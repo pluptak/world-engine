@@ -100,15 +100,6 @@ function transition(context: TransitionContext): void {
   }
 
   context.snapshot = { ...context.snapshot, tick: endTick };
-  context.recordDelta(context.actor.id, "tick", startTick, endTick, context.root_event_id);
-
-  for (const entityId of Object.keys(context.snapshot.entities).sort()) {
-    const entity = context.snapshot.entities[entityId]!;
-    const modifiers = entity.modifiers.filter(
-      (modifier) => modifier.expires_at_tick === null || modifier.expires_at_tick > endTick,
-    );
-    context.set(entityId, "modifiers", modifiers, context.root_event_id);
-  }
 }
 
 export const waitVerb: Verb = {

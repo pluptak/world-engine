@@ -1,22 +1,20 @@
 import { readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { z } from "zod";
-import { apply } from "../engine/pipeline.js";
 import { canonicalJson } from "../engine/canonical.js";
 import { query as queryEngine } from "../engine/query.js";
 import { spawn } from "../engine/spawn.js";
-import type { Command, Result } from "../engine/command.js";
-import type { Delta, Snapshot, WorldEvent } from "../model.js";
+import type { Result } from "../engine/command.js";
+import type { Delta, Snapshot } from "../model.js";
+import { defaultCoverage } from "../model.js";
 import {
-  CommandResponseSchema,
   RequestSchema,
   ResponseSchema,
-  SnapshotSchema,
   ValidationFailureSchema,
   type Request,
 } from "../contract.js";
-import { create, load, submit } from "../store/file-store.js";
+import { create, load, replayWithEvents, submit } from "../store/file-store.js";
 import { loadTemplates, templatesHash, type TemplateRegistry } from "../templates.js";
 
 const templatesDirectory = fileURLToPath(new URL("../../templates/", import.meta.url));
@@ -81,11 +79,7 @@ function initialSnapshot(registry: TemplateRegistry): Snapshot {
     tick: 0,
     next_seq: 1,
     templates_hash: templatesHash(registry),
-    coverage: {
-      relations: ["support", "contained_in", "attached_to", "status", "location"],
-      senses: ["sight", "hearing"],
-      properties: ["integrity", "residue", "pos"],
-    },
+    coverage: defaultCoverage(),
     entities: {},
   };
 }
@@ -143,28 +137,6 @@ function commandResponse(result: Result, includeSnapshot: boolean) {
   };
 }
 
-function eventsForWorld(dir: string, registry: TemplateRegistry): WorldEvent[] {
-  let snapshot = JSON.parse(readFileSync(join(dir, "initial.json"), "utf8")) as Snapshot;
-  const events: WorldEvent[] = [];
-  const lines = readFileSync(join(dir, "log.jsonl"), "utf8").split(/\r?\n/);
-  for (const line of lines) {
-    if (line.length === 0) {
-      continue;
-    }
-    const entry = JSON.parse(line) as { status: string; command: Command };
-    if (entry.status !== "ok") {
-      continue;
-    }
-    const result = apply(snapshot, registry, entry.command);
-    if (result.status !== "ok") {
-      throw new TypeError("Accepted command failed while rebuilding events");
-    }
-    events.push(...result.events);
-    snapshot = result.snapshot;
-  }
-  return events;
-}
-
 function dispatch(request: Request, registry: TemplateRegistry): unknown {
   if (request.op === "command") {
     const result = submit(
@@ -177,7 +149,8 @@ function dispatch(request: Request, registry: TemplateRegistry): unknown {
   }
   if (request.op === "query") {
     const snapshot = load(request.world, registry);
-    return queryEngine(snapshot, registry, eventsForWorld(request.world, registry), request.query);
+    const events = replayWithEvents(request.world, registry).events;
+    return queryEngine(snapshot, registry, events, request.query);
   }
   return load(request.world, registry);
 }

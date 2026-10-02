@@ -1,4 +1,5 @@
 import { elevation, effectivePos } from "../engine/geometry.js";
+import { addResidue } from "../engine/residue.js";
 import { spawn } from "../engine/spawn.js";
 import type { Id, Pos } from "../model.js";
 import type { TransitionContext } from "../engine/command.js";
@@ -9,13 +10,9 @@ interface Landing {
   pos: Pos | null;
 }
 
-interface LossRequest {
-  entity: Id;
-  cause: Id;
-  displaced: boolean;
-  landing?: Landing;
-  fall_cm?: number;
-}
+type LossRequest =
+  | { entity: Id; cause: Id; displaced: boolean }
+  | { entity: Id; cause: Id; displaced: boolean; landing: Landing; fall_cm: number };
 
 function requireEntity(context: TransitionContext, entityId: Id) {
   const entity = context.snapshot.entities[entityId];
@@ -142,12 +139,7 @@ function breakOnFall(
 
   const residueSurfaceId = landing.support ?? location;
   if (residueSurfaceId !== null && Object.keys(residueAdds).length > 0) {
-    const surface = requireEntity(context, residueSurfaceId);
-    const residue = { ...surface.residue };
-    for (const material of Object.keys(residueAdds).sort()) {
-      residue[material] = (residue[material] ?? 0) + residueAdds[material]!;
-    }
-    context.set(residueSurfaceId, "residue", residue, brokenEvent);
+    addResidue(context, residueSurfaceId, residueAdds, brokenEvent);
   }
 
   if (typeof liquidMaterial === "string" || typeof liquidAmount === "number") {
@@ -179,7 +171,7 @@ function processLoss(context: TransitionContext, request: LossRequest, queue: Lo
   let landing: Landing;
   let fall_cm: number;
 
-  if (request.landing !== undefined && request.fall_cm !== undefined) {
+  if ("landing" in request) {
     landing = request.landing;
     fall_cm = request.fall_cm;
   } else {

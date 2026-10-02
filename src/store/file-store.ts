@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { apply } from "../engine/pipeline.js";
 import { canonicalJson } from "../engine/canonical.js";
 import type { Command, Result } from "../engine/command.js";
-import type { Snapshot, Status } from "../model.js";
+import type { Snapshot, Status, WorldEvent } from "../model.js";
 import { loadTemplates, templatesHash, type TemplateRegistry } from "../templates.js";
 
 interface LogEntry {
@@ -206,10 +206,14 @@ export function submit(
   return result;
 }
 
-export function replay(dir: string, registry?: TemplateRegistry): Snapshot {
+export function replayWithEvents(
+  dir: string,
+  registry?: TemplateRegistry,
+): { snapshot: Snapshot; events: WorldEvent[] } {
   const templates = activeRegistry(registry);
   let snapshot = readSnapshot(join(dir, snapshots.initial));
   assertTemplates(snapshot, templates);
+  const events: WorldEvent[] = [];
 
   for (const [index, entry] of readLogEntries(dir).entries()) {
     if (entry.status !== "ok") {
@@ -219,8 +223,13 @@ export function replay(dir: string, registry?: TemplateRegistry): Snapshot {
     if (result.status !== "ok") {
       throw new TypeError(`Accepted command failed during replay at line ${index + 1}`);
     }
+    events.push(...result.events);
     snapshot = result.snapshot;
   }
 
-  return snapshot;
+  return { snapshot, events };
+}
+
+export function replay(dir: string, registry?: TemplateRegistry): Snapshot {
+  return replayWithEvents(dir, registry).snapshot;
 }

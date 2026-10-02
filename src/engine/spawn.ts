@@ -1,13 +1,8 @@
+import { defaultCoverage } from "../model.js";
 import type { Entity, Id, Snapshot } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 
 export type EntityOverrides = Partial<Omit<Entity, "id" | "template" | "parts">>;
-
-const DEFAULT_COVERAGE = {
-  relations: ["support", "contained_in", "attached_to", "status", "location"],
-  senses: ["sight", "hearing"],
-  properties: ["integrity", "residue", "pos"],
-};
 
 function copyOverrides(overrides: EntityOverrides): EntityOverrides {
   return {
@@ -76,11 +71,7 @@ export function spawn(
     snapshot: {
       ...snapshot,
       ...(Object.keys(snapshot.entities).length === 0 && !hasCoverage && {
-        coverage: {
-          relations: [...DEFAULT_COVERAGE.relations],
-          senses: [...DEFAULT_COVERAGE.senses],
-          properties: [...DEFAULT_COVERAGE.properties],
-        },
+        coverage: defaultCoverage(),
       }),
       next_seq: snapshot.next_seq + 1,
       entities: { ...snapshot.entities, [id]: entity },

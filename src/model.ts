@@ -42,6 +42,14 @@ export interface Coverage {
   properties: string[];
 }
 
+export function defaultCoverage(): Coverage {
+  return {
+    relations: ["support", "contained_in", "attached_to", "status", "location"],
+    senses: ["sight", "hearing"],
+    properties: ["integrity", "residue", "pos"],
+  };
+}
+
 export interface Snapshot {
   version: number;
   tick: number;

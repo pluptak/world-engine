@@ -1,5 +1,6 @@
 import { capacities, capacity } from "../capacity.js";
 import { effectivePos } from "../geometry.js";
+import { addResidue } from "../residue.js";
 import type { PartState } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { dropCarriedItem } from "./drop.js";
@@ -165,15 +166,10 @@ function addBreakResidue(
   }
 
   const surfaceId = entity.support ?? entity.contained_in ?? entity.location;
-  const surface = surfaceId === null ? undefined : context.snapshot.entities[surfaceId];
-  if (surface === undefined || Object.keys(template.break_residue).length === 0) {
+  if (surfaceId === null || Object.keys(template.break_residue).length === 0) {
     return;
   }
-  const residue = { ...surface.residue };
-  for (const material of Object.keys(template.break_residue).sort()) {
-    residue[material] = (residue[material] ?? 0) + template.break_residue[material]!;
-  }
-  context.set(surface.id, "residue", residue, eventId);
+  addResidue(context, surfaceId, template.break_residue, eventId);
 }
 
 function detachPart(
