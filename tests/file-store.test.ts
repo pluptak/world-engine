@@ -1,0 +1,322 @@
+import { deepStrictEqual, equal, ok, strictEqual, throws } from "node:assert";
+import { appendFileSync, cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { test } from "node:test";
+import { canonicalJson } from "../src/engine/canonical.js";
+import { apply } from "../src/engine/pipeline.js";
+import { spawn } from "../src/engine/spawn.js";
+import { create, load, replay, submit } from "../src/store/file-store.js";
+import type { Snapshot } from "../src/model.js";
+import { loadTemplates, templatesHash } from "../src/templates.js";
+
+const templatesDir = fileURLToPath(new URL("../templates/", import.meta.url));
+const registry = loadTemplates(templatesDir);
+
+function initialSnapshot(): Snapshot {
+  return {
+    version: 0,
+    tick: 0,
+    next_seq: 1,
+    templates_hash: templatesHash(registry),
+    coverage: { relations: [], senses: [], properties: [] },
+    entities: {},
+  };
+}
+
+function temporaryDirectory(t: { after(callback: () => void): void }): string {
+  const dir = mkdtempSync(join(tmpdir(), "world-engine-store-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  return dir;
+}
+
+function bottleWorld(actorX = 0) {
+  const room = spawn(initialSnapshot(), registry, "room", { name: "room" });
+  const table = spawn(room.snapshot, registry, "table", {
+    name: "table",
+    location: room.id,
+    support: room.id,
+    pos: { x: 30, y: 0 },
+  });
+  const bottle = spawn(table.snapshot, registry, "bottle", {
+    name: "bottle",
+    location: room.id,
+    support: table.id,
+    pos: { x: 30, y: 0 },
+  });
+  const actor = spawn(bottle.snapshot, registry, "human", {
+    name: "actor",
+    location: room.id,
+    support: room.id,
+    pos: { x: actorX, y: 0 },
+  });
+  return {
+    snapshot: actor.snapshot,
+    roomId: room.id,
+    tableId: table.id,
+    bottleId: bottle.id,
+    actorId: actor.id,
+  };
+}
+
+test("create and load preserve a canonical snapshot", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+
+  const loaded = load(dir);
+  strictEqual(canonicalJson(loaded), canonicalJson(scenario.snapshot));
+  equal(readFileSync(join(dir, "snapshot.json"), "utf8"), canonicalJson(scenario.snapshot));
+});
+
+test("replay reproduces the bottle and hand scenarios byte-for-byte", (t) => {
+  const dir = temporaryDirectory(t);
+  const room = spawn(initialSnapshot(), registry, "room", { name: "room" });
+  const table = spawn(room.snapshot, registry, "table", {
+    name: "table",
+    location: room.id,
+    support: room.id,
+    pos: { x: 30, y: 0 },
+  });
+  const bottle = spawn(table.snapshot, registry, "bottle", {
+    name: "bottle",
+    location: room.id,
+    support: table.id,
+    pos: { x: 30, y: 0 },
+  });
+  const attacker = spawn(bottle.snapshot, registry, "human", {
+    name: "attacker",
+    location: room.id,
+    support: room.id,
+    pos: { x: -50, y: 0 },
+  });
+  const guard = spawn(attacker.snapshot, registry, "human", {
+    name: "guard",
+    location: room.id,
+    support: room.id,
+    pos: { x: -40, y: 0 },
+  });
+  create(dir, guard.snapshot);
+
+  const pushed = submit(dir, {
+    command_id: "push-table",
+    actor: attacker.id,
+    verb: "push",
+    target: "table",
+  });
+  strictEqual(pushed.status, "ok");
+
+  let snapshot = pushed.snapshot;
+  for (let index = 0; index < 3; index += 1) {
+    const hit = submit(dir, {
+      command_id: `hand-hit-${index}`,
+      actor: attacker.id,
+      verb: "attack",
+      target: `${guard.id}.hand_r`,
+    });
+    strictEqual(hit.status, "ok");
+    snapshot = hit.snapshot;
+    if (index < 2) {
+      const waited = submit(dir, {
+        command_id: `wait-${index}`,
+        actor: attacker.id,
+        verb: "wait",
+        args: { ticks: 3 },
+      });
+      strictEqual(waited.status, "ok");
+      snapshot = waited.snapshot;
+    }
+  }
+
+  const current = load(dir);
+  const replayed = replay(dir);
+  strictEqual(canonicalJson(current), canonicalJson(snapshot));
+  strictEqual(canonicalJson(replayed), canonicalJson(current));
+  equal(readFileSync(join(dir, "snapshot.json"), "utf8"), canonicalJson(current));
+});
+
+test("a stale take is preempted after the bottle is broken and moved out of reach", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld(-50);
+  create(dir, scenario.snapshot);
+  const basedOn = scenario.snapshot.version;
+
+  const pushed = submit(
+    dir,
+    {
+      command_id: "push-table",
+      actor: scenario.actorId,
+      verb: "push",
+      target: "table",
+    },
+    basedOn,
+  );
+  strictEqual(pushed.status, "ok");
+
+  const staleTake = submit(
+    dir,
+    {
+      command_id: "take-bottle",
+      actor: scenario.actorId,
+      verb: "take",
+      target: "bottle",
+    },
+    basedOn,
+  );
+  strictEqual(staleTake.status, "preempted");
+  strictEqual(staleTake.reason_code, "out_of_reach");
+  strictEqual(staleTake.snapshot.version, pushed.snapshot.version);
+  strictEqual(load(dir).version, pushed.snapshot.version);
+  const entries = readFileSync(join(dir, "log.jsonl"), "utf8")
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => JSON.parse(line) as { status: string });
+  deepStrictEqual(entries.map((entry) => entry.status), ["ok", "preempted"]);
+});
+
+test("a stale unknown verb remains invalid", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+  const basedOn = scenario.snapshot.version;
+  const moved = submit(dir, {
+    command_id: "move-actor",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 1, y: 0 } },
+  }, basedOn);
+  strictEqual(moved.status, "ok");
+
+  const stale = submit(dir, {
+    command_id: "unknown-verb",
+    actor: scenario.actorId,
+    verb: "fly",
+  }, basedOn);
+  strictEqual(stale.status, "invalid");
+  strictEqual(stale.reason_code, "unknown_verb");
+});
+
+test("a stale take that fails reach at both versions remains refused", (t) => {
+  const dir = temporaryDirectory(t);
+  const room = spawn(initialSnapshot(), registry, "room", { name: "room" });
+  const actor = spawn(room.snapshot, registry, "human", {
+    name: "actor",
+    location: room.id,
+    support: room.id,
+    pos: { x: 0, y: 0 },
+  });
+  const bottle = spawn(actor.snapshot, registry, "bottle", {
+    name: "bottle",
+    location: room.id,
+    support: room.id,
+    pos: { x: 200, y: 0 },
+  });
+  create(dir, bottle.snapshot);
+
+  const moved = submit(dir, {
+    command_id: "move-actor",
+    actor: actor.id,
+    verb: "move",
+    args: { to: { x: 10, y: 0 } },
+  }, bottle.snapshot.version);
+  strictEqual(moved.status, "ok");
+
+  const stale = submit(dir, {
+    command_id: "take-bottle",
+    actor: actor.id,
+    verb: "take",
+    target: "bottle",
+  }, bottle.snapshot.version);
+  strictEqual(stale.status, "refused");
+  strictEqual(stale.reason_code, "out_of_reach");
+});
+
+test("load recovers a logged accepted command after a snapshot-write crash", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+  const command = {
+    command_id: "move-before-crash",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 5, y: 0 } },
+  };
+  const expected = apply(scenario.snapshot, registry, command);
+  strictEqual(expected.status, "ok");
+
+  appendFileSync(
+    join(dir, "log.jsonl"),
+    `${canonicalJson({
+      command,
+      based_on_version: scenario.snapshot.version,
+      status: "ok",
+    })}\n`,
+    "utf8",
+  );
+
+  const recovered = load(dir);
+  const replayed = replay(dir);
+  strictEqual(canonicalJson(recovered), canonicalJson(expected.snapshot));
+  strictEqual(canonicalJson(recovered), canonicalJson(replayed));
+  equal(readFileSync(join(dir, "snapshot.json"), "utf8"), canonicalJson(recovered));
+});
+
+test("stale commands on unrelated entities both apply to the current snapshot", (t) => {
+  const dir = temporaryDirectory(t);
+  const room = spawn(initialSnapshot(), registry, "room", { name: "room" });
+  const actor = spawn(room.snapshot, registry, "human", {
+    name: "actor",
+    location: room.id,
+    support: room.id,
+    pos: { x: 0, y: 0 },
+  });
+  const first = spawn(actor.snapshot, registry, "bottle", {
+    name: "bottle-a",
+    location: room.id,
+    support: room.id,
+    pos: { x: 10, y: 0 },
+  });
+  const second = spawn(first.snapshot, registry, "bottle", {
+    name: "bottle-b",
+    location: room.id,
+    support: room.id,
+    pos: { x: 20, y: 0 },
+  });
+  create(dir, second.snapshot);
+
+  const firstTake = submit(
+    dir,
+    { command_id: "take-a", actor: actor.id, verb: "take", target: "bottle-a" },
+    second.snapshot.version,
+  );
+  const secondTake = submit(
+    dir,
+    { command_id: "take-b", actor: actor.id, verb: "take", target: "bottle-b" },
+    second.snapshot.version,
+  );
+
+  strictEqual(firstTake.status, "ok");
+  strictEqual(secondTake.status, "ok");
+  strictEqual(secondTake.snapshot.entities[first.id]?.contained_in, actor.id);
+  strictEqual(secondTake.snapshot.entities[second.id]?.contained_in, actor.id);
+});
+
+test("load rejects a world after its template data changes", (t) => {
+  const root = temporaryDirectory(t);
+  const worldDir = join(root, "world");
+  const copiedTemplates = join(root, "templates");
+  cpSync(templatesDir, copiedTemplates, { recursive: true });
+  const scenario = bottleWorld();
+  create(worldDir, scenario.snapshot, registry);
+
+  const bottlePath = join(copiedTemplates, "bottle.json");
+  const bottle = JSON.parse(readFileSync(bottlePath, "utf8")) as {
+    props: { break_fall_cm: number };
+  };
+  bottle.props.break_fall_cm += 1;
+  writeFileSync(bottlePath, JSON.stringify(bottle), "utf8");
+  const changedRegistry = loadTemplates(copiedTemplates);
+
+  throws(() => load(worldDir, changedRegistry), /Template hash mismatch/);
+});

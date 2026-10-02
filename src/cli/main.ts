@@ -1,0 +1,232 @@
+import { readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { z } from "zod";
+import { apply } from "../engine/pipeline.js";
+import { canonicalJson } from "../engine/canonical.js";
+import { query as queryEngine } from "../engine/query.js";
+import { spawn } from "../engine/spawn.js";
+import type { Command, Result } from "../engine/command.js";
+import type { Delta, Snapshot, WorldEvent } from "../model.js";
+import {
+  CommandResponseSchema,
+  RequestSchema,
+  ResponseSchema,
+  SnapshotSchema,
+  ValidationFailureSchema,
+  type Request,
+} from "../contract.js";
+import { create, load, submit } from "../store/file-store.js";
+import { loadTemplates, templatesHash, type TemplateRegistry } from "../templates.js";
+
+const templatesDirectory = fileURLToPath(new URL("../../templates/", import.meta.url));
+const PrimitiveSchema = z.union([z.number(), z.string(), z.boolean()]);
+const ModifierSchema = z.object({
+  capacity: z.string(),
+  delta: z.number().int(),
+  expires_at_tick: z.number().int().nullable(),
+  cause_id: z.string(),
+}).strict();
+const SpawnOverridesSchema = z.object({
+  name: z.string().optional(),
+  aliases: z.array(z.string()).optional(),
+  location: z.string().nullable().optional(),
+  support: z.string().nullable().optional(),
+  contained_in: z.string().nullable().optional(),
+  pos: z.object({ x: z.number().int(), y: z.number().int() }).strict().nullable().optional(),
+  detached_from: z.object({ entity: z.string(), part: z.string() }).strict().nullable().optional(),
+  integrity: z.number().int().min(0).max(100).optional(),
+  status: z.enum(["intact", "broken", "destroyed"]).optional(),
+  residue: z.record(z.string(), z.number().int()).optional(),
+  modifiers: z.array(ModifierSchema).optional(),
+  props: z.record(z.string(), PrimitiveSchema).optional(),
+}).strict();
+const ScenarioSchema = z.array(z.object({
+  template: z.string().min(1),
+  overrides: SpawnOverridesSchema.optional(),
+}).strict());
+
+function issue(code: string, message = code) {
+  return { code, path: [], message };
+}
+
+function writeResponse(response: unknown): void {
+  const parsed = ResponseSchema.safeParse(response);
+  if (!parsed.success) {
+    const failure = {
+      status: "invalid",
+      issues: [issue("invalid_response")],
+    };
+    process.stdout.write(`${canonicalJson(ValidationFailureSchema.parse(failure))}\n`);
+    process.exitCode = 2;
+    return;
+  }
+  process.stdout.write(`${canonicalJson(parsed.data)}\n`);
+  if ("status" in parsed.data && parsed.data.status === "invalid") {
+    process.exitCode = 2;
+  }
+}
+
+function parseJson(text: string): { success: true; value: unknown } | { success: false } {
+  try {
+    return { success: true, value: JSON.parse(text) as unknown };
+  } catch {
+    return { success: false };
+  }
+}
+
+function initialSnapshot(registry: TemplateRegistry): Snapshot {
+  return {
+    version: 0,
+    tick: 0,
+    next_seq: 1,
+    templates_hash: templatesHash(registry),
+    coverage: {
+      relations: ["support", "contained_in", "attached_to", "status", "location"],
+      senses: ["sight", "hearing"],
+      properties: ["integrity", "residue", "pos"],
+    },
+    entities: {},
+  };
+}
+
+function initializeWorld(dir: string, scenarioPath: string, registry: TemplateRegistry): void {
+  const parsedJson = parseJson(readFileSync(scenarioPath, "utf8"));
+  if (!parsedJson.success) {
+    writeResponse({ status: "invalid", issues: [issue("invalid_scenario_json")] });
+    return;
+  }
+  const parsedScenario = ScenarioSchema.safeParse(parsedJson.value);
+  if (!parsedScenario.success) {
+    writeResponse({ status: "invalid", issues: parsedScenario.error.issues });
+    return;
+  }
+
+  let snapshot = initialSnapshot(registry);
+  for (const spec of parsedScenario.data) {
+    snapshot = spawn(snapshot, registry, spec.template, spec.overrides).snapshot;
+  }
+  create(dir, snapshot, registry);
+  process.stdout.write(`${canonicalJson({ status: "ok", world: dir, snapshot_version: snapshot.version })}\n`);
+}
+
+function commandResponse(result: Result, includeSnapshot: boolean) {
+  const responseDeltas: Delta[] = [];
+  for (const delta of result.deltas) {
+    responseDeltas.push(delta);
+    if (delta.field === "entity" && delta.to !== null && typeof delta.to === "object") {
+      const entity = delta.to as Record<string, unknown>;
+      for (const field of ["support", "contained_in", "location", "detached_from", "pos"]) {
+        if (Object.hasOwn(entity, field)) {
+          responseDeltas.push({
+            event_id: delta.event_id,
+            entity: delta.entity,
+            field,
+            from: null,
+            to: entity[field],
+          });
+        }
+      }
+    }
+  }
+
+  return {
+    status: result.status,
+    command_id: result.command_id,
+    resolved_target: result.resolved_target,
+    ...(result.candidates !== undefined && { candidates: result.candidates }),
+    ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
+    snapshot_version: result.snapshot.version,
+    deltas: responseDeltas,
+    events: result.events,
+    ...(includeSnapshot && { snapshot: result.snapshot }),
+  };
+}
+
+function eventsForWorld(dir: string, registry: TemplateRegistry): WorldEvent[] {
+  let snapshot = JSON.parse(readFileSync(join(dir, "initial.json"), "utf8")) as Snapshot;
+  const events: WorldEvent[] = [];
+  const lines = readFileSync(join(dir, "log.jsonl"), "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    if (line.length === 0) {
+      continue;
+    }
+    const entry = JSON.parse(line) as { status: string; command: Command };
+    if (entry.status !== "ok") {
+      continue;
+    }
+    const result = apply(snapshot, registry, entry.command);
+    if (result.status !== "ok") {
+      throw new TypeError("Accepted command failed while rebuilding events");
+    }
+    events.push(...result.events);
+    snapshot = result.snapshot;
+  }
+  return events;
+}
+
+function dispatch(request: Request, registry: TemplateRegistry): unknown {
+  if (request.op === "command") {
+    const result = submit(
+      request.world,
+      request.command,
+      request.based_on_version,
+      registry,
+    );
+    return commandResponse(result, request.include_snapshot === true);
+  }
+  if (request.op === "query") {
+    const snapshot = load(request.world, registry);
+    return queryEngine(snapshot, registry, eventsForWorld(request.world, registry), request.query);
+  }
+  return load(request.world, registry);
+}
+
+async function stdinText(): Promise<string> {
+  let text = "";
+  for await (const chunk of process.stdin) {
+    text += chunk.toString();
+  }
+  return text;
+}
+
+function invalidFromIssues(issues: unknown): void {
+  writeResponse({ status: "invalid", issues });
+}
+
+async function main(argv: string[]): Promise<void> {
+  const registry = loadTemplates(templatesDirectory);
+  if (argv[0] === "init") {
+    if (argv.length !== 3) {
+      invalidFromIssues([issue("invalid_init_args")]);
+      return;
+    }
+    initializeWorld(argv[1]!, argv[2]!, registry);
+    return;
+  }
+
+  const parsedJson = parseJson(await stdinText());
+  if (!parsedJson.success) {
+    invalidFromIssues([issue("invalid_json")]);
+    return;
+  }
+  const parsedRequest = RequestSchema.safeParse(parsedJson.value);
+  if (!parsedRequest.success) {
+    invalidFromIssues(parsedRequest.error.issues);
+    return;
+  }
+
+  try {
+    const response = dispatch(parsedRequest.data, registry);
+    writeResponse(response);
+  } catch {
+    invalidFromIssues([issue("request_failed")]);
+  }
+}
+
+const invokedPath = process.argv[1];
+if (invokedPath !== undefined && pathToFileURL(resolve(invokedPath)).href === import.meta.url) {
+  void main(process.argv.slice(2)).catch(() => {
+    invalidFromIssues([issue("request_failed")]);
+  });
+}

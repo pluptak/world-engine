@@ -1,0 +1,9 @@
+{
+  "id": "glass_shard",
+  "size_cm": { "w": 5, "d": 5, "h": 1 },
+  "mass_g": 50,
+  "parts": [],
+  "props": {},
+  "break_products": [],
+  "break_residue": {}
+}

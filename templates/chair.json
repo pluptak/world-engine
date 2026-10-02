@@ -1,0 +1,16 @@
+{
+  "id": "chair",
+  "size_cm": { "w": 45, "d": 45, "h": 90 },
+  "mass_g": 8000,
+  "parts": [
+    { "name": "seat", "parent": null, "contributes": {}, "detachable": false, "max_integrity": 100 },
+    { "name": "back", "parent": null, "contributes": {}, "detachable": false, "max_integrity": 100 },
+    { "name": "leg_fl", "parent": null, "contributes": {}, "detachable": true, "max_integrity": 100 },
+    { "name": "leg_fr", "parent": null, "contributes": {}, "detachable": true, "max_integrity": 100 },
+    { "name": "leg_bl", "parent": null, "contributes": {}, "detachable": true, "max_integrity": 100 },
+    { "name": "leg_br", "parent": null, "contributes": {}, "detachable": true, "max_integrity": 100 }
+  ],
+  "props": {},
+  "break_products": [],
+  "break_residue": {}
+}

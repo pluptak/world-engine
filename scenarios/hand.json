@@ -1,0 +1,31 @@
+[
+  { "template": "room", "overrides": { "name": "room" } },
+  {
+    "template": "human",
+    "overrides": {
+      "name": "attacker",
+      "location": "e1",
+      "support": "e1",
+      "pos": { "x": 0, "y": 0 }
+    }
+  },
+  {
+    "template": "human",
+    "overrides": {
+      "name": "guard",
+      "location": "e1",
+      "support": "e1",
+      "pos": { "x": 50, "y": 0 }
+    }
+  },
+  {
+    "template": "stone",
+    "overrides": {
+      "name": "crate",
+      "location": "e1",
+      "support": "e1",
+      "pos": { "x": 50, "y": 0 },
+      "props": { "hands_required": 2 }
+    }
+  }
+]

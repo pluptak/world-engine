@@ -1,0 +1,29 @@
+[
+  { "template": "room", "overrides": { "name": "room" } },
+  {
+    "template": "table",
+    "overrides": {
+      "name": "table",
+      "location": "e1",
+      "support": "e1",
+      "pos": { "x": 30, "y": 0 }
+    }
+  },
+  {
+    "template": "bottle",
+    "overrides": {
+      "name": "bottle",
+      "location": "e1",
+      "support": "e2"
+    }
+  },
+  {
+    "template": "human",
+    "overrides": {
+      "name": "pusher",
+      "location": "e1",
+      "support": "e1",
+      "pos": { "x": -50, "y": 0 }
+    }
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "id": "stone",
+  "size_cm": { "w": 20, "d": 20, "h": 20 },
+  "mass_g": 2000,
+  "parts": [],
+  "props": {},
+  "break_products": [],
+  "break_residue": {}
+}

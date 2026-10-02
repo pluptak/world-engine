@@ -1,0 +1,14 @@
+{
+  "id": "bottle",
+  "size_cm": { "w": 8, "d": 8, "h": 25 },
+  "mass_g": 500,
+  "parts": [],
+  "props": {
+    "topples": true,
+    "break_fall_cm": 50,
+    "liquid_material": "wine",
+    "liquid_amount": 75
+  },
+  "break_products": [{ "template": "glass_shard", "count": 3 }],
+  "break_residue": { "glass": 5 }
+}
