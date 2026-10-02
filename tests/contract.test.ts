@@ -1,6 +1,6 @@
 import { deepStrictEqual, match, ok, strictEqual } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -225,6 +225,54 @@ test("malformed JSON is converted to an invalid response", () => {
   strictEqual(result.status, 2);
   const response = ResponseSchema.parse(JSON.parse(result.stdout));
   ok("issues" in response);
+});
+
+test("an unknown world reports no_such_world", (t) => {
+  const missing = join(temporaryDirectory(t), "never-created");
+  for (const request of [
+    { op: "snapshot", world: missing },
+    { op: "query", world: missing, query: { kind: "fact", subject: "e1", relation: "status" } },
+    {
+      op: "command",
+      world: missing,
+      command: { command_id: "c1", actor: "e1", verb: "move", args: { to: { x: 0, y: 0 } } },
+    },
+  ]) {
+    const result = runCli(JSON.stringify(request));
+    strictEqual(result.status, 2);
+    const response = ResponseSchema.parse(JSON.parse(result.stdout));
+    ok("issues" in response);
+    strictEqual(response.issues[0]?.code, "no_such_world");
+  }
+});
+
+test("a world built from other templates reports templates_changed", (t) => {
+  const world = initWorld(t);
+  for (const name of ["snapshot.json", "initial.json"]) {
+    const path = join(world, name);
+    const snapshot = JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
+    snapshot.templates_hash = "0".repeat(64);
+    writeFileSync(path, JSON.stringify(snapshot), "utf8");
+  }
+
+  const result = runCli(JSON.stringify({ op: "snapshot", world }));
+  strictEqual(result.status, 2);
+  const response = ResponseSchema.parse(JSON.parse(result.stdout));
+  ok("issues" in response);
+  strictEqual(response.issues[0]?.code, "templates_changed");
+});
+
+test("a missing scenario file reports no_such_scenario", (t) => {
+  const dir = temporaryDirectory(t);
+  const result = runCli(undefined, [
+    "init",
+    join(dir, "world"),
+    join(dir, "no-such-scenario.json"),
+  ]);
+  strictEqual(result.status, 2);
+  const response = ResponseSchema.parse(JSON.parse(result.stdout));
+  ok("issues" in response);
+  strictEqual(response.issues[0]?.code, "no_such_scenario");
 });
 
 test("request schemas reject unknown operations", () => {

@@ -14,7 +14,7 @@ import {
   ValidationFailureSchema,
   type Request,
 } from "../contract.js";
-import { create, load, replayWithEvents, submit } from "../store/file-store.js";
+import { create, load, replayWithEvents, submit, StoreError } from "../store/file-store.js";
 import { loadTemplates, templatesHash, type TemplateRegistry } from "../templates.js";
 
 const templatesDirectory = fileURLToPath(new URL("../../templates/", import.meta.url));
@@ -46,6 +46,10 @@ const ScenarioSchema = z.array(z.object({
 
 function issue(code: string, message = code) {
   return { code, path: [], message };
+}
+
+function errorCode(error: unknown): string {
+  return error instanceof StoreError ? error.code : "internal_error";
 }
 
 function writeResponse(response: unknown): void {
@@ -85,7 +89,15 @@ function initialSnapshot(registry: TemplateRegistry): Snapshot {
 }
 
 function initializeWorld(dir: string, scenarioPath: string, registry: TemplateRegistry): void {
-  const parsedJson = parseJson(readFileSync(scenarioPath, "utf8"));
+  let scenarioText: string;
+  try {
+    scenarioText = readFileSync(scenarioPath, "utf8");
+  } catch {
+    writeResponse({ status: "invalid", issues: [issue("no_such_scenario")] });
+    return;
+  }
+
+  const parsedJson = parseJson(scenarioText);
   if (!parsedJson.success) {
     writeResponse({ status: "invalid", issues: [issue("invalid_scenario_json")] });
     return;
@@ -192,14 +204,14 @@ async function main(argv: string[]): Promise<void> {
   try {
     const response = dispatch(parsedRequest.data, registry);
     writeResponse(response);
-  } catch {
-    invalidFromIssues([issue("request_failed")]);
+  } catch (error) {
+    invalidFromIssues([issue(errorCode(error))]);
   }
 }
 
 const invokedPath = process.argv[1];
 if (invokedPath !== undefined && pathToFileURL(resolve(invokedPath)).href === import.meta.url) {
-  void main(process.argv.slice(2)).catch(() => {
-    invalidFromIssues([issue("request_failed")]);
+  void main(process.argv.slice(2)).catch((error: unknown) => {
+    invalidFromIssues([issue(errorCode(error))]);
   });
 }

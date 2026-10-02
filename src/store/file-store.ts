@@ -1,4 +1,4 @@
-import { appendFileSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { apply } from "../engine/pipeline.js";
@@ -20,6 +20,23 @@ const snapshots = {
 };
 
 const templatesDirectory = fileURLToPath(new URL("../../templates/", import.meta.url));
+
+export type StoreErrorCode = "no_such_world" | "templates_changed";
+
+export class StoreError extends Error {
+  constructor(readonly code: StoreErrorCode, message: string) {
+    super(message);
+  }
+}
+
+function assertWorldExists(dir: string): void {
+  const missing = [snapshots.current, snapshots.initial, snapshots.log].filter(
+    (name) => !existsSync(join(dir, name)),
+  );
+  if (missing.length > 0) {
+    throw new StoreError("no_such_world", `No world at ${dir}: missing ${missing.join(", ")}`);
+  }
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -50,7 +67,7 @@ function readSnapshot(path: string): Snapshot {
 
 function assertTemplates(snapshot: Snapshot, registry: TemplateRegistry): void {
   if (snapshot.templates_hash !== templatesHash(registry)) {
-    throw new TypeError("Template hash mismatch");
+    throw new StoreError("templates_changed", "Template hash mismatch");
   }
 }
 
@@ -150,6 +167,7 @@ export function create(
 }
 
 export function load(dir: string, registry?: TemplateRegistry): Snapshot {
+  assertWorldExists(dir);
   const templates = activeRegistry(registry);
   const snapshot = readSnapshot(join(dir, snapshots.current));
   const initial = readSnapshot(join(dir, snapshots.initial));
