@@ -2,6 +2,7 @@ import { capacity } from "./capacity.js";
 import { canonicalJson } from "./canonical.js";
 import type { Entity, Id, Snapshot, Tri, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
+import { closedEnclosure } from "./verbs/address.js";
 
 export type Query =
   | { kind: "fact"; subject: Id; relation: string; object?: Id | string }
@@ -175,6 +176,10 @@ function perceive(
       : snapshot.entities[event.entity];
   if (targetEntity === undefined) {
     return answer("false", "no_such_entity");
+  }
+  // A shut container hides what is inside it, however deep; hearing does not care.
+  if (query.sense === "sight" && closedEnclosure(snapshot, targetEntity.id) !== null) {
+    return answer("false", "enclosed");
   }
 
   const observerLocation = observer.location;

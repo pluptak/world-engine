@@ -1,6 +1,7 @@
 import { capacity } from "../capacity.js";
 import { effectivePos } from "../geometry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
+import { closedEnclosure, isAgent } from "./address.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
   const target = context.target;
@@ -37,7 +38,18 @@ function preconditions(context: CommandContext): PreconditionResult {
     return { status: "refused", reason_code: "insufficient_manipulation" };
   }
   if (entity.contained_in !== null && entity.contained_in !== context.actor.id) {
-    return { status: "refused", reason_code: "held_by_another" };
+    const holder = context.snapshot.entities[entity.contained_in];
+    if (holder === undefined) {
+      return { status: "invalid", reason_code: "no_such_entity" };
+    }
+    if (closedEnclosure(context.snapshot, entity.id) !== null) {
+      return { status: "refused", reason_code: "container_closed" };
+    }
+    // Only an agent holds: a container or a piece of furniture keeps what is inside it, and what it
+    // keeps is there to be taken out.
+    if (isAgent(context.snapshot, holder.id)) {
+      return { status: "refused", reason_code: "held_by_another" };
+    }
   }
 
   return { status: "ok" };

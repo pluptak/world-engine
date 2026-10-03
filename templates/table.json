@@ -3,7 +3,7 @@
   "size_cm": { "w": 120, "d": 60, "h": 75 },
   "mass_g": 15000,
   "parts": [],
-  "props": {},
+  "props": { "surface": true },
   "break_products": [],
   "break_residue": {}
 }

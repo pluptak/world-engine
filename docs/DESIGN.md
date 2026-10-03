@@ -10,6 +10,30 @@ version. Events use command IDs and cause IDs to preserve the causal chain.
 The engine is pure: transitions take a snapshot and return a new one. Persistence and command-line
 input/output are handled outside the engine.
 
+Verbs are `move`, `take`, `drop`, `put`, `give`, `push`, `pull`, `attack`, and `wait`. `put` and `give`
+name their second address in `args.destination`, beside `args.relation` for `put`, which is `on` or
+`in`: a surface declares `surface` and is sized by its footprint, a container declares `container` and
+`inner_*_cm`. `put` emits one `moved` event and sets `support`, or `contained_in`; it never sets a
+position, so an item on a surface takes that surface's position through the support chain. Fit
+compares the item's longest dimensions with the destination's longest — width and depth for a
+surface, all three for a container — because nothing fixes an orientation; the contents a container
+already holds are not counted. `give` emits `moved` with `from` and `to` and changes one
+`contained_in`; the recipient must have capacities of its own and hold the item's required
+manipulation. Consent is the consumer's decision; the engine only checks the transfer is possible.
+
+`take` lifts a thing out of whatever holds it: only an agent holds, so a container or a piece of
+furniture keeps what is inside it and that can be taken out. Agency is declared by the template's
+`agent` property and withheld from anything detached from what it was part of, so a severed arm is
+neither an actor of a command nor a recipient of one. A shut container hides its whole chain of
+contents: `take` and `put` refuse `container_closed`, and sight of anything inside answers `false`
+with basis `enclosed`.
+
+`open`, `close`, `lock`, and `unlock` change one property of a target that declares `openable`: `open`
+or `locked`, recorded as a `props` delta under an `opened`, `closed`, `locked`, or `unlocked` event.
+`open` refuses a locked target with `locked`; `lock` and `unlock` need a carried entity whose `opens`
+property is the target's id, or refuse `no_key`. A door joins two rooms instead of sitting in one, so
+it is in view from either room it joins and, having no position of its own, is in reach from both.
+
 ## State model
 
 A snapshot contains entities, a tick, a version, a sequence number, template hash, and coverage.
@@ -41,7 +65,8 @@ error; stale commands are re-evaluated against the current snapshot.
 Queries answer facts and perception using the snapshot, templates, events, and coverage. Covered
 relations and properties answer true or false from state. A category absent from coverage answers
 unknown. Perception supports sight and hearing using capacities, room lighting, doors, and loud
-event types.
+event types. Sight answers `false` with basis `enclosed` for anything inside a shut container; hearing
+does not.
 
 Coverage describes what the engine can answer; it does not describe what any actor knows, notices,
 or remembers. The engine models world state only.

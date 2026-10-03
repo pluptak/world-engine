@@ -3,6 +3,7 @@ import type { Command, CommandContext, Result, TransitionContext } from "./comma
 import { verbRegistry } from "./verbs/index.js";
 import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
+import { isAgent } from "./verbs/address.js";
 import { resolveTarget } from "./resolve.js";
 
 function unchangedResult(
@@ -35,6 +36,9 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
   if (actor === undefined) {
     return unchangedResult(snapshot, command, "invalid", null, "no_such_actor");
   }
+  if (!isAgent(snapshot, actor.id)) {
+    return unchangedResult(snapshot, command, "invalid", null, "not_an_agent");
+  }
 
   let target = null;
   if (command.target !== undefined) {
@@ -57,8 +61,9 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
       snapshot,
       command,
       precondition.status,
-      target?.address ?? null,
-      precondition.reason_code,
+      precondition.status === "unresolved" ? null : (target?.address ?? null),
+      "reason_code" in precondition ? precondition.reason_code : undefined,
+      "candidates" in precondition ? precondition.candidates : undefined,
     );
   }
 

@@ -1,4 +1,4 @@
-import type { Id, Snapshot } from "../model.js";
+import type { Entity, Id, Snapshot } from "../model.js";
 import type { TargetAddress } from "./command.js";
 
 export type TargetResolution =
@@ -15,6 +15,17 @@ function resolved(entityId: Id, part: string | null = null): TargetResolution {
       address: part === null ? entityId : `${entityId}.${part}`,
     },
   };
+}
+
+// A door or a panel has no location: it stands in the boundary between the rooms it joins, so it is
+// in view from either of them.
+function inViewOf(entity: Entity, location: Id | null): boolean {
+  if (entity.location === location) {
+    return true;
+  }
+  const from = entity.props.from;
+  const to = entity.props.to;
+  return typeof from === "string" && typeof to === "string" && (from === location || to === location);
 }
 
 export function resolveTarget(
@@ -47,7 +58,7 @@ export function resolveTarget(
     .sort()
     .filter((id) => {
       const entity = snapshot.entities[id];
-      if (entity === undefined || entity.location !== actor.location) {
+      if (entity === undefined || !inViewOf(entity, actor.location)) {
         return false;
       }
       return (

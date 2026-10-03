@@ -10,7 +10,7 @@
     { "name": "arm_r", "parent": null, "contributes": {}, "detachable": true, "max_integrity": 100 },
     { "name": "hand_r", "parent": "arm_r", "contributes": { "manipulation": 50 }, "detachable": true, "max_integrity": 100 }
   ],
-  "props": { "reach_cm": 100, "hand_height_cm": 100, "attack_damage": 40, "default_hit_part": "torso" },
+  "props": { "agent": true, "reach_cm": 100, "hand_height_cm": 100, "attack_damage": 40, "default_hit_part": "torso" },
   "break_products": [],
   "break_residue": {}
 }

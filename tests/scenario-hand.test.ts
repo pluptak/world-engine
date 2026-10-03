@@ -184,6 +184,34 @@ test("detaching an arm carries its hand and its manipulation contribution", () =
   strictEqual(finalAttack.snapshot.entities[setup.guardId]?.parts.hand_r?.status, "detached");
 });
 
+test("a severed arm cannot act as the actor of a command", () => {
+  const setup = duel();
+  let snapshot = setup.snapshot;
+  for (let index = 0; index < 3; index += 1) {
+    const hit = attack(snapshot, setup.attackerId, `${setup.guardId}.arm_r`, `cut-arm-${index}`);
+    strictEqual(hit.status, "ok");
+    snapshot = hit.snapshot;
+  }
+
+  const arm = Object.values(snapshot.entities).find(
+    (entity) => entity.detached_from?.entity === setup.guardId,
+  );
+  ok(arm);
+
+  const asActor = apply(snapshot, registry, {
+    command_id: "arm-waits",
+    actor: arm.id,
+    verb: "wait",
+    args: { ticks: 1 },
+  });
+
+  strictEqual(asActor.status, "invalid");
+  strictEqual(asActor.reason_code, "not_an_agent");
+  strictEqual(asActor.deltas.length, 0);
+  strictEqual(asActor.events.length, 0);
+  strictEqual(asActor.snapshot.version, snapshot.version);
+});
+
 test("detaching a chair leg creates a supported part entity", () => {
   const room = spawn(initialSnapshot(), registry, "room", { name: "room" });
   const attacker = spawn(room.snapshot, registry, "human", {

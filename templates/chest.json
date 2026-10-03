@@ -1,0 +1,15 @@
+{
+  "id": "chest",
+  "size_cm": { "w": 60, "d": 40, "h": 40 },
+  "mass_g": 12000,
+  "parts": [],
+  "props": {
+    "container": true,
+    "topples": true,
+    "inner_w_cm": 55,
+    "inner_d_cm": 35,
+    "inner_h_cm": 35
+  },
+  "break_products": [],
+  "break_residue": {}
+}

@@ -1,0 +1,15 @@
+{
+  "id": "cup",
+  "size_cm": { "w": 8, "d": 8, "h": 10 },
+  "mass_g": 150,
+  "parts": [],
+  "props": {
+    "container": true,
+    "topples": true,
+    "inner_w_cm": 6,
+    "inner_d_cm": 6,
+    "inner_h_cm": 8
+  },
+  "break_products": [],
+  "break_residue": {}
+}

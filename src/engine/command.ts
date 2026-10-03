@@ -44,6 +44,8 @@ export interface TransitionContext extends CommandContext {
 export type PreconditionResult =
   | { status: "ok" }
   | { status: "refused"; reason_code: string }
+  | { status: "unresolved" }
+  | { status: "ambiguous"; candidates: Id[] }
   | { status: "invalid"; reason_code: string };
 
 export interface Verb {
