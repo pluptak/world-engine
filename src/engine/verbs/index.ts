@@ -1,5 +1,6 @@
 import type { VerbRegistry } from "../command.js";
 import { dropVerb } from "./drop.js";
+import { editVerb } from "./edit.js";
 import { moveVerb } from "./move.js";
 import { closeVerb, lockVerb, openVerb, unlockVerb } from "./openable.js";
 import { pullVerb, pushVerb } from "./push.js";
@@ -23,4 +24,5 @@ export const verbRegistry: VerbRegistry = new Map([
   ["pull", pullVerb],
   ["attack", attackVerb],
   ["wait", waitVerb],
+  ["edit", editVerb],
 ]);

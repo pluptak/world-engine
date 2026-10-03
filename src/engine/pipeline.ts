@@ -1,5 +1,6 @@
 import { canonicalJson } from "./canonical.js";
 import type { Command, CommandContext, Result, TransitionContext } from "./command.js";
+import { WORLD_AUTHOR } from "./command.js";
 import { verbRegistry } from "./verbs/index.js";
 import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
@@ -26,17 +27,37 @@ function unchangedResult(
   };
 }
 
+// The reserved author signs edits but lives in no snapshot; the edit verb never reads it.
+const worldAuthor: Entity = {
+  id: WORLD_AUTHOR,
+  template: "world",
+  name: "world",
+  aliases: [],
+  location: null,
+  support: null,
+  contained_in: null,
+  pos: null,
+  detached_from: null,
+  integrity: 100,
+  status: "intact",
+  parts: {},
+  residue: {},
+  modifiers: [],
+  props: {},
+};
+
 export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: Command): Result {
   const verb = verbRegistry.get(command.verb);
   if (verb === undefined) {
     return unchangedResult(snapshot, command, "invalid", null, "unknown_verb");
   }
 
-  const actor = snapshot.entities[command.actor];
+  const worldEdit = command.actor === WORLD_AUTHOR && command.verb === "edit";
+  const actor = worldEdit ? worldAuthor : snapshot.entities[command.actor];
   if (actor === undefined) {
     return unchangedResult(snapshot, command, "invalid", null, "no_such_actor");
   }
-  if (!isAgent(snapshot, actor.id)) {
+  if (!worldEdit && !isAgent(snapshot, actor.id)) {
     return unchangedResult(snapshot, command, "invalid", null, "not_an_agent");
   }
 
@@ -86,7 +107,7 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     });
   };
   const emit = (type: string, entity: Id, data: Record<string, unknown>, causeId: Id | null): Id => {
-    if (working.entities[entity] === undefined) {
+    if (working.entities[entity] === undefined && entity !== WORLD_AUTHOR) {
       throw new TypeError(`Cannot emit an event for unknown entity ${entity}`);
     }
     const eventId = `ev${working.next_seq}`;
@@ -140,6 +161,19 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     recordDelta,
   };
   verb.transition(transitionContext);
+  if (verb.validateResult !== undefined) {
+    const validation = verb.validateResult({ ...commandContext, snapshot: working });
+    if (validation.status !== "ok") {
+      return unchangedResult(
+        snapshot,
+        command,
+        validation.status,
+        validation.status === "unresolved" ? null : (target?.address ?? null),
+        "reason_code" in validation ? validation.reason_code : undefined,
+        "candidates" in validation ? validation.candidates : undefined,
+      );
+    }
+  }
   working = { ...working, version: working.version + 1 };
 
   return {

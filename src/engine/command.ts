@@ -1,5 +1,43 @@
-import type { Delta, Entity, Id, Snapshot, Status, WorldEvent } from "../model.js";
+import type { Delta, Entity, Id, PartState, Pos, Snapshot, Status, WorldEvent } from "../model.js";
+import type { EntityOverrides } from "./spawn.js";
 import type { TemplateRegistry } from "../templates.js";
+
+// The reserved author of direct world edits: causality, not state, so it never appears in entities.
+export const WORLD_AUTHOR: Id = "world";
+
+export interface SpawnEdit {
+  kind: "spawn";
+  template: string;
+  overrides?: EntityOverrides;
+}
+
+export interface RemoveEdit {
+  kind: "remove";
+  target: Id;
+}
+
+export interface PlaceEdit {
+  kind: "place";
+  target: Id;
+  support?: Id | null;
+  contained_in?: Id | null;
+  pos?: Pos | null;
+}
+
+export interface PropsEdit {
+  kind: "set_props";
+  target: Id;
+  props: Record<string, number | string | boolean>;
+}
+
+export interface PartEdit {
+  kind: "set_part";
+  target: Id;
+  part: string;
+  state: PartState;
+}
+
+export type WorldEdit = SpawnEdit | RemoveEdit | PlaceEdit | PropsEdit | PartEdit;
 
 export interface Command {
   command_id: Id;
@@ -52,6 +90,7 @@ export interface Verb {
   requires_target: boolean;
   preconditions(context: CommandContext): PreconditionResult;
   transition(context: TransitionContext): void;
+  validateResult?: (context: CommandContext) => PreconditionResult;
 }
 
 export type VerbRegistry = ReadonlyMap<string, Verb>;

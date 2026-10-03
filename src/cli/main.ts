@@ -1,23 +1,22 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { pathToFileURL } from "node:url";
 import { z } from "zod";
-import { canonicalJson } from "../engine/canonical.js";
-import { query as queryEngine } from "../engine/query.js";
-import { spawn } from "../engine/spawn.js";
-import type { Result } from "../engine/command.js";
-import type { Delta, Snapshot } from "../model.js";
-import { defaultCoverage } from "../model.js";
+import {
+  canonicalJson,
+  createWorld,
+  openWorld,
+  WorldError,
+  type Delta,
+  type Result,
+} from "../api.js";
 import {
   RequestSchema,
   ResponseSchema,
   ValidationFailureSchema,
   type Request,
 } from "../contract.js";
-import { create, load, replayWithEvents, submit, StoreError } from "../store/file-store.js";
-import { loadTemplates, templatesHash, type TemplateRegistry } from "../templates.js";
 
-const templatesDirectory = fileURLToPath(new URL("../../templates/", import.meta.url));
 const PrimitiveSchema = z.union([z.number(), z.string(), z.boolean()]);
 const ModifierSchema = z.object({
   capacity: z.string(),
@@ -49,7 +48,13 @@ function issue(code: string, message = code) {
 }
 
 function errorCode(error: unknown): string {
-  return error instanceof StoreError ? error.code : "internal_error";
+  return error instanceof WorldError ? error.code : "internal_error";
+}
+
+// The world's own failure code first, then the rules it broke: a caller sees which invariant failed.
+function errorIssues(error: unknown): unknown[] {
+  const rules = error instanceof WorldError ? [...error.issues] : [];
+  return [issue(errorCode(error)), ...rules];
 }
 
 function writeResponse(response: unknown): void {
@@ -77,18 +82,7 @@ function parseJson(text: string): { success: true; value: unknown } | { success:
   }
 }
 
-function initialSnapshot(registry: TemplateRegistry): Snapshot {
-  return {
-    version: 0,
-    tick: 0,
-    next_seq: 1,
-    templates_hash: templatesHash(registry),
-    coverage: defaultCoverage(),
-    entities: {},
-  };
-}
-
-function initializeWorld(dir: string, scenarioPath: string, registry: TemplateRegistry): void {
+function initializeWorld(dir: string, scenarioPath: string): void {
   let scenarioText: string;
   try {
     scenarioText = readFileSync(scenarioPath, "utf8");
@@ -108,14 +102,12 @@ function initializeWorld(dir: string, scenarioPath: string, registry: TemplateRe
     return;
   }
 
-  let snapshot = initialSnapshot(registry);
-  for (const spec of parsedScenario.data) {
-    snapshot = spawn(snapshot, registry, spec.template, spec.overrides).snapshot;
-  }
-  create(dir, snapshot, registry);
-  process.stdout.write(`${canonicalJson({ status: "ok", world: dir, snapshot_version: snapshot.version })}\n`);
+  const world = createWorld(dir, parsedScenario.data);
+  process.stdout.write(`${canonicalJson({ status: "ok", world: dir, snapshot_version: world.snapshot().version })}\n`);
 }
 
+// A spawned entity arrives as one delta on the field "entity"; the contract also reports the relation
+// fields it came with, so a caller can follow support and containment without reading the snapshot.
 function commandResponse(result: Result, includeSnapshot: boolean) {
   const responseDeltas: Delta[] = [];
   for (const delta of result.deltas) {
@@ -149,22 +141,17 @@ function commandResponse(result: Result, includeSnapshot: boolean) {
   };
 }
 
-function dispatch(request: Request, registry: TemplateRegistry): unknown {
+function dispatch(request: Request): unknown {
   if (request.op === "command") {
-    const result = submit(
-      request.world,
-      request.command,
-      request.based_on_version,
-      registry,
-    );
+    const world = openWorld(request.world);
+    const result = world.command(request.command, { basedOn: request.based_on_version });
     return commandResponse(result, request.include_snapshot === true);
   }
+  const world = openWorld(request.world);
   if (request.op === "query") {
-    const snapshot = load(request.world, registry);
-    const events = replayWithEvents(request.world, registry).events;
-    return queryEngine(snapshot, registry, events, request.query);
+    return world.query(request.query);
   }
-  return load(request.world, registry);
+  return world.snapshot();
 }
 
 async function stdinText(): Promise<string> {
@@ -180,13 +167,12 @@ function invalidFromIssues(issues: unknown): void {
 }
 
 async function main(argv: string[]): Promise<void> {
-  const registry = loadTemplates(templatesDirectory);
   if (argv[0] === "init") {
     if (argv.length !== 3) {
       invalidFromIssues([issue("invalid_init_args")]);
       return;
     }
-    initializeWorld(argv[1]!, argv[2]!, registry);
+    initializeWorld(argv[1]!, argv[2]!);
     return;
   }
 
@@ -202,16 +188,16 @@ async function main(argv: string[]): Promise<void> {
   }
 
   try {
-    const response = dispatch(parsedRequest.data, registry);
+    const response = dispatch(parsedRequest.data);
     writeResponse(response);
   } catch (error) {
-    invalidFromIssues([issue(errorCode(error))]);
+    invalidFromIssues(errorIssues(error));
   }
 }
 
 const invokedPath = process.argv[1];
 if (invokedPath !== undefined && pathToFileURL(resolve(invokedPath)).href === import.meta.url) {
   void main(process.argv.slice(2)).catch((error: unknown) => {
-    invalidFromIssues([issue(errorCode(error))]);
+    invalidFromIssues(errorIssues(error));
   });
 }

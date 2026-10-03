@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { apply } from "../engine/pipeline.js";
 import { canonicalJson } from "../engine/canonical.js";
 import type { Command, Result } from "../engine/command.js";
+import { WorldError } from "../errors.js";
 import type { Snapshot, Status, WorldEvent } from "../model.js";
 import { loadTemplates, templatesHash, type TemplateRegistry } from "../templates.js";
 
@@ -21,20 +22,12 @@ const snapshots = {
 
 const templatesDirectory = fileURLToPath(new URL("../../templates/", import.meta.url));
 
-export type StoreErrorCode = "no_such_world" | "templates_changed";
-
-export class StoreError extends Error {
-  constructor(readonly code: StoreErrorCode, message: string) {
-    super(message);
-  }
-}
-
 function assertWorldExists(dir: string): void {
   const missing = [snapshots.current, snapshots.initial, snapshots.log].filter(
     (name) => !existsSync(join(dir, name)),
   );
   if (missing.length > 0) {
-    throw new StoreError("no_such_world", `No world at ${dir}: missing ${missing.join(", ")}`);
+    throw new WorldError("no_such_world", `No world at ${dir}: missing ${missing.join(", ")}`);
   }
 }
 
@@ -67,7 +60,7 @@ function readSnapshot(path: string): Snapshot {
 
 function assertTemplates(snapshot: Snapshot, registry: TemplateRegistry): void {
   if (snapshot.templates_hash !== templatesHash(registry)) {
-    throw new StoreError("templates_changed", "Template hash mismatch");
+    throw new WorldError("templates_changed", "Template hash mismatch");
   }
 }
 
@@ -184,6 +177,32 @@ export function load(dir: string, registry?: TemplateRegistry): Snapshot {
   return snapshot;
 }
 
+// The version rule, with no disk of its own: a command against a version the world has already left
+// is preempted when it would have succeeded there, so a caller that raced sees why it lost.
+export function resolveSubmission(
+  current: Snapshot,
+  registry: TemplateRegistry,
+  command: Command,
+  basedOn: number,
+  snapshotAt: (version: number) => Snapshot | null,
+): Result {
+  if (!Number.isSafeInteger(basedOn) || basedOn < 0) {
+    return invalidResult(current, command, "invalid_version");
+  }
+  if (basedOn > current.version) {
+    return invalidResult(current, command, "future_version");
+  }
+
+  const applied = apply(current, registry, command);
+  if (basedOn >= current.version || applied.status === "ok" || applied.status === "invalid") {
+    return applied;
+  }
+
+  const basedSnapshot = snapshotAt(basedOn);
+  const basedResult = basedSnapshot === null ? null : apply(basedSnapshot, registry, command);
+  return basedResult?.status === "ok" ? { ...applied, status: "preempted" } : applied;
+}
+
 export function submit(
   dir: string,
   command: Command,
@@ -193,23 +212,9 @@ export function submit(
   const templates = activeRegistry(registry);
   const current = load(dir, templates);
   const basedOn = based_on_version ?? current.version;
-  let result: Result;
-
-  if (!Number.isSafeInteger(basedOn) || basedOn < 0) {
-    result = invalidResult(current, command, "invalid_version");
-  } else if (basedOn > current.version) {
-    result = invalidResult(current, command, "future_version");
-  } else {
-    const applied = apply(current, templates, command);
-    result = applied;
-    if (basedOn < current.version && applied.status !== "ok") {
-      const basedSnapshot = snapshotAtVersion(dir, basedOn, templates);
-      const basedResult = basedSnapshot === null ? null : apply(basedSnapshot, templates, command);
-      if (applied.status !== "invalid" && basedResult?.status === "ok") {
-        result = { ...applied, status: "preempted" };
-      }
-    }
-  }
+  const result = resolveSubmission(current, templates, command, basedOn, (version) =>
+    snapshotAtVersion(dir, version, templates),
+  );
 
   const entry: LogEntry = {
     command,

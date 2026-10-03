@@ -32,7 +32,9 @@ suffixes (NodeNext).
   It looks up the verb, then checks the actor, resolves the target (`resolve.ts`: name, alias or
   `entity.part`) and runs `verb.preconditions`. Only after all of those pass does it emit the root
   event and call `verb.transition`. Any status other than `ok` returns the input snapshot unchanged.
-  `ok` bumps `version`.
+   `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
+   a failure returns the input snapshot unchanged. `edit` uses it to refuse results that break a
+   snapshot invariant.
 - Verbs (`src/engine/verbs/*.ts`) implement `Verb` from `command.ts` and are registered in
   `verbs/index.ts`. A transition mutates state only through its `TransitionContext`: `set` (records a
   delta, skips no-ops), `emit` (allocates `ev<next_seq>` and chains `cause_id`), `recordDelta`, and
@@ -48,12 +50,17 @@ suffixes (NodeNext).
   `log.jsonl`. `submit` logs every command (including refused and invalid ones) before it atomically
   writes the snapshot. `load` replays the log if the snapshot version disagrees with the count of `ok`
   entries. A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
-  fails now but would have succeeded at its base version becomes `preempted`. `StoreError` codes
+  fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
   surface as CLI issue codes.
-- `src/cli/main.ts`: `init <dir> <scenario.json>` builds a world from spawn specs in
-  `scenarios/*.json`. Otherwise it reads one request (`op`: `command` | `query` | `snapshot`) from
-  stdin, and every response is validated against `ResponseSchema` before it is written. A failure
-  becomes `{status:"invalid", issues}` with exit code 2.
+- `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
+  `command`/`edit`/`query`/`snapshot`/`entity`), re-exported by `src/index.ts` and by the package's
+  `exports`. `src/errors.ts` holds `WorldError`, whose codes surface as CLI issue codes. `edit` sends
+  one `spawn`/`remove`/`place`/`set_props`/`set_part` through the pipeline as the reserved non-agent
+  author `world` (`WORLD_AUTHOR`), which skips the agency check; `src/engine/verbs/edit.ts` holds it.
+- `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `query` |
+  `snapshot`), calls one `World` method, and validates every response against `ResponseSchema` before
+  writing it. `init <dir> <scenario.json>` builds a world from spawn specs in `scenarios/*.json`. A
+  failure becomes `{status:"invalid", issues}` with exit code 2.
 
 ## Templates
 

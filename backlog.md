@@ -13,35 +13,6 @@ world state, is the job of a middleware that does not exist and is not part of t
 below may make the API easier for such a caller to drive (describing its own commands, dry-running
 one, structured refusals), but never interpret text or plan on a caller's behalf.
 
-## A. The library API
-
-Today the only public surface is the CLI's stdin/stdout JSON: `src/index.ts` exports a placeholder,
-`package.json` has no `exports`, and a TypeScript caller must reach into `src/engine/*` internals.
-
-### 1. A `World` facade and the package's public surface
-- **Scope:** `src/api.ts`, re-exported from `src/index.ts` and `package.json` `exports`:
-  - `createWorld(dir, scenario)`, `openWorld(dir)` → a store-backed `World`;
-    `memoryWorld(snapshot)` → the same interface with no disk, for tests and embedding;
-  - `world.command(cmd, { basedOn? })`, `world.query(q)`, `world.snapshot()`, `world.entity(id)`;
-  - the public types (`Command`, `Result`, `Query`, `Answer`, `Snapshot`, `Entity`, `WorldEvent`,
-    `Delta`, `Status`) re-exported; engine internals stay unexported.
-  The CLI becomes a JSON adapter over `World` with no logic of its own. Every later item here lands
-  as a `World` method first; the CLI mirrors it as an `op`.
-- **Done when:** the acceptance tests run unchanged through the CLI, a twin suite runs through the
-  API, and `src/cli/main.ts` imports nothing from `src/engine/` or `src/store/`.
-
-### 2. Direct world edits
-- **Why:** a caller has to manipulate the world itself, not only through what agents do: bring a
-  character in, take one out, set a door ajar, move a body.
-- **Scope:** `world.edit(op)` with `spawn`, `remove`, `place` (set support/containment/pos),
-  `set_props`, `set_part`. Each one goes through the pipeline as a command of a reserved non-agent
-  `world` author: it is logged, replayable, emits `spawned` / `removed` / `placed` / `edited` events
-  with the edit as their root cause, and is refused when its result would break a snapshot
-  invariant (a support loop, a part the template does not declare). Physical consequences follow
-  as they would after a command: removing a table drops its bottle.
-- **Done when:** removing the table under the bottle produces the break chain caused by the edit,
-  replay reproduces it, and an edit making a support loop is refused with `circular_placement`.
-
 ## B. Bodies beyond humans
 
 ### 3. Verbs declare capacities, not hands
@@ -167,17 +138,6 @@ Today the only public surface is the CLI's stdin/stdout JSON: `src/index.ts` exp
 - **Done when:** editing `templates/bottle.json` leaves an existing world loadable and unchanged.
 
 ## G. Robustness
-
-### 19. `validateSnapshot` invariants
-- **Scope:** one pure checker:
-  - no support or containment cycles;
-  - `pos` set iff support is a room;
-  - detached parts have an entity with `detached_from`;
-  - integrity 0..100;
-  - ids < next_seq.
-
-  Run it in tests after every `apply`, on `openWorld`, and as the guard for item 2's edits.
-- **Done when:** a corrupted snapshot fixture fails to open with `invalid_snapshot`, naming the rule.
 
 ### 20. Seeded property tests, an event store, a benchmark
 - **Scope:**
