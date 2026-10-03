@@ -1,0 +1,201 @@
+# Backlog
+
+The next steps. One item = one small block: plan it, build it, `npm run check`, review the diff,
+commit. Each item keeps every invariant in AGENTS.md (determinism, pure core, `canonicalJson`, no
+prose, coverage-governed `"unknown"`).
+
+Delete an item when it ships — git history records it; DESIGN.md describes what is built.
+
+**Scope line.** The engine is a library: a typed, in-process API through which a caller manipulates
+objects, humans and animals and asks about the world. The CLI is one thin adapter over that API, and
+there is no web server. Turning prose or intent into calls, and choosing calls that reach a desired
+world state, is the job of a middleware that does not exist and is not part of this project. Items
+below may make the API easier for such a caller to drive (describing its own commands, dry-running
+one, structured refusals), but never interpret text or plan on a caller's behalf.
+
+## A. The library API
+
+Today the only public surface is the CLI's stdin/stdout JSON: `src/index.ts` exports a placeholder,
+`package.json` has no `exports`, and a TypeScript caller must reach into `src/engine/*` internals.
+
+### 1. A `World` facade and the package's public surface
+- **Scope:** `src/api.ts`, re-exported from `src/index.ts` and `package.json` `exports`:
+  - `createWorld(dir, scenario)`, `openWorld(dir)` → a store-backed `World`;
+    `memoryWorld(snapshot)` → the same interface with no disk, for tests and embedding;
+  - `world.command(cmd, { basedOn? })`, `world.query(q)`, `world.snapshot()`, `world.entity(id)`;
+  - the public types (`Command`, `Result`, `Query`, `Answer`, `Snapshot`, `Entity`, `WorldEvent`,
+    `Delta`, `Status`) re-exported; engine internals stay unexported.
+  The CLI becomes a JSON adapter over `World` with no logic of its own. Every later item here lands
+  as a `World` method first; the CLI mirrors it as an `op`.
+- **Done when:** the acceptance tests run unchanged through the CLI, a twin suite runs through the
+  API, and `src/cli/main.ts` imports nothing from `src/engine/` or `src/store/`.
+
+### 2. Direct world edits
+- **Why:** a caller has to manipulate the world itself, not only through what agents do: bring a
+  character in, take one out, set a door ajar, move a body.
+- **Scope:** `world.edit(op)` with `spawn`, `remove`, `place` (set support/containment/pos),
+  `set_props`, `set_part`. Each one goes through the pipeline as a command of a reserved non-agent
+  `world` author: it is logged, replayable, emits `spawned` / `removed` / `placed` / `edited` events
+  with the edit as their root cause, and is refused when its result would break a snapshot
+  invariant (a support loop, a part the template does not declare). Physical consequences follow
+  as they would after a command: removing a table drops its bottle.
+- **Done when:** removing the table under the bottle produces the break chain caused by the edit,
+  replay reproduces it, and an edit making a support loop is refused with `circular_placement`.
+
+## B. Bodies beyond humans
+
+### 3. Verbs declare capacities, not hands
+- **Why:** `take`, `give` and `attack` hard-code `manipulation`, so only a two-handed body can act.
+  A dog carries in its mouth, pushes with its body and bites.
+- **Scope:** each verb names what it needs as capacity alternatives, for example take needs
+  `manipulation ≥ 50` or `mouth_carry ≥ 1` for an item up to the template's `carry_limit_g`. The
+  `hands_required` rule becomes a requirement on a capacity. Attack damage comes from the attacker's
+  template, by the capacity used (fist, bite). The verb catalog (item 9) reads these declarations.
+- **Done when:** every existing test passes unchanged and no verb names `manipulation` outside its
+  declaration.
+
+### 4. Animals
+- **Scope:** templates `dog`, `cat` and `horse` with `agent: true`, part trees (head → jaw, four legs,
+  tail), and capacities `moving`, `sight`, `hearing`, `mouth_carry`. Add `smell` as a capacity and a
+  covered sense for the worlds that declare it. Anything uncovered stays `"unknown"`.
+- **Done when:**
+  - a dog takes a glass shard in its mouth but is refused the two-handed crate;
+  - it cannot open a locked door, but can push a chair;
+  - detaching its jaw drops what it carried;
+  - a cat hears the bottle break through a closed door.
+
+## C. Perception correctness
+
+### 5. Perceive an event against the state at that event
+- **Why:** `perceive` with an `event_id` reads the *current* snapshot. A coin put into an open chest
+  is seen (`same_location_lit`); close the chest afterwards and the same question about the same
+  past event answers `false` / `enclosed`. A door closed after a break flips its sight answer the
+  same way.
+- **Scope:** an event-form `perceive` evaluates against the snapshot right after that event's
+  command (the store rebuilds it through its log fold); the entity form keeps using the current
+  snapshot. The engine-level `query` takes the snapshot to evaluate against explicitly.
+- **Done when:** the put-then-close sequence answers `true` for the put both before and after the
+  close; a door closed after a break keeps the break visible.
+
+## D. What the API tells its caller
+
+### 6. `since(version)` — changes since version N
+- **Why:** a caller that missed commands catches up by asking, not by guessing.
+- **Scope:** the ordered deltas and events of every `ok` command after N, via the store's log fold.
+  `version` > current → `invalid` `future_version`.
+- **Done when:** since(0) after the bottle scenario equals the concatenated command results.
+
+### 7. Perceivers per event
+- **Why:** a caller that tracks who knows what needs who *could* have sensed each event — the batch
+  form of `perceive`. Knowing/noticing stays the caller's.
+- **Scope:** `{ perceivers: true }` on a command adds, per event,
+  `{sight: Id[], hearing: Id[], smell: Id[], unknown_senses: string[]}` over every agent, evaluated
+  as in item 5.
+- **Done when:** the bottle break behind a closed door lists the listener under hearing, not sight.
+
+### 8. `trace` — the cause chain of an event or an entity's state
+- **Scope:** `trace(event_id | {entity, field})` → the event chain back to the root command or edit
+  (for a field: the event of the last delta that set it).
+- **Done when:** trace(the room's `residue`) returns spawned/broken/dropped/displaced/moved/push.
+
+### 9. `verbs()` — the engine describes its own command language
+- **Why:** a caller should learn what it may send from the engine, not from its source.
+- **Scope:** per verb: whether it needs a target, its `args` shape, the capacity alternatives it
+  requires (item 3), and the `reason_code`s it can refuse with. Generated from the verb registry,
+  never hand-maintained.
+- **Done when:** adding a verb to the registry without a description fails a test.
+
+### 10. `check(cmd)` — a dry run
+- **Scope:** the status, `resolved_target` and `reason_code` a command would get now, with no state
+  change and no log line.
+- **Done when:** `check` and `command` agree on status for every case in the contract tests, and the
+  world directory is byte-identical after a `check`.
+
+### 11. Structured refusal data
+- **Why:** `out_of_reach` alone does not say by how much; a caller must not have to recompute it.
+- **Scope:** an optional `reason_data` beside `reason_code`:
+  - `out_of_reach` → `{distance_cm, reach_cm}`;
+  - `too_large` → `{item_cm, space_cm}`;
+  - `container_closed` → `{enclosure}`;
+  - `insufficient_capacity` → `{capacity, have, need}`.
+
+  Data only, never prose.
+- **Done when:** every refusal the verbs emit carries its data, and the contract schema types it.
+
+### 12. A beat: several commands against one version
+- **Why:** several agents can act at once.
+- **Scope:** `beat(basedOn, commands[])`, applied in array order, each with the existing
+  stale/`preempted` rule; one log line per command. Not atomic — each has its status.
+- **Done when:** two takes of the same bottle in one beat → the first `ok`, the second `preempted`.
+
+## E. Spatial vocabulary
+
+### 13. Anchors: relation-first positions
+- **Why:** worlds are easier to author as "by the door", "at the window" than in centimetres.
+- **Scope:** an `anchor` template (no mass, no collision) and a `near: Id | null` field derived
+  into `pos` when present; scenarios and `edit place` can use it. `fact(x, near, door)` joins
+  coverage.
+- **Done when:** a scenario authored with anchors only (no `pos`) runs the bottle chain unchanged.
+
+### 14. `pour` and liquid transfer — optional
+- **Scope:** liquid contents (`props.liquid_material/amount`) move into a container or become
+  residue on a surface; partial amounts; emits `poured`.
+- **Done when:** pour half a bottle into a cup → both amounts correct; onto the floor → residue.
+
+### 15. Concealment: `under` / `behind` — optional
+- **Scope:** a `concealed_by: Id | null` relation; sight of a concealed entity is `false` until the
+  observer searches the concealer (a `search` verb).
+- **Done when:** a file under a book is not seen; after `search book` it is.
+
+## F. Authoring
+
+### 16. Named ids in scenarios
+- **Scope:** a scenario entry may carry `"id": "bottle"`; references use names. `createWorld` maps
+  them to `e<n>` deterministically and returns the map.
+- **Done when:** both shipped scenarios are rewritten without a single literal `e<n>`.
+
+### 17. Template `extends`
+- **Scope:** `"extends": "bottle"` merges parent fields (props shallow-merged, parts replaced only
+  if declared); cycles rejected; the hash covers the resolved templates.
+- **Done when:** `wine_bottle extends bottle` with only a changed `liquid_material` loads and breaks.
+
+### 18. Templates frozen per world
+- **Why:** today editing any template breaks every existing world (`templates_changed`).
+- **Scope:** `createWorld` copies the resolved template set into `<world>/templates.json`;
+  `openWorld` uses it. A global edit affects new worlds only. An explicit `upgradeTemplates`
+  re-hashes and refuses if any live entity's template lost a field it uses.
+- **Done when:** editing `templates/bottle.json` leaves an existing world loadable and unchanged.
+
+## G. Robustness
+
+### 19. `validateSnapshot` invariants
+- **Scope:** one pure checker:
+  - no support or containment cycles;
+  - `pos` set iff support is a room;
+  - detached parts have an entity with `detached_from`;
+  - integrity 0..100;
+  - ids < next_seq.
+
+  Run it in tests after every `apply`, on `openWorld`, and as the guard for item 2's edits.
+- **Done when:** a corrupted snapshot fixture fails to open with `invalid_snapshot`, naming the rule.
+
+### 20. Seeded property tests, an event store, a benchmark
+- **Scope:**
+  - a test-only seeded PRNG generates random command and edit sequences, for humans and animals;
+  - assert replay equality, no input mutation, cause chains that end at a root, and that
+    `validateSnapshot` holds after each step;
+  - append events to `<world>/events.jsonl` so queries stop replaying the whole log;
+  - `scripts/bench.ts` runs 10k commands.
+- **Done when:**
+  - 500 sequences × 30 steps pass;
+  - a planted bug (skip a delta) is caught;
+  - event-store results are byte-identical to the replay path;
+  - the benchmark number is in DESIGN.md.
+
+## Out of scope
+
+- Prose or intent → calls, and planning calls toward a goal state: the middleware's job.
+- A web/HTTP server: the API is in-process; the CLI is the only adapter.
+- Any Story-writer integration: a decision for that repo, if a middleware ever exists.
+- The social resolver (mechanical state only: `alert`, `locked_by_order`) and continuous physics
+  (Rapier/Box2D): revisit only when a concrete world needs them.
