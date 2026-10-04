@@ -8,7 +8,7 @@ import { validateSnapshot } from "../engine/validate.js";
 import { lostField } from "../engine/upgrade.js";
 import type { Command, Result } from "../engine/command.js";
 import { WorldError } from "../errors.js";
-import type { Delta, Snapshot, Status, WorldEvent } from "../model.js";
+import type { Delta, Id, Snapshot, Status, WorldEvent } from "../model.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../templates.js";
 
 interface LogEntry {
@@ -32,6 +32,7 @@ const snapshots = {
   events: "events.jsonl",
   head: "head.json",
   templates: "templates.json",
+  ids: "ids.json",
 };
 
 // A world is created from the templates directory and then never reads it again: the copy beside
@@ -216,6 +217,7 @@ export function create(
   dir: string,
   initialSnapshot: Snapshot,
   registry?: TemplateRegistry,
+  ids: Readonly<Record<string, Id>> = {},
 ): void {
   const templates = registry ?? loadTemplates(templatesDirectory);
   assertTemplates(initialSnapshot, templates);
@@ -223,6 +225,11 @@ export function create(
   atomicWrite(join(dir, snapshots.templates), canonicalJson(templates));
   atomicWrite(join(dir, snapshots.initial), canonicalJson(initialSnapshot));
   atomicWrite(join(dir, snapshots.current), canonicalJson(initialSnapshot));
+  // Written only when a scenario named something, so a world without names and a world written
+  // before ids.json existed are the same thing on disk: no file, no names.
+  if (Object.keys(ids).length > 0) {
+    atomicWrite(join(dir, snapshots.ids), canonicalJson(ids));
+  }
   writeFileSync(join(dir, snapshots.log), "", "utf8");
   writeFileSync(join(dir, snapshots.events), "", "utf8");
   writeHead(dir, {
@@ -232,6 +239,31 @@ export function create(
     ok_entries: 0,
     templates_hash: templatesHash(templates),
   });
+}
+
+// The names the scenario gave this world, so a reopened world answers them like the handle that
+// created it. Absence means none; a file that is there and unreadable is a broken world, not a
+// world without names.
+export function readWorldIds(dir: string): Readonly<Record<string, Id>> {
+  const path = join(dir, snapshots.ids);
+  if (!existsSync(path)) {
+    return {};
+  }
+  try {
+    const value: unknown = JSON.parse(readFileSync(path, "utf8"));
+    if (
+      !isRecord(value) ||
+      Object.values(value).some((id) => typeof id !== "string")
+    ) {
+      throw new TypeError("ids.json is not a map of names to ids");
+    }
+    return value as Record<string, Id>;
+  } catch (error) {
+    throw new WorldError(
+      "invalid_ids",
+      `Unreadable name map at ${path}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }
 
 // `setIsTheWorlds` says the registry came from the world's own templates.json rather than from a

@@ -10,7 +10,8 @@ import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./e
 import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
 import { lostField } from "./engine/upgrade.js";
 import { verbCatalog } from "./engine/verbs/index.js";
-import { spawn, type EntityOverrides } from "./engine/spawn.js";
+import { spawn } from "./engine/spawn.js";
+import { resolveScenario, type Scenario } from "./scenario.js";
 import { validateSnapshot } from "./engine/validate.js";
 import { WorldError } from "./errors.js";
 import { defaultCoverage, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type Status, type WorldEvent } from "./model.js";
@@ -20,6 +21,7 @@ import {
   replayFold,
   load,
   readEvents,
+  readWorldIds,
   readWorldTemplates,
   replayUntilEvent,
   resolveSubmission,
@@ -31,13 +33,6 @@ import {
 import { loadTemplates, missingCompanions, templatesHash, type TemplateRegistry } from "./templates.js";
 
 const templatesDirectory = fileURLToPath(new URL("../templates/", import.meta.url));
-
-export interface ScenarioEntry {
-  template: string;
-  overrides?: EntityOverrides;
-}
-
-export type Scenario = readonly ScenarioEntry[];
 
 export interface CommandOptions {
   basedOn?: number;
@@ -79,6 +74,9 @@ export interface World {
   query(query: Query): Answer;
   snapshot(): Snapshot;
   entity(id: Id): Entity | null;
+  // The id a scenario gave this world, or null. Names are authoring sugar rather than world state,
+  // so a store world keeps them in ids.json and a memory world is handed them.
+  id(name: string): Id | null;
 }
 
 function checkResult(result: Result): CheckResult {
@@ -132,7 +130,11 @@ function initialSnapshot(registry: TemplateRegistry): Snapshot {
 }
 
 // Every read goes to the store, so two handles on one directory see each other's commands.
-function storeWorld(dir: string, registry: TemplateRegistry): World {
+function storeWorld(
+  dir: string,
+  registry: TemplateRegistry,
+  names: Readonly<Record<string, Id>> = {},
+): World {
   // A world that opens is a world whose snapshot holds together. The set came from the world's own
   // file, which is what tells load() it may settle a moved set rather than refuse it.
   const opened = load(dir, registry, true);
@@ -210,6 +212,7 @@ function storeWorld(dir: string, registry: TemplateRegistry): World {
     },
     snapshot: () => load(dir, active),
     entity: (id) => load(dir, active).entities[id] ?? null,
+    id: (name) => names[name] ?? null,
   };
 }
 
@@ -231,22 +234,29 @@ export function createWorld(
   registry?: TemplateRegistry,
 ): World {
   const templates = activeRegistry(registry);
-  let snapshot = initialSnapshot(templates);
-  for (const entry of scenario) {
+  const initial = initialSnapshot(templates);
+  // Names resolve before the first spawn, so a bad name is refused before anything is written.
+  const resolved = resolveScenario(scenario, initial.next_seq);
+  let snapshot = initial;
+  for (const entry of resolved.scenario) {
     snapshot = spawn(snapshot, templates, entry.template, entry.overrides).snapshot;
   }
   assertValid(snapshot, templates);
-  create(dir, snapshot, templates);
-  return storeWorld(dir, templates);
+  create(dir, snapshot, templates, resolved.ids);
+  return storeWorld(dir, templates, resolved.ids);
 }
 
 export function openWorld(dir: string): World {
-  return storeWorld(dir, readWorldTemplates(dir));
+  return storeWorld(dir, readWorldTemplates(dir), readWorldIds(dir));
 }
 
 // No directory, no log: what the caller hands in is the whole world, and its events are the ones its
 // own commands produced.
-export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): World {
+export function memoryWorld(
+  snapshot: Snapshot,
+  registry?: TemplateRegistry,
+  names: Readonly<Record<string, Id>> = {},
+): World {
   let templates = activeRegistry(registry);
   if (snapshot.templates_hash !== templatesHash(templates)) {
     throw new WorldError("templates_changed", "Template hash mismatch");
@@ -410,11 +420,13 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
     },
     snapshot: () => current,
     entity: (id) => current.entities[id] ?? null,
+    id: (name) => names[name] ?? null,
   };
 }
 
 export { canonicalJson, verbCatalog as verbs, WorldError, WORLD_AUTHOR };
 export type { WorldErrorCode } from "./errors.js";
+export type { Scenario, ScenarioEntry } from "./scenario.js";
 export type { Command, Result, WorldEdit } from "./engine/command.js";
 export type { Answer, Query } from "./engine/query.js";
 export type { TraceQuery } from "./engine/trace.js";

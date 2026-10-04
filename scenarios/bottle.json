@@ -1,28 +1,31 @@
 [
-  { "template": "room", "overrides": { "name": "room" } },
+  { "id": "room", "template": "room", "overrides": { "name": "room" } },
   {
+    "id": "table",
     "template": "table",
     "overrides": {
       "name": "table",
-      "location": "e1",
-      "support": "e1",
+      "location": "room",
+      "support": "room",
       "pos": { "x": 30, "y": 0 }
     }
   },
   {
+    "id": "bottle",
     "template": "bottle",
     "overrides": {
       "name": "bottle",
-      "location": "e1",
-      "support": "e2"
+      "location": "room",
+      "support": "table"
     }
   },
   {
+    "id": "pusher",
     "template": "human",
     "overrides": {
       "name": "pusher",
-      "location": "e1",
-      "support": "e1",
+      "location": "room",
+      "support": "room",
       "pos": { "x": -50, "y": 0 }
     }
   }

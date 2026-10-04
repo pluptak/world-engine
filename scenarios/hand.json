@@ -1,29 +1,32 @@
 [
-  { "template": "room", "overrides": { "name": "room" } },
+  { "id": "room", "template": "room", "overrides": { "name": "room" } },
   {
+    "id": "attacker",
     "template": "human",
     "overrides": {
       "name": "attacker",
-      "location": "e1",
-      "support": "e1",
+      "location": "room",
+      "support": "room",
       "pos": { "x": 0, "y": 0 }
     }
   },
   {
+    "id": "guard",
     "template": "human",
     "overrides": {
       "name": "guard",
-      "location": "e1",
-      "support": "e1",
+      "location": "room",
+      "support": "room",
       "pos": { "x": 50, "y": 0 }
     }
   },
   {
+    "id": "crate",
     "template": "stone",
     "overrides": {
       "name": "crate",
-      "location": "e1",
-      "support": "e1",
+      "location": "room",
+      "support": "room",
       "pos": { "x": 50, "y": 0 },
       "props": { "hands_required": 2 }
     }

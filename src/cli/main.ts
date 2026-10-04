@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { z } from "zod";
 import {
   canonicalJson,
   createWorld,
@@ -12,17 +11,12 @@ import {
   type Result,
 } from "../api.js";
 import {
-  EntityOverridesSchema,
   RequestSchema,
   ResponseSchema,
+  ScenarioSchema,
   ValidationFailureSchema,
   type Request,
 } from "../contract.js";
-
-const ScenarioSchema = z.array(z.object({
-  template: z.string().min(1),
-  overrides: EntityOverridesSchema.optional(),
-}).strict());
 
 function issue(code: string, message = code) {
   return { code, path: [], message };

@@ -14,13 +14,6 @@ world state, is the job of a middleware that does not exist and is not part of t
 below may make the API easier for such a caller to drive (describing its own commands, dry-running
 one, structured refusals), but never interpret text or plan on a caller's behalf.
 
-### 1. Named ids in scenarios
-- **Why:** scenarios and tests full of `e4` and `e7` are coupled to spawn order and hard to read.
-- **Scope:** a scenario entry may carry `"id": "bottle"`, and references in that scenario use the
-  names. `createWorld` maps them to `e<n>` deterministically, in entry order, and returns the map.
-  An unknown or duplicate name is refused before anything is written.
-- **Done when:** both shipped scenarios are rewritten without a single literal `e<n>`.
-
 ### 2. Relation invariants
 - **Why:** relations are about to multiply (concealment next), and today their rules live partly in
   `validateSnapshot` and partly in individual verbs. Nothing in the validator says an entity is never

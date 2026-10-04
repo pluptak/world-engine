@@ -303,6 +303,24 @@ test("a missing scenario file reports no_such_scenario", (t) => {
   strictEqual(response.issues[0]?.code, "no_such_scenario");
 });
 
+test("CLI init accepts a scenario with declared names and refuses a duplicate", (t) => {
+  const named = runCli(undefined, ["init", join(temporaryDirectory(t), "named"), bottleScenario]);
+  strictEqual(named.status, 0, named.stderr);
+
+  const path = join(temporaryDirectory(t), "duplicate.json");
+  writeFileSync(
+    path,
+    JSON.stringify([
+      { id: "room", template: "room", overrides: { name: "room" } },
+      { id: "room", template: "room", overrides: { name: "other" } },
+    ]),
+  );
+  const refused = runCli(undefined, ["init", join(temporaryDirectory(t), "duplicate"), path]);
+  strictEqual(refused.status, 2, refused.stderr);
+  const response = JSON.parse(refused.stdout) as { issues: Array<{ code: string }> };
+  strictEqual(response.issues[0]?.code, "duplicate_name");
+});
+
 test("request schemas reject unknown operations", () => {
   const parsed = RequestSchema.safeParse({ op: "other", world: "world" });
   strictEqual(parsed.success, false);

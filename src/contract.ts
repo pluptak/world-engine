@@ -61,6 +61,14 @@ export const EntityOverridesSchema = z.object({
   props: z.record(z.string(), PrimitiveSchema).optional(),
 }).strict();
 
+// A scenario entry may declare a name for the entity it spawns; createWorld resolves names to ids
+// before anything spawns, so a duplicate, an unknown reference, or an id-shaped name is refused.
+export const ScenarioSchema = z.array(z.object({
+  id: z.string().min(1).optional(),
+  template: z.string().min(1),
+  overrides: EntityOverridesSchema.optional(),
+}).strict());
+
 export const WorldEditSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("spawn"),

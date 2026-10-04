@@ -12,7 +12,11 @@ export type WorldErrorCode =
   | "history_unavailable"
   | "no_such_event"
   | "no_such_entity"
-  | "no_such_field";
+  | "no_such_field"
+  | "invalid_name"
+  | "duplicate_name"
+  | "unknown_name"
+  | "invalid_ids";
 
 export class WorldError extends Error {
   constructor(
