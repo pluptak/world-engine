@@ -1,6 +1,7 @@
 import { capacity } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Pos } from "../../model.js";
+import { refreshSubtreeLocations } from "./address.js";
 
 type MoveDestination = { kind: "position"; pos: Pos } | { kind: "location"; id: string };
 
@@ -84,6 +85,8 @@ function transition(context: TransitionContext): void {
     context.set(context.actor.id, "location", to.id, movedEvent);
     context.set(context.actor.id, "support", to.id, movedEvent);
   }
+  // What the actor holds or carries moves rooms with it; a positional move changes nothing.
+  refreshSubtreeLocations(context, context.actor.id, movedEvent);
 }
 
 export const moveVerb: Verb = {

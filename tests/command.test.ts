@@ -6,6 +6,7 @@ import type { Command } from "../src/engine/command.js";
 import { apply } from "../src/engine/pipeline.js";
 import { resolveTarget } from "../src/engine/resolve.js";
 import { spawn } from "../src/engine/spawn.js";
+import { validateSnapshot } from "../src/engine/validate.js";
 import type { Snapshot } from "../src/model.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
 
@@ -211,4 +212,34 @@ test("part addresses resolve only for declared, attached parts", () => {
     },
   };
   strictEqual(resolveTarget(detached, actorId, `${actorId}.hand_l`).status, "unresolved");
+});
+
+test("moving rooms carries what the actor holds", () => {
+  const setup = world();
+  const otherRoom = spawn(setup.snapshot, registry, "room", { name: "cellar" });
+  const door = spawn(otherRoom.snapshot, registry, "door", {
+    name: "door",
+    props: { open: true, openable: true, from: setup.roomId, to: otherRoom.id },
+  });
+  const bottleId = setup.bottleIds[0]!;
+
+  const taking = apply(
+    door.snapshot,
+    registry,
+    command(setup.actorId, "take", "bottle"),
+  );
+  strictEqual(taking.status, "ok");
+
+  const moving = apply(
+    taking.snapshot,
+    registry,
+    command(setup.actorId, "move", undefined, { location: otherRoom.id }),
+  );
+  strictEqual(moving.status, "ok");
+  strictEqual(moving.snapshot.entities[bottleId]?.contained_in, setup.actorId);
+  strictEqual(moving.snapshot.entities[bottleId]?.location, otherRoom.id);
+  deepStrictEqual(
+    validateSnapshot(moving.snapshot, registry).map((issue) => issue.code),
+    [],
+  );
 });

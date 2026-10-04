@@ -125,10 +125,33 @@ test("each rule fires on a snapshot wrong in exactly one way", () => {
     ["id_not_below_next_seq"],
   );
 
+  deepStrictEqual(
+    wrong((snapshot) => {
+      entity(snapshot, "e3").support = "e99";
+    }),
+    ["dangling_reference"],
+  );
+
+  deepStrictEqual(
+    wrong((snapshot) => {
+      entity(snapshot, "e3").location = "e2";
+    }),
+    ["location_mismatch"],
+  );
+
   const cyclic = baseSnapshot();
   entity(cyclic, "e2").support = "e3";
   entity(cyclic, "e2").pos = null;
   deepStrictEqual(validate(cyclic)[0]?.path, ["entities", "e2"]);
+});
+
+test("a door to a removed room names the dangling prop", () => {
+  const built = spawn(baseSnapshot(), registry, "door", {
+    name: "door",
+    props: { open: true, openable: true, from: "e1", to: "e99" },
+  });
+  deepStrictEqual(codes(built.snapshot), ["dangling_reference"]);
+  deepStrictEqual(validate(built.snapshot)[0]?.path, ["entities", built.id, "props", "to"]);
 });
 
 test("every command of a long sequence leaves a valid snapshot", (t) => {

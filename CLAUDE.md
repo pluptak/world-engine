@@ -34,7 +34,11 @@ suffixes (NodeNext).
   event and call `verb.transition`. Any status other than `ok` returns the input snapshot unchanged.
    `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
    a failure returns the input snapshot unchanged. `edit` uses it to refuse results that break a
-   snapshot invariant.
+   snapshot invariant. `move` to another room, `place`, and removals re-derive `location` for the
+   whole subtree below the change (`refreshSubtreeLocations` in `verbs/address.ts`); `place` setting
+   one relation clears the other, `spawn` fills an omitted `location` from the chain, and what a
+   removed support or container held takes the relation the removed thing itself was in — carried
+   by its holder, inside its container, else on the surface under it.
 - Verbs (`src/engine/verbs/*.ts`) implement `Verb` from `command.ts` and are registered in
   `verbs/index.ts`. A transition mutates state only through its `TransitionContext`: `set` (records a
   delta, skips no-ops), `emit` (allocates `ev<next_seq>` and chains `cause_id`), `recordDelta`, and
@@ -45,10 +49,14 @@ suffixes (NodeNext).
   `"unknown"` with a `basis_code`, from the snapshot, the templates, coverage and the replayed event
   list.
 - `src/engine/capacity.ts`, `geometry.ts` (derived position and elevation along support/containment
-  chains), `spawn.ts` (ids from `next_seq`), `residue.ts`, `canonical.ts`.
+  chains), `spawn.ts` (ids from `next_seq`), `residue.ts`, `canonical.ts`, `validate.ts` (snapshot
+  invariants: no loops, `pos`/`location` match the chain, no dangling references (`detached_from` is
+  history, not a link), detached parts accounted for, integrity range, ids below `next_seq`).
 - `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json` and
   `log.jsonl`. `submit` logs every command (including refused and invalid ones) before it atomically
-  writes the snapshot. `load` replays the log if the snapshot version disagrees with the count of `ok`
+  writes the snapshot. `resolveSubmission` runs `validateSnapshot` on every accepted result and
+  downgrades a breaking one to `invalid` with the rule's code, so a verb bug is logged but never
+  written. `load` replays the log if the snapshot version disagrees with the count of `ok`
   entries. A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
   surface as CLI issue codes.
@@ -57,8 +65,12 @@ suffixes (NodeNext).
   `exports`. `src/errors.ts` holds `WorldError`, whose codes surface as CLI issue codes. `edit` sends
   one `spawn`/`remove`/`place`/`set_props`/`set_part` through the pipeline as the reserved non-agent
   author `world` (`WORLD_AUTHOR`), which skips the agency check; `src/engine/verbs/edit.ts` holds it.
-- `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `query` |
-  `snapshot`), calls one `World` method, and validates every response against `ResponseSchema` before
+  A default edit id is `edit-<n>` with n one plus the world's submission count — log lines for a
+  store world, a closure counter over its own commands and edits for a memory one — so the same
+  sequence of calls writes the same log through any number of handles.
+  A memory world keeps past snapshots so stale commands preempt exactly like store-backed ones.
+- `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
+  `query` | `snapshot`), calls one `World` method, and validates every response against `ResponseSchema` before
   writing it. `init <dir> <scenario.json>` builds a world from spawn specs in `scenarios/*.json`. A
   failure becomes `{status:"invalid", issues}` with exit code 2.
 

@@ -11,36 +11,16 @@ import {
   type Result,
 } from "../api.js";
 import {
+  EntityOverridesSchema,
   RequestSchema,
   ResponseSchema,
   ValidationFailureSchema,
   type Request,
 } from "../contract.js";
 
-const PrimitiveSchema = z.union([z.number(), z.string(), z.boolean()]);
-const ModifierSchema = z.object({
-  capacity: z.string(),
-  delta: z.number().int(),
-  expires_at_tick: z.number().int().nullable(),
-  cause_id: z.string(),
-}).strict();
-const SpawnOverridesSchema = z.object({
-  name: z.string().optional(),
-  aliases: z.array(z.string()).optional(),
-  location: z.string().nullable().optional(),
-  support: z.string().nullable().optional(),
-  contained_in: z.string().nullable().optional(),
-  pos: z.object({ x: z.number().int(), y: z.number().int() }).strict().nullable().optional(),
-  detached_from: z.object({ entity: z.string(), part: z.string() }).strict().nullable().optional(),
-  integrity: z.number().int().min(0).max(100).optional(),
-  status: z.enum(["intact", "broken", "destroyed"]).optional(),
-  residue: z.record(z.string(), z.number().int()).optional(),
-  modifiers: z.array(ModifierSchema).optional(),
-  props: z.record(z.string(), PrimitiveSchema).optional(),
-}).strict();
 const ScenarioSchema = z.array(z.object({
   template: z.string().min(1),
-  overrides: SpawnOverridesSchema.optional(),
+  overrides: EntityOverridesSchema.optional(),
 }).strict());
 
 function issue(code: string, message = code) {
@@ -145,6 +125,14 @@ function dispatch(request: Request): unknown {
   if (request.op === "command") {
     const world = openWorld(request.world);
     const result = world.command(request.command, { basedOn: request.based_on_version });
+    return commandResponse(result, request.include_snapshot === true);
+  }
+  if (request.op === "edit") {
+    const world = openWorld(request.world);
+    const result = world.edit(
+      request.edit,
+      { command_id: request.command_id, basedOn: request.based_on_version },
+    );
     return commandResponse(result, request.include_snapshot === true);
   }
   const world = openWorld(request.world);

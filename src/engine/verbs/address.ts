@@ -1,7 +1,8 @@
 import { effectivePos } from "../geometry.js";
 import { resolveTarget } from "../resolve.js";
+import { derivedLocationOf } from "../validate.js";
 import type { Entity, Id, Snapshot } from "../../model.js";
-import type { CommandContext, PreconditionResult } from "../command.js";
+import type { CommandContext, PreconditionResult, TransitionContext } from "../command.js";
 
 // Agency is declared, never inferred: a template says so, and a severed part is not the whole it came
 // from even when its own template is the agent's.
@@ -36,6 +37,46 @@ export function closedEnclosure(snapshot: Snapshot, id: Id): Id | null {
   }
 
   return null;
+}
+
+// Location is derived state: after relations change, everything below the change belongs to
+// whatever room the new chain leads to. Chains that cannot be read keep their location.
+export function refreshSubtreeLocations(
+  context: TransitionContext,
+  rootId: Id,
+  eventId: Id,
+): void {
+  const members = new Set<Id>([rootId]);
+  let frontier = [rootId];
+  while (frontier.length > 0) {
+    const next: Id[] = [];
+    for (const id of Object.keys(context.snapshot.entities).sort()) {
+      if (members.has(id)) {
+        continue;
+      }
+      const entity = context.snapshot.entities[id];
+      if (
+        entity !== undefined &&
+        ((entity.support !== null && members.has(entity.support)) ||
+          (entity.contained_in !== null && members.has(entity.contained_in)))
+      ) {
+        members.add(id);
+        next.push(id);
+      }
+    }
+    frontier = next;
+  }
+
+  for (const id of [...members].sort()) {
+    const entity = context.snapshot.entities[id];
+    if (entity === undefined) {
+      continue;
+    }
+    const expected = derivedLocationOf(context.snapshot, entity.support, entity.contained_in);
+    if (expected !== undefined) {
+      context.set(id, "location", expected, eventId);
+    }
+  }
 }
 
 export type Address =

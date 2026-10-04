@@ -1,8 +1,8 @@
-import type { Entity, Id } from "../../model.js";
+import type { Entity, Id, Pos, Snapshot } from "../../model.js";
 import type { TemplateRegistry } from "../../templates.js";
 import { propagateSupportLoss } from "../../resolvers/physical.js";
 import { spawn, type EntityOverrides } from "../spawn.js";
-import { validateSnapshot } from "../validate.js";
+import { derivedLocationOf, validateSnapshot } from "../validate.js";
 import {
   WORLD_AUTHOR,
   type CommandContext,
@@ -13,7 +13,7 @@ import {
   type Verb,
   type WorldEdit,
 } from "../command.js";
-import { wouldLoop } from "./address.js";
+import { refreshSubtreeLocations, wouldLoop } from "./address.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -227,16 +227,26 @@ function spawnRefusal(context: CommandContext, edit: SpawnEdit): PreconditionRes
   }
   const overrides = edit.overrides ?? {};
   if (
+    overrides.support !== undefined &&
+    overrides.support !== null &&
+    overrides.contained_in !== undefined &&
+    overrides.contained_in !== null
+  ) {
+    return refused("conflicting_placement");
+  }
+  if (
     missingRef(context, overrides.location) ||
     missingRef(context, overrides.support) ||
     missingRef(context, overrides.contained_in)
   ) {
     return invalid("no_such_entity");
   }
-  if (overrides.location !== undefined && overrides.location !== null) {
-    if (context.snapshot.entities[overrides.location]?.template !== "room") {
-      return invalid("invalid_location");
-    }
+  const location = spawnLocation(context.snapshot, overrides);
+  if (location === undefined) {
+    return invalid("invalid_location");
+  }
+  if (location !== null && context.snapshot.entities[location]?.template !== "room") {
+    return invalid("invalid_location");
   }
   const support = overrides.support ?? null;
   if (support !== null && context.snapshot.entities[support]?.template === "room") {
@@ -260,6 +270,17 @@ function spawnRefusal(context: CommandContext, edit: SpawnEdit): PreconditionRes
   return { status: "ok" };
 }
 
+// An omitted location is derived from the chain, never left to drift; an explicit one must match it.
+function spawnLocation(
+  snapshot: Snapshot,
+  overrides: EntityOverrides,
+): Id | null | undefined {
+  if (overrides.location !== undefined) {
+    return overrides.location;
+  }
+  return derivedLocationOf(snapshot, overrides.support ?? null, overrides.contained_in ?? null);
+}
+
 function removeRefusal(context: CommandContext, subject: Entity): PreconditionResult {
   if (subject.template !== "room") {
     return { status: "ok" };
@@ -270,24 +291,49 @@ function removeRefusal(context: CommandContext, subject: Entity): PreconditionRe
   return inhabited ? refused("occupied_room") : { status: "ok" };
 }
 
+// Nothing is both held and supported: setting one relation clears the other, and asking for both
+// is refused outright.
+function normalizedPlacement(
+  subject: Entity,
+  edit: PlaceEdit,
+): { support: Id | null; contained: Id | null; pos: Pos | null } | null {
+  if (
+    edit.support !== undefined &&
+    edit.support !== null &&
+    edit.contained_in !== undefined &&
+    edit.contained_in !== null
+  ) {
+    return null;
+  }
+  let support = edit.support === undefined ? subject.support : edit.support;
+  let contained = edit.contained_in === undefined ? subject.contained_in : edit.contained_in;
+  if (edit.support !== undefined && edit.support !== null) {
+    contained = null;
+  } else if (edit.contained_in !== undefined && edit.contained_in !== null) {
+    support = null;
+  }
+  return { support, contained, pos: edit.pos === undefined ? subject.pos : edit.pos };
+}
+
 function placeRefusal(context: CommandContext, edit: PlaceEdit, subject: Entity): PreconditionResult {
-  const support = edit.support === undefined ? subject.support : edit.support;
-  const contained = edit.contained_in === undefined ? subject.contained_in : edit.contained_in;
-  const pos = edit.pos === undefined ? subject.pos : edit.pos;
-  if (missingRef(context, support) || missingRef(context, contained)) {
+  const placement = normalizedPlacement(subject, edit);
+  if (placement === null) {
+    return refused("conflicting_placement");
+  }
+  if (missingRef(context, placement.support) || missingRef(context, placement.contained)) {
     return invalid("no_such_entity");
   }
-  if (support !== null && wouldLoop(context, edit.target, support)) {
+  if (placement.support !== null && wouldLoop(context, edit.target, placement.support)) {
     return refused("circular_placement");
   }
-  if (contained !== null && wouldLoop(context, edit.target, contained)) {
+  if (placement.contained !== null && wouldLoop(context, edit.target, placement.contained)) {
     return refused("circular_placement");
   }
-  if (support !== null && context.snapshot.entities[support]?.template === "room") {
-    if (pos === null) {
+  if (placement.support !== null && context.snapshot.entities[placement.support]?.template === "room") {
+    if (placement.pos === null) {
       return refused("room_support_without_pos");
     }
-  } else if (pos !== null) {
+  } else if (placement.pos !== null) {
     return refused("pos_without_room_support");
   }
   return { status: "ok" };
@@ -347,14 +393,18 @@ function preconditions(context: CommandContext): PreconditionResult {
 }
 
 // What is left behind when a support or a container goes: riders that would not topple on their
-// own, and everything the container held, settle onto whatever held it.
+// own, and everything the container held. They take the relation the removed thing itself was in —
+// carried by its holder, inside its container, else on the surface under it — so a stone from a cup
+// in a shut chest stays shut inside the chest. Locations follow the new chains, not the old one.
 function releaseDependents(
   context: TransitionContext,
   targetId: Id,
   eventId: Id,
   former: Entity,
 ): void {
+  const carried = former.contained_in;
   const pos = former.pos === null ? null : { ...former.pos };
+  const moved: Id[] = [];
   for (const id of Object.keys(context.snapshot.entities).sort()) {
     if (id === targetId) {
       continue;
@@ -363,21 +413,36 @@ function releaseDependents(
     if (entity === undefined) {
       continue;
     }
-    if (entity.contained_in === targetId) {
+    const wasContent = entity.contained_in === targetId;
+    const wasRider = entity.support === targetId && entity.props.topples !== true;
+    if (!wasContent && !wasRider) {
+      continue;
+    }
+    if (carried !== null) {
+      context.set(id, "contained_in", carried, eventId);
+      context.set(id, "support", null, eventId);
+      context.set(id, "pos", null, eventId);
+    } else if (wasContent) {
       context.set(id, "contained_in", null, eventId);
       context.set(id, "support", former.support, eventId);
-      context.set(id, "location", former.location, eventId);
       context.set(id, "pos", pos, eventId);
-    } else if (entity.support === targetId && entity.props.topples !== true) {
+    } else {
       context.set(id, "support", former.support, eventId);
-      context.set(id, "location", former.location, eventId);
       context.set(id, "pos", pos, eventId);
     }
+    moved.push(id);
+  }
+  for (const id of moved) {
+    refreshSubtreeLocations(context, id, eventId);
   }
 }
 
 function transitionSpawn(context: TransitionContext, edit: SpawnEdit): void {
-  const created = spawn(context.snapshot, context.registry, edit.template, edit.overrides ?? {});
+  const overrides = edit.overrides ?? {};
+  const created = spawn(context.snapshot, context.registry, edit.template, {
+    ...overrides,
+    location: spawnLocation(context.snapshot, overrides) ?? null,
+  });
   context.snapshot = created.snapshot;
   const spawnedEvent = context.emit(
     "spawned",
@@ -403,21 +468,18 @@ function transitionRemove(context: TransitionContext, targetId: Id): void {
 }
 
 function transitionPlace(context: TransitionContext, edit: PlaceEdit, subject: Entity): void {
-  const contained =
-    edit.contained_in === undefined ? subject.contained_in : edit.contained_in;
+  const placement = normalizedPlacement(subject, edit);
+  if (placement === null) {
+    throw new TypeError("Edit placement changed after validation");
+  }
   const placedEvent = context.emit("placed", edit.target, {}, context.root_event_id);
-  if (subject.support !== null && edit.support === null && contained === null) {
+  if (subject.support !== null && placement.support === null && placement.contained === null) {
     propagateSupportLoss(context, edit.target, placedEvent);
   }
-  if (edit.contained_in !== undefined) {
-    context.set(edit.target, "contained_in", edit.contained_in, placedEvent);
-  }
-  if (edit.support !== undefined) {
-    context.set(edit.target, "support", edit.support, placedEvent);
-  }
-  if (edit.pos !== undefined) {
-    context.set(edit.target, "pos", edit.pos, placedEvent);
-  }
+  context.set(edit.target, "contained_in", placement.contained, placedEvent);
+  context.set(edit.target, "support", placement.support, placedEvent);
+  context.set(edit.target, "pos", placement.pos, placedEvent);
+  refreshSubtreeLocations(context, edit.target, placedEvent);
 }
 
 function transition(context: TransitionContext): void {

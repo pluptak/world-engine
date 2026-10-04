@@ -134,6 +134,19 @@ test("a stale command through the API is preempted", (t) => {
   strictEqual(future.reason_code, "future_version");
 });
 
+test("a stale command in a memory world is preempted like on disk", (t) => {
+  const stored = bottleWorld(t);
+  const world = memoryWorld(stored.snapshot());
+  strictEqual(world.command(pushTable).status, "ok");
+
+  const stale = world.command(
+    { command_id: "stale-take", actor: "e4", verb: "take", target: "bottle" },
+    { basedOn: 0 },
+  );
+  strictEqual(stale.status, "preempted");
+  strictEqual(world.snapshot().version, 1);
+});
+
 test("the package's exports map is the API a caller imports", (t) => {
   strictEqual(createWorldByName, createWorld);
   const world = createWorldByName(join(tempDir(t), "self-referenced"), bottleScenario);

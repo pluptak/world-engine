@@ -7,6 +7,20 @@ export const PosSchema = z.object({
   y: z.number().int(),
 }).strict();
 
+const PrimitiveSchema = z.union([z.number(), z.string(), z.boolean()]);
+
+const ModifierSchema = z.object({
+  capacity: z.string(),
+  delta: z.number().int(),
+  expires_at_tick: z.number().int().nullable(),
+  cause_id: z.string(),
+}).strict();
+
+const PartStateSchema = z.object({
+  integrity: z.number().int().min(0).max(100),
+  status: z.enum(["intact", "damaged", "detached", "destroyed"]),
+}).strict();
+
 export const CommandSchema = z.object({
   command_id: IdSchema,
   actor: IdSchema,
@@ -31,12 +45,62 @@ export const QuerySchema = z.discriminatedUnion("kind", [
   }).strict(),
 ]);
 
+export const EntityOverridesSchema = z.object({
+  name: z.string().optional(),
+  aliases: z.array(z.string()).optional(),
+  location: z.string().nullable().optional(),
+  support: z.string().nullable().optional(),
+  contained_in: z.string().nullable().optional(),
+  pos: PosSchema.nullable().optional(),
+  detached_from: z.object({ entity: z.string(), part: z.string() }).strict().nullable().optional(),
+  integrity: z.number().int().optional(),
+  status: z.enum(["intact", "broken", "destroyed"]).optional(),
+  residue: z.record(z.string(), z.number().int()).optional(),
+  modifiers: z.array(ModifierSchema).optional(),
+  props: z.record(z.string(), PrimitiveSchema).optional(),
+}).strict();
+
+export const WorldEditSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("spawn"),
+    template: z.string().min(1),
+    overrides: EntityOverridesSchema.optional(),
+  }).strict(),
+  z.object({ kind: z.literal("remove"), target: IdSchema }).strict(),
+  z.object({
+    kind: z.literal("place"),
+    target: IdSchema,
+    support: IdSchema.nullable().optional(),
+    contained_in: IdSchema.nullable().optional(),
+    pos: PosSchema.nullable().optional(),
+  }).strict(),
+  z.object({
+    kind: z.literal("set_props"),
+    target: IdSchema,
+    props: z.record(z.string(), PrimitiveSchema),
+  }).strict(),
+  z.object({
+    kind: z.literal("set_part"),
+    target: IdSchema,
+    part: z.string().min(1),
+    state: PartStateSchema,
+  }).strict(),
+]);
+
 export const RequestSchema = z.discriminatedUnion("op", [
   z.object({
     op: z.literal("command"),
     world: z.string().min(1),
     based_on_version: z.number().int().optional(),
     command: CommandSchema,
+    include_snapshot: z.boolean().optional(),
+  }).strict(),
+  z.object({
+    op: z.literal("edit"),
+    world: z.string().min(1),
+    command_id: IdSchema.optional(),
+    based_on_version: z.number().int().optional(),
+    edit: WorldEditSchema,
     include_snapshot: z.boolean().optional(),
   }).strict(),
   z.object({
@@ -49,18 +113,6 @@ export const RequestSchema = z.discriminatedUnion("op", [
     world: z.string().min(1),
   }).strict(),
 ]);
-
-const PartStateSchema = z.object({
-  integrity: z.number().int().min(0).max(100),
-  status: z.enum(["intact", "damaged", "detached", "destroyed"]),
-}).strict();
-
-const ModifierSchema = z.object({
-  capacity: z.string(),
-  delta: z.number().int(),
-  expires_at_tick: z.number().int().nullable(),
-  cause_id: IdSchema,
-}).strict();
 
 export const EntitySchema = z.object({
   id: IdSchema,

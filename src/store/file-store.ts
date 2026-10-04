@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { apply } from "../engine/pipeline.js";
 import { canonicalJson } from "../engine/canonical.js";
+import { validateSnapshot } from "../engine/validate.js";
 import type { Command, Result } from "../engine/command.js";
 import { WorldError } from "../errors.js";
 import type { Snapshot, Status, WorldEvent } from "../model.js";
@@ -177,6 +178,30 @@ export function load(dir: string, registry?: TemplateRegistry): Snapshot {
   return snapshot;
 }
 
+// Log entries so far: every submission appends exactly one line, refused or not, so this count is
+// unique per world state and safe to build a default id from.
+export function entryCount(dir: string): number {
+  assertWorldExists(dir);
+  return readFileSync(join(dir, snapshots.log), "utf8")
+    .split(/\r?\n/)
+    .filter((line) => line.length > 0).length;
+}
+
+// The last gate before anything is believed: an accepted command whose result breaks a snapshot
+// invariant is not applied. A verb bug must never persist a world that cannot open.
+function acceptedResult(
+  current: Snapshot,
+  registry: TemplateRegistry,
+  command: Command,
+  applied: Result,
+): Result {
+  if (applied.status !== "ok") {
+    return applied;
+  }
+  const [first] = validateSnapshot(applied.snapshot, registry);
+  return first === undefined ? applied : invalidResult(current, command, first.code);
+}
+
 // The version rule, with no disk of its own: a command against a version the world has already left
 // is preempted when it would have succeeded there, so a caller that raced sees why it lost.
 export function resolveSubmission(
@@ -193,14 +218,17 @@ export function resolveSubmission(
     return invalidResult(current, command, "future_version");
   }
 
-  const applied = apply(current, registry, command);
-  if (basedOn >= current.version || applied.status === "ok" || applied.status === "invalid") {
-    return applied;
+  const result = acceptedResult(current, registry, command, apply(current, registry, command));
+  if (basedOn >= current.version || result.status === "ok" || result.status === "invalid") {
+    return result;
   }
 
   const basedSnapshot = snapshotAt(basedOn);
-  const basedResult = basedSnapshot === null ? null : apply(basedSnapshot, registry, command);
-  return basedResult?.status === "ok" ? { ...applied, status: "preempted" } : applied;
+  const basedResult =
+    basedSnapshot === null
+      ? null
+      : acceptedResult(basedSnapshot, registry, command, apply(basedSnapshot, registry, command));
+  return basedResult?.status === "ok" ? { ...result, status: "preempted" } : result;
 }
 
 export function submit(

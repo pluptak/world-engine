@@ -43,7 +43,6 @@ function bottleWorld(actorX = 0) {
     name: "bottle",
     location: room.id,
     support: table.id,
-    pos: { x: 30, y: 0 },
   });
   const actor = spawn(bottle.snapshot, registry, "human", {
     name: "actor",
@@ -83,7 +82,6 @@ test("replay reproduces the bottle and hand scenarios byte-for-byte", (t) => {
     name: "bottle",
     location: room.id,
     support: table.id,
-    pos: { x: 30, y: 0 },
   });
   const attacker = spawn(bottle.snapshot, registry, "human", {
     name: "attacker",

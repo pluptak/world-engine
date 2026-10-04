@@ -7,7 +7,9 @@ import {
   canonicalJson,
   createWorld,
   memoryWorld,
+  openWorld,
   WORLD_AUTHOR,
+  type Id,
   type Scenario,
   type World,
   type WorldEdit,
@@ -54,6 +56,19 @@ const scenario: Scenario = [
 function editWorld(t: { after(callback: () => void): void }): { dir: string; world: World } {
   const dir = join(tempDir(t), "edited-world");
   return { dir, world: createWorld(dir, scenario) };
+}
+
+// An edit spawn into a container, with the name taken from the command id; the world assigns the id.
+function spawnInto(world: World, commandId: string, container: Id, template: string): Id {
+  const result = world.edit({
+    kind: "spawn",
+    template,
+    overrides: { name: commandId.split("-").at(-1), contained_in: container },
+  });
+  strictEqual(result.status, "ok");
+  const id = result.events[1]?.entity;
+  ok(typeof id === "string");
+  return id;
 }
 
 function causesLeadToRoot(events: Array<{ event_id: string; cause_id: string | null }>): boolean {
@@ -184,14 +199,244 @@ test("spawn, place, set_props and set_part run as one logged edit each", (t) => 
   strictEqual(world.snapshot().version, 4);
 });
 
+test("place clears the other relation and follows the chain across rooms", (t) => {
+  const { world } = editWorld(t);
+  const taken = world.command({
+    command_id: "take-bottle",
+    actor: "e4",
+    verb: "take",
+    target: "bottle",
+  });
+  strictEqual(taken.status, "ok");
+  strictEqual(world.entity("e3")?.contained_in, "e4");
+
+  const cellar = world.edit(
+    { kind: "spawn", template: "room", overrides: { name: "cellar" } },
+    { command_id: "spawn-cellar" },
+  );
+  const cellarId = cellar.events[1]?.entity;
+  ok(typeof cellarId === "string");
+
+  const placed = world.edit(
+    { kind: "place", target: "e3", support: "e2", pos: null },
+    { command_id: "place-bottle" },
+  );
+  strictEqual(placed.status, "ok");
+  strictEqual(world.entity("e3")?.contained_in, null);
+  strictEqual(world.entity("e3")?.support, "e2");
+
+  const moved = world.edit(
+    { kind: "place", target: "e2", support: cellarId, pos: { x: 5, y: 0 } },
+    { command_id: "place-table" },
+  );
+  strictEqual(moved.status, "ok");
+  strictEqual(world.entity("e2")?.location, cellarId);
+  strictEqual(world.entity("e3")?.location, cellarId);
+  strictEqual(world.entity("e3")?.support, "e2");
+
+  const reach = world.command({
+    command_id: "take-across-rooms",
+    actor: "e4",
+    verb: "take",
+    target: "e3",
+  });
+  strictEqual(reach.status, "refused");
+  strictEqual(reach.reason_code, "out_of_reach");
+});
+
+test("removing a held container passes its contents to the holder", (t) => {
+  const { world } = editWorld(t);
+
+  const held = world.edit(
+    { kind: "spawn", template: "cup", overrides: { name: "cup", contained_in: "e4" } },
+    { command_id: "spawn-held-cup" },
+  );
+  strictEqual(held.status, "ok");
+  const cup = held.events[1]?.entity;
+  ok(typeof cup === "string");
+
+  const inner = world.edit(
+    { kind: "spawn", template: "cup", overrides: { name: "inner", contained_in: cup } },
+    { command_id: "spawn-inner-cup" },
+  );
+  strictEqual(inner.status, "ok");
+  const drop = inner.events[1]?.entity;
+  ok(typeof drop === "string");
+
+  const removed = world.edit({ kind: "remove", target: cup }, { command_id: "remove-held-cup" });
+
+  strictEqual(removed.status, "ok");
+  deepStrictEqual(
+    removed.events.map((event) => event.type),
+    ["edit", "removed"],
+  );
+  strictEqual(world.entity(drop)?.contained_in, "e4");
+  strictEqual(world.entity(drop)?.support, null);
+  strictEqual(world.entity(drop)?.location, "e1");
+
+  const released = world.command({
+    command_id: "drop-inner",
+    actor: "e4",
+    verb: "drop",
+    target: drop,
+  });
+  strictEqual(released.status, "ok");
+});
+
+test("removing a container inside a chest keeps its contents shut inside", (t) => {
+  const { world } = editWorld(t);
+  const chest = world.entity("e5");
+  ok(chest);
+  const shut = world.edit(
+    { kind: "set_props", target: "e5", props: { ...chest.props, open: false } },
+    { command_id: "shut-chest" },
+  );
+  strictEqual(shut.status, "ok");
+
+  const cup = spawnInto(world, "spawn-cup", "e5", "cup");
+  const pebble = spawnInto(world, "spawn-pebble", cup, "stone");
+
+  const removed = world.edit({ kind: "remove", target: cup }, { command_id: "remove-cup" });
+  strictEqual(removed.status, "ok");
+
+  strictEqual(world.entity(pebble)?.contained_in, "e5");
+  strictEqual(world.entity(pebble)?.support, null);
+  strictEqual(world.entity(pebble)?.location, "e1");
+
+  const take = world.command({
+    command_id: "take-pebble",
+    actor: "e4",
+    verb: "take",
+    target: "pebble",
+  });
+  strictEqual(take.status, "refused");
+  strictEqual(take.reason_code, "container_closed");
+});
+
+test("a detached part outlives its origin, but not the other way round", (t) => {
+  const { world } = editWorld(t);
+  const spawned = world.edit(
+    {
+      kind: "spawn",
+      template: "human",
+      overrides: { name: "guard", location: "e1", support: "e1", pos: { x: 50, y: 0 } },
+    },
+    { command_id: "spawn-guard" },
+  );
+  strictEqual(spawned.status, "ok");
+  const guard = spawned.events[1]?.entity;
+  ok(typeof guard === "string");
+
+  let arm: string | undefined;
+  for (let index = 0; index < 3; index += 1) {
+    const hit = world.command({
+      command_id: `cut-arm-${index}`,
+      actor: "e4",
+      verb: "attack",
+      target: `${guard}.arm_r`,
+    });
+    strictEqual(hit.status, "ok");
+    const snapshot = world.snapshot();
+    arm = Object.keys(snapshot.entities).find(
+      (id) => snapshot.entities[id]?.detached_from?.entity === guard,
+    );
+  }
+  ok(arm);
+
+  const removeArm = world.edit({ kind: "remove", target: arm }, { command_id: "remove-arm-first" });
+  strictEqual(removeArm.status, "refused");
+  strictEqual(removeArm.reason_code, "detached_part_without_entity");
+
+  const removeGuard = world.edit({ kind: "remove", target: guard }, { command_id: "remove-guard" });
+  strictEqual(removeGuard.status, "ok");
+  strictEqual(world.entity(guard), null);
+  deepStrictEqual(world.entity(arm)?.detached_from, { entity: guard, part: "arm_r" });
+
+  const removeArmAfter = world.edit({ kind: "remove", target: arm }, { command_id: "remove-arm" });
+  strictEqual(removeArmAfter.status, "ok");
+  strictEqual(world.entity(arm), null);
+});
+
+test("spawn derives a missing location and refuses two holders", (t) => {
+  const { world } = editWorld(t);
+
+  const spawned = world.edit(
+    { kind: "spawn", template: "bottle", overrides: { name: "spare", support: "e2" } },
+    { command_id: "spawn-spare" },
+  );
+  strictEqual(spawned.status, "ok");
+  const spare = spawned.events[1]?.entity;
+  ok(typeof spare === "string");
+  strictEqual(world.entity(spare)?.location, "e1");
+
+  const conflict = world.edit(
+    { kind: "place", target: spare, support: "e2", contained_in: "e4" },
+    { command_id: "conflict-spare" },
+  );
+  strictEqual(conflict.status, "refused");
+  strictEqual(conflict.reason_code, "conflicting_placement");
+});
+
 test("a memory edit without options takes the next deterministic command id", () => {
   const stored = createWorld(mkdtempSync(join(tmpdir(), "world-engine-edit-mem-")), scenario);
   const world = memoryWorld(stored.snapshot());
 
-  const result = world.edit({ kind: "place", target: "e3", support: "e2" });
+  const first = world.edit({ kind: "place", target: "e3", support: "e2" });
+  strictEqual(first.status, "ok");
+  strictEqual(first.command_id, "edit-1");
 
-  strictEqual(result.status, "ok");
-  strictEqual(result.command_id, "edit-1");
+  const taken = world.command({
+    command_id: "take-bottle",
+    actor: "e4",
+    verb: "take",
+    target: "bottle",
+  });
+  strictEqual(taken.status, "ok");
+
+  const third = world.edit({ kind: "place", target: "e3", support: "e2" });
+  strictEqual(third.status, "ok");
+  strictEqual(third.command_id, "edit-3");
+});
+
+test("the same edits write the same log through one handle or many", (t) => {
+  // Spawn a spare bottle, try to loop the table onto the bottle it stands on, then place the spare
+  // on the floor: one ok, one refused, one ok. `open` stands for how the caller holds the world:
+  // one long-lived handle, or a fresh one per call, as the CLI does.
+  const run = (open: () => World): string[] => {
+    const spawned = open().edit({
+      kind: "spawn",
+      template: "bottle",
+      overrides: { name: "spare", support: "e2" },
+    });
+    const spare = spawned.events[1]?.entity;
+    ok(typeof spare === "string");
+    const looped = open().edit({ kind: "place", target: "e2", support: "e3", pos: null });
+    const placed = open().edit({ kind: "place", target: spare, support: "e1", pos: { x: 31, y: 0 } });
+    return [
+      spawned.status,
+      `${looped.status} ${looped.reason_code ?? ""}`.trim(),
+      `${placed.status} ${placed.reason_code ?? ""}`.trim(),
+    ];
+  };
+
+  const runs = [false, true].map((perCall) => {
+    const dir = join(tempDir(t), perCall ? "per-call" : "one-handle");
+    createWorld(dir, scenario);
+    const single = openWorld(dir);
+    const statuses = run(perCall ? () => openWorld(dir) : () => single);
+    deepStrictEqual(statuses, ["ok", "refused circular_placement", "ok"]);
+    return {
+      log: readFileSync(join(dir, "log.jsonl"), "utf8"),
+      snapshot: readFileSync(join(dir, "snapshot.json"), "utf8"),
+    };
+  });
+
+  const [one, many] = runs;
+  ok(one && many);
+  deepStrictEqual(one.log, many.log);
+  deepStrictEqual(one.snapshot, many.snapshot);
+  ok(one.log.includes('"command_id":"edit-1"'));
+  ok(one.log.includes('"command_id":"edit-3"'));
 });
 
 test("edits that break snapshot invariants are refused and change nothing", (t) => {

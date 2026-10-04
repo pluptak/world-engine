@@ -28,12 +28,49 @@ function chainLoop(snapshot: Snapshot, id: Id): Id[] | null {
 
     const entity: Entity | undefined = snapshot.entities[current];
     if (entity === undefined) {
-      return path.slice(seenAt);
+      return null;
     }
     current = entity.contained_in ?? entity.support;
   }
 
   return null;
+}
+
+// The room at the end of a support or containment chain, or null when the chain ends nowhere;
+// undefined when the chain cannot be read, which always has its own issue already.
+export function derivedLocationOf(
+  snapshot: Snapshot,
+  support: Id | null,
+  contained_in: Id | null,
+): Id | null | undefined {
+  const visited = new Set<Id>();
+  let current = contained_in ?? support;
+
+  while (current !== null) {
+    if (visited.has(current)) {
+      return undefined;
+    }
+    visited.add(current);
+
+    const entity: Entity | undefined = snapshot.entities[current];
+    if (entity === undefined) {
+      return undefined;
+    }
+    if (entity.template === "room") {
+      return entity.id;
+    }
+    current = entity.contained_in ?? entity.support;
+  }
+
+  return null;
+}
+
+export function derivedLocation(snapshot: Snapshot, id: Id): Id | null | undefined {
+  const entity = snapshot.entities[id];
+  if (entity === undefined) {
+    return undefined;
+  }
+  return derivedLocationOf(snapshot, entity.support, entity.contained_in);
 }
 
 // Detaching a subtree spawns one entity for its root; the descendants travel inside it rather than
@@ -76,6 +113,40 @@ function accountedFor(
   return false;
 }
 
+function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIssue[] {
+  const entity = snapshot.entities[id];
+  if (entity === undefined) {
+    return [];
+  }
+
+  const issues: SnapshotIssue[] = [];
+  // detached_from is history, not a live link: the origin may itself be gone while the entity it
+  // produced remains, so it is not checked here.
+  if (entity.support !== null && snapshot.entities[entity.support] === undefined) {
+    issues.push(issue("dangling_reference", [...path, "support"], `unknown entity ${entity.support}`));
+  }
+  if (entity.contained_in !== null && snapshot.entities[entity.contained_in] === undefined) {
+    issues.push(
+      issue("dangling_reference", [...path, "contained_in"], `unknown entity ${entity.contained_in}`),
+    );
+  }
+  if (entity.location !== null && snapshot.entities[entity.location] === undefined) {
+    issues.push(
+      issue("dangling_reference", [...path, "location"], `unknown entity ${entity.location}`),
+    );
+  }
+  // Doors name the rooms they join in props, outside the support and containment relations.
+  if (entity.template === "door") {
+    for (const side of ["from", "to"] as const) {
+      const ref = entity.props[side];
+      if (typeof ref === "string" && snapshot.entities[ref] === undefined) {
+        issues.push(issue("dangling_reference", [...path, "props", side], `unknown entity ${ref}`));
+      }
+    }
+  }
+  return issues;
+}
+
 function integrityIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIssue[] {
   const entity = snapshot.entities[id];
   if (entity === undefined) {
@@ -115,23 +186,39 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
       issues.push(issue("id_not_below_next_seq", path, `next_seq ${snapshot.next_seq}`));
     }
     issues.push(...integrityIssues(snapshot, id, path));
+    issues.push(...referenceIssues(snapshot, id, path));
 
-    const loop = chainLoop(snapshot, id);
-    if (loop !== null) {
-      const name = [...loop].sort()[0] ?? id;
-      if (!reportedLoops.has(name)) {
-        reportedLoops.add(name);
-        issues.push(issue("support_or_containment_cycle", path, `loop: ${[...loop].sort().join(", ")}`));
+    // A missing link already has its issue; the rules below read chains, so they stay out of the
+    // way rather than pile onto it.
+    const chainDangles =
+      (entity.support !== null && snapshot.entities[entity.support] === undefined) ||
+      (entity.contained_in !== null && snapshot.entities[entity.contained_in] === undefined);
+    if (!chainDangles) {
+      const loop = chainLoop(snapshot, id);
+      if (loop !== null) {
+        const name = [...loop].sort()[0] ?? id;
+        if (!reportedLoops.has(name)) {
+          reportedLoops.add(name);
+          issues.push(issue("support_or_containment_cycle", path, `loop: ${[...loop].sort().join(", ")}`));
+        }
       }
-    }
 
-    const support = entity.support === null ? undefined : snapshot.entities[entity.support];
-    if (support?.template === "room") {
-      if (entity.pos === null) {
-        issues.push(issue("room_support_without_pos", path, `support ${entity.support}`));
+      const support = entity.support === null ? undefined : snapshot.entities[entity.support];
+      if (support?.template === "room") {
+        if (entity.pos === null) {
+          issues.push(issue("room_support_without_pos", path, `support ${entity.support}`));
+        }
+      } else if (entity.pos !== null) {
+        issues.push(issue("pos_without_room_support", path, `support ${String(entity.support)}`));
       }
-    } else if (entity.pos !== null) {
-      issues.push(issue("pos_without_room_support", path, `support ${String(entity.support)}`));
+
+      // Location is derived state: the room at the end of the support or containment chain.
+      if (entity.location === null || snapshot.entities[entity.location] !== undefined) {
+        const expected = derivedLocation(snapshot, id);
+        if (expected !== undefined && entity.location !== expected) {
+          issues.push(issue("location_mismatch", path, `location ${String(entity.location)}`));
+        }
+      }
     }
 
     for (const part of Object.keys(entity.parts).sort()) {

@@ -8,6 +8,7 @@ import { WorldError } from "./errors.js";
 import { defaultCoverage, type Entity, type Id, type Snapshot, type WorldEvent } from "./model.js";
 import {
   create,
+  entryCount,
   load,
   replayWithEvents,
   resolveSubmission,
@@ -80,10 +81,13 @@ function storeWorld(dir: string, registry: TemplateRegistry): World {
   return {
     command: (command, options) => submit(dir, command, options?.basedOn, registry),
     edit: (edit, options) => {
-      const current = load(dir, registry);
+      // The count of logged submissions names the next edit: every submission appends exactly one
+      // line, so the id follows the world rather than the handle, and the same sequence of calls
+      // writes the same log through any number of handles.
+      const prior = entryCount(dir);
       return submit(
         dir,
-        editCommand(edit, options?.command_id ?? `edit-${current.version + 1}`),
+        editCommand(edit, options?.command_id ?? `edit-${prior + 1}`),
         options?.basedOn,
         registry,
       );
@@ -140,31 +144,36 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
 
   let current = snapshot;
   const events: WorldEvent[] = [];
+  // Snapshots are immutable, so past versions stay around for preemption checks for free.
+  const history = new Map<number, Snapshot>([[snapshot.version, snapshot]]);
+  // No log, so the count of this world's own submissions stands in for one; commands count like
+  // edits, exactly like the store's lines, and the id is read before the count grows.
+  let submissions = 0;
+
+  function submitMemory(command: Command, basedOn: number): Result {
+    submissions += 1;
+    const result = resolveSubmission(
+      current,
+      templates,
+      command,
+      basedOn,
+      (version) => history.get(version) ?? null,
+    );
+    if (result.status === "ok") {
+      current = result.snapshot;
+      events.push(...result.events);
+      history.set(current.version, current);
+    }
+    return result;
+  }
 
   return {
-    command: (command, options) => {
-      const result = resolveSubmission(current, templates, command, options?.basedOn ?? current.version, () => null);
-      if (result.status === "ok") {
-        current = result.snapshot;
-        events.push(...result.events);
-      }
-      return result;
-    },
-    edit: (edit, options) => {
-      const command = editCommand(edit, options?.command_id ?? `edit-${current.version + 1}`);
-      const result = resolveSubmission(
-        current,
-        templates,
-        command,
+    command: (command, options) => submitMemory(command, options?.basedOn ?? current.version),
+    edit: (edit, options) =>
+      submitMemory(
+        editCommand(edit, options?.command_id ?? `edit-${submissions + 1}`),
         options?.basedOn ?? current.version,
-        () => null,
-      );
-      if (result.status === "ok") {
-        current = result.snapshot;
-        events.push(...result.events);
-      }
-      return result;
-    },
+      ),
     query: (request) => queryEngine(current, templates, events, request),
     snapshot: () => current,
     entity: (id) => current.entities[id] ?? null,

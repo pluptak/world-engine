@@ -192,6 +192,34 @@ test("command responses include snapshots on request and expose relation deltas"
   strictEqual(included.snapshot.coverage.senses.includes("sight"), true);
 });
 
+test("an edit operation removes the table through the World method", (t) => {
+  const world = initWorld(t);
+  const removed = runCli(JSON.stringify({
+    op: "edit",
+    world,
+    command_id: "remove-table",
+    edit: { kind: "remove", target: "e2" },
+  }));
+  strictEqual(removed.status, 0, removed.stderr);
+  const body = commandBody(removed);
+  strictEqual(body.status, "ok");
+  deepStrictEqual(
+    body.events.map((event) => event.type),
+    ["edit", "removed", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"],
+  );
+
+  const looped = runCli(JSON.stringify({
+    op: "edit",
+    world,
+    command_id: "loop-room",
+    edit: { kind: "place", target: "e1", support: "e3", pos: null },
+  }));
+  strictEqual(looped.status, 0, looped.stderr);
+  const refused = commandBody(looped);
+  strictEqual(refused.status, "refused");
+  strictEqual(refused.reason_code, "circular_placement");
+});
+
 test("query and snapshot operations return schema-valid responses with coverage", (t) => {
   const world = initWorld(t);
   const query = runCli(JSON.stringify({
