@@ -13,28 +13,6 @@ world state, is the job of a middleware that does not exist and is not part of t
 below may make the API easier for such a caller to drive (describing its own commands, dry-running
 one, structured refusals), but never interpret text or plan on a caller's behalf.
 
-## B. Bodies beyond humans
-
-### 3. Verbs declare capacities, not hands
-- **Why:** `take`, `give` and `attack` hard-code `manipulation`, so only a two-handed body can act.
-  A dog carries in its mouth, pushes with its body and bites.
-- **Scope:** each verb names what it needs as capacity alternatives, for example take needs
-  `manipulation ≥ 50` or `mouth_carry ≥ 1` for an item up to the template's `carry_limit_g`. The
-  `hands_required` rule becomes a requirement on a capacity. Attack damage comes from the attacker's
-  template, by the capacity used (fist, bite). The verb catalog (item 9) reads these declarations.
-- **Done when:** every existing test passes unchanged and no verb names `manipulation` outside its
-  declaration.
-
-### 4. Animals
-- **Scope:** templates `dog`, `cat` and `horse` with `agent: true`, part trees (head → jaw, four legs,
-  tail), and capacities `moving`, `sight`, `hearing`, `mouth_carry`. Add `smell` as a capacity and a
-  covered sense for the worlds that declare it. Anything uncovered stays `"unknown"`.
-- **Done when:**
-  - a dog takes a glass shard in its mouth but is refused the two-handed crate;
-  - it cannot open a locked door, but can push a chair;
-  - detaching its jaw drops what it carried;
-  - a cat hears the bottle break through a closed door.
-
 ## C. Perception correctness
 
 ### 5. Perceive an event against the state at that event

@@ -177,7 +177,7 @@ function perceive(
   if (targetEntity === undefined) {
     return answer("false", "no_such_entity");
   }
-  // A shut container hides what is inside it, however deep; hearing does not care.
+  // A shut container hides what is inside it, however deep; hearing and smell do not care.
   if (query.sense === "sight" && closedEnclosure(snapshot, targetEntity.id) !== null) {
     return answer("false", "enclosed");
   }
@@ -187,8 +187,10 @@ function perceive(
   if (observerLocation === null || targetLocation === null) {
     return answer("false", "not_perceptible");
   }
+  // Hearing and smell cross a doorway whether it is open or not, and ignore shut containers.
+  const crossesDoors = query.sense === "hearing" || query.sense === "smell";
   if (observerLocation === targetLocation) {
-    if (query.sense === "hearing") {
+    if (crossesDoors) {
       return answer("true", "same_location");
     }
     if (query.sense === "sight") {
@@ -209,7 +211,7 @@ function perceive(
       ? answer("true", "adjacent_open_door_lit")
       : answer("false", connected ? "location_unlit" : "not_perceptible");
   }
-  if (query.sense === "hearing") {
+  if (crossesDoors) {
     return connectedByDoor(snapshot, observerLocation, targetLocation, false) && loudEvent(event)
       ? answer("true", "adjacent_loud_event")
       : answer("false", "not_perceptible");

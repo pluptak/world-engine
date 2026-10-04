@@ -1,10 +1,17 @@
-import { capacities, capacity } from "../capacity.js";
+import { capacities, capacity, structuralCapacities } from "../capacity.js";
 import { effectivePos } from "../geometry.js";
 import { addResidue } from "../residue.js";
+import { carryAlternatives, insufficientCode, lostCarry } from "../carry.js";
 import type { PartState } from "../../model.js";
-import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
+import type { AttackMode, CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { dropCarriedItem } from "./drop.js";
 import { spawn } from "../spawn.js";
+
+// A fist needs hands, a bite a jaw; the damage of the mode used comes from the attacker's template.
+const attackModes: readonly AttackMode[] = [
+  { capacity: "manipulation", at_least: 1, damage_prop: "attack_damage" },
+  { capacity: "mouth_carry", at_least: 1, damage_prop: "bite_damage" },
+];
 
 interface AttackTarget {
   entityId: string;
@@ -12,21 +19,19 @@ interface AttackTarget {
   damage: number;
 }
 
-function attackTarget(context: CommandContext): AttackTarget | null {
+type AttackChoice =
+  | { kind: "chosen"; damage: number }
+  | { kind: "no_capacity" }
+  | { kind: "no_damage" };
+
+function attackStructure(context: CommandContext): { entityId: string; partName: string | null } | null {
   const target = context.target;
   if (target === null) {
     return null;
   }
   const entity = context.snapshot.entities[target.entity_id];
   const template = entity === undefined ? undefined : context.registry[entity.template];
-  const damage = context.actor.props.attack_damage;
-  if (
-    entity === undefined ||
-    template === undefined ||
-    typeof damage !== "number" ||
-    !Number.isSafeInteger(damage) ||
-    damage <= 0
-  ) {
+  if (entity === undefined || template === undefined) {
     return null;
   }
 
@@ -45,7 +50,27 @@ function attackTarget(context: CommandContext): AttackTarget | null {
     return null;
   }
 
-  return { entityId: entity.id, partName, damage };
+  return { entityId: entity.id, partName };
+}
+
+// The first declared mode the attacker can use: enough of its capacity and a usable damage value.
+// Having a capacity but no damage is template data gone wrong, reported apart from the refusal.
+function chooseAttack(context: CommandContext): AttackChoice {
+  let hadCapacity = false;
+  for (const mode of context.verb.attack_modes ?? []) {
+    if (
+      (capacity(context.snapshot, context.registry, context.actor.id, mode.capacity) ?? 0) <
+      mode.at_least
+    ) {
+      continue;
+    }
+    hadCapacity = true;
+    const damage = context.actor.props[mode.damage_prop];
+    if (typeof damage === "number" && Number.isSafeInteger(damage) && damage > 0) {
+      return { kind: "chosen", damage };
+    }
+  }
+  return hadCapacity ? { kind: "no_damage" } : { kind: "no_capacity" };
 }
 
 function preconditions(context: CommandContext): PreconditionResult {
@@ -53,11 +78,12 @@ function preconditions(context: CommandContext): PreconditionResult {
   if (target === null) {
     return { status: "invalid", reason_code: "missing_target" };
   }
-  if (attackTarget(context) === null) {
+  const structure = attackStructure(context);
+  if (structure === null) {
     return { status: "invalid", reason_code: "invalid_attack_target" };
   }
 
-  const entity = context.snapshot.entities[target.entity_id]!;
+  const entity = context.snapshot.entities[structure.entityId]!;
   const actorPos = effectivePos(context.snapshot, context.actor.id);
   const targetPos = effectivePos(context.snapshot, entity.id);
   const reach = context.actor.props.reach_cm;
@@ -70,8 +96,12 @@ function preconditions(context: CommandContext): PreconditionResult {
   ) {
     return { status: "refused", reason_code: "out_of_reach" };
   }
-  if ((capacity(context.snapshot, context.registry, context.actor.id, "manipulation") ?? 0) < 1) {
-    return { status: "refused", reason_code: "insufficient_manipulation" };
+  const choice = chooseAttack(context);
+  if (choice.kind === "no_capacity") {
+    return { status: "refused", reason_code: insufficientCode(context.verb.attack_modes ?? []) };
+  }
+  if (choice.kind === "no_damage") {
+    return { status: "invalid", reason_code: "invalid_attack_target" };
   }
   return { status: "ok" };
 }
@@ -235,14 +265,24 @@ function detachPart(
 }
 
 function transition(context: TransitionContext): void {
-  const attack = attackTarget(context);
-  if (attack === null) {
+  const structure = attackStructure(context);
+  if (structure === null) {
     throw new TypeError("Attack target changed after validation");
   }
+  const choice = chooseAttack(context);
+  if (choice.kind !== "chosen") {
+    throw new TypeError("Attack mode changed after validation");
+  }
+  const attack: AttackTarget = {
+    entityId: structure.entityId,
+    partName: structure.partName,
+    damage: choice.damage,
+  };
 
   const target = context.snapshot.entities[attack.entityId]!;
   const template = context.registry[target.template]!;
   const before = capacities(context.snapshot, context.registry, target.id);
+  const structuralBefore = structuralCapacities(context.snapshot, context.registry, target.id);
   let damageEvent: string;
   let detachEvent: string | null = null;
 
@@ -314,22 +354,35 @@ function transition(context: TransitionContext): void {
   }
 
   const after = capacities(context.snapshot, context.registry, target.id);
+  const structuralAfter = structuralCapacities(context.snapshot, context.registry, target.id);
   const capabilityEvents = emitCapabilityChanges(context, target.id, before, after, damageEvent);
-  const priorManipulation = before?.manipulation ?? 0;
-  const nextManipulation = after?.manipulation ?? 0;
-  if (priorManipulation > 0 && nextManipulation === 0) {
-    const causeId = capabilityEvents.get("manipulation") ?? detachEvent ?? damageEvent;
-    const carried = Object.keys(context.snapshot.entities)
-      .sort()
-      .filter((id) => context.snapshot.entities[id]?.contained_in === target.id);
-    for (const itemId of carried) {
-      dropCarriedItem(context, target.id, itemId, causeId);
+  // Whatever structurally lost the capacity that held a thing lets it fall; a stunned carrier can
+  // hold on until the modifier expires. The cause is the event that took the capacity away.
+  const victim = context.snapshot.entities[target.id]!;
+  for (const itemId of Object.keys(context.snapshot.entities).sort()) {
+    const item = context.snapshot.entities[itemId];
+    if (item === undefined || item.contained_in !== target.id) {
+      continue;
     }
+    const lost = lostCarry(
+      structuralBefore,
+      structuralAfter,
+      victim.props,
+      item,
+      context.registry,
+      context.verb.carry_alternatives ?? [],
+    );
+    if (lost === null) {
+      continue;
+    }
+    dropCarriedItem(context, target.id, itemId, capabilityEvents.get(lost) ?? detachEvent ?? damageEvent);
   }
 }
 
 export const attackVerb: Verb = {
   requires_target: true,
+  carry_alternatives: carryAlternatives,
+  attack_modes: attackModes,
   preconditions,
   transition,
 };

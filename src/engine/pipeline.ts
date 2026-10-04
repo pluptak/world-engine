@@ -75,7 +75,7 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     return unchangedResult(snapshot, command, "unresolved");
   }
 
-  const commandContext: CommandContext = { snapshot, registry, command, actor, target };
+  const commandContext: CommandContext = { snapshot, registry, command, actor, target, verb };
   const precondition = verb.preconditions(commandContext);
   if (precondition.status !== "ok") {
     return unchangedResult(

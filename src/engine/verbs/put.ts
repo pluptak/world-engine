@@ -1,5 +1,7 @@
+import { capacities } from "../capacity.js";
 import type { Entity } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
+import { insufficientCode, meetsRequirements } from "../carry.js";
 import { addressEntity, addressText, closedEnclosure, wouldLoop, withinReach } from "./address.js";
 
 type Relation = "on" | "in";
@@ -106,6 +108,16 @@ function preconditions(context: CommandContext): PreconditionResult {
   if (item.contained_in !== context.actor.id) {
     return { status: "refused", reason_code: "not_carried" };
   }
+  // Placing into a container needs hands; setting onto a surface does not, and the verb's
+  // declaration names the capacity the `in` relation spends.
+  if (relation === "in") {
+    const required = context.verb.requires ?? [];
+    if (
+      !meetsRequirements(capacities(context.snapshot, context.registry, context.actor.id), required)
+    ) {
+      return { status: "refused", reason_code: insufficientCode(required) };
+    }
+  }
 
   const address = addressEntity(context, destinationText, "not_a_surface");
   if (address.status === "failed") {
@@ -138,6 +150,7 @@ function transition(context: TransitionContext): void {
 
 export const putVerb: Verb = {
   requires_target: true,
+  requires: [{ capacity: "manipulation", at_least: 50 }],
   preconditions,
   transition,
 };

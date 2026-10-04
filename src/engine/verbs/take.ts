@@ -1,6 +1,7 @@
-import { capacity } from "../capacity.js";
+import { capacities } from "../capacity.js";
 import { effectivePos } from "../geometry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
+import { carryAlternatives, carryCheck, heldCount } from "../carry.js";
 import { closedEnclosure, isAgent } from "./address.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
@@ -30,12 +31,16 @@ function preconditions(context: CommandContext): PreconditionResult {
     return { status: "refused", reason_code: "out_of_reach" };
   }
 
-  const requiredManipulation = entity.props.hands_required === 2 ? 100 : 50;
-  if (
-    (capacity(context.snapshot, context.registry, context.actor.id, "manipulation") ?? 0) <
-    requiredManipulation
-  ) {
-    return { status: "refused", reason_code: "insufficient_manipulation" };
+  const carry = carryCheck(
+    capacities(context.snapshot, context.registry, context.actor.id),
+    context.actor.props,
+    entity,
+    context.registry,
+    heldCount(context.snapshot, context.actor.id),
+    context.verb.carry_alternatives ?? [],
+  );
+  if (!carry.ok) {
+    return { status: "refused", reason_code: carry.reason_code };
   }
   if (entity.contained_in !== null && entity.contained_in !== context.actor.id) {
     const holder = context.snapshot.entities[entity.contained_in];
@@ -69,6 +74,7 @@ function transition(context: TransitionContext): void {
 
 export const takeVerb: Verb = {
   requires_target: true,
+  carry_alternatives: carryAlternatives,
   preconditions,
   transition,
 };

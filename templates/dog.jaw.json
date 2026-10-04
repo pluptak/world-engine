@@ -1,0 +1,9 @@
+{
+  "id": "dog.jaw",
+  "size_cm": { "w": 15, "d": 10, "h": 8 },
+  "mass_g": 400,
+  "parts": [],
+  "props": {},
+  "break_products": [],
+  "break_residue": {}
+}

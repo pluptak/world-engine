@@ -1,5 +1,7 @@
+import { capacities } from "../capacity.js";
 import type { Entity, Id } from "../../model.js";
-import type { CommandContext, PreconditionResult, TargetAddress, TransitionContext, Verb } from "../command.js";
+import type { CapacityRequirement, CommandContext, PreconditionResult, TargetAddress, TransitionContext, Verb } from "../command.js";
+import { insufficientCode, meetsRequirements } from "../carry.js";
 import { withinReach } from "./address.js";
 
 type Kind = "open" | "close" | "lock" | "unlock";
@@ -16,6 +18,14 @@ const changes: Record<Kind, Change> = {
   close: { prop: "open", value: false, event: "closed", needsKey: false },
   lock: { prop: "locked", value: true, event: "locked", needsKey: true },
   unlock: { prop: "locked", value: false, event: "unlocked", needsKey: true },
+};
+
+// Turning a key needs hands; nosing a door open or shut does not.
+const requirements: Record<Kind, readonly CapacityRequirement[] | undefined> = {
+  open: undefined,
+  close: undefined,
+  lock: [{ capacity: "manipulation", at_least: 50 }],
+  unlock: [{ capacity: "manipulation", at_least: 50 }],
 };
 
 type Target =
@@ -75,6 +85,12 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
   if (changes[kind].needsKey && !carriedKeyFor(context, entity.id)) {
     return { status: "refused", reason_code: "no_key" };
   }
+  const required = context.verb.requires ?? [];
+  if (
+    !meetsRequirements(capacities(context.snapshot, context.registry, context.actor.id), required)
+  ) {
+    return { status: "refused", reason_code: insufficientCode(required) };
+  }
 
   return { status: "ok" };
 }
@@ -94,6 +110,7 @@ function transition(context: TransitionContext, kind: Kind): void {
 function makeVerb(kind: Kind): Verb {
   return {
     requires_target: true,
+    ...(requirements[kind] !== undefined && { requires: requirements[kind] }),
     preconditions: (context) => preconditions(context, kind),
     transition: (context) => transition(context, kind),
   };

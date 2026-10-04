@@ -43,15 +43,29 @@ suffixes (NodeNext).
   `verbs/index.ts`. A transition mutates state only through its `TransitionContext`: `set` (records a
   delta, skips no-ops), `emit` (allocates `ev<next_seq>` and chains `cause_id`), `recordDelta`, and
   a `snapshot` getter and setter that verbs use to splice in `spawn()` results.
+- Capacity needs are declared on the verb, never hard-coded, and every check reads its own verb's
+  declaration through `context.verb`. `carry_alternatives` (`src/engine/carry.ts`: `manipulation`
+  scaled by the item's `hands_required`, or `mouth_carry` within the carrier's `carry_limit_g` —
+  one item at a time, never two-handed) gate `take` and `give` and drive attack's drop-on-loss rule;
+  `carryCheck` refuses with the failure that came furthest through its conditions:
+  `insufficient_<capacity>`, `two_hands_required`, `too_heavy`, `mouth_full`. `attack_modes` in
+  `verbs/attack.ts` pick the strike (a fist reads `attack_damage`, a bite `bite_damage`).
+  `requires` gates `lock`, `unlock`, and `put` into a container on `manipulation`; `open`,
+  `close`, `drop`, and `put` onto a surface stay free. An attack that structurally removes the
+  capacity a victim held with drops what it held — structural sums, not modifier dips: a stunned
+  carrier holds on.
 - `src/resolvers/physical.ts`: consequences that run after the verb, such as support loss,
   displacement, falls, breaking into `break_products`, and residue transfer. Verbs call into it.
 - `src/engine/query.ts`: `fact` and `perceive` queries. They answer `"true"`, `"false"` or
   `"unknown"` with a `basis_code`, from the snapshot, the templates, coverage and the replayed event
-  list.
-- `src/engine/capacity.ts`, `geometry.ts` (derived position and elevation along support/containment
-  chains), `spawn.ts` (ids from `next_seq`), `residue.ts`, `canonical.ts`, `validate.ts` (snapshot
-  invariants: no loops, `pos`/`location` match the chain, no dangling references (`detached_from` is
-  history, not a link), detached parts accounted for, integrity range, ids below `next_seq`).
+  list. Senses are `sight`, `hearing`, and `smell`; smell mirrors hearing and only answers where the
+  snapshot's coverage declares it, so a world without it stays `"unknown"`.
+- `src/engine/capacity.ts` (`capacity` adds part contributions and unexpired modifiers;
+  `structuralCapacity`/`structuralCapacities` skip modifiers), `geometry.ts` (derived position and
+  elevation along support/containment chains), `spawn.ts` (ids from `next_seq`), `residue.ts`,
+  `canonical.ts`, `carry.ts`, `validate.ts` (snapshot invariants: no loops, `pos`/`location` match
+  the chain, no dangling references (`detached_from` is history, not a link), detached parts
+  accounted for, integrity range, ids below `next_seq`).
 - `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json` and
   `log.jsonl`. `submit` logs every command (including refused and invalid ones) before it atomically
   writes the snapshot. `resolveSubmission` runs `validateSnapshot` on every accepted result and
@@ -80,6 +94,9 @@ suffixes (NodeNext).
 `templates_hash`. Editing any template therefore makes existing worlds fail with `templates_changed`.
 A detachable part needs a companion template named `<template>.<part>.json` (for example
 `human.hand_l.json`). Detaching spawns that template, and `attack.ts` throws if it is missing.
+`dog`, `cat`, and `horse` are agents with `moving`, `sight`, `hearing`, `smell` and a detachable
+`jaw` that provides `mouth_carry`; default coverage stays `sight`+`hearing`, so smell answers only
+where a snapshot's coverage declares it.
 
 ## Tests
 

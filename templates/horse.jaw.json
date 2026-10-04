@@ -1,0 +1,9 @@
+{
+  "id": "horse.jaw",
+  "size_cm": { "w": 40, "d": 20, "h": 25 },
+  "mass_g": 3000,
+  "parts": [],
+  "props": {},
+  "break_products": [],
+  "break_residue": {}
+}

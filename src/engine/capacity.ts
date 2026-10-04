@@ -48,7 +48,8 @@ function ancestorsAvailable(
   return true;
 }
 
-export function capacity(
+// The part-contribution sum, before modifiers: what the body structurally still has.
+export function structuralCapacity(
   snapshot: Snapshot,
   registry: TemplateRegistry,
   entityId: Id,
@@ -75,6 +76,22 @@ export function capacity(
     total += part.contributes[name] ?? 0;
   }
 
+  return Math.max(0, Math.min(100, total));
+}
+
+export function capacity(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  entityId: Id,
+  name: string,
+): number | null {
+  const structural = structuralCapacity(snapshot, registry, entityId, name);
+  if (structural === null) {
+    return null;
+  }
+  const { entity } = entityAndTemplate(snapshot, registry, entityId);
+
+  let total = structural;
   for (const modifier of entity.modifiers) {
     if (
       modifier.capacity === name &&
@@ -92,6 +109,29 @@ export function capacities(
   registry: TemplateRegistry,
   entityId: Id,
 ): Record<string, number> | null {
+  return capacityRecord(capacity, snapshot, registry, entityId);
+}
+
+// The structural sums alone: a stunned carrier can hold on, a structurally broken one cannot.
+export function structuralCapacities(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  entityId: Id,
+): Record<string, number> | null {
+  return capacityRecord(structuralCapacity, snapshot, registry, entityId);
+}
+
+function capacityRecord(
+  perCapacity: (
+    snapshot: Snapshot,
+    registry: TemplateRegistry,
+    entityId: Id,
+    name: string,
+  ) => number | null,
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  entityId: Id,
+): Record<string, number> | null {
   const { template } = entityAndTemplate(snapshot, registry, entityId);
   if (template.parts.length === 0) {
     return null;
@@ -101,6 +141,6 @@ export function capacities(
     ...new Set(template.parts.flatMap((part) => Object.keys(part.contributes))),
   ].sort();
   return Object.fromEntries(
-    names.map((name) => [name, capacity(snapshot, registry, entityId, name) ?? 0]),
+    names.map((name) => [name, perCapacity(snapshot, registry, entityId, name) ?? 0]),
   );
 }

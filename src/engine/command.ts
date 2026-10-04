@@ -70,6 +70,7 @@ export interface CommandContext {
   command: Command;
   actor: Entity;
   target: TargetAddress | null;
+  verb: Verb;
 }
 
 export interface TransitionContext extends CommandContext {
@@ -86,8 +87,39 @@ export type PreconditionResult =
   | { status: "ambiguous"; candidates: Id[] }
   | { status: "invalid"; reason_code: string };
 
+// One way a body can hold a thing, tried in declaration order. `per_hand` scales with the item's
+// `hands_required` (one hand needs per_hand, two need twice that); the flat form takes `at_least`
+// of the capacity. `max_hands` refuses items needing more hands than the body part offers,
+// `mass_limit_prop` names the carrier prop that caps the item's mass, and `holds` caps how many
+// things the body part holds at once.
+export interface CarryAlternative {
+  capacity: string;
+  per_hand?: number;
+  at_least?: number;
+  max_hands?: number;
+  mass_limit_prop?: string;
+  holds?: number;
+}
+
+// An unconditional capacity floor for acting at all, read from the verb's own declaration.
+export interface CapacityRequirement {
+  capacity: string;
+  at_least: number;
+}
+
+// One way a body can strike: it needs at_least of the capacity, and the damage comes from the
+// attacker's prop the mode names.
+export interface AttackMode {
+  capacity: string;
+  at_least: number;
+  damage_prop: string;
+}
+
 export interface Verb {
   requires_target: boolean;
+  requires?: readonly CapacityRequirement[];
+  carry_alternatives?: readonly CarryAlternative[];
+  attack_modes?: readonly AttackMode[];
   preconditions(context: CommandContext): PreconditionResult;
   transition(context: TransitionContext): void;
   validateResult?: (context: CommandContext) => PreconditionResult;
