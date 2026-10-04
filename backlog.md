@@ -38,16 +38,6 @@ Owns `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception part of
 - **Done when:** a file under a book is not seen; after `search book` it is; lifting the book reveals
   it to everyone in the room.
 
-## Lane C. Materials
-
-Owns a new `src/engine/verbs/pour.ts`; may call `src/engine/residue.ts` and
-`src/resolvers/physical.ts` without changing their behaviour.
-
-### C1. `pour` and liquid transfer
-- **Scope:** liquid contents (`props.liquid_material/amount`) move into a container or become
-  residue on a surface; partial amounts; emits `poured`.
-- **Done when:** pour half a bottle into a cup → both amounts correct; onto the floor → residue.
-
 ## Lane D. Authoring space
 
 Owns `src/scenario.ts`, the `place` path of `src/engine/verbs/edit.ts`, the `fact` part of

@@ -181,6 +181,45 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
       destination: context.agents.length > 0 ? pick(context.rand, context.agents) : "e999",
     },
   }),
+  // A plausible source: what the actor holds, preferring a vessel that has liquid, so a pour
+  // reaches the transition instead of stopping at not_carried. Ids are sorted, so the choice does
+  // not depend on key order.
+  pour: (context) => {
+    const held = context.ids.filter(
+      (id) => context.snapshot.entities[id]?.contained_in === context.actor,
+    );
+    const withLiquid = held.filter((id) => {
+      const entity = context.snapshot.entities[id];
+      return (
+        typeof entity?.props.liquid_material === "string" &&
+        entity.props.liquid_material.length > 0 &&
+        typeof entity.props.liquid_amount === "number" &&
+        entity.props.liquid_amount > 0
+      );
+    });
+    const sources = withLiquid.length > 0 ? withLiquid : held;
+    const receivers = context.ids.filter((id) => {
+      const entity = context.snapshot.entities[id];
+      return (
+        entity !== undefined &&
+        (entity.props.container === true ||
+          entity.props.surface === true ||
+          entity.template === "room")
+      );
+    });
+
+    return {
+      command_id: context.commandId,
+      actor: context.actor,
+      verb: "pour",
+      target: sources.length > 0 ? pick(context.rand, sources) : context.target,
+      args: {
+        destination:
+          receivers.length > 0 ? pick(context.rand, receivers) : context.ids[0] ?? "e999",
+        ...(context.rand() < 0.5 && { amount: int(context.rand, 1, 100) }),
+      },
+    };
+  },
   open: (context) => openable(context, "open"),
   close: (context) => openable(context, "close"),
   lock: (context) => openable(context, "lock"),
@@ -391,6 +430,7 @@ const SLOTS: readonly { below: number; verbs: readonly string[] }[] = [
   { below: 0.63, verbs: ["give"] },
   { below: 0.69, verbs: ["attack"] },
   { below: 0.75, verbs: ["open", "close", "lock", "unlock"] },
+  { below: 0.81, verbs: ["pour"] },
   { below: 1, verbs: ["edit"] },
 ];
 

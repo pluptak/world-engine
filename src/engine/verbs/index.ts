@@ -8,6 +8,7 @@ import { takeVerb } from "./take.js";
 import { attackVerb } from "./attack.js";
 import { giveVerb } from "./give.js";
 import { putVerb } from "./put.js";
+import { pourVerb } from "./pour.js";
 import { waitVerb } from "./wait.js";
 
 export const verbRegistry: VerbRegistry = new Map([
@@ -16,6 +17,7 @@ export const verbRegistry: VerbRegistry = new Map([
   ["drop", dropVerb],
   ["put", putVerb],
   ["give", giveVerb],
+  ["pour", pourVerb],
   ["open", openVerb],
   ["close", closeVerb],
   ["lock", lockVerb],

@@ -21,6 +21,8 @@ part. A surface declares `surface`, sized by its footprint; a container declares
   sets `support` or `contained_in`, never a position, which comes through the chain. Fit compares
   the longest dimensions, ignoring a container's contents; `in` needs `manipulation`, `on` does not.
 - `give`: hands a carried thing to `args.destination`, another agent in reach, under `take`'s rules.
+- `pour`: moves `args.amount` (all of it by default) of a carried liquid into a container's
+  `liquid_*` props or onto residue; the model is in [liquids.md](liquids.md).
 - `push`: shifts a target by `args.distance_cm` along `args.dir`, then support loss runs; it needs
   `moving`, and refuses what it cannot reach or lift.
 - `pull`: the same shift in the opposite direction.

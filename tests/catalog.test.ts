@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import type { VerbRegistry } from "../src/engine/command.js";
-import { verbCatalog } from "../src/engine/verbs/index.js";
+import { verbCatalog, verbRegistry } from "../src/engine/verbs/index.js";
 import { VerbsResponseSchema } from "../src/contract.js";
 import { createWorld, type Scenario } from "../src/index.js";
 import { VERB_TABLE } from "./property-gen.js";
@@ -16,9 +16,9 @@ const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
 
 test("every verb describes itself and the catalog is sorted", () => {
   const catalog = verbCatalog();
-  strictEqual(catalog.length, 14);
+  ok(catalog.length > 0, "the catalog lists no verb");
   const names = catalog.map((entry) => entry.verb);
-  deepStrictEqual(names, [...names].sort());
+  deepStrictEqual(names, [...verbRegistry.keys()].sort());
   for (const entry of catalog) {
     ok(entry.args !== undefined, `${entry.verb} has no args shape`);
     ok(entry.refuses !== undefined, `${entry.verb} has no refusal codes`);
@@ -86,7 +86,13 @@ test("the CLI answers the verb catalog", () => {
   });
   strictEqual(cli.status, 0, cli.stderr);
   const parsed = VerbsResponseSchema.parse(JSON.parse(cli.stdout));
-  strictEqual(parsed.verbs.length, 14);
+  // The CLI reads the same registry through a Zod boundary, so its answer must be the catalog.
+  const catalog = verbCatalog();
+  strictEqual(parsed.verbs.length, catalog.length);
+  deepStrictEqual(
+    parsed.verbs.map((entry) => entry.verb),
+    catalog.map((entry) => entry.verb),
+  );
   ok(parsed.verbs.find((entry) => entry.verb === "give")?.refuses.includes("not_an_actor"));
 });
 

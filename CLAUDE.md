@@ -140,7 +140,8 @@ refusal code also touches the shared registration points, one line or one entry 
   the chain), so no `extends` key survives into the hash, a frozen `templates.json`, the companion
   rule or `lostField`. `templates/wine_bottle.json` is the worked example.
 - **Materials:** `src/engine/residue.ts` and `src/resolvers/physical.ts`, whose behaviour the rest
-  of the engine relies on; a material's own verb lives in `src/engine/verbs/`.
+  of the engine relies on; a material's own verb lives in `src/engine/verbs/` — `pour` moves
+  `liquid_material`/`liquid_amount` between props and residue, and `docs/liquids.md` has that model.
 - **Authoring space:** `src/scenario.ts`, the `place` path of `src/engine/verbs/edit.ts`, the `fact`
   half of `src/engine/query.ts`, `docs/api.md`.
 
