@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { apply } from "../engine/pipeline.js";
@@ -16,16 +16,25 @@ interface LogEntry {
   status: Status;
 }
 
+interface Head {
+  log_bytes: number;
+  events_bytes: number;
+  log_entries: number;
+  ok_entries: number;
+}
+
 const snapshots = {
   current: "snapshot.json",
   initial: "initial.json",
   log: "log.jsonl",
+  events: "events.jsonl",
+  head: "head.json",
 };
 
 const templatesDirectory = fileURLToPath(new URL("../../templates/", import.meta.url));
 
 function assertWorldExists(dir: string): void {
-  const missing = [snapshots.current, snapshots.initial, snapshots.log].filter(
+  const missing = [snapshots.current, snapshots.initial, snapshots.log, snapshots.events].filter(
     (name) => !existsSync(join(dir, name)),
   );
   if (missing.length > 0) {
@@ -39,6 +48,32 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function activeRegistry(registry?: TemplateRegistry): TemplateRegistry {
   return registry ?? loadTemplates(templatesDirectory);
+}
+
+function readHead(dir: string): Head | null {
+  const headPath = join(dir, snapshots.head);
+  if (!existsSync(headPath)) {
+    return null;
+  }
+  try {
+    const value: unknown = JSON.parse(readFileSync(headPath, "utf8"));
+    if (
+      !isRecord(value) ||
+      typeof value.log_bytes !== "number" ||
+      typeof value.events_bytes !== "number" ||
+      typeof value.log_entries !== "number" ||
+      typeof value.ok_entries !== "number"
+    ) {
+      return null;
+    }
+    return value as unknown as Head;
+  } catch {
+    return null;
+  }
+}
+
+function writeHead(dir: string, head: Head): void {
+  atomicWrite(join(dir, snapshots.head), canonicalJson(head));
 }
 
 function readSnapshot(path: string): Snapshot {
@@ -159,6 +194,8 @@ export function create(
   atomicWrite(join(dir, snapshots.initial), canonicalJson(initialSnapshot));
   atomicWrite(join(dir, snapshots.current), canonicalJson(initialSnapshot));
   writeFileSync(join(dir, snapshots.log), "", "utf8");
+  writeFileSync(join(dir, snapshots.events), "", "utf8");
+  writeHead(dir, { log_bytes: 0, events_bytes: 0, log_entries: 0, ok_entries: 0 });
 }
 
 export function load(dir: string, registry?: TemplateRegistry): Snapshot {
@@ -169,13 +206,52 @@ export function load(dir: string, registry?: TemplateRegistry): Snapshot {
   assertTemplates(snapshot, templates);
   assertTemplates(initial, templates);
 
-  const expectedVersion =
-    initial.version + readLogEntries(dir).filter((entry) => entry.status === "ok").length;
+  const head = readHead(dir);
+  const logPath = join(dir, snapshots.log);
+  const eventsPath = join(dir, snapshots.events);
+
+  if (head !== null) {
+    try {
+      const logStat = statSync(logPath);
+      const eventsStat = statSync(eventsPath);
+      if (logStat.size === head.log_bytes && eventsStat.size === head.events_bytes) {
+        const expectedVersion = initial.version + head.ok_entries;
+        if (snapshot.version === expectedVersion) {
+          return snapshot;
+        }
+      }
+    } catch {
+      // Fall through to full check
+    }
+  }
+
+  // A crash between the log, event, and snapshot appends leaves them disagreeing; the log is
+  // the source of truth, so replay rebuilds both files, events first, and any later open finds
+  // them consistent again.
+  const entries = readLogEntries(dir);
+  const okEntries = entries.filter((entry) => entry.status === "ok");
+  const expectedVersion = initial.version + okEntries.length;
   if (snapshot.version !== expectedVersion) {
-    const recovered = replay(dir, templates);
+    const { snapshot: recovered, events } = replayWithEvents(dir, templates);
+    atomicWrite(
+      join(dir, snapshots.events),
+      events.map((event) => `${canonicalJson(event)}\n`).join(""),
+    );
     atomicWrite(join(dir, snapshots.current), canonicalJson(recovered));
+    writeHead(dir, {
+      log_bytes: statSync(logPath).size,
+      events_bytes: statSync(eventsPath).size,
+      log_entries: entries.length,
+      ok_entries: okEntries.length,
+    });
     return recovered;
   }
+  writeHead(dir, {
+    log_bytes: statSync(logPath).size,
+    events_bytes: statSync(eventsPath).size,
+    log_entries: entries.length,
+    ok_entries: okEntries.length,
+  });
   return snapshot;
 }
 
@@ -183,7 +259,18 @@ export function load(dir: string, registry?: TemplateRegistry): Snapshot {
 // unique per world state and safe to build a default id from.
 export function entryCount(dir: string): number {
   assertWorldExists(dir);
-  return readFileSync(join(dir, snapshots.log), "utf8")
+  const head = readHead(dir);
+  const logPath = join(dir, snapshots.log);
+  if (head !== null) {
+    try {
+      if (statSync(logPath).size === head.log_bytes) {
+        return head.log_entries;
+      }
+    } catch {
+      // Fall through to line counting
+    }
+  }
+  return readFileSync(logPath, "utf8")
     .split(/\r?\n/)
     .filter((line) => line.length > 0).length;
 }
@@ -250,12 +337,64 @@ export function submit(
     based_on_version: basedOn,
     status: result.status,
   };
-  appendFileSync(join(dir, snapshots.log), `${canonicalJson(entry)}\n`, "utf8");
+  const logPath = join(dir, snapshots.log);
+  const eventsPath = join(dir, snapshots.events);
+
+  appendFileSync(logPath, `${canonicalJson(entry)}\n`, "utf8");
+  for (const event of result.events) {
+    appendFileSync(eventsPath, `${canonicalJson(event)}\n`, "utf8");
+  }
 
   if (result.status === "ok") {
     atomicWrite(join(dir, snapshots.current), canonicalJson(result.snapshot));
   }
+
+  const logStat = statSync(logPath);
+  const eventsStat = statSync(eventsPath);
+  const head = readHead(dir);
+  const logEntries = head !== null ? head.log_entries + 1 : 1;
+  const okEntries =
+    head !== null ? (result.status === "ok" ? head.ok_entries + 1 : head.ok_entries) : result.status === "ok" ? 1 : 0;
+  writeHead(dir, {
+    log_bytes: logStat.size,
+    events_bytes: eventsStat.size,
+    log_entries: logEntries,
+    ok_entries: okEntries,
+  });
+
   return result;
+}
+
+// The stored event list in file order: what submit() appended, one canonical line per event.
+export function readEvents(dir: string, registry?: TemplateRegistry): WorldEvent[] {
+  assertWorldExists(dir);
+  activeRegistry(registry);
+  const events: WorldEvent[] = [];
+  for (const [index, line] of readFileSync(join(dir, snapshots.events), "utf8")
+    .split(/\r?\n/)
+    .entries()) {
+    if (line.length === 0) {
+      continue;
+    }
+    events.push(parseEventLine(line, index + 1));
+  }
+  return events;
+}
+
+function parseEventLine(line: string, lineNumber: number): WorldEvent {
+  const value: unknown = JSON.parse(line);
+  if (
+    !isRecord(value) ||
+    typeof value.event_id !== "string" ||
+    (value.cause_id !== null && typeof value.cause_id !== "string") ||
+    typeof value.command_id !== "string" ||
+    typeof value.type !== "string" ||
+    typeof value.entity !== "string" ||
+    !isRecord(value.data)
+  ) {
+    throw new TypeError(`Invalid event entry at line ${lineNumber}`);
+  }
+  return value as unknown as WorldEvent;
 }
 
 export function replayWithEvents(

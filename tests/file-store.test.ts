@@ -1,5 +1,5 @@
 import { deepStrictEqual, equal, ok, strictEqual, throws } from "node:assert";
-import { appendFileSync, cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { canonicalJson } from "../src/engine/canonical.js";
 import { apply } from "../src/engine/pipeline.js";
 import { spawn } from "../src/engine/spawn.js";
-import { create, load, replay, submit } from "../src/store/file-store.js";
+import { create, entryCount, load, replay, submit } from "../src/store/file-store.js";
 import type { Snapshot } from "../src/model.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
 
@@ -317,4 +317,279 @@ test("load rejects a world after its template data changes", (t) => {
   const changedRegistry = loadTemplates(copiedTemplates);
 
   throws(() => load(worldDir, changedRegistry), /Template hash mismatch/);
+});
+
+test("head.json is created and matches after create", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+
+  const headPath = join(dir, "head.json");
+  ok(existsSync(headPath));
+  const head = JSON.parse(readFileSync(headPath, "utf8")) as {
+    log_bytes: number;
+    events_bytes: number;
+    log_entries: number;
+  };
+  strictEqual(head.log_bytes, 0);
+  strictEqual(head.events_bytes, 0);
+  strictEqual(head.log_entries, 0);
+});
+
+test("head.json is updated after submit", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+
+  submit(dir, {
+    command_id: "move-1",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 5, y: 0 } },
+  });
+
+  const headPath = join(dir, "head.json");
+  const head = JSON.parse(readFileSync(headPath, "utf8")) as {
+    log_bytes: number;
+    events_bytes: number;
+    log_entries: number;
+  };
+  strictEqual(head.log_entries, 1);
+  ok(head.log_bytes > 0);
+  ok(head.events_bytes > 0);
+});
+
+test("head.json matches after multiple ok and refused submits", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+
+  const ok1 = submit(dir, {
+    command_id: "move-1",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 5, y: 0 } },
+  });
+  strictEqual(ok1.status, "ok");
+
+  const refused = submit(dir, {
+    command_id: "impossible",
+    actor: scenario.actorId,
+    verb: "fly",
+  });
+  strictEqual(refused.status, "invalid");
+
+  const ok2 = submit(dir, {
+    command_id: "move-2",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 10, y: 0 } },
+  });
+  strictEqual(ok2.status, "ok");
+
+  const headPath = join(dir, "head.json");
+  const head = JSON.parse(readFileSync(headPath, "utf8")) as {
+    log_bytes: number;
+    events_bytes: number;
+    log_entries: number;
+  };
+  strictEqual(head.log_entries, 3);
+});
+
+test("load skips log read when head.json matches", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+
+  submit(dir, {
+    command_id: "move-1",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 5, y: 0 } },
+  });
+
+  const loaded = load(dir);
+  strictEqual(loaded.version, 1);
+});
+
+test("missing head.json: load recovers correctly and rewrites it", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+
+  submit(dir, {
+    command_id: "move-1",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 5, y: 0 } },
+  });
+
+  const headPath = join(dir, "head.json");
+  rmSync(headPath);
+  ok(!existsSync(headPath));
+
+  const loaded = load(dir);
+  strictEqual(loaded.version, 1);
+  ok(existsSync(headPath));
+
+  const head = JSON.parse(readFileSync(headPath, "utf8")) as {
+    log_bytes: number;
+    events_bytes: number;
+    log_entries: number;
+  };
+  strictEqual(head.log_entries, 1);
+});
+
+test("stale head.json: load recovers correctly and rewrites it", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+
+  submit(dir, {
+    command_id: "move-1",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 5, y: 0 } },
+  });
+
+  const command = {
+    command_id: "move-before-crash",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 10, y: 0 } },
+  };
+  const expected = apply(scenario.snapshot, registry, command);
+  strictEqual(expected.status, "ok");
+
+  appendFileSync(
+    join(dir, "log.jsonl"),
+    `${canonicalJson({
+      command,
+      based_on_version: 1,
+      status: "ok",
+    })}\n`,
+    "utf8",
+  );
+
+  const recovered = load(dir);
+  strictEqual(recovered.version, 2);
+
+  const headPath = join(dir, "head.json");
+  const head = JSON.parse(readFileSync(headPath, "utf8")) as {
+    log_bytes: number;
+    events_bytes: number;
+    log_entries: number;
+  };
+  strictEqual(head.log_entries, 2);
+});
+
+test("entryCount uses head.json when available", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+
+  submit(dir, {
+    command_id: "move-1",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 5, y: 0 } },
+  });
+
+  strictEqual(entryCount(dir), 1);
+
+  submit(dir, {
+    command_id: "move-2",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 10, y: 0 } },
+  });
+
+  strictEqual(entryCount(dir), 2);
+});
+
+test("head.json records both log_entries and ok_entries after mixed submissions", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+
+  const ok1 = submit(dir, {
+    command_id: "move-1",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 5, y: 0 } },
+  });
+  strictEqual(ok1.status, "ok");
+
+  const refused = submit(dir, {
+    command_id: "impossible",
+    actor: scenario.actorId,
+    verb: "fly",
+  });
+  strictEqual(refused.status, "invalid");
+
+  const ok2 = submit(dir, {
+    command_id: "move-2",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 10, y: 0 } },
+  });
+  strictEqual(ok2.status, "ok");
+
+  const headPath = join(dir, "head.json");
+  const head = JSON.parse(readFileSync(headPath, "utf8")) as {
+    log_bytes: number;
+    events_bytes: number;
+    log_entries: number;
+    ok_entries: number;
+  };
+  strictEqual(head.log_entries, 3);
+  strictEqual(head.ok_entries, 2);
+});
+
+test("fast path is taken after refused commands (corrupted log line same size)", (t) => {
+  const dir = temporaryDirectory(t);
+  const scenario = bottleWorld();
+  create(dir, scenario.snapshot);
+
+  submit(dir, {
+    command_id: "refused-1",
+    actor: scenario.actorId,
+    verb: "fly",
+  });
+
+  const ok1 = submit(dir, {
+    command_id: "move-1",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 5, y: 0 } },
+  });
+  strictEqual(ok1.status, "ok");
+
+  const ok2 = submit(dir, {
+    command_id: "move-2",
+    actor: scenario.actorId,
+    verb: "move",
+    args: { to: { x: 10, y: 0 } },
+  });
+  strictEqual(ok2.status, "ok");
+
+  const logPath = join(dir, "log.jsonl");
+  const logContent = readFileSync(logPath, "utf8");
+  const lines = logContent.split("\n").filter((line) => line.length > 0);
+
+  const firstLine = lines[0]!;
+  let corrupted: string;
+  if (firstLine.includes('"invalid"')) {
+    corrupted = firstLine.replace('"invalid"', '"refusef"');
+  } else {
+    throw new Error("Unexpected log line format");
+  }
+  strictEqual(firstLine.length, corrupted.length);
+  ok(firstLine !== corrupted);
+
+  const newContent = corrupted + "\n" + lines.slice(1).join("\n") + "\n";
+  writeFileSync(logPath, newContent, "utf8");
+
+  const loaded = load(dir);
+  strictEqual(loaded.version, 2);
 });

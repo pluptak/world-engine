@@ -52,29 +52,29 @@ surface.
 agrees with `command` without writing or logging; `since` gives the deltas and events of every ok
 command after a version; `beat` runs commands in array order against one shared base, one log line
 each, each with its status. Refusals carry optional `reason_data` (reach, fit, enclosure, capacity
-numbers, never prose). `trace` follows `cause_id` root-first from an event, or from the last
-delta of an entity field, else its spawn; an initial entity's field has an empty chain, and a
-memory world answers `history_unavailable` for what predates it. Edits (`spawn`, `remove`, `place`,
-`set_props`, `set_part`) are logged under the author `world`, refused when they break an invariant;
-a removed holder passes what it held into its own relation. Store worlds share a directory, memory
-worlds hold their own; a missing directory, changed hash, or bad version is a `WorldError`.
+numbers, never prose). `trace` follows `cause_id` root-first from an event, or from the last delta
+of an entity field, else its spawn; an initial entity's field has an empty chain, and a memory world
+answers `history_unavailable` for what predates it. Edits (`spawn`, `remove`, `place`, `set_props`,
+`set_part`) are logged under the author `world`, refused when they break an invariant; a removed
+holder passes what it held into its own relation. Store worlds share a directory, memory worlds
+hold their own; a missing directory, changed hash, or bad version is a `WorldError`.
 
 ## Commands and persistence
 
 The CLI is a JSON adapter over `World`: one request on stdin, one method, one response. Zod
 validates that boundary, a failure becomes `{status:"invalid", issues}`; `init` takes spawn specs.
 
-Each world stores `initial.json`, canonical `snapshot.json`, and a JSONL command log holding every
-command. The store appends before atomically replacing the snapshot; an accepted command whose
-result breaks a snapshot invariant is logged as `invalid` and never written. Replay folds accepted
-commands over the initial snapshot; a template-hash mismatch is an error, stale ones re-evaluated.
+Each world stores `initial.json`, canonical `snapshot.json`, a JSONL log of every command, a JSONL
+event store that queries read instead of replaying, and `head.json` with both files' sizes and
+entry counts, written last, so opening a world detects a crash without reading the log. An accepted
+command whose result breaks an invariant is logged `invalid` and never written. Replay folds
+accepted commands over the initial snapshot; a hash mismatch is an error, stale commands are
+re-evaluated. `npm run bench` (10k store commands) holds ~3.5 ms per command from first to last.
 
 ## Queries and coverage
 
-Queries answer facts and perception from the snapshot, templates, events, and coverage. Covered
-relations and properties answer true or false from state; a category absent from coverage answers
-unknown. Perception spans sight, hearing, and smell — the last only where covered — reads
-capacities, lighting, doors, and loud event types; an event-form perceive is perceptible if
-true before or after that command. Sight is `false` (`enclosed`) in a shut container; hearing
-and smell ignore it. A command with `perceivers: true` names who sensed each event, by sense,
-at either end. Coverage describes the engine's answers, never who knows, notices, or remembers.
+Queries answer facts and perception from snapshot, templates, events, and coverage; an uncovered
+category answers unknown. Perception spans sight, hearing, and smell (smell only where covered) via
+capacities, lighting, doors, and loud events; an event-form perceive is true if true at either end
+of its command. Sight alone is `false` (`enclosed`) in a shut container; `perceivers: true` names
+who sensed each event. Coverage describes the engine's answers, never who knows or remembers.

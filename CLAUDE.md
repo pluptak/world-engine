@@ -18,6 +18,7 @@ node --import tsx --test tests/query.test.ts    # one file
 node --import tsx --test --test-name-pattern="<regex>" tests/query.test.ts   # one test
 npm run world -- init data/w1 scenarios/bottle.json                          # create a world
 echo '{"op":"snapshot","world":"data/w1"}' | npm run world --silent          # one JSON request on stdin
+npm run bench                                   # 10k store commands; ms/cmd for the first and last 1k
 ```
 
 There's no lint step and no build output (`noEmit`; everything runs through `tsx`). Imports use `.js`
@@ -68,12 +69,15 @@ suffixes (NodeNext).
   `canonical.ts`, `carry.ts`, `validate.ts` (snapshot invariants: no loops, `pos`/`location` match
   the chain, no dangling references (`detached_from` is history, not a link), detached parts
   accounted for, integrity range, ids below `next_seq`).
-- `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json` and
-  `log.jsonl`. `submit` logs every command (including refused and invalid ones) before it atomically
-  writes the snapshot. `resolveSubmission` runs `validateSnapshot` on every accepted result and
+- `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json`,
+  `log.jsonl`, `events.jsonl` and `head.json`. `submit` appends the log line (every command, including
+  refused and invalid ones) and the command's events, atomically writes the snapshot, and writes
+  `head.json` last: both files' byte sizes, `log_entries` (all lines, used for default edit ids) and
+  `ok_entries`. `resolveSubmission` runs `validateSnapshot` on every accepted result and
   downgrades a breaking one to `invalid` with the rule's code, so a verb bug is logged but never
-  written. `load` replays the log if the snapshot version disagrees with the count of `ok`
-  entries. A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
+  written. `load` trusts the snapshot when the head matches the file sizes and `ok_entries`, without
+  reading the log; otherwise it counts `ok` entries, replays and rewrites the events and head if they
+  disagree. Store queries read `events.jsonl`; `since`, `trace` and event-time perceive replay. A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
   surface as CLI issue codes.
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with

@@ -190,6 +190,14 @@ export function loadTemplates(dir: string): TemplateRegistry {
   return registry;
 }
 
+const hashCache = new WeakMap<TemplateRegistry, string>();
+
 export function templatesHash(registry: TemplateRegistry): string {
-  return createHash("sha256").update(canonicalJson(registry)).digest("hex");
+  const cached = hashCache.get(registry);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const hash = createHash("sha256").update(canonicalJson(registry)).digest("hex");
+  hashCache.set(registry, hash);
+  return hash;
 }

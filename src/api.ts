@@ -17,8 +17,8 @@ import {
   create,
   entryCount,
   load,
+  readEvents,
   replayUntilEvent,
-  replayWithEvents,
   resolveSubmission,
   since as foldSince,
   submit,
@@ -165,7 +165,7 @@ function storeWorld(dir: string, registry: TemplateRegistry): World {
         }
       }
       const snapshot = load(dir, registry);
-      return queryEngine(snapshot, registry, replayWithEvents(dir, registry).events, request);
+      return queryEngine(snapshot, registry, readEvents(dir, registry), request);
     },
     snapshot: () => load(dir, registry),
     entity: (id) => load(dir, registry).entities[id] ?? null,
