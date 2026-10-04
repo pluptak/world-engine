@@ -116,7 +116,8 @@ suffixes (NodeNext).
 `templates/*.json` are loaded and validated by `src/templates.ts`, and all of them are hashed into
 `templates_hash`. Editing any template therefore makes existing worlds fail with `templates_changed`.
 A detachable part needs a companion template named `<template>.<part>.json` (for example
-`human.hand_l.json`). Detaching spawns that template, and `attack.ts` throws if it is missing.
+`human.hand_l.json`). The registry is rejected when loading, in a world's templates.json, or by
+`upgradeTemplates` if a detached part has no companion. Detaching spawns that template.
 `dog`, `cat`, and `horse` are agents with `moving`, `sight`, `hearing`, `smell` and a detachable
 `jaw` that provides `mouth_carry`; default coverage stays `sight`+`hearing`, so smell answers only
 where a snapshot's coverage declares it.

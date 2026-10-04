@@ -3,6 +3,9 @@ import type { SnapshotIssue } from "./engine/validate.js";
 export type WorldErrorCode =
   | "no_such_world"
   | "templates_changed"
+  | "invalid_templates"
+  | "templates_lost_field"
+  | "replay_diverges"
   | "invalid_snapshot"
   | "invalid_version"
   | "future_version"

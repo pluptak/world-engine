@@ -204,16 +204,23 @@ test("an unknown world and a missing directory report through WorldError", (t) =
   }
 });
 
-test("a world whose templates changed will not open", (t) => {
+test("a world whose template set no longer replays its history will not open", (t) => {
   const dir = join(tempDir(t), "changed-world");
-  createWorld(dir, bottleScenario);
+  const world = createWorld(dir, bottleScenario);
+  strictEqual(world.command(pushTable).status, "ok");
 
-  const changed: TemplateRegistry = { ...registry, bottle: { ...registry.bottle!, mass_g: 1 } };
+  const changed: TemplateRegistry = {
+    ...registry,
+    bottle: { ...registry.bottle!, break_residue: { glass: 9 } },
+  };
+  writeFileSync(join(dir, "templates.json"), canonicalJson(changed), "utf8");
   assertThrows(
-    () => openWorld(dir, changed).snapshot(),
+    () => openWorld(dir).snapshot(),
     (error: unknown) => error instanceof WorldError && error.code === "templates_changed",
   );
-  strictEqual(openWorld(dir).snapshot().version, 0);
+
+  writeFileSync(join(dir, "templates.json"), canonicalJson(registry), "utf8");
+  strictEqual(openWorld(dir).snapshot().version, 1);
 
   writeFileSync(join(dir, "log.jsonl"), "", "utf8");
   strictEqual(openWorld(dir).snapshot().version, 0);

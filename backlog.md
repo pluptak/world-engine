@@ -68,13 +68,6 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
   if declared); cycles rejected; the hash covers the resolved templates.
 - **Done when:** `wine_bottle extends bottle` with only a changed `liquid_material` loads and breaks.
 
-### 18. Templates frozen per world
-- **Why:** today editing any template breaks every existing world (`templates_changed`).
-- **Scope:** `createWorld` copies the resolved template set into `<world>/templates.json`;
-  `openWorld` uses it. A global edit affects new worlds only. An explicit `upgradeTemplates`
-  re-hashes and refuses if any live entity's template lost a field it uses.
-- **Done when:** editing `templates/bottle.json` leaves an existing world loadable and unchanged.
-
 ## G. Robustness
 
 ### 20. Seeded property tests, an event store, a benchmark

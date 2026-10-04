@@ -171,6 +171,29 @@ function validateParts(template: Template, source: string): void {
   }
 }
 
+export function missingCompanions(registry: TemplateRegistry): string[] {
+  const missing: string[] = [];
+  for (const template of Object.values(registry)) {
+    for (const part of template.parts) {
+      if (part.detachable) {
+        const companionId = `${template.id}.${part.name}`;
+        if (!Object.hasOwn(registry, companionId)) {
+          missing.push(companionId);
+        }
+      }
+    }
+  }
+  return missing.sort();
+}
+
+function assertMissingCompanions(registry: TemplateRegistry): void {
+  const missing = missingCompanions(registry);
+  if (missing.length > 0) {
+    const [first] = missing;
+    throw new TypeError(`Missing detached part template ${first}`);
+  }
+}
+
 export function loadTemplates(dir: string): TemplateRegistry {
   const files = readdirSync(dir)
     .filter((file) => file.endsWith(".json"))
@@ -187,6 +210,25 @@ export function loadTemplates(dir: string): TemplateRegistry {
     registry[template.id] = template;
   }
 
+  assertMissingCompanions(registry);
+  return registry;
+}
+
+// The same validation for a whole set read as one object rather than a directory of files: a key
+// that disagrees with the id inside it is a rename the caller did not ask for.
+export function parseRegistry(value: unknown, source = "templates.json"): TemplateRegistry {
+  if (!isRecord(value)) {
+    throw new TypeError(`${source} must contain a template object`);
+  }
+  const registry: TemplateRegistry = {};
+  for (const id of Object.keys(value).sort()) {
+    const template = parseTemplate(value[id], `${source}#${id}`);
+    if (template.id !== id) {
+      throw new TypeError(`${source}#${id} declares id ${template.id}`);
+    }
+    registry[id] = template;
+  }
+  assertMissingCompanions(registry);
   return registry;
 }
 

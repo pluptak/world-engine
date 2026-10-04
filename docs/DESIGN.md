@@ -7,23 +7,22 @@ and causal events, and return a status, deltas, and events chained by command an
 results leave the snapshot unchanged; a success bumps its version. The engine is pure: a
 transition takes a snapshot and returns a new one; I/O stays outside.
 
-Verbs are `move`, `take`, `drop`, `put`, `give`, `push`, `pull`, `attack`, `wait`, and `edit`. `put` and `give`
-name a second address in `args.destination`; `put` also takes `args.relation`: `on` or `in`. A
-surface declares `surface`, sized by its footprint; a container declares `container` and
+Verbs are `move`, `take`, `drop`, `put`, `give`, `push`, `pull`, `attack`, `wait`, and `edit`. `put`
+and `give` name a second address in `args.destination`; `put` also takes `args.relation`: `on` or
+`in`. A surface declares `surface`, sized by its footprint; a container declares `container` and
 `inner_*_cm`. `put` emits one `moved` and sets `support` or `contained_in`, never a position, which
 comes through the chain. Fit compares the longest dimensions; a container's contents do not count.
 Carrying is declared: `take` and `give` need `manipulation` scaled by the item's `hands_required`,
 or `mouth_carry` within the carrier's `carry_limit_g` — one item at a time, never a two-handed one.
-`attack` picks the first mode its attacker can use, with damage from its template. `lock`,
-`unlock`, and `put` into a container need `manipulation`; opening, closing, and `put` on do not.
-
+`attack` picks the first mode its attacker can use, with damage from its template. `lock`, `unlock`,
+and `put` into a container need `manipulation`; opening, closing, and `put` on do not.
 `take` lifts a thing out of whatever holds it; only an agent holds, and what it carries moves rooms
 with it. Agency is the template's `agent` property, withheld from detached parts. A shut container
 hides its chain: `take` and `put` refuse `container_closed`; sight inside is `false`.
-
 `open`, `close`, `lock`, and `unlock` change one property of a target that declares `openable` as a
 `props` delta under the matching event. `open` refuses a locked target with `locked`; `lock` and
-`unlock` need a carried entity whose `opens` is the target's id, or refuse `no_key`.
+`unlock` need a carried entity whose `opens` is the target's id, or refuse `no_key`. A world written
+before this item has no `templates.json` and answers `no_such_world`.
 
 ## State model
 
@@ -33,48 +32,49 @@ entities supported by a room and derived through the support or containment chai
 `validateSnapshot` checks that one pure way: no support or containment loop, `pos` exactly when the
 support is a room, `location` the room at the end of the chain, every reference present (a detached
 entity's origin is history, not a link), detached parts accounted for, integrity in 0–100, and ids
-below `next_seq`. A world that breaks one does not open; the CLI reports `invalid_snapshot` and the rule.
-
-Templates declare parts, dimensions, mass, properties, break products, and residue. Only declared
-parts exist. Part state records integrity and whether a part is intact, damaged, detached, or
-destroyed. Detachable subtrees become entities and retain their origin in `detached_from`.
-
-Capacities sum part contributions and unexpired modifiers, clamped to 0–100; templates with no
-parts have none. Residue records amounts on their receiver. Support loss emits displacement and
-fall events; high falls break entities, spawn products, and move liquids and solids to the landing
+below `next_seq`. A world that breaks one does not open; the CLI reports `invalid_snapshot` and the
+rule. Templates declare parts, dimensions, mass, properties, break products, and residue. Only
+declared parts exist. Part state records integrity and whether a part is intact, damaged, detached,
+or destroyed. Detachable subtrees become entities and retain their origin in `detached_from`.
+Capacities sum part contributions and unexpired modifiers, clamped to 0–100; templates with no parts
+have none. Residue records amounts on their receiver. Support loss emits displacement and fall
+events; high falls break entities, spawn products, and move liquids and solids to the landing
 surface.
 
 ## The library API
 
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)`, `openWorld(dir)`, and
-`memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `since`, `trace`,
-`query`, `snapshot`, and `entity`; `verbs()` is the catalog each verb describes itself to. `check`
-agrees with `command` without writing or logging; `since` gives the deltas and events of every ok
-command after a version; `beat` runs commands in array order against one shared base, one log line
-each, each with its status. Refusals carry optional `reason_data` (reach, fit, enclosure, capacity
-numbers, never prose). `trace` follows `cause_id` root-first from an event, or from the last delta
-of an entity field, else its spawn; an initial entity's field has an empty chain, and a memory world
-answers `history_unavailable` for what predates it. Edits (`spawn`, `remove`, `place`, `set_props`,
-`set_part`) are logged under the author `world`, refused when they break an invariant; a removed
-holder passes what it held into its own relation. Store worlds share a directory, memory worlds
-hold their own; a missing directory, changed hash, or bad version is a `WorldError`.
+`memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `since`, `trace`, `beat`,
+`upgradeTemplates`, `query`, `snapshot`, and `entity`; `verbs()` is the catalog each verb describes
+itself to. `check` agrees with `command` without writing or logging; `since` gives the deltas and
+events of every ok command after a version; `beat` runs commands in array order against one shared
+base, one log line each, each with its status. Refusals carry optional `reason_data` (reach, fit,
+enclosure, capacity numbers, never prose). `trace` follows `cause_id` root-first from an event, or
+from the last delta of an entity field, else its spawn; an initial entity's field has an empty
+chain, and a memory world answers `history_unavailable` for what predates it. Edits (`spawn`,
+`remove`, `place`, `set_props`, `set_part`) are logged under the author `world`, refused when they
+break an invariant. Store worlds share a directory, memory worlds hold their own; a missing
+directory, changed hash, or bad version is a `WorldError`.
 
 ## Commands and persistence
 
 The CLI is a JSON adapter over `World`: one request on stdin, one method, one response. Zod
 validates that boundary, a failure becomes `{status:"invalid", issues}`; `init` takes spawn specs.
-
-Each world stores `initial.json`, canonical `snapshot.json`, a JSONL log of every command, a JSONL
-event store that queries read instead of replaying, and `head.json` with both files' sizes and
-entry counts, written last, so opening a world detects a crash without reading the log. An accepted
-command whose result breaks an invariant is logged `invalid` and never written. Replay folds
-accepted commands over the initial snapshot; a hash mismatch is an error, stale commands are
-re-evaluated. `npm run bench` (10k store commands) holds ~3.5 ms per command from first to last.
+Each world stores `initial.json`, canonical `snapshot.json`, the resolved template set in
+`templates.json`, a JSONL log of every command, a JSONL event store that queries read instead of
+replaying, and `head.json` with both files' sizes, entry counts, and the template hash, written
+last, so opening a world detects a crash without reading the log. A world loads the set it was
+created with, so editing `templates/` reaches new worlds only; `upgradeTemplates` moves a live one
+and refuses if a template lost a field an entity uses, or if the log no longer replays to the stored
+snapshot and event stream. An accepted command whose result breaks an invariant is logged `invalid`
+and never written. Replay folds accepted commands over the initial snapshot; a hash mismatch is an
+error, stale commands are re-evaluated. `npm run bench` (10k store commands) holds ~3.5 ms per
+command.
 
 ## Queries and coverage
 
 Queries answer facts and perception from snapshot, templates, events, and coverage; an uncovered
-category answers unknown. Perception spans sight, hearing, and smell (smell only where covered) via
-capacities, lighting, doors, and loud events; an event-form perceive is true if true at either end
-of its command. Sight alone is `false` (`enclosed`) in a shut container; `perceivers: true` names
-who sensed each event. Coverage describes the engine's answers, never who knows or remembers.
+category answers unknown, and coverage describes the engine's answers, never who knows or remembers.
+Perception spans sight, hearing, and smell (smell only where covered) via capacities, lighting,
+doors, and loud events; an event-form perceive is true if true at either end of its command. Sight
+alone is `false` (`enclosed`) in a shut container; `perceivers: true` names who sensed each event.

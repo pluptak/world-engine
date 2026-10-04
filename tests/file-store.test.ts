@@ -300,7 +300,7 @@ test("stale commands on unrelated entities both apply to the current snapshot", 
   strictEqual(secondTake.snapshot.entities[second.id]?.contained_in, actor.id);
 });
 
-test("load rejects a world after its template data changes", (t) => {
+test("load reads the world's own template set", (t) => {
   const root = temporaryDirectory(t);
   const worldDir = join(root, "world");
   const copiedTemplates = join(root, "templates");
@@ -314,9 +314,12 @@ test("load rejects a world after its template data changes", (t) => {
   };
   bottle.props.break_fall_cm += 1;
   writeFileSync(bottlePath, JSON.stringify(bottle), "utf8");
-  const changedRegistry = loadTemplates(copiedTemplates);
 
-  throws(() => load(worldDir, changedRegistry), /Template hash mismatch/);
+  strictEqual(canonicalJson(load(worldDir)), canonicalJson(scenario.snapshot));
+  const head = JSON.parse(readFileSync(join(worldDir, "head.json"), "utf8")) as {
+    templates_hash: string;
+  };
+  strictEqual(head.templates_hash, templatesHash(registry));
 });
 
 test("head.json is created and matches after create", (t) => {

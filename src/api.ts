@@ -1,4 +1,4 @@
-import { fileURLToPath } from "node:url";
+﻿import { fileURLToPath } from "node:url";
 import { canonicalJson } from "./engine/canonical.js";
 import {
   WORLD_AUTHOR,
@@ -8,6 +8,7 @@ import {
 } from "./engine/command.js";
 import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./engine/query.js";
 import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
+import { lostField } from "./engine/upgrade.js";
 import { verbCatalog } from "./engine/verbs/index.js";
 import { spawn, type EntityOverrides } from "./engine/spawn.js";
 import { validateSnapshot } from "./engine/validate.js";
@@ -16,15 +17,18 @@ import { defaultCoverage, type Delta, type Entity, type Id, type ReasonData, typ
 import {
   create,
   entryCount,
+  replayFold,
   load,
   readEvents,
+  readWorldTemplates,
   replayUntilEvent,
   resolveSubmission,
   since as foldSince,
   submit,
   trace as foldTrace,
+  writeWorldTemplates,
 } from "./store/file-store.js";
-import { loadTemplates, templatesHash, type TemplateRegistry } from "./templates.js";
+import { loadTemplates, missingCompanions, templatesHash, type TemplateRegistry } from "./templates.js";
 
 const templatesDirectory = fileURLToPath(new URL("../templates/", import.meta.url));
 
@@ -71,6 +75,7 @@ export interface World {
   check(command: Command): CheckResult;
   since(version: number): SinceResult;
   trace(query: TraceQuery): TraceResult;
+  upgradeTemplates(registry?: TemplateRegistry): Snapshot;
   query(query: Query): Answer;
   snapshot(): Snapshot;
   entity(id: Id): Entity | null;
@@ -128,17 +133,22 @@ function initialSnapshot(registry: TemplateRegistry): Snapshot {
 
 // Every read goes to the store, so two handles on one directory see each other's commands.
 function storeWorld(dir: string, registry: TemplateRegistry): World {
-  // A world that opens is a world whose snapshot holds together.
-  const opened = load(dir, registry);
+  // A world that opens is a world whose snapshot holds together. The set came from the world's own
+  // file, which is what tells load() it may settle a moved set rather than refuse it.
+  const opened = load(dir, registry, true);
   assertValid(opened, registry);
+  // The set this handle was opened with. An upgrade replaces it here; another handle keeps the old
+  // one and refuses to write, which is the only honest thing it can do with a set the world has
+  // left behind.
+  let active = registry;
 
   return {
-    command: (command, options) => submit(dir, command, options?.basedOn, registry),
+    command: (command, options) => submit(dir, command, options?.basedOn, active),
     // One shared base version for the whole beat, so later commands see earlier ones as stale;
     // one log line per command, each with its own status.
     beat: (commands, options) => {
-      const base = options?.basedOn ?? load(dir, registry).version;
-      return commands.map((command) => submit(dir, command, base, registry));
+      const base = options?.basedOn ?? load(dir, active).version;
+      return commands.map((command) => submit(dir, command, base, active));
     },
     edit: (edit, options) => {
       // The count of logged submissions names the next edit: every submission appends exactly one
@@ -149,26 +159,57 @@ function storeWorld(dir: string, registry: TemplateRegistry): World {
         dir,
         editCommand(edit, options?.command_id ?? `edit-${prior + 1}`, options?.perceivers),
         options?.basedOn,
-        registry,
+        active,
       );
     },
-    check: (command) => checkResult(dryRun(load(dir, registry), registry, command)),
-    since: (version) => foldSince(dir, version, registry),
-    trace: (query) => foldTrace(dir, query, registry),
+    check: (command) => checkResult(dryRun(load(dir, active), active, command)),
+    since: (version) => foldSince(dir, version, active),
+    trace: (query) => foldTrace(dir, query, active),
+    upgradeTemplates: (next) => {
+      const target = next ?? loadTemplates(templatesDirectory);
+      const missing = missingCompanions(target);
+      if (missing.length > 0) {
+        const [first] = missing;
+        throw new WorldError("invalid_templates", `Missing detached part template ${first}`);
+      }
+      const current = load(dir, active);
+      const lost = lostField(current, target);
+      if (lost !== null) {
+        throw new WorldError(
+          "templates_lost_field",
+          `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`,
+        );
+      }
+      // The log was produced under the old set, so a set that folds it to anything else would
+      // leave a world whose history no longer reproduces its own snapshot.
+      const replayed = replayFold(dir, target);
+      if (
+        canonicalJson(replayed.snapshot) !== canonicalJson(current) ||
+        canonicalJson(replayed.events) !== canonicalJson(readEvents(dir))
+      ) {
+        throw new WorldError(
+          "replay_diverges",
+          `History replays to version ${replayed.snapshot.version}, not ${current.version}`,
+        );
+      }
+      writeWorldTemplates(dir, target);
+      active = target;
+      return load(dir, active);
+    },
     query: (request) => {
       // An event-form perceive reads the world at either end of that event's command: perceptible
       // if perceptible before or after it. The entity form and unknown events read the present.
       if (request.kind === "perceive" && request.event_id !== undefined) {
-        const atEvent = replayUntilEvent(dir, request.event_id, registry);
+        const atEvent = replayUntilEvent(dir, request.event_id, active);
         if (atEvent !== null) {
-          return queryAtEvent(atEvent.before, atEvent.snapshot, registry, atEvent.events, request);
+          return queryAtEvent(atEvent.before, atEvent.snapshot, active, atEvent.events, request);
         }
       }
-      const snapshot = load(dir, registry);
-      return queryEngine(snapshot, registry, readEvents(dir, registry), request);
+      const snapshot = load(dir, active);
+      return queryEngine(snapshot, active, readEvents(dir), request);
     },
-    snapshot: () => load(dir, registry),
-    entity: (id) => load(dir, registry).entities[id] ?? null,
+    snapshot: () => load(dir, active),
+    entity: (id) => load(dir, active).entities[id] ?? null,
   };
 }
 
@@ -199,15 +240,14 @@ export function createWorld(
   return storeWorld(dir, templates);
 }
 
-export function openWorld(dir: string, registry?: TemplateRegistry): World {
-  const templates = activeRegistry(registry);
-  return storeWorld(dir, templates);
+export function openWorld(dir: string): World {
+  return storeWorld(dir, readWorldTemplates(dir));
 }
 
 // No directory, no log: what the caller hands in is the whole world, and its events are the ones its
 // own commands produced.
 export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): World {
-  const templates = activeRegistry(registry);
+  let templates = activeRegistry(registry);
   if (snapshot.templates_hash !== templatesHash(templates)) {
     throw new WorldError("templates_changed", "Template hash mismatch");
   }
@@ -276,6 +316,30 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
         options?.basedOn ?? current.version,
       ),
     check: (command) => checkResult(dryRun(current, templates, command)),
+    // A memory world keeps its snapshots rather than a log, so its past cannot be falsified by a
+    // new set: only commands from here on resolve against it. The lost-field rule still applies,
+    // because the entities it would orphan are the ones these snapshots hold.
+    upgradeTemplates: (next) => {
+      const target = next ?? loadTemplates(templatesDirectory);
+      const missing = missingCompanions(target);
+      if (missing.length > 0) {
+        const [first] = missing;
+        throw new WorldError("invalid_templates", `Missing detached part template ${first}`);
+      }
+      const lost = lostField(current, target);
+      if (lost !== null) {
+        throw new WorldError(
+          "templates_lost_field",
+          `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`,
+        );
+      }
+      templates = target;
+      // Re-stamped so the world stays consistent with the set it now answers for: handing this
+      // snapshot to memoryWorld again must not read as a changed set.
+      current = { ...current, templates_hash: templatesHash(target) };
+      history.set(current.version, current);
+      return current;
+    },
     trace: (query) => {
       const allDeltas: Delta[] = [];
       for (const record of applied) {

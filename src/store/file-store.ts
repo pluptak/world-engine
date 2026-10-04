@@ -5,10 +5,11 @@ import { apply } from "../engine/pipeline.js";
 import { canonicalJson } from "../engine/canonical.js";
 import { traceQuery, type TraceQuery } from "../engine/trace.js";
 import { validateSnapshot } from "../engine/validate.js";
+import { lostField } from "../engine/upgrade.js";
 import type { Command, Result } from "../engine/command.js";
 import { WorldError } from "../errors.js";
 import type { Delta, Snapshot, Status, WorldEvent } from "../model.js";
-import { loadTemplates, templatesHash, type TemplateRegistry } from "../templates.js";
+import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../templates.js";
 
 interface LogEntry {
   command: Command;
@@ -21,6 +22,7 @@ interface Head {
   events_bytes: number;
   log_entries: number;
   ok_entries: number;
+  templates_hash: string;
 }
 
 const snapshots = {
@@ -29,14 +31,21 @@ const snapshots = {
   log: "log.jsonl",
   events: "events.jsonl",
   head: "head.json",
+  templates: "templates.json",
 };
 
+// A world is created from the templates directory and then never reads it again: the copy beside
+// the log is the one it is bound to.
 const templatesDirectory = fileURLToPath(new URL("../../templates/", import.meta.url));
 
 function assertWorldExists(dir: string): void {
-  const missing = [snapshots.current, snapshots.initial, snapshots.log, snapshots.events].filter(
-    (name) => !existsSync(join(dir, name)),
-  );
+  const missing = [
+    snapshots.current,
+    snapshots.initial,
+    snapshots.log,
+    snapshots.events,
+    snapshots.templates,
+  ].filter((name) => !existsSync(join(dir, name)));
   if (missing.length > 0) {
     throw new WorldError("no_such_world", `No world at ${dir}: missing ${missing.join(", ")}`);
   }
@@ -46,8 +55,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-function activeRegistry(registry?: TemplateRegistry): TemplateRegistry {
-  return registry ?? loadTemplates(templatesDirectory);
+// The set this world was created with: a world is self-contained, so the templates directory a
+// caller happens to be editing is none of its business.
+export function readWorldTemplates(dir: string): TemplateRegistry {
+  assertWorldExists(dir);
+  const path = join(dir, snapshots.templates);
+  try {
+    return parseRegistry(JSON.parse(readFileSync(path, "utf8")) as unknown, snapshots.templates);
+  } catch (error) {
+    throw new WorldError(
+      "invalid_templates",
+      `Unreadable template set at ${path}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
+function activeRegistry(dir: string, registry?: TemplateRegistry): TemplateRegistry {
+  return registry ?? readWorldTemplates(dir);
 }
 
 function readHead(dir: string): Head | null {
@@ -62,7 +86,8 @@ function readHead(dir: string): Head | null {
       typeof value.log_bytes !== "number" ||
       typeof value.events_bytes !== "number" ||
       typeof value.log_entries !== "number" ||
-      typeof value.ok_entries !== "number"
+      typeof value.ok_entries !== "number" ||
+      typeof value.templates_hash !== "string"
     ) {
       return null;
     }
@@ -74,6 +99,10 @@ function readHead(dir: string): Head | null {
 
 function writeHead(dir: string, head: Head): void {
   atomicWrite(join(dir, snapshots.head), canonicalJson(head));
+}
+
+function emptyHead(): Head {
+  return { log_bytes: 0, events_bytes: 0, log_entries: 0, ok_entries: 0, templates_hash: "" };
 }
 
 function readSnapshot(path: string): Snapshot {
@@ -188,27 +217,74 @@ export function create(
   initialSnapshot: Snapshot,
   registry?: TemplateRegistry,
 ): void {
-  const templates = activeRegistry(registry);
+  const templates = registry ?? loadTemplates(templatesDirectory);
   assertTemplates(initialSnapshot, templates);
   mkdirSync(dir, { recursive: true });
+  atomicWrite(join(dir, snapshots.templates), canonicalJson(templates));
   atomicWrite(join(dir, snapshots.initial), canonicalJson(initialSnapshot));
   atomicWrite(join(dir, snapshots.current), canonicalJson(initialSnapshot));
   writeFileSync(join(dir, snapshots.log), "", "utf8");
   writeFileSync(join(dir, snapshots.events), "", "utf8");
-  writeHead(dir, { log_bytes: 0, events_bytes: 0, log_entries: 0, ok_entries: 0 });
+  writeHead(dir, {
+    log_bytes: 0,
+    events_bytes: 0,
+    log_entries: 0,
+    ok_entries: 0,
+    templates_hash: templatesHash(templates),
+  });
 }
 
-export function load(dir: string, registry?: TemplateRegistry): Snapshot {
+// `setIsTheWorlds` says the registry came from the world's own templates.json rather than from a
+// caller, which is what lets load() settle a moved set instead of refusing it: only the world's own
+// file may take the world over.
+export function load(dir: string, registry?: TemplateRegistry, setIsTheWorlds = false): Snapshot {
   assertWorldExists(dir);
-  const templates = activeRegistry(registry);
+  const templates = activeRegistry(dir, registry);
   const snapshot = readSnapshot(join(dir, snapshots.current));
   const initial = readSnapshot(join(dir, snapshots.initial));
-  assertTemplates(snapshot, templates);
-  assertTemplates(initial, templates);
 
   const head = readHead(dir);
   const logPath = join(dir, snapshots.log);
   const eventsPath = join(dir, snapshots.events);
+  const frozenHash = templatesHash(templates);
+
+  // An upgrade stamps the snapshots before the head, so a head still naming the old hash means the
+  // set moved and the write may have been interrupted somewhere in between. Only the set in the file
+  // may take the world over: a registry handed in by a caller is a claim about the set, checked and
+  // refused when it no longer holds, never written. Which of an edit and an interruption moved the
+  // set cannot be told from the files, so it is settled by proof — a set that leaves every live
+  // entity whole and still folds the log to the stored snapshot is a successor, and one that does
+  // not is refused rather than silently rewriting history. The comparison is over the world with
+  // both hashes normalized, because which file was stamped before a crash is exactly what is unknown.
+  // This runs before the hash assertions below, which would read the interruption itself as a world
+  // whose files disagree.
+  if (head !== null && head.templates_hash !== frozenHash) {
+    if (!setIsTheWorlds) {
+      throw new WorldError("templates_changed", "Template hash mismatch");
+    }
+    const lost = lostField(snapshot, templates);
+    if (lost !== null) {
+      throw new WorldError(
+        "templates_lost_field",
+        `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`,
+      );
+    }
+    const folded = replayFold(dir, templates);
+    if (
+      canonicalJson({ ...folded.snapshot, templates_hash: frozenHash }) !==
+      canonicalJson({ ...snapshot, templates_hash: frozenHash }) ||
+      canonicalJson(folded.events) !== canonicalJson(readEvents(dir))
+    ) {
+      throw new WorldError("templates_changed", "Template hash mismatch");
+    }
+    atomicWrite(join(dir, snapshots.initial), canonicalJson({ ...initial, templates_hash: frozenHash }));
+    atomicWrite(join(dir, snapshots.current), canonicalJson({ ...snapshot, templates_hash: frozenHash }));
+    writeHead(dir, { ...head, templates_hash: frozenHash });
+    return load(dir);
+  }
+
+  assertTemplates(snapshot, templates);
+  assertTemplates(initial, templates);
 
   if (head !== null) {
     try {
@@ -243,6 +319,7 @@ export function load(dir: string, registry?: TemplateRegistry): Snapshot {
       events_bytes: statSync(eventsPath).size,
       log_entries: entries.length,
       ok_entries: okEntries.length,
+      templates_hash: frozenHash,
     });
     return recovered;
   }
@@ -251,6 +328,7 @@ export function load(dir: string, registry?: TemplateRegistry): Snapshot {
     events_bytes: statSync(eventsPath).size,
     log_entries: entries.length,
     ok_entries: okEntries.length,
+    templates_hash: frozenHash,
   });
   return snapshot;
 }
@@ -325,7 +403,7 @@ export function submit(
   based_on_version?: number,
   registry?: TemplateRegistry,
 ): Result {
-  const templates = activeRegistry(registry);
+  const templates = activeRegistry(dir, registry);
   const current = load(dir, templates);
   const basedOn = based_on_version ?? current.version;
   const result = resolveSubmission(current, templates, command, basedOn, (version) =>
@@ -360,15 +438,15 @@ export function submit(
     events_bytes: eventsStat.size,
     log_entries: logEntries,
     ok_entries: okEntries,
+    templates_hash: templatesHash(templates),
   });
 
   return result;
 }
 
 // The stored event list in file order: what submit() appended, one canonical line per event.
-export function readEvents(dir: string, registry?: TemplateRegistry): WorldEvent[] {
+export function readEvents(dir: string): WorldEvent[] {
   assertWorldExists(dir);
-  activeRegistry(registry);
   const events: WorldEvent[] = [];
   for (const [index, line] of readFileSync(join(dir, snapshots.events), "utf8")
     .split(/\r?\n/)
@@ -397,28 +475,55 @@ function parseEventLine(line: string, lineNumber: number): WorldEvent {
   return value as unknown as WorldEvent;
 }
 
-export function replayWithEvents(
-  dir: string,
-  registry?: TemplateRegistry,
-): { snapshot: Snapshot; events: WorldEvent[] } {
-  const templates = activeRegistry(registry);
+export interface Fold {
+  snapshot: Snapshot;
+  events: WorldEvent[];
+}
+
+// Install a new set. The head is written last, as everywhere else in this file, so any interruption
+// leaves it naming the hash the snapshots still carry and load() can settle the rest; the log, the
+// event file, and every version are untouched, because an upgrade changes what the world may spawn,
+// never what it has been.
+export function writeWorldTemplates(dir: string, registry: TemplateRegistry): void {
+  const hash = templatesHash(registry);
+  const initial = readSnapshot(join(dir, snapshots.initial));
+  const snapshot = readSnapshot(join(dir, snapshots.current));
+  atomicWrite(join(dir, snapshots.templates), canonicalJson(registry));
+  atomicWrite(join(dir, snapshots.initial), canonicalJson({ ...initial, templates_hash: hash }));
+  atomicWrite(join(dir, snapshots.current), canonicalJson({ ...snapshot, templates_hash: hash }));
+  writeHead(dir, { ...(readHead(dir) ?? emptyHead()), templates_hash: hash });
+}
+
+// Every ok command folded over the initial snapshot. Deliberately without the hash assertion the
+// replay path makes: this is what decides whether a set the snapshots have not been stamped with
+// yet is a successor to the one they carry. A command the log accepted and this set refuses is a
+// WorldError rather than a TypeError, so a caller hears a code and not a crash.
+export function replayFold(dir: string, registry: TemplateRegistry): Fold {
   let snapshot = readSnapshot(join(dir, snapshots.initial));
-  assertTemplates(snapshot, templates);
   const events: WorldEvent[] = [];
 
   for (const [index, entry] of readLogEntries(dir).entries()) {
     if (entry.status !== "ok") {
       continue;
     }
-    const result = apply(snapshot, templates, entry.command);
+    const result = apply(snapshot, registry, entry.command);
     if (result.status !== "ok") {
-      throw new TypeError(`Accepted command failed during replay at line ${index + 1}`);
+      throw new WorldError(
+        "replay_diverges",
+        `Accepted command failed during replay at line ${index + 1}`,
+      );
     }
     events.push(...result.events);
     snapshot = result.snapshot;
   }
 
   return { snapshot, events };
+}
+
+export function replayWithEvents(dir: string, registry?: TemplateRegistry): Fold {
+  const templates = activeRegistry(dir, registry);
+  assertTemplates(readSnapshot(join(dir, snapshots.initial)), templates);
+  return replayFold(dir, templates);
 }
 
 export function replay(dir: string, registry?: TemplateRegistry): Snapshot {
@@ -432,7 +537,7 @@ export function replayUntilEvent(
   eventId: string,
   registry?: TemplateRegistry,
 ): { before: Snapshot; snapshot: Snapshot; events: WorldEvent[] } | null {
-  const templates = activeRegistry(registry);
+  const templates = activeRegistry(dir, registry);
   let snapshot = readSnapshot(join(dir, snapshots.initial));
   assertTemplates(snapshot, templates);
   const events: WorldEvent[] = [];
@@ -465,7 +570,7 @@ export function trace(
   query: TraceQuery,
   registry?: TemplateRegistry,
 ): { events: WorldEvent[] } {
-  const templates = activeRegistry(registry);
+  const templates = activeRegistry(dir, registry);
   const current = load(dir, templates);
   const initial = readSnapshot(join(dir, snapshots.initial));
   assertTemplates(current, templates);
@@ -508,7 +613,7 @@ export function since(
   if (!Number.isSafeInteger(version) || version < 0) {
     throw new WorldError("invalid_version", `Invalid version ${version}`);
   }
-  const templates = activeRegistry(registry);
+  const templates = activeRegistry(dir, registry);
   const current = load(dir, templates);
   if (version > current.version) {
     throw new WorldError("future_version", `Version ${version} is ahead of ${current.version}`);

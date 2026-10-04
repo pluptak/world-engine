@@ -1,0 +1,9 @@
+{
+  "id": "human.arm_r.hand_r",
+  "size_cm": { "w": 15, "d": 8, "h": 5 },
+  "mass_g": 500,
+  "parts": [],
+  "props": {},
+  "break_products": [],
+  "break_residue": {}
+}
