@@ -3,7 +3,7 @@ import type { Command, CommandContext, Result, TransitionContext } from "./comma
 import { WORLD_AUTHOR } from "./command.js";
 import { eventPerceivers } from "./query.js";
 import { verbRegistry } from "./verbs/index.js";
-import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../model.js";
+import type { Delta, Entity, Id, ReasonData, Snapshot, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import { isAgent } from "./verbs/address.js";
 import { resolveTarget } from "./resolve.js";
@@ -15,6 +15,7 @@ function unchangedResult(
   resolvedTarget: Id | null = null,
   reasonCode?: string,
   candidates?: Id[],
+  reasonData?: ReasonData,
 ): Result {
   return {
     status,
@@ -22,6 +23,7 @@ function unchangedResult(
     resolved_target: resolvedTarget,
     ...(candidates !== undefined && { candidates }),
     ...(reasonCode !== undefined && { reason_code: reasonCode }),
+    ...(reasonData !== undefined && { reason_data: reasonData }),
     snapshot,
     deltas: [],
     events: [],
@@ -108,6 +110,7 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
       precondition.status === "unresolved" ? null : (target?.address ?? null),
       "reason_code" in precondition ? precondition.reason_code : undefined,
       "candidates" in precondition ? precondition.candidates : undefined,
+      "reason_data" in precondition ? precondition.reason_data : undefined,
     );
   }
 
@@ -199,6 +202,7 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
         validation.status === "unresolved" ? null : (target?.address ?? null),
         "reason_code" in validation ? validation.reason_code : undefined,
         "candidates" in validation ? validation.candidates : undefined,
+        "reason_data" in validation ? validation.reason_data : undefined,
       );
     }
   }

@@ -133,6 +133,35 @@ export function withinReach(context: CommandContext, destinationId: Id): boolean
   return (actorPos.x - destinationPos.x) ** 2 + (actorPos.y - destinationPos.y) ** 2 <= reach ** 2;
 }
 
+// Structured data for an out_of_reach refusal, measured only when the quantities exist:
+// both positions known, same room, numeric reach. Otherwise null, and the refusal omits data.
+export function reachData(
+  snapshot: Snapshot,
+  actorId: Id,
+  targetId: Id,
+): { distance_cm: number; reach_cm: number } | null {
+  const actor = snapshot.entities[actorId];
+  const target = snapshot.entities[targetId];
+  if (actor === undefined || target === undefined) {
+    return null;
+  }
+  const actorPos = effectivePos(snapshot, actorId);
+  const targetPos = effectivePos(snapshot, targetId);
+  const reach = actor.props.reach_cm;
+  if (
+    actorPos === null ||
+    targetPos === null ||
+    target.location !== actor.location ||
+    typeof reach !== "number"
+  ) {
+    return null;
+  }
+  const distance_cm = Math.ceil(
+    Math.sqrt((actorPos.x - targetPos.x) ** 2 + (actorPos.y - targetPos.y) ** 2),
+  );
+  return { distance_cm, reach_cm: reach };
+}
+
 // A placement may not close a containment or support loop: the item would hold what holds it.
 export function wouldLoop(context: CommandContext, itemId: Id, destinationId: Id): boolean {
   const visited = new Set<Id>();

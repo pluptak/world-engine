@@ -5,6 +5,7 @@ import { carryAlternatives, insufficientCode, lostCarry } from "../carry.js";
 import type { PartState } from "../../model.js";
 import type { AttackMode, CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { dropCarriedItem } from "./drop.js";
+import { reachData } from "./address.js";
 import { spawn } from "../spawn.js";
 
 // A fist needs hands, a bite a jaw; the damage of the mode used comes from the attacker's template.
@@ -94,11 +95,27 @@ function preconditions(context: CommandContext): PreconditionResult {
     typeof reach !== "number" ||
     (actorPos.x - targetPos.x) ** 2 + (actorPos.y - targetPos.y) ** 2 > reach ** 2
   ) {
-    return { status: "refused", reason_code: "out_of_reach" };
+    const data = reachData(context.snapshot, context.actor.id, entity.id);
+    return {
+      status: "refused",
+      reason_code: "out_of_reach",
+      ...(data !== null && { reason_data: data }),
+    };
   }
   const choice = chooseAttack(context);
   if (choice.kind === "no_capacity") {
-    return { status: "refused", reason_code: insufficientCode(context.verb.attack_modes ?? []) };
+    const [firstMode] = context.verb.attack_modes ?? [];
+    return {
+      status: "refused",
+      reason_code: insufficientCode(context.verb.attack_modes ?? []),
+      ...(firstMode !== undefined && {
+        reason_data: {
+          capacity: firstMode.capacity,
+          have: capacity(context.snapshot, context.registry, context.actor.id, firstMode.capacity) ?? 0,
+          need: firstMode.at_least,
+        },
+      }),
+    };
   }
   if (choice.kind === "no_damage") {
     return { status: "invalid", reason_code: "invalid_attack_target" };

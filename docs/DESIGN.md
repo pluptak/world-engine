@@ -10,9 +10,8 @@ transition takes a snapshot and returns a new one; I/O stays outside.
 Verbs are `move`, `take`, `drop`, `put`, `give`, `push`, `pull`, `attack`, `wait`, and `edit`. `put` and `give`
 name a second address in `args.destination`; `put` also takes `args.relation`: `on` or `in`. A
 surface declares `surface`, sized by its footprint; a container declares `container` and
-`inner_*_cm`. `put` emits one `moved` and sets `support` or `contained_in`, never a position:
-position comes through the chain. Fit compares the two longest dimensions; a container's contents
-do not count.
+`inner_*_cm`. `put` emits one `moved` and sets `support` or `contained_in`, never a position, which
+comes through the chain. Fit compares the longest dimensions; a container's contents do not count.
 Carrying is declared: `take` and `give` need `manipulation` scaled by the item's `hands_required`,
 or `mouth_carry` within the carrier's `carry_limit_g` — one item at a time, never a two-handed one.
 `attack` picks the first mode its attacker can use, with damage from its template. `lock`,
@@ -51,7 +50,9 @@ surface.
 `memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `since`, `trace`,
 `query`, `snapshot`, and `entity`; `verbs()` is the catalog each verb describes itself to. `check`
 agrees with `command` without writing or logging; `since` gives the deltas and events of every ok
-command after a version. `trace` follows `cause_id` root-first from an event, or from the last
+command after a version; `beat` runs commands in array order against one shared base, one log line
+each, each with its status. Refusals carry optional `reason_data` (reach, fit, enclosure, capacity
+numbers, never prose). `trace` follows `cause_id` root-first from an event, or from the last
 delta of an entity field, else its spawn; an initial entity's field has an empty chain, and a
 memory world answers `history_unavailable` for what predates it. Edits (`spawn`, `remove`, `place`,
 `set_props`, `set_part`) are logged under the author `world`, refused when they break an invariant;
@@ -61,8 +62,7 @@ worlds hold their own; a missing directory, changed hash, or bad version is a `W
 ## Commands and persistence
 
 The CLI is a JSON adapter over `World`: one request on stdin, one method, one response. Zod
-validates that boundary, a failure becomes `{status:"invalid", issues}`, and `init` takes spawn
-specs.
+validates that boundary, a failure becomes `{status:"invalid", issues}`; `init` takes spawn specs.
 
 Each world stores `initial.json`, canonical `snapshot.json`, and a JSONL command log holding every
 command. The store appends before atomically replacing the snapshot; an accepted command whose

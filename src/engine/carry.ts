@@ -1,4 +1,4 @@
-import type { Entity, Id, Snapshot } from "../model.js";
+import type { Entity, Id, ReasonData, Snapshot } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import type { CapacityRequirement, CarryAlternative } from "./command.js";
 
@@ -17,8 +17,9 @@ export function heldCount(snapshot: Snapshot, carrierId: Id): number {
 }
 
 // Why one alternative fails, in the order its conditions are declared; null when it can hold the item.
+// A capacity shortfall names what it had and what it needed.
 type Failure =
-  | { kind: "capacity"; capacity: string }
+  | { kind: "capacity"; capacity: string; have: number; need: number }
   | { kind: "hands" }
   | { kind: "weight"; capacity: string }
   | { kind: "full"; capacity: string };
@@ -43,6 +44,10 @@ function failureCode(failure: Failure): string {
   }
 }
 
+function handsOf(item: Entity): number {
+  return item.props.hands_required === 2 ? 2 : 1;
+}
+
 function alternativeFailure(
   caps: Record<string, number> | null,
   carrierProps: Record<string, number | string | boolean>,
@@ -52,16 +57,31 @@ function alternativeFailure(
   alternative: CarryAlternative,
 ): Failure | null {
   if (caps === null) {
-    return { kind: "capacity", capacity: alternative.capacity };
+    return {
+      kind: "capacity",
+      capacity: alternative.capacity,
+      have: 0,
+      need: alternative.per_hand !== undefined ? handsOf(item) * alternative.per_hand : (alternative.at_least ?? 1),
+    };
   }
-  const hands = item.props.hands_required === 2 ? 2 : 1;
+  const hands = handsOf(item);
   if (alternative.per_hand !== undefined) {
     return (caps[alternative.capacity] ?? 0) >= hands * alternative.per_hand
       ? null
-      : { kind: "capacity", capacity: alternative.capacity };
+      : {
+          kind: "capacity",
+          capacity: alternative.capacity,
+          have: caps[alternative.capacity] ?? 0,
+          need: hands * alternative.per_hand,
+        };
   }
   if ((caps[alternative.capacity] ?? 0) < (alternative.at_least ?? 1)) {
-    return { kind: "capacity", capacity: alternative.capacity };
+    return {
+      kind: "capacity",
+      capacity: alternative.capacity,
+      have: caps[alternative.capacity] ?? 0,
+      need: alternative.at_least ?? 1,
+    };
   }
   if (alternative.max_hands !== undefined && hands > alternative.max_hands) {
     return { kind: "hands" };
@@ -80,7 +100,8 @@ function alternativeFailure(
 }
 
 // Whether any declared alternative can hold the item; a refusal names the failure that came
-// furthest through its conditions, ties going to the first declared alternative.
+// furthest through its conditions, ties going to the first declared alternative. A capacity
+// shortfall also reports what it had and what it needed.
 export function carryCheck(
   caps: Record<string, number> | null,
   carrierProps: Record<string, number | string | boolean>,
@@ -88,8 +109,8 @@ export function carryCheck(
   registry: TemplateRegistry,
   otherHeld: number,
   alternatives: readonly CarryAlternative[],
-): { ok: true } | { ok: false; reason_code: string } {
-  let worst: { code: string; rank: number } | null = null;
+): { ok: true } | { ok: false; reason_code: string; reason_data?: ReasonData } {
+  let worst: { code: string; rank: number; reason_data?: ReasonData } | null = null;
   for (const alternative of alternatives) {
     const failure = alternativeFailure(caps, carrierProps, item, registry, otherHeld, alternative);
     if (failure === null) {
@@ -97,10 +118,22 @@ export function carryCheck(
     }
     const rank = failureRank[failure.kind];
     if (worst === null || rank > worst.rank) {
-      worst = { code: failureCode(failure), rank };
+      worst = {
+        code: failureCode(failure),
+        rank,
+        ...(failure.kind === "capacity" && {
+          reason_data: { capacity: failure.capacity, have: failure.have, need: failure.need },
+        }),
+      };
     }
   }
-  return { ok: false, reason_code: worst?.code ?? "uncarryable" };
+  return worst === null
+    ? { ok: false, reason_code: "uncarryable" }
+    : {
+        ok: false,
+        reason_code: worst.code,
+        ...(worst.reason_data !== undefined && { reason_data: worst.reason_data }),
+      };
 }
 
 // The capacity that held the item before a change and cannot after it, or null. Losing is not
@@ -133,4 +166,21 @@ export function meetsRequirements(
 
 export function insufficientCode(named: readonly { capacity: string }[]): string {
   return `insufficient_${named[0]?.capacity ?? "manipulation"}`;
+}
+
+// The first unmet capacity requirement with what it had and what it needed, if any is unmet.
+export function unmetRequirement(
+  caps: Record<string, number> | null,
+  requirements: readonly CapacityRequirement[],
+): { capacity: string; have: number; need: number } | null {
+  const found = requirements.find(
+    (requirement) => (caps?.[requirement.capacity] ?? 0) < requirement.at_least,
+  );
+  return found === undefined
+    ? null
+    : {
+        capacity: found.capacity,
+        have: caps?.[found.capacity] ?? 0,
+        need: found.at_least,
+      };
 }

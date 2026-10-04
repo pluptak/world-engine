@@ -1,6 +1,9 @@
 export type Id = string;
 export type Tri = "true" | "false" | "unknown";
 
+// Structured refusal data: ints and id strings only, never prose.
+export type ReasonData = Record<string, number | string>;
+
 export interface Pos {
   x: number;
   y: number;

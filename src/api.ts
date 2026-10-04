@@ -12,7 +12,7 @@ import { verbCatalog } from "./engine/verbs/index.js";
 import { spawn, type EntityOverrides } from "./engine/spawn.js";
 import { validateSnapshot } from "./engine/validate.js";
 import { WorldError } from "./errors.js";
-import { defaultCoverage, type Delta, type Entity, type Id, type Snapshot, type Status, type WorldEvent } from "./model.js";
+import { defaultCoverage, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type Status, type WorldEvent } from "./model.js";
 import {
   create,
   entryCount,
@@ -52,6 +52,7 @@ export interface CheckResult {
   resolved_target: Id | null;
   candidates?: Id[];
   reason_code?: string;
+  reason_data?: ReasonData;
 }
 
 export interface SinceResult {
@@ -65,6 +66,7 @@ export interface TraceResult {
 
 export interface World {
   command(command: Command, options?: CommandOptions): Result;
+  beat(commands: Command[], options?: CommandOptions): Result[];
   edit(edit: WorldEdit, options?: EditOptions): Result;
   check(command: Command): CheckResult;
   since(version: number): SinceResult;
@@ -81,6 +83,7 @@ function checkResult(result: Result): CheckResult {
     resolved_target: result.resolved_target,
     ...(result.candidates !== undefined && { candidates: result.candidates }),
     ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
+    ...(result.reason_data !== undefined && { reason_data: result.reason_data }),
   };
 }
 
@@ -131,6 +134,12 @@ function storeWorld(dir: string, registry: TemplateRegistry): World {
 
   return {
     command: (command, options) => submit(dir, command, options?.basedOn, registry),
+    // One shared base version for the whole beat, so later commands see earlier ones as stale;
+    // one log line per command, each with its own status.
+    beat: (commands, options) => {
+      const base = options?.basedOn ?? load(dir, registry).version;
+      return commands.map((command) => submit(dir, command, base, registry));
+    },
     edit: (edit, options) => {
       // The count of logged submissions names the next edit: every submission appends exactly one
       // line, so the id follows the world rather than the handle, and the same sequence of calls
@@ -257,6 +266,10 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
 
   return {
     command: (command, options) => submitMemory(command, options?.basedOn ?? current.version),
+    beat: (commands, options) => {
+      const base = options?.basedOn ?? current.version;
+      return commands.map((command) => submitMemory(command, base));
+    },
     edit: (edit, options) =>
       submitMemory(
         editCommand(edit, options?.command_id ?? `edit-${submissions + 1}`, options?.perceivers),
@@ -348,6 +361,7 @@ export type {
   Id,
   Perceivers,
   Pos,
+  ReasonData,
   Snapshot,
   Status,
   WorldEvent,

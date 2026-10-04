@@ -2,7 +2,7 @@ import { capacities } from "../capacity.js";
 import { effectivePos } from "../geometry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { carryAlternatives, carryCheck, heldCount } from "../carry.js";
-import { closedEnclosure, isAgent } from "./address.js";
+import { closedEnclosure, isAgent, reachData } from "./address.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
   const target = context.target;
@@ -28,7 +28,12 @@ function preconditions(context: CommandContext): PreconditionResult {
     typeof reach !== "number" ||
     (actorPos.x - targetPos.x) ** 2 + (actorPos.y - targetPos.y) ** 2 > reach ** 2
   ) {
-    return { status: "refused", reason_code: "out_of_reach" };
+    const data = reachData(context.snapshot, context.actor.id, entity.id);
+    return {
+      status: "refused",
+      reason_code: "out_of_reach",
+      ...(data !== null && { reason_data: data }),
+    };
   }
 
   const carry = carryCheck(
@@ -40,15 +45,20 @@ function preconditions(context: CommandContext): PreconditionResult {
     context.verb.carry_alternatives ?? [],
   );
   if (!carry.ok) {
-    return { status: "refused", reason_code: carry.reason_code };
+    return {
+      status: "refused",
+      reason_code: carry.reason_code,
+      ...(carry.reason_data !== undefined && { reason_data: carry.reason_data }),
+    };
   }
   if (entity.contained_in !== null && entity.contained_in !== context.actor.id) {
     const holder = context.snapshot.entities[entity.contained_in];
     if (holder === undefined) {
       return { status: "invalid", reason_code: "no_such_entity" };
     }
-    if (closedEnclosure(context.snapshot, entity.id) !== null) {
-      return { status: "refused", reason_code: "container_closed" };
+    const enclosure = closedEnclosure(context.snapshot, entity.id);
+    if (enclosure !== null) {
+      return { status: "refused", reason_code: "container_closed", reason_data: { enclosure } };
     }
     // Only an agent holds: a container or a piece of furniture keeps what is inside it, and what it
     // keeps is there to be taken out.

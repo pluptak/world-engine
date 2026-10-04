@@ -115,6 +115,7 @@ function commandResponse(result: Result, includeSnapshot: boolean) {
     resolved_target: result.resolved_target,
     ...(result.candidates !== undefined && { candidates: result.candidates }),
     ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
+    ...(result.reason_data !== undefined && { reason_data: result.reason_data }),
     snapshot_version: result.snapshot.version,
     deltas: responseDeltas,
     events: result.events,
@@ -150,6 +151,15 @@ function dispatch(request: Request): unknown {
   if (request.op === "trace") {
     const world = openWorld(request.world);
     return world.trace(request.query);
+  }
+  if (request.op === "beat") {
+    const world = openWorld(request.world);
+    const includeSnapshot = request.include_snapshot === true;
+    return {
+      results: world
+        .beat(request.commands, { basedOn: request.based_on_version })
+        .map((result) => commandResponse(result, includeSnapshot)),
+    };
   }
   const world = openWorld(request.world);
   if (request.op === "query") {

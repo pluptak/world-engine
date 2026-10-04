@@ -1,8 +1,9 @@
 import { capacities } from "../capacity.js";
+import { misfit } from "../fit.js";
 import type { Entity } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
-import { insufficientCode, meetsRequirements } from "../carry.js";
-import { addressEntity, addressText, closedEnclosure, wouldLoop, withinReach } from "./address.js";
+import { insufficientCode, meetsRequirements, unmetRequirement } from "../carry.js";
+import { addressEntity, addressText, closedEnclosure, reachData, wouldLoop, withinReach } from "./address.js";
 
 type Relation = "on" | "in";
 
@@ -29,28 +30,26 @@ function innerDimensions(destination: Entity): number[] | null {
   return [width, depth, height];
 }
 
-// Nothing here fixes an orientation, so the item's longest dimensions meet the destination's longest:
-// a 20 by 100 thing fits a 120 by 60 table, and a 70 cm chair leg does not fit a 35 cm chest.
-function fits(item: number[], destination: number[]): boolean {
-  const itemDescending = [...item].sort((left, right) => right - left);
-  const destinationDescending = [...destination].sort((left, right) => right - left);
-  return itemDescending.every((value, index) => value <= (destinationDescending[index] ?? 0));
-}
-
 function footprintRefusal(context: CommandContext, item: Entity, destination: Entity): PreconditionResult | null {
   const size = template(context, item).size_cm;
   const footprint = template(context, destination).size_cm;
-  return fits([size.w, size.d], [footprint.w, footprint.d])
+  const data = misfit([size.w, size.d], [footprint.w, footprint.d]);
+  return data === null
     ? null
-    : { status: "refused", reason_code: "too_large" };
+    : { status: "refused", reason_code: "too_large", reason_data: data };
 }
 
 function innerRefusal(context: CommandContext, item: Entity, destination: Entity): PreconditionResult | null {
   const size = template(context, item).size_cm;
   const inner = innerDimensions(destination);
-  return inner === null || !fits([size.w, size.d, size.h], inner)
-    ? { status: "refused", reason_code: "too_large" }
-    : null;
+  // No inner dimensions to report a space against, so the refusal carries no data.
+  if (inner === null) {
+    return { status: "refused", reason_code: "too_large" };
+  }
+  const data = misfit([size.w, size.d, size.h], inner);
+  return data === null
+    ? null
+    : { status: "refused", reason_code: "too_large", reason_data: data };
 }
 
 function placementRefusal(
@@ -63,15 +62,21 @@ function placementRefusal(
     return { status: "refused", reason_code: "circular_placement" };
   }
   if (!withinReach(context, destination.id)) {
-    return { status: "refused", reason_code: "out_of_reach" };
+    const data = reachData(context.snapshot, context.actor.id, destination.id);
+    return {
+      status: "refused",
+      reason_code: "out_of_reach",
+      ...(data !== null && { reason_data: data }),
+    };
   }
 
   if (relation === "on") {
     if (destination.props.surface !== true) {
       return { status: "refused", reason_code: "not_a_surface" };
     }
-    if (closedEnclosure(context.snapshot, destination.id) !== null) {
-      return { status: "refused", reason_code: "container_closed" };
+    const enclosure = closedEnclosure(context.snapshot, destination.id);
+    if (enclosure !== null) {
+      return { status: "refused", reason_code: "container_closed", reason_data: { enclosure } };
     }
     return footprintRefusal(context, item, destination);
   }
@@ -80,8 +85,9 @@ function placementRefusal(
     return { status: "refused", reason_code: "not_a_container" };
   }
   const shut = destination.props.openable === true && destination.props.open !== true;
-  if (shut || closedEnclosure(context.snapshot, destination.id) !== null) {
-    return { status: "refused", reason_code: "container_closed" };
+  const enclosure = shut ? destination.id : closedEnclosure(context.snapshot, destination.id);
+  if (enclosure !== null) {
+    return { status: "refused", reason_code: "container_closed", reason_data: { enclosure } };
   }
   return innerRefusal(context, item, destination);
 }
@@ -115,7 +121,15 @@ function preconditions(context: CommandContext): PreconditionResult {
     if (
       !meetsRequirements(capacities(context.snapshot, context.registry, context.actor.id), required)
     ) {
-      return { status: "refused", reason_code: insufficientCode(required) };
+      const data = unmetRequirement(
+        capacities(context.snapshot, context.registry, context.actor.id),
+        required,
+      );
+      return {
+        status: "refused",
+        reason_code: insufficientCode(required),
+        ...(data !== null && { reason_data: data }),
+      };
     }
   }
 

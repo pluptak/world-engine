@@ -1,7 +1,7 @@
 import { capacities } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { carryAlternatives, carryCheck, heldCount } from "../carry.js";
-import { addressEntity, addressText, isAgent, wouldLoop, withinReach } from "./address.js";
+import { addressEntity, addressText, isAgent, reachData, wouldLoop, withinReach } from "./address.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
   const destinationText = addressText(context, "destination");
@@ -41,7 +41,12 @@ function preconditions(context: CommandContext): PreconditionResult {
     return { status: "refused", reason_code: "circular_placement" };
   }
   if (!withinReach(context, recipient.id)) {
-    return { status: "refused", reason_code: "out_of_reach" };
+    const data = reachData(context.snapshot, context.actor.id, recipient.id);
+    return {
+      status: "refused",
+      reason_code: "out_of_reach",
+      ...(data !== null && { reason_data: data }),
+    };
   }
   const carry = carryCheck(
     capacities(context.snapshot, context.registry, recipient.id),
@@ -52,7 +57,11 @@ function preconditions(context: CommandContext): PreconditionResult {
     context.verb.carry_alternatives ?? [],
   );
   if (!carry.ok) {
-    return { status: "refused", reason_code: carry.reason_code };
+    return {
+      status: "refused",
+      reason_code: carry.reason_code,
+      ...(carry.reason_data !== undefined && { reason_data: carry.reason_data }),
+    };
   }
 
   return { status: "ok" };

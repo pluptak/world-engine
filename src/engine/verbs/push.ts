@@ -3,6 +3,7 @@ import { effectivePos } from "../geometry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Pos } from "../../model.js";
 import { propagateSupportLoss } from "../../resolvers/physical.js";
+import { reachData } from "./address.js";
 
 interface Movement {
   distance: number;
@@ -50,11 +51,20 @@ function preconditions(context: CommandContext): PreconditionResult {
     typeof reach !== "number" ||
     (actorPos.x - targetPos.x) ** 2 + (actorPos.y - targetPos.y) ** 2 > reach ** 2
   ) {
-    return { status: "refused", reason_code: "out_of_reach" };
+    const data = reachData(context.snapshot, context.actor.id, target.id);
+    return {
+      status: "refused",
+      reason_code: "out_of_reach",
+      ...(data !== null && { reason_data: data }),
+    };
   }
   const moving = capacity(context.snapshot, context.registry, context.actor.id, "moving") ?? 0;
   if (moving < 1) {
-    return { status: "refused", reason_code: "insufficient_moving" };
+    return {
+      status: "refused",
+      reason_code: "insufficient_moving",
+      reason_data: { capacity: "moving", have: moving, need: 1 },
+    };
   }
   if (target.contained_in !== null) {
     return { status: "refused", reason_code: "target_carried" };

@@ -55,8 +55,13 @@ function preconditions(context: CommandContext): PreconditionResult {
     return { status: "invalid", reason_code: "invalid_args" };
   }
 
-  if ((capacity(context.snapshot, context.registry, context.actor.id, "moving") ?? 0) < 1) {
-    return { status: "refused", reason_code: "insufficient_moving" };
+  const moving = capacity(context.snapshot, context.registry, context.actor.id, "moving") ?? 0;
+  if (moving < 1) {
+    return {
+      status: "refused",
+      reason_code: "insufficient_moving",
+      reason_data: { capacity: "moving", have: moving, need: 1 },
+    };
   }
 
   if (to.kind === "location") {

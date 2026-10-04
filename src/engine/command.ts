@@ -1,4 +1,4 @@
-import type { Delta, Entity, Id, PartState, Pos, Snapshot, Status, WorldEvent } from "../model.js";
+import type { Delta, Entity, Id, PartState, Pos, ReasonData, Snapshot, Status, WorldEvent } from "../model.js";
 import type { EntityOverrides } from "./spawn.js";
 import type { TemplateRegistry } from "../templates.js";
 
@@ -55,6 +55,7 @@ export interface Result {
   resolved_target: Id | null;
   candidates?: Id[];
   reason_code?: string;
+  reason_data?: ReasonData;
   snapshot: Snapshot;
   deltas: Delta[];
   events: WorldEvent[];
@@ -84,7 +85,7 @@ export interface TransitionContext extends CommandContext {
 
 export type PreconditionResult =
   | { status: "ok" }
-  | { status: "refused"; reason_code: string }
+  | { status: "refused"; reason_code: string; reason_data?: ReasonData }
   | { status: "unresolved" }
   | { status: "ambiguous"; candidates: Id[] }
   | { status: "invalid"; reason_code: string };

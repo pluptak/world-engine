@@ -159,6 +159,13 @@ export const RequestSchema = z.discriminatedUnion("op", [
     ]),
   }).strict(),
   z.object({
+    op: z.literal("beat"),
+    world: z.string().min(1),
+    based_on_version: z.number().int().optional(),
+    commands: z.array(CommandSchema),
+    include_snapshot: z.boolean().optional(),
+  }).strict(),
+  z.object({
     op: z.literal("query"),
     world: z.string().min(1),
     query: QuerySchema,
@@ -239,12 +246,16 @@ export const StatusSchema = z.enum([
   "invalid",
 ]);
 
+// Structured refusal data: ints and id strings only, never prose.
+export const ReasonDataSchema = z.record(z.string(), z.union([z.number().int(), z.string()]));
+
 export const CommandResponseSchema = z.object({
   status: StatusSchema,
   command_id: IdSchema,
   resolved_target: IdSchema.nullable(),
   candidates: z.array(IdSchema).optional(),
   reason_code: z.string().optional(),
+  reason_data: ReasonDataSchema.optional(),
   snapshot_version: z.number().int(),
   deltas: z.array(DeltaSchema),
   events: z.array(WorldEventSchema),
@@ -262,6 +273,7 @@ export const CheckResponseSchema = z.object({
   resolved_target: IdSchema.nullable(),
   candidates: z.array(IdSchema).optional(),
   reason_code: z.string().optional(),
+  reason_data: ReasonDataSchema.optional(),
 }).strict();
 
 export const SinceResponseSchema = z.object({
@@ -276,6 +288,10 @@ export const TraceQuerySchema = z.union([
 
 export const TraceResponseSchema = z.object({
   events: z.array(WorldEventSchema),
+}).strict();
+
+export const BeatResponseSchema = z.object({
+  results: z.array(CommandResponseSchema),
 }).strict();
 
 export const VerbsResponseSchema = z.object({
@@ -300,6 +316,7 @@ export const ResponseSchema = z.union([
   CheckResponseSchema,
   SinceResponseSchema,
   TraceResponseSchema,
+  BeatResponseSchema,
   VerbsResponseSchema,
   ValidationFailureSchema,
 ]);

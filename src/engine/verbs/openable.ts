@@ -1,8 +1,8 @@
 import { capacities } from "../capacity.js";
 import type { Entity, Id } from "../../model.js";
 import type { CapacityRequirement, CommandContext, PreconditionResult, TargetAddress, TransitionContext, Verb } from "../command.js";
-import { insufficientCode, meetsRequirements } from "../carry.js";
-import { withinReach } from "./address.js";
+import { insufficientCode, meetsRequirements, unmetRequirement } from "../carry.js";
+import { withinReach, reachData } from "./address.js";
 
 type Kind = "open" | "close" | "lock" | "unlock";
 
@@ -79,7 +79,15 @@ function openableTarget(context: CommandContext, address: TargetAddress | null):
     return { status: "failed", result: { status: "refused", reason_code: "not_openable" } };
   }
   if (!inReach(context, entity)) {
-    return { status: "failed", result: { status: "refused", reason_code: "out_of_reach" } };
+    const data = reachData(context.snapshot, context.actor.id, entity.id);
+    return {
+      status: "failed",
+      result: {
+        status: "refused",
+        reason_code: "out_of_reach",
+        ...(data !== null && { reason_data: data }),
+      },
+    };
   }
   return { status: "resolved", entity };
 }
@@ -101,7 +109,15 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
   if (
     !meetsRequirements(capacities(context.snapshot, context.registry, context.actor.id), required)
   ) {
-    return { status: "refused", reason_code: insufficientCode(required) };
+    const data = unmetRequirement(
+      capacities(context.snapshot, context.registry, context.actor.id),
+      required,
+    );
+    return {
+      status: "refused",
+      reason_code: insufficientCode(required),
+      ...(data !== null && { reason_data: data }),
+    };
   }
 
   return { status: "ok" };
