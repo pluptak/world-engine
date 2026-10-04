@@ -130,7 +130,9 @@ refusal code also touches the shared registration points, one line or one entry 
 `tests/property-gen.ts`, and one bullet in `docs/pipeline.md`.
 
 - **Relations and perception:** `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception
-  half of `src/engine/query.ts`, `docs/state.md`, `docs/perception.md`.
+  half of `src/engine/query.ts`, `docs/state.md`, `docs/perception.md`, `docs/relations.md`
+  (one row per relation: kind, exclusivity, loop, live or history, what removal and detaching do,
+  the enforcing `validateSnapshot` code and the test).
 - **Templates:** `src/templates.ts`, `src/engine/upgrade.ts`, `templates/*.json`, the hash and
   companion rules above, and `docs/templates.md`: a template may declare `"extends": "<parent id>"`,
   resolved once when a set is loaded or parsed (own field wins, `props` shallow-merged, `parts`

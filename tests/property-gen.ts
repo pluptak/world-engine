@@ -58,6 +58,16 @@ export const SCENARIO: Scenario = [
     template: "cat",
     overrides: { name: "kit", location: "e2", support: "e2", pos: { x: 5, y: 5 } },
   },
+  {
+    template: "stone",
+    overrides: {
+      name: "key",
+      location: "e1",
+      support: "e1",
+      pos: { x: 70, y: 0 },
+      props: { opens: "e3" },
+    },
+  },
 ];
 
 export function buildInitial(registry: TemplateRegistry): Snapshot {
@@ -194,7 +204,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
   wait: (context, options) => waiting(context, options?.ticks),
   // The five edit kinds, not five verbs: the roll that chose `edit` chooses among them too.
   edit: (context) => {
-    if (context.roll < 0.8) {
+    if (context.roll < 0.77) {
       const template = pick(context.rand, [
         "bottle",
         "stone",
@@ -205,6 +215,19 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
         "cat",
       ] as const);
       const room = context.rooms.length > 0 ? pick(context.rand, context.rooms) : "e999";
+      const [first, second] = context.rooms;
+      // A location the chain does not lead to: derived state, refused with location_mismatch.
+      if (first !== undefined && second !== undefined && context.rand() < 0.25) {
+        return {
+          kind: "spawn",
+          template,
+          overrides: {
+            location: second,
+            support: first,
+            pos: { x: int(context.rand, -200, 200), y: int(context.rand, -200, 200) },
+          },
+        };
+      }
       return {
         kind: "spawn",
         template,
@@ -215,8 +238,15 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
         },
       };
     }
-    if (context.roll < 0.84) {
+    if (context.roll < 0.81) {
+      return conflictingPlacement(context);
+    }
+    if (context.roll < 0.85) {
       const anchor = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+      // An entity cannot set itself down: refused circular_placement.
+      if (context.rand() < 0.25) {
+        return { kind: "place", target: context.target, support: context.target, pos: null };
+      }
       return context.rand() < 0.5
         ? {
             kind: "place",
@@ -226,7 +256,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
           }
         : { kind: "place", target: context.target, contained_in: anchor };
     }
-    if (context.roll < 0.88) {
+    if (context.roll < 0.89) {
       const subject = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
       const entity = context.snapshot.entities[subject];
       const boolKeys =
@@ -267,9 +297,56 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
         },
       };
     }
+    if (context.roll < 0.965) {
+      return brokenReference(context);
+    }
     return { kind: "remove", target: context.target };
   },
 };
+
+// Both relations at once, which no entity holds: refused conflicting_placement before anything runs.
+function conflictingPlacement(context: GenContext): Command | WorldEdit {
+  const anchor = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+  const other = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+  if (context.rand() < 0.5) {
+    return {
+      kind: "spawn",
+      template: "bottle",
+      overrides: { support: anchor, contained_in: other },
+    };
+  }
+  return { kind: "place", target: context.target, support: anchor, contained_in: other };
+}
+
+// A relation prop aimed at the wrong kind of entity: a door side that is not a room, or an `opens`
+// naming something that cannot be opened. Refused with the rule's own code.
+function brokenReference(context: GenContext): Command | WorldEdit {
+  const rooms = new Set(context.rooms);
+  const notRooms = context.ids.filter((id) => !rooms.has(id));
+  if (context.rand() < 0.5) {
+    const doors = context.ids.filter((id) => context.snapshot.entities[id]?.template === "door");
+    if (doors.length === 0 || notRooms.length === 0) {
+      return waiting(context, 1);
+    }
+    const door = pick(context.rand, doors);
+    const side = context.rand() < 0.5 ? "from" : "to";
+    return {
+      kind: "set_props",
+      target: door,
+      props: { ...context.snapshot.entities[door]?.props, [side]: pick(context.rand, notRooms) },
+    };
+  }
+  const shut = context.ids.filter((id) => !context.openables.includes(id));
+  if (context.ids.length === 0 || shut.length === 0) {
+    return waiting(context, 1);
+  }
+  const subject = pick(context.rand, context.ids);
+  return {
+    kind: "set_props",
+    target: subject,
+    props: { ...context.snapshot.entities[subject]?.props, opens: pick(context.rand, shut) },
+  };
+}
 
 // A caller that already knows the tick count (an edit with nothing to write) spends no draw.
 function waiting(context: GenContext, ticks?: number): Command {

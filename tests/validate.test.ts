@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import {
+  canonicalJson,
   createWorld,
   openWorld,
   WorldError,
@@ -139,6 +140,13 @@ test("each rule fires on a snapshot wrong in exactly one way", () => {
     ["location_mismatch"],
   );
 
+  deepStrictEqual(
+    wrong((snapshot) => {
+      entity(snapshot, "e3").contained_in = "e2";
+    }),
+    ["support_and_contained_in"],
+  );
+
   const cyclic = baseSnapshot();
   entity(cyclic, "e2").support = "e3";
   entity(cyclic, "e2").pos = null;
@@ -152,6 +160,140 @@ test("a door to a removed room names the dangling prop", () => {
   });
   deepStrictEqual(codes(built.snapshot), ["dangling_reference"]);
   deepStrictEqual(validate(built.snapshot)[0]?.path, ["entities", built.id, "props", "to"]);
+});
+
+test("a door side names a room and a key's opens names something openable", () => {
+  const other = spawn(baseSnapshot(), registry, "room", { name: "other" });
+  const door = spawn(other.snapshot, registry, "door", {
+    name: "door",
+    props: { open: true, openable: true, from: "e1", to: other.id },
+  });
+  const key = spawn(door.snapshot, registry, "stone", {
+    name: "key",
+    location: "e1",
+    support: "e1",
+    pos: { x: 40, y: 0 },
+    props: { opens: door.id },
+  });
+  deepStrictEqual(codes(key.snapshot), []);
+
+  // e3 is the bottle: a door does not join a bottle to a room.
+  const notARoom = structuredClone(key.snapshot);
+  notARoom.entities[door.id]!.props.to = "e3";
+  deepStrictEqual(codes(notARoom), ["door_side_not_room"]);
+  deepStrictEqual(validate(notARoom)[0]?.path, ["entities", door.id, "props", "to"]);
+
+  const notOpenable = structuredClone(key.snapshot);
+  notOpenable.entities[key.id]!.props.opens = "e3";
+  deepStrictEqual(codes(notOpenable), ["opens_target_not_openable"]);
+  deepStrictEqual(validate(notOpenable)[0]?.path, ["entities", key.id, "props", "opens"]);
+
+  // A key outlives the lock it names: nothing left to open is not a broken reference.
+  const targetGone = structuredClone(key.snapshot);
+  delete targetGone.entities[door.id];
+  deepStrictEqual(codes(targetGone), []);
+  strictEqual(targetGone.entities[key.id]?.props.opens, door.id);
+});
+
+test("a wrong kind on a door side or on a key's opens is refused; a door's rooms cannot go", (t) => {
+  const world = createWorld(join(tempDir(t), "relations"), [
+    { template: "room", overrides: { name: "hall", props: { lit: true } } },
+    { template: "room", overrides: { name: "yard", props: { lit: true } } },
+    {
+      template: "door",
+      overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2" } },
+    },
+    {
+      template: "stone",
+      overrides: {
+        name: "key",
+        location: "e1",
+        support: "e1",
+        pos: { x: 10, y: 0 },
+        props: { opens: "e3" },
+      },
+    },
+    {
+      template: "human",
+      overrides: { name: "guard", location: "e1", support: "e1", pos: { x: -10, y: 0 } },
+    },
+  ]);
+  const before = canonicalJson(world.snapshot());
+
+  // e4 is the key: a door joins rooms, not keys, and a key opens what can be opened.
+  const rejoined = world.edit(
+    { kind: "set_props", target: "e3", props: { ...world.entity("e3")?.props, to: "e4" } },
+    { command_id: "rejoin-door" },
+  );
+  strictEqual(rejoined.status, "refused");
+  strictEqual(rejoined.reason_code, "door_side_not_room");
+
+  const retargeted = world.edit(
+    { kind: "set_props", target: "e4", props: { ...world.entity("e4")?.props, opens: "e1" } },
+    { command_id: "retarget-key" },
+  );
+  strictEqual(retargeted.status, "refused");
+  strictEqual(retargeted.reason_code, "opens_target_not_openable");
+  deepStrictEqual(canonicalJson(world.snapshot()), before);
+
+  // A door's sides are live, so the rooms it joins cannot go while it names them. A key's `opens`
+  // is not: the door goes and the key stays, naming what is no longer there.
+  const yard = world.edit({ kind: "remove", target: "e2" }, { command_id: "remove-yard" });
+  strictEqual(yard.status, "refused");
+  strictEqual(yard.reason_code, "dangling_reference");
+  deepStrictEqual(canonicalJson(world.snapshot()), before);
+
+  strictEqual(world.edit({ kind: "remove", target: "e3" }).status, "ok");
+  strictEqual(world.entity("e3"), null);
+  strictEqual(world.entity("e4")?.props.opens, "e3");
+  deepStrictEqual(codes(world.snapshot()), []);
+  strictEqual(world.edit({ kind: "remove", target: "e2" }).status, "ok");
+  strictEqual(world.entity("e2"), null);
+});
+
+test("removing a chest leaves the key that opened it valid", (t) => {
+  const world = createWorld(join(tempDir(t), "key-outlives-its-lock"), [
+    { template: "room", overrides: { name: "room" } },
+    {
+      template: "chest",
+      overrides: {
+        name: "chest",
+        location: "e1",
+        support: "e1",
+        pos: { x: 20, y: 0 },
+        props: {
+          container: true,
+          inner_w_cm: 55,
+          inner_d_cm: 35,
+          inner_h_cm: 35,
+          openable: true,
+          open: false,
+          locked: true,
+        },
+      },
+    },
+    {
+      template: "stone",
+      overrides: {
+        name: "key",
+        location: "e1",
+        support: "e1",
+        pos: { x: 40, y: 0 },
+        props: { opens: "e2" },
+      },
+    },
+    {
+      template: "human",
+      overrides: { name: "guard", location: "e1", support: "e1", pos: { x: -10, y: 0 } },
+    },
+  ]);
+
+  const removed = world.edit({ kind: "remove", target: "e2" }, { command_id: "remove-chest" });
+  strictEqual(removed.status, "ok");
+  strictEqual(world.entity("e2"), null);
+  strictEqual(world.entity("e3")?.name, "key");
+  strictEqual(world.entity("e3")?.props.opens, "e2");
+  deepStrictEqual(codes(world.snapshot()), []);
 });
 
 test("every command of a long sequence leaves a valid snapshot", (t) => {
@@ -276,6 +418,37 @@ test("a corrupted snapshot fixture fails to open and names the rule", (t) => {
   strictEqual(response.issues[0]?.code, "invalid_snapshot");
   strictEqual(response.issues[1]?.code, "pos_without_room_support");
   deepStrictEqual(response.issues[1]?.path, ["entities", "e3"]);
+});
+
+test("a scenario that both supports and contains an entity never becomes a world", (t) => {
+  const dir = join(tempDir(t), "never-held");
+  try {
+    createWorld(dir, [
+      { template: "room", overrides: { name: "room" } },
+      {
+        template: "chest",
+        overrides: {
+          name: "chest",
+          location: "e1",
+          support: "e1",
+          pos: { x: 20, y: 0 },
+          props: { container: true, inner_w_cm: 55, inner_d_cm: 35, inner_h_cm: 35 },
+        },
+      },
+      // A stone set down on the chest and inside it at once.
+      {
+        template: "stone",
+        overrides: { name: "stone", location: "e1", support: "e2", contained_in: "e2" },
+      },
+    ]);
+    throw new Error("Expected the scenario to be refused");
+  } catch (error) {
+    ok(error instanceof WorldError, String(error));
+    strictEqual(error.code, "invalid_snapshot");
+    strictEqual(error.issues[0]?.code, "support_and_contained_in");
+    deepStrictEqual(error.issues[0]?.path, ["entities", "e3"]);
+  }
+  strictEqual(existsSync(dir), false);
 });
 
 test("a world built from an invalid scenario is never written", (t) => {

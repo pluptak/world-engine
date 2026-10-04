@@ -13,6 +13,7 @@ import {
   openWorld,
   WORLD_AUTHOR,
   type Command,
+  type Snapshot,
   type World,
   type WorldEdit,
 } from "../src/index.js";
@@ -87,6 +88,96 @@ function runSequence(world: World, seed: number, steps: number): { snapshot: str
   }
   return { snapshot: canonicalJson(world.snapshot()), events: canonicalJson(world.since(0).events) };
 }
+
+// The edits a step aims at each relation rule: what it tries to break, read off the snapshot the
+// generator read. Nothing here needs the step to land: a refused step is the point.
+function aimedAt(step: WorldEdit, snapshot: Snapshot): string[] {
+  const targets = step.kind === "remove" ? [step.target] : [];
+  if (step.kind === "set_props") {
+    targets.push(step.target);
+  }
+  if (step.kind === "place") {
+    targets.push(step.target);
+  }
+  const aims: string[] = [];
+  if (step.kind === "spawn" || step.kind === "place") {
+    const support = step.kind === "spawn" ? (step.overrides?.support ?? null) : (step.support ?? null);
+    const contained =
+      step.kind === "spawn" ? (step.overrides?.contained_in ?? null) : (step.contained_in ?? null);
+    if (support !== null && contained !== null) {
+      aims.push("both_relations");
+    }
+    if (step.kind === "place" && support !== null && support === step.target) {
+      aims.push("self_support");
+    }
+    if (step.kind === "spawn") {
+      const location = step.overrides?.location ?? null;
+      if (
+        location !== null &&
+        support !== null &&
+        location !== support &&
+        snapshot.entities[location]?.template === "room" &&
+        snapshot.entities[support]?.template === "room"
+      ) {
+        aims.push("wrong_location");
+      }
+    }
+  }
+  if (step.kind === "set_props") {
+    const subject = snapshot.entities[step.target];
+    for (const side of ["from", "to"] as const) {
+      const ref = step.props[side];
+      if (
+        subject?.template === "door" &&
+        typeof ref === "string" &&
+        snapshot.entities[ref]?.template !== "room"
+      ) {
+        aims.push("door_side_not_room");
+      }
+    }
+    const opens = step.props.opens;
+    if (typeof opens === "string" && snapshot.entities[opens]?.props.openable !== true) {
+      aims.push("opens_not_openable");
+    }
+  }
+  for (const id of targets) {
+    // `opens` is not here: a key outlives the lock it names, so removing one is not a broken rule.
+    const named = Object.values(snapshot.entities).some(
+      (entity) =>
+        entity.support === id ||
+        entity.contained_in === id ||
+        entity.location === id ||
+        entity.props.from === id ||
+        entity.props.to === id,
+    );
+    if (named) {
+      aims.push("remove_live_target");
+    }
+  }
+  return aims;
+}
+
+test("the generator aims an edit at every relation rule, and each step still validates", () => {
+  const seen = new Set<string>();
+  for (let seed = 0; seed < 100 && seen.size < 6; seed += 1) {
+    const rand = mulberry32(seed);
+    const world = memoryWorld(buildInitial(registry));
+    for (let i = 0; i < 30 && seen.size < 6; i += 1) {
+      const step = genStep(rand, world.snapshot(), `aim-${seed}-${i}`);
+      if (!("verb" in step)) {
+        for (const aim of aimedAt(step, world.snapshot())) {
+          seen.add(aim);
+        }
+      }
+      const result = "verb" in step ? world.command(step) : world.edit(step);
+      deepStrictEqual(validateSnapshot(world.snapshot(), registry), [], `aim-${seed}-${i}`);
+    }
+  }
+  deepStrictEqual(
+    [...seen].sort(),
+    ["both_relations", "door_side_not_room", "opens_not_openable", "remove_live_target", "self_support", "wrong_location"],
+  );
+});
 
 test("foldEntities replays raw deltas exactly", () => {
   const initial = buildInitial(registry);

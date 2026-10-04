@@ -35,4 +35,6 @@ part. A surface declares `surface`, sized by its footprint; a container declares
   `opens` is the target's id, else `no_key`.
 - `unlock`: the same requirement, clearing `locked` under `unlocked`.
 - `wait`: advances `args.ticks` ticks and expires every modifier due in that span, in tick order.
-- `edit`: carries one `spawn`, `remove`, `place`, `set_props` or `set_part` as `args.edit`.
+- `edit`: carries one `spawn`, `remove`, `place`, `set_props` or `set_part` as `args.edit`, and
+  refuses the code of the first snapshot rule its result breaks, so every relation rule in
+  [relations.md](relations.md) is a code this verb can return.

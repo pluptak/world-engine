@@ -8,8 +8,11 @@ entities supported by a room and derived through the support or containment chai
 `validateSnapshot` is the one pure check: no support or containment loop, `pos` exactly when the
 support is a room, `location` the room at the end of the chain, every reference present (a detached
 entity's origin is history, not a link), detached parts accounted for, integrity in 0–100, and ids
-below `next_seq`. A world that breaks one does not open; the CLI reports `invalid_snapshot` and the
-rule. Every accepted command and edit is checked before it is written.
+below `next_seq`. It also holds the relations to their own rules: never both supported and
+contained, a door's sides are rooms, and what a key's `opens` names can be opened.
+[relations.md](relations.md) names every relation, its kind, and the code that enforces it. A world
+that breaks one rule does not open; the CLI reports `invalid_snapshot` and the rule. Every accepted
+command and edit is checked before it is written.
 
 Templates declare parts, dimensions, mass, properties, break products, and residue. Only declared
 parts exist. Part state records integrity and whether a part is intact, damaged, detached, or

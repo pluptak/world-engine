@@ -135,13 +135,31 @@ function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
       issue("dangling_reference", [...path, "location"], `unknown entity ${entity.location}`),
     );
   }
-  // Doors name the rooms they join in props, outside the support and containment relations.
+  // Doors name the rooms they join in props, outside the support and containment relations: a side
+  // that names anything else joins nothing, so it is not a door's side at all.
   if (entity.template === "door") {
     for (const side of ["from", "to"] as const) {
       const ref = entity.props[side];
-      if (typeof ref === "string" && snapshot.entities[ref] === undefined) {
-        issues.push(issue("dangling_reference", [...path, "props", side], `unknown entity ${ref}`));
+      if (typeof ref !== "string") {
+        continue;
       }
+      const target = snapshot.entities[ref];
+      if (target === undefined) {
+        issues.push(issue("dangling_reference", [...path, "props", side], `unknown entity ${ref}`));
+      } else if (target.template !== "room") {
+        issues.push(
+          issue("door_side_not_room", [...path, "props", side], `template ${target.template}`),
+        );
+      }
+    }
+  }
+  // A key's `opens` is a live reference to what it can turn, but a key outlives the lock it names:
+  // an absent target is left alone, one that cannot be opened is not.
+  const opens = entity.props.opens;
+  if (typeof opens === "string") {
+    const target = snapshot.entities[opens];
+    if (target !== undefined && target.props.openable !== true) {
+      issues.push(issue("opens_target_not_openable", [...path, "props", "opens"], opens));
     }
   }
   return issues;
@@ -187,6 +205,18 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     }
     issues.push(...integrityIssues(snapshot, id, path));
     issues.push(...referenceIssues(snapshot, id, path));
+
+    // One entity sits in one place: it is either set down on something or inside something, never
+    // both, which also keeps the chain single-valued for the walk below.
+    if (entity.support !== null && entity.contained_in !== null) {
+      issues.push(
+        issue(
+          "support_and_contained_in",
+          path,
+          `support ${entity.support} contained_in ${entity.contained_in}`,
+        ),
+      );
+    }
 
     // A missing link already has its issue; the rules below read chains, so they stay out of the
     // way rather than pile onto it.

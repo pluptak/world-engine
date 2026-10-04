@@ -29,18 +29,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 Owns `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception part of
 `src/engine/query.ts`, `docs/relations.md`, `docs/perception.md`, `docs/state.md`.
 
-### A1. Relation invariants
-- **Why:** relations are about to multiply (A2 next), and today their rules live partly in
-  `validateSnapshot` and partly in individual verbs. Nothing in the validator says an entity is never
-  both supported and contained; only `place` and `spawn` refuse that.
-- **Scope:** one table in `docs/relations.md` for every relation — `support`, `contained_in`,
-  `location`, `detached_from`, a door's `from`/`to`, a key's `opens` — stating whether it is
-  exclusive with another, whether it may form a loop, whether it is live or history, and what
-  happens when its target is removed or detached. Every rule in the table is enforced by
-  `validateSnapshot` or by one named verb, and the property generator covers it.
-- **Done when:** each row names its enforcing rule and a test; a snapshot with both `support` and
-  `contained_in` set fails validation with its own code.
-
 ### A2. Concealment: `under` / `behind`
 - **Why:** it exercises the boundary the engine exists for — what the world holds versus what can be
   perceived — and a consumer decides whether a character noticed.
