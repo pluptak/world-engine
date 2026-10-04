@@ -4,8 +4,8 @@ The next steps, in order. One item = one small block: plan it, build it, `npm ru
 the diff, commit. Each item keeps every invariant in AGENTS.md (determinism, pure core,
 `canonicalJson`, no prose, coverage-governed `"unknown"`).
 
-Delete an item in the same commit that ships it — git history records it; DESIGN.md describes what
-is built.
+Delete an item in the same commit that ships it — git history records it; `docs/` describes what is
+built (index: `docs/DESIGN.md`).
 
 **Scope line.** The engine is a library: a typed, in-process API through which a caller manipulates
 objects, humans and animals and asks about the world. The CLI is one thin adapter over that API, and
@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 - **Why:** relations are about to multiply (concealment next), and today their rules live partly in
   `validateSnapshot` and partly in individual verbs. Nothing in the validator says an entity is never
   both supported and contained; only `place` and `spawn` refuse that.
-- **Scope:** one table in DESIGN.md for every relation — `support`, `contained_in`, `location`,
+- **Scope:** one table in `docs/relations.md` for every relation — `support`, `contained_in`, `location`,
   `detached_from`, a door's `from`/`to` — stating whether it is exclusive with another, whether it
   may form a loop, whether it is live or history, and what happens when its target is removed or
   detached. Every rule in the table is enforced by `validateSnapshot` or by one named verb, and
@@ -62,7 +62,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 - **Scope:** a hand-written scenario (an inn room: table with bottle, chair, door, locked chest and
   key, two humans, a dog) and a scripted 30–100 command sequence that mixes support loss, breaking,
   carrying, locks, perception and edits. Assert its full trace and perceivers at the key events.
-- **Done when:** the sequence passes, and a short note in DESIGN.md records what it could not
+- **Done when:** the sequence passes, and a short note in `docs/` records what it could not
   express — that list, not the project's name, decides whether richer physics is ever needed.
 
 ## Out of scope

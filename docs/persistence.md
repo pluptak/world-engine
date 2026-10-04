@@ -1,0 +1,25 @@
+# Commands and persistence
+
+The CLI is a JSON adapter over `World`: one request on stdin, one method, one response. Zod
+validates that boundary, and a failure becomes `{status:"invalid", issues}` with exit code 2.
+`init` builds a world from a scenario of spawn specs.
+
+A world directory holds:
+- `initial.json` and canonical `snapshot.json`;
+- `templates.json`, the resolved template set the world was created with;
+- `ids.json`, when the scenario named anything;
+- `log.jsonl`, every command with its base version and status, refused ones included;
+- `events.jsonl`, every emitted event, which queries read instead of replaying;
+- `head.json`, written last: both JSONL files' sizes, all and accepted entry counts, and the
+  template hash, so opening a world detects a crash without reading the log.
+
+Replay folds accepted commands over the initial snapshot; it is the source of truth, and a mismatch
+with the head rebuilds the snapshot, events and head from the log. An accepted command whose result
+breaks an invariant is logged `invalid` and never written. A stale command is re-evaluated against
+the current snapshot and becomes `preempted` when it would have succeeded at its base version.
+
+A world loads the template set it was created with, so editing `templates/` reaches new worlds only.
+`upgradeTemplates` moves a live world to a new set and refuses if a template lost a field an entity
+uses, or if the log no longer replays to the stored snapshot and event stream.
+
+`npm run bench` runs 10k store commands and holds about 3.6 ms per command from first to last.

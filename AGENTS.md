@@ -67,8 +67,9 @@ Guidance for coding agents in this directory.
 
 ## Doc size caps (explicit in `plan.md`)
 
-- `world-engine/README.md` ≤ 15 lines; `docs/DESIGN.md` ≤ 80 lines and describes **what is built, nothing
-  aspirational**.
+- `world-engine/README.md` ≤ 15 lines. `docs/` describes **what is built, nothing aspirational**, one
+  concept per file, each ≤ 40 lines and ≤ 100 columns; `docs/DESIGN.md` is the index of those files.
+  A topic that outgrows its cap splits into a new file rather than losing content.
 
 ## Out of scope — do not build these, even if the code would be easier
 

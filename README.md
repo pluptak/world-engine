@@ -16,4 +16,4 @@ npm test          # node:test via tsx
 npm run typecheck # tsc --noEmit
 ```
 
-Node ≥ 20. See `docs/DESIGN.md` (written at block 9) for the built model.
+Node ≥ 20. See `docs/DESIGN.md`, the index of the built model.
