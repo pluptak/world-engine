@@ -23,6 +23,19 @@ export interface Template {
 
 export type TemplateRegistry = Record<string, Template>;
 
+// What a template file declares before its parent is folded in: every field except `id` may be
+// absent, and an absent field is what inheritance fills in.
+interface TemplateDecl {
+  id: string;
+  extends: string | null;
+  size_cm?: { w: number; d: number; h: number };
+  mass_g?: number;
+  parts?: PartDecl[];
+  props?: Record<string, number | string | boolean>;
+  break_products?: { template: string; count: number }[];
+  break_residue?: Record<string, number>;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -46,90 +59,195 @@ function assertNumericRecord(
   }
 }
 
-function parseTemplate(value: unknown, source: string): Template {
+function parseDecl(value: unknown, source: string): TemplateDecl {
   if (!isRecord(value)) {
     throw new TypeError(`${source} must contain a template object`);
   }
   if (typeof value.id !== "string" || value.id.length === 0) {
     throw new TypeError(`${source} has an invalid id`);
   }
-  if (!isRecord(value.size_cm)) {
-    throw new TypeError(`${source}.size_cm must be an object`);
+  if (
+    value.extends !== undefined &&
+    (typeof value.extends !== "string" || value.extends.length === 0)
+  ) {
+    throw new TypeError(`${source}.extends must be a non-empty string`);
   }
-  for (const dimension of ["w", "d", "h"] as const) {
-    assertNumber(value.size_cm[dimension], `${source}.size_cm.${dimension}`);
-  }
-  assertNumber(value.mass_g, `${source}.mass_g`);
-  if (!Array.isArray(value.parts)) {
-    throw new TypeError(`${source}.parts must be an array`);
-  }
-  if (!isRecord(value.props)) {
-    throw new TypeError(`${source}.props must be an object`);
-  }
-  for (const [key, prop] of Object.entries(value.props)) {
-    if (
-      typeof prop !== "string" &&
-      typeof prop !== "number" &&
-      typeof prop !== "boolean"
-    ) {
-      throw new TypeError(`${source}.props.${key} must be a primitive`);
-    }
-  }
-  if (!Array.isArray(value.break_products)) {
-    throw new TypeError(`${source}.break_products must be an array`);
-  }
-  assertNumericRecord(value.break_residue, `${source}.break_residue`);
 
-  const parts = value.parts.map((part, index): PartDecl => {
-    const label = `${source}.parts[${index}]`;
-    if (!isRecord(part)) {
-      throw new TypeError(`${label} must be an object`);
-    }
-    if (typeof part.name !== "string" || part.name.length === 0) {
-      throw new TypeError(`${label}.name must be a non-empty string`);
-    }
-    if (part.parent !== null && typeof part.parent !== "string") {
-      throw new TypeError(`${label}.parent must be a string or null`);
-    }
-    assertNumericRecord(part.contributes, `${label}.contributes`);
-    if (typeof part.detachable !== "boolean") {
-      throw new TypeError(`${label}.detachable must be a boolean`);
-    }
-    assertNumber(part.max_integrity, `${label}.max_integrity`);
-    return {
-      name: part.name,
-      parent: part.parent,
-      contributes: { ...part.contributes },
-      detachable: part.detachable,
-      max_integrity: part.max_integrity,
-    };
-  });
+  const decl: TemplateDecl = { id: value.id, extends: value.extends ?? null };
 
-  const breakProducts = value.break_products.map((product, index) => {
-    const label = `${source}.break_products[${index}]`;
-    if (!isRecord(product) || typeof product.template !== "string") {
-      throw new TypeError(`${label} must contain a template id`);
+  if (Object.hasOwn(value, "size_cm")) {
+    if (!isRecord(value.size_cm)) {
+      throw new TypeError(`${source}.size_cm must be an object`);
     }
-    assertNumber(product.count, `${label}.count`);
-    return { template: product.template, count: product.count };
-  });
-
-  const template: Template = {
-    id: value.id,
-    size_cm: {
+    for (const dimension of ["w", "d", "h"] as const) {
+      assertNumber(value.size_cm[dimension], `${source}.size_cm.${dimension}`);
+    }
+    decl.size_cm = {
       w: value.size_cm.w as number,
       d: value.size_cm.d as number,
       h: value.size_cm.h as number,
-    },
-    mass_g: value.mass_g,
-    parts,
-    props: { ...value.props } as Template["props"],
-    break_products: breakProducts,
-    break_residue: { ...value.break_residue },
-  };
+    };
+  }
 
-  validateParts(template, source);
-  return template;
+  if (Object.hasOwn(value, "mass_g")) {
+    assertNumber(value.mass_g, `${source}.mass_g`);
+    decl.mass_g = value.mass_g;
+  }
+
+  if (Object.hasOwn(value, "parts")) {
+    if (!Array.isArray(value.parts)) {
+      throw new TypeError(`${source}.parts must be an array`);
+    }
+    decl.parts = value.parts.map((part, index): PartDecl => {
+      const label = `${source}.parts[${index}]`;
+      if (!isRecord(part)) {
+        throw new TypeError(`${label} must be an object`);
+      }
+      if (typeof part.name !== "string" || part.name.length === 0) {
+        throw new TypeError(`${label}.name must be a non-empty string`);
+      }
+      if (part.parent !== null && typeof part.parent !== "string") {
+        throw new TypeError(`${label}.parent must be a string or null`);
+      }
+      assertNumericRecord(part.contributes, `${label}.contributes`);
+      if (typeof part.detachable !== "boolean") {
+        throw new TypeError(`${label}.detachable must be a boolean`);
+      }
+      assertNumber(part.max_integrity, `${label}.max_integrity`);
+      return {
+        name: part.name,
+        parent: part.parent,
+        contributes: { ...part.contributes },
+        detachable: part.detachable,
+        max_integrity: part.max_integrity,
+      };
+    });
+  }
+
+  if (Object.hasOwn(value, "props")) {
+    if (!isRecord(value.props)) {
+      throw new TypeError(`${source}.props must be an object`);
+    }
+    for (const [key, prop] of Object.entries(value.props)) {
+      if (
+        typeof prop !== "string" &&
+        typeof prop !== "number" &&
+        typeof prop !== "boolean"
+      ) {
+        throw new TypeError(`${source}.props.${key} must be a primitive`);
+      }
+    }
+    decl.props = { ...value.props } as TemplateDecl["props"];
+  }
+
+  if (Object.hasOwn(value, "break_products")) {
+    if (!Array.isArray(value.break_products)) {
+      throw new TypeError(`${source}.break_products must be an array`);
+    }
+    decl.break_products = value.break_products.map((product, index) => {
+      const label = `${source}.break_products[${index}]`;
+      if (!isRecord(product) || typeof product.template !== "string") {
+        throw new TypeError(`${label} must contain a template id`);
+      }
+      assertNumber(product.count, `${label}.count`);
+      return { template: product.template, count: product.count };
+    });
+  }
+
+  if (Object.hasOwn(value, "break_residue")) {
+    assertNumericRecord(value.break_residue, `${source}.break_residue`);
+    decl.break_residue = { ...value.break_residue };
+  }
+
+  return decl;
+}
+
+// Inherited containers are never shared with a caller: each template's merge base is rebuilt from
+// the declarations here, and a declared list is copied into the resolved template.
+function copyParts(parts: readonly PartDecl[]): PartDecl[] {
+  return parts.map((part) => ({ ...part, contributes: { ...part.contributes } }));
+}
+
+function requireResolved(decl: TemplateDecl, source: string): Template {
+  const missing = ["size_cm", "mass_g", "parts", "props", "break_products", "break_residue"].filter(
+    (field) => decl[field as keyof TemplateDecl] === undefined,
+  );
+  if (missing.length > 0) {
+    throw new TypeError(`${source} declares no ${missing.join(" or ")} and extends nothing`);
+  }
+
+  return {
+    id: decl.id,
+    size_cm: { ...decl.size_cm! },
+    mass_g: decl.mass_g!,
+    parts: copyParts(decl.parts!),
+    props: { ...decl.props! },
+    break_products: decl.break_products!.map((product) => ({ ...product })),
+    break_residue: { ...decl.break_residue! },
+  };
+}
+
+// The child's own field wins, props are shallow-merged over the parent's, and parts are replaced
+// rather than merged: a child that declares parts declares the whole part tree it has.
+function overParent(parent: Template, decl: TemplateDecl): Template {
+  return {
+    id: decl.id,
+    size_cm: decl.size_cm === undefined ? parent.size_cm : { ...decl.size_cm },
+    mass_g: decl.mass_g ?? parent.mass_g,
+    parts: decl.parts === undefined ? parent.parts : copyParts(decl.parts),
+    props: { ...parent.props, ...decl.props },
+    break_products:
+      decl.break_products === undefined
+        ? parent.break_products
+        : decl.break_products.map((product) => ({ ...product })),
+    break_residue:
+      decl.break_residue === undefined
+        ? parent.break_residue
+        : { ...decl.break_residue },
+  };
+}
+
+// The ids from a template up to its root, child first. A cycle or a parent no template declares is
+// refused here, with the chain that produced it, before any field is merged.
+function ancestry(id: string, decls: ReadonlyMap<string, TemplateDecl>): string[] {
+  const chain: string[] = [];
+  const seen = new Set<string>();
+  let current: string | null = id;
+  while (current !== null) {
+    if (seen.has(current)) {
+      throw new TypeError(`Template extends cycle: ${[...chain, current].join(" -> ")}`);
+    }
+    const decl = decls.get(current);
+    if (decl === undefined) {
+      throw new TypeError(`Template extends unknown parent: ${[...chain, current].join(" -> ")}`);
+    }
+    seen.add(current);
+    chain.push(current);
+    current = decl.extends;
+  }
+  return chain;
+}
+
+// Resolution happens once, here: everything downstream sees a set with no `extends` in it, so the
+// hash, a world's frozen templates.json and upgradeTemplates never have to know a parent existed.
+function resolveTemplates(
+  decls: ReadonlyMap<string, TemplateDecl>,
+  sources: ReadonlyMap<string, string>,
+): TemplateRegistry {
+  const registry: TemplateRegistry = {};
+  for (const id of [...decls.keys()].sort()) {
+    const chain = ancestry(id, decls);
+    const rootId = chain[chain.length - 1]!;
+    let template = requireResolved(decls.get(rootId)!, sources.get(rootId) ?? rootId);
+    for (const chainId of chain.slice(0, -1).reverse()) {
+      template = overParent(template, decls.get(chainId)!);
+    }
+    validateParts(template, sources.get(id) ?? id);
+    registry[id] = template;
+  }
+
+  assertMissingCompanions(registry);
+  return registry;
 }
 
 function validateParts(template: Template, source: string): void {
@@ -198,20 +316,21 @@ export function loadTemplates(dir: string): TemplateRegistry {
   const files = readdirSync(dir)
     .filter((file) => file.endsWith(".json"))
     .sort();
-  const registry: TemplateRegistry = {};
+  const decls = new Map<string, TemplateDecl>();
+  const sources = new Map<string, string>();
 
   for (const file of files) {
     const path = join(dir, file);
     const parsed: unknown = JSON.parse(readFileSync(path, "utf8"));
-    const template = parseTemplate(parsed, file);
-    if (Object.hasOwn(registry, template.id)) {
-      throw new TypeError(`Duplicate template id ${template.id}`);
+    const decl = parseDecl(parsed, file);
+    if (decls.has(decl.id)) {
+      throw new TypeError(`Duplicate template id ${decl.id}`);
     }
-    registry[template.id] = template;
+    decls.set(decl.id, decl);
+    sources.set(decl.id, file);
   }
 
-  assertMissingCompanions(registry);
-  return registry;
+  return resolveTemplates(decls, sources);
 }
 
 // The same validation for a whole set read as one object rather than a directory of files: a key
@@ -220,16 +339,19 @@ export function parseRegistry(value: unknown, source = "templates.json"): Templa
   if (!isRecord(value)) {
     throw new TypeError(`${source} must contain a template object`);
   }
-  const registry: TemplateRegistry = {};
+  const decls = new Map<string, TemplateDecl>();
+  const sources = new Map<string, string>();
+
   for (const id of Object.keys(value).sort()) {
-    const template = parseTemplate(value[id], `${source}#${id}`);
-    if (template.id !== id) {
-      throw new TypeError(`${source}#${id} declares id ${template.id}`);
+    const decl = parseDecl(value[id], `${source}#${id}`);
+    if (decl.id !== id) {
+      throw new TypeError(`${source}#${id} declares id ${decl.id}`);
     }
-    registry[id] = template;
+    decls.set(id, decl);
+    sources.set(id, `${source}#${id}`);
   }
-  assertMissingCompanions(registry);
-  return registry;
+
+  return resolveTemplates(decls, sources);
 }
 
 const hashCache = new WeakMap<TemplateRegistry, string>();

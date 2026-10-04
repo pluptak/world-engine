@@ -131,8 +131,12 @@ refusal code also touches the shared registration points, one line or one entry 
 
 - **Relations and perception:** `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception
   half of `src/engine/query.ts`, `docs/state.md`, `docs/perception.md`.
-- **Templates:** `src/templates.ts`, `src/engine/upgrade.ts`, `templates/*.json`, and the hash and
-  companion rules above.
+- **Templates:** `src/templates.ts`, `src/engine/upgrade.ts`, `templates/*.json`, the hash and
+  companion rules above, and `docs/templates.md`: a template may declare `"extends": "<parent id>"`,
+  resolved once when a set is loaded or parsed (own field wins, `props` shallow-merged, `parts`
+  replaced only if declared, everything else inherited; a cycle or unknown parent is refused with
+  the chain), so no `extends` key survives into the hash, a frozen `templates.json`, the companion
+  rule or `lostField`. `templates/wine_bottle.json` is the worked example.
 - **Materials:** `src/engine/residue.ts` and `src/resolvers/physical.ts`, whose behaviour the rest
   of the engine relies on; a material's own verb lives in `src/engine/verbs/`.
 - **Authoring space:** `src/scenario.ts`, the `place` path of `src/engine/verbs/edit.ts`, the `fact`

@@ -50,16 +50,6 @@ Owns `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception part of
 - **Done when:** a file under a book is not seen; after `search book` it is; lifting the book reveals
   it to everyone in the room.
 
-## Lane B. Templates
-
-Owns `src/templates.ts`, `src/engine/upgrade.ts`, new files in `templates/`.
-
-### B1. Template `extends`
-- **Scope:** `"extends": "bottle"` merges parent fields (props shallow-merged, parts replaced only
-  if declared); cycles rejected; the hash covers the resolved templates, and the companion-template
-  rule applies to the resolved set.
-- **Done when:** `wine_bottle extends bottle` with only a changed `liquid_material` loads and breaks.
-
 ## Lane C. Materials
 
 Owns a new `src/engine/verbs/pour.ts`; may call `src/engine/residue.ts` and
