@@ -1,0 +1,9 @@
+{
+  "id": "anchor",
+  "size_cm": { "w": 0, "d": 0, "h": 0 },
+  "mass_g": 0,
+  "parts": [],
+  "props": { "abstract": true },
+  "break_products": [],
+  "break_residue": {}
+}

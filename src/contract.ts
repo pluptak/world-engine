@@ -7,6 +7,15 @@ export const PosSchema = z.object({
   y: z.number().int(),
 }).strict();
 
+// A position written against a named reference point; it resolves to anchor.pos + (dx, dy).
+export const AnchorPosSchema = z.object({
+  anchor: z.string().min(1),
+  dx: z.number().int(),
+  dy: z.number().int(),
+}).strict();
+
+const PlacementPosSchema = z.union([PosSchema, AnchorPosSchema]);
+
 const PrimitiveSchema = z.union([z.number(), z.string(), z.boolean()]);
 
 const ModifierSchema = z.object({
@@ -61,12 +70,18 @@ export const EntityOverridesSchema = z.object({
   props: z.record(z.string(), PrimitiveSchema).optional(),
 }).strict();
 
+// A scenario entry may place its entity against an anchor; a spawn edit may not, so only the
+// scenario's overrides admit the anchor form of a position.
+export const ScenarioOverridesSchema = EntityOverridesSchema.extend({
+  pos: PlacementPosSchema.nullable().optional(),
+});
+
 // A scenario entry may declare a name for the entity it spawns; createWorld resolves names to ids
 // before anything spawns, so a duplicate, an unknown reference, or an id-shaped name is refused.
 export const ScenarioSchema = z.array(z.object({
   id: z.string().min(1).optional(),
   template: z.string().min(1),
-  overrides: EntityOverridesSchema.optional(),
+  overrides: ScenarioOverridesSchema.optional(),
 }).strict());
 
 export const WorldEditSchema = z.discriminatedUnion("kind", [
@@ -81,7 +96,7 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
     target: IdSchema,
     support: IdSchema.nullable().optional(),
     contained_in: IdSchema.nullable().optional(),
-    pos: PosSchema.nullable().optional(),
+    pos: PlacementPosSchema.nullable().optional(),
   }).strict(),
   z.object({
     kind: z.literal("set_props"),

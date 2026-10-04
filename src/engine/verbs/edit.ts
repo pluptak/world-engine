@@ -1,10 +1,12 @@
 import type { Entity, Id, Pos, Snapshot } from "../../model.js";
 import type { TemplateRegistry } from "../../templates.js";
 import { propagateSupportLoss } from "../../resolvers/physical.js";
+import { effectivePos } from "../geometry.js";
 import { spawn, type EntityOverrides } from "../spawn.js";
 import { derivedLocationOf, validateSnapshot } from "../validate.js";
 import {
   WORLD_AUTHOR,
+  type AnchorPos,
   type CommandContext,
   type PlaceEdit,
   type PreconditionResult,
@@ -27,8 +29,30 @@ function isInt(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value);
 }
 
-function isPos(value: Record<string, unknown>[string]): value is { x: number; y: number } {
-  return isRecord(value) && isInt(value.x) && isInt(value.y);
+// A pos is exactly a position in centimetres: a record carrying anything else is not one, which is
+// what tells the anchor form apart from a mistyped position.
+function isPos(value: Record<string, unknown>[string]): value is Pos {
+  return (
+    isRecord(value) &&
+    isInt(value.x) &&
+    isInt(value.y) &&
+    Object.keys(value).every((key) => key === "x" || key === "y")
+  );
+}
+
+// The anchor form of a position: a reference point and an offset, never a position of its own.
+function isAnchorPos(value: unknown): value is AnchorPos {
+  return (
+    isRecord(value) &&
+    isId(value.anchor) &&
+    isInt(value.dx) &&
+    isInt(value.dy) &&
+    Object.keys(value).every((key) => key === "anchor" || key === "dx" || key === "dy")
+  );
+}
+
+function anchorOffset(pos: Pos | AnchorPos | null | undefined): AnchorPos | null {
+  return isAnchorPos(pos) ? pos : null;
 }
 
 function isProps(value: unknown): value is Record<string, number | string | boolean> {
@@ -165,13 +189,16 @@ function parseEdit(value: unknown): WorldEdit | null {
     return { kind: "remove", target: value.target };
   }
   if (value.kind === "place") {
-    if (!onlyKeys(value, ["kind", "target", "support", "contained_in", "pos"]) || !isId(value.target)) {
+    if (
+      !onlyKeys(value, ["kind", "target", "support", "contained_in", "pos"]) ||
+      !isId(value.target)
+    ) {
       return null;
     }
     if (
       (value.support !== undefined && value.support !== null && !isId(value.support)) ||
       (value.contained_in !== undefined && value.contained_in !== null && !isId(value.contained_in)) ||
-      (value.pos !== undefined && value.pos !== null && !isPos(value.pos))
+      (value.pos !== undefined && value.pos !== null && !isPos(value.pos) && !isAnchorPos(value.pos))
     ) {
       return null;
     }
@@ -182,7 +209,7 @@ function parseEdit(value: unknown): WorldEdit | null {
     if (typeof value.contained_in === "string" || value.contained_in === null) {
       edit.contained_in = value.contained_in;
     }
-    if (value.pos === null || isPos(value.pos)) {
+    if (value.pos === null || isPos(value.pos) || isAnchorPos(value.pos)) {
       edit.pos = value.pos;
     }
     return edit;
@@ -295,7 +322,7 @@ function removeRefusal(context: CommandContext, subject: Entity): PreconditionRe
 // is refused outright.
 function normalizedPlacement(
   subject: Entity,
-  edit: PlaceEdit,
+  edit: ResolvedPlaceEdit,
 ): { support: Id | null; contained: Id | null; pos: Pos | null } | null {
   if (
     edit.support !== undefined &&
@@ -315,7 +342,52 @@ function normalizedPlacement(
   return { support, contained, pos: edit.pos === undefined ? subject.pos : edit.pos };
 }
 
-function placeRefusal(context: CommandContext, edit: PlaceEdit, subject: Entity): PreconditionResult {
+// A place edit whose position is already a plain one, which is what every rule below reads.
+type ResolvedPlaceEdit = PlaceEdit & { pos?: Pos | null };
+
+// An anchor resolves to a plain position before any placement rule reads one: the offset against
+// the anchor's own position, and the anchor's room as the holder. Nothing records the anchor, so
+// the entity afterwards is simply in that room at that position. An anchor that is not standing in
+// a room has no position to offset from, and is refused rather than guessed at.
+function anchoredPlace(snapshot: Snapshot, edit: PlaceEdit): ResolvedPlaceEdit | PreconditionResult {
+  const offset = anchorOffset(edit.pos);
+  if (offset === null) {
+    // Parsing admits only a plain position or an anchor form, so anything else is already resolved.
+    return edit as ResolvedPlaceEdit;
+  }
+  // An anchor says where the entity is, so it cannot sit beside a holder the author also named.
+  if (
+    (edit.support !== undefined && edit.support !== null) ||
+    (edit.contained_in !== undefined && edit.contained_in !== null)
+  ) {
+    return refused("conflicting_placement");
+  }
+  const anchor = snapshot.entities[offset.anchor];
+  if (anchor === undefined) {
+    return invalid("no_such_entity");
+  }
+  const room = anchor.support === null ? null : snapshot.entities[anchor.support];
+  const base = room?.template === "room" ? effectivePos(snapshot, anchor.id) : null;
+  if (base === null) {
+    return refused("anchor_not_room_supported");
+  }
+  return {
+    ...edit,
+    support: anchor.support,
+    contained_in: null,
+    pos: { x: base.x + offset.dx, y: base.y + offset.dy },
+  };
+}
+
+function isPlacement(value: ResolvedPlaceEdit | PreconditionResult): value is ResolvedPlaceEdit {
+  return !("status" in value);
+}
+
+function placeRefusal(
+  context: CommandContext,
+  edit: ResolvedPlaceEdit,
+  subject: Entity,
+): PreconditionResult {
   const placement = normalizedPlacement(subject, edit);
   if (placement === null) {
     return refused("conflicting_placement");
@@ -379,8 +451,10 @@ function preconditions(context: CommandContext): PreconditionResult {
   switch (edit.kind) {
     case "remove":
       return removeRefusal(context, subject);
-    case "place":
-      return placeRefusal(context, edit, subject);
+    case "place": {
+      const placed = anchoredPlace(context.snapshot, edit);
+      return isPlacement(placed) ? placeRefusal(context, placed, subject) : placed;
+    }
     case "set_props":
       return { status: "ok" };
     case "set_part":
@@ -468,7 +542,11 @@ function transitionRemove(context: TransitionContext, targetId: Id): void {
 }
 
 function transitionPlace(context: TransitionContext, edit: PlaceEdit, subject: Entity): void {
-  const placement = normalizedPlacement(subject, edit);
+  const anchored = anchoredPlace(context.snapshot, edit);
+  if (!isPlacement(anchored)) {
+    throw new TypeError("Edit placement changed after validation");
+  }
+  const placement = normalizedPlacement(subject, anchored);
   if (placement === null) {
     throw new TypeError("Edit placement changed after validation");
   }
@@ -552,6 +630,7 @@ export const editVerb: Verb = {
     "conflicting_placement",
     "room_support_without_pos",
     "pos_without_room_support",
+    "anchor_not_room_supported",
     "circular_placement",
     "occupied_room",
     "unknown_part",

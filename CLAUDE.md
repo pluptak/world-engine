@@ -127,7 +127,7 @@ where a snapshot's coverage declares it.
 One bullet per area, and an area is extended by appending to its own bullet only. A new verb or
 refusal code also touches the shared registration points, one line or one entry each:
 `src/engine/verbs/index.ts`, `src/errors.ts`, `src/contract.ts`, the verb table in
-`tests/property-gen.ts`, and one bullet in `docs/pipeline.md`.
+`tests/property-gen.ts`, and one bullet in `docs/verbs.md`.
 
 - **Relations and perception:** `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception
   half of `src/engine/query.ts`, `docs/state.md`, `docs/perception.md`, `docs/relations.md`
@@ -143,7 +143,15 @@ refusal code also touches the shared registration points, one line or one entry 
   of the engine relies on; a material's own verb lives in `src/engine/verbs/` — `pour` moves
   `liquid_material`/`liquid_amount` between props and residue, and `docs/liquids.md` has that model.
 - **Authoring space:** `src/scenario.ts`, the `place` path of `src/engine/verbs/edit.ts`, the `fact`
-  half of `src/engine/query.ts`, `docs/api.md`.
+  half of `src/engine/query.ts`, `docs/api.md`. A position may be written as `{anchor, dx, dy}`
+  instead of `pos` (`AnchorPos` in `command.ts`, `ScenarioOverrides` in `scenario.ts`): it resolves
+  to the anchor's position in the anchor's room and adds no relation, refusing
+  `conflicting_placement` beside a named holder and `anchor_not_room_supported` for an anchor not
+  standing in a room. `templates/anchor.json` is the empty point template and declares
+  `abstract: true`; an abstract entity is skipped by target resolution and answers `false` /
+  `abstract` to perception (`isAbstract` in `resolve.ts`), which is why an anchor is a fixed point
+  nothing can move. `fact`'s `near` is derived from both sides' positions under
+  `NEAR_THRESHOLD_CM` (in the default coverage); docs: `docs/space.md`.
 
 ## Tests
 

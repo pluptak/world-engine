@@ -16,6 +16,9 @@ export type WorldErrorCode =
   | "invalid_name"
   | "duplicate_name"
   | "unknown_name"
+  | "unknown_anchor"
+  | "anchor_not_room_supported"
+  | "conflicting_placement"
   | "invalid_ids";
 
 export class WorldError extends Error {

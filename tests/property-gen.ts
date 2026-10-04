@@ -3,6 +3,7 @@
 // and a cause-chain check. Nothing here ships in src/.
 import type { Command, WorldEdit } from "../src/engine/command.js";
 import { spawn } from "../src/engine/spawn.js";
+import { resolveScenario } from "../src/scenario.js";
 import { templatesHash, type TemplateRegistry } from "../src/templates.js";
 import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../src/model.js";
 import type { Scenario } from "../src/api.js";
@@ -79,7 +80,8 @@ export function buildInitial(registry: TemplateRegistry): Snapshot {
     coverage: { relations: [], senses: [], properties: [] },
     entities: {},
   };
-  for (const entry of SCENARIO) {
+  // The scenario goes through the resolver every world is built from, anchors and all.
+  for (const entry of resolveScenario(SCENARIO).scenario) {
     snapshot = spawn(snapshot, registry, entry.template, entry.overrides).snapshot;
   }
   return snapshot;

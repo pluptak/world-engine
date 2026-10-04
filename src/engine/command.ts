@@ -16,12 +16,21 @@ export interface RemoveEdit {
   target: Id;
 }
 
+// A position written against a named reference point rather than in centimetres: it resolves, when
+// the world is written, to anchor.pos + (dx, dy) and the anchor's room as the holder. Nothing keeps
+// the anchor afterwards, so it adds no relation.
+export interface AnchorPos {
+  anchor: Id | string;
+  dx: number;
+  dy: number;
+}
+
 export interface PlaceEdit {
   kind: "place";
   target: Id;
   support?: Id | null;
   contained_in?: Id | null;
-  pos?: Pos | null;
+  pos?: Pos | AnchorPos | null;
 }
 
 export interface PropsEdit {

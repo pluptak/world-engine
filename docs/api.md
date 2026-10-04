@@ -24,3 +24,10 @@ A scenario entry may declare `"id"`, and `location`, `support`, `contained_in`,
 to `e<n>` in entry order before the first spawn; an empty, duplicate, id-shaped, or unknown name is
 refused before anything is written. `World.id(name)` returns the id: `openWorld` reads the map back
 from `ids.json`, `memoryWorld` takes it as an option.
+
+`overrides.pos` may be `{anchor, dx, dy}` instead of `{x, y}`: it resolves to the anchor's position
+plus the offset, in the anchor's room, before the first spawn. Naming a holder beside it is refused
+`conflicting_placement`, an anchor that names nothing `unknown_anchor`, and one that is not standing
+in a room `anchor_not_room_supported`; an `edit place` takes the same shape in `pos` by id and
+refuses a bad anchor the same way, with `no_such_entity` for one that does not exist. See
+[space.md](space.md).

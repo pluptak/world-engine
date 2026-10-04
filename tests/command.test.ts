@@ -194,7 +194,7 @@ test("repeating a command on the same snapshot is deterministic", () => {
 
 test("part addresses resolve only for declared, attached parts", () => {
   const { snapshot, actorId } = world();
-  const resolved = resolveTarget(snapshot, actorId, `${actorId}.hand_l`);
+  const resolved = resolveTarget(snapshot, registry, actorId, `${actorId}.hand_l`);
   deepStrictEqual(resolved, {
     status: "resolved",
     target: { entity_id: actorId, part: "hand_l", address: `${actorId}.hand_l` },
@@ -211,7 +211,7 @@ test("part addresses resolve only for declared, attached parts", () => {
       },
     },
   };
-  strictEqual(resolveTarget(detached, actorId, `${actorId}.hand_l`).status, "unresolved");
+  strictEqual(resolveTarget(detached, registry, actorId, `${actorId}.hand_l`).status, "unresolved");
 });
 
 test("take of a part address is refused with its declared code", () => {

@@ -1,8 +1,14 @@
 import { capacity } from "./capacity.js";
 import { canonicalJson } from "./canonical.js";
-import type { Entity, Id, Perceivers, Snapshot, Tri, WorldEvent } from "../model.js";
+import { effectivePos } from "./geometry.js";
+import type { Entity, Id, Perceivers, Pos, Snapshot, Tri, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import { closedEnclosure, isAgent } from "./verbs/address.js";
+import { isAbstract } from "./resolve.js";
+
+// The one declared threshold for `near`: two positions in the same room this far apart or closer are
+// near. Squared, because the arithmetic stays integer and no square root is ever taken.
+export const NEAR_THRESHOLD_CM = 100;
 
 export type Query =
   | { kind: "fact"; subject: Id; relation: string; object?: Id | string }
@@ -82,12 +88,42 @@ function propertyMatches(value: unknown, object: Id | string | undefined, proper
   return typeof object === "string" && typeof value === "object" && canonicalJson(value) === object;
 }
 
+// `near` is the one relation that is never stored: it is read off two positions every time it is
+// asked, so a world can answer a proximity without ever having to claim one. Both sides need a
+// position derivable through their support or containment chain, and the same room at the end of it.
+function nearValue(snapshot: Snapshot, entity: Entity, other: Entity): boolean {
+  if (entity.location === null || entity.location !== other.location) {
+    return false;
+  }
+  const here = effectivePos(snapshot, entity.id);
+  const there = effectivePos(snapshot, other.id);
+  return here !== null && there !== null && withinThreshold(here, there);
+}
+
+function withinThreshold(here: Pos, there: Pos): boolean {
+  const dx = here.x - there.x;
+  const dy = here.y - there.y;
+  return dx * dx + dy * dy <= NEAR_THRESHOLD_CM * NEAR_THRESHOLD_CM;
+}
+
 function fact(snapshot: Snapshot, query: Extract<Query, { kind: "fact" }>): Answer {
   const entity = snapshot.entities[query.subject];
   if (entity === undefined) {
     return answer("false", "no_such_entity");
   }
   if (snapshot.coverage.relations.includes(query.relation)) {
+    if (query.relation === "near") {
+      // Existence is modelled, so a bad object is false rather than unknown, and only the basis
+      // says which of the two ways it failed.
+      if (query.object === undefined) {
+        return answer("false", "no_object");
+      }
+      const other = snapshot.entities[query.object];
+      if (other === undefined) {
+        return answer("false", "no_such_entity");
+      }
+      return answer(nearValue(snapshot, entity, other) ? "true" : "false", "derived_near");
+    }
     return answer(relationValue(entity, query.relation, query.object) ? "true" : "false", "relation_state");
   }
   if (snapshot.coverage.properties.includes(query.relation)) {
@@ -197,6 +233,11 @@ function perceive(
       : snapshot.entities[event.entity];
   if (targetEntity === undefined) {
     return answer("false", "no_such_entity");
+  }
+  // An abstract entity exists and is not a thing to be sensed: it is false in either form, the
+  // entity and the event alike.
+  if (isAbstract(registry, targetEntity)) {
+    return answer("false", "abstract");
   }
   // A shut container hides what is inside it, however deep; hearing and smell do not care.
   if (query.sense === "sight" && closedEnclosure(snapshot, targetEntity.id) !== null) {

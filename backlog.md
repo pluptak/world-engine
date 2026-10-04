@@ -20,7 +20,7 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 - **Owned files:** a lane edits only the files its items name, plus the shared registration points.
 - **Shared registration points** — `src/engine/verbs/index.ts`, `src/errors.ts`, `src/contract.ts`,
-  the verb table in `tests/property-gen.ts`, the verb list in `docs/pipeline.md`, `CLAUDE.md` — take
+  the verb table in `tests/property-gen.ts`, the verb list in `docs/verbs.md`, `CLAUDE.md` — take
   additions only, one line or one entry per change, so concurrent lanes conflict at most trivially.
 - **No lane changes another lane's semantics.** If an item needs that, it stops and says so.
 
@@ -37,22 +37,6 @@ Owns `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception part of
   moving the concealer reveals what it hid.
 - **Done when:** a file under a book is not seen; after `search book` it is; lifting the book reveals
   it to everyone in the room.
-
-## Lane D. Authoring space
-
-Owns `src/scenario.ts`, the `place` path of `src/engine/verbs/edit.ts`, the `fact` part of
-`src/engine/query.ts`, `docs/api.md`.
-
-### D1. Authoring anchors without weakening spatial truth
-- **Why:** worlds are easier to author as "by the door" than in centimetres, but "near" does not
-  determine a position, and deriving one from it would be false precision.
-- **Scope:** an `anchor` is a named reference point with real coordinates (no mass, no collision).
-  A scenario or `edit place` may position an entity relative to an anchor with an explicit offset;
-  the offset resolves to a stored `pos` when written, and nothing records the anchor afterwards — so
-  anchors add no relation and stay out of Lane A's table. `near(x, y)` is a derived, queryable fact
-  computed from geometry under a declared threshold; it never produces a position.
-- **Done when:** a scenario authored against anchors runs the bottle chain unchanged, and
-  `fact(table, near, door)` answers from positions.
 
 ## Lane Z. After A–D merge
 

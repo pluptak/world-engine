@@ -47,7 +47,7 @@ export interface Coverage {
 
 export function defaultCoverage(): Coverage {
   return {
-    relations: ["support", "contained_in", "attached_to", "status", "location"],
+    relations: ["support", "contained_in", "attached_to", "status", "location", "near"],
     senses: ["sight", "hearing"],
     properties: ["integrity", "residue", "pos"],
   };

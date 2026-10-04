@@ -94,7 +94,7 @@ export function addressEntity(
   text: string,
   partReasonCode: string,
 ): Address {
-  const resolution = resolveTarget(context.snapshot, context.actor.id, text);
+  const resolution = resolveTarget(context.snapshot, context.registry, context.actor.id, text);
   if (resolution.status === "unresolved") {
     return { status: "failed", result: { status: "unresolved" } };
   }

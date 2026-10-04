@@ -81,7 +81,7 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
 
   let target = null;
   if (command.target !== undefined) {
-    const resolution = resolveTarget(snapshot, actor.id, command.target);
+    const resolution = resolveTarget(snapshot, registry, actor.id, command.target);
     if (resolution.status === "unresolved") {
       return unchangedResult(snapshot, command, "unresolved");
     }
