@@ -124,7 +124,8 @@ export interface GenContext {
   agents: Id[];
   rooms: Id[];
   openables: Id[];
-  // The step's selection roll. `edit` reads it to pick its kind: one draw chose both.
+  // Where the selection roll fell inside its own verb's band, from 0 to 1. `edit` reads it to pick
+  // its kind: one draw chose both, and a band added before `edit` cannot starve any kind.
   roll: number;
 }
 
@@ -243,7 +244,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
   wait: (context, options) => waiting(context, options?.ticks),
   // The five edit kinds, not five verbs: the roll that chose `edit` chooses among them too.
   edit: (context) => {
-    if (context.roll < 0.77) {
+    if (context.roll < 0.08) {
       const template = pick(context.rand, [
         "bottle",
         "stone",
@@ -277,10 +278,10 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
         },
       };
     }
-    if (context.roll < 0.81) {
+    if (context.roll < 0.24) {
       return conflictingPlacement(context);
     }
-    if (context.roll < 0.85) {
+    if (context.roll < 0.4) {
       const anchor = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
       // An entity cannot set itself down: refused circular_placement.
       if (context.rand() < 0.25) {
@@ -295,7 +296,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
           }
         : { kind: "place", target: context.target, contained_in: anchor };
     }
-    if (context.roll < 0.89) {
+    if (context.roll < 0.56) {
       const subject = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
       const entity = context.snapshot.entities[subject];
       const boolKeys =
@@ -314,7 +315,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
         props: { ...entity?.props, [key]: !(entity?.props[key] as boolean) },
       };
     }
-    if (context.roll < 0.93) {
+    if (context.roll < 0.72) {
       const withParts = context.ids.filter(
         (id) => Object.keys(context.snapshot.entities[id]?.parts ?? {}).length > 0,
       );
@@ -336,7 +337,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
         },
       };
     }
-    if (context.roll < 0.965) {
+    if (context.roll < 0.86) {
       return brokenReference(context);
     }
     return { kind: "remove", target: context.target };
@@ -455,6 +456,12 @@ export function genStep(rand: () => number, snapshot: Snapshot, commandId: strin
   const actor = agents.length > 0 ? pick(rand, agents) : "e999";
   const target = ids.length > 0 ? pick(rand, ids) : "e999";
   const roll = rand();
+  const slotIndex = SLOTS.findIndex((candidate) => roll < candidate.below);
+  const slot = SLOTS[slotIndex];
+  if (slot === undefined) {
+    throw new Error(`No verb slot covers roll ${roll}`);
+  }
+  const start = slotIndex === 0 ? 0 : (SLOTS[slotIndex - 1]?.below ?? 0);
   const context: GenContext = {
     rand,
     snapshot,
@@ -465,12 +472,8 @@ export function genStep(rand: () => number, snapshot: Snapshot, commandId: strin
     agents,
     rooms,
     openables,
-    roll,
+    roll: (roll - start) / (slot.below - start),
   };
-  const slot = SLOTS.find((candidate) => roll < candidate.below);
-  if (slot === undefined) {
-    throw new Error(`No verb slot covers roll ${roll}`);
-  }
   const verb = chooseVerb(context, slot.verbs);
   const entry = VERB_TABLE[verb];
   if (entry === undefined) {
