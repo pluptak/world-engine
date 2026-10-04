@@ -75,6 +75,7 @@ commands over the initial snapshot; a template-hash mismatch is an error, stale 
 Queries answer facts and perception from the snapshot, templates, events, and coverage. Covered
 relations and properties answer true or false from state; a category absent from coverage answers
 unknown. Perception supports sight, hearing, and smell — the last only where a world's coverage
-declares it — from capacities, lighting, doors, and loud event types; sight answers `false` with
-basis `enclosed` inside a shut container, hearing and smell do not. Coverage describes what the
-engine can answer, never what any actor knows, notices, or remembers.
+declares it — from capacities, lighting, doors, and loud event types; an event-form perceive is
+perceptible if true before or after that command. Sight is `false` (`enclosed`) in a shut
+container; hearing and smell ignore it. Coverage describes the engine's answers, never who knows,
+notices, or remembers.

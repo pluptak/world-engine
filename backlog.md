@@ -13,19 +13,6 @@ world state, is the job of a middleware that does not exist and is not part of t
 below may make the API easier for such a caller to drive (describing its own commands, dry-running
 one, structured refusals), but never interpret text or plan on a caller's behalf.
 
-## C. Perception correctness
-
-### 5. Perceive an event against the state at that event
-- **Why:** `perceive` with an `event_id` reads the *current* snapshot. A coin put into an open chest
-  is seen (`same_location_lit`); close the chest afterwards and the same question about the same
-  past event answers `false` / `enclosed`. A door closed after a break flips its sight answer the
-  same way.
-- **Scope:** an event-form `perceive` evaluates against the snapshot right after that event's
-  command (the store rebuilds it through its log fold); the entity form keeps using the current
-  snapshot. The engine-level `query` takes the snapshot to evaluate against explicitly.
-- **Done when:** the put-then-close sequence answers `true` for the put both before and after the
-  close; a door closed after a break keeps the break visible.
-
 ## D. What the API tells its caller
 
 ### 7. Perceivers per event

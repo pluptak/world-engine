@@ -87,7 +87,10 @@ suffixes (NodeNext).
   current version with the same validation gate, but never writes or logs; `since` folds the store's
   log, or a memory world's per-command records, into the deltas and events of every ok command after
   the version — a memory world only knows its own lifetime and throws `history_unavailable` below
-  the version it started from. A default edit id is `edit-<n>` with n one plus the world's
+  the version it started from. An event-form `perceive` is perceptible if true before or after
+  that event's command; the store's `replayUntilEvent` in `store/file-store.ts` returns both
+  snapshots, a memory world provides them through its history map, and `queryAtEvent` in the
+  engine combines both answers, while the entity form and an unknown event read the present. A default edit id is `edit-<n>` with n one plus the world's
   submission count — log lines for a store world, a closure counter over its own commands and edits
   for a memory one — so the same sequence of calls writes the same log through any number of
   handles.

@@ -285,6 +285,37 @@ export function replay(dir: string, registry?: TemplateRegistry): Snapshot {
   return replayWithEvents(dir, registry).snapshot;
 }
 
+// The snapshots before and after the command that produced an event, with the events up to and
+// including that command: event-form perceive evaluates against both via queryAtEvent.
+export function replayUntilEvent(
+  dir: string,
+  eventId: string,
+  registry?: TemplateRegistry,
+): { before: Snapshot; snapshot: Snapshot; events: WorldEvent[] } | null {
+  const templates = activeRegistry(registry);
+  let snapshot = readSnapshot(join(dir, snapshots.initial));
+  assertTemplates(snapshot, templates);
+  const events: WorldEvent[] = [];
+
+  for (const [index, entry] of readLogEntries(dir).entries()) {
+    if (entry.status !== "ok") {
+      continue;
+    }
+    const before = snapshot;
+    const result = apply(snapshot, templates, entry.command);
+    if (result.status !== "ok") {
+      throw new TypeError(`Accepted command failed during replay at line ${index + 1}`);
+    }
+    events.push(...result.events);
+    snapshot = result.snapshot;
+    if (result.events.some((event) => event.event_id === eventId)) {
+      return { before, snapshot, events };
+    }
+  }
+
+  return null;
+}
+
 // Every ok command after `version`, folded from the log: their deltas and events in command order.
 // A command counts when it was applied at `version` or later, so the fold walks the whole log and
 // only collects past the cut.

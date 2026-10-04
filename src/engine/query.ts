@@ -132,6 +132,27 @@ function eventLocation(snapshot: Snapshot, event: WorldEvent): Id | null {
   return snapshot.entities[event.entity]?.location ?? null;
 }
 
+// A door with no location is in either room it connects; treat it as in the observer's room
+// if they're in one of them, mirroring inViewOf in resolve.ts.
+function targetLocationForPerception(
+  targetEntity: Entity,
+  targetLocation: Id | null,
+  observerLocation: Id | null,
+): Id | null {
+  if (targetLocation !== null) {
+    return targetLocation;
+  }
+  const from = targetEntity.props.from;
+  const to = targetEntity.props.to;
+  if (typeof from === "string" && typeof to === "string" && observerLocation === from) {
+    return from;
+  }
+  if (typeof from === "string" && typeof to === "string" && observerLocation === to) {
+    return to;
+  }
+  return null;
+}
+
 function loudEvent(event: WorldEvent | undefined): boolean {
   if (event === undefined) {
     return false;
@@ -183,7 +204,8 @@ function perceive(
   }
 
   const observerLocation = observer.location;
-  const targetLocation = event === undefined ? targetEntity.location : eventLocation(snapshot, event);
+  let targetLocation = event === undefined ? targetEntity.location : eventLocation(snapshot, event);
+  targetLocation = targetLocationForPerception(targetEntity, targetLocation, observerLocation);
   if (observerLocation === null || targetLocation === null) {
     return answer("false", "not_perceptible");
   }
@@ -226,4 +248,24 @@ export function query(
   q: Query,
 ): Answer {
   return q.kind === "fact" ? fact(snapshot, q) : perceive(snapshot, registry, events, q);
+}
+
+// For event-form perceive: evaluate against both snapshot before and after the command that
+// produced the event. Return true if true at either end, otherwise the after answer.
+export function queryAtEvent(
+  before: Snapshot,
+  after: Snapshot,
+  registry: TemplateRegistry,
+  events: WorldEvent[],
+  q: Extract<Query, { kind: "perceive" }>,
+): Answer {
+  const afterAnswer = perceive(after, registry, events, q);
+  if (afterAnswer.value === "true") {
+    return afterAnswer;
+  }
+  const beforeAnswer = perceive(before, registry, events, q);
+  if (beforeAnswer.value === "true") {
+    return beforeAnswer;
+  }
+  return afterAnswer;
 }

@@ -6,7 +6,7 @@ import {
   type Result,
   type WorldEdit,
 } from "./engine/command.js";
-import { query as queryEngine, type Answer, type Query } from "./engine/query.js";
+import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./engine/query.js";
 import { verbCatalog } from "./engine/verbs/index.js";
 import { spawn, type EntityOverrides } from "./engine/spawn.js";
 import { validateSnapshot } from "./engine/validate.js";
@@ -16,6 +16,7 @@ import {
   create,
   entryCount,
   load,
+  replayUntilEvent,
   replayWithEvents,
   resolveSubmission,
   since as foldSince,
@@ -134,6 +135,14 @@ function storeWorld(dir: string, registry: TemplateRegistry): World {
     check: (command) => checkResult(dryRun(load(dir, registry), registry, command)),
     since: (version) => foldSince(dir, version, registry),
     query: (request) => {
+      // An event-form perceive reads the world at either end of that event's command: perceptible
+      // if perceptible before or after it. The entity form and unknown events read the present.
+      if (request.kind === "perceive" && request.event_id !== undefined) {
+        const atEvent = replayUntilEvent(dir, request.event_id, registry);
+        if (atEvent !== null) {
+          return queryAtEvent(atEvent.before, atEvent.snapshot, registry, atEvent.events, request);
+        }
+      }
       const snapshot = load(dir, registry);
       return queryEngine(snapshot, registry, replayWithEvents(dir, registry).events, request);
     },
@@ -196,6 +205,25 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
   // asking below it is an error rather than an empty answer.
   const firstVersion = snapshot.version;
 
+  // The snapshots before and after the command that produced an event: event-form perceive
+  // evaluates against both via queryAtEvent, while the entity form keeps the current snapshot.
+  function snapshotAtEvent(
+    eventId: Id,
+  ): { before: Snapshot; snapshot: Snapshot; events: WorldEvent[] } | null {
+    const collected: WorldEvent[] = [];
+    for (const record of applied) {
+      collected.push(...record.events);
+      if (record.events.some((event) => event.event_id === eventId)) {
+        const before = history.get(record.base);
+        const after = history.get(record.base + 1);
+        return before === undefined || after === undefined
+          ? null
+          : { before, snapshot: after, events: collected };
+      }
+    }
+    return null;
+  }
+
   function submitMemory(command: Command, basedOn: number): Result {
     submissions += 1;
     const base = current.version;
@@ -243,7 +271,15 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
       }
       return { deltas, events: sinceEvents };
     },
-    query: (request) => queryEngine(current, templates, events, request),
+    query: (request) => {
+      if (request.kind === "perceive" && request.event_id !== undefined) {
+        const atEvent = snapshotAtEvent(request.event_id);
+        if (atEvent !== null) {
+          return queryAtEvent(atEvent.before, atEvent.snapshot, templates, atEvent.events, request);
+        }
+      }
+      return queryEngine(current, templates, events, request);
+    },
     snapshot: () => current,
     entity: (id) => current.entities[id] ?? null,
   };
