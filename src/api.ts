@@ -1,17 +1,24 @@
 import { fileURLToPath } from "node:url";
 import { canonicalJson } from "./engine/canonical.js";
-import { WORLD_AUTHOR, type Command, type Result, type WorldEdit } from "./engine/command.js";
+import {
+  WORLD_AUTHOR,
+  type Command,
+  type Result,
+  type WorldEdit,
+} from "./engine/command.js";
 import { query as queryEngine, type Answer, type Query } from "./engine/query.js";
+import { verbCatalog } from "./engine/verbs/index.js";
 import { spawn, type EntityOverrides } from "./engine/spawn.js";
 import { validateSnapshot } from "./engine/validate.js";
 import { WorldError } from "./errors.js";
-import { defaultCoverage, type Entity, type Id, type Snapshot, type WorldEvent } from "./model.js";
+import { defaultCoverage, type Delta, type Entity, type Id, type Snapshot, type Status, type WorldEvent } from "./model.js";
 import {
   create,
   entryCount,
   load,
   replayWithEvents,
   resolveSubmission,
+  since as foldSince,
   submit,
 } from "./store/file-store.js";
 import { loadTemplates, templatesHash, type TemplateRegistry } from "./templates.js";
@@ -34,12 +41,44 @@ export interface EditOptions {
   basedOn?: number;
 }
 
+// What a dry run reports: the verdict a command would get now, without state or a log line.
+export interface CheckResult {
+  status: Status;
+  command_id: Id;
+  resolved_target: Id | null;
+  candidates?: Id[];
+  reason_code?: string;
+}
+
+export interface SinceResult {
+  deltas: Delta[];
+  events: WorldEvent[];
+}
+
 export interface World {
   command(command: Command, options?: CommandOptions): Result;
   edit(edit: WorldEdit, options?: EditOptions): Result;
+  check(command: Command): CheckResult;
+  since(version: number): SinceResult;
   query(query: Query): Answer;
   snapshot(): Snapshot;
   entity(id: Id): Entity | null;
+}
+
+function checkResult(result: Result): CheckResult {
+  return {
+    status: result.status,
+    command_id: result.command_id,
+    resolved_target: result.resolved_target,
+    ...(result.candidates !== undefined && { candidates: result.candidates }),
+    ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
+  };
+}
+
+// The version rule with the same gate as a real submission, but never a write and never a log line:
+// based on the current version, so nothing here can be preempted.
+function dryRun(current: Snapshot, registry: TemplateRegistry, command: Command): Result {
+  return resolveSubmission(current, registry, command, current.version, () => null);
 }
 
 function activeRegistry(registry?: TemplateRegistry): TemplateRegistry {
@@ -92,6 +131,8 @@ function storeWorld(dir: string, registry: TemplateRegistry): World {
         registry,
       );
     },
+    check: (command) => checkResult(dryRun(load(dir, registry), registry, command)),
+    since: (version) => foldSince(dir, version, registry),
     query: (request) => {
       const snapshot = load(dir, registry);
       return queryEngine(snapshot, registry, replayWithEvents(dir, registry).events, request);
@@ -149,9 +190,15 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
   // No log, so the count of this world's own submissions stands in for one; commands count like
   // edits, exactly like the store's lines, and the id is read before the count grows.
   let submissions = 0;
+  // Each ok submission keeps its deltas and events, so since(version) can answer without a fold.
+  const applied: Array<{ base: number; deltas: Delta[]; events: WorldEvent[] }> = [];
+  // The version this world started from: anything older predates its records, however valid, so
+  // asking below it is an error rather than an empty answer.
+  const firstVersion = snapshot.version;
 
   function submitMemory(command: Command, basedOn: number): Result {
     submissions += 1;
+    const base = current.version;
     const result = resolveSubmission(
       current,
       templates,
@@ -162,6 +209,7 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
     if (result.status === "ok") {
       current = result.snapshot;
       events.push(...result.events);
+      applied.push({ base, deltas: result.deltas, events: result.events });
       history.set(current.version, current);
     }
     return result;
@@ -174,13 +222,34 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
         editCommand(edit, options?.command_id ?? `edit-${submissions + 1}`),
         options?.basedOn ?? current.version,
       ),
+    check: (command) => checkResult(dryRun(current, templates, command)),
+    since: (version) => {
+      if (!Number.isSafeInteger(version) || version < 0) {
+        throw new WorldError("invalid_version", `Invalid version ${version}`);
+      }
+      if (version < firstVersion) {
+        throw new WorldError("history_unavailable", `No records before version ${firstVersion}`);
+      }
+      if (version > current.version) {
+        throw new WorldError("future_version", `Version ${version} is ahead of ${current.version}`);
+      }
+      const deltas: Delta[] = [];
+      const sinceEvents: WorldEvent[] = [];
+      for (const record of applied) {
+        if (record.base >= version) {
+          deltas.push(...record.deltas);
+          sinceEvents.push(...record.events);
+        }
+      }
+      return { deltas, events: sinceEvents };
+    },
     query: (request) => queryEngine(current, templates, events, request),
     snapshot: () => current,
     entity: (id) => current.entities[id] ?? null,
   };
 }
 
-export { canonicalJson, WorldError, WORLD_AUTHOR };
+export { canonicalJson, verbCatalog as verbs, WorldError, WORLD_AUTHOR };
 export type { WorldErrorCode } from "./errors.js";
 export type { Command, Result, WorldEdit } from "./engine/command.js";
 export type { Answer, Query } from "./engine/query.js";

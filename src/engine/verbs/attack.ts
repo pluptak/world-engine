@@ -381,6 +381,8 @@ function transition(context: TransitionContext): void {
 
 export const attackVerb: Verb = {
   requires_target: true,
+  args: {},
+  refuses: ["out_of_reach", "insufficient_manipulation"],
   carry_alternatives: carryAlternatives,
   attack_modes: attackModes,
   preconditions,

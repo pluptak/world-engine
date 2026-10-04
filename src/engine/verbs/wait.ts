@@ -104,6 +104,8 @@ function transition(context: TransitionContext): void {
 
 export const waitVerb: Verb = {
   requires_target: false,
+  args: { ticks: { kind: "int" } },
+  refuses: [],
   preconditions,
   transition,
 };

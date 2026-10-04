@@ -115,8 +115,27 @@ export interface AttackMode {
   damage_prop: string;
 }
 
+// One entry of a verb's declared args shape; `enum` carries its values.
+export interface ArgDecl {
+  kind: "address" | "pos" | "room" | "int" | "enum" | "world_edit";
+  values?: readonly string[];
+}
+
+// What the engine tells a caller about one verb, read from the verb's own declarations.
+export interface VerbCatalogEntry {
+  verb: string;
+  requires_target: boolean;
+  args: Readonly<Record<string, ArgDecl>>;
+  requires: readonly CapacityRequirement[];
+  carry_alternatives: readonly CarryAlternative[];
+  attack_modes: readonly AttackMode[];
+  refuses: readonly string[];
+}
+
 export interface Verb {
   requires_target: boolean;
+  args: Readonly<Record<string, ArgDecl>>;
+  refuses: readonly string[];
   requires?: readonly CapacityRequirement[];
   carry_alternatives?: readonly CarryAlternative[];
   attack_modes?: readonly AttackMode[];

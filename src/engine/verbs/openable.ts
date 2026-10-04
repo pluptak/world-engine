@@ -28,6 +28,18 @@ const requirements: Record<Kind, readonly CapacityRequirement[] | undefined> = {
   unlock: [{ capacity: "manipulation", at_least: 50 }],
 };
 
+const openableArgs: Readonly<Record<string, never>> = {};
+const openRefuses = ["not_openable", "out_of_reach", "locked"] as const;
+const closeRefuses = ["not_openable", "out_of_reach"] as const;
+const keyRefuses = ["not_openable", "out_of_reach", "no_key", "insufficient_manipulation"] as const;
+
+const refuses: Record<Kind, readonly string[]> = {
+  open: openRefuses,
+  close: closeRefuses,
+  lock: keyRefuses,
+  unlock: keyRefuses,
+};
+
 type Target =
   | { status: "resolved"; entity: Entity }
   | { status: "failed"; result: PreconditionResult };
@@ -110,6 +122,8 @@ function transition(context: TransitionContext, kind: Kind): void {
 function makeVerb(kind: Kind): Verb {
   return {
     requires_target: true,
+    args: openableArgs,
+    refuses: refuses[kind],
     ...(requirements[kind] !== undefined && { requires: requirements[kind] }),
     preconditions: (context) => preconditions(context, kind),
     transition: (context) => transition(context, kind),

@@ -74,6 +74,17 @@ function transition(context: TransitionContext): void {
 
 export const takeVerb: Verb = {
   requires_target: true,
+  args: {},
+  refuses: [
+    "target_attached",
+    "out_of_reach",
+    "insufficient_manipulation",
+    "container_closed",
+    "held_by_another",
+    "two_hands_required",
+    "too_heavy",
+    "mouth_full",
+  ],
   carry_alternatives: carryAlternatives,
   preconditions,
   transition,

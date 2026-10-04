@@ -547,6 +547,21 @@ function validateResult(context: CommandContext): PreconditionResult {
 
 export const editVerb: Verb = {
   requires_target: false,
+  args: { edit: { kind: "world_edit" } },
+  refuses: [
+    "conflicting_placement",
+    "room_support_without_pos",
+    "pos_without_room_support",
+    "circular_placement",
+    "occupied_room",
+    "unknown_part",
+    "integrity_out_of_range",
+    "detached_part_without_entity",
+    "location_mismatch",
+    "dangling_reference",
+    "id_not_below_next_seq",
+    "support_or_containment_cycle",
+  ],
   preconditions,
   transition,
   validateResult,

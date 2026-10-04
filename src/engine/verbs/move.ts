@@ -91,6 +91,8 @@ function transition(context: TransitionContext): void {
 
 export const moveVerb: Verb = {
   requires_target: false,
+  args: { to: { kind: "pos" }, location: { kind: "room" } },
+  refuses: ["insufficient_moving", "no_open_door"],
   preconditions,
   transition,
 };

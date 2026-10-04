@@ -28,12 +28,6 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 ## D. What the API tells its caller
 
-### 6. `since(version)` — changes since version N
-- **Why:** a caller that missed commands catches up by asking, not by guessing.
-- **Scope:** the ordered deltas and events of every `ok` command after N, via the store's log fold.
-  `version` > current → `invalid` `future_version`.
-- **Done when:** since(0) after the bottle scenario equals the concatenated command results.
-
 ### 7. Perceivers per event
 - **Why:** a caller that tracks who knows what needs who *could* have sensed each event — the batch
   form of `perceive`. Knowing/noticing stays the caller's.
@@ -46,19 +40,6 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 - **Scope:** `trace(event_id | {entity, field})` → the event chain back to the root command or edit
   (for a field: the event of the last delta that set it).
 - **Done when:** trace(the room's `residue`) returns spawned/broken/dropped/displaced/moved/push.
-
-### 9. `verbs()` — the engine describes its own command language
-- **Why:** a caller should learn what it may send from the engine, not from its source.
-- **Scope:** per verb: whether it needs a target, its `args` shape, the capacity alternatives it
-  requires (item 3), and the `reason_code`s it can refuse with. Generated from the verb registry,
-  never hand-maintained.
-- **Done when:** adding a verb to the registry without a description fails a test.
-
-### 10. `check(cmd)` — a dry run
-- **Scope:** the status, `resolved_target` and `reason_code` a command would get now, with no state
-  change and no log line.
-- **Done when:** `check` and `command` agree on status for every case in the contract tests, and the
-  world directory is byte-identical after a `check`.
 
 ### 11. Structured refusal data
 - **Why:** `out_of_reach` alone does not say by how much; a caller must not have to recompute it.

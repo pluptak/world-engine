@@ -82,6 +82,18 @@ function transition(context: TransitionContext): void {
 
 export const giveVerb: Verb = {
   requires_target: true,
+  args: { destination: { kind: "address" } },
+  refuses: [
+    "not_carried",
+    "cannot_give_to_self",
+    "not_an_actor",
+    "circular_placement",
+    "out_of_reach",
+    "insufficient_manipulation",
+    "two_hands_required",
+    "too_heavy",
+    "mouth_full",
+  ],
   carry_alternatives: carryAlternatives,
   preconditions,
   transition,

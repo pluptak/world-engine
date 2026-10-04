@@ -75,18 +75,28 @@ suffixes (NodeNext).
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
   surface as CLI issue codes.
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
-  `command`/`edit`/`query`/`snapshot`/`entity`), re-exported by `src/index.ts` and by the package's
-  `exports`. `src/errors.ts` holds `WorldError`, whose codes surface as CLI issue codes. `edit` sends
-  one `spawn`/`remove`/`place`/`set_props`/`set_part` through the pipeline as the reserved non-agent
-  author `world` (`WORLD_AUTHOR`), which skips the agency check; `src/engine/verbs/edit.ts` holds it.
-  A default edit id is `edit-<n>` with n one plus the world's submission count — log lines for a
-  store world, a closure counter over its own commands and edits for a memory one — so the same
-  sequence of calls writes the same log through any number of handles.
+  `command`/`edit`/`check`/`since`/`query`/`snapshot`/`entity`), re-exported by `src/index.ts` and by
+  the package's `exports`, together with `verbs` (`verbCatalog` in `verbs/index.ts`, which throws on
+  a verb that does not declare `args` and `refuses`, and returns structuredClone copies so callers
+  cannot mutate the declarations the checks read). Command checks read their own verb's declaration
+  through `context.verb`; a refusal with an undeclared code throws in `pipeline.ts`, which makes the
+  whole suite a drift check for the declared lists. `src/errors.ts` holds `WorldError`, whose
+  codes surface as CLI issue codes. `edit` sends one `spawn`/`remove`/`place`/`set_props`/`set_part`
+  through the pipeline as the reserved non-agent author `world` (`WORLD_AUTHOR`), which skips the
+  agency check; `src/engine/verbs/edit.ts` holds it. `check` runs `resolveSubmission` against the
+  current version with the same validation gate, but never writes or logs; `since` folds the store's
+  log, or a memory world's per-command records, into the deltas and events of every ok command after
+  the version — a memory world only knows its own lifetime and throws `history_unavailable` below
+  the version it started from. A default edit id is `edit-<n>` with n one plus the world's
+  submission count — log lines for a store world, a closure counter over its own commands and edits
+  for a memory one — so the same sequence of calls writes the same log through any number of
+  handles.
   A memory world keeps past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
-  `query` | `snapshot`), calls one `World` method, and validates every response against `ResponseSchema` before
-  writing it. `init <dir> <scenario.json>` builds a world from spawn specs in `scenarios/*.json`. A
-  failure becomes `{status:"invalid", issues}` with exit code 2.
+  `check` | `since` | `query` | `snapshot` | `verbs`), calls one `World` method or `verbCatalog`, and
+  validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`
+  builds a world from spawn specs in `scenarios/*.json`. A failure becomes `{status:"invalid",
+  issues}` with exit code 2.
 
 ## Templates
 

@@ -78,6 +78,13 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
   const commandContext: CommandContext = { snapshot, registry, command, actor, target, verb };
   const precondition = verb.preconditions(commandContext);
   if (precondition.status !== "ok") {
+    // The catalog is the caller's contract: a refusal the verbs do not declare is a bug, and the
+    // whole suite exercises refusals, so this turns declaration drift into a loud failure.
+    if (precondition.status === "refused" && !verb.refuses.includes(precondition.reason_code)) {
+      throw new TypeError(
+        `Verb ${command.verb} refused with undeclared code ${precondition.reason_code}`,
+      );
+    }
     return unchangedResult(
       snapshot,
       command,
@@ -164,6 +171,11 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
   if (verb.validateResult !== undefined) {
     const validation = verb.validateResult({ ...commandContext, snapshot: working });
     if (validation.status !== "ok") {
+      if (validation.status === "refused" && !verb.refuses.includes(validation.reason_code)) {
+        throw new TypeError(
+          `Verb ${command.verb} refused with undeclared code ${validation.reason_code}`,
+        );
+      }
       return unchangedResult(
         snapshot,
         command,

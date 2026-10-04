@@ -69,6 +69,8 @@ function transition(context: TransitionContext): void {
 
 export const dropVerb: Verb = {
   requires_target: true,
+  args: {},
+  refuses: ["not_carried"],
   preconditions,
   transition,
 };

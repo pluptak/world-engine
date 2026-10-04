@@ -150,6 +150,17 @@ function transition(context: TransitionContext): void {
 
 export const putVerb: Verb = {
   requires_target: true,
+  args: { relation: { kind: "enum", values: ["on", "in"] }, destination: { kind: "address" } },
+  refuses: [
+    "not_carried",
+    "circular_placement",
+    "out_of_reach",
+    "not_a_surface",
+    "container_closed",
+    "too_large",
+    "not_a_container",
+    "insufficient_manipulation",
+  ],
   requires: [{ capacity: "manipulation", at_least: 50 }],
   preconditions,
   transition,

@@ -87,6 +87,41 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
   }).strict(),
 ]);
 
+const CapacityRequirementSchema = z.object({
+  capacity: z.string(),
+  at_least: z.number().int(),
+}).strict();
+
+const CarryAlternativeSchema = z.object({
+  capacity: z.string(),
+  per_hand: z.number().int().optional(),
+  at_least: z.number().int().optional(),
+  max_hands: z.number().int().optional(),
+  mass_limit_prop: z.string().optional(),
+  holds: z.number().int().optional(),
+}).strict();
+
+const AttackModeSchema = z.object({
+  capacity: z.string(),
+  at_least: z.number().int(),
+  damage_prop: z.string(),
+}).strict();
+
+const ArgDeclSchema = z.union([
+  z.object({ kind: z.enum(["address", "pos", "room", "int", "world_edit"]) }).strict(),
+  z.object({ kind: z.literal("enum"), values: z.array(z.string()) }).strict(),
+]);
+
+const VerbCatalogEntrySchema = z.object({
+  verb: z.string(),
+  requires_target: z.boolean(),
+  args: z.record(z.string(), ArgDeclSchema),
+  requires: z.array(CapacityRequirementSchema),
+  carry_alternatives: z.array(CarryAlternativeSchema),
+  attack_modes: z.array(AttackModeSchema),
+  refuses: z.array(z.string()),
+}).strict();
+
 export const RequestSchema = z.discriminatedUnion("op", [
   z.object({
     op: z.literal("command"),
@@ -104,6 +139,16 @@ export const RequestSchema = z.discriminatedUnion("op", [
     include_snapshot: z.boolean().optional(),
   }).strict(),
   z.object({
+    op: z.literal("check"),
+    world: z.string().min(1),
+    command: CommandSchema,
+  }).strict(),
+  z.object({
+    op: z.literal("since"),
+    world: z.string().min(1),
+    version: z.number().int(),
+  }).strict(),
+  z.object({
     op: z.literal("query"),
     world: z.string().min(1),
     query: QuerySchema,
@@ -111,6 +156,9 @@ export const RequestSchema = z.discriminatedUnion("op", [
   z.object({
     op: z.literal("snapshot"),
     world: z.string().min(1),
+  }).strict(),
+  z.object({
+    op: z.literal("verbs"),
   }).strict(),
 ]);
 
@@ -190,6 +238,23 @@ export const AnswerSchema = z.object({
   basis_code: z.string(),
 }).strict();
 
+export const CheckResponseSchema = z.object({
+  status: StatusSchema,
+  command_id: IdSchema,
+  resolved_target: IdSchema.nullable(),
+  candidates: z.array(IdSchema).optional(),
+  reason_code: z.string().optional(),
+}).strict();
+
+export const SinceResponseSchema = z.object({
+  deltas: z.array(DeltaSchema),
+  events: z.array(WorldEventSchema),
+}).strict();
+
+export const VerbsResponseSchema = z.object({
+  verbs: z.array(VerbCatalogEntrySchema),
+}).strict();
+
 export const ValidationIssueSchema = z.object({
   code: z.string(),
   path: z.array(z.union([z.string(), z.number()])),
@@ -205,6 +270,9 @@ export const ResponseSchema = z.union([
   CommandResponseSchema,
   AnswerSchema,
   SnapshotSchema,
+  CheckResponseSchema,
+  SinceResponseSchema,
+  VerbsResponseSchema,
   ValidationFailureSchema,
 ]);
 

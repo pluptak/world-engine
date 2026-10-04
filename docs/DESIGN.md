@@ -4,9 +4,8 @@
 
 Commands pass through target resolution, preconditions, a verb transition, physical consequences,
 and causal events, and return a status, deltas, and events chained by command and cause ID. Non-ok
-results leave the snapshot unchanged; a success bumps its version.
-
-The engine is pure: a transition takes a snapshot and returns a new one; I/O stays outside it.
+results leave the snapshot unchanged; a success bumps its version. The engine is pure: a
+transition takes a snapshot and returns a new one; I/O stays outside.
 
 Verbs are `move`, `take`, `drop`, `put`, `give`, `push`, `pull`, `attack`, `wait`, and `edit`. `put` and `give`
 name a second address in `args.destination`; `put` also takes `args.relation`: `on` or `in`. A
@@ -50,20 +49,21 @@ surface.
 
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)`, `openWorld(dir)`, and
 `memoryWorld(snapshot)` return a `World` with `command(cmd, { basedOn })`, `edit(op, { command_id,
-basedOn })`, `query(q)`, `snapshot()`, and `entity(id)`. An edit runs one `spawn`, `remove`, `place`,
-`set_props`, or `set_part` as a logged command by the reserved non-agent author `world`, and is
-refused when the result would break a snapshot invariant; removing a support or container passes
-its riders and contents into the relation it itself was in. A store-backed world reads through to
-its directory on every call, so two handles see each other's commands; a memory world holds its
-own. A missing directory, a changed template hash, or a broken snapshot is a `WorldError` with a
-code.
+basedOn })`, `check(cmd)`, `since(version)`, `query(q)`, `snapshot()`, and `entity(id)`. `verbs()`
+is the catalog each verb describes itself to. `check` agrees with `command` on the verdict without
+writing or logging; `since` folds the log, or a memory world's own records, into the deltas and
+events of every ok command after the version. An edit is one `spawn`, `remove`, `place`,
+`set_props`, or `set_part` logged under the reserved author `world`, refused when it breaks a
+snapshot invariant; removing a support or container passes its riders and contents into the
+relation it itself was in. A store world reads through to its directory, so handles see each
+other; a memory world holds its own. A missing directory, a changed template hash, a broken
+snapshot, or a bad version is a `WorldError`.
 
 ## Commands and persistence
 
-The CLI is a JSON adapter over `World` with no logic of its own: it reads one request on stdin, calls
-one method, and writes the response. Zod validates that boundary, and a failure becomes
-`{status:"invalid", issues}`. `world init` builds a world from a list of template spawn
-specifications; responses carry statuses, deltas, and events, with a snapshot only when requested.
+The CLI is a JSON adapter over `World` with no logic of its own: one request on stdin, one method,
+one response. Zod validates that boundary; a failure becomes `{status:"invalid", issues}`.
+`world init` builds a world from template spawn specs; a snapshot only when requested.
 
 Each world stores `initial.json`, canonical `snapshot.json`, and a JSONL command log holding every
 command. The store appends before atomically replacing the snapshot; an accepted command whose

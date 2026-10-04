@@ -6,7 +6,7 @@ import { canonicalJson } from "../engine/canonical.js";
 import { validateSnapshot } from "../engine/validate.js";
 import type { Command, Result } from "../engine/command.js";
 import { WorldError } from "../errors.js";
-import type { Snapshot, Status, WorldEvent } from "../model.js";
+import type { Delta, Snapshot, Status, WorldEvent } from "../model.js";
 import { loadTemplates, templatesHash, type TemplateRegistry } from "../templates.js";
 
 interface LogEntry {
@@ -283,4 +283,43 @@ export function replayWithEvents(
 
 export function replay(dir: string, registry?: TemplateRegistry): Snapshot {
   return replayWithEvents(dir, registry).snapshot;
+}
+
+// Every ok command after `version`, folded from the log: their deltas and events in command order.
+// A command counts when it was applied at `version` or later, so the fold walks the whole log and
+// only collects past the cut.
+export function since(
+  dir: string,
+  version: number,
+  registry?: TemplateRegistry,
+): { deltas: Delta[]; events: WorldEvent[] } {
+  if (!Number.isSafeInteger(version) || version < 0) {
+    throw new WorldError("invalid_version", `Invalid version ${version}`);
+  }
+  const templates = activeRegistry(registry);
+  const current = load(dir, templates);
+  if (version > current.version) {
+    throw new WorldError("future_version", `Version ${version} is ahead of ${current.version}`);
+  }
+
+  let snapshot = readSnapshot(join(dir, snapshots.initial));
+  assertTemplates(snapshot, templates);
+  const deltas: Delta[] = [];
+  const events: WorldEvent[] = [];
+  for (const [index, entry] of readLogEntries(dir).entries()) {
+    if (entry.status !== "ok") {
+      continue;
+    }
+    const result = apply(snapshot, templates, entry.command);
+    if (result.status !== "ok") {
+      throw new TypeError(`Accepted command failed during replay at line ${index + 1}`);
+    }
+    if (snapshot.version >= version) {
+      deltas.push(...result.deltas);
+      events.push(...result.events);
+    }
+    snapshot = result.snapshot;
+  }
+
+  return { deltas, events };
 }

@@ -98,14 +98,30 @@ function makeTransition(reverse: boolean) {
   };
 }
 
+const pushArgs = {
+  distance_cm: { kind: "int" } as const,
+  dir: { kind: "enum", values: ["+x", "-x", "+y", "-y"] } as const,
+};
+const pushRefuses = [
+  "target_attached",
+  "out_of_reach",
+  "insufficient_moving",
+  "target_carried",
+  "too_heavy",
+] as const;
+
 export const pushVerb: Verb = {
   requires_target: true,
+  args: pushArgs,
+  refuses: pushRefuses,
   preconditions,
   transition: makeTransition(false),
 };
 
 export const pullVerb: Verb = {
   requires_target: true,
+  args: pushArgs,
+  refuses: pushRefuses,
   preconditions,
   transition: makeTransition(true),
 };

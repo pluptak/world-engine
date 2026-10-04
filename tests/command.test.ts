@@ -214,6 +214,14 @@ test("part addresses resolve only for declared, attached parts", () => {
   strictEqual(resolveTarget(detached, actorId, `${actorId}.hand_l`).status, "unresolved");
 });
 
+test("take of a part address is refused with its declared code", () => {
+  const { snapshot, actorId } = world();
+  const result = apply(snapshot, registry, command(actorId, "take", `${actorId}.hand_r`));
+
+  strictEqual(result.status, "refused");
+  strictEqual(result.reason_code, "target_attached");
+});
+
 test("moving rooms carries what the actor holds", () => {
   const setup = world();
   const otherRoom = spawn(setup.snapshot, registry, "room", { name: "cellar" });

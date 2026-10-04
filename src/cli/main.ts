@@ -6,6 +6,7 @@ import {
   canonicalJson,
   createWorld,
   openWorld,
+  verbs,
   WorldError,
   type Delta,
   type Result,
@@ -122,6 +123,9 @@ function commandResponse(result: Result, includeSnapshot: boolean) {
 }
 
 function dispatch(request: Request): unknown {
+  if (request.op === "verbs") {
+    return { verbs: verbs() };
+  }
   if (request.op === "command") {
     const world = openWorld(request.world);
     const result = world.command(request.command, { basedOn: request.based_on_version });
@@ -134,6 +138,14 @@ function dispatch(request: Request): unknown {
       { command_id: request.command_id, basedOn: request.based_on_version },
     );
     return commandResponse(result, request.include_snapshot === true);
+  }
+  if (request.op === "check") {
+    const world = openWorld(request.world);
+    return world.check(request.command);
+  }
+  if (request.op === "since") {
+    const world = openWorld(request.world);
+    return world.since(request.version);
   }
   const world = openWorld(request.world);
   if (request.op === "query") {
