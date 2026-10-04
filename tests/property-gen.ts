@@ -103,6 +103,231 @@ function agentsOf(snapshot: Snapshot): Id[] {
     });
 }
 
+// What one generator entry reads: the draws are shared, the snapshot is the current state.
+export interface GenContext {
+  rand: () => number;
+  snapshot: Snapshot;
+  commandId: string;
+  actor: Id;
+  target: Id;
+  ids: Id[];
+  agents: Id[];
+  rooms: Id[];
+  openables: Id[];
+  // The step's selection roll. `edit` reads it to pick its kind: one draw chose both.
+  roll: number;
+}
+
+export type VerbEntry = (context: GenContext, options?: { ticks?: number }) => Command | WorldEdit;
+
+// One entry per registered verb, in the registry's order; `catalog.test.ts` fails when one is
+// missing. `wait` takes the tick count through `options` so an edit that has nothing to write can
+// still emit one without spending a draw.
+export const VERB_TABLE: Record<string, VerbEntry> = {
+  move: (context) =>
+    context.rand() < 0.5
+      ? {
+          command_id: context.commandId,
+          actor: context.actor,
+          verb: "move",
+          args: { to: { x: int(context.rand, -200, 200), y: int(context.rand, -200, 200) } },
+        }
+      : {
+          command_id: context.commandId,
+          actor: context.actor,
+          verb: "move",
+          args: {
+            location: context.rooms.length > 0 ? pick(context.rand, context.rooms) : "e999",
+          },
+        },
+  take: (context) => ({
+    command_id: context.commandId,
+    actor: context.actor,
+    verb: "take",
+    target: context.target,
+  }),
+  drop: (context) => ({
+    command_id: context.commandId,
+    actor: context.actor,
+    verb: "drop",
+    target: context.target,
+  }),
+  put: (context) => ({
+    command_id: context.commandId,
+    actor: context.actor,
+    verb: "put",
+    target: context.target,
+    args: {
+      relation: pick(context.rand, ["on", "in"] as const),
+      destination: context.ids.length > 0 ? pick(context.rand, context.ids) : "e999",
+    },
+  }),
+  give: (context) => ({
+    command_id: context.commandId,
+    actor: context.actor,
+    verb: "give",
+    target: context.target,
+    args: {
+      destination: context.agents.length > 0 ? pick(context.rand, context.agents) : "e999",
+    },
+  }),
+  open: (context) => openable(context, "open"),
+  close: (context) => openable(context, "close"),
+  lock: (context) => openable(context, "lock"),
+  unlock: (context) => openable(context, "unlock"),
+  push: (context) => shifted(context, "push"),
+  pull: (context) => shifted(context, "pull"),
+  attack: (context) => {
+    const victim = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+    // Sorted: store snapshots arrive via canonical JSON (sorted keys), memory ones in template
+    // order, and the same seed must pick the same part in both.
+    const parts = Object.keys(context.snapshot.entities[victim]?.parts ?? {}).sort();
+    const address =
+      parts.length > 0 && context.rand() < 0.5 ? `${victim}.${pick(context.rand, parts)}` : victim;
+    return {
+      command_id: context.commandId,
+      actor: context.actor,
+      verb: "attack",
+      target: address,
+    };
+  },
+  wait: (context, options) => waiting(context, options?.ticks),
+  // The five edit kinds, not five verbs: the roll that chose `edit` chooses among them too.
+  edit: (context) => {
+    if (context.roll < 0.8) {
+      const template = pick(context.rand, [
+        "bottle",
+        "stone",
+        "cup",
+        "chair",
+        "table",
+        "dog",
+        "cat",
+      ] as const);
+      const room = context.rooms.length > 0 ? pick(context.rand, context.rooms) : "e999";
+      return {
+        kind: "spawn",
+        template,
+        overrides: {
+          location: room,
+          support: room,
+          pos: { x: int(context.rand, -200, 200), y: int(context.rand, -200, 200) },
+        },
+      };
+    }
+    if (context.roll < 0.84) {
+      const anchor = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+      return context.rand() < 0.5
+        ? {
+            kind: "place",
+            target: context.target,
+            support: anchor,
+            pos: { x: int(context.rand, -200, 200), y: int(context.rand, -200, 200) },
+          }
+        : { kind: "place", target: context.target, contained_in: anchor };
+    }
+    if (context.roll < 0.88) {
+      const subject = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+      const entity = context.snapshot.entities[subject];
+      const boolKeys =
+        entity === undefined
+          ? []
+          : Object.keys(entity.props)
+              .filter((key) => typeof entity.props[key] === "boolean")
+              .sort();
+      if (boolKeys.length === 0) {
+        return waiting(context, 1);
+      }
+      const key = pick(context.rand, boolKeys);
+      return {
+        kind: "set_props",
+        target: subject,
+        props: { ...entity?.props, [key]: !(entity?.props[key] as boolean) },
+      };
+    }
+    if (context.roll < 0.93) {
+      const withParts = context.ids.filter(
+        (id) => Object.keys(context.snapshot.entities[id]?.parts ?? {}).length > 0,
+      );
+      if (withParts.length === 0) {
+        return waiting(context, 1);
+      }
+      const subject = pick(context.rand, withParts);
+      const part = pick(
+        context.rand,
+        Object.keys(context.snapshot.entities[subject]?.parts ?? {}).sort(),
+      );
+      return {
+        kind: "set_part",
+        target: subject,
+        part,
+        state: {
+          integrity: int(context.rand, 0, 100),
+          status: pick(context.rand, ["intact", "damaged", "detached", "destroyed"] as const),
+        },
+      };
+    }
+    return { kind: "remove", target: context.target };
+  },
+};
+
+// A caller that already knows the tick count (an edit with nothing to write) spends no draw.
+function waiting(context: GenContext, ticks?: number): Command {
+  return {
+    command_id: context.commandId,
+    actor: context.actor,
+    verb: "wait",
+    args: { ticks: ticks ?? int(context.rand, 1, 5) },
+  };
+}
+
+function openable(context: GenContext, verb: "open" | "close" | "lock" | "unlock"): Command {
+  return {
+    command_id: context.commandId,
+    actor: context.actor,
+    verb,
+    target: context.openables.length > 0 ? pick(context.rand, context.openables) : context.target,
+  };
+}
+
+function shifted(context: GenContext, verb: "push" | "pull"): Command {
+  return {
+    command_id: context.commandId,
+    actor: context.actor,
+    verb,
+    target: context.target,
+    args: {
+      distance_cm: int(context.rand, 0, 120),
+      dir: pick(context.rand, ["+x", "-x", "+y", "-y"] as const),
+    },
+  };
+}
+
+// One slot per band of the roll; a slot with several verbs spends a draw to choose between them.
+const SLOTS: readonly { below: number; verbs: readonly string[] }[] = [
+  { below: 0.14, verbs: ["wait"] },
+  { below: 0.26, verbs: ["move"] },
+  { below: 0.36, verbs: ["take"] },
+  { below: 0.42, verbs: ["drop"] },
+  { below: 0.5, verbs: ["push", "pull"] },
+  { below: 0.58, verbs: ["put"] },
+  { below: 0.63, verbs: ["give"] },
+  { below: 0.69, verbs: ["attack"] },
+  { below: 0.75, verbs: ["open", "close", "lock", "unlock"] },
+  { below: 1, verbs: ["edit"] },
+];
+
+function chooseVerb(context: GenContext, verbs: readonly string[]): string {
+  if (verbs.length === 1) {
+    const [only] = verbs;
+    if (only === undefined) {
+      throw new Error("A verb slot needs at least one verb");
+    }
+    return only;
+  }
+  return pick(context.rand, verbs);
+}
+
 // One plausible command or edit against the given snapshot: entity-id targets always resolve,
 // so outcomes vary across ok/refused/invalid without ever leaving the engine's handled paths.
 export function genStep(rand: () => number, snapshot: Snapshot, commandId: string): Command | WorldEdit {
@@ -113,140 +338,28 @@ export function genStep(rand: () => number, snapshot: Snapshot, commandId: strin
   const actor = agents.length > 0 ? pick(rand, agents) : "e999";
   const target = ids.length > 0 ? pick(rand, ids) : "e999";
   const roll = rand();
-  if (roll < 0.14) {
-    return { command_id: commandId, actor, verb: "wait", args: { ticks: int(rand, 1, 5) } };
+  const context: GenContext = {
+    rand,
+    snapshot,
+    commandId,
+    actor,
+    target,
+    ids,
+    agents,
+    rooms,
+    openables,
+    roll,
+  };
+  const slot = SLOTS.find((candidate) => roll < candidate.below);
+  if (slot === undefined) {
+    throw new Error(`No verb slot covers roll ${roll}`);
   }
-  if (roll < 0.26) {
-    return rand() < 0.5
-      ? {
-          command_id: commandId,
-          actor,
-          verb: "move",
-          args: { to: { x: int(rand, -200, 200), y: int(rand, -200, 200) } },
-        }
-      : {
-          command_id: commandId,
-          actor,
-          verb: "move",
-          args: { location: rooms.length > 0 ? pick(rand, rooms) : "e999" },
-        };
+  const verb = chooseVerb(context, slot.verbs);
+  const entry = VERB_TABLE[verb];
+  if (entry === undefined) {
+    throw new Error(`No generator entry for verb ${verb}`);
   }
-  if (roll < 0.36) {
-    return { command_id: commandId, actor, verb: "take", target };
-  }
-  if (roll < 0.42) {
-    return { command_id: commandId, actor, verb: "drop", target };
-  }
-  if (roll < 0.5) {
-    return {
-      command_id: commandId,
-      actor,
-      verb: pick(rand, ["push", "pull"] as const),
-      target,
-      args: {
-        distance_cm: int(rand, 0, 120),
-        dir: pick(rand, ["+x", "-x", "+y", "-y"] as const),
-      },
-    };
-  }
-  if (roll < 0.58) {
-    return {
-      command_id: commandId,
-      actor,
-      verb: "put",
-      target,
-      args: {
-        relation: pick(rand, ["on", "in"] as const),
-        destination: ids.length > 0 ? pick(rand, ids) : "e999",
-      },
-    };
-  }
-  if (roll < 0.63) {
-    return {
-      command_id: commandId,
-      actor,
-      verb: "give",
-      target,
-      args: { destination: agents.length > 0 ? pick(rand, agents) : "e999" },
-    };
-  }
-  if (roll < 0.69) {
-    const victim = ids.length > 0 ? pick(rand, ids) : "e999";
-    // Sorted: store snapshots arrive via canonical JSON (sorted keys), memory ones in template
-    // order, and the same seed must pick the same part in both.
-    const parts = Object.keys(snapshot.entities[victim]?.parts ?? {}).sort();
-    const address = parts.length > 0 && rand() < 0.5 ? `${victim}.${pick(rand, parts)}` : victim;
-    return { command_id: commandId, actor, verb: "attack", target: address };
-  }
-  if (roll < 0.75) {
-    return {
-      command_id: commandId,
-      actor,
-      verb: pick(rand, ["open", "close", "lock", "unlock"] as const),
-      target: openables.length > 0 ? pick(rand, openables) : target,
-    };
-  }
-  if (roll < 0.8) {
-    const template = pick(rand, ["bottle", "stone", "cup", "chair", "table", "dog", "cat"] as const);
-    const room = rooms.length > 0 ? pick(rand, rooms) : "e999";
-    return {
-      kind: "spawn",
-      template,
-      overrides: {
-        location: room,
-        support: room,
-        pos: { x: int(rand, -200, 200), y: int(rand, -200, 200) },
-      },
-    };
-  }
-  if (roll < 0.84) {
-    const anchor = ids.length > 0 ? pick(rand, ids) : "e999";
-    return rand() < 0.5
-      ? {
-          kind: "place",
-          target,
-          support: anchor,
-          pos: { x: int(rand, -200, 200), y: int(rand, -200, 200) },
-        }
-      : { kind: "place", target, contained_in: anchor };
-  }
-  if (roll < 0.88) {
-    const subject = ids.length > 0 ? pick(rand, ids) : "e999";
-    const entity = snapshot.entities[subject];
-    const boolKeys =
-      entity === undefined
-        ? []
-        : Object.keys(entity.props)
-            .filter((key) => typeof entity.props[key] === "boolean")
-            .sort();
-    if (boolKeys.length === 0) {
-      return { command_id: commandId, actor, verb: "wait", args: { ticks: 1 } };
-    }
-    const key = pick(rand, boolKeys);
-    return {
-      kind: "set_props",
-      target: subject,
-      props: { ...entity?.props, [key]: !(entity?.props[key] as boolean) },
-    };
-  }
-  if (roll < 0.93) {
-    const withParts = ids.filter((id) => Object.keys(snapshot.entities[id]?.parts ?? {}).length > 0);
-    if (withParts.length === 0) {
-      return { command_id: commandId, actor, verb: "wait", args: { ticks: 1 } };
-    }
-    const subject = pick(rand, withParts);
-    const part = pick(rand, Object.keys(snapshot.entities[subject]?.parts ?? {}).sort());
-    return {
-      kind: "set_part",
-      target: subject,
-      part,
-      state: {
-        integrity: int(rand, 0, 100),
-        status: pick(rand, ["intact", "damaged", "detached", "destroyed"] as const),
-      },
-    };
-  }
-  return { kind: "remove", target };
+  return entry(context);
 }
 
 // Replays raw deltas over the initial entities: spawn ("entity" from null) adds, remove (to null)

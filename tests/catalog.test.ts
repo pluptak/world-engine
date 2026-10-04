@@ -9,6 +9,7 @@ import type { VerbRegistry } from "../src/engine/command.js";
 import { verbCatalog } from "../src/engine/verbs/index.js";
 import { VerbsResponseSchema } from "../src/contract.js";
 import { createWorld, type Scenario } from "../src/index.js";
+import { VERB_TABLE } from "./property-gen.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -22,6 +23,14 @@ test("every verb describes itself and the catalog is sorted", () => {
     ok(entry.args !== undefined, `${entry.verb} has no args shape`);
     ok(entry.refuses !== undefined, `${entry.verb} has no refusal codes`);
   }
+});
+
+test("every registered verb has a generator entry, and no entry is dead", () => {
+  const registered = verbCatalog().map((entry) => entry.verb);
+  const missing = registered.filter((verb) => VERB_TABLE[verb] === undefined);
+  deepStrictEqual(missing, [], `no property generator entry for: ${missing.join(", ")}`);
+  const dead = Object.keys(VERB_TABLE).filter((verb) => !registered.includes(verb));
+  deepStrictEqual(dead, [], `property generator entries for unregistered verbs: ${dead.join(", ")}`);
 });
 
 test("the catalog reads the live declarations", () => {

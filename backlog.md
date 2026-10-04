@@ -24,17 +24,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
   additions only, one line or one entry per change, so concurrent lanes conflict at most trivially.
 - **No lane changes another lane's semantics.** If an item needs that, it stops and says so.
 
-## P. Prepare shared files for parallel lanes
-
-### P1. Merge-friendly registration points
-- **Scope:**
-  - `docs/pipeline.md` lists verbs one per bullet instead of in one sentence;
-  - `tests/property-gen.ts` keeps one entry per verb in a single table, and a test fails when a
-    registered verb has no entry, so no lane can forget its generator case;
-  - `CLAUDE.md` gives each lane's area its own bullet to extend.
-- **Done when:** adding a verb touches each registration point by appending one entry, and no
-  behaviour or test outcome changes.
-
 ## Lane A. Relations and perception
 
 Owns `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception part of

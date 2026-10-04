@@ -122,6 +122,22 @@ A detachable part needs a companion template named `<template>.<part>.json` (for
 `jaw` that provides `mouth_carry`; default coverage stays `sight`+`hearing`, so smell answers only
 where a snapshot's coverage declares it.
 
+## Lane areas
+
+One bullet per area, and an area is extended by appending to its own bullet only. A new verb or
+refusal code also touches the shared registration points, one line or one entry each:
+`src/engine/verbs/index.ts`, `src/errors.ts`, `src/contract.ts`, the verb table in
+`tests/property-gen.ts`, and one bullet in `docs/pipeline.md`.
+
+- **Relations and perception:** `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception
+  half of `src/engine/query.ts`, `docs/state.md`, `docs/perception.md`.
+- **Templates:** `src/templates.ts`, `src/engine/upgrade.ts`, `templates/*.json`, and the hash and
+  companion rules above.
+- **Materials:** `src/engine/residue.ts` and `src/resolvers/physical.ts`, whose behaviour the rest
+  of the engine relies on; a material's own verb lives in `src/engine/verbs/`.
+- **Authoring space:** `src/scenario.ts`, the `place` path of `src/engine/verbs/edit.ts`, the `fact`
+  half of `src/engine/query.ts`, `docs/api.md`.
+
 ## Tests
 
 `tests/*.test.ts` use `node:test` and `node:assert`. Engine tests deep-freeze the input snapshot and
