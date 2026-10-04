@@ -6,7 +6,10 @@ export type WorldErrorCode =
   | "invalid_snapshot"
   | "invalid_version"
   | "future_version"
-  | "history_unavailable";
+  | "history_unavailable"
+  | "no_such_event"
+  | "no_such_entity"
+  | "no_such_field";
 
 export class WorldError extends Error {
   constructor(

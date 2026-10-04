@@ -7,6 +7,7 @@ import {
   type WorldEdit,
 } from "./engine/command.js";
 import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./engine/query.js";
+import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
 import { verbCatalog } from "./engine/verbs/index.js";
 import { spawn, type EntityOverrides } from "./engine/spawn.js";
 import { validateSnapshot } from "./engine/validate.js";
@@ -21,6 +22,7 @@ import {
   resolveSubmission,
   since as foldSince,
   submit,
+  trace as foldTrace,
 } from "./store/file-store.js";
 import { loadTemplates, templatesHash, type TemplateRegistry } from "./templates.js";
 
@@ -57,11 +59,16 @@ export interface SinceResult {
   events: WorldEvent[];
 }
 
+export interface TraceResult {
+  events: WorldEvent[];
+}
+
 export interface World {
   command(command: Command, options?: CommandOptions): Result;
   edit(edit: WorldEdit, options?: EditOptions): Result;
   check(command: Command): CheckResult;
   since(version: number): SinceResult;
+  trace(query: TraceQuery): TraceResult;
   query(query: Query): Answer;
   snapshot(): Snapshot;
   entity(id: Id): Entity | null;
@@ -138,6 +145,7 @@ function storeWorld(dir: string, registry: TemplateRegistry): World {
     },
     check: (command) => checkResult(dryRun(load(dir, registry), registry, command)),
     since: (version) => foldSince(dir, version, registry),
+    trace: (query) => foldTrace(dir, query, registry),
     query: (request) => {
       // An event-form perceive reads the world at either end of that event's command: perceptible
       // if perceptible before or after it. The entity form and unknown events read the present.
@@ -255,6 +263,45 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
         options?.basedOn ?? current.version,
       ),
     check: (command) => checkResult(dryRun(current, templates, command)),
+    trace: (query) => {
+      const allDeltas: Delta[] = [];
+      for (const record of applied) {
+        allDeltas.push(...record.deltas);
+      }
+      if ("entity" in query) {
+        const known =
+          current.entities[query.entity] !== undefined ||
+          allDeltas.some((delta) => delta.entity === query.entity) ||
+          events.some((event) => event.entity === query.entity);
+        if (!known) {
+          throw new WorldError("no_such_entity", `No such entity ${query.entity}`);
+        }
+
+        const field = query.field as string;
+        if (!VALID_ENTITY_FIELDS.includes(field as typeof VALID_ENTITY_FIELDS[number])) {
+          throw new WorldError(
+            "no_such_field",
+            `No such field ${field}`,
+          );
+        }
+
+        if (field !== "entity") {
+          const hasDelta = allDeltas.some(
+            (delta) => delta.entity === query.entity && delta.field === field,
+          );
+          const hasSpawn = allDeltas.some(
+            (delta) => delta.entity === query.entity && delta.field === "entity",
+          );
+          if (!hasDelta && !hasSpawn && snapshot.entities[query.entity] !== undefined) {
+            throw new WorldError(
+              "history_unavailable",
+              `No history for ${query.entity}.${field} before this memory world was created`,
+            );
+          }
+        }
+      }
+      return { events: traceQuery(events, allDeltas, query) };
+    },
     since: (version) => {
       if (!Number.isSafeInteger(version) || version < 0) {
         throw new WorldError("invalid_version", `Invalid version ${version}`);
@@ -293,6 +340,7 @@ export { canonicalJson, verbCatalog as verbs, WorldError, WORLD_AUTHOR };
 export type { WorldErrorCode } from "./errors.js";
 export type { Command, Result, WorldEdit } from "./engine/command.js";
 export type { Answer, Query } from "./engine/query.js";
+export type { TraceQuery } from "./engine/trace.js";
 export type {
   Coverage,
   Delta,

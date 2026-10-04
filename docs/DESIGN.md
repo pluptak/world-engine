@@ -48,21 +48,21 @@ surface.
 ## The library API
 
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)`, `openWorld(dir)`, and
-`memoryWorld(snapshot)` return a `World` with `command(cmd, { basedOn })`, `edit(op, { command_id,
-basedOn })`, `check(cmd)`, `since(version)`, `query(q)`, `snapshot()`, and `entity(id)`. `verbs()`
-is the catalog each verb describes itself to. `check` agrees with `command` on the verdict without
-writing or logging; `since` folds the log, or a memory world's own records, into the deltas and
-events of every ok command after the version. An edit is one `spawn`, `remove`, `place`,
-`set_props`, or `set_part` logged under the reserved author `world`, refused when it breaks a
-snapshot invariant; removing a support or container passes its riders and contents into the
-relation it itself was in. Store worlds share a directory, so handles see each other; memory
-worlds hold their own. A missing directory, a changed hash, or a bad version is a `WorldError`.
+`memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `since`, `trace`,
+`query`, `snapshot`, and `entity`; `verbs()` is the catalog each verb describes itself to. `check`
+agrees with `command` without writing or logging; `since` gives the deltas and events of every ok
+command after a version. `trace` follows `cause_id` root-first from an event, or from the last
+delta of an entity field, else its spawn; an initial entity's field has an empty chain, and a
+memory world answers `history_unavailable` for what predates it. Edits (`spawn`, `remove`, `place`,
+`set_props`, `set_part`) are logged under the author `world`, refused when they break an invariant;
+a removed holder passes what it held into its own relation. Store worlds share a directory, memory
+worlds hold their own; a missing directory, changed hash, or bad version is a `WorldError`.
 
 ## Commands and persistence
 
-The CLI is a JSON adapter over `World` with no logic of its own: one request on stdin, one method,
-one response. Zod validates that boundary; a failure becomes `{status:"invalid", issues}`.
-`world init` builds a world from template spawn specs; a snapshot only when requested.
+The CLI is a JSON adapter over `World`: one request on stdin, one method, one response. Zod
+validates that boundary, a failure becomes `{status:"invalid", issues}`, and `init` takes spawn
+specs.
 
 Each world stores `initial.json`, canonical `snapshot.json`, and a JSONL command log holding every
 command. The store appends before atomically replacing the snapshot; an accepted command whose

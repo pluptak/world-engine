@@ -147,6 +147,10 @@ function dispatch(request: Request): unknown {
     const world = openWorld(request.world);
     return world.since(request.version);
   }
+  if (request.op === "trace") {
+    const world = openWorld(request.world);
+    return world.trace(request.query);
+  }
   const world = openWorld(request.world);
   if (request.op === "query") {
     return world.query(request.query);

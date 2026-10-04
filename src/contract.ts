@@ -151,6 +151,14 @@ export const RequestSchema = z.discriminatedUnion("op", [
     version: z.number().int(),
   }).strict(),
   z.object({
+    op: z.literal("trace"),
+    world: z.string().min(1),
+    query: z.union([
+      z.object({ event_id: IdSchema }).strict(),
+      z.object({ entity: IdSchema, field: z.string().min(1) }).strict(),
+    ]),
+  }).strict(),
+  z.object({
     op: z.literal("query"),
     world: z.string().min(1),
     query: QuerySchema,
@@ -261,6 +269,15 @@ export const SinceResponseSchema = z.object({
   events: z.array(WorldEventSchema),
 }).strict();
 
+export const TraceQuerySchema = z.union([
+  z.object({ event_id: IdSchema }).strict(),
+  z.object({ entity: IdSchema, field: z.string().min(1) }).strict(),
+]);
+
+export const TraceResponseSchema = z.object({
+  events: z.array(WorldEventSchema),
+}).strict();
+
 export const VerbsResponseSchema = z.object({
   verbs: z.array(VerbCatalogEntrySchema),
 }).strict();
@@ -282,6 +299,7 @@ export const ResponseSchema = z.union([
   SnapshotSchema,
   CheckResponseSchema,
   SinceResponseSchema,
+  TraceResponseSchema,
   VerbsResponseSchema,
   ValidationFailureSchema,
 ]);

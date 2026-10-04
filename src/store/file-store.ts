@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { apply } from "../engine/pipeline.js";
 import { canonicalJson } from "../engine/canonical.js";
+import { traceQuery, type TraceQuery } from "../engine/trace.js";
 import { validateSnapshot } from "../engine/validate.js";
 import type { Command, Result } from "../engine/command.js";
 import { WorldError } from "../errors.js";
@@ -314,6 +315,47 @@ export function replayUntilEvent(
   }
 
   return null;
+}
+
+// The cause chain for one event or one entity field, folded from the whole log in command
+// order; field mode resolves to the last raw delta for that entity and field, or the entity
+// spawn event if the field was never explicitly set. A field with no delta and no spawn
+// event returns an empty chain (entity existed in the initial snapshot).
+export function trace(
+  dir: string,
+  query: TraceQuery,
+  registry?: TemplateRegistry,
+): { events: WorldEvent[] } {
+  const templates = activeRegistry(registry);
+  const current = load(dir, templates);
+  const initial = readSnapshot(join(dir, snapshots.initial));
+  assertTemplates(current, templates);
+  assertTemplates(initial, templates);
+  let snapshot = initial;
+  const deltas: Delta[] = [];
+  const events: WorldEvent[] = [];
+  for (const [index, entry] of readLogEntries(dir).entries()) {
+    if (entry.status !== "ok") {
+      continue;
+    }
+    const result = apply(snapshot, templates, entry.command);
+    if (result.status !== "ok") {
+      throw new TypeError(`Accepted command failed during replay at line ${index + 1}`);
+    }
+    deltas.push(...result.deltas);
+    events.push(...result.events);
+    snapshot = result.snapshot;
+  }
+  if ("entity" in query) {
+    const known =
+      current.entities[query.entity] !== undefined ||
+      deltas.some((delta) => delta.entity === query.entity) ||
+      events.some((event) => event.entity === query.entity);
+    if (!known) {
+      throw new WorldError("no_such_entity", `No such entity ${query.entity}`);
+    }
+  }
+  return { events: traceQuery(events, deltas, query) };
 }
 
 // Every ok command after `version`, folded from the log: their deltas and events in command order.
