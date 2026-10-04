@@ -1,19 +1,16 @@
 # world-engine
 
 A deterministic, persistent, causal world-transition engine: persistent causal world state, with
-physics as one resolver underneath it.
+physics as one resolver underneath it. An in-process library API; the CLI is a thin JSON adapter.
 
 ```
 Command → Target resolution → Preconditions → Action → World transition (resolvers)
         → Consequences → Events (causal chain)
 ```
 
-Every command enters that pipeline and leaves as statuses, deltas and events — never prose.
+Every command leaves as statuses, deltas and events — never prose. Node ≥ 20.
 
 ```bash
-npm run check     # tsc --noEmit && node --import tsx --test
-npm test          # node:test via tsx
-npm run typecheck # tsc --noEmit
+npm run check     # the gate: tsc --noEmit + all tests
 ```
-
-Node ≥ 20. See `docs/DESIGN.md`, the index of the built model.
+See `docs/DESIGN.md`, the index of the built model, and `CLAUDE.md` for the code map.
