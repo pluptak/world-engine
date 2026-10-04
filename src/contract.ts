@@ -27,6 +27,7 @@ export const CommandSchema = z.object({
   verb: z.string(),
   target: z.string().optional(),
   args: z.record(z.string(), z.unknown()).optional(),
+  perceivers: z.boolean().optional(),
 }).strict();
 
 export const QuerySchema = z.discriminatedUnion("kind", [
@@ -136,6 +137,7 @@ export const RequestSchema = z.discriminatedUnion("op", [
     command_id: IdSchema.optional(),
     based_on_version: z.number().int().optional(),
     edit: WorldEditSchema,
+    perceivers: z.boolean().optional(),
     include_snapshot: z.boolean().optional(),
   }).strict(),
   z.object({
@@ -195,6 +197,13 @@ export const SnapshotSchema = z.object({
   entities: z.record(z.string(), EntitySchema),
 }).strict();
 
+export const PerceiversSchema = z.object({
+  sight: z.array(IdSchema),
+  hearing: z.array(IdSchema),
+  smell: z.array(IdSchema),
+  unknown_senses: z.array(z.string()),
+}).strict();
+
 export const WorldEventSchema = z.object({
   event_id: IdSchema,
   cause_id: IdSchema.nullable(),
@@ -202,6 +211,7 @@ export const WorldEventSchema = z.object({
   type: z.string(),
   entity: IdSchema,
   data: z.record(z.string(), z.unknown()),
+  perceivers: PerceiversSchema.optional(),
 }).strict();
 
 export const DeltaSchema = z.object({

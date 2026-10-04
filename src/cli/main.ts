@@ -135,7 +135,7 @@ function dispatch(request: Request): unknown {
     const world = openWorld(request.world);
     const result = world.edit(
       request.edit,
-      { command_id: request.command_id, basedOn: request.based_on_version },
+      { command_id: request.command_id, basedOn: request.based_on_version, perceivers: request.perceivers },
     );
     return commandResponse(result, request.include_snapshot === true);
   }

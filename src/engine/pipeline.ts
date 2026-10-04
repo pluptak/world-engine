@@ -1,6 +1,7 @@
 import { canonicalJson } from "./canonical.js";
 import type { Command, CommandContext, Result, TransitionContext } from "./command.js";
 import { WORLD_AUTHOR } from "./command.js";
+import { eventPerceivers } from "./query.js";
 import { verbRegistry } from "./verbs/index.js";
 import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
@@ -45,6 +46,21 @@ const worldAuthor: Entity = {
   modifiers: [],
   props: {},
 };
+
+function withPerceivers(
+  before: Snapshot,
+  after: Snapshot,
+  registry: TemplateRegistry,
+  events: WorldEvent[],
+): WorldEvent[] {
+  const described = new Map(
+    eventPerceivers(before, after, registry, events).map((entry) => [
+      entry.event_id,
+      entry.perceivers,
+    ]),
+  );
+  return events.map((event) => ({ ...event, perceivers: described.get(event.event_id) }));
+}
 
 export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: Command): Result {
   const verb = verbRegistry.get(command.verb);
@@ -188,12 +204,19 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
   }
   working = { ...working, version: working.version + 1 };
 
+  // The batch form of perceive, asked for on the way in: every event of this command names who
+  // sensed it at either end, the same either-end reading item 5 gives a past event.
+  const reported =
+    command.perceivers === true
+      ? withPerceivers(snapshot, working, registry, events)
+      : events;
+
   return {
     status: "ok",
     command_id: command.command_id,
     resolved_target: target?.address ?? null,
     snapshot: working,
     deltas,
-    events,
+    events: reported,
   };
 }

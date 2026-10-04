@@ -45,6 +45,8 @@ export interface Command {
   verb: string;
   target?: string;
   args?: Record<string, unknown>;
+  // Ask for the batch form of perceive: every event of an ok command names its perceivers.
+  perceivers?: boolean;
 }
 
 export interface Result {

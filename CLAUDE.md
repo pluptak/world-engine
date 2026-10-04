@@ -59,7 +59,9 @@ suffixes (NodeNext).
 - `src/engine/query.ts`: `fact` and `perceive` queries. They answer `"true"`, `"false"` or
   `"unknown"` with a `basis_code`, from the snapshot, the templates, coverage and the replayed event
   list. Senses are `sight`, `hearing`, and `smell`; smell mirrors hearing and only answers where the
-  snapshot's coverage declares it, so a world without it stays `"unknown"`.
+  snapshot's coverage declares it, so a world without it stays `"unknown"`. `eventPerceivers` is the
+  batch form: every agent, every covered sense, an agent listed exactly when `perceive` is true for
+  it before or after the events' command.
 - `src/engine/capacity.ts` (`capacity` adds part contributions and unexpired modifiers;
   `structuralCapacity`/`structuralCapacities` skip modifiers), `geometry.ts` (derived position and
   elevation along support/containment chains), `spawn.ts` (ids from `next_seq`), `residue.ts`,
@@ -90,11 +92,15 @@ suffixes (NodeNext).
   the version it started from. An event-form `perceive` is perceptible if true before or after
   that event's command; the store's `replayUntilEvent` in `store/file-store.ts` returns both
   snapshots, a memory world provides them through its history map, and `queryAtEvent` in the
-  engine combines both answers, while the entity form and an unknown event read the present. A default edit id is `edit-<n>` with n one plus the world's
-  submission count — log lines for a store world, a closure counter over its own commands and edits
-  for a memory one — so the same sequence of calls writes the same log through any number of
-  handles.
-  A memory world keeps past snapshots so stale commands preempt exactly like store-backed ones.
+  engine combines both answers, while the entity form and an unknown event read the present. A
+  command with `perceivers: true` names, on every event of an ok result, who sensed it by sense
+  (`Perceivers` in `model.ts`, validated by `PerceiversSchema`); the flag rides on the `Command`
+  through the log and replay, and events without it carry no such field. `EditOptions` can set
+  `perceivers: true` to enable this for edits, and the CLI's `edit` op accepts `perceivers` as a
+  field. A default edit id is `edit-<n>` with n one plus the world's submission count — log lines
+  for a store world, a closure counter over its own commands and edits for a memory one — so the
+  same sequence of calls writes the same log through any number of handles. A memory world keeps
+  past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
   `check` | `since` | `query` | `snapshot` | `verbs`), calls one `World` method or `verbCatalog`, and
   validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`

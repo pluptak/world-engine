@@ -15,14 +15,6 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 ## D. What the API tells its caller
 
-### 7. Perceivers per event
-- **Why:** a caller that tracks who knows what needs who *could* have sensed each event — the batch
-  form of `perceive`. Knowing/noticing stays the caller's.
-- **Scope:** `{ perceivers: true }` on a command adds, per event,
-  `{sight: Id[], hearing: Id[], smell: Id[], unknown_senses: string[]}` over every agent, evaluated
-  as in item 5.
-- **Done when:** the bottle break behind a closed door lists the listener under hearing, not sight.
-
 ### 8. `trace` — the cause chain of an event or an entity's state
 - **Scope:** `trace(event_id | {entity, field})` → the event chain back to the root command or edit
   (for a field: the event of the last delta that set it).

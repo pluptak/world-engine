@@ -1,8 +1,8 @@
 import { capacity } from "./capacity.js";
 import { canonicalJson } from "./canonical.js";
-import type { Entity, Id, Snapshot, Tri, WorldEvent } from "../model.js";
+import type { Entity, Id, Perceivers, Snapshot, Tri, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
-import { closedEnclosure } from "./verbs/address.js";
+import { closedEnclosure, isAgent } from "./verbs/address.js";
 
 export type Query =
   | { kind: "fact"; subject: Id; relation: string; object?: Id | string }
@@ -248,6 +248,55 @@ export function query(
   q: Query,
 ): Answer {
   return q.kind === "fact" ? fact(snapshot, q) : perceive(snapshot, registry, events, q);
+}
+
+// Who could have sensed each event: every agent, every covered sense, true before or after the
+// events' command — the caller passes both snapshots, as in item 5. An agent is listed exactly
+// when perceive would answer true for it at either end.
+export function eventPerceivers(
+  before: Snapshot,
+  after: Snapshot,
+  registry: TemplateRegistry,
+  events: WorldEvent[],
+): Array<{ event_id: Id; perceivers: Perceivers }> {
+  const senses = ["sight", "hearing", "smell"];
+  const unknown_senses = senses.filter((sense) => !after.coverage.senses.includes(sense));
+  // Agents at either end: a command can introduce an entity its own events are about.
+  const agents = [...new Set([...Object.keys(before.entities), ...Object.keys(after.entities)])]
+    .sort()
+    .filter((id) => isAgent(after.entities[id] === undefined ? before : after, id));
+  const sensed = (snapshot: Snapshot, observer: Id, event: Id, sense: string): boolean =>
+    perceive(snapshot, registry, events, {
+      kind: "perceive",
+      observer,
+      event_id: event,
+      sense,
+    }).value === "true";
+  return events.map((event) => {
+    const seen: Record<string, Id[]> = { sight: [], hearing: [], smell: [] };
+    for (const observer of agents) {
+      for (const sense of senses) {
+        if (unknown_senses.includes(sense)) {
+          continue;
+        }
+        if (
+          sensed(before, observer, event.event_id, sense) ||
+          sensed(after, observer, event.event_id, sense)
+        ) {
+          seen[sense]?.push(observer);
+        }
+      }
+    }
+    return {
+      event_id: event.event_id,
+      perceivers: {
+        sight: seen.sight ?? [],
+        hearing: seen.hearing ?? [],
+        smell: seen.smell ?? [],
+        unknown_senses: [...unknown_senses],
+      },
+    };
+  });
 }
 
 // For event-form perceive: evaluate against both snapshot before and after the command that

@@ -55,9 +55,8 @@ writing or logging; `since` folds the log, or a memory world's own records, into
 events of every ok command after the version. An edit is one `spawn`, `remove`, `place`,
 `set_props`, or `set_part` logged under the reserved author `world`, refused when it breaks a
 snapshot invariant; removing a support or container passes its riders and contents into the
-relation it itself was in. A store world reads through to its directory, so handles see each
-other; a memory world holds its own. A missing directory, a changed template hash, a broken
-snapshot, or a bad version is a `WorldError`.
+relation it itself was in. Store worlds share a directory, so handles see each other; memory
+worlds hold their own. A missing directory, a changed hash, or a bad version is a `WorldError`.
 
 ## Commands and persistence
 
@@ -74,8 +73,8 @@ commands over the initial snapshot; a template-hash mismatch is an error, stale 
 
 Queries answer facts and perception from the snapshot, templates, events, and coverage. Covered
 relations and properties answer true or false from state; a category absent from coverage answers
-unknown. Perception supports sight, hearing, and smell — the last only where a world's coverage
-declares it — from capacities, lighting, doors, and loud event types; an event-form perceive is
-perceptible if true before or after that command. Sight is `false` (`enclosed`) in a shut
-container; hearing and smell ignore it. Coverage describes the engine's answers, never who knows,
-notices, or remembers.
+unknown. Perception spans sight, hearing, and smell — the last only where covered — reads
+capacities, lighting, doors, and loud event types; an event-form perceive is perceptible if
+true before or after that command. Sight is `false` (`enclosed`) in a shut container; hearing
+and smell ignore it. A command with `perceivers: true` names who sensed each event, by sense,
+at either end. Coverage describes the engine's answers, never who knows, notices, or remembers.

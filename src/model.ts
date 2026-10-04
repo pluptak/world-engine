@@ -66,6 +66,16 @@ export interface WorldEvent {
   type: string;
   entity: Id;
   data: Record<string, unknown>;
+  perceivers?: Perceivers;
+}
+
+// The batch form of perceive, per event: the agents that sensed it through each covered sense.
+// Senses the world's coverage does not declare cannot sense, so they are named, not mapped.
+export interface Perceivers {
+  sight: Id[];
+  hearing: Id[];
+  smell: Id[];
+  unknown_senses: string[];
 }
 
 export interface Delta {

@@ -40,6 +40,7 @@ export interface CommandOptions {
 export interface EditOptions {
   command_id?: Id;
   basedOn?: number;
+  perceivers?: boolean;
 }
 
 // What a dry run reports: the verdict a command would get now, without state or a log line.
@@ -88,7 +89,7 @@ function activeRegistry(registry?: TemplateRegistry): TemplateRegistry {
 
 // Every edit is a command by the reserved author, so it is logged and replayed like one; the
 // caller names the edit, the world names the command only when the caller does not.
-function editCommand(edit: WorldEdit, commandId: Id): Command {
+function editCommand(edit: WorldEdit, commandId: Id, perceivers?: boolean): Command {
   const command: Command = {
     command_id: commandId,
     actor: WORLD_AUTHOR,
@@ -97,6 +98,9 @@ function editCommand(edit: WorldEdit, commandId: Id): Command {
   };
   if ("target" in edit) {
     command.target = edit.target;
+  }
+  if (perceivers === true) {
+    command.perceivers = true;
   }
   return command;
 }
@@ -127,7 +131,7 @@ function storeWorld(dir: string, registry: TemplateRegistry): World {
       const prior = entryCount(dir);
       return submit(
         dir,
-        editCommand(edit, options?.command_id ?? `edit-${prior + 1}`),
+        editCommand(edit, options?.command_id ?? `edit-${prior + 1}`, options?.perceivers),
         options?.basedOn,
         registry,
       );
@@ -247,7 +251,7 @@ export function memoryWorld(snapshot: Snapshot, registry?: TemplateRegistry): Wo
     command: (command, options) => submitMemory(command, options?.basedOn ?? current.version),
     edit: (edit, options) =>
       submitMemory(
-        editCommand(edit, options?.command_id ?? `edit-${submissions + 1}`),
+        editCommand(edit, options?.command_id ?? `edit-${submissions + 1}`, options?.perceivers),
         options?.basedOn ?? current.version,
       ),
     check: (command) => checkResult(dryRun(current, templates, command)),
@@ -294,6 +298,7 @@ export type {
   Delta,
   Entity,
   Id,
+  Perceivers,
   Pos,
   Snapshot,
   Status,
