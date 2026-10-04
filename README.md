@@ -9,7 +9,6 @@ Command → Target resolution → Preconditions → Action → World transition 
 ```
 
 Every command leaves as statuses, deltas and events — never prose. Node ≥ 20.
-
 ```bash
 npm run check     # the gate: tsc --noEmit + all tests
 ```
