@@ -4,6 +4,7 @@
 what broke, who could have seen it. The engine keeps that state and answers with codes, never prose.
 **For** a caller that turns intent into commands, such as a game loop, interactive fiction or an
 LLM agent that must be grounded in what is true. The caller owns knowledge, language and luck.
+The promises and the decisions that bound them are in [thesis.md](thesis.md).
 
 **One example**, `scenarios/bottle.json` (`e2` table, `e3` bottle, `e4` pusher, `e5` stone):
 

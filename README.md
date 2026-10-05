@@ -1,7 +1,7 @@
 # world-engine
 
-A deterministic, causal world-transition library: commands go in; statuses, deltas and events come
-out, never prose. An in-process API (`createWorld`, `openWorld`, `memoryWorld`); the CLI is JSON.
+A deterministic world model for narrative and agent grounding: commands in; statuses, deltas and
+events out, never prose. An in-process API (`createWorld`, `openWorld`, `memoryWorld`); a JSON CLI.
 
 - **Verbs:** move, take, drop, put, give, pour, push, pull, attack, open, close, lock, unlock,
   search, wait, and the author's `edit`; every refusal is a declared code with numbers, not text.
