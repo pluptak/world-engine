@@ -4,7 +4,7 @@ One row per class of event, one column per sense and situation: `s`, `h`, `m` an
 hearing, smell and touch, `A` the same room, `+` an open door and `B` a shut door. `T` is true,
 `L` is true only if the event is loud (`broken`, `detached`, or a `dropped` of 50 cm or more) and
 `F` is false. Touch ignores rooms: `O` is felt when the observer is the subject or holds it in a
-grip, and not felt otherwise.
+grip, and not felt otherwise; a `collided` is felt through what it hit as well.
 
 | row | sA | s+ | sB | hA | h+ | hB | mA | m+ | mB | t |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

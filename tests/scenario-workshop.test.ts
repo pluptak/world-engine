@@ -159,7 +159,6 @@ test(
 
 test(
   "a stone pushed into the bottle stops at it and the impact breaks the bottle",
-  { todo: "impact" },
   (t) => {
     const { world, ids } = open(t);
     // Centres 100 apart, half-widths 10 + 4: 86.

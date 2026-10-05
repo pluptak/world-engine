@@ -2,7 +2,7 @@ import { capacity } from "../capacity.js";
 import { effectivePos, sweep, type Direction, type Sweep } from "../geometry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Pos } from "../../model.js";
-import { propagateSupportLoss } from "../../resolvers/physical.js";
+import { propagateSupportLoss, resolveImpact } from "../../resolvers/physical.js";
 import { isAbstract } from "../resolve.js";
 import { reachData } from "./address.js";
 import { revealConcealed } from "./search.js";
@@ -125,7 +125,8 @@ function makeTransition(reverse: boolean) {
     const movedEvent = context.emit("moved", target.entity_id, { distance_cm: path.distance }, context.root_event_id);
     context.set(target.entity_id, "pos", offset(position, travel(move, reverse), path.distance), movedEvent);
     if (path.obstacle !== null) {
-      context.emit("collided", target.entity_id, { with: path.obstacle }, movedEvent);
+      const collidedEvent = context.emit("collided", target.entity_id, { with: path.obstacle }, movedEvent);
+      resolveImpact(context, target.entity_id, path.obstacle, path.distance, collidedEvent);
     }
     revealConcealed(context, target.entity_id, movedEvent);
     propagateSupportLoss(context, target.entity_id, movedEvent);

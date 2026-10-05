@@ -447,7 +447,13 @@ function perceive(
     if (sensesFor(event, events).touch !== "body") {
       return answer("false", "authored");
     }
-    return touchesBody(snapshot, registry, observer.id, subject)
+    // A collision is felt by what was hit as much as by what moved.
+    const struck =
+      event?.type === "collided" && typeof event.data.with === "string"
+        ? snapshot.entities[event.data.with]
+        : undefined;
+    return touchesBody(snapshot, registry, observer.id, subject) ||
+      (struck !== undefined && touchesBody(snapshot, registry, observer.id, struck))
       ? answer("true", "own_body")
       : answer("false", "not_touching");
   }

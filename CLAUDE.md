@@ -56,7 +56,8 @@ suffixes (NodeNext).
   capacity a victim held with drops what it held — structural sums, not modifier dips: a stunned
   carrier holds on.
 - `src/resolvers/physical.ts`: consequences that run after the verb, such as support loss,
-  displacement, falls, breaking into `break_products`, and residue transfer. Verbs call into it.
+  displacement, falls, breaking into `break_products`, residue transfer, and `resolveImpact`
+  (mass × distance against each party's mass × `break_fall_cm`). Verbs call into it.
 - `src/engine/query.ts`: `fact` and `perceive` queries. They answer `"true"`, `"false"` or
   `"unknown"` with a `basis_code`, from the snapshot, the templates, coverage and the replayed event
   list. Senses are `sight`, `hearing`, `smell`, and `touch`, read from `EVENT_SENSES` (one row per event type,

@@ -99,7 +99,18 @@ function breakOnFall(
     spillVessel(context, entityId, causeId, fall_cm, landing);
     return;
   }
+  breakEntity(context, entityId, causeId, fall_cm, landing, queue);
+}
 
+function breakEntity(
+  context: TransitionContext,
+  entityId: Id,
+  causeId: Id,
+  fall_cm: number,
+  landing: Landing,
+  queue: LossRequest[],
+): void {
+  const entity = requireEntity(context, entityId);
   const template = context.registry[entity.template];
   if (template === undefined) {
     throw new TypeError(`Unknown template ${entity.template}`);
@@ -288,5 +299,46 @@ export function resolveDropFall(
   };
   const queue: LossRequest[] = [];
   breakOnFall(context, entityId, droppedEventId, fall_cm, landing, queue);
+  processQueue(context, queue);
+}
+
+function massOf(context: TransitionContext, entityId: Id): number {
+  const template = context.registry[requireEntity(context, entityId).template];
+  if (template === undefined) {
+    throw new TypeError(`Unknown template ${requireEntity(context, entityId).template}`);
+  }
+  return template.mass_g;
+}
+
+// A pushed thing that meets another strikes it with its mass times the distance it travelled.
+// Either party breaks when that is at least what its own fall to breaking would take, its mass
+// times `break_fall_cm`; what declares no threshold takes no harm. The struck one is read first.
+export function resolveImpact(
+  context: TransitionContext,
+  moverId: Id,
+  obstacleId: Id,
+  distance_cm: number,
+  collidedEventId: Id,
+): void {
+  const impact = massOf(context, moverId) * distance_cm;
+  const queue: LossRequest[] = [];
+  for (const id of [obstacleId, moverId]) {
+    const entity = requireEntity(context, id);
+    const threshold = entity.props.break_fall_cm;
+    if (
+      entity.status === "broken" ||
+      entity.status === "destroyed" ||
+      typeof threshold !== "number" ||
+      impact < massOf(context, id) * threshold
+    ) {
+      continue;
+    }
+    const landing: Landing = {
+      support: entity.support,
+      location: entity.location,
+      pos: effectivePos(context.snapshot, id),
+    };
+    breakEntity(context, id, collidedEventId, 0, landing, queue);
+  }
   processQueue(context, queue);
 }
