@@ -11,7 +11,7 @@ What is built, nothing aspirational, one concept per file:
 - [carrying.md](carrying.md): holding parts, grips and pockets, and what losing a part drops.
 - [api.md](api.md): the `World` API, edits, scenarios and names.
 - [space.md](space.md): anchors, offsets and the derived `near` relation.
-- [occupancy.md](occupancy.md): footprints, and what stops a push.
+- [occupancy.md](occupancy.md): footprints, what stops a push, and where a fall lands.
 - [persistence.md](persistence.md): the CLI and the world directory.
 - [perception.md](perception.md): queries, perception, and coverage.
 - [senses.md](senses.md): the sense table both queries and tests read.

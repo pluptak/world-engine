@@ -33,7 +33,8 @@ function bottleWorld(
     name: "guard",
     location: room.id,
     support: room.id,
-    pos: { x: 0, y: 0 },
+    // Beside the table, not inside its footprint, so what the guard drops lands on the floor.
+    pos: { x: -40, y: 0 },
   });
   const bottle = spawn(actor.snapshot, registry, "bottle", {
     name: "bottle",

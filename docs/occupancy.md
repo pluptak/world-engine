@@ -1,4 +1,4 @@
-# Occupancy: footprints and what stops a push
+# Occupancy: footprints, what stops a push, and where a fall lands
 
 An entity on a support occupies a footprint: its template's `size_cm.w` along x and `size_cm.d`
 along y, centred on its position, axis-aligned. Two footprints overlap when `2·|Δx| < w₁ + w₂` and
@@ -26,3 +26,9 @@ The impact is the mover's `mass_g` times the distance it travelled. Each party w
 `break_fall_cm` breaks when the impact is at least its own `mass_g` times that threshold, the
 struck one first: the break runs exactly as a fall's does, caused by `collided`, with products and
 residue where the broken thing stands. What declares no threshold takes no harm, agents included.
+
+A fall comes to rest on the tallest surface (`surface: true`, what `put` sets things on) standing
+on the room below it, lower than the height it falls from, whose footprint holds the landing point
+strictly inside and is at least as wide and deep as the faller; else on the floor. The point is
+the holder's centre for a drop and the lost support's for a support loss, which is never itself a
+candidate. `fall_cm` is measured to that surface, and what lands on it has no `pos` of its own.

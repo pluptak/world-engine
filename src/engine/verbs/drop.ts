@@ -1,7 +1,7 @@
 import type { Id } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { inSpacePart } from "../carry.js";
-import { resolveDropFall } from "../../resolvers/physical.js";
+import { resolveDropFall, restingPlace } from "../../resolvers/physical.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
   const target = context.target;
@@ -49,7 +49,12 @@ export function dropCarriedItem(
   }
 
   const handHeight = holder.props.hand_height_cm;
-  const fall_cm = typeof handHeight === "number" ? handHeight : 0;
+  const from_cm = typeof handHeight === "number" ? handHeight : 0;
+  const rest =
+    holder.location !== null && holder.pos !== null
+      ? restingPlace(context, holder.location, holder.pos, from_cm, entityId, [holderId])
+      : null;
+  const fall_cm = from_cm - (rest?.height_cm ?? 0);
   const droppedEvent = context.emit(
     "dropped",
     entityId,
@@ -58,8 +63,8 @@ export function dropCarriedItem(
   );
   context.set(entityId, "contained_in", null, droppedEvent);
   context.set(entityId, "in_part", null, droppedEvent);
-  context.set(entityId, "support", holder.location, droppedEvent);
-  context.set(entityId, "pos", holder.pos, droppedEvent);
+  context.set(entityId, "support", rest?.support ?? holder.location, droppedEvent);
+  context.set(entityId, "pos", rest === null ? holder.pos : null, droppedEvent);
   dropFallHook(context, entityId, droppedEvent, fall_cm);
   return droppedEvent;
 }

@@ -23,6 +23,54 @@ function requireEntity(context: TransitionContext, entityId: Id) {
   return entity;
 }
 
+// What a thing falling at a point of a room comes to rest on: the tallest surface standing on that
+// room — what `put` could set it on — lower than the height it falls from, whose footprint holds
+// the point strictly inside (compared on doubled coordinates) and is at least as wide and deep as
+// the faller's. The faller and whatever it fell from are not candidates.
+export function restingPlace(
+  context: TransitionContext,
+  roomId: Id,
+  pos: Pos,
+  from_cm: number,
+  faller: Id,
+  exclude: readonly Id[],
+): { support: Id; height_cm: number } | null {
+  const fallerTemplate = context.registry[requireEntity(context, faller).template];
+  if (fallerTemplate === undefined) {
+    throw new TypeError(`Unknown template ${requireEntity(context, faller).template}`);
+  }
+  let best: { support: Id; height_cm: number } | null = null;
+  for (const id of Object.keys(context.snapshot.entities).sort()) {
+    const entity = requireEntity(context, id);
+    const template = context.registry[entity.template];
+    if (
+      template === undefined ||
+      id === faller ||
+      exclude.includes(id) ||
+      entity.support !== roomId ||
+      entity.contained_in !== null ||
+      entity.pos === null ||
+      entity.status === "destroyed" ||
+      entity.props.surface !== true ||
+      template.size_cm.h >= from_cm ||
+      template.size_cm.w < fallerTemplate.size_cm.w ||
+      template.size_cm.d < fallerTemplate.size_cm.d
+    ) {
+      continue;
+    }
+    if (
+      2 * Math.abs(pos.x - entity.pos.x) >= template.size_cm.w ||
+      2 * Math.abs(pos.y - entity.pos.y) >= template.size_cm.d
+    ) {
+      continue;
+    }
+    if (best === null || template.size_cm.h > best.height_cm) {
+      best = { support: id, height_cm: template.size_cm.h };
+    }
+  }
+  return best;
+}
+
 function landingLocation(context: TransitionContext, supportId: Id | null): Id | null {
   if (supportId === null) {
     return null;
@@ -59,7 +107,17 @@ function landingFromSupport(
   }
 
   let newElevation = 0;
-  if (supportId !== null) {
+  let landingPos = pos;
+  const floor = supportId === null ? undefined : context.snapshot.entities[supportId];
+  const rest =
+    floor?.template === "room" && pos !== null
+      ? restingPlace(context, floor.id, pos, oldElevation, entityId, [oldSupportId])
+      : null;
+  if (rest !== null) {
+    supportId = rest.support;
+    newElevation = rest.height_cm;
+    landingPos = null;
+  } else if (supportId !== null) {
     const support = requireEntity(context, supportId);
     if (support.template !== "room") {
       const template = context.registry[support.template];
@@ -74,7 +132,7 @@ function landingFromSupport(
     landing: {
       support: supportId,
       location: landingLocation(context, supportId) ?? entity.location,
-      pos,
+      pos: landingPos,
     },
     fall_cm: oldElevation - newElevation,
   };
@@ -294,8 +352,7 @@ export function resolveDropFall(
   const landing: Landing = {
     support: entity.support ?? entity.location,
     location: entity.location,
-    pos: entity.pos ??
-      (entity.support === null ? null : effectivePos(context.snapshot, entity.support)),
+    pos: entity.pos,
   };
   const queue: LossRequest[] = [];
   breakOnFall(context, entityId, droppedEventId, fall_cm, landing, queue);

@@ -58,7 +58,8 @@ const hall: Scenario = [
   {
     id: "table",
     template: "table",
-    overrides: { name: "table", location: "hall", support: "hall", pos: { x: 30, y: 0 } },
+    // Its footprint stays clear of where ann steps, so what ann drops lands on the floor.
+    overrides: { name: "table", location: "hall", support: "hall", pos: { x: 70, y: 0 } },
   },
   {
     id: "chest",

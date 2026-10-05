@@ -39,7 +39,8 @@ function giveWorld(registry: TemplateRegistry = baseRegistry): GiveWorld {
 
   const giver = onFloor(room.snapshot, "human", "giver", 0);
   const recipient = onFloor(giver.snapshot, "human", "recipient", 50);
-  const table = onFloor(recipient.snapshot, "table", "table", 80);
+  // Its footprint ends at the recipient's centre, so what the recipient drops lands on the floor.
+  const table = onFloor(recipient.snapshot, "table", "table", 110);
   const chair = onFloor(table.snapshot, "chair", "chair", 90);
   const item = spawn(chair.snapshot, registry, "bottle", {
     name: "bottle",

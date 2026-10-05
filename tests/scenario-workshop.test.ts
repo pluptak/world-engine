@@ -187,21 +187,29 @@ test(
   },
 );
 
-test(
-  "a cup dropped over the stone lands on it, falling 80 cm, not 100",
-  { todo: "landing" },
-  (t) => {
-    const { world, ids } = open(t);
-    strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 300, y: 60 } }).status, "ok");
-    strictEqual(run(world, ids.ann, "take", "cup").status, "ok");
-    strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 150, y: 200 } }).status, "ok");
-    const result = run(world, ids.ann, "drop", "cup");
-    strictEqual(result.status, "ok");
-    // Hand height 100, stone height 20.
-    deepStrictEqual(eventOf(result, "dropped").data, { fall_cm: 80 });
-    strictEqual(entity(world, ids.cup).support, ids.stone);
-  },
-);
+test("a cup dropped over the bench comes to rest on it, falling 25 cm, not 100", (t) => {
+  const { world, ids } = open(t);
+  strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 300, y: 60 } }).status, "ok");
+  strictEqual(run(world, ids.ann, "take", "cup").status, "ok");
+  // The drop point is the holder's centre, so ann stands at the bench to drop over it.
+  strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 300, y: 20 } }).status, "ok");
+  const result = run(world, ids.ann, "drop", "cup");
+  strictEqual(result.status, "ok");
+  // Hand height 100, bench height 75.
+  deepStrictEqual(eventOf(result, "dropped").data, { fall_cm: 25 });
+  strictEqual(entity(world, ids.cup).support, ids.bench);
+  strictEqual(entity(world, ids.cup).pos, null);
+});
+
+test("a cup dropped over the stone falls past it to the floor: a stone is no surface", (t) => {
+  const { world, ids } = open(t);
+  strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 300, y: 60 } }).status, "ok");
+  strictEqual(run(world, ids.ann, "take", "cup").status, "ok");
+  strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 150, y: 200 } }).status, "ok");
+  const result = run(world, ids.ann, "drop", "cup");
+  deepStrictEqual(eventOf(result, "dropped").data, { fall_cm: 100 });
+  strictEqual(entity(world, ids.cup).support, ids.shop);
+});
 
 test(
   "a short push of the bench leaves the cup standing on it",

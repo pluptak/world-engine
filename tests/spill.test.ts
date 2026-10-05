@@ -18,7 +18,8 @@ const SMELLING: Coverage = {
 
 const scenario: Scenario = [
   { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
-  { id: "table", template: "table", overrides: { name: "table", location: "hall", support: "hall", pos: { x: 30, y: 0 } } },
+  // Its footprint ends at ann's centre, so what ann drops lands on the floor.
+  { id: "table", template: "table", overrides: { name: "table", location: "hall", support: "hall", pos: { x: 60, y: 0 } } },
   {
     id: "cup",
     template: "cup",
