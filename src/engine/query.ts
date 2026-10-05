@@ -160,12 +160,12 @@ function eventAt(events: WorldEvent[], eventId: Id): WorldEvent | undefined {
   return events.find((event) => event.event_id === eventId);
 }
 
-function eventLocation(snapshot: Snapshot, event: WorldEvent): Id | null {
+function eventLocation(event: WorldEvent, fallback: Entity): Id | null {
   const location = event.data.location;
   if (typeof location === "string") {
     return location;
   }
-  return snapshot.entities[event.entity]?.location ?? null;
+  return fallback.location;
 }
 
 // A door with no location is in either room it connects; treat it as in the observer's room
@@ -225,28 +225,38 @@ function perceive(
     return answer("false", "no_target");
   }
 
-  const targetEntity =
+  const named =
     event === undefined
       ? query.entity === undefined
         ? undefined
         : snapshot.entities[query.entity]
       : snapshot.entities[event.entity];
-  if (targetEntity === undefined) {
+  if (named === undefined) {
     return answer("false", "no_such_entity");
   }
+  // A `found` event is where the search happened, not what was under it: it is read against the
+  // concealer, so whoever can see where it was looked for can see that it was found there.
+  const subject =
+    event !== undefined && event.type === "found" && typeof event.data.concealer === "string"
+      ? (snapshot.entities[event.data.concealer] ?? named)
+      : named;
   // An abstract entity exists and is not a thing to be sensed: it is false in either form, the
   // entity and the event alike.
-  if (isAbstract(registry, targetEntity)) {
+  if (isAbstract(registry, subject)) {
     return answer("false", "abstract");
   }
+  // What is hidden under or behind something is not seen, by anybody, until the relation is broken.
+  if (query.sense === "sight" && subject.concealed_by !== null) {
+    return answer("false", "concealed");
+  }
   // A shut container hides what is inside it, however deep; hearing and smell do not care.
-  if (query.sense === "sight" && closedEnclosure(snapshot, targetEntity.id) !== null) {
+  if (query.sense === "sight" && closedEnclosure(snapshot, subject.id) !== null) {
     return answer("false", "enclosed");
   }
 
   const observerLocation = observer.location;
-  let targetLocation = event === undefined ? targetEntity.location : eventLocation(snapshot, event);
-  targetLocation = targetLocationForPerception(targetEntity, targetLocation, observerLocation);
+  let targetLocation = event === undefined ? subject.location : eventLocation(event, subject);
+  targetLocation = targetLocationForPerception(subject, targetLocation, observerLocation);
   if (observerLocation === null || targetLocation === null) {
     return answer("false", "not_perceptible");
   }

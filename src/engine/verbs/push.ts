@@ -4,6 +4,7 @@ import type { CommandContext, PreconditionResult, TransitionContext, Verb } from
 import type { Pos } from "../../model.js";
 import { propagateSupportLoss } from "../../resolvers/physical.js";
 import { reachData } from "./address.js";
+import { revealConcealed } from "./search.js";
 
 interface Movement {
   distance: number;
@@ -104,6 +105,7 @@ function makeTransition(reverse: boolean) {
 
     const movedEvent = context.emit("moved", target.entity_id, { distance_cm: move.distance }, context.root_event_id);
     context.set(target.entity_id, "pos", offset(position, move, reverse), movedEvent);
+    revealConcealed(context, target.entity_id, movedEvent);
     propagateSupportLoss(context, target.entity_id, movedEvent);
   };
 }

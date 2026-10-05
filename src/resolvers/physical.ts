@@ -1,6 +1,7 @@
 import { elevation, effectivePos } from "../engine/geometry.js";
 import { addResidue } from "../engine/residue.js";
 import { spawn } from "../engine/spawn.js";
+import { revealConcealed } from "../engine/verbs/search.js";
 import type { Id, Pos } from "../model.js";
 import type { TransitionContext } from "../engine/command.js";
 
@@ -194,6 +195,9 @@ function processLoss(context: TransitionContext, request: LossRequest, queue: Lo
   context.set(entity.id, "support", landing.support, droppedEvent);
   context.set(entity.id, "location", landing.location, droppedEvent);
   context.set(entity.id, "pos", landing.pos, droppedEvent);
+  // A thing that falls or is knocked out from under whatever hid it uncovers it, and stops being
+  // hidden itself if it was under something else.
+  revealConcealed(context, entity.id, droppedEvent);
   breakOnFall(context, entity.id, droppedEvent, fall_cm, landing, queue);
 }
 

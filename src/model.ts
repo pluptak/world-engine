@@ -29,6 +29,8 @@ export interface Entity {
   location: Id | null;
   support: Id | null;
   contained_in: Id | null;
+  // What the entity is hidden under or behind. Sight cannot see past it; moving either end clears it.
+  concealed_by: Id | null;
   pos: Pos | null;
   detached_from: { entity: Id; part: string } | null;
   integrity: number;

@@ -47,6 +47,7 @@ export function spawn(
     location: null,
     support: null,
     contained_in: null,
+    concealed_by: null,
     pos: null,
     detached_from: null,
     integrity: 100,

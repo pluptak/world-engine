@@ -1,5 +1,6 @@
 import type { Entity, Id, Snapshot } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
+import { isAbstract } from "./resolve.js";
 
 export interface SnapshotIssue {
   code: string;
@@ -135,6 +136,13 @@ function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
       issue("dangling_reference", [...path, "location"], `unknown entity ${entity.location}`),
     );
   }
+  // A concealer is present or nothing is hidden: unlike a key's `opens`, a name that reaches nothing
+  // would leave the thing it was hiding invisible for ever.
+  if (entity.concealed_by !== null && snapshot.entities[entity.concealed_by] === undefined) {
+    issues.push(
+      issue("dangling_reference", [...path, "concealed_by"], `unknown entity ${entity.concealed_by}`),
+    );
+  }
   // Doors name the rooms they join in props, outside the support and containment relations: a side
   // that names anything else joins nothing, so it is not a door's side at all.
   if (entity.template === "door") {
@@ -160,6 +168,71 @@ function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
     const target = snapshot.entities[opens];
     if (target !== undefined && target.props.openable !== true) {
       issues.push(issue("opens_target_not_openable", [...path, "props", "opens"], opens));
+    }
+  }
+  return issues;
+}
+
+// The ids that close a concealment loop, or null: it is walked on its own, not with the chain, and a
+// name that reaches nothing cannot close one.
+function concealLoop(snapshot: Snapshot, id: Id): Id[] | null {
+  const path: Id[] = [];
+  const visited = new Map<Id, number>();
+  let current: Id | null = id;
+
+  while (current !== null) {
+    const seenAt = visited.get(current);
+    if (seenAt !== undefined) {
+      return path.slice(seenAt);
+    }
+    visited.set(current, path.length);
+    path.push(current);
+
+    const entity: Entity | undefined = snapshot.entities[current];
+    if (entity === undefined) {
+      return null;
+    }
+    current = entity.concealed_by;
+  }
+
+  return null;
+}
+
+// What may hide what: a thing that is there, in the same room, and neither end abstract — an abstract
+// entity is a mark, so nothing lies under it and it lies under nothing. Nothing may hide itself, or
+// hide what hides it.
+function concealmentIssues(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  reportedLoops: Set<Id>,
+  id: Id,
+  path: string[],
+): SnapshotIssue[] {
+  const entity = snapshot.entities[id];
+  if (entity === undefined || entity.concealed_by === null) {
+    return [];
+  }
+  // A missing concealer already has its dangling_reference; the rules below read the other end.
+  const concealer = snapshot.entities[entity.concealed_by];
+  if (concealer === undefined) {
+    return [];
+  }
+
+  const issues: SnapshotIssue[] = [];
+  if (isAbstract(registry, entity) || isAbstract(registry, concealer)) {
+    issues.push(issue("concealed_by_abstract", path, entity.concealed_by));
+  }
+  if (entity.location === null || entity.location !== concealer.location) {
+    issues.push(
+      issue("concealed_by_not_same_room", path, `${String(entity.location)} ${concealer.location}`),
+    );
+  }
+  const loop = concealLoop(snapshot, id);
+  if (loop !== null) {
+    const name = [...loop].sort()[0] ?? id;
+    if (!reportedLoops.has(name)) {
+      reportedLoops.add(name);
+      issues.push(issue("concealed_by_cycle", path, `loop: ${[...loop].sort().join(", ")}`));
     }
   }
   return issues;
@@ -191,6 +264,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
   const spawned = detachedIndex(snapshot);
   // One issue per loop, however many entities sit in it.
   const reportedLoops = new Set<Id>();
+  const reportedConcealLoops = new Set<Id>();
 
   for (const id of Object.keys(snapshot.entities).sort()) {
     const entity = snapshot.entities[id];
@@ -205,6 +279,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     }
     issues.push(...integrityIssues(snapshot, id, path));
     issues.push(...referenceIssues(snapshot, id, path));
+    issues.push(...concealmentIssues(snapshot, registry, reportedConcealLoops, id, path));
 
     // One entity sits in one place: it is either set down on something or inside something, never
     // both, which also keeps the chain single-valued for the walk below.

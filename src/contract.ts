@@ -61,6 +61,7 @@ export const EntityOverridesSchema = z.object({
   location: z.string().nullable().optional(),
   support: z.string().nullable().optional(),
   contained_in: z.string().nullable().optional(),
+  concealed_by: z.string().nullable().optional(),
   pos: PosSchema.nullable().optional(),
   detached_from: z.object({ entity: z.string(), part: z.string() }).strict().nullable().optional(),
   integrity: z.number().int().optional(),
@@ -96,6 +97,7 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
     target: IdSchema,
     support: IdSchema.nullable().optional(),
     contained_in: IdSchema.nullable().optional(),
+    concealed_by: IdSchema.nullable().optional(),
     pos: PlacementPosSchema.nullable().optional(),
   }).strict(),
   z.object({
@@ -210,6 +212,7 @@ export const EntitySchema = z.object({
   location: IdSchema.nullable(),
   support: IdSchema.nullable(),
   contained_in: IdSchema.nullable(),
+  concealed_by: IdSchema.nullable(),
   pos: PosSchema.nullable(),
   detached_from: z.object({ entity: IdSchema, part: z.string() }).strict().nullable(),
   integrity: z.number().int().min(0).max(100),

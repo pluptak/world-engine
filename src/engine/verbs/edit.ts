@@ -16,6 +16,7 @@ import {
   type WorldEdit,
 } from "../command.js";
 import { refreshSubtreeLocations, wouldLoop } from "./address.js";
+import { revealConcealed } from "./search.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -84,6 +85,7 @@ const overrideKeys = [
   "location",
   "support",
   "contained_in",
+  "concealed_by",
   "pos",
   "detached_from",
   "integrity",
@@ -112,7 +114,7 @@ function isOverrides(value: unknown): value is EntityOverrides {
   ) {
     return false;
   }
-  for (const key of ["location", "support", "contained_in"] as const) {
+  for (const key of ["location", "support", "contained_in", "concealed_by"] as const) {
     const ref = value[key];
     if (ref !== undefined && ref !== null && !isId(ref)) {
       return false;
@@ -190,7 +192,7 @@ function parseEdit(value: unknown): WorldEdit | null {
   }
   if (value.kind === "place") {
     if (
-      !onlyKeys(value, ["kind", "target", "support", "contained_in", "pos"]) ||
+      !onlyKeys(value, ["kind", "target", "support", "contained_in", "concealed_by", "pos"]) ||
       !isId(value.target)
     ) {
       return null;
@@ -198,6 +200,7 @@ function parseEdit(value: unknown): WorldEdit | null {
     if (
       (value.support !== undefined && value.support !== null && !isId(value.support)) ||
       (value.contained_in !== undefined && value.contained_in !== null && !isId(value.contained_in)) ||
+      (value.concealed_by !== undefined && value.concealed_by !== null && !isId(value.concealed_by)) ||
       (value.pos !== undefined && value.pos !== null && !isPos(value.pos) && !isAnchorPos(value.pos))
     ) {
       return null;
@@ -208,6 +211,9 @@ function parseEdit(value: unknown): WorldEdit | null {
     }
     if (typeof value.contained_in === "string" || value.contained_in === null) {
       edit.contained_in = value.contained_in;
+    }
+    if (typeof value.concealed_by === "string" || value.concealed_by === null) {
+      edit.concealed_by = value.concealed_by;
     }
     if (value.pos === null || isPos(value.pos) || isAnchorPos(value.pos)) {
       edit.pos = value.pos;
@@ -534,11 +540,21 @@ function transitionRemove(context: TransitionContext, targetId: Id): void {
   }
   const removedEvent = context.emit("removed", targetId, {}, context.root_event_id);
   context.recordDelta(targetId, "entity", doomed, null, removedEvent);
+  // What the removed thing was hiding is uncovered rather than orphaned: the hidden things stay in
+  // the world, and stay where they were.
+  revealConcealed(context, targetId, removedEvent);
   propagateSupportLoss(context, targetId, removedEvent);
   releaseDependents(context, targetId, removedEvent, doomed);
   const entities = { ...context.snapshot.entities };
   delete entities[targetId];
   context.snapshot = { ...context.snapshot, entities };
+}
+
+function samePosition(left: Pos | null, right: Pos | null): boolean {
+  if (left === null || right === null) {
+    return left === right;
+  }
+  return left.x === right.x && left.y === right.y;
 }
 
 function transitionPlace(context: TransitionContext, edit: PlaceEdit, subject: Entity): void {
@@ -557,6 +573,22 @@ function transitionPlace(context: TransitionContext, edit: PlaceEdit, subject: E
   context.set(edit.target, "contained_in", placement.contained, placedEvent);
   context.set(edit.target, "support", placement.support, placedEvent);
   context.set(edit.target, "pos", placement.pos, placedEvent);
+  // A placement that changes where the entity is uncovers what it was hiding. An explicit
+  // `concealed_by` in the same edit is written after that, so an author can hide a thing where they
+  // put it.
+  if (
+    placement.support !== subject.support ||
+    placement.contained !== subject.contained_in ||
+    !samePosition(placement.pos, subject.pos)
+  ) {
+    revealConcealed(context, edit.target, placedEvent);
+  }
+  context.set(
+    edit.target,
+    "concealed_by",
+    anchored.concealed_by === undefined ? subject.concealed_by : anchored.concealed_by,
+    placedEvent,
+  );
   refreshSubtreeLocations(context, edit.target, placedEvent);
 }
 
@@ -643,6 +675,9 @@ export const editVerb: Verb = {
     "support_and_contained_in",
     "door_side_not_room",
     "opens_target_not_openable",
+    "concealed_by_abstract",
+    "concealed_by_not_same_room",
+    "concealed_by_cycle",
   ],
   preconditions,
   transition,

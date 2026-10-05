@@ -29,7 +29,11 @@ abstract template ([space.md](space.md)) is no target for an agent's verb. A sur
   `opens` is the target's id, else `no_key`.
 - `unlock`: the same requirement, clearing `locked` under `unlocked`.
 - `wait`: advances `args.ticks` ticks and expires every modifier due in that span, in tick order.
+- `search`: looks under or behind a target; it needs `manipulation` and reach, emits one `found`
+  event per hidden thing naming its concealer (none if it hides nothing), and changes nothing —
+  who looked and what they were told is the caller's business ([relations.md](relations.md)).
 - `edit`: carries one `spawn`, `remove`, `place`, `set_props` or `set_part` as `args.edit`, and
   refuses with the code of the first snapshot rule its result breaks ([relations.md](relations.md)).
   A `place` may write `pos` as `{anchor, dx, dy}`, which resolves to the anchor's position and its
-  room and records nothing of the anchor ([space.md](space.md)).
+  room and records nothing of the anchor ([space.md](space.md)), and may write `concealed_by`, which
+  hides the placed thing under or behind another in the same room.

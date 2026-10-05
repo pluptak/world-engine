@@ -132,7 +132,11 @@ refusal code also touches the shared registration points, one line or one entry 
 - **Relations and perception:** `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception
   half of `src/engine/query.ts`, `docs/state.md`, `docs/perception.md`, `docs/relations.md`
   (one row per relation: kind, exclusivity, loop, live or history, what removal and detaching do,
-  the enforcing `validateSnapshot` code and the test).
+  the enforcing `validateSnapshot` code and the test). `concealed_by` is that area's relation:
+  `revealConcealed` in `verbs/search.ts` clears it when either end moves, and is called from `take`,
+  `push`, the fall path in `physical.ts` and `edit`'s place and remove; sight of a concealed entity
+  answers `false` / `concealed`, and a `found` event is perceived against its `concealer`, so it
+  reads as where the search happened. Nothing records who searched or who knows.
 - **Templates:** `src/templates.ts`, `src/engine/upgrade.ts`, `templates/*.json`, the hash and
   companion rules above, and `docs/templates.md`: a template may declare `"extends": "<parent id>"`,
   resolved once when a set is loaded or parsed (own field wins, `props` shallow-merged, `parts`

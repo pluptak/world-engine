@@ -3,6 +3,7 @@ import { effectivePos } from "../geometry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { carryAlternatives, carryCheck, heldCount } from "../carry.js";
 import { closedEnclosure, isAgent, reachData } from "./address.js";
+import { revealConcealed } from "./search.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
   const target = context.target;
@@ -80,6 +81,8 @@ function transition(context: TransitionContext): void {
   context.set(target.entity_id, "contained_in", context.actor.id, movedEvent);
   context.set(target.entity_id, "support", null, movedEvent);
   context.set(target.entity_id, "pos", null, movedEvent);
+  // Lifting a thing uncovers whatever it was hiding and takes it out from under whatever hid it.
+  revealConcealed(context, target.entity_id, movedEvent);
 }
 
 export const takeVerb: Verb = {

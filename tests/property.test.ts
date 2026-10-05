@@ -110,6 +110,23 @@ function aimedAt(step: WorldEdit, snapshot: Snapshot): string[] {
     if (step.kind === "place" && support !== null && support === step.target) {
       aims.push("self_support");
     }
+    // `concealed_by` is the one relation with four ways to be wrong; each is read off the snapshot.
+    const concealer =
+      step.kind === "spawn" ? (step.overrides?.concealed_by ?? null) : (step.concealed_by ?? null);
+    if (step.kind === "place" && concealer !== null) {
+      const concealerEntity = snapshot.entities[concealer];
+      const room = snapshot.entities[step.target]?.location ?? null;
+      const abstract = (id: string): boolean => snapshot.entities[id]?.template === "anchor";
+      if (concealerEntity === undefined) {
+        aims.push("concealed_by_dangling");
+      } else if (concealer === step.target) {
+        aims.push("concealed_by_cycle");
+      } else if (abstract(concealer) || abstract(step.target)) {
+        aims.push("concealed_by_abstract");
+      } else if (concealerEntity.location !== room) {
+        aims.push("concealed_by_other_room");
+      }
+    }
     if (step.kind === "spawn") {
       const location = step.overrides?.location ?? null;
       if (
@@ -159,10 +176,10 @@ function aimedAt(step: WorldEdit, snapshot: Snapshot): string[] {
 
 test("the generator aims an edit at every relation rule, and each step still validates", () => {
   const seen = new Set<string>();
-  for (let seed = 0; seed < 100 && seen.size < 6; seed += 1) {
+  for (let seed = 0; seed < 100 && seen.size < 10; seed += 1) {
     const rand = mulberry32(seed);
     const world = memoryWorld(buildInitial(registry));
-    for (let i = 0; i < 30 && seen.size < 6; i += 1) {
+    for (let i = 0; i < 30 && seen.size < 10; i += 1) {
       const step = genStep(rand, world.snapshot(), `aim-${seed}-${i}`);
       if (!("verb" in step)) {
         for (const aim of aimedAt(step, world.snapshot())) {
@@ -173,10 +190,18 @@ test("the generator aims an edit at every relation rule, and each step still val
       deepStrictEqual(validateSnapshot(world.snapshot(), registry), [], `aim-${seed}-${i}`);
     }
   }
-  deepStrictEqual(
-    [...seen].sort(),
-    ["both_relations", "door_side_not_room", "opens_not_openable", "remove_live_target", "self_support", "wrong_location"],
-  );
+  deepStrictEqual([...seen].sort(), [
+    "both_relations",
+    "concealed_by_abstract",
+    "concealed_by_cycle",
+    "concealed_by_dangling",
+    "concealed_by_other_room",
+    "door_side_not_room",
+    "opens_not_openable",
+    "remove_live_target",
+    "self_support",
+    "wrong_location",
+  ]);
 });
 
 test("foldEntities replays raw deltas exactly", () => {
@@ -195,6 +220,7 @@ test("foldEntities replays raw deltas exactly", () => {
     location: "e1",
     support: "e1",
     contained_in: null,
+    concealed_by: null,
     pos: { x: 0, y: 0 },
     detached_from: null,
     integrity: 100,

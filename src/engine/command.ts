@@ -30,6 +30,8 @@ export interface PlaceEdit {
   target: Id;
   support?: Id | null;
   contained_in?: Id | null;
+  // What the entity is hidden under or behind; null clears it. Omitted leaves it as it is.
+  concealed_by?: Id | null;
   pos?: Pos | AnchorPos | null;
 }
 

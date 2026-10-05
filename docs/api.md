@@ -19,7 +19,7 @@ Refusals carry a machine `reason_code` and optional `reason_data` (reach, fit, e
 numbers), never prose. Edits (`spawn`, `remove`, `place`, `set_props`, `set_part`) are logged under
 the reserved non-agent author `world` and refused when they break an invariant.
 
-A scenario entry may declare `"id"`, and `location`, `support`, `contained_in`,
+A scenario entry may declare `"id"`, and `location`, `support`, `contained_in`, `concealed_by`,
 `detached_from.entity`, and the props `from`, `to`, and `opens` may name their entity. Names resolve
 to `e<n>` in entry order before the first spawn; an empty, duplicate, id-shaped, or unknown name is
 refused before anything is written. `World.id(name)` returns the id: `openWorld` reads the map back

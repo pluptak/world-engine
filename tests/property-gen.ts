@@ -69,6 +69,12 @@ export const SCENARIO: Scenario = [
       props: { opens: "e3" },
     },
   },
+  {
+    // An anchor is abstract: nothing can address it and nothing may hide under it, so the generator
+    // has a mark to aim concealment at.
+    template: "anchor",
+    overrides: { name: "mark", location: "e1", support: "e1", pos: { x: 90, y: 0 } },
+  },
 ];
 
 export function buildInitial(registry: TemplateRegistry): Snapshot {
@@ -227,6 +233,18 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
   close: (context) => openable(context, "close"),
   lock: (context) => openable(context, "lock"),
   unlock: (context) => openable(context, "unlock"),
+  search: (context) => {
+    // A concealer currently hides something; otherwise any entity, a search is still ok.
+    const concealers = context.ids.filter((id) =>
+      context.ids.some((other) => context.snapshot.entities[other]?.concealed_by === id),
+    );
+    return {
+      command_id: context.commandId,
+      actor: context.actor,
+      verb: "search",
+      target: concealers.length > 0 ? pick(context.rand, concealers) : context.target,
+    };
+  },
   push: (context) => shifted(context, "push"),
   pull: (context) => shifted(context, "pull"),
   attack: (context) => {
@@ -342,6 +360,9 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     if (context.roll < 0.86) {
       return brokenReference(context);
     }
+    if (context.roll < 0.92) {
+      return concealmentEdit(context);
+    }
     return { kind: "remove", target: context.target };
   },
 };
@@ -390,6 +411,38 @@ function brokenReference(context: GenContext): Command | WorldEdit {
   };
 }
 
+// A `place` that only writes concealed_by: nothing moves, so the entity stays exactly where it was
+// and is simply hidden under (or not) whatever the roll picks. Three of the four break a rule the
+// relation has; the fourth is a real concealment, which the movers then have to uncover.
+function concealmentEdit(context: GenContext): Command | WorldEdit {
+  if (context.ids.length === 0) {
+    return waiting(context, 1);
+  }
+  const target = pick(context.rand, context.ids);
+  const room = context.snapshot.entities[target]?.location ?? null;
+  const anchors = context.ids.filter((id) => context.snapshot.entities[id]?.template === "anchor");
+  const elsewhere = context.ids.filter(
+    (id) => context.snapshot.entities[id]?.location !== room,
+  );
+  const here = context.ids.filter((id) => context.snapshot.entities[id]?.location === room);
+  const roll = context.rand();
+
+  // A name that reaches nothing: whatever it was hiding stays hidden for ever.
+  if (roll < 0.2) {
+    return { kind: "place", target, concealed_by: "e999" };
+  }
+  // An abstract entity is a mark, so nothing lies under it.
+  if (roll < 0.4 && anchors.length > 0) {
+    return { kind: "place", target, concealed_by: pick(context.rand, anchors) };
+  }
+  // Something in another room hides nothing here.
+  if (roll < 0.6 && elsewhere.length > 0) {
+    return { kind: "place", target, concealed_by: pick(context.rand, elsewhere) };
+  }
+  const concealers = here.length > 0 ? here : context.ids;
+  return { kind: "place", target, concealed_by: pick(context.rand, concealers) };
+}
+
 // A caller that already knows the tick count (an edit with nothing to write) spends no draw.
 function waiting(context: GenContext, ticks?: number): Command {
   return {
@@ -434,6 +487,7 @@ const SLOTS: readonly { below: number; verbs: readonly string[] }[] = [
   { below: 0.69, verbs: ["attack"] },
   { below: 0.75, verbs: ["open", "close", "lock", "unlock"] },
   { below: 0.81, verbs: ["pour"] },
+  { below: 0.84, verbs: ["search"] },
   { below: 1, verbs: ["edit"] },
 ];
 

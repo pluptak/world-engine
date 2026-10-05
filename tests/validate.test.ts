@@ -147,10 +147,65 @@ test("each rule fires on a snapshot wrong in exactly one way", () => {
     ["support_and_contained_in"],
   );
 
+  deepStrictEqual(
+    wrong((snapshot) => {
+      entity(snapshot, "e3").concealed_by = "e2";
+      entity(snapshot, "e2").concealed_by = "e3";
+    }),
+    ["concealed_by_cycle"],
+  );
+
+  deepStrictEqual(
+    wrong((snapshot) => {
+      entity(snapshot, "e3").concealed_by = "e99";
+    }),
+    ["dangling_reference"],
+  );
+
   const cyclic = baseSnapshot();
   entity(cyclic, "e2").support = "e3";
   entity(cyclic, "e2").pos = null;
   deepStrictEqual(validate(cyclic)[0]?.path, ["entities", "e2"]);
+});
+
+test("a concealer shares the room, and neither end may be a mark", () => {
+  const marked = spawn(baseSnapshot(), registry, "anchor", {
+    name: "mark",
+    location: "e1",
+    support: "e1",
+    pos: { x: 90, y: 0 },
+  });
+  deepStrictEqual(codes(marked.snapshot), []);
+
+  // An anchor is a mark: nothing hides under it.
+  const underMark = structuredClone(marked.snapshot);
+  underMark.entities.e3!.concealed_by = marked.id;
+  deepStrictEqual(codes(underMark), ["concealed_by_abstract"]);
+  deepStrictEqual(validate(underMark)[0]?.path, ["entities", "e3"]);
+
+  // And a mark hides nothing.
+  const markHidden = structuredClone(marked.snapshot);
+  markHidden.entities[marked.id]!.concealed_by = "e2";
+  deepStrictEqual(codes(markHidden), ["concealed_by_abstract"]);
+
+  // Two rooms, so the same relation can break on the room instead.
+  const other = spawn(marked.snapshot, registry, "room", { name: "other" });
+  const across = spawn(other.snapshot, registry, "stone", {
+    name: "far",
+    location: other.id,
+    support: other.id,
+    pos: { x: 0, y: 0 },
+  });
+  const hiddenAcross = structuredClone(across.snapshot);
+  hiddenAcross.entities.e3!.concealed_by = across.id;
+  deepStrictEqual(codes(hiddenAcross), ["concealed_by_not_same_room"]);
+
+  // The same rule covers an entity in no room at all: there is no room to share.
+  const nowhere = structuredClone(across.snapshot);
+  nowhere.entities.e3!.support = null;
+  nowhere.entities.e3!.location = null;
+  nowhere.entities.e3!.concealed_by = "e2";
+  deepStrictEqual(codes(nowhere), ["concealed_by_not_same_room"]);
 });
 
 test("a door to a removed room names the dangling prop", () => {

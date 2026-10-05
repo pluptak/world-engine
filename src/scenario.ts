@@ -37,7 +37,8 @@ const ANCHOR_KEYS = ["anchor", "dx", "dy"];
 // location, support and contained_in are ids; detached_from carries one alongside a part name.
 // A door's from/to and a key's opens are ids too, read as props because props are free-form; these
 // three are the whole list, and every other prop stays the literal the author wrote.
-const REFERENCE_FIELDS = ["location", "support", "contained_in"] as const;
+const REFERENCE_FIELDS = ["location", "support", "contained_in", "concealed_by"] as const;
+const HOLDER_FIELDS = ["location", "support", "contained_in"] as const;
 const REFERENCE_PROPS = ["from", "to", "opens"] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -150,7 +151,7 @@ export function resolveScenario(scenario: Scenario, nextSeq = 1): ResolvedScenar
     const { dx, dy } = written;
     const overrides = scenario[index]?.overrides;
     // An anchor says where the entity is, so it cannot sit beside a holder the author also named.
-    if (REFERENCE_FIELDS.some((field) => overrides?.[field] !== undefined && overrides[field] !== null)) {
+    if (HOLDER_FIELDS.some((field) => overrides?.[field] !== undefined && overrides[field] !== null)) {
       throw new WorldError(
         "conflicting_placement",
         `Entry ${index} names a holder and an anchor position`,

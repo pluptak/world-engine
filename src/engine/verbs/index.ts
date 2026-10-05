@@ -9,6 +9,7 @@ import { attackVerb } from "./attack.js";
 import { giveVerb } from "./give.js";
 import { putVerb } from "./put.js";
 import { pourVerb } from "./pour.js";
+import { searchVerb } from "./search.js";
 import { waitVerb } from "./wait.js";
 
 export const verbRegistry: VerbRegistry = new Map([
@@ -18,6 +19,7 @@ export const verbRegistry: VerbRegistry = new Map([
   ["put", putVerb],
   ["give", giveVerb],
   ["pour", pourVerb],
+  ["search", searchVerb],
   ["open", openVerb],
   ["close", closeVerb],
   ["lock", lockVerb],
