@@ -59,8 +59,8 @@ suffixes (NodeNext).
   displacement, falls, breaking into `break_products`, and residue transfer. Verbs call into it.
 - `src/engine/query.ts`: `fact` and `perceive` queries. They answer `"true"`, `"false"` or
   `"unknown"` with a `basis_code`, from the snapshot, the templates, coverage and the replayed event
-  list. Senses are `sight`, `hearing`, and `smell`; smell mirrors hearing and only answers where the
-  snapshot's coverage declares it, so a world without it stays `"unknown"`. `eventPerceivers` is the
+  list. Senses are `sight`, `hearing`, and `smell`, read from `EVENT_SENSES` (one row per event type,
+  `docs/perception.md`); smell answers only where coverage declares it, else `"unknown"`. `eventPerceivers` is the
   batch form: every agent, every covered sense, an agent listed exactly when `perceive` is true for
   it before or after the events' command.
 - `src/engine/capacity.ts` (`capacity` adds part contributions and unexpired modifiers;

@@ -200,6 +200,131 @@ function loudEvent(event: WorldEvent | undefined): boolean {
   );
 }
 
+// One sense in one situation, as the sense table in docs/perception.md reads it: `same` decides the
+// observer's own room, `door` decides across a doorway, and `basis` is what a false answer says when
+// nothing about where the observer stands is wrong.
+interface Sense {
+  same: "always" | "odorous" | "never";
+  door: "loud" | "never";
+  basis: string;
+}
+
+interface EventSenses {
+  hearing: Sense;
+  smell: Sense;
+}
+
+// An event that happened: heard next door, smelt nowhere.
+const QUIET_SENSES: EventSenses = {
+  hearing: { same: "always", door: "loud", basis: "odourless" },
+  smell: { same: "never", door: "never", basis: "odourless" },
+};
+
+// The world author's own work: nobody senses it, and `basis` says why.
+const AUTHORED_SENSES: EventSenses = {
+  hearing: { same: "never", door: "never", basis: "authored" },
+  smell: { same: "never", door: "never", basis: "authored" },
+};
+
+// A pour releases what it pours, whatever is left in the vessel.
+const POUR_SENSES: EventSenses = {
+  hearing: QUIET_SENSES.hearing,
+  smell: { same: "always", door: "never", basis: "odourless" },
+};
+
+// A break releases what was inside, so it is smelt when the broken entity smelled.
+const BROKEN_SENSES: EventSenses = {
+  hearing: QUIET_SENSES.hearing,
+  smell: { same: "odorous", door: "loud", basis: "odourless" },
+};
+
+// The entity form: no event, so nothing is ever loud, and what there is to smell is the entity.
+const ENTITY_SENSES: EventSenses = {
+  hearing: { same: "always", door: "never", basis: "odourless" },
+  smell: { same: "odorous", door: "never", basis: "odourless" },
+};
+
+// The rows of the sense table, keyed by every event type the engine can emit: a verb's root event
+// carries the verb's name, and everything else is named where it is emitted. A type that is not
+// listed here is one this build does not know — a foreign or hand-written events file — and is read
+// like the `event` row, which is what it would be if the engine had emitted it. `tests/senses.test.ts`
+// walks this table against the catalog and the sources, so a new type is added here on purpose.
+export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
+  // A thing that happened: every verb's root event but a pour's and an edit's, and the physical
+  // events a verb or the resolver emits.
+  move: QUIET_SENSES,
+  take: QUIET_SENSES,
+  drop: QUIET_SENSES,
+  put: QUIET_SENSES,
+  give: QUIET_SENSES,
+  open: QUIET_SENSES,
+  close: QUIET_SENSES,
+  lock: QUIET_SENSES,
+  unlock: QUIET_SENSES,
+  push: QUIET_SENSES,
+  pull: QUIET_SENSES,
+  attack: QUIET_SENSES,
+  wait: QUIET_SENSES,
+  search: QUIET_SENSES,
+  moved: QUIET_SENSES,
+  dropped: QUIET_SENSES,
+  displaced: QUIET_SENSES,
+  damaged: QUIET_SENSES,
+  destroyed: QUIET_SENSES,
+  detached: QUIET_SENSES,
+  capability_changed: QUIET_SENSES,
+  // The openable verbs name their event as data rather than at the call.
+  opened: QUIET_SENSES,
+  closed: QUIET_SENSES,
+  locked: QUIET_SENSES,
+  unlocked: QUIET_SENSES,
+  // A spawn the physics made — a break product, a severed part — is an event like any other; only a
+  // spawn the world wrote joins the authored row, which isAuthored decides from the cause.
+  spawned: QUIET_SENSES,
+  revealed: QUIET_SENSES,
+  found: QUIET_SENSES,
+  // A pour releases what it pours.
+  pour: POUR_SENSES,
+  poured: POUR_SENSES,
+  // A break releases what was inside, so it is smelt when the broken entity smelled.
+  broken: BROKEN_SENSES,
+  // What the world writes.
+  edit: AUTHORED_SENSES,
+  placed: AUTHORED_SENSES,
+  edited: AUTHORED_SENSES,
+  removed: AUTHORED_SENSES,
+};
+
+// Whether the world authored this event. It is decided from the event's own type and one step up its
+// cause chain, never from an actor: the events list carries no author, and an edit's spawns hang off
+// the `edit` event that wrote them.
+function isAuthored(event: WorldEvent, events: WorldEvent[]): boolean {
+  if (EVENT_SENSES[event.type] === AUTHORED_SENSES) {
+    return true;
+  }
+  if (event.type !== "spawned" || event.cause_id === null) {
+    return false;
+  }
+  const cause = events.find((candidate) => candidate.event_id === event.cause_id);
+  return cause !== undefined && EVENT_SENSES[cause.type] === AUTHORED_SENSES;
+}
+
+function sensesFor(event: WorldEvent | undefined): EventSenses {
+  if (event === undefined) {
+    return ENTITY_SENSES;
+  }
+  return EVENT_SENSES[event.type] ?? QUIET_SENSES;
+}
+
+// What an entity offers the nose: a liquid it holds, or residue spilled on it.
+function smells(subject: Entity): boolean {
+  const material = subject.props.liquid_material;
+  if (typeof material === "string" && material.length > 0) {
+    return true;
+  }
+  return Object.keys(subject.residue).some((name) => (subject.residue[name] ?? 0) > 0);
+}
+
 function perceive(
   snapshot: Snapshot,
   registry: TemplateRegistry,
@@ -225,6 +350,10 @@ function perceive(
     return answer("false", "no_target");
   }
 
+  // What the world writes is not something that happened in front of anybody: no sense reports it,
+  // and its consequences, which did happen, are events of their own. It is read from the event's own
+  // type and one step up its cause chain, never from an actor, and before the sight rules below.
+  const authored = event !== undefined && isAuthored(event, events);
   const named =
     event === undefined
       ? query.entity === undefined
@@ -232,7 +361,9 @@ function perceive(
         : snapshot.entities[query.entity]
       : snapshot.entities[event.entity];
   if (named === undefined) {
-    return answer("false", "no_such_entity");
+    // A `removed` event names an entity that is no longer there to be sensed; what made it is that
+    // the world wrote it.
+    return authored ? answer("false", "authored") : answer("false", "no_such_entity");
   }
   // A `found` event is where the search happened, not what was under it: it is read against the
   // concealer, so whoever can see where it was looked for can see that it was found there.
@@ -241,9 +372,12 @@ function perceive(
       ? (snapshot.entities[event.data.concealer] ?? named)
       : named;
   // An abstract entity exists and is not a thing to be sensed: it is false in either form, the
-  // entity and the event alike.
+  // entity and the event alike. That is a stronger claim about the subject than who wrote the event.
   if (isAbstract(registry, subject)) {
     return answer("false", "abstract");
+  }
+  if (authored) {
+    return answer("false", "authored");
   }
   // What is hidden under or behind something is not seen, by anybody, until the relation is broken.
   if (query.sense === "sight" && subject.concealed_by !== null) {
@@ -260,11 +394,16 @@ function perceive(
   if (observerLocation === null || targetLocation === null) {
     return answer("false", "not_perceptible");
   }
-  // Hearing and smell cross a doorway whether it is open or not, and ignore shut containers.
   const crossesDoors = query.sense === "hearing" || query.sense === "smell";
+  const rule = sensesFor(event);
+  // The rule has a column for each of the two senses that read it, and only those two come this far.
+  const sense = query.sense === "hearing" ? rule.hearing : rule.smell;
   if (observerLocation === targetLocation) {
     if (crossesDoors) {
-      return answer("true", "same_location");
+      if (sense.same === "always" || (sense.same === "odorous" && smells(subject))) {
+        return answer("true", "same_location");
+      }
+      return answer("false", sense.basis);
     }
     if (query.sense === "sight") {
       const location = snapshot.entities[observerLocation];
@@ -285,7 +424,9 @@ function perceive(
       : answer("false", connected ? "location_unlit" : "not_perceptible");
   }
   if (crossesDoors) {
-    return connectedByDoor(snapshot, observerLocation, targetLocation, false) && loudEvent(event)
+    return connectedByDoor(snapshot, observerLocation, targetLocation, false) &&
+      sense.door === "loud" &&
+      loudEvent(event)
       ? answer("true", "adjacent_loud_event")
       : answer("false", "not_perceptible");
   }

@@ -18,11 +18,11 @@ R1 — `validateSnapshot`: `support_and_contained_in`, `support_or_containment_c
 R2 — `validateSnapshot`: `location_mismatch`; `remove` refuses `occupied_room`.
 R3 — never walked: `detached_from` is history and may name a removed origin; the rule on the part
 that left is `detached_part_without_entity`.
-R4 — `validateSnapshot`, for the `door` template only: `door_side_not_room`, else
-`dangling_reference`.
+R4 — `validateSnapshot` on a `door`: `door_side_not_room`, else `dangling_reference`.
 R5 — `validateSnapshot`: `opens_target_not_openable`; a name reaching nothing is left alone.
-R6 — `validateSnapshot`: `concealed_by_abstract` (neither end a mark), `concealed_by_not_same_room`,
-`concealed_by_cycle`, `dangling_reference`. Moving either end clears it under a `revealed` event.
+R6 — `validateSnapshot`: `concealed_by_abstract` (neither end a mark),
+`concealed_by_not_same_room`, `concealed_by_cycle`, `dangling_reference`. Moving either end clears
+it under a `revealed` event.
 
 T0 `validate.test.ts` "each rule fires on a snapshot wrong in exactly one way".
 T1 T0; `edit.test.ts` "removing the table under the bottle produces the break chain caused by the

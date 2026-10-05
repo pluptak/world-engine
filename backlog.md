@@ -24,25 +24,7 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
   additions only, one line or one entry per change, so concurrent lanes conflict at most trivially.
 - **No lane changes another lane's semantics.** If an item needs that, it stops and says so.
 
-## Lane A. Relations and perception
-
-Owns `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception part of
-`src/engine/query.ts`, `docs/relations.md`, `docs/perception.md`, `docs/state.md`.
-
-### A3. Perception spec: what each sense perceives
-- **Why:** today, in the same room, every event is audible and smellable whatever it is (smelling a
-  `search` or an `opened`), and the world author's own edits are perceived like physical events.
-  Z1 asserts perceivers, so these answers must be specified before it relies on them.
-- **Scope:** one table in `docs/perception.md`: per sense and event type, perceptible in the same
-  room, through an open door, through a closed one; `query.ts` and `eventPerceivers` enforce it.
-  Defaults: sight as now; hearing every physical event in the room, loud ones through a doorway;
-  smell only events that release a smell (a pour, a broken wine bottle), where coverage declares
-  it; the world author's `edit`, `placed`, `edited`, `removed`, and a `spawned` the edit itself
-  caused, are not perceptible, but their physical consequences (a fall, a break) are.
-- **Done when:** a test walks the table row by row, and an edit that knocks a bottle off a table
-  lists perceivers on the fall and the break but none on the edit itself.
-
-## Lane Z. After A3 merges
+## Lane Z. After every lane has merged
 
 ### Z1. An authored adversarial scenario, then reassess
 - **Why:** the property tests check invariants on random sequences; they do not show whether the
@@ -50,7 +32,9 @@ Owns `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception part of
 - **Scope:** a hand-written scenario (an inn room: table with bottle, chair, door, locked chest and
   key, two humans, a dog, a book hiding a note) and a scripted 30–100 command sequence that mixes
   support loss, breaking, carrying, locks, concealment, pouring, perception and edits, authored with
-  names and anchors. Assert its full trace and perceivers at the key events.
+  names and anchors. Assert its full trace and perceivers at the key events. `createWorld` and
+  `memoryWorld` take an optional `coverage`, stored in the initial snapshot, so the dog's smell is
+  reachable through the API (today `src/api.ts` always writes `defaultCoverage()`).
 - **Done when:** the sequence passes, and a short note in `docs/` records what it could not
   express — that list, not the project's name, decides whether richer physics is ever needed.
 
