@@ -24,13 +24,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
   additions only, one line or one entry per change, so concurrent lanes conflict at most trivially.
 - **No lane changes another lane's semantics.** If an item needs that, it stops and says so.
 
-## Lane Z. After every lane has merged
-
-### Z5. Reassess
-- What the inn could not express: `docs/limits.md` lists the limits left, each with the step that
-  shows it. After Z4, take the rest one at a time, or say why none of them is worth a
-  verb. Facing and a sight cone (an unseen theft in a lit room) are a candidate, the costliest one.
-
 ## Out of scope
 
 - Prose or intent → calls, and planning calls toward a goal state: the middleware's job.
@@ -38,3 +31,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 - Any Story-writer integration: a decision for that repo, if a middleware ever exists.
 - The social resolver (mechanical state only: `alert`, `locked_by_order`), a generic relation graph,
   and continuous physics (Rapier/Box2D): revisit only when a concrete world needs them.
+- The limits in `docs/limits.md`, reassessed after the inn: none is worth a verb yet. Facing and a
+  sight cone (an unseen act in a lit room) is the costliest and the first to revisit, when a
+  concrete world needs what darkness, concealment and staging cannot give.
