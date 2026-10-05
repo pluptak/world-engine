@@ -143,6 +143,9 @@ const BOOK = "e10";
 
 // One script that leaves behind an event of every class the table names.
 const script: Command[] = [
+  // Footsteps first: the `event` row is read off the first `moved`, and a move the hands caused
+  // is silent, so the row needs one the feet made.
+  { command_id: "step-out", actor: ANN, verb: "move", args: { to: { x: 5, y: 0 } } },
   { command_id: "open-chest", actor: ANN, verb: "open", target: "chest" },
   { command_id: "close-chest", actor: ANN, verb: "close", target: "chest" },
   { command_id: "search-book", actor: ANN, verb: "search", target: "book" },
@@ -336,6 +339,8 @@ function walkTable(world: World, senses: readonly string[]): void {
   }
 
   // The rest of the `event` row's members, heard next door only when loud and smelt never.
+  // Hand acts are the exception: the ear reports them nowhere, near or far.
+  const silent = new Set(["search", "found", "wait", "revealed"]);
   for (const type of alsoQuiet) {
     const eventId = eventIdOf(world, type);
     const loud = type === "broken" || type === "detached" || type === "dropped";
@@ -352,9 +357,11 @@ function walkTable(world: World, senses: readonly string[]): void {
           ? no("odourless")
           : sense === "touch"
             ? no("not_touching")
-            : sense === "sight"
-              ? yes("same_location_lit")
-              : yes("same_location");
+            : sense === "hearing" && silent.has(type)
+              ? no("quiet")
+              : sense === "sight"
+                ? yes("same_location_lit")
+                : yes("same_location");
       const expectedFar =
         sense === "sight"
           ? yes("adjacent_open_door_lit")
@@ -596,11 +603,14 @@ test("a search and an open are never smelled", (t) => {
         event_id: root.event_id,
         sense,
       });
-      const expected =
+      // A search is a hand act: heard nowhere, while an open is heard in the room.
+      const expected: Answer =
         sense === "sight"
           ? yes("same_location_lit")
           : sense === "hearing"
-            ? yes("same_location")
+            ? root.type === "search"
+              ? no("quiet")
+              : yes("same_location")
             : no("odourless");
       deepStrictEqual(answer, expected, `${root.type} / ${sense}`);
     }

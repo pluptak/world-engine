@@ -26,17 +26,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 ## Lane Z. After every lane has merged
 
-### Z4. Quiet events
-- **Why:** hearing takes every event in the same room, so the pocket theft Z3 made unfelt is still
-  heard by its victim, even in the dark (`docs/limits.md`, B2c): no act can go unnoticed.
-- **Scope:** a `silent` class in the sense table: hearing answers `false` / `quiet` for it in the
-  same room and through a door. Silent are the hand acts (`take`, `give`, `put`, `search`, `found`,
-  `revealed`), a `moved` caused by one of them, `wait`, and `capability_changed`; footsteps, pushes,
-  falls, breaks, spills, attacks and the openable verbs stay audible. Sight, smell and touch are
-  unchanged.
-- **Done when:** in the dark, ann neither hears nor feels bob take the key from her pocket; bob
-  walking, pushing or dropping something is still heard; A3's guard holds.
-
 ### Z5. Reassess
 - What the inn could not express: `docs/limits.md` lists the limits left, each with the step that
   shows it. After Z4, take the rest one at a time, or say why none of them is worth a

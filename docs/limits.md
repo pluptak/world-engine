@@ -17,5 +17,7 @@ shows it. Step letters are the command ids the script uses. Nothing here is a pr
   half spill (E2).
 - Touch is all or nothing, and snatching from a hand isn't modelled: a pocket theft is unfelt,
   and taking from a hand is refused (B2c, G2).
-- No act is quiet: hearing takes every event in the same room, so the unfelt pocket theft is
-  still heard by its victim, even in the dark; an unnoticed theft can't be expressed (B2c).
+- Sight has no facing: in a lit room the silent, unfelt pocket theft is still seen by its
+  victim, so a theft goes unnoticed only in the dark (B2c).
+- Silence is by event type, not by care: a `take` is silent whether it is a careful lift or a
+  clumsy grab, and a `move` is heard however softly it is made.

@@ -12,6 +12,7 @@ grip, and not felt otherwise.
 | `pour` | T | T | F | T | L | L | T | F | F | O |
 | `broken` | T | T | F | T | L | L | T | L | L | O |
 | `event` | T | T | F | T | L | L | F | F | F | O |
+| `silent` | T | T | F | F | F | F | F | F | F | O |
 | `entity-odorous` | T | T | F | T | F | F | T | F | F | O |
 | `entity-odourless` | T | T | F | T | F | F | F | F | F | O |
 
@@ -20,8 +21,11 @@ the world author's own work, which nobody senses, though its consequences (`disp
 `broken`, a product's `spawned`) are sensed as any other event. `pour` is `pour`, `poured` and
 `spilled`; `broken` is a break whose entity held a liquid or residue; `event` is any other. The
 `entity-` rows are the entity form, where there is no event and so nothing is loud. `found` is read
-against the concealer it names, `revealed` against the thing revealed. The false bases are
+against the concealer it names, `revealed` against the thing revealed. `silent` is the hand acts
+(`take`, `give`, `put`, `search`, `found`, `revealed`), `wait`, `capability_changed`, and a `moved`
+whose cause chain starts at `take`, `give` or `put`; its hearing is `quiet`. A `moved` under
+`move`, `push` or `pull` is footsteps or scraping, and stays `event`. The false bases are
 `no_such_entity`, `no_such_event`, `no_target`, `no_sense_capacity`, `uncovered_sense`, `authored`,
-`odourless`, `not_touching`, `abstract`, `concealed`, `enclosed`, `not_perceptible`,
+`odourless`, `quiet`, `not_touching`, `abstract`, `concealed`, `enclosed`, `not_perceptible`,
 `location_unlit`, and `unsupported_sense`; the true ones are `same_location`, `same_location_lit`,
 `adjacent_open_door_lit`, `adjacent_loud_event` and `own_body`.

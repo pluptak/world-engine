@@ -217,8 +217,8 @@ interface EventSenses {
   touch: "body" | "never";
 }
 
-// An event that happened: heard next door, smelt nowhere.
-const QUIET_SENSES: EventSenses = {
+// An event that happened: heard in the room and, when loud, next door; smelt nowhere.
+const AUDIBLE_SENSES: EventSenses = {
   hearing: { same: "always", door: "loud", basis: "odourless" },
   smell: { same: "never", door: "never", basis: "odourless" },
   touch: "body",
@@ -233,14 +233,23 @@ const AUTHORED_SENSES: EventSenses = {
 
 // A pour releases what it pours, whatever is left in the vessel.
 const POUR_SENSES: EventSenses = {
-  hearing: QUIET_SENSES.hearing,
+  hearing: AUDIBLE_SENSES.hearing,
   smell: { same: "always", door: "never", basis: "odourless" },
+  touch: "body",
+};
+
+// A hand act makes no sound the ear reports: the hand verbs and what they cause, waits, and a
+// body's own capacity changes. Footsteps, pushes, falls, breaks, spills, attacks and the openable verbs
+// stay audible; sight, smell and touch read these rows exactly as before.
+const SILENT_SENSES: EventSenses = {
+  hearing: { same: "never", door: "never", basis: "quiet" },
+  smell: AUDIBLE_SENSES.smell,
   touch: "body",
 };
 
 // A break releases what was inside, so it is smelt when the broken entity smelled.
 const BROKEN_SENSES: EventSenses = {
-  hearing: QUIET_SENSES.hearing,
+  hearing: AUDIBLE_SENSES.hearing,
   smell: { same: "odorous", door: "loud", basis: "odourless" },
   touch: "body",
 };
@@ -260,37 +269,37 @@ const ENTITY_SENSES: EventSenses = {
 export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
   // A thing that happened: every verb's root event but a pour's and an edit's, and the physical
   // events a verb or the resolver emits.
-  move: QUIET_SENSES,
-  take: QUIET_SENSES,
-  drop: QUIET_SENSES,
-  put: QUIET_SENSES,
-  give: QUIET_SENSES,
-  open: QUIET_SENSES,
-  close: QUIET_SENSES,
-  lock: QUIET_SENSES,
-  unlock: QUIET_SENSES,
-  push: QUIET_SENSES,
-  pull: QUIET_SENSES,
-  attack: QUIET_SENSES,
-  wait: QUIET_SENSES,
-  search: QUIET_SENSES,
-  moved: QUIET_SENSES,
-  dropped: QUIET_SENSES,
-  displaced: QUIET_SENSES,
-  damaged: QUIET_SENSES,
-  destroyed: QUIET_SENSES,
-  detached: QUIET_SENSES,
-  capability_changed: QUIET_SENSES,
+  move: AUDIBLE_SENSES,
+  take: SILENT_SENSES,
+  drop: AUDIBLE_SENSES,
+  put: SILENT_SENSES,
+  give: SILENT_SENSES,
+  open: AUDIBLE_SENSES,
+  close: AUDIBLE_SENSES,
+  lock: AUDIBLE_SENSES,
+  unlock: AUDIBLE_SENSES,
+  push: AUDIBLE_SENSES,
+  pull: AUDIBLE_SENSES,
+  attack: AUDIBLE_SENSES,
+  wait: SILENT_SENSES,
+  search: SILENT_SENSES,
+  moved: AUDIBLE_SENSES,
+  dropped: AUDIBLE_SENSES,
+  displaced: AUDIBLE_SENSES,
+  damaged: AUDIBLE_SENSES,
+  destroyed: AUDIBLE_SENSES,
+  detached: AUDIBLE_SENSES,
+  capability_changed: SILENT_SENSES,
   // The openable verbs name their event as data rather than at the call.
-  opened: QUIET_SENSES,
-  closed: QUIET_SENSES,
-  locked: QUIET_SENSES,
-  unlocked: QUIET_SENSES,
+  opened: AUDIBLE_SENSES,
+  closed: AUDIBLE_SENSES,
+  locked: AUDIBLE_SENSES,
+  unlocked: AUDIBLE_SENSES,
   // A spawn the physics made — a break product, a severed part — is an event like any other; only a
   // spawn the world wrote joins the authored row, which isAuthored decides from the cause.
-  spawned: QUIET_SENSES,
-  revealed: QUIET_SENSES,
-  found: QUIET_SENSES,
+  spawned: AUDIBLE_SENSES,
+  revealed: SILENT_SENSES,
+  found: SILENT_SENSES,
   // A pour releases what it pours.
   pour: POUR_SENSES,
   poured: POUR_SENSES,
@@ -327,7 +336,23 @@ function sensesFor(event: WorldEvent | undefined, events: WorldEvent[]): EventSe
   if (isAuthored(event, events)) {
     return AUTHORED_SENSES;
   }
-  return EVENT_SENSES[event.type] ?? QUIET_SENSES;
+  return EVENT_SENSES[event.type] ?? AUDIBLE_SENSES;
+}
+
+// Whether a `moved` was caused by a hand act: the cause chain is walked to its root, and a take,
+// give or put at the bottom silences it. A chain that names nothing is read as footsteps.
+function handCaused(event: WorldEvent, events: WorldEvent[]): boolean {
+  let current = event;
+  for (;;) {
+    if (current.cause_id === null) {
+      return current.type === "take" || current.type === "give" || current.type === "put";
+    }
+    const parent = events.find((candidate) => candidate.event_id === current.cause_id);
+    if (parent === undefined) {
+      return false;
+    }
+    current = parent;
+  }
 }
 
 // Whether the observer feels the subject through its body: the subject is the observer itself,
@@ -442,6 +467,16 @@ function perceive(
   }
   const crossesDoors = query.sense === "hearing" || query.sense === "smell";
   const rule = sensesFor(event, events);
+  // A `moved` the hands caused is as silent as the act behind it: footsteps stay audible, and the
+  // door never carries what the room itself does not hear.
+  if (
+    query.sense === "hearing" &&
+    event !== undefined &&
+    event.type === "moved" &&
+    handCaused(event, events)
+  ) {
+    return answer("false", "quiet");
+  }
   // The rule has a column for each of the two senses that read it, and only those two come this far.
   const sense = query.sense === "hearing" ? rule.hearing : rule.smell;
   if (observerLocation === targetLocation) {

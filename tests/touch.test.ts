@@ -160,6 +160,87 @@ test("a pocket theft succeeds unfelt, but stays visible", (t) => {
   }
 });
 
+test("in the dark a pocket theft goes unheard as well as unfelt", (t) => {
+  for (const world of touchWorlds(t)) {
+    const ann = world.id("ann");
+    const bob = world.id("bob");
+    const rex = world.id("rex");
+    ok(ann !== null && bob !== null && rex !== null);
+    strictEqual(
+      world.command({ command_id: "take-key", actor: ann, verb: "take", target: "key", perceivers: true }).status,
+      "ok",
+    );
+    strictEqual(
+      world.command({
+        command_id: "pocket-key",
+        actor: ann,
+        verb: "put",
+        target: "key",
+        args: { relation: "in", destination: `${ann}.pocket` },
+      }).status,
+      "ok",
+    );
+    // The cellar is dark and the act is silent: the victim neither feels nor hears it.
+    const stolen = world.command({
+      command_id: "steal-key",
+      actor: bob,
+      verb: "take",
+      target: "key",
+      perceivers: true,
+    });
+    strictEqual(stolen.status, "ok");
+    for (const type of ["take", "moved"]) {
+      const event = stolen.events.find((candidate) => candidate.type === type);
+      ok(event?.perceivers !== undefined, `no perceivers on ${type}`);
+      deepStrictEqual([...(event.perceivers?.touch ?? [])].sort(), [bob].sort());
+      deepStrictEqual(event.perceivers?.hearing, [], `${type} heard`);
+    }
+    // The controls still make a sound: walking, pushing and dropping are heard in the room.
+    const walked = world.command({
+      command_id: "bob-steps",
+      actor: bob,
+      verb: "move",
+      args: { to: { x: 50, y: 0 } },
+      perceivers: true,
+    });
+    strictEqual(walked.status, "ok");
+    deepStrictEqual(
+      [...(walked.events.find((event) => event.type === "moved")?.perceivers?.hearing ?? [])].sort(),
+      [ann, bob, rex].sort(),
+    );
+    const pushed = world.command({
+      command_id: "bob-shove",
+      actor: bob,
+      verb: "push",
+      target: "flask",
+      args: { distance_cm: 10, dir: "+x" },
+      perceivers: true,
+    });
+    strictEqual(pushed.status, "ok");
+    deepStrictEqual(
+      [...(pushed.events.find((event) => event.type === "push")?.perceivers?.hearing ?? [])].sort(),
+      [ann, bob, rex].sort(),
+    );
+    strictEqual(
+      world.command({ command_id: "take-flask", actor: bob, verb: "take", target: "flask" }).status,
+      "ok",
+    );
+    const dropped = world.command({
+      command_id: "drop-flask",
+      actor: bob,
+      verb: "drop",
+      target: "flask",
+      perceivers: true,
+    });
+    strictEqual(dropped.status, "ok");
+    deepStrictEqual(
+      [...(dropped.events.find((event) => event.type === "dropped")?.perceivers?.hearing ?? [])].sort(),
+      [ann, bob, rex].sort(),
+    );
+    deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
+  }
+});
+
 test("taking from another agent's hand stays refused", (t) => {
   for (const world of touchWorlds(t)) {
     const ann = world.id("ann");

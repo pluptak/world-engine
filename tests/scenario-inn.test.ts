@@ -314,10 +314,10 @@ function script(ids: Ids): Step[] {
     run: cmd("B2c-steal-key", "bob", "take", "key"),
     expect: [{ status: "ok", events: ["take", "moved"] }],
     perceivers: {
-      // Bob's grip closes on it, so he feels both; ann's pocket never tells her, though in the
-      // lit room she sees and hears it happen like everyone else.
-      take: { sight: ["ann", "bob", "rex"], hearing: ["ann", "bob", "rex"], touch: ["bob"] },
-      moved: { sight: ["ann", "bob", "rex"], hearing: ["ann", "bob", "rex"], touch: ["bob"] },
+      // Bob's grip closes on it, so he feels both; the act is silent, so nobody hears it, though
+      // in the lit room everyone sees it happen like everything else.
+      take: { sight: ["ann", "bob", "rex"], hearing: [], touch: ["bob"] },
+      moved: { sight: ["ann", "bob", "rex"], hearing: [], touch: ["bob"] },
     },
     then: (world) => {
       strictEqual(world.entity(ids.key)?.contained_in, ids.bob);
@@ -402,9 +402,10 @@ function script(ids: Ids): Step[] {
     note: "ann searches the book, which is still hiding the note",
     run: cmd("C1-search", "ann", "search", "book"),
     expect: [{ status: "ok", events: ["search", "found"] }],
-    // A `found` is read where the search happened, so it names the book: everyone in the lit room.
+    // A `found` is read where the search happened, so it names the book: everyone in the lit room
+    // sees it, and the search itself is silent.
     perceivers: {
-      found: { sight: ["ann", "bob", "rex"], hearing: ["ann", "bob", "rex"], smell: [] },
+      found: { sight: ["ann", "bob", "rex"], hearing: [], smell: [] },
     },
   });
   step({
@@ -412,7 +413,7 @@ function script(ids: Ids): Step[] {
     run: cmd("C2-lift-book", "ann", "take", "book"),
     expect: [{ status: "ok", events: ["take", "moved", "revealed"] }],
     perceivers: {
-      revealed: { sight: ["ann", "bob", "rex"], hearing: ["ann", "bob", "rex"], smell: [] },
+      revealed: { sight: ["ann", "bob", "rex"], hearing: [], smell: [] },
     },
     then: (world) => {
       strictEqual(world.entity(ids.note)?.concealed_by, null);
@@ -520,6 +521,11 @@ function script(ids: Ids): Step[] {
     note: "bob waits three ticks, and both moving modifiers expire in tick order",
     run: cmd("D6-wait", "bob", "wait", undefined, { ticks: 3 }),
     expect: [{ status: "ok", events: ["wait", "capability_changed", "capability_changed"] }],
+    perceivers: {
+      // Waiting makes no sound, and neither does a modifier fading: the room hears nothing.
+      wait: { sight: ["ann", "bob", "rex"], hearing: [] },
+      capability_changed: { sight: ["ann", "bob", "rex"], hearing: [] },
+    },
     then: (world) => {
       deepStrictEqual(world.entity(ids.ann)?.modifiers, []);
       strictEqual(world.snapshot().tick, 3);
