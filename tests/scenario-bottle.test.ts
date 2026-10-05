@@ -44,8 +44,15 @@ function bottleWorld(
     pos: carried ? null : { x: 30, y: 0 },
     props: { ...registry.bottle!.props, ...bottleProps },
   });
+  // In the table's path, so a push stops short and the jolt knocks what topples off.
+  const doorstop = spawn(bottle.snapshot, registry, "stone", {
+    name: "doorstop",
+    location: room.id,
+    support: room.id,
+    pos: { x: 129, y: 0 },
+  });
   return {
-    snapshot: bottle.snapshot,
+    snapshot: doorstop.snapshot,
     roomId: room.id,
     tableId: table.id,
     actorId: actor.id,
@@ -65,13 +72,14 @@ test("pushing a table propagates a deterministic bottle break chain", () => {
   strictEqual(result.status, "ok");
   deepStrictEqual(
     result.events.map((event) => event.type),
-    ["push", "moved", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"],
+    ["push", "moved", "collided", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"],
   );
   strictEqual(result.events[0]?.cause_id, null);
   strictEqual(result.events[0]?.command_id, "push-table");
   strictEqual(result.events[1]?.entity, scenario.tableId);
-  strictEqual(result.events[2]?.entity, scenario.bottleId);
-  strictEqual(result.events[3]?.data.fall_cm, 75);
+  strictEqual(result.events[2]?.entity, scenario.tableId);
+  strictEqual(result.events[3]?.entity, scenario.bottleId);
+  strictEqual(result.events[4]?.data.fall_cm, 75);
 
   const byId = new Map(result.events.map((event, index) => [event.event_id, { event, index }]));
   for (const [index, event] of result.events.entries()) {
@@ -99,7 +107,7 @@ test("pushing a table propagates a deterministic bottle break chain", () => {
   strictEqual(
     Object.values(result.snapshot.entities)
       .filter((entity) => entity.template === "glass_shard")
-      .every((entity) => entity.support === scenario.roomId && entity.pos?.x === 60),
+      .every((entity) => entity.support === scenario.roomId && entity.pos?.x === 59),
     true,
   );
 });
@@ -183,7 +191,7 @@ test("solid contents lose containment onto the bottle's landing surface", () => 
   strictEqual(result.status, "ok");
   strictEqual(result.snapshot.entities[stone.id]?.contained_in, null);
   strictEqual(result.snapshot.entities[stone.id]?.support, scenario.roomId);
-  deepStrictEqual(result.snapshot.entities[stone.id]?.pos, { x: 60, y: 0 });
+  deepStrictEqual(result.snapshot.entities[stone.id]?.pos, { x: 59, y: 0 });
   const stoneDrop = result.events.find((event) => event.type === "dropped" && event.entity === stone.id);
   ok(stoneDrop);
   const bottleBreak = result.events.find((event) => event.type === "broken");

@@ -61,6 +61,11 @@ const doorScenario: Scenario = [
     template: "human",
     overrides: { name: "breaker", location: "e2", support: "e2", pos: { x: -50, y: 0 } },
   },
+  // In the table's path, so the push stops short and the jolt knocks the bottle off.
+  {
+    template: "stone",
+    overrides: { name: "doorstop", location: "e2", support: "e2", pos: { x: 129, y: 0 } },
+  },
 ];
 
 function idOf(world: World, name: string): string {

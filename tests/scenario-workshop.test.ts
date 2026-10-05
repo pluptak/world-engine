@@ -213,7 +213,6 @@ test("a cup dropped over the stone falls past it to the floor: a stone is no sur
 
 test(
   "a short push of the bench leaves the cup standing on it",
-  { todo: "position on a surface" },
   (t) => {
     const { world, ids } = open(t);
     strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 300, y: 60 } }).status, "ok");

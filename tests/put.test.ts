@@ -160,8 +160,10 @@ test("a bottle put on a table then pushed reproduces the bottle break chain", ()
   const world = putWorld();
   const placed = put(world, { relation: "on", destination: "table" });
   strictEqual(placed.status, "ok");
+  // In the table's path, so the push stops short and the jolt knocks the bottle off.
+  const doorstop = onRoom(placed.snapshot, world.registry, "stone", "doorstop", 129);
 
-  const result = apply(placed.snapshot, world.registry, {
+  const result = apply(doorstop.snapshot, world.registry, {
     command_id: "push-table",
     actor: world.actorId,
     verb: "push",
@@ -171,9 +173,9 @@ test("a bottle put on a table then pushed reproduces the bottle break chain", ()
   strictEqual(result.status, "ok");
   deepStrictEqual(
     result.events.map((event) => event.type),
-    ["push", "moved", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"],
+    ["push", "moved", "collided", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"],
   );
-  strictEqual(result.events[3]?.data.fall_cm, 75);
+  strictEqual(result.events[4]?.data.fall_cm, 75);
   strictEqual(result.snapshot.entities[world.bottleId]?.status, "broken");
   deepStrictEqual(result.snapshot.entities[world.roomId]?.residue, { glass: 5, wine: 75 });
 });

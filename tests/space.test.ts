@@ -54,6 +54,11 @@ const literalBottle: Scenario = [
     template: "human",
     overrides: { name: "pusher", location: "room", support: "room", pos: { x: -50, y: 0 } },
   },
+  // In the table's path, so the push stops short and the jolt knocks the bottle off.
+  {
+    template: "stone",
+    overrides: { name: "doorstop", location: "room", support: "room", pos: { x: 129, y: 0 } },
+  },
 ];
 
 // The same world with no literal pos at all: the table and the pusher are placed against anchors.
@@ -83,6 +88,11 @@ const anchoredBottle: Scenario = [
     id: "pusher",
     template: "human",
     overrides: { name: "pusher", pos: { anchor: "west", dx: -50, dy: 0 } },
+  },
+  {
+    id: "doorstop",
+    template: "stone",
+    overrides: { name: "doorstop", pos: { anchor: "mid", dx: 129, dy: 0 } },
   },
 ];
 
@@ -272,7 +282,7 @@ test("the bottle scenario authored against anchors runs the same chain", (t) => 
     strictEqual(result.status, "ok", canonicalJson(result.snapshot.coverage));
     deepStrictEqual(
       result.events.map((event) => event.type),
-      ["push", "moved", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"],
+      ["push", "moved", "collided", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"],
     );
   }
 

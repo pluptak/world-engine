@@ -33,6 +33,8 @@ const scenario: Scenario = [
   { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
   { id: "bob", template: "human", overrides: { name: "bob", location: "hall", support: "hall", pos: { x: 60, y: 0 } } },
   { id: "rex", template: "dog", overrides: { name: "rex", location: "hall", support: "hall", pos: { x: -50, y: 0 } } },
+  // In the table's path, so a push stops short and the jolt knocks the cup off.
+  { id: "doorstop", template: "stone", overrides: { name: "doorstop", location: "hall", support: "hall", pos: { x: 200, y: 0 } } },
 ];
 
 // A store world and a memory world over the same snapshot: every spill reads in both.

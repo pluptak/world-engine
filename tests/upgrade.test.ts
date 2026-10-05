@@ -30,6 +30,11 @@ const bottleScenario: Scenario = [
     template: "human",
     overrides: { name: "pusher", location: "e1", support: "e1", pos: { x: -50, y: 0 } },
   },
+  // In the table's path, so the push stops short and the jolt knocks the bottle off.
+  {
+    template: "stone",
+    overrides: { name: "doorstop", location: "e1", support: "e1", pos: { x: 129, y: 0 } },
+  },
 ];
 
 const pushTable = { command_id: "push-table", actor: "e4", verb: "push", target: "table" } as const;

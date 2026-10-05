@@ -83,6 +83,11 @@ const bottleScenario = [
     template: "human",
     overrides: { name: "pusher", location: "e1", support: "e1", pos: { x: -50, y: 0 } },
   },
+  // In the table's path, so the push stops short and the jolt knocks the bottle off.
+  {
+    template: "stone",
+    overrides: { name: "doorstop", location: "e1", support: "e1", pos: { x: 129, y: 0 } },
+  },
 ] as const;
 
 test("store and memory trace event_id to its root command", (t) => {
@@ -102,7 +107,7 @@ test("store and memory trace event_id to its root command", (t) => {
     const chain = world.trace({ event_id: brokenId }).events;
     deepStrictEqual(
       chain.map((e) => e.type),
-      ["push", "moved", "displaced", "dropped", "broken"],
+      ["push", "moved", "collided", "displaced", "dropped", "broken"],
     );
     for (const e of chain) {
       strictEqual(e.command_id, "push-table");
@@ -190,7 +195,7 @@ test("CLI trace answers event_id and entity/field", async (t) => {
   const parsedEvent = TraceResponseSchema.parse(JSON.parse(byEvent.stdout));
   deepStrictEqual(
     parsedEvent.events.map((e) => e.type),
-    ["push", "moved", "displaced", "dropped", "broken"],
+    ["push", "moved", "collided", "displaced", "dropped", "broken"],
   );
 
   const byField = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
@@ -202,7 +207,7 @@ test("CLI trace answers event_id and entity/field", async (t) => {
   const parsedField = TraceResponseSchema.parse(JSON.parse(byField.stdout));
   deepStrictEqual(
     parsedField.events.map((e) => e.type),
-    ["push", "moved", "displaced", "dropped", "broken"],
+    ["push", "moved", "collided", "displaced", "dropped", "broken"],
   );
 });
 
@@ -257,18 +262,18 @@ test("done: room residue and spawned shard cover the bottle chain", (t) => {
   strictEqual(pushed.status, "ok");
   deepStrictEqual(
     world.trace({ entity: "e1", field: "residue" }).events.map((e) => e.type),
-    ["push", "moved", "displaced", "dropped", "broken"],
+    ["push", "moved", "collided", "displaced", "dropped", "broken"],
   );
   const spawnedEvent = pushed.events.find((e) => e.type === "spawned");
   ok(spawnedEvent);
   deepStrictEqual(
     world.trace({ event_id: spawnedEvent.event_id }).events.map((e) => e.type),
-    ["push", "moved", "displaced", "dropped", "broken", "spawned"],
+    ["push", "moved", "collided", "displaced", "dropped", "broken", "spawned"],
   );
   const spawnedEntity = spawnedEvent.entity;
   deepStrictEqual(
     world.trace({ entity: spawnedEntity, field: "entity" }).events.map((e) => e.type),
-    ["push", "moved", "displaced", "dropped", "broken", "spawned"],
+    ["push", "moved", "collided", "displaced", "dropped", "broken", "spawned"],
   );
 });
 

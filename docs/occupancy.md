@@ -27,6 +27,10 @@ The impact is the mover's `mass_g` times the distance it travelled. Each party w
 struck one first: the break runs exactly as a fall's does, caused by `collided`, with products and
 residue where the broken thing stands. What declares no threshold takes no harm, agents included.
 
+What stands on a pushed thing rides along with it: a smooth push leaves a cup on its bench. A push
+that stops short jolts the mover: after the impact, what topples on it falls through the ordinary
+support loss, caused by `collided`. The struck thing does not move, so nothing on it is jolted.
+
 A fall comes to rest on the tallest surface (`surface: true`, what `put` sets things on) standing
 on the room below it, lower than the height it falls from, whose footprint holds the landing point
 strictly inside and is at least as wide and deep as the faller; else on the floor. The point is

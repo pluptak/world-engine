@@ -126,7 +126,7 @@ test("propagation preserves the full causal bottle chain", (t) => {
     type: string;
   }>;
   const types = events.map((event) => event.type);
-  deepStrictEqual(types, ["push", "moved", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"]);
+  deepStrictEqual(types, ["push", "moved", "collided", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"]);
   const eventPositions = new Map(events.map((event, index) => [event.event_id, index]));
   for (const [index, event] of events.entries()) {
     let current = event;

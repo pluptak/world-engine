@@ -28,5 +28,15 @@
       "support": "room",
       "pos": { "x": -50, "y": 0 }
     }
+  },
+  {
+    "id": "doorstop",
+    "template": "stone",
+    "overrides": {
+      "name": "doorstop",
+      "location": "room",
+      "support": "room",
+      "pos": { "x": 129, "y": 0 }
+    }
   }
 ]

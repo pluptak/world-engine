@@ -54,6 +54,11 @@ const wineScenario: Scenario = [
     template: "human",
     overrides: { name: "pusher", location: "e1", support: "e1", pos: { x: -50, y: 0 } },
   },
+  // In the table's path, so the push stops short and the jolt knocks the bottle off.
+  {
+    template: "stone",
+    overrides: { name: "doorstop", location: "e1", support: "e1", pos: { x: 129, y: 0 } },
+  },
 ];
 
 const pushTable = {
@@ -295,6 +300,7 @@ test("a store world pushes a wine_bottle off its table into shards and its own r
   deepStrictEqual(result.events.map((event) => event.type), [
     "push",
     "moved",
+    "collided",
     "displaced",
     "dropped",
     "broken",
@@ -302,7 +308,7 @@ test("a store world pushes a wine_bottle off its table into shards and its own r
     "spawned",
     "spawned",
   ]);
-  strictEqual(result.events[3]?.data.fall_cm, 75);
+  strictEqual(result.events[4]?.data.fall_cm, 75);
   strictEqual(world.entity("e3")?.status, "broken");
   strictEqual(world.entity("e3")?.props.liquid_amount, 0);
   deepStrictEqual(world.entity("e1")?.residue, { glass: 5, grape_wine: 75 });

@@ -41,6 +41,11 @@ const bottleScenario: Scenario = [
     template: "human",
     overrides: { name: "pusher", location: "e1", support: "e1", pos: { x: -50, y: 0 } },
   },
+  // In the table's path, so the push stops short and the jolt knocks the bottle off.
+  {
+    template: "stone",
+    overrides: { name: "doorstop", location: "e1", support: "e1", pos: { x: 129, y: 0 } },
+  },
 ];
 
 const pushTable: Command = {
@@ -61,7 +66,7 @@ test("a command through the API reproduces the causal bottle chain", (t) => {
   strictEqual(result.status, "ok");
   deepStrictEqual(
     result.events.map((event) => event.type),
-    ["push", "moved", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"],
+    ["push", "moved", "collided", "displaced", "dropped", "broken", "spawned", "spawned", "spawned"],
   );
   const positions = new Map(result.events.map((event, index) => [event.event_id, index]));
   for (const [index, event] of result.events.entries()) {

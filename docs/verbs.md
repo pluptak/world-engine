@@ -16,8 +16,9 @@ abstract template ([space.md](space.md)) is no target for an agent's verb. A sur
 - `pour`: moves `args.amount` (all of it by default) of a carried liquid into a container's
   `liquid_*` props or onto residue; the model is in [liquids.md](liquids.md).
 - `push`: shifts a target by `args.distance_cm` along `args.dir`, stopping short at the first
-  footprint in its path ([occupancy.md](occupancy.md)), then support loss runs; it needs `moving`,
-  and refuses what it cannot reach or lift, or `blocked` when it cannot move at all.
+  footprint in its path ([occupancy.md](occupancy.md)); what stands on it rides along, and only a
+  stop short jolts off what topples. It needs `moving`, and refuses what it cannot reach or lift,
+  or `blocked` when it cannot move at all.
 - `pull`: the same shift in the opposite direction.
 - `attack`: picks the first mode its attacker can use (fist, bite), with damage from the template;
   a lost part drops what it held, and a stunned victim keeps the rest.
