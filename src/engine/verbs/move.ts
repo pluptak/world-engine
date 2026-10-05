@@ -43,8 +43,8 @@ function hasOpenDoor(context: CommandContext, to: string): boolean {
         entity !== undefined &&
         entity.template === "door" &&
         entity.props.open === true &&
-        entity.props.from === from &&
-        entity.props.to === to
+        ((entity.props.from === from && entity.props.to === to) ||
+          (entity.props.from === to && entity.props.to === from))
       );
     });
 }

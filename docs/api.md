@@ -14,6 +14,8 @@ directory, a changed hash, or a bad version is a `WorldError` with a code.
   else its spawn; an initial entity's field has an empty chain, and a memory world answers
   `history_unavailable` for what predates it.
 - `perceivers: true` on a command or edit names who sensed each of its events.
+- `createWorld` and `memoryWorld` take an optional `coverage`, which the world's initial snapshot
+  declares in place of `defaultCoverage()`; a category it leaves out answers `unknown`.
 
 Refusals carry a machine `reason_code` and optional `reason_data` (reach, fit, enclosure, capacity
 numbers), never prose. Edits (`spawn`, `remove`, `place`, `set_props`, `set_part`) are logged under

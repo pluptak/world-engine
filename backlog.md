@@ -26,17 +26,9 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 ## Lane Z. After every lane has merged
 
-### Z1. An authored adversarial scenario, then reassess
-- **Why:** the property tests check invariants on random sequences; they do not show whether the
-  model stays understandable when several systems interact in a world someone designed.
-- **Scope:** a hand-written scenario (an inn room: table with bottle, chair, door, locked chest and
-  key, two humans, a dog, a book hiding a note) and a scripted 30–100 command sequence that mixes
-  support loss, breaking, carrying, locks, concealment, pouring, perception and edits, authored with
-  names and anchors. Assert its full trace and perceivers at the key events. `createWorld` and
-  `memoryWorld` take an optional `coverage`, stored in the initial snapshot, so the dog's smell is
-  reachable through the API (today `src/api.ts` always writes `defaultCoverage()`).
-- **Done when:** the sequence passes, and a short note in `docs/` records what it could not
-  express — that list, not the project's name, decides whether richer physics is ever needed.
+### Z2. Reassess
+- What the inn could not express: `docs/limits.md` lists seven limits, each with the step that shows
+  it. Take them one at a time, or say why none of them is worth a verb.
 
 ## Out of scope
 

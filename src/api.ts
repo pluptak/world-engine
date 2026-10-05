@@ -14,7 +14,7 @@ import { spawn } from "./engine/spawn.js";
 import { resolveScenario, type Scenario } from "./scenario.js";
 import { validateSnapshot } from "./engine/validate.js";
 import { WorldError } from "./errors.js";
-import { defaultCoverage, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type Status, type WorldEvent } from "./model.js";
+import { defaultCoverage, type Coverage, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type Status, type WorldEvent } from "./model.js";
 import {
   create,
   entryCount,
@@ -42,6 +42,12 @@ export interface EditOptions {
   command_id?: Id;
   basedOn?: number;
   perceivers?: boolean;
+}
+
+// What a world's initial snapshot declares over the defaults. Coverage says what the engine can
+// answer, so a category left out of `senses` is `unknown` rather than `false` from the first command.
+export interface WorldOptions {
+  coverage?: Coverage;
 }
 
 // What a dry run reports: the verdict a command would get now, without state or a log line.
@@ -118,13 +124,29 @@ function editCommand(edit: WorldEdit, commandId: Id, perceivers?: boolean): Comm
   return command;
 }
 
-function initialSnapshot(registry: TemplateRegistry): Snapshot {
+function isCategoryList(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((name) => typeof name === "string");
+}
+
+// The snapshot's own shape for the one field no engine rule reads: an unreadable coverage answers
+// nothing sensibly, so it is a caller's mistake rather than a world that cannot be built. It returns
+// the coverage, so a caller writes `coverage: assertCoverage(coverage)`.
+function assertCoverage(coverage: Coverage): Coverage {
+  for (const name of ["relations", "senses", "properties"] as const) {
+    if (!isCategoryList(coverage[name])) {
+      throw new TypeError(`Coverage ${name} is not a list of names`);
+    }
+  }
+  return coverage;
+}
+
+function initialSnapshot(registry: TemplateRegistry, coverage?: Coverage): Snapshot {
   return {
     version: 0,
     tick: 0,
     next_seq: 1,
     templates_hash: templatesHash(registry),
-    coverage: defaultCoverage(),
+    coverage: coverage === undefined ? defaultCoverage() : assertCoverage(coverage),
     entities: {},
   };
 }
@@ -232,9 +254,10 @@ export function createWorld(
   dir: string,
   scenario: Scenario,
   registry?: TemplateRegistry,
+  options?: WorldOptions,
 ): World {
   const templates = activeRegistry(registry);
-  const initial = initialSnapshot(templates);
+  const initial = initialSnapshot(templates, options?.coverage);
   // Names resolve before the first spawn, so a bad name is refused before anything is written.
   const resolved = resolveScenario(scenario, initial.next_seq);
   let snapshot = initial;
@@ -256,17 +279,24 @@ export function memoryWorld(
   snapshot: Snapshot,
   registry?: TemplateRegistry,
   names: Readonly<Record<string, Id>> = {},
+  options?: WorldOptions,
 ): World {
   let templates = activeRegistry(registry);
-  if (snapshot.templates_hash !== templatesHash(templates)) {
+  // What the caller handed in is the whole world, so a coverage option says the same thing about a
+  // snapshot it came from: this memory world's initial snapshot declares that instead.
+  const initial =
+    options?.coverage === undefined
+      ? snapshot
+      : { ...snapshot, coverage: assertCoverage(options.coverage) };
+  if (initial.templates_hash !== templatesHash(templates)) {
     throw new WorldError("templates_changed", "Template hash mismatch");
   }
-  assertValid(snapshot, templates);
+  assertValid(initial, templates);
 
-  let current = snapshot;
+  let current = initial;
   const events: WorldEvent[] = [];
   // Snapshots are immutable, so past versions stay around for preemption checks for free.
-  const history = new Map<number, Snapshot>([[snapshot.version, snapshot]]);
+  const history = new Map<number, Snapshot>([[initial.version, initial]]);
   // No log, so the count of this world's own submissions stands in for one; commands count like
   // edits, exactly like the store's lines, and the id is read before the count grows.
   let submissions = 0;
@@ -274,7 +304,7 @@ export function memoryWorld(
   const applied: Array<{ base: number; deltas: Delta[]; events: WorldEvent[] }> = [];
   // The version this world started from: anything older predates its records, however valid, so
   // asking below it is an error rather than an empty answer.
-  const firstVersion = snapshot.version;
+  const firstVersion = initial.version;
 
   // The snapshots before and after the command that produced an event: event-form perceive
   // evaluates against both via queryAtEvent, while the entity form keeps the current snapshot.
@@ -379,7 +409,7 @@ export function memoryWorld(
           const hasSpawn = allDeltas.some(
             (delta) => delta.entity === query.entity && delta.field === "entity",
           );
-          if (!hasDelta && !hasSpawn && snapshot.entities[query.entity] !== undefined) {
+          if (!hasDelta && !hasSpawn && initial.entities[query.entity] !== undefined) {
             throw new WorldError(
               "history_unavailable",
               `No history for ${query.entity}.${field} before this memory world was created`,

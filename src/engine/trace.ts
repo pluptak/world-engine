@@ -3,25 +3,28 @@ import type { Delta, Entity, Id, WorldEvent } from "../model.js";
 
 export type TraceQuery = { event_id: Id } | { entity: Id; field: string };
 
+// Every Entity field, so the compiler names one that a new field leaves out.
+const ENTITY_FIELDS: Record<keyof Entity, true> = {
+  id: true,
+  template: true,
+  name: true,
+  aliases: true,
+  location: true,
+  support: true,
+  contained_in: true,
+  concealed_by: true,
+  pos: true,
+  detached_from: true,
+  integrity: true,
+  status: true,
+  parts: true,
+  residue: true,
+  modifiers: true,
+  props: true,
+};
+
 // Valid Entity field names plus the pseudo-field "entity" used for spawn/remove deltas.
-export const VALID_ENTITY_FIELDS = [
-  "id",
-  "template",
-  "name",
-  "aliases",
-  "location",
-  "support",
-  "contained_in",
-  "pos",
-  "detached_from",
-  "integrity",
-  "status",
-  "parts",
-  "residue",
-  "modifiers",
-  "props",
-  "entity",
-] as const;
+export const VALID_ENTITY_FIELDS = [...Object.keys(ENTITY_FIELDS), "entity"] as const;
 
 export function traceChain(events: readonly WorldEvent[], startEventId: Id): WorldEvent[] {
   const byId = new Map<Id, WorldEvent>();

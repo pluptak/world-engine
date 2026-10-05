@@ -1,0 +1,88 @@
+[
+  { "id": "common", "template": "room", "overrides": { "name": "common room", "props": { "lit": true } } },
+  { "id": "cellar", "template": "room", "overrides": { "name": "cellar" } },
+  {
+    "id": "door",
+    "template": "door",
+    "overrides": {
+      "name": "cellar door",
+      "props": { "openable": true, "open": false, "from": "common", "to": "cellar" }
+    }
+  },
+  {
+    "id": "hearth",
+    "template": "anchor",
+    "overrides": { "name": "hearth", "location": "common", "support": "common", "pos": { "x": 200, "y": 0 } }
+  },
+  {
+    "id": "window",
+    "template": "anchor",
+    "overrides": { "name": "window", "location": "common", "support": "common", "pos": { "x": 200, "y": 260 } }
+  },
+  {
+    "id": "table",
+    "template": "table",
+    "overrides": { "name": "table", "pos": { "anchor": "hearth", "dx": -110, "dy": 0 } }
+  },
+  {
+    "id": "chair",
+    "template": "chair",
+    "overrides": { "name": "chair", "pos": { "anchor": "window", "dx": -40, "dy": -120 } }
+  },
+  { "id": "bottle", "template": "wine_bottle", "overrides": { "name": "bottle", "location": "common", "support": "table" } },
+  { "id": "cup", "template": "cup", "overrides": { "name": "cup", "location": "common", "support": "table" } },
+  { "id": "book", "template": "book", "overrides": { "name": "book", "location": "common", "support": "table" } },
+  {
+    "id": "note",
+    "template": "note",
+    "overrides": {
+      "name": "note",
+      "location": "common",
+      "support": "table",
+      "concealed_by": "book"
+    }
+  },
+  {
+    "id": "chest",
+    "template": "chest",
+    "overrides": {
+      "name": "chest",
+      "pos": { "anchor": "hearth", "dx": 0, "dy": -60 },
+      "props": {
+        "container": true,
+        "topples": true,
+        "inner_w_cm": 55,
+        "inner_d_cm": 35,
+        "inner_h_cm": 35,
+        "openable": true,
+        "open": false,
+        "locked": true
+      }
+    }
+  },
+  {
+    "id": "key",
+    "template": "stone",
+    "overrides": {
+      "name": "key",
+      "location": "common",
+      "contained_in": "ann",
+      "props": { "opens": "chest" }
+    }
+  },
+  {
+    "id": "ann",
+    "template": "human",
+    "overrides": { "name": "ann", "pos": { "anchor": "hearth", "dx": -60, "dy": 60 } }
+  },
+  {
+    "id": "bob",
+    "template": "human",
+    "overrides": { "name": "bob", "pos": { "anchor": "window", "dx": -20, "dy": -240 } }
+  },
+  {
+    "id": "rex",
+    "template": "dog",
+    "overrides": { "name": "rex", "pos": { "anchor": "hearth", "dx": -150, "dy": 0 } }
+  }
+]

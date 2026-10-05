@@ -7,8 +7,8 @@ import {
   createWorld,
   memoryWorld,
   type Command,
+  type Coverage,
   type Scenario,
-  type Snapshot,
   type World,
 } from "../src/index.js";
 import { EVENT_SENSES, query } from "../src/engine/query.js";
@@ -275,15 +275,12 @@ function runScript(world: World): void {
   strictEqual(removed.status, "ok");
 }
 
-// A world that declares smell, which the public API cannot do: `createWorld` writes
-// `defaultCoverage()`, whose senses are sight and hearing, so the snapshot is rewritten and handed
-// to a memory world instead.
-function withSmell(snapshot: Snapshot): Snapshot {
-  return {
-    ...snapshot,
-    coverage: { ...snapshot.coverage, senses: ["sight", "hearing", "smell"] },
-  };
-}
+// Coverage that includes smell.
+const SMELLING: Coverage = {
+  relations: ["support", "contained_in", "attached_to", "status", "location", "near"],
+  senses: ["sight", "hearing", "smell"],
+  properties: ["integrity", "residue", "pos"],
+};
 
 function walkTable(world: World, senses: readonly string[]): void {
   const situations = [
@@ -391,7 +388,7 @@ test("every event type the engine can emit has a row of the sense table", (t) =>
 const store = createWorld(join(tempDir(t), "every-type"), hall);
   const initial = store.snapshot();
   runScript(store);
-  const smelly = memoryWorld(withSmell(initial), undefined, { ann: ANN });
+  const smelly = memoryWorld(initial, undefined, { ann: ANN }, { coverage: SMELLING });
   runScript(smelly);
   for (const world of [store, smelly]) {
     const seen = [...new Set(world.since(0).events.map((event) => event.type))].sort();
@@ -410,7 +407,7 @@ test("the sense table holds row by row in a store world and in a memory world", 
   // A store world declares sight and hearing only, so that is what its rows can answer.
   walkTable(store, ["sight", "hearing"]);
 
-  const smelly = memoryWorld(withSmell(initial), undefined, {
+  const smelly = memoryWorld(initial, undefined, {
     ann: ANN,
     kit: IN_HALL,
     watcher: THROUGH_OPEN_DOOR,
@@ -418,7 +415,7 @@ test("the sense table holds row by row in a store world and in a memory world", 
     book: BOOK,
     cup: CUP,
     chest: CHEST,
-  });
+  }, { coverage: SMELLING });
   runScript(smelly);
   walkTable(smelly, ["sight", "hearing", "smell"]);
 
@@ -506,7 +503,7 @@ test("an edit's own events are nobody's, and its fall and break are", (t) => {
   deepStrictEqual(broken.perceivers?.smell, []);
   deepStrictEqual(broken.perceivers?.unknown_senses, ["smell"]);
 
-  const smelly = memoryWorld(withSmell(initial), undefined, { ann: "e4", kit: "e5" });
+  const smelly = memoryWorld(initial, undefined, { ann: "e4", kit: "e5" }, { coverage: SMELLING });
   const again = smelly.edit(
     { kind: "remove", target: "e2" },
     { command_id: "remove-table", perceivers: true },
@@ -560,7 +557,7 @@ test("a search and an open are never smelled", (t) => {
       overrides: { name: "kit", location: "hall", support: "hall", pos: { x: 10, y: 0 } },
     },
   ]);
-  const world = memoryWorld(withSmell(store.snapshot()), undefined, { chest: "e2" });
+  const world = memoryWorld(store.snapshot(), undefined, { chest: "e2" }, { coverage: SMELLING });
   const searched = world.command({ command_id: "search-chest", actor: "e3", verb: "search", target: "chest" });
   strictEqual(searched.status, "ok");
   const opened = world.command({ command_id: "open-chest", actor: "e3", verb: "open", target: "chest" });

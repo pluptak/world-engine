@@ -1,0 +1,9 @@
+{
+  "id": "note",
+  "size_cm": { "w": 15, "d": 10, "h": 1 },
+  "mass_g": 5,
+  "parts": [],
+  "props": {},
+  "break_products": [],
+  "break_residue": {}
+}
