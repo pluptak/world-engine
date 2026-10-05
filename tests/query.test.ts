@@ -131,6 +131,31 @@ test("attached_to reflects declared part states", () => {
   strictEqual(query(detached, registry, [], relation).value, "false");
 });
 
+test("a fact about one part reads its stored entry or its template default", () => {
+  const guard = spawn(initialSnapshot(), registry, "human", { name: "guard" });
+  const ask = (snapshot: Snapshot, subject: string, relation: string, object?: string) =>
+    query(snapshot, registry, [], { kind: "fact", subject, relation, ...(object !== undefined && { object }) });
+  const hand = `${guard.id}.hand_r`;
+
+  // Untouched: nothing stored, and the default answers.
+  deepStrictEqual(guard.snapshot.entities[guard.id]?.parts, {});
+  deepStrictEqual(ask(guard.snapshot, hand, "status", "intact"), { value: "true", basis_code: "part_state" });
+  strictEqual(ask(guard.snapshot, hand, "integrity", "100").value, "true");
+  strictEqual(ask(guard.snapshot, hand, "attached_to", guard.id).value, "true");
+
+  const hurt = (state: Snapshot["entities"][string]["parts"][string]): Snapshot => ({
+    ...guard.snapshot,
+    entities: { ...guard.snapshot.entities, [guard.id]: { ...guard.snapshot.entities[guard.id]!, parts: { hand_r: state } } },
+  });
+  strictEqual(ask(hurt({ integrity: 60, status: "damaged" }), hand, "integrity", "60").value, "true");
+  strictEqual(ask(hurt({ integrity: 60, status: "damaged" }), hand, "status", "intact").value, "false");
+  strictEqual(ask(hurt({ integrity: 0, status: "detached" }), hand, "attached_to").value, "false");
+
+  deepStrictEqual(ask(guard.snapshot, `${guard.id}.tail`, "status"), { value: "false", basis_code: "no_such_part" });
+  deepStrictEqual(ask(guard.snapshot, hand, "support"), { value: "false", basis_code: "not_a_part_field" });
+  deepStrictEqual(ask(guard.snapshot, hand, "temperature"), { value: "unknown", basis_code: "uncovered_category" });
+});
+
 test("uncovered smell is unknown", () => {
   const world = twoRoomWorld(false);
   deepStrictEqual(

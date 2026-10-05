@@ -22,6 +22,7 @@ import { loadTemplates, type TemplateRegistry } from "../src/templates.js";
 import {
   buildInitial,
   checkCauseChain,
+  checkPartTriggers,
   foldEntities,
   genStep,
   mulberry32,
@@ -72,6 +73,13 @@ function runSequence(world: World, seed: number, steps: number): { snapshot: str
     const result = "verb" in step ? world.command(step) : world.edit(step);
     deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
     strictEqual(canonicalJson(before), beforeJson);
+    checkPartTriggers(before, world.snapshot(), result.status === "ok" ? result.events : []);
+    // Observing is a read: what an agent could sense writes nothing, parts included.
+    if ("verb" in step && world.snapshot().entities[step.actor] !== undefined) {
+      const seen = canonicalJson(world.snapshot());
+      world.observe(step.actor, { since: before.version });
+      strictEqual(canonicalJson(world.snapshot()), seen);
+    }
     if (result.status === "ok") {
       for (const event of result.events) {
         strictEqual(event.command_id, result.command_id);
@@ -136,7 +144,7 @@ function aimedAt(step: WorldEdit, snapshot: Snapshot): string[] {
           : snapshot.entities[step.contained_in];
       if (holder === undefined) {
         aims.push("in_part_mismatch");
-      } else if (!Object.hasOwn(holder.parts, step.in_part)) {
+      } else if (!(registry[holder.template]?.parts ?? []).some((part) => part.name === step.in_part)) {
         aims.push("in_part_unknown");
       }
     }

@@ -232,7 +232,9 @@ test("an upgrade is refused when a live entity's template lost a field", (t) => 
   const before = world.snapshot().templates_hash;
 
   const human = readTemplate(copies, "human.json");
-  human.parts = (human.parts as Array<{ name: string }>).filter((part) => part.name !== "hand_r");
+  human.parts = (human.parts as Array<{ name: string; parent: string | null }>).filter(
+    (part) => part.name !== "hand_r" && part.parent !== "hand_r",
+  );
   writeTemplate(copies, "human.json", human);
 
   assertThrows(
@@ -333,7 +335,9 @@ test("a set that orphans a live entity is never adopted", (t) => {
 
   const human = readTemplate(copies, "human.json");
   const whole = JSON.stringify(human, null, 2);
-  human.parts = (human.parts as Array<{ name: string }>).filter((part) => part.name !== "hand_r");
+  human.parts = (human.parts as Array<{ name: string; parent: string | null }>).filter(
+    (part) => part.name !== "hand_r" && part.parent !== "hand_r",
+  );
   writeTemplate(copies, "human.json", human);
   const orphaned = loadTemplates(copies);
   writeFileSync(join(dir, "templates.json"), canonicalJson(orphaned), "utf8");

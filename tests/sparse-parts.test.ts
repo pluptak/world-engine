@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { canonicalJson, createWorld, openWorld, type Result, type Scenario, type World } from "../src/index.js";
+import { structuralCapacity } from "../src/engine/capacity.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
 
@@ -54,9 +55,27 @@ test("a struck hand stores only itself; struck again it updates; severed it stay
   deepStrictEqual(world.entity(ann)?.parts, { hand_r: { integrity: 20, status: "damaged" } });
   const severed = run(world, bob, "attack", `${ann}.hand_r`);
   ok(severed.events.some((event) => event.type === "detached"));
-  deepStrictEqual(world.entity(ann)?.parts, { hand_r: { integrity: 0, status: "detached" } });
+  // The thumb goes with its hand: the whole subtree is recorded as detached.
+  deepStrictEqual(world.entity(ann)?.parts, {
+    hand_r: { integrity: 0, status: "detached" },
+    thumb_r: { integrity: 50, status: "detached" },
+  });
   const hand = Object.values(world.snapshot().entities).find((entity) => entity.detached_from?.entity === ann);
   strictEqual(hand?.template, "human.hand_r");
+});
+
+test("a thumb costs nothing until it is struck, and losing it costs a fifth of the grip", (t) => {
+  const { world, ann, bob } = open(t);
+  const thumb = { kind: "fact" as const, subject: `${ann}.thumb_r`, relation: "status" };
+  strictEqual(world.query({ ...thumb, object: "intact" }).value, "true");
+  deepStrictEqual(world.entity(ann)?.parts, {});
+  strictEqual(structuralCapacity(world.snapshot(), registry, ann, "manipulation"), 100);
+
+  strictEqual(run(world, bob, "attack", `${ann}.thumb_r`).status, "ok");
+  strictEqual(run(world, bob, "attack", `${ann}.thumb_r`).status, "ok");
+  deepStrictEqual(world.entity(ann)?.parts, { thumb_r: { integrity: 0, status: "destroyed" } });
+  strictEqual(world.query({ ...thumb, object: "destroyed" }).value, "true");
+  strictEqual(structuralCapacity(world.snapshot(), registry, ann, "manipulation"), 80);
 });
 
 test("reopening, and replaying the log, give the same sparse snapshot byte for byte", (t) => {

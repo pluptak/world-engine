@@ -3,7 +3,8 @@
   "size_cm": { "w": 12, "d": 12, "h": 60 },
   "mass_g": 2500,
   "parts": [
-    { "name": "hand_r", "parent": null, "contributes": { "manipulation": 50 }, "detachable": true, "max_integrity": 100 }
+    { "name": "hand_r", "parent": null, "contributes": { "manipulation": 30 }, "detachable": true, "max_integrity": 100 },
+    { "name": "thumb_r", "parent": "hand_r", "contributes": { "manipulation": 20 }, "detachable": false, "max_integrity": 50 }
   ],
   "props": {},
   "break_products": [],

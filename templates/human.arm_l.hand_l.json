@@ -2,7 +2,9 @@
   "id": "human.arm_l.hand_l",
   "size_cm": { "w": 15, "d": 8, "h": 5 },
   "mass_g": 500,
-  "parts": [],
+  "parts": [
+    { "name": "thumb_l", "parent": null, "contributes": {}, "detachable": false, "max_integrity": 50 }
+  ],
   "props": {},
   "break_products": [],
   "break_residue": {}

@@ -59,7 +59,7 @@ suffixes (NodeNext).
   displacement, falls, breaking into `break_products`, residue transfer, `resolveImpact`
   (mass × distance against each party's mass × `break_fall_cm`), and `restingPlace` (the surface
   under a fall that catches it). Verbs call into it.
-- `src/engine/query.ts`: `fact` and `perceive` queries. They answer `"true"`, `"false"` or
+- `src/engine/query.ts`: `fact` and `perceive` queries (a `fact` subject may be `<entity>.<part>`). They answer `"true"`, `"false"` or
   `"unknown"` with a `basis_code`, from the snapshot, the templates, coverage and the replayed event
   list. Senses are `sight`, `hearing`, `smell`, and `touch`, read from `EVENT_SENSES` (one row per event type,
   `docs/senses.md`); smell answers only where coverage declares it, else `"unknown"`. `touch` reads the

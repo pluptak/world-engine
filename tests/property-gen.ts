@@ -1,10 +1,11 @@
 // Test-only seeded sequence generation for the property tests: a deterministic PRNG, a
 // state-aware-lite step generator (reads the snapshot, never Math.random), a delta-fold check,
 // and a cause-chain check. Nothing here ships in src/.
+import { fileURLToPath } from "node:url";
 import type { Command, WorldEdit } from "../src/engine/command.js";
 import { spawn } from "../src/engine/spawn.js";
 import { resolveScenario } from "../src/scenario.js";
-import { templatesHash, type TemplateRegistry } from "../src/templates.js";
+import { loadTemplates, templatesHash, type TemplateRegistry } from "../src/templates.js";
 import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../src/model.js";
 import type { Scenario } from "../src/api.js";
 
@@ -102,6 +103,15 @@ export function mulberry32(seed: number): () => number {
     mixed = (mixed + Math.imul(mixed ^ (mixed >>> 7), 61 | mixed)) ^ mixed;
     return ((mixed ^ (mixed >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+const templates = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+
+// The parts an entity's template declares, sorted. Part state is sparse, so the stored record
+// names only the parts something has changed; the template names every one there is.
+function declaredParts(snapshot: Snapshot, id: Id): string[] {
+  const entity = snapshot.entities[id];
+  return (templates[entity?.template ?? ""]?.parts ?? []).map((part) => part.name).sort();
 }
 
 function int(rand: () => number, min: number, max: number): number {
@@ -249,9 +259,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
   pull: (context) => shifted(context, "pull"),
   attack: (context) => {
     const victim = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
-    // Sorted: store snapshots arrive via canonical JSON (sorted keys), memory ones in template
-    // order, and the same seed must pick the same part in both.
-    const parts = Object.keys(context.snapshot.entities[victim]?.parts ?? {}).sort();
+    const parts = declaredParts(context.snapshot, victim);
     const address =
       parts.length > 0 && context.rand() < 0.5 ? `${victim}.${pick(context.rand, parts)}` : victim;
     return {
@@ -337,7 +345,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     }
     if (context.roll < 0.72) {
       const withParts = context.ids.filter(
-        (id) => Object.keys(context.snapshot.entities[id]?.parts ?? {}).length > 0,
+        (id) => declaredParts(context.snapshot, id).length > 0,
       );
       if (withParts.length === 0) {
         return waiting(context, 1);
@@ -345,7 +353,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
       const subject = pick(context.rand, withParts);
       const part = pick(
         context.rand,
-        Object.keys(context.snapshot.entities[subject]?.parts ?? {}).sort(),
+        declaredParts(context.snapshot, subject),
       );
       return {
         kind: "set_part",
@@ -603,6 +611,54 @@ export function checkCauseChain(events: WorldEvent[]): void {
         throw new Error(`Event ${current.event_id} names missing cause ${current.cause_id}`);
       }
       current = parent;
+    }
+  }
+}
+
+const PART_EVENTS = new Set(["damaged", "destroyed", "detached", "edited"]);
+
+// Stored part state is written only where an event says a part changed: a damaged, destroyed,
+// detached or edited event on that entity naming the part or an ancestor that took it along. A new
+// entity stores parts only as a severed part, spawned by a detachment. So carrying, pocketing,
+// perceiving, pushing and every other verb leave the record alone.
+export function checkPartTriggers(before: Snapshot, after: Snapshot, events: WorldEvent[]): void {
+  const byId = new Map(events.map((event) => [event.event_id, event]));
+  const same = (a: Entity["parts"][string] | undefined, b: Entity["parts"][string] | undefined) =>
+    a?.integrity === b?.integrity && a?.status === b?.status;
+  for (const id of Object.keys(after.entities).sort()) {
+    const now = after.entities[id]!;
+    const was = before.entities[id];
+    if (was === undefined) {
+      if (Object.keys(now.parts).length === 0) {
+        continue;
+      }
+      const spawned = events.find((event) => event.type === "spawned" && event.entity === id);
+      const cause = spawned?.cause_id === undefined || spawned.cause_id === null ? undefined : byId.get(spawned.cause_id);
+      if (cause?.type !== "detached") {
+        throw new Error(`New entity ${id} stores parts without being severed`);
+      }
+      continue;
+    }
+    const parents = new Map((templates[now.template]?.parts ?? []).map((part) => [part.name, part.parent]));
+    for (const name of [...new Set([...Object.keys(was.parts), ...Object.keys(now.parts)])].sort()) {
+      if (same(was.parts[name], now.parts[name])) {
+        continue;
+      }
+      const lineage = new Set<string>();
+      for (let current: string | null = name; current !== null && !lineage.has(current); ) {
+        lineage.add(current);
+        current = parents.get(current) ?? null;
+      }
+      const named = events.some(
+        (event) =>
+          event.entity === id &&
+          PART_EVENTS.has(event.type) &&
+          typeof event.data.part === "string" &&
+          lineage.has(event.data.part),
+      );
+      if (!named) {
+        throw new Error(`Part ${id}.${name} changed under no part event`);
+      }
     }
   }
 }

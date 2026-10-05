@@ -117,7 +117,7 @@ function fact(
 ): Answer {
   const entity = snapshot.entities[query.subject];
   if (entity === undefined) {
-    return answer("false", "no_such_entity");
+    return partFact(snapshot, registry, query);
   }
   if (snapshot.coverage.relations.includes(query.relation)) {
     if (query.relation === "near") {
@@ -139,6 +139,40 @@ function fact(
     return answer(propertyMatches(value, query.object, query.relation) ? "true" : "false", "property_state");
   }
   return answer("unknown", "uncovered_category");
+}
+
+// A fact about one part, addressed `<entity>.<part>`: its status, its integrity, and whether it is
+// still attached to its entity, read from the stored entry or the template default. A part is not
+// an entity, so every other field is false with `not_a_part_field`. Nothing is written.
+function partFact(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  query: Extract<Query, { kind: "fact" }>,
+): Answer {
+  const separator = query.subject.lastIndexOf(".");
+  const entity = separator > 0 ? snapshot.entities[query.subject.slice(0, separator)] : undefined;
+  if (entity === undefined) {
+    return answer("false", "no_such_entity");
+  }
+  const state = partState(registry[entity.template], entity, query.subject.slice(separator + 1));
+  if (state === undefined) {
+    return answer("false", "no_such_part");
+  }
+  const relation = snapshot.coverage.relations.includes(query.relation);
+  if (!relation && !snapshot.coverage.properties.includes(query.relation)) {
+    return answer("unknown", "uncovered_category");
+  }
+  const attached = state.status !== "detached" && state.status !== "destroyed";
+  switch (relation ? query.relation : `property ${query.relation}`) {
+    case "status":
+      return answer(query.object === undefined || state.status === query.object ? "true" : "false", "part_state");
+    case "attached_to":
+      return answer(attached && (query.object === undefined || query.object === entity.id) ? "true" : "false", "part_state");
+    case "property integrity":
+      return answer(propertyMatches(state.integrity, query.object, "integrity") ? "true" : "false", "part_state");
+    default:
+      return answer("false", "not_a_part_field");
+  }
 }
 
 function connectedByDoor(
