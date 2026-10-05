@@ -15,5 +15,6 @@ What is built, nothing aspirational, one concept per file:
 - [persistence.md](persistence.md): the CLI and the world directory.
 - [perception.md](perception.md): queries, perception, and coverage.
 - [senses.md](senses.md): the sense table both queries and tests read.
+- [projection.md](projection.md): what one observer could sense, as one structured answer.
 - [liquids.md](liquids.md): liquid in props, and the `pour` verb.
 - [limits.md](limits.md): what the inn scenario could not express.

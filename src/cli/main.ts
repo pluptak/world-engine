@@ -193,6 +193,9 @@ function dispatch(request: Request): unknown {
   if (request.op === "query") {
     return world.query(request.query);
   }
+  if (request.op === "observe") {
+    return world.observe(request.observer, request.since === undefined ? {} : { since: request.since });
+  }
   return world.snapshot();
 }
 

@@ -6,6 +6,7 @@ import {
   type Result,
   type WorldEdit,
 } from "./engine/command.js";
+import { observeEntities, SENSES, type ObservedEvent, type Projection } from "./engine/projection.js";
 import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./engine/query.js";
 import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
 import { lostField } from "./engine/upgrade.js";
@@ -65,6 +66,10 @@ export interface SinceResult {
   events: WorldEvent[];
 }
 
+export interface ObserveOptions {
+  since?: number;
+}
+
 export interface TraceResult {
   events: WorldEvent[];
 }
@@ -78,6 +83,8 @@ export interface World {
   trace(query: TraceQuery): TraceResult;
   upgradeTemplates(registry?: TemplateRegistry): Snapshot;
   query(query: Query): Answer;
+  // What one observer could sense now, and, with `since`, which events after that version it sensed.
+  observe(observer: Id, options?: ObserveOptions): Projection;
   snapshot(): Snapshot;
   entity(id: Id): Entity | null;
   // The id a scenario gave this world, or null. Names are authoring sugar rather than world state,
@@ -93,6 +100,41 @@ function checkResult(result: Result): CheckResult {
     ...(result.candidates !== undefined && { candidates: result.candidates }),
     ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
     ...(result.reason_data !== undefined && { reason_data: result.reason_data }),
+  };
+}
+
+// A projection read through a world's own methods, so a store world and a memory world project
+// alike: the entities from the current snapshot, each event through event-form perceive.
+function observeThrough(
+  world: Pick<World, "snapshot" | "since" | "query">,
+  registry: TemplateRegistry,
+  observer: Id,
+  options: ObserveOptions,
+): Projection {
+  const snapshot = world.snapshot();
+  if (snapshot.entities[observer] === undefined) {
+    throw new WorldError("no_such_entity", `Unknown observer ${observer}`);
+  }
+  const covered = SENSES.filter((sense) => snapshot.coverage.senses.includes(sense));
+  const events: ObservedEvent[] =
+    options.since === undefined
+      ? []
+      : world.since(options.since).events.flatMap((event) => {
+          const senses = covered.filter(
+            (sense) =>
+              world.query({ kind: "perceive", observer, event_id: event.event_id, sense }).value ===
+              "true",
+          );
+          return senses.length === 0
+            ? []
+            : [{ event_id: event.event_id, type: event.type, entity: event.entity, senses }];
+        });
+  return {
+    observer,
+    version: snapshot.version,
+    unknown_senses: SENSES.filter((sense) => !covered.includes(sense)),
+    entities: observeEntities(snapshot, registry, [], observer),
+    events,
   };
 }
 
@@ -166,7 +208,7 @@ function storeWorld(
   // left behind.
   let active = registry;
 
-  return {
+  const world: World = {
     command: (command, options) => submit(dir, command, options?.basedOn, active),
     // One shared base version for the whole beat, so later commands see earlier ones as stale;
     // one log line per command, each with its own status.
@@ -232,10 +274,12 @@ function storeWorld(
       const snapshot = load(dir, active);
       return queryEngine(snapshot, active, readEvents(dir), request);
     },
+    observe: (observer, options = {}) => observeThrough(world, active, observer, options),
     snapshot: () => load(dir, active),
     entity: (id) => load(dir, active).entities[id] ?? null,
     id: (name) => names[name] ?? null,
   };
+  return world;
 }
 
 function assertValid(snapshot: Snapshot, registry: TemplateRegistry): void {
@@ -344,7 +388,7 @@ export function memoryWorld(
     return result;
   }
 
-  return {
+  const world: World = {
     command: (command, options) => submitMemory(command, options?.basedOn ?? current.version),
     beat: (commands, options) => {
       const base = options?.basedOn ?? current.version;
@@ -448,10 +492,12 @@ export function memoryWorld(
       }
       return queryEngine(current, templates, events, request);
     },
+    observe: (observer, options = {}) => observeThrough(world, templates, observer, options),
     snapshot: () => current,
     entity: (id) => current.entities[id] ?? null,
     id: (name) => names[name] ?? null,
   };
+  return world;
 }
 
 export { canonicalJson, verbCatalog as verbs, WorldError, WORLD_AUTHOR };
@@ -459,6 +505,7 @@ export type { WorldErrorCode } from "./errors.js";
 export type { Scenario, ScenarioEntry } from "./scenario.js";
 export type { Command, Result, WorldEdit } from "./engine/command.js";
 export type { Answer, Query } from "./engine/query.js";
+export type { ObservedEntity, ObservedEvent, Projection } from "./engine/projection.js";
 export type { TraceQuery } from "./engine/trace.js";
 export type {
   Coverage,

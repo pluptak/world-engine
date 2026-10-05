@@ -2,7 +2,8 @@
 
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)`, `openWorld(dir)`, and
 `memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `since`, `trace`, `beat`,
-`upgradeTemplates`, `query`, `snapshot`, `entity`, and `id`. `verbs()` is the verb catalog. Store
+`upgradeTemplates`, `query`, `observe` ([projection.md](projection.md)), `snapshot`, `entity`, and
+`id`. `verbs()` is the verb catalog. Store
 worlds share a directory, so handles see each other; memory worlds hold their own. A missing
 directory, a changed hash, or a bad version is a `WorldError` with a code.
 

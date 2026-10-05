@@ -198,6 +198,12 @@ export const RequestSchema = z.discriminatedUnion("op", [
     query: QuerySchema,
   }).strict(),
   z.object({
+    op: z.literal("observe"),
+    world: z.string().min(1),
+    observer: IdSchema,
+    since: z.number().int().optional(),
+  }).strict(),
+  z.object({
     op: z.literal("snapshot"),
     world: z.string().min(1),
   }).strict(),
@@ -328,6 +334,34 @@ export const VerbsResponseSchema = z.object({
   verbs: z.array(VerbCatalogEntrySchema),
 }).strict();
 
+export const ProjectionSchema = z.object({
+  observer: IdSchema,
+  version: z.number().int(),
+  unknown_senses: z.array(z.string()),
+  entities: z.array(z.object({
+    id: IdSchema,
+    template: z.string(),
+    name: z.string(),
+    senses: z.array(z.string()),
+    facts: z.object({
+      location: IdSchema.nullable().optional(),
+      support: IdSchema.nullable().optional(),
+      contained_in: IdSchema.nullable().optional(),
+      in_part: z.string().nullable().optional(),
+      status: z.string().optional(),
+      integrity: z.number().int().optional(),
+      residue: z.record(z.string(), z.number().int()).optional(),
+      pos: PosSchema.nullable().optional(),
+    }).strict().optional(),
+  }).strict()),
+  events: z.array(z.object({
+    event_id: IdSchema,
+    type: z.string(),
+    entity: IdSchema,
+    senses: z.array(z.string()),
+  }).strict()),
+}).strict();
+
 export const ValidationIssueSchema = z.object({
   code: z.string(),
   path: z.array(z.union([z.string(), z.number()])),
@@ -348,6 +382,7 @@ export const ResponseSchema = z.union([
   TraceResponseSchema,
   BeatResponseSchema,
   VerbsResponseSchema,
+  ProjectionSchema,
   ValidationFailureSchema,
 ]);
 
