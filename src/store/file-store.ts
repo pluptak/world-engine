@@ -33,7 +33,12 @@ const snapshots = {
   head: "head.json",
   templates: "templates.json",
   ids: "ids.json",
+  format: "format.json",
 };
+
+// Bumped when a stored file's shape changes; a world written under another number is refused,
+// never read as if it matched.
+export const SCHEMA_VERSION = 1;
 
 // A world is created from the templates directory and then never reads it again: the copy beside
 // the log is the one it is bound to.
@@ -49,6 +54,24 @@ function assertWorldExists(dir: string): void {
   ].filter((name) => !existsSync(join(dir, name)));
   if (missing.length > 0) {
     throw new WorldError("no_such_world", `No world at ${dir}: missing ${missing.join(", ")}`);
+  }
+  assertSchema(dir);
+}
+
+function assertSchema(dir: string): void {
+  const path = join(dir, snapshots.format);
+  let found: unknown = null;
+  try {
+    const value: unknown = JSON.parse(readFileSync(path, "utf8"));
+    found = isRecord(value) ? value.schema_version : null;
+  } catch {
+    // A world written before the marker existed has no file: the same refusal as a wrong number.
+  }
+  if (found !== SCHEMA_VERSION) {
+    throw new WorldError(
+      "unsupported_schema",
+      `World at ${dir} has schema_version ${JSON.stringify(found)}, this engine reads ${SCHEMA_VERSION}`,
+    );
   }
 }
 
@@ -222,6 +245,7 @@ export function create(
   const templates = registry ?? loadTemplates(templatesDirectory);
   assertTemplates(initialSnapshot, templates);
   mkdirSync(dir, { recursive: true });
+  atomicWrite(join(dir, snapshots.format), canonicalJson({ schema_version: SCHEMA_VERSION }));
   atomicWrite(join(dir, snapshots.templates), canonicalJson(templates));
   atomicWrite(join(dir, snapshots.initial), canonicalJson(initialSnapshot));
   atomicWrite(join(dir, snapshots.current), canonicalJson(initialSnapshot));

@@ -22,3 +22,5 @@ What the workshop's physics cannot say is in [limits-workshop.md](limits-worksho
   victim, so a theft goes unnoticed only in the dark (B2c).
 - Silence is by event type, not by care: a `take` is silent whether it is a careful lift or a
   clumsy grab, and a `move` is heard however softly it is made.
+- A `beat` is an ordered batch against one base, not simultaneous action: no initiative, and no
+  tie-break for two agents acting in the same instant (`tests/beat.test.ts`).

@@ -2,16 +2,15 @@
 
 Guidance for coding agents in this directory.
 
-## What this directory is
+## What this repo is
 
-- **Plan only — no code here.** `plan.md` is the spec: blocks 0–9 of "world-engine", a deterministic,
-  persistent, causal world-transition engine (physics is one resolver underneath persistent state).
-- Implementation lives in a **separate repo**, `C:\Users\Peter\source\repos\LLM-playground\world-engine`
-  (`git init`, no commit at block 0). Nothing imports Story-writer; Story-writer imports nothing from
-  it. Keep the two repos independent.
-- `plan.md` is the source of truth. The **Shared brief** (hard rules + core types) is pasted verbatim
-  above every block prompt — read it from `plan.md`, don't re-derive or paraphrase the types.
-- `..\Story-writer\CLAUDE.md` is the precedent this series copies for process and comment style.
+- A deterministic, persistent, causal world-transition engine (physics is one resolver underneath
+  persistent state). Blocks 0–9 of the original plan are implemented here; `CLAUDE.md` maps the code
+  and `docs/DESIGN.md` indexes what is built.
+- Nothing here imports Story-writer and Story-writer imports nothing from it. Keep the two
+  independent. `..\Story-writer\CLAUDE.md` is the precedent for process and comment style.
+- The original plan's **Shared brief** (hard rules and core types) is reflected in the invariants
+  below and in `src/model.ts`; don't re-derive or paraphrase the types.
 
 ## Working process — one block per session
 

@@ -2,6 +2,7 @@ import type { SnapshotIssue } from "./engine/validate.js";
 
 export type WorldErrorCode =
   | "no_such_world"
+  | "unsupported_schema"
   | "templates_changed"
   | "invalid_templates"
   | "templates_lost_field"

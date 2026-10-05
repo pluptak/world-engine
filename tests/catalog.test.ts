@@ -1,6 +1,6 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -117,4 +117,10 @@ test("mutating the catalog cannot change what a carrier can hold", (t) => {
   const second = world.command({ command_id: "c2", actor: "e2", verb: "take", target: "cup" });
   strictEqual(second.status, "refused");
   strictEqual(second.reason_code, "mouth_full");
+});
+
+test("docs/verbs.md has one bullet per registered verb and none for a missing one", () => {
+  const text = readFileSync(join(root, "docs", "verbs.md"), "utf8");
+  const documented = [...text.matchAll(/^- `([a-z_]+)`:/gm)].map((match) => match[1]);
+  deepStrictEqual([...documented].sort(), verbCatalog().map((entry) => entry.verb));
 });

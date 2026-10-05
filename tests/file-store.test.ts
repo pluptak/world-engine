@@ -8,7 +8,9 @@ import { canonicalJson } from "../src/engine/canonical.js";
 import { apply } from "../src/engine/pipeline.js";
 import { spawn } from "../src/engine/spawn.js";
 import { create, entryCount, load, replay, submit } from "../src/store/file-store.js";
+import { WorldError } from "../src/errors.js";
 import type { Snapshot } from "../src/model.js";
+import { SCHEMA_VERSION } from "../src/store/file-store.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
 
 const templatesDir = fileURLToPath(new URL("../templates/", import.meta.url));
@@ -595,4 +597,18 @@ test("fast path is taken after refused commands (corrupted log line same size)",
 
   const loaded = load(dir);
   strictEqual(loaded.version, 2);
+});
+
+test("a world with no schema marker or another number is refused, never read", (t) => {
+  const dir = temporaryDirectory(t);
+  create(dir, initialSnapshot(), registry);
+  const marker = join(dir, "format.json");
+  deepStrictEqual(JSON.parse(readFileSync(marker, "utf8")), { schema_version: SCHEMA_VERSION });
+  load(dir, registry);
+
+  writeFileSync(marker, canonicalJson({ schema_version: SCHEMA_VERSION + 1 }), "utf8");
+  throws(() => load(dir, registry), (error: unknown) => error instanceof WorldError && error.code === "unsupported_schema");
+
+  rmSync(marker);
+  throws(() => load(dir, registry), (error: unknown) => error instanceof WorldError && error.code === "unsupported_schema");
 });

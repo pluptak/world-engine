@@ -2,6 +2,7 @@
 
 What is built, nothing aspirational, one concept per file:
 
+- [overview.md](overview.md): the problem, who it is for, one worked example, scale and non-goals.
 - [pipeline.md](pipeline.md): the transition pipeline.
 - [verbs.md](verbs.md): every verb, its arguments and its rules.
 - [state.md](state.md): snapshots, validation, templates, parts, capacities, physical consequences.
