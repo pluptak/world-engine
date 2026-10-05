@@ -350,6 +350,39 @@ test("a set that orphans a live entity is never adopted", (t) => {
   strictEqual(openWorld(dir).snapshot().templates_hash, before);
 });
 
+test("a world with a chair upgrades: a template never declaring default_hit_part loses nothing", (t) => {
+  const copies = copiedTemplates(t);
+  const { world } = frozenWorld(t, copies);
+  strictEqual(
+    world.edit({ kind: "spawn", template: "chair", overrides: { name: "chair", support: "e1", pos: { x: -50, y: 80 } } }).status,
+    "ok",
+  );
+  const bottle = readTemplate(copies, "bottle.json");
+  bottle.mass_g = 1;
+  writeTemplate(copies, "bottle.json", bottle);
+  const next = loadTemplates(copies);
+  strictEqual(world.upgradeTemplates(next).templates_hash, templatesHash(next));
+});
+
+test("dropping default_hit_part after an attack that relied on it fails the replay check", (t) => {
+  const copies = copiedTemplates(t);
+  const { world } = frozenWorld(t, copies);
+  strictEqual(
+    world.edit({ kind: "spawn", template: "human", overrides: { name: "guard", support: "e1", pos: { x: -50, y: 60 } } }).status,
+    "ok",
+  );
+  const human = readTemplate(copies, "human.json");
+  delete (human.props as Record<string, unknown>).default_hit_part;
+  writeTemplate(copies, "human.json", human);
+  const next = loadTemplates(copies);
+
+  strictEqual(world.command({ command_id: "hit-guard", actor: "e4", verb: "attack", target: "guard" }).status, "ok");
+  assertThrows(
+    () => world.upgradeTemplates(next),
+    (error: unknown) => error instanceof WorldError && error.code === "replay_diverges",
+  );
+});
+
 test("an upgrade that changes what an accepted command emits is refused", (t) => {
   const copies = copiedTemplates(t);
   const { dir, world } = frozenWorld(t, copies);

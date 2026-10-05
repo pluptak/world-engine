@@ -133,17 +133,16 @@ test("a break product template that is gone is reported against the bottle", () 
   });
 });
 
-test("default_hit_part dropped from a part-bearing template is reported", () => {
+test("default_hit_part is not a field an entity holds: dropping it, or never having it, loses nothing", () => {
   const next = edited("human", (human) => {
     const props = { ...human.props };
     delete props.default_hit_part;
     return { ...human, props };
   });
-  deepStrictEqual(lostField(subjects(empty()), next), {
-    entity: "e4",
-    template: "human",
-    field: "props.default_hit_part",
-  });
+  strictEqual(lostField(subjects(empty()), next), null);
+  // The chair has parts and never declared one.
+  const seated = spawn(subjects(empty()), registry, "chair", { name: "chair", support: "e1", pos: { x: -50, y: 60 } });
+  strictEqual(lostField(seated.snapshot, registry), null);
 });
 
 test("scenario props and transferred residue are not template fields", () => {

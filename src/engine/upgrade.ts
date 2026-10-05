@@ -11,10 +11,10 @@ export interface LostField {
 // Props and residue are deliberately absent: a template seeds them at spawn, but the entity owns
 // them afterwards, so a key no template declares is ordinary (a scenario may add one) and residue
 // arrives from transfers rather than from any declaration. What is left is what would leave live
-// state unreadable — a part in use that is no longer declared, a product that can no longer be spawned, the one prop the
-// attack resolver reads off the template. Size, mass, contributions and residue amounts are read off
-// templates too, and changing them moves the present without breaking the past; the replay check
-// behind this rule is what covers the past.
+// state unreadable: a part in use that is no longer declared, or a product that can no longer be
+// spawned. Size, mass, contributions, residue amounts and `default_hit_part` are read off templates
+// too, and changing them moves the present without breaking the past; the replay check behind this
+// rule is what covers the past.
 function lostFor(snapshot: Snapshot, entity: Entity, registry: TemplateRegistry): string | null {
   const template = registry[entity.template];
   if (template === undefined) {
@@ -42,12 +42,6 @@ function lostFor(snapshot: Snapshot, entity: Entity, registry: TemplateRegistry)
     if (registry[product.template] === undefined) {
       return `break_products.${product.template}`;
     }
-  }
-
-  // attackStructure reads this one off the template for a live entity; every other prop it reads
-  // comes from the entity.
-  if (template.parts.length > 0 && typeof template.props.default_hit_part !== "string") {
-    return "props.default_hit_part";
   }
 
   return null;

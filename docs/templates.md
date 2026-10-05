@@ -33,5 +33,5 @@ keep the mouth rules), while `{ "kind": "space", "inner_*_cm": … }` holds what
 (`human` pockets one). Holds travel with the part list a child replaces as a whole.
 
 `upgradeTemplates` compares a new set against the live world by resolved field: a part a live entity
-has, a break product that can no longer be spawned, and `props.default_hit_part` are the fields a
-new set may not take away.
+has in use and a break product that can no longer be spawned are what a new set may not take away.
+Dropping `props.default_hit_part` only makes an attack naming no part `invalid_attack_target`.
