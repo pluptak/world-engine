@@ -3,7 +3,7 @@
   "size_cm": { "w": 5, "d": 5, "h": 1 },
   "mass_g": 50,
   "parts": [],
-  "props": {},
+  "props": { "rubble": true },
   "break_products": [],
   "break_residue": {}
 }

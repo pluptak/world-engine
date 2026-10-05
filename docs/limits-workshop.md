@@ -7,8 +7,8 @@ the bottle scenario. Nothing here is a proposal.
 
 - A footprint has no height: a stone pushed at a table stops at its edge rather than passing
   under it (O "no height").
-- Rubble is solid: a broken bottle blocks the next push exactly as the whole one did, and a
-  glass shard is an obstacle like any other footprint (W "rubble").
+- Rubble is all or nothing: whatever has broken never blocks, whatever its size, and a template
+  is debris or not, with nothing about how a pushed thing rides over it (W "rubble").
 - Impact breaks or does nothing: it is the mover's mass times the distance it travelled against
   `break_fall_cm`, so a struck agent, chair or bench takes no harm (W "struck agent", I).
 - A push has no speed: a longer run-up hits harder, a stone breaks the bottle from 13 cm and not

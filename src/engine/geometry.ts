@@ -120,6 +120,10 @@ export function sweep(
       other.support !== mover.support ||
       other.contained_in !== null ||
       other.status === "destroyed" ||
+      // Rubble is passed over: what broke, and what declares itself debris (`rubble` in props,
+      // which spawn copies from the template).
+      other.status === "broken" ||
+      other.props.rubble === true ||
       skip(otherId)
     ) {
       continue;

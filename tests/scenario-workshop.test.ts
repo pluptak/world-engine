@@ -223,14 +223,15 @@ test(
   },
 );
 
-test("rubble still blocks: the broken bottle stops the stone a second time", (t) => {
+test("rubble does not block: the stone slides on over the broken bottle and its shards", (t) => {
   const { world, ids } = open(t);
   run(world, ids.bob, "push", "stone", { dir: "+x", distance_cm: 150 });
   strictEqual(entity(world, ids.bottle).status, "broken");
   strictEqual(run(world, ids.bob, "move", undefined, { to: { x: 200, y: 220 } }).status, "ok");
-  const result = run(world, ids.bob, "push", "stone", { dir: "+x", distance_cm: 10 });
-  strictEqual(result.reason_code, "blocked");
-  deepStrictEqual(result.reason_data, { with: ids.bottle });
+  const result = run(world, ids.bob, "push", "stone", { dir: "+x", distance_cm: 30 });
+  strictEqual(result.status, "ok");
+  deepStrictEqual(types(result), ["push", "moved"]);
+  deepStrictEqual(entity(world, ids.stone).pos, { x: 266, y: 200 });
 });
 
 test("a struck agent takes no harm: the chair stops at rex, who keeps every point", (t) => {

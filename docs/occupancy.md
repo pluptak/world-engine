@@ -9,8 +9,9 @@ Overlap is a legal state, not a `validateSnapshot` rule: scenarios may place a d
 and an agent's `move` goes to its destination unchecked. Only motion collides, and today the only
 motion that sweeps is `push` and `pull` (`sweep` in `src/engine/geometry.ts`).
 
-A pushed entity meets only what stands on the same support, uncontained, not destroyed and not
-abstract: a cup on a bench is no obstacle to a chair on the floor, and an anchor is a point that
+A pushed entity meets only what stands on the same support, uncontained, not destroyed, not
+broken, not declaring `rubble: true` (the glass shard does) and not abstract: rubble is passed
+over, a cup on a bench is no obstacle to a chair on the floor, and an anchor is a point that
 nothing hits. Agents are obstacles like anything else. A footprint already overlapping the mover
 never blocks it, so whatever starts entangled can always be moved apart.
 
