@@ -106,11 +106,13 @@ test("an item put on a surface takes that surface as support and no position", (
   const bottle = result.snapshot.entities[world.bottleId];
   strictEqual(bottle?.support, world.tableId);
   strictEqual(bottle?.contained_in, null);
+  strictEqual(bottle?.in_part, null);
   strictEqual(bottle?.pos, null);
   deepStrictEqual(
     result.deltas.map((delta) => [delta.field, delta.from, delta.to]),
     [
       ["contained_in", world.actorId, null],
+      ["in_part", "hand_l", null],
       ["support", null, world.tableId],
     ],
   );

@@ -127,6 +127,19 @@ function aimedAt(step: WorldEdit, snapshot: Snapshot): string[] {
         aims.push("concealed_by_other_room");
       }
     }
+    if (step.kind === "place" && step.in_part !== undefined && step.in_part !== null) {
+      // `in_part` names a part of whoever holds the target: a part set beside a support, or a
+      // name the holder never declared, tries to break the holder rules.
+      const holder =
+        step.contained_in === undefined || step.contained_in === null
+          ? undefined
+          : snapshot.entities[step.contained_in];
+      if (holder === undefined) {
+        aims.push("in_part_mismatch");
+      } else if (!Object.hasOwn(holder.parts, step.in_part)) {
+        aims.push("in_part_unknown");
+      }
+    }
     if (step.kind === "spawn") {
       const location = step.overrides?.location ?? null;
       if (
@@ -176,10 +189,10 @@ function aimedAt(step: WorldEdit, snapshot: Snapshot): string[] {
 
 test("the generator aims an edit at every relation rule, and each step still validates", () => {
   const seen = new Set<string>();
-  for (let seed = 0; seed < 100 && seen.size < 10; seed += 1) {
+  for (let seed = 0; seed < 100 && seen.size < 12; seed += 1) {
     const rand = mulberry32(seed);
     const world = memoryWorld(buildInitial(registry));
-    for (let i = 0; i < 30 && seen.size < 10; i += 1) {
+    for (let i = 0; i < 30 && seen.size < 12; i += 1) {
       const step = genStep(rand, world.snapshot(), `aim-${seed}-${i}`);
       if (!("verb" in step)) {
         for (const aim of aimedAt(step, world.snapshot())) {
@@ -197,6 +210,8 @@ test("the generator aims an edit at every relation rule, and each step still val
     "concealed_by_dangling",
     "concealed_by_other_room",
     "door_side_not_room",
+    "in_part_mismatch",
+    "in_part_unknown",
     "opens_not_openable",
     "remove_live_target",
     "self_support",

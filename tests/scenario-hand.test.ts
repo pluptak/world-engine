@@ -303,9 +303,11 @@ test("a holder who loses all manipulation drops carried items", () => {
     verb: "take",
     target: "bottle",
   });
+  strictEqual(taken.snapshot.entities[bottle.id]?.in_part, "hand_l");
   let snapshot = taken.snapshot;
   let finalAttack: ReturnType<typeof attack> | undefined;
   let index = 0;
+  let holdingDrop: ReturnType<typeof attack> | undefined;
 
   for (const part of ["hand_l", "hand_r"]) {
     for (let hit = 0; hit < 3; hit += 1) {
@@ -321,22 +323,35 @@ test("a holder who loses all manipulation drops carried items", () => {
         snapshot = waited.snapshot;
       }
     }
+    // Losing the holding hand drops the bottle at once, caused by the detach rather than by the
+    // capacity the carrier has left; the other hand's loss drops nothing more.
+    if (part === "hand_l") {
+      holdingDrop = finalAttack;
+    }
   }
 
   ok(finalAttack);
+  ok(holdingDrop);
+  const detached = holdingDrop.events.find((event) => event.type === "detached");
+  const dropped = holdingDrop.events.find(
+    (event) => event.type === "dropped" && event.entity === bottle.id,
+  );
+  ok(detached);
+  ok(dropped);
+  strictEqual(dropped.cause_id, detached.event_id);
+  strictEqual(holdingDrop.snapshot.entities[bottle.id]?.contained_in, null);
+  strictEqual(holdingDrop.snapshot.entities[bottle.id]?.status, "broken");
+  deepStrictEqual(holdingDrop.snapshot.entities[setup.roomId]?.residue, { glass: 5, wine: 75 });
+
   const capability = finalAttack.events.find(
     (event) => event.type === "capability_changed" && event.data.capacity === "manipulation",
   );
-  const dropped = finalAttack.events.find(
-    (event) => event.type === "dropped" && event.entity === bottle.id,
-  );
   ok(capability);
-  ok(dropped);
   strictEqual(capability.data.to, 0);
-  strictEqual(dropped.cause_id, capability.event_id);
-  strictEqual(finalAttack.snapshot.entities[bottle.id]?.contained_in, null);
-  strictEqual(finalAttack.snapshot.entities[bottle.id]?.status, "broken");
-  deepStrictEqual(finalAttack.snapshot.entities[setup.roomId]?.residue, { glass: 5, wine: 75 });
+  strictEqual(
+    finalAttack.events.some((event) => event.type === "dropped" && event.entity === bottle.id),
+    false,
+  );
   deepStrictEqual(capacities(finalAttack.snapshot, registry, setup.guardId), {
     hearing: 100,
     manipulation: 0,

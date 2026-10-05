@@ -291,7 +291,16 @@ function script(ids: Ids): Step[] {
     ],
   });
   step({
-    note: "ann takes the cup as well: hands scale with the item's hands_required, never summed",
+    note: "ann pockets the key, which frees the hand it sat in",
+    run: cmd("B2b-pocket-key", "ann", "put", "key", { relation: "in", destination: `${ids.ann}.pocket` }),
+    expect: [{ status: "ok", events: ["put", "moved"] }],
+    then: (world) => {
+      strictEqual(world.entity(ids.key)?.contained_in, ids.ann);
+      strictEqual(world.entity(ids.key)?.in_part, "pocket");
+    },
+  });
+  step({
+    note: "ann takes the cup with the freed hand: two grips hold two one-handed things",
     run: cmd("B3-take-cup", "ann", "take", "cup"),
     expect: [{ status: "ok", events: ["take", "moved"] }],
   });
@@ -340,6 +349,15 @@ function script(ids: Ids): Step[] {
     note: "an emptied bottle has nothing to pour, and says so as no_liquid",
     run: cmd("B7-pour-again", "ann", "pour", "bottle", { destination: "cup" }),
     expect: [{ status: "refused", code: "no_liquid", events: [] }],
+  });
+  step({
+    note: "ann hands the empty bottle to bob: the book will want both of her hands",
+    run: cmd("B7b-give-bottle", "ann", "give", "bottle", { destination: "bob" }),
+    expect: [{ status: "ok", events: ["give", "moved"] }],
+    then: (world) => {
+      strictEqual(world.entity(ids.bottle)?.contained_in, ids.bob);
+      strictEqual(world.entity(ids.bottle)?.in_part, "hand_l");
+    },
   });
   // C. concealment: a search finds the note, and lifting the book uncovers it.
   step({
@@ -391,9 +409,31 @@ function script(ids: Ids): Step[] {
     expect: [{ status: "refused", code: "two_hands_required", events: [] }],
   });
   step({
+    note: "ann sets the book on the table: her hands are needed for what comes next",
+    run: cmd("C6b-put-book", "ann", "put", "book", { relation: "on", destination: "table" }),
+    expect: [{ status: "ok", events: ["put", "moved"] }],
+  });
+  step({
     note: "rex hands the note back to ann out of his mouth",
     run: cmd("C7-rex-give-note", "rex", "give", "note", { destination: "ann" }),
     expect: [{ status: "ok", events: ["give", "moved"] }],
+  });
+  step({
+    note: "ann pockets the note beside the key",
+    run: cmd("C7b-pocket-note", "ann", "put", "note", { relation: "in", destination: `${ids.ann}.pocket` }),
+    expect: [{ status: "ok", events: ["put", "moved"] }],
+    then: (world) => {
+      strictEqual(world.entity(ids.note)?.in_part, "pocket");
+    },
+  });
+  step({
+    note: "ann lifts the book again, with both hands free for it",
+    run: cmd("D0-take-book", "ann", "take", "book"),
+    expect: [{ status: "ok", events: ["take", "moved"] }],
+    then: (world) => {
+      strictEqual(world.entity(ids.book)?.contained_in, ids.ann);
+      strictEqual(world.entity(ids.book)?.in_part, "hand_l");
+    },
   });
 
   // D. a fight: a torso that costs moving, an arm that comes off, and the wait that undoes the rest.
@@ -429,10 +469,13 @@ function script(ids: Ids): Step[] {
       dropped: { sight: ["ann", "bob", "rex"], hearing: ["ann", "bob", "rex"], smell: [] },
     },
     then: (world) => {
-      // The book needed both hands, so losing one drops it: the structural loss, not a modifier.
+      // The book needed both hands, so losing one drops it; what sits elsewhere stays: the
+      // pocketed key with ann, the bottle with bob, the tabled cup where it was put.
       strictEqual(world.entity(ids.book)?.support, ids.common);
-      // The bottle needs one hand, so ann keeps it.
-      strictEqual(world.entity(ids.bottle)?.contained_in, ids.ann);
+      strictEqual(world.entity(ids.book)?.in_part, null);
+      strictEqual(world.entity(ids.key)?.contained_in, ids.ann);
+      strictEqual(world.entity(ids.key)?.in_part, "pocket");
+      strictEqual(world.entity(ids.bottle)?.contained_in, ids.bob);
     },
   });
   step({
@@ -460,6 +503,11 @@ function script(ids: Ids): Step[] {
   });
 
   // E. the cellar: an observer behind the open door, then behind a shut one, during a loud event.
+  step({
+    note: "bob hands the bottle back: ann will want it within reach",
+    run: cmd("E0-give-back", "bob", "give", "bottle", { destination: "ann" }),
+    expect: [{ status: "ok", events: ["give", "moved"] }],
+  });
   step({
     note: "bob goes down to the cellar through the open door",
     run: cmd("E1-bob-down", "bob", "move", undefined, { location: ids.cellar }),
@@ -574,6 +622,11 @@ function script(ids: Ids): Step[] {
     expect: [{ status: "ok", events: ["move", "moved"] }],
   });
   step({
+    note: "ann takes the note out of her pocket",
+    run: cmd("G1b-take-note", "ann", "take", "note"),
+    expect: [{ status: "ok", events: ["take", "moved"] }],
+  });
+  step({
     note: "rex cannot take the note out of ann's hands",
     run: cmd("G2-take-held", "rex", "take", "note"),
     expect: [{ status: "refused", code: "held_by_another", events: [] }],
@@ -618,8 +671,8 @@ test("the inn's names are the ids its entries allocate, and its anchors resolved
 test("the script runs step by step in a store world and in a memory world", (t) => {
   const { store, memory, ids } = innWorlds(t);
   const steps = script(ids);
-  // 47 steps, one beat of two among them: 48 submissions, 37 of which move the world.
-  strictEqual(steps.length, 47);
+  // 54 steps, one beat of two among them: 55 submissions, 44 of which move the world.
+  strictEqual(steps.length, 54);
   const fromStore = play(store, ids, steps);
   const fromMemory = play(memory, ids, steps);
 
@@ -627,9 +680,9 @@ test("the script runs step by step in a store world and in a memory world", (t) 
   const oks = (results: Result[]): number => results.filter((result) => result.status === "ok").length;
   strictEqual(store.snapshot().version, oks(fromStore));
   strictEqual(memory.snapshot().version, oks(fromMemory));
-  strictEqual(store.snapshot().version, 37);
+  strictEqual(store.snapshot().version, 44);
   // and the rest of them are one refusal, one stale version, and one beat.
-  strictEqual(fromStore.length, 48);
+  strictEqual(fromStore.length, 55);
   strictEqual(store.snapshot().version, fromStore.length - 11);
 
   // The two worlds agree byte for byte, and they hold the same templates.

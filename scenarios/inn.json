@@ -62,7 +62,7 @@
   },
   {
     "id": "key",
-    "template": "stone",
+    "template": "key",
     "overrides": {
       "name": "key",
       "location": "common",

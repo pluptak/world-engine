@@ -1,7 +1,7 @@
 import { capacities, capacity, structuralCapacities } from "../capacity.js";
 import { effectivePos } from "../geometry.js";
 import { addResidue } from "../residue.js";
-import { carryAlternatives, insufficientCode, lostCarry } from "../carry.js";
+import { carryAlternatives, gripEvictions, insufficientCode, lostCarry } from "../carry.js";
 import type { PartState } from "../../model.js";
 import type { AttackMode, CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { dropCarriedItem } from "./drop.js";
@@ -376,9 +376,16 @@ function transition(context: TransitionContext): void {
   // Whatever structurally lost the capacity that held a thing lets it fall; a stunned carrier can
   // hold on until the modifier expires. The cause is the event that took the capacity away.
   const victim = context.snapshot.entities[target.id]!;
+  // A lost part drops what it held first: exactly that part's items, never the other grips or a
+  // pocket that survived. What is left still answers to the structural rule below.
+  const evicted = new Set(gripEvictions(context.snapshot, context.registry, target.id));
   for (const itemId of Object.keys(context.snapshot.entities).sort()) {
     const item = context.snapshot.entities[itemId];
     if (item === undefined || item.contained_in !== target.id) {
+      continue;
+    }
+    if (evicted.has(itemId)) {
+      dropCarriedItem(context, target.id, itemId, detachEvent ?? damageEvent);
       continue;
     }
     const lost = lostCarry(

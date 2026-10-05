@@ -3,12 +3,15 @@ import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { canonicalJson } from "./engine/canonical.js";
 
+export type HoldsDecl = { kind: "grip" } | { kind: "space"; inner_w_cm: number; inner_d_cm: number; inner_h_cm: number };
+
 export interface PartDecl {
   name: string;
   parent: string | null;
   contributes: Record<string, number>;
   detachable: boolean;
   max_integrity: number;
+  holds?: HoldsDecl;
 }
 
 export interface Template {
@@ -120,6 +123,7 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
         contributes: { ...part.contributes },
         detachable: part.detachable,
         max_integrity: part.max_integrity,
+        ...parseHolds(part.holds, label),
       };
     });
   }
@@ -162,10 +166,44 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
   return decl;
 }
 
+function parseHolds(value: unknown, label: string): { holds?: HoldsDecl } {
+  if (value === undefined) {
+    return {};
+  }
+  const holdsLabel = `${label}.holds`;
+  if (!isRecord(value) || (value.kind !== "grip" && value.kind !== "space")) {
+    throw new TypeError(`${holdsLabel} must declare kind "grip" or "space"`);
+  }
+  if (value.kind === "grip") {
+    if (!Object.keys(value).every((key) => key === "kind")) {
+      throw new TypeError(`${holdsLabel} carries only its kind`);
+    }
+    return { holds: { kind: "grip" } };
+  }
+  for (const dimension of ["inner_w_cm", "inner_d_cm", "inner_h_cm"] as const) {
+    assertNumber(value[dimension], `${holdsLabel}.${dimension}`);
+  }
+  if (!Object.keys(value).every((key) => key === "kind" || key.startsWith("inner_"))) {
+    throw new TypeError(`${holdsLabel} carries only its kind and inner dimensions`);
+  }
+  return {
+    holds: {
+      kind: "space",
+      inner_w_cm: value.inner_w_cm as number,
+      inner_d_cm: value.inner_d_cm as number,
+      inner_h_cm: value.inner_h_cm as number,
+    },
+  };
+}
+
 // Inherited containers are never shared with a caller: each template's merge base is rebuilt from
 // the declarations here, and a declared list is copied into the resolved template.
 function copyParts(parts: readonly PartDecl[]): PartDecl[] {
-  return parts.map((part) => ({ ...part, contributes: { ...part.contributes } }));
+  return parts.map((part) => ({
+    ...part,
+    contributes: { ...part.contributes },
+    ...(part.holds !== undefined && { holds: { ...part.holds } }),
+  }));
 }
 
 function requireResolved(decl: TemplateDecl, source: string): Template {

@@ -151,6 +151,9 @@ const script: Command[] = [
   { command_id: "cut-1", actor: ANN, verb: "attack", target: `${ANN}.arm_r` },
   { command_id: "cut-2", actor: ANN, verb: "attack", target: `${ANN}.arm_r` },
   { command_id: "take-book", actor: ANN, verb: "take", target: "book" },
+  // The book needs both hands, so it is set down again before the bottle: it cannot break, and a
+  // 100 cm fall is loud like the bottle's, so no row reads differently.
+  { command_id: "drop-book", actor: ANN, verb: "drop", target: "book" },
   { command_id: "take-bottle", actor: ANN, verb: "take", target: "bottle" },
   { command_id: "drop-bottle", actor: ANN, verb: "drop", target: "bottle" },
   { command_id: "take-spare", actor: ANN, verb: "take", target: "spare" },

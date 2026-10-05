@@ -4,7 +4,7 @@
   "mass_g": 25000,
   "parts": [
     { "name": "head", "parent": null, "contributes": { "sight": 100, "hearing": 100, "smell": 100 }, "detachable": false, "max_integrity": 100 },
-    { "name": "jaw", "parent": "head", "contributes": { "mouth_carry": 1 }, "detachable": true, "max_integrity": 40 },
+    { "name": "jaw", "parent": "head", "contributes": { "mouth_carry": 1 }, "detachable": true, "max_integrity": 40, "holds": { "kind": "grip" } },
     { "name": "leg_fl", "parent": null, "contributes": { "moving": 25 }, "detachable": false, "max_integrity": 100 },
     { "name": "leg_fr", "parent": null, "contributes": { "moving": 25 }, "detachable": false, "max_integrity": 100 },
     { "name": "leg_bl", "parent": null, "contributes": { "moving": 25 }, "detachable": false, "max_integrity": 100 },

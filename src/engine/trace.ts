@@ -12,6 +12,7 @@ const ENTITY_FIELDS: Record<keyof Entity, true> = {
   location: true,
   support: true,
   contained_in: true,
+  in_part: true,
   concealed_by: true,
   pos: true,
   detached_from: true,

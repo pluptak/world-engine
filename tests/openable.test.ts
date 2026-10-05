@@ -282,9 +282,13 @@ test("a closed container refuses the take of what it holds", () => {
   const taken = take(opened.snapshot);
   strictEqual(taken.status, "ok");
   strictEqual(taken.snapshot.entities[bottle.id]?.contained_in, actor.id);
+  strictEqual(taken.snapshot.entities[bottle.id]?.in_part, "hand_l");
   deepStrictEqual(
     taken.deltas.map((delta) => [delta.field, delta.from, delta.to]),
-    [["contained_in", chest.id, actor.id]],
+    [
+      ["contained_in", chest.id, actor.id],
+      ["in_part", null, "hand_l"],
+    ],
   );
 });
 

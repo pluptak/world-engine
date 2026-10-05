@@ -16,7 +16,9 @@ import {
   type WorldEdit,
 } from "../command.js";
 import { refreshSubtreeLocations, wouldLoop } from "./address.js";
+import { dropCarriedItem } from "./drop.js";
 import { revealConcealed } from "./search.js";
+import { claimGrip, gripEvictions, holderLayout } from "../carry.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -85,6 +87,7 @@ const overrideKeys = [
   "location",
   "support",
   "contained_in",
+  "in_part",
   "concealed_by",
   "pos",
   "detached_from",
@@ -119,6 +122,9 @@ function isOverrides(value: unknown): value is EntityOverrides {
     if (ref !== undefined && ref !== null && !isId(ref)) {
       return false;
     }
+  }
+  if (value.in_part !== undefined && value.in_part !== null && typeof value.in_part !== "string") {
+    return false;
   }
   if (value.pos !== undefined && value.pos !== null && !isPos(value.pos)) {
     return false;
@@ -192,7 +198,7 @@ function parseEdit(value: unknown): WorldEdit | null {
   }
   if (value.kind === "place") {
     if (
-      !onlyKeys(value, ["kind", "target", "support", "contained_in", "concealed_by", "pos"]) ||
+      !onlyKeys(value, ["kind", "target", "support", "contained_in", "in_part", "concealed_by", "pos"]) ||
       !isId(value.target)
     ) {
       return null;
@@ -200,6 +206,7 @@ function parseEdit(value: unknown): WorldEdit | null {
     if (
       (value.support !== undefined && value.support !== null && !isId(value.support)) ||
       (value.contained_in !== undefined && value.contained_in !== null && !isId(value.contained_in)) ||
+      (value.in_part !== undefined && value.in_part !== null && !isId(value.in_part)) ||
       (value.concealed_by !== undefined && value.concealed_by !== null && !isId(value.concealed_by)) ||
       (value.pos !== undefined && value.pos !== null && !isPos(value.pos) && !isAnchorPos(value.pos))
     ) {
@@ -211,6 +218,9 @@ function parseEdit(value: unknown): WorldEdit | null {
     }
     if (typeof value.contained_in === "string" || value.contained_in === null) {
       edit.contained_in = value.contained_in;
+    }
+    if (typeof value.in_part === "string" || value.in_part === null) {
+      edit.in_part = value.in_part;
     }
     if (typeof value.concealed_by === "string" || value.concealed_by === null) {
       edit.concealed_by = value.concealed_by;
@@ -498,12 +508,39 @@ function releaseDependents(
     if (!wasContent && !wasRider) {
       continue;
     }
+    // A part name travels only onto a holder that declares it; what newly lands in grips
+    // takes the first free one, the way a spawn does. Otherwise it is cleared.
+    const keepPart = (holder: Id | null): string | null => {
+      if (holder === null) {
+        return null;
+      }
+      if (entity.in_part !== null) {
+        const next = context.snapshot.entities[holder];
+        const declared = context.registry[next?.template ?? ""];
+        return declared?.parts.some(
+          (decl) => decl.name === entity.in_part && decl.holds !== undefined,
+        ) === true
+          ? entity.in_part
+          : null;
+      }
+      const next = context.snapshot.entities[holder];
+      if (
+        next === undefined ||
+        holderLayout(context.registry, next.template).grips.length === 0
+      ) {
+        return null;
+      }
+      const claimed = claimGrip(context.snapshot, context.registry, holder, entity);
+      return "part" in claimed ? claimed.part : null;
+    };
     if (carried !== null) {
       context.set(id, "contained_in", carried, eventId);
+      context.set(id, "in_part", keepPart(carried), eventId);
       context.set(id, "support", null, eventId);
       context.set(id, "pos", null, eventId);
     } else if (wasContent) {
       context.set(id, "contained_in", null, eventId);
+      context.set(id, "in_part", null, eventId);
       context.set(id, "support", former.support, eventId);
       context.set(id, "pos", pos, eventId);
     } else {
@@ -571,6 +608,20 @@ function transitionPlace(context: TransitionContext, edit: PlaceEdit, subject: E
     propagateSupportLoss(context, edit.target, placedEvent);
   }
   context.set(edit.target, "contained_in", placement.contained, placedEvent);
+  // A placement into a holder fills the first free grip when the edit leaves it unnamed, the way
+  // a spawn does; a placement out of one clears it, and one that stays held keeps it.
+  let part: string | null;
+  if (anchored.in_part !== undefined) {
+    part = anchored.in_part;
+  } else if (anchored.contained_in !== undefined && anchored.contained_in !== null) {
+    const claimed = claimGrip(context.snapshot, context.registry, anchored.contained_in, subject);
+    part = "part" in claimed ? claimed.part : null;
+  } else if (placement.contained === null) {
+    part = null;
+  } else {
+    part = subject.in_part;
+  }
+  context.set(edit.target, "in_part", part, placedEvent);
   context.set(edit.target, "support", placement.support, placedEvent);
   context.set(edit.target, "pos", placement.pos, placedEvent);
   // A placement that changes where the entity is uncovers what it was hiding. An explicit
@@ -634,6 +685,11 @@ function transition(context: TransitionContext): void {
         { ...subject.parts, [edit.part]: { ...edit.state } },
         editedEvent,
       );
+      // Destroying a holder part spills what it held; a detached part is refused by validation,
+      // so only destruction reaches here with contents still inside.
+      for (const itemId of gripEvictions(context.snapshot, context.registry, edit.target)) {
+        dropCarriedItem(context, edit.target, itemId, editedEvent);
+      }
       break;
     }
     default: {
@@ -678,6 +734,11 @@ export const editVerb: Verb = {
     "concealed_by_abstract",
     "concealed_by_not_same_room",
     "concealed_by_cycle",
+    "in_part_holder_mismatch",
+    "in_part_unknown_part",
+    "in_part_unavailable",
+    "grip_occupied",
+    "part_contents_too_large",
   ],
   preconditions,
   transition,

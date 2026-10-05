@@ -1,5 +1,5 @@
 import { capacities } from "../capacity.js";
-import { insufficientCode, meetsRequirements, unmetRequirement } from "../carry.js";
+import { insufficientCode, meetsRequirements, unmetRequirement, inSpacePart } from "../carry.js";
 import { addResidue } from "../residue.js";
 import type { Entity } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
@@ -70,6 +70,10 @@ function plan(context: CommandContext): Planning {
   }
   if (source.contained_in !== context.actor.id) {
     return { status: "refused", reason_code: "not_carried" };
+  }
+  // A vessel in a space part (pocket) must be taken out first before pouring from it.
+  if (inSpacePart(context.snapshot, context.registry, context.actor, source)) {
+    return { status: "refused", reason_code: "not_in_hand" };
   }
 
   const material = source.props.liquid_material;
@@ -219,6 +223,7 @@ export const pourVerb: Verb = {
   args: { destination: { kind: "address" }, amount: { kind: "int" } },
   refuses: [
     "not_carried",
+    "not_in_hand",
     "no_liquid",
     "nothing_to_pour",
     "insufficient_liquid",

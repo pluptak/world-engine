@@ -1,0 +1,9 @@
+{
+  "id": "key",
+  "size_cm": { "w": 8, "d": 3, "h": 1 },
+  "mass_g": 30,
+  "parts": [],
+  "props": {},
+  "break_products": [],
+  "break_residue": {}
+}

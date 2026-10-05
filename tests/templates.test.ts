@@ -83,6 +83,72 @@ test("wine_bottle inherits every bottle field and overrides only its liquid", ()
   deepStrictEqual(wine.props, { ...bottle.props, liquid_material: "grape_wine" });
 });
 
+test("holder parts declare what they hold", () => {
+  const hand = registry.human?.parts.find((part) => part.name === "hand_l");
+  deepStrictEqual(hand?.holds, { kind: "grip" });
+  deepStrictEqual(
+    registry.human?.parts.find((part) => part.name === "hand_r")?.holds,
+    { kind: "grip" },
+  );
+  deepStrictEqual(registry.human?.parts.find((part) => part.name === "pocket")?.holds, {
+    kind: "space",
+    inner_w_cm: 18,
+    inner_d_cm: 12,
+    inner_h_cm: 4,
+  });
+  for (const template of ["dog", "cat", "horse"] as const) {
+    deepStrictEqual(
+      registry[template]?.parts.find((part) => part.name === "jaw")?.holds,
+      { kind: "grip" },
+      `${template} jaw holds nothing`,
+    );
+  }
+  strictEqual(registry.human?.parts.find((part) => part.name === "head")?.holds, undefined);
+});
+
+test("holds resolve with the part and vanish when a child replaces its parts", () => {
+  const grip = {
+    name: "hand",
+    parent: null,
+    contributes: {},
+    detachable: false,
+    max_integrity: 100,
+    holds: { kind: "grip" },
+  };
+  const resolved = parseRegistry({
+    parent: decl("parent", { parts: [grip] }),
+    heir: { id: "heir", extends: "parent" },
+    blank: decl("blank", { extends: "parent", parts: [] }),
+  });
+  deepStrictEqual(resolved.heir?.parts, [grip]);
+  deepStrictEqual(resolved.blank?.parts, []);
+});
+
+test("a part that holds wrongly is refused by name", () => {
+  const bad = (holds: unknown) =>
+    decl("bad", {
+      parts: [
+        {
+          name: "hand",
+          parent: null,
+          contributes: {},
+          detachable: false,
+          max_integrity: 100,
+          holds,
+        },
+      ],
+    });
+  for (const holds of [{ kind: "pocket" }, { kind: "space" }, { kind: "space", inner_w_cm: 1 }, 1]) {
+    assertThrows(
+      () => parseRegistry({ bad: bad(holds) }),
+      (error: unknown) =>
+        error instanceof TypeError &&
+        error.message.startsWith("templates.json#bad.parts[0].holds"),
+      `holds ${JSON.stringify(holds)} loads`,
+    );
+  }
+});
+
 test("two children of one parent resolve to the same fields", () => {
   const resolved = parseRegistry({
     parent: decl("parent", { break_residue: { glass: 5 } }),

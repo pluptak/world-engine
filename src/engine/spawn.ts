@@ -1,6 +1,7 @@
 import { defaultCoverage } from "../model.js";
 import type { Entity, Id, Snapshot } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
+import { claimGrip, holderLayout } from "./carry.js";
 
 export type EntityOverrides = Partial<Omit<Entity, "id" | "template" | "parts">>;
 
@@ -47,6 +48,7 @@ export function spawn(
     location: null,
     support: null,
     contained_in: null,
+    in_part: null,
     concealed_by: null,
     pos: null,
     detached_from: null,
@@ -63,6 +65,32 @@ export function spawn(
     props: { ...template.props },
     ...copyOverrides(overrides),
   };
+  // A spawn into a holder with grips fills the first free one, the way location is filled from
+  // the chain. A full holder, or a space part left unnamed, is left for validation to refuse.
+  if (entity.contained_in !== null && overrides.in_part === undefined) {
+    const holder = snapshot.entities[entity.contained_in];
+    if (holder !== undefined && holderLayout(registry, holder.template).grips.length > 0) {
+      const claimed = claimGrip(snapshot, registry, entity.contained_in, entity);
+      if ("part" in claimed) {
+        entity.in_part = claimed.part;
+      }
+    }
+  }
+  const entities = { ...snapshot.entities, [id]: entity };
+  // A holder completes forward containment: whoever named it before it existed takes the first
+  // free grip now, in entry order. Validation still catches a part written where no part fits.
+  if (holderLayout(registry, templateId).grips.length > 0) {
+    for (const otherId of Object.keys(entities).sort()) {
+      const other = entities[otherId];
+      if (other === undefined || other.contained_in !== id || other.in_part !== null) {
+        continue;
+      }
+      const claimed = claimGrip({ ...snapshot, entities }, registry, id, other);
+      if ("part" in claimed) {
+        entities[otherId] = { ...other, in_part: claimed.part };
+      }
+    }
+  }
   const hasCoverage =
     snapshot.coverage.relations.length > 0 ||
     snapshot.coverage.senses.length > 0 ||
@@ -75,7 +103,7 @@ export function spawn(
         coverage: defaultCoverage(),
       }),
       next_seq: snapshot.next_seq + 1,
-      entities: { ...snapshot.entities, [id]: entity },
+      entities,
     },
     id,
   };

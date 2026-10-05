@@ -39,6 +39,7 @@ const worldAuthor: Entity = {
   location: null,
   support: null,
   contained_in: null,
+  in_part: null,
   concealed_by: null,
   pos: null,
   detached_from: null,

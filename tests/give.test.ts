@@ -196,9 +196,13 @@ test("a recipient who cannot move but has hands receives an item", () => {
 
   strictEqual(result.status, "ok");
   strictEqual(result.snapshot.entities[pen.id]?.contained_in, world.recipientId);
+  strictEqual(result.snapshot.entities[pen.id]?.in_part, "hand_l");
   deepStrictEqual(
     result.deltas.map((delta) => [delta.field, delta.from, delta.to]),
-    [["contained_in", world.giverId, world.recipientId]],
+    [
+      ["contained_in", world.giverId, world.recipientId],
+      ["in_part", "hand_r", "hand_l"],
+    ],
   );
 });
 

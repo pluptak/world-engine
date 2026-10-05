@@ -116,11 +116,13 @@ test("take and drop record field deltas and causal events", () => {
   strictEqual(moved.cause_id, takeRoot.event_id);
   deepStrictEqual(taking.deltas.map((delta) => delta.field), [
     "contained_in",
+    "in_part",
     "support",
     "pos",
   ]);
   strictEqual(taking.deltas.every((delta) => delta.event_id === moved.event_id), true);
   strictEqual(taking.snapshot.entities[bottleId]?.contained_in, setup.actorId);
+  strictEqual(taking.snapshot.entities[bottleId]?.in_part, "hand_l");
   strictEqual(taking.snapshot.entities[bottleId]?.support, null);
   strictEqual(taking.snapshot.entities[bottleId]?.pos, null);
   strictEqual(snapshot.entities[bottleId]?.support, setup.roomId);
@@ -138,12 +140,14 @@ test("take and drop record field deltas and causal events", () => {
   strictEqual(dropRoot.cause_id, null);
   strictEqual(dropped.type, "dropped");
   strictEqual(dropped.cause_id, dropRoot.event_id);
-  deepStrictEqual(dropping.deltas.slice(0, 3).map((delta) => delta.field), [
+  deepStrictEqual(dropping.deltas.slice(0, 4).map((delta) => delta.field), [
     "contained_in",
+    "in_part",
     "support",
     "pos",
   ]);
   strictEqual(dropping.snapshot.entities[bottleId]?.contained_in, null);
+  strictEqual(dropping.snapshot.entities[bottleId]?.in_part, null);
   strictEqual(dropping.snapshot.entities[bottleId]?.support, setup.roomId);
   deepStrictEqual(dropping.snapshot.entities[bottleId]?.pos, { x: 0, y: 0 });
   strictEqual(dropping.events.some((event) => event.type === "broken"), true);

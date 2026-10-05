@@ -2,7 +2,8 @@ import { capacities } from "../capacity.js";
 import { misfit } from "../fit.js";
 import type { Entity } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
-import { insufficientCode, meetsRequirements, unmetRequirement } from "../carry.js";
+import { insufficientCode, meetsRequirements, spaceRefusal, unmetRequirement } from "../carry.js";
+import { resolveTarget } from "../resolve.js";
 import { addressEntity, addressText, closedEnclosure, reachData, wouldLoop, withinReach } from "./address.js";
 
 type Relation = "on" | "in";
@@ -133,12 +134,51 @@ function preconditions(context: CommandContext): PreconditionResult {
     }
   }
 
+  const resolution = resolveTarget(context.snapshot, context.registry, context.actor.id, destinationText);
+  if (resolution.status === "unresolved") {
+    return { status: "unresolved" };
+  }
+  if (resolution.status === "ambiguous") {
+    return { status: "ambiguous", candidates: resolution.candidates };
+  }
+  // A part is never a destination, with one exception: the actor's own space part stows a held
+  // item out of the hands. Grips are filled by take, never by put.
+  if (resolution.target.part !== null) {
+    return stowRefusal(context, item, relation, resolution.target.entity_id, resolution.target.part);
+  }
+
   const address = addressEntity(context, destinationText, "not_a_surface");
   if (address.status === "failed") {
     return address.result;
   }
 
   return placementRefusal(context, item, address.entity, relation) ?? { status: "ok" };
+}
+
+// Stowing into the actor's own pocket: it must be a space part, the relation is `in`, and the
+// item must fit it the way it must fit a container.
+function stowRefusal(
+  context: CommandContext,
+  item: Entity,
+  relation: Relation,
+  holderId: string,
+  part: string,
+): PreconditionResult {
+  const holder = context.snapshot.entities[holderId];
+  const holds = holder === undefined
+    ? undefined
+    : context.registry[holder.template]?.parts.find((decl) => decl.name === part)?.holds;
+  if (holderId !== context.actor.id || holds?.kind !== "space" || relation !== "in") {
+    return { status: "refused", reason_code: "not_a_surface" };
+  }
+  const refusal = spaceRefusal(context.snapshot, context.registry, holderId, part, item);
+  return refusal === null
+    ? { status: "ok" }
+    : {
+        status: "refused",
+        reason_code: refusal.reason_code,
+        ...(refusal.reason_data !== undefined && { reason_data: refusal.reason_data }),
+      };
 }
 
 function transition(context: TransitionContext): void {
@@ -149,6 +189,19 @@ function transition(context: TransitionContext): void {
     throw new TypeError("Put target or placement changed after validation");
   }
 
+  const resolution = resolveTarget(context.snapshot, context.registry, context.actor.id, destinationText);
+  if (resolution.status !== "resolved") {
+    throw new TypeError("Put destination changed after validation");
+  }
+  const movedEvent = context.emit("moved", target.entity_id, { relation }, context.root_event_id);
+  if (resolution.target.part !== null) {
+    context.set(target.entity_id, "contained_in", context.actor.id, movedEvent);
+    context.set(target.entity_id, "in_part", resolution.target.part, movedEvent);
+    context.set(target.entity_id, "support", null, movedEvent);
+    context.set(target.entity_id, "pos", null, movedEvent);
+    return;
+  }
+
   const address = addressEntity(context, destinationText, "not_a_surface");
   if (address.status === "failed") {
     throw new TypeError("Put destination changed after validation");
@@ -156,8 +209,8 @@ function transition(context: TransitionContext): void {
   const destination = address.entity;
 
   const onSurface = relation === "on";
-  const movedEvent = context.emit("moved", target.entity_id, { relation }, context.root_event_id);
   context.set(target.entity_id, "contained_in", onSurface ? null : destination.id, movedEvent);
+  context.set(target.entity_id, "in_part", null, movedEvent);
   context.set(target.entity_id, "support", onSurface ? destination.id : null, movedEvent);
   context.set(target.entity_id, "pos", null, movedEvent);
 }

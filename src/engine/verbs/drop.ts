@@ -1,5 +1,6 @@
 import type { Id } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
+import { inSpacePart } from "../carry.js";
 import { resolveDropFall } from "../../resolvers/physical.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
@@ -17,6 +18,10 @@ function preconditions(context: CommandContext): PreconditionResult {
   }
   if (entity.contained_in !== context.actor.id) {
     return { status: "refused", reason_code: "not_carried" };
+  }
+  // A drop leaves from a grip; what sits in a space part (pocket) is taken out first.
+  if (inSpacePart(context.snapshot, context.registry, context.actor, entity)) {
+    return { status: "refused", reason_code: "not_in_hand" };
   }
 
   return { status: "ok" };
@@ -52,6 +57,7 @@ export function dropCarriedItem(
     causeId,
   );
   context.set(entityId, "contained_in", null, droppedEvent);
+  context.set(entityId, "in_part", null, droppedEvent);
   context.set(entityId, "support", holder.location, droppedEvent);
   context.set(entityId, "pos", holder.pos, droppedEvent);
   dropFallHook(context, entityId, droppedEvent, fall_cm);
@@ -70,7 +76,7 @@ function transition(context: TransitionContext): void {
 export const dropVerb: Verb = {
   requires_target: true,
   args: {},
-  refuses: ["not_carried"],
+  refuses: ["not_carried", "not_in_hand"],
   preconditions,
   transition,
 };

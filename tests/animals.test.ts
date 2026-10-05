@@ -183,16 +183,20 @@ test("detaching a dog's jaw drops what it carried", (t) => {
 
   const bite = world.command(command("e4", "attack", "e2.jaw"));
   strictEqual(bite.status, "ok");
+  const detached = bite.events.find((event) => event.type === "detached");
   const capability = bite.events.find(
     (event) => event.type === "capability_changed" && event.data.capacity === "mouth_carry",
   );
   const dropped = bite.events.find((event) => event.type === "dropped" && event.entity === "e3");
+  ok(detached);
   ok(capability);
   ok(dropped);
   deepStrictEqual({ from: capability.data.from, to: capability.data.to }, { from: 1, to: 0 });
-  strictEqual(dropped.cause_id, capability.event_id);
+  // The grip part dropped what it held: the fall is caused by the detach, not the capacity change.
+  strictEqual(dropped.cause_id, detached.event_id);
 
   strictEqual(world.entity("e3")?.contained_in, null);
+  strictEqual(world.entity("e3")?.in_part, null);
   strictEqual(world.entity("e3")?.support, "e1");
   strictEqual(world.entity("e3")?.status, "intact");
   const jaw = Object.values(world.snapshot().entities).find(

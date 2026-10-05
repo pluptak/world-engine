@@ -6,9 +6,10 @@
     { "name": "head", "parent": null, "contributes": { "sight": 100, "hearing": 100 }, "detachable": false, "max_integrity": 100 },
     { "name": "torso", "parent": null, "contributes": { "moving": 100 }, "detachable": false, "max_integrity": 100 },
     { "name": "arm_l", "parent": null, "contributes": {}, "detachable": true, "max_integrity": 100 },
-    { "name": "hand_l", "parent": "arm_l", "contributes": { "manipulation": 50 }, "detachable": true, "max_integrity": 100 },
+    { "name": "hand_l", "parent": "arm_l", "contributes": { "manipulation": 50 }, "detachable": true, "max_integrity": 100, "holds": { "kind": "grip" } },
     { "name": "arm_r", "parent": null, "contributes": {}, "detachable": true, "max_integrity": 100 },
-    { "name": "hand_r", "parent": "arm_r", "contributes": { "manipulation": 50 }, "detachable": true, "max_integrity": 100 }
+    { "name": "hand_r", "parent": "arm_r", "contributes": { "manipulation": 50 }, "detachable": true, "max_integrity": 100, "holds": { "kind": "grip" } },
+    { "name": "pocket", "parent": "torso", "contributes": {}, "detachable": false, "max_integrity": 100, "holds": { "kind": "space", "inner_w_cm": 18, "inner_d_cm": 12, "inner_h_cm": 4 } }
   ],
   "props": { "agent": true, "reach_cm": 100, "hand_height_cm": 100, "attack_damage": 40, "default_hit_part": "torso" },
   "break_products": [],

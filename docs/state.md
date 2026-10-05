@@ -25,7 +25,8 @@ template, so a registry that gains the prop makes the world's own entities abstr
 
 Capacities sum part contributions and unexpired modifiers, clamped to 0–100; templates with no parts
 have none. Structural capacity leaves the modifiers out, so a stunned carrier keeps hold of what it
-carries. Residue records amounts on its receiver.
+carries. A part that declares `holds` is a grip for one item or a space for what fits; carried
+things name it in `in_part` ([carrying.md](carrying.md)). Residue records amounts on its receiver.
 
 Support loss emits displacement and fall events; high falls break entities, spawn their products,
 and move liquids and solids to the landing surface. Removing a holder passes what it held into the

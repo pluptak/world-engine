@@ -1,6 +1,6 @@
 import { capacities } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
-import { carryAlternatives, carryCheck, heldCount } from "../carry.js";
+import { carryAlternatives, carryCheck, gripPlacement, heldCount, inSpacePart } from "../carry.js";
 import { addressEntity, addressText, isAgent, reachData, wouldLoop, withinReach } from "./address.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
@@ -23,6 +23,10 @@ function preconditions(context: CommandContext): PreconditionResult {
   }
   if (item.contained_in !== context.actor.id) {
     return { status: "refused", reason_code: "not_carried" };
+  }
+  // An item in a space part (pocket) must be taken out first before giving it.
+  if (inSpacePart(context.snapshot, context.registry, context.actor, item)) {
+    return { status: "refused", reason_code: "not_in_hand" };
   }
 
   const address = addressEntity(context, destinationText, "not_an_actor");
@@ -63,6 +67,16 @@ function preconditions(context: CommandContext): PreconditionResult {
       ...(carry.reason_data !== undefined && { reason_data: carry.reason_data }),
     };
   }
+  const grip = gripPlacement(context, recipient.id, item);
+  if (grip.status !== "ok") {
+    return grip.status === "invalid"
+      ? { status: "invalid", reason_code: grip.reason_code }
+      : {
+          status: "refused",
+          reason_code: grip.reason_code,
+          ...(grip.reason_data !== undefined && { reason_data: grip.reason_data }),
+        };
+  }
 
   return { status: "ok" };
 }
@@ -86,14 +100,24 @@ function transition(context: TransitionContext): void {
     { from: context.actor.id, to: address.entity.id },
     context.root_event_id,
   );
+  const item = context.snapshot.entities[target.entity_id];
+  if (item === undefined) {
+    throw new TypeError("Give target changed after validation");
+  }
+  const grip = gripPlacement(context, address.entity.id, item);
+  if (grip.status !== "ok") {
+    throw new TypeError("Give grip changed after validation");
+  }
   context.set(target.entity_id, "contained_in", address.entity.id, movedEvent);
+  context.set(target.entity_id, "in_part", grip.part, movedEvent);
 }
 
 export const giveVerb: Verb = {
   requires_target: true,
-  args: { destination: { kind: "address" } },
+  args: { destination: { kind: "address" }, part: { kind: "address" } },
   refuses: [
     "not_carried",
+    "not_in_hand",
     "cannot_give_to_self",
     "not_an_actor",
     "circular_placement",
@@ -102,6 +126,8 @@ export const giveVerb: Verb = {
     "two_hands_required",
     "too_heavy",
     "mouth_full",
+    "hands_full",
+    "unknown_part",
   ],
   carry_alternatives: carryAlternatives,
   preconditions,

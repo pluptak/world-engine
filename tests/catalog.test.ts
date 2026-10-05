@@ -37,10 +37,11 @@ test("the catalog reads the live declarations", () => {
   const catalog = verbCatalog();
   const take = catalog.find((entry) => entry.verb === "take");
   ok(take);
-  deepStrictEqual(take.args, {});
+  deepStrictEqual(take.args, { part: { kind: "address" } });
   strictEqual(take.carry_alternatives.length, 2);
   ok(take.carry_alternatives.some((alternative) => alternative.capacity === "mouth_carry" && alternative.holds === 1));
   ok(take.refuses.includes("mouth_full"));
+  ok(take.refuses.includes("hands_full"));
 
   const put = catalog.find((entry) => entry.verb === "put");
   ok(put);

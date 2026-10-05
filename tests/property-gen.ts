@@ -363,6 +363,9 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     if (context.roll < 0.92) {
       return concealmentEdit(context);
     }
+    if (context.roll < 0.96) {
+      return holderPartEdit(context);
+    }
     return { kind: "remove", target: context.target };
   },
 };
@@ -441,6 +444,26 @@ function concealmentEdit(context: GenContext): Command | WorldEdit {
   }
   const concealers = here.length > 0 ? here : context.ids;
   return { kind: "place", target, concealed_by: pick(context.rand, concealers) };
+}
+
+// A `place` that only writes in_part: a part named where no holder is, or a name no holder
+// declares. Refused with the holder rule's own code.
+function holderPartEdit(context: GenContext): Command | WorldEdit {
+  if (context.agents.length === 0) {
+    return waiting(context, 1);
+  }
+  const holder = pick(context.rand, context.agents);
+  if (context.rand() < 0.5) {
+    const support = context.rooms.length > 0 ? pick(context.rand, context.rooms) : "e999";
+    return {
+      kind: "place",
+      target: context.target,
+      support,
+      pos: { x: int(context.rand, -200, 200), y: int(context.rand, -200, 200) },
+      in_part: "hand_l",
+    };
+  }
+  return { kind: "place", target: context.target, contained_in: holder, pos: null, in_part: "elbow" };
 }
 
 // A caller that already knows the tick count (an edit with nothing to write) spends no draw.

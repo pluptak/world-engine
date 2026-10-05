@@ -1,5 +1,7 @@
 import type { Entity, Id, Snapshot } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
+import { heldInParts, holderLayout, packGrips, partAvailable } from "./carry.js";
+import { misfit } from "./fit.js";
 import { isAbstract } from "./resolve.js";
 
 export interface SnapshotIssue {
@@ -259,6 +261,88 @@ function integrityIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
   return issues;
 }
 
+// What sits in a holder's part: in_part is set exactly when the holder declares holder parts,
+// names one that is present, grips pack lowest-first, and space contents fit.
+function holderIssues(snapshot: Snapshot, registry: TemplateRegistry, id: Id, path: string[]): SnapshotIssue[] {
+  const entity = snapshot.entities[id];
+  if (entity === undefined) {
+    return [];
+  }
+  if (entity.contained_in === null) {
+    return entity.in_part === null
+      ? []
+      : [issue("in_part_holder_mismatch", [...path, "in_part"], `in_part ${String(entity.in_part)}`)];
+  }
+  // A missing holder already has its dangling_reference; the rules below read the other end.
+  const holder = snapshot.entities[entity.contained_in];
+  if (holder === undefined) {
+    return [];
+  }
+  const layout = holderLayout(registry, holder.template);
+  const declared = [...layout.grips, ...layout.spaces.map((space) => space.name)];
+  if (entity.in_part === null) {
+    return declared.length === 0
+      ? []
+      : [issue("in_part_holder_mismatch", [...path, "in_part"], `holder ${entity.contained_in}`)];
+  }
+  if (declared.length === 0) {
+    return [issue("in_part_holder_mismatch", [...path, "in_part"], `in_part ${String(entity.in_part)}`)];
+  }
+  if (!declared.includes(entity.in_part)) {
+    return [issue("in_part_unknown_part", [...path, "in_part"], entity.in_part)];
+  }
+  if (!partAvailable(snapshot, registry, entity.contained_in, entity.in_part)) {
+    return [issue("in_part_unavailable", [...path, "in_part"], entity.in_part)];
+  }
+  return [];
+}
+
+// Grip packing and space fit read the holder's whole contents, so they run once per holder: one
+// issue per holder, however many items share the fault.
+function holderPackingIssues(snapshot: Snapshot, registry: TemplateRegistry): SnapshotIssue[] {
+  const issues: SnapshotIssue[] = [];
+  const holders = new Set<Id>();
+  for (const id of Object.keys(snapshot.entities).sort()) {
+    const holder = snapshot.entities[id]?.contained_in;
+    if (holder !== null && holder !== undefined) {
+      holders.add(holder);
+    }
+  }
+  for (const holderId of [...holders].sort()) {
+    const holder = snapshot.entities[holderId];
+    const template = holder === undefined ? undefined : registry[holder.template];
+    if (holder === undefined || template === undefined) {
+      continue;
+    }
+    const layout = holderLayout(registry, holder.template);
+    if (layout.grips.length === 0 && layout.spaces.length === 0) {
+      continue;
+    }
+    const available = (name: string): boolean => partAvailable(snapshot, registry, holderId, name);
+    const grips = layout.grips.filter(available);
+    const gripHeld = heldInParts(snapshot, holderId).filter((item) => grips.includes(item.in_part));
+    if (packGrips(grips, gripHeld) === null) {
+      issues.push(issue("grip_occupied", ["entities", holderId], `holder ${holderId}`));
+    }
+    for (const space of layout.spaces) {
+      if (!available(space.name)) {
+        continue;
+      }
+      const oversized = heldInParts(snapshot, holderId)
+        .filter((item) => item.in_part === space.name)
+        .find((item) => {
+          const size = registry[snapshot.entities[item.id]?.template ?? ""]?.size_cm;
+          return size !== undefined && misfit([size.w, size.d, size.h], [...space.inner]) !== null;
+        });
+      if (oversized !== undefined) {
+        issues.push(issue("part_contents_too_large", ["entities", oversized.id, "in_part"], space.name));
+        break;
+      }
+    }
+  }
+  return issues;
+}
+
 export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry): SnapshotIssue[] {
   const issues: SnapshotIssue[] = [];
   const spawned = detachedIndex(snapshot);
@@ -280,6 +364,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     issues.push(...integrityIssues(snapshot, id, path));
     issues.push(...referenceIssues(snapshot, id, path));
     issues.push(...concealmentIssues(snapshot, registry, reportedConcealLoops, id, path));
+    issues.push(...holderIssues(snapshot, registry, id, path));
 
     // One entity sits in one place: it is either set down on something or inside something, never
     // both, which also keeps the chain single-valued for the walk below.
@@ -333,6 +418,8 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
       }
     }
   }
+
+  issues.push(...holderPackingIssues(snapshot, registry));
 
   return issues;
 }
