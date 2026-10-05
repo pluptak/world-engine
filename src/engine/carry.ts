@@ -6,6 +6,7 @@ import type {
   CommandContext,
 } from "./command.js";
 import { misfit } from "./fit.js";
+import { partState } from "./parts.js";
 
 // What it takes to hold a thing, declared once and read by take, give, and the loss of a carrier:
 // hands scale with the item's hands_required; a mouth takes one thing at a time, never a
@@ -99,7 +100,7 @@ export function partAvailable(
   const parents = new Map(template.parts.map((part) => [part.name, part.parent]));
   let current: string | null = partName;
   while (current !== null) {
-    const state = holder.parts[current];
+    const state = partState(template, holder, current);
     if (state === undefined || (state.status !== "intact" && state.status !== "damaged")) {
       return false;
     }

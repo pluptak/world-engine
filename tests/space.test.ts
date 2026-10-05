@@ -412,7 +412,6 @@ test("no part of an abstract entity is addressable, and a real part still is", (
   };
   const world = createWorld(join(tempDir(t), "parted"), inertScenario, parted);
   const ann = world.id("ann")!;
-  strictEqual(Object.keys(world.entity("e2")?.parts ?? {}).join(), "mark");
 
   const abstract = world.command({ command_id: "attack-mark", actor: ann, verb: "attack", target: "e2.mark" });
   strictEqual(abstract.status, "unresolved");

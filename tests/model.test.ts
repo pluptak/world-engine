@@ -72,7 +72,8 @@ test("spawn allocates sequential ids without mutating its input", () => {
   strictEqual(first.id, "e1");
   strictEqual(second.id, "e2");
   strictEqual(second.snapshot.next_seq, 3);
-  strictEqual(second.snapshot.entities.e2?.parts.hand_l?.integrity, 100);
+  // Every part starts at its template default, which is not stored.
+  deepStrictEqual(second.snapshot.entities.e2?.parts, {});
   strictEqual(second.snapshot.entities.e1?.name, "hall");
   deepStrictEqual(original.entities, {});
   strictEqual(original.next_seq, 1);

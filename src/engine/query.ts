@@ -5,6 +5,7 @@ import type { Entity, Id, Perceivers, Pos, Snapshot, Tri, WorldEvent } from "../
 import type { TemplateRegistry } from "../templates.js";
 import { closedEnclosure, isAgent } from "./verbs/address.js";
 import { isAbstract } from "./resolve.js";
+import { partState } from "./parts.js";
 
 // The one declared threshold for `near`: two positions in the same room this far apart or closer are
 // near. Squared, because the arithmetic stays integer and no square root is ever taken.
@@ -24,6 +25,7 @@ function answer(value: Tri, basis_code: string): Answer {
 }
 
 function relationValue(
+  registry: TemplateRegistry,
   entity: Entity,
   relation: string,
   object: Id | string | undefined,
@@ -39,12 +41,11 @@ function relationValue(
       return object === undefined ? true : entity.status === object;
     case "attached_to": {
       if (object === undefined) {
-        return Object.keys(entity.parts)
-          .sort()
-          .some((name) => {
-            const part = entity.parts[name];
-            return part !== undefined && part.status !== "detached" && part.status !== "destroyed";
-          });
+        const template = registry[entity.template];
+        return (template?.parts ?? []).some((decl) => {
+          const part = partState(template, entity, decl.name);
+          return part !== undefined && part.status !== "detached" && part.status !== "destroyed";
+        });
       }
       if (entity.detached_from !== null && object === entity.detached_from.entity) {
         return false;
@@ -53,7 +54,10 @@ function relationValue(
         typeof object === "string" && object.startsWith(`${entity.id}.`)
           ? object.slice(entity.id.length + 1)
           : object;
-      const part = typeof partName === "string" ? entity.parts[partName] : undefined;
+      const part =
+        typeof partName === "string"
+          ? partState(registry[entity.template], entity, partName)
+          : undefined;
       return part !== undefined && part.status !== "detached" && part.status !== "destroyed";
     }
     default:
@@ -106,7 +110,11 @@ function withinThreshold(here: Pos, there: Pos): boolean {
   return dx * dx + dy * dy <= NEAR_THRESHOLD_CM * NEAR_THRESHOLD_CM;
 }
 
-function fact(snapshot: Snapshot, query: Extract<Query, { kind: "fact" }>): Answer {
+function fact(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  query: Extract<Query, { kind: "fact" }>,
+): Answer {
   const entity = snapshot.entities[query.subject];
   if (entity === undefined) {
     return answer("false", "no_such_entity");
@@ -124,7 +132,7 @@ function fact(snapshot: Snapshot, query: Extract<Query, { kind: "fact" }>): Answ
       }
       return answer(nearValue(snapshot, entity, other) ? "true" : "false", "derived_near");
     }
-    return answer(relationValue(entity, query.relation, query.object) ? "true" : "false", "relation_state");
+    return answer(relationValue(registry, entity, query.relation, query.object) ? "true" : "false", "relation_state");
   }
   if (snapshot.coverage.properties.includes(query.relation)) {
     const value = propertyValue(entity, query.relation);
@@ -527,7 +535,7 @@ export function query(
   events: WorldEvent[],
   q: Query,
 ): Answer {
-  return q.kind === "fact" ? fact(snapshot, q) : perceive(snapshot, registry, events, q);
+  return q.kind === "fact" ? fact(snapshot, registry, q) : perceive(snapshot, registry, events, q);
 }
 
 // Who could have sensed each event: every agent, every covered sense, true before or after the

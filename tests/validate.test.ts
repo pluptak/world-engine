@@ -431,7 +431,7 @@ test("a severed limb is accounted for by the entity it became", (t) => {
     (entity) => entity.detached_from?.entity === "e3",
   );
   ok(arm);
-  strictEqual(arm.parts.hand_r?.status, "intact");
+  strictEqual(arm.parts.hand_r, undefined);
 });
 
 test("a corrupted snapshot fixture fails to open and names the rule", (t) => {

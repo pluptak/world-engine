@@ -54,12 +54,8 @@ export function spawn(
     detached_from: null,
     integrity: 100,
     status: "intact",
-    parts: Object.fromEntries(
-      template.parts.map((part) => [
-        part.name,
-        { integrity: part.max_integrity, status: "intact" as const },
-      ]),
-    ),
+    // Every declared part starts at its template default, which is never stored (parts.ts).
+    parts: {},
     residue: {},
     modifiers: [],
     props: { ...template.props },

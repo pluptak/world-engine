@@ -225,6 +225,10 @@ test("an upgrade that adds a template succeeds and leaves the log untouched", (t
 test("an upgrade is refused when a live entity's template lost a field", (t) => {
   const copies = copiedTemplates(t);
   const { dir, world } = frozenWorld(t, copies);
+  strictEqual(
+    world.edit({ kind: "set_part", target: "e4", part: "hand_r", state: { integrity: 40, status: "damaged" } }).status,
+    "ok",
+  );
   const before = world.snapshot().templates_hash;
 
   const human = readTemplate(copies, "human.json");
@@ -321,6 +325,10 @@ test("an upgrade interrupted before the snapshots are stamped is repaired", (t) 
 test("a set that orphans a live entity is never adopted", (t) => {
   const copies = copiedTemplates(t);
   const { dir, world } = frozenWorld(t, copies);
+  strictEqual(
+    world.edit({ kind: "set_part", target: "e4", part: "hand_r", state: { integrity: 40, status: "damaged" } }).status,
+    "ok",
+  );
   const before = world.snapshot().templates_hash;
 
   const human = readTemplate(copies, "human.json");

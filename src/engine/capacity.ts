@@ -1,5 +1,6 @@
 import type { Id, Snapshot } from "../model.js";
 import type { PartDecl, TemplateRegistry } from "../templates.js";
+import { partState } from "./parts.js";
 
 function entityAndTemplate(snapshot: Snapshot, registry: TemplateRegistry, entityId: Id) {
   const entity = snapshot.entities[entityId];
@@ -18,7 +19,7 @@ function entityAndTemplate(snapshot: Snapshot, registry: TemplateRegistry, entit
 function ancestorsAvailable(
   part: PartDecl,
   partsByName: Map<string, PartDecl>,
-  partStates: Snapshot["entities"][string]["parts"],
+  stateOf: (name: string) => ReturnType<typeof partState>,
 ): boolean {
   const visited = new Set<string>();
   let ancestorName = part.parent;
@@ -29,7 +30,7 @@ function ancestorsAvailable(
     }
     visited.add(ancestorName);
 
-    const state = partStates[ancestorName];
+    const state = stateOf(ancestorName);
     if (
       state === undefined ||
       state.status === "detached" ||
@@ -61,15 +62,16 @@ export function structuralCapacity(
   }
 
   const partsByName = new Map(template.parts.map((part) => [part.name, part]));
+  const stateOf = (partName: string) => partState(template, entity, partName);
   let total = 0;
 
   for (const part of template.parts) {
-    const state = entity.parts[part.name];
+    const state = stateOf(part.name);
     if (
       state === undefined ||
       (state.status !== "intact" && state.status !== "damaged") ||
       !Object.hasOwn(part.contributes, name) ||
-      !ancestorsAvailable(part, partsByName, entity.parts)
+      !ancestorsAvailable(part, partsByName, stateOf)
     ) {
       continue;
     }

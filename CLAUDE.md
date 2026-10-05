@@ -72,7 +72,9 @@ suffixes (NodeNext).
   another on the same support, which stops `push`/`pull` with `collided` or refuses `blocked`), `spawn.ts` (ids from `next_seq`), `residue.ts`,
   `canonical.ts`, `carry.ts`, `validate.ts` (snapshot invariants: no loops, `pos`/`location` match
   the chain, no dangling references (`detached_from` is history, not a link), detached parts
-  accounted for, integrity range, ids below `next_seq`).
+  accounted for, no part stored at its default, integrity range, ids below `next_seq`), `parts.ts`
+  (part state is sparse: an absent entry is the template default, intact at `max_integrity`; read
+  through `partState`, write through `withParts`, which drops an entry set back to the default).
 - `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json`,
   `log.jsonl`, `events.jsonl` and `head.json`. `submit` appends the log line (every command, including
   refused and invalid ones) and the command's events, atomically writes the snapshot, and writes

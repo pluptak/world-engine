@@ -19,6 +19,7 @@ import { refreshSubtreeLocations, wouldLoop } from "./address.js";
 import { dropCarriedItem } from "./drop.js";
 import { revealConcealed } from "./search.js";
 import { claimGrip, gripEvictions, holderLayout } from "../carry.js";
+import { withParts } from "../parts.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -682,7 +683,7 @@ function transition(context: TransitionContext): void {
       context.set(
         edit.target,
         "parts",
-        { ...subject.parts, [edit.part]: { ...edit.state } },
+        withParts(context.registry[subject.template]!, subject.parts, { [edit.part]: edit.state }),
         editedEvent,
       );
       // Destroying a holder part spills what it held; a detached part is refused by validation,
@@ -724,6 +725,7 @@ export const editVerb: Verb = {
     "unknown_part",
     "integrity_out_of_range",
     "detached_part_without_entity",
+    "part_at_default",
     "location_mismatch",
     "dangling_reference",
     "id_not_below_next_seq",

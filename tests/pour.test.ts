@@ -131,15 +131,11 @@ function contents(snapshot: Snapshot, id: Id): [unknown, unknown] {
 function handless(world: PourWorld): Snapshot {
   const actor = world.snapshot.entities[world.actorId];
   ok(actor !== undefined);
-  const parts: Entity["parts"] = {};
-  for (const name of Object.keys(actor.parts).sort()) {
-    const state = actor.parts[name];
-    if (state === undefined) {
-      continue;
-    }
-    const lost = name === "hand_l" || name === "hand_r";
-    parts[name] = lost ? { integrity: 0, status: "destroyed" } : state;
-  }
+  const parts: Entity["parts"] = {
+    ...actor.parts,
+    hand_l: { integrity: 0, status: "destroyed" },
+    hand_r: { integrity: 0, status: "destroyed" },
+  };
   return {
     ...world.snapshot,
     entities: { ...world.snapshot.entities, [world.actorId]: { ...actor, parts } },

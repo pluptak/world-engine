@@ -11,18 +11,26 @@ export interface LostField {
 // Props and residue are deliberately absent: a template seeds them at spawn, but the entity owns
 // them afterwards, so a key no template declares is ordinary (a scenario may add one) and residue
 // arrives from transfers rather than from any declaration. What is left is what would leave live
-// state unreadable — an undeclared part, a product that can no longer be spawned, the one prop the
+// state unreadable — a part in use that is no longer declared, a product that can no longer be spawned, the one prop the
 // attack resolver reads off the template. Size, mass, contributions and residue amounts are read off
 // templates too, and changing them moves the present without breaking the past; the replay check
 // behind this rule is what covers the past.
-function lostFor(entity: Entity, registry: TemplateRegistry): string | null {
+function lostFor(snapshot: Snapshot, entity: Entity, registry: TemplateRegistry): string | null {
   const template = registry[entity.template];
   if (template === undefined) {
     return "template";
   }
 
+  // A part at its default is not stored (parts.ts), so a part is in use when it has stored state
+  // or something sits in it; an untouched one the template drops is a template change like any other.
   const declared = new Set(template.parts.map((part) => part.name));
-  for (const part of Object.keys(entity.parts).sort()) {
+  const used = new Set(Object.keys(entity.parts));
+  for (const other of Object.values(snapshot.entities)) {
+    if (other.contained_in === entity.id && other.in_part !== null) {
+      used.add(other.in_part);
+    }
+  }
+  for (const part of [...used].sort()) {
     if (!declared.has(part)) {
       return `parts.${part}`;
     }
@@ -38,11 +46,7 @@ function lostFor(entity: Entity, registry: TemplateRegistry): string | null {
 
   // attackStructure reads this one off the template for a live entity; every other prop it reads
   // comes from the entity.
-  if (
-    Object.keys(entity.parts).length > 0 &&
-    template.parts.length > 0 &&
-    typeof template.props.default_hit_part !== "string"
-  ) {
+  if (template.parts.length > 0 && typeof template.props.default_hit_part !== "string") {
     return "props.default_hit_part";
   }
 
@@ -58,7 +62,7 @@ export function lostField(snapshot: Snapshot, registry: TemplateRegistry): LostF
     if (entity === undefined) {
       continue;
     }
-    const field = lostFor(entity, registry);
+    const field = lostFor(snapshot, entity, registry);
     if (field !== null) {
       return { entity: id, template: entity.template, field };
     }

@@ -2,6 +2,7 @@ import type { Entity, Id, Snapshot } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import { heldInParts, holderLayout, packGrips, partAvailable } from "./carry.js";
 import { misfit } from "./fit.js";
+import { isDefaultPart } from "./parts.js";
 import { isAbstract } from "./resolve.js";
 
 export interface SnapshotIssue {
@@ -411,10 +412,16 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
       }
     }
 
+    const template = registry[entity.template];
     for (const part of Object.keys(entity.parts).sort()) {
       const state = entity.parts[part];
       if (state?.status === "detached" && !accountedFor(snapshot, registry, spawned, id, part)) {
         issues.push(issue("detached_part_without_entity", [...path, "parts", part], "detached"));
+      }
+      // A part at its template default is never stored, so each state has one stored form.
+      const decl = template?.parts.find((candidate) => candidate.name === part);
+      if (state !== undefined && decl !== undefined && isDefaultPart(decl, state)) {
+        issues.push(issue("part_at_default", [...path, "parts", part], "default"));
       }
     }
   }

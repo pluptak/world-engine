@@ -7,6 +7,7 @@ import type { AttackMode, CommandContext, PreconditionResult, TransitionContext,
 import { dropCarriedItem } from "./drop.js";
 import { reachData } from "./address.js";
 import { spawn } from "../spawn.js";
+import { partState, withParts } from "../parts.js";
 
 // A fist needs hands, a bite a jaw; the damage of the mode used comes from the attacker's template.
 const attackModes: readonly AttackMode[] = [
@@ -46,7 +47,7 @@ function attackStructure(context: CommandContext): { entityId: string; partName:
   }
   if (
     partName !== null &&
-    (!template.parts.some((part) => part.name === partName) || entity.parts[partName] === undefined)
+    !template.parts.some((part) => part.name === partName)
   ) {
     return null;
   }
@@ -235,18 +236,16 @@ function detachPart(
 
   const subtree = descendantNames(template.parts, partName);
   const subtreeSet = new Set(subtree);
-  const detachedParts: Record<string, PartState> = { ...entity.parts };
+  const detachedParts: Record<string, PartState> = {};
   for (const name of subtree) {
-    const state = entity.parts[name];
-    if (state !== undefined) {
-      detachedParts[name] = {
-        ...state,
-        ...(name === partName && { integrity: nextIntegrity }),
-        status: "detached",
-      };
-    }
+    const state = partState(template, entity, name)!;
+    detachedParts[name] = {
+      ...state,
+      ...(name === partName && { integrity: nextIntegrity }),
+      status: "detached",
+    };
   }
-  context.set(entityId, "parts", detachedParts, eventId);
+  context.set(entityId, "parts", withParts(template, entity.parts, detachedParts), eventId);
 
   const detachedTemplateId = `${entity.template}.${partName}`;
   const detachedTemplate = context.registry[detachedTemplateId];
@@ -272,13 +271,9 @@ function detachPart(
     if (!subtreeSet.has(part.name) || part.name === partName) {
       throw new TypeError(`Detached template ${detachedTemplateId} does not match its part subtree`);
     }
-    const state = entity.parts[part.name];
-    if (state === undefined) {
-      throw new TypeError(`Missing descendant part state ${part.name}`);
-    }
-    copiedParts[part.name] = { ...state };
+    copiedParts[part.name] = { ...partState(template, entity, part.name)! };
   }
-  context.set(created.id, "parts", copiedParts, spawnedEvent);
+  context.set(created.id, "parts", withParts(detachedTemplate, {}, copiedParts), spawnedEvent);
 }
 
 function transition(context: TransitionContext): void {
@@ -305,7 +300,7 @@ function transition(context: TransitionContext): void {
 
   if (attack.partName !== null) {
     const part = template.parts.find((decl) => decl.name === attack.partName)!;
-    const state = target.parts[attack.partName]!;
+    const state = partState(template, target, attack.partName)!;
     const integrity = Math.max(0, state.integrity - attack.damage);
     if (integrity === 0 && part.detachable) {
       damageEvent = context.emit("detached", target.id, { part: attack.partName }, context.root_event_id);
@@ -316,10 +311,7 @@ function transition(context: TransitionContext): void {
       context.set(
         target.id,
         "parts",
-        {
-          ...target.parts,
-          [attack.partName]: { integrity, status: "destroyed" },
-        },
+        withParts(template, target.parts, { [attack.partName]: { integrity, status: "destroyed" } }),
         damageEvent,
       );
     } else {
@@ -332,10 +324,7 @@ function transition(context: TransitionContext): void {
       context.set(
         target.id,
         "parts",
-        {
-          ...target.parts,
-          [attack.partName]: { integrity, status: "damaged" },
-        },
+        withParts(template, target.parts, { [attack.partName]: { integrity, status: "damaged" } }),
         damageEvent,
       );
       const capacityName = Object.keys(part.contributes).sort()[0];

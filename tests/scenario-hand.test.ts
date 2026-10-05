@@ -179,7 +179,8 @@ test("detaching an arm carries its hand and its manipulation contribution", () =
   );
   ok(detachedArm);
   strictEqual(detachedArm.template, "human.arm_r");
-  deepStrictEqual(detachedArm.parts.hand_r, { integrity: 100, status: "intact" });
+  // The hand came off untouched, so the arm stores nothing for it.
+  deepStrictEqual(detachedArm.parts, {});
   strictEqual(capacity(finalAttack.snapshot, registry, detachedArm.id, "manipulation"), 50);
   strictEqual(finalAttack.snapshot.entities[setup.guardId]?.parts.hand_r?.status, "detached");
 });

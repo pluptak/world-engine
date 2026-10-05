@@ -2,6 +2,7 @@ import type { Entity, Id, Snapshot } from "../model.js";
 import type { TargetAddress } from "./command.js";
 import { WORLD_AUTHOR } from "./command.js";
 import type { TemplateRegistry } from "../templates.js";
+import { partState } from "./parts.js";
 
 export type TargetResolution =
   | { status: "resolved"; target: TargetAddress }
@@ -62,7 +63,10 @@ export function resolveTarget(
     const partName = text.slice(separator + 1);
     const entity = snapshot.entities[entityId];
     const skipAbstractTarget = skipAbstract && isAbstract(registry, entity);
-    const state = skipAbstractTarget ? undefined : entity?.parts[partName];
+    const state =
+      skipAbstractTarget || entity === undefined
+        ? undefined
+        : partState(registry[entity.template], entity, partName);
     if (state !== undefined && state.status !== "detached") {
       return resolved(entityId, partName);
     }

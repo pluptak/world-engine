@@ -67,6 +67,15 @@ function subjects(snapshot: Snapshot): Snapshot {
   return current;
 }
 
+// Ann's right hand hurt: state the template must keep declaring, unlike an untouched part.
+function hurtHand(snapshot: Snapshot): Snapshot {
+  const ann = snapshot.entities.e4!;
+  return {
+    ...snapshot,
+    entities: { ...snapshot.entities, e4: { ...ann, parts: { hand_r: { integrity: 40, status: "damaged" } } } },
+  };
+}
+
 function without(...ids: string[]): TemplateRegistry {
   const copy: TemplateRegistry = { ...registry };
   for (const id of ids) {
@@ -83,16 +92,29 @@ function edited(id: string, change: (template: Template) => Template): TemplateR
   return { ...registry, [id]: change(base) };
 }
 
-test("a template that lost a declared part is reported against the live entity", () => {
-  const next = edited("human", (human) => ({
+const withoutHandR = (): TemplateRegistry =>
+  edited("human", (human) => ({
     ...human,
     parts: human.parts.filter((part) => part.name !== "hand_r"),
   }));
-  deepStrictEqual(lostField(subjects(empty()), next), {
+
+test("a template that lost a part with stored state is reported against the live entity", () => {
+  deepStrictEqual(lostField(hurtHand(subjects(empty())), withoutHandR()), {
     entity: "e4",
     template: "human",
     field: "parts.hand_r",
   });
+});
+
+test("a part something sits in is in use; an untouched, empty part may go with the template", () => {
+  strictEqual(lostField(subjects(empty()), withoutHandR()), null);
+  const holding = spawn(subjects(empty()), registry, "key", { name: "key", contained_in: "e4" }).snapshot;
+  strictEqual(holding.entities.e5?.in_part, "hand_l");
+  const withoutHandL = edited("human", (human) => ({
+    ...human,
+    parts: human.parts.filter((part) => part.name !== "hand_l"),
+  }));
+  deepStrictEqual(lostField(holding, withoutHandL), { entity: "e4", template: "human", field: "parts.hand_l" });
 });
 
 test("a template that is gone is reported against the live entity", () => {
@@ -158,7 +180,7 @@ test("two offences report the lowest entity id first", () => {
   }));
   delete combined.glass_shard;
 
-  deepStrictEqual(lostField(subjects(empty()), combined), {
+  deepStrictEqual(lostField(hurtHand(subjects(empty())), combined), {
     entity: "e3",
     template: "bottle",
     field: "break_products.glass_shard",
@@ -166,8 +188,7 @@ test("two offences report the lowest entity id first", () => {
 });
 
 test("a memory world refuses a set that orphans a live entity and adopts one that does not", () => {
-  const seeded = seedWorld();
-  const world = memoryWorld(seeded);
+  const world = memoryWorld(hurtHand(seedWorld()));
 
   const withoutHand: TemplateRegistry = {
     ...registry,
@@ -227,8 +248,7 @@ test("a store world's upgradeTemplates refuses a registry lacking a detachable p
 });
 
 test("a memory world's upgradeTemplates refuses a registry lacking a detachable part's companion", () => {
-  const seeded = seedWorld();
-  const world = memoryWorld(seeded);
+  const world = memoryWorld(hurtHand(seedWorld()));
   const before = canonicalJson(world.snapshot());
   const beforeHash = world.snapshot().templates_hash;
 

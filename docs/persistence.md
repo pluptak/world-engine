@@ -21,6 +21,7 @@ the current snapshot and becomes `preempted` when it would have succeeded at its
 
 A world loads the template set it was created with, so editing `templates/` reaches new worlds only.
 `upgradeTemplates` moves a live world to a new set and refuses if a template lost a field an entity
-uses, or if the log no longer replays to the stored snapshot and event stream.
+uses (a part counts only with stored state or something in it), or if the log no longer replays to
+the stored snapshot and event stream.
 
 `npm run bench` runs 10k store commands and holds about 3.6 ms per command from first to last.
