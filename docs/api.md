@@ -3,9 +3,10 @@
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)`, `openWorld(dir)`, and
 `memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `since`, `trace`, `beat`,
 `upgradeTemplates`, `query`, `observe` ([projection.md](projection.md)), `snapshot`, `entity`, and
-`id`. `verbs()` is the verb catalog. Store
-worlds share a directory, so handles see each other; memory worlds hold their own. A missing
-directory, a changed hash, or a bad version is a `WorldError` with a code.
+`id`. `verbs()` is the verb catalog and `ENGINE_CAPABILITIES` what the engine computes; the CLI
+answers both (`op` `verbs`, `capabilities`). Store worlds share a directory, so handles see each
+other; memory worlds hold their own. A missing directory, a changed hash, or a bad version is a
+`WorldError` with a code.
 
 - `check` agrees with `command` on the verdict without writing or logging.
 - `since` gives the deltas and events of every ok command after a version.

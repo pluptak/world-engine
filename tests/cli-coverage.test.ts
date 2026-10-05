@@ -1,11 +1,11 @@
-import { deepStrictEqual, ok, strictEqual } from "node:assert";
+import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { createWorld, memoryWorld, openWorld, type Scenario } from "../src/api.js";
+import { createWorld, memoryWorld, openWorld, WorldError, type Scenario } from "../src/api.js";
 import { CoverageSchema, ResponseSchema } from "../src/contract.js";
 import { loadTemplates } from "../src/templates.js";
 
@@ -128,94 +128,47 @@ test("init without a coverage file still writes the default coverage", (t) => {
   deepStrictEqual(openWorld(world).snapshot().coverage.senses, ["sight", "hearing"]);
 });
 
-// A sense nobody declares capacity for. Coverage accepts any name, so the world may cover `taste`,
-// but no template part contributes it: what the engine answers is the finding, whatever it is.
+// A sense the engine has no rule for. The coverage schema takes any name; validation refuses a world
+// that covers one, so it never answers `false` where it meant "modelled".
 const uncapableSense = "taste";
 const uncapableCoverage = { ...smellCoverage, senses: ["sight", "hearing", uncapableSense] };
 
-test("a covered sense with no capacity answers no_sense_capacity, not unsupported_sense", (t) => {
-  const scenario: Scenario = [
-    { id: "room", template: "room", overrides: { name: "room" } },
-    { id: "ann", template: "human", overrides: { name: "ann", location: "room", support: "room", pos: { x: 0, y: 0 } } },
-    { id: "table", template: "table", overrides: { name: "table", location: "room", support: "room", pos: { x: 10, y: 0 } } },
-  ];
-
-  for (const kind of ["store", "memory"] as const) {
-    const world = kind === "store"
-      ? createWorld(join(temporaryDirectory(t), "store"), scenario, registry, { coverage: uncapableCoverage })
-      : memoryWorld(
-        createWorld(join(temporaryDirectory(t), "memory"), scenario, registry).snapshot(),
-        registry,
-        { room: "e1", ann: "e2", table: "e3" },
-        { coverage: uncapableCoverage },
-      );
-    const ann = world.id("ann");
-    const table = world.id("table");
-    ok(ann !== null && table !== null);
-
-    // The entity form, and the event form: the same question about a thing and about what happened.
-    const entityAnswer = world.query({ kind: "perceive", observer: ann, entity: table, sense: uncapableSense });
-    deepStrictEqual(entityAnswer, { value: "false", basis_code: "no_sense_capacity" }, `${kind} entity form`);
-
-    const moved = world.command({ command_id: "t1", actor: ann, verb: "move", args: { to: { x: 5, y: 0 } } });
-    strictEqual(moved.status, "ok");
-    const eventId = moved.events[0]?.event_id;
-    ok(eventId !== undefined);
-    const eventAnswer = world.query({ kind: "perceive", observer: ann, event_id: eventId, sense: uncapableSense });
-    deepStrictEqual(eventAnswer, { value: "false", basis_code: "no_sense_capacity" }, `${kind} event form`);
-  }
-});
-
 test("the coverage schema accepts a sense name the engine has no rule for", () => {
-  // The boundary takes any name; what the engine can answer for it is the engine's business.
   const parsed = CoverageSchema.safeParse(uncapableCoverage);
   ok(parsed.success, "coverage schema refused a plain sense name");
 });
 
-test("a covered sense that some observer has capacity for but the engine does not answers unsupported_sense", (t) => {
-  // Create a custom registry by cloning the human template and modifying it to add taste capacity
+test("a world covering a sense the engine has no rule for is refused, even with a template that contributes it", (t) => {
+  // A human whose head contributes taste: the capacity is there, the rule is not.
   const customRegistry = { ...registry };
   const humanTemplate = registry.human;
   if (humanTemplate === undefined) {
     throw new Error("human template not found");
   }
-  // Modify a structuredClone of human in place, keeping its id, to add taste capacity to head
   const modifiedHuman = structuredClone(humanTemplate);
   modifiedHuman.parts = modifiedHuman.parts.map((part) =>
     part.name === "head" ? { ...part, contributes: { ...part.contributes, taste: 100 } } : part
   );
   customRegistry.human = modifiedHuman;
-
-  const tasteCoverage = { ...smellCoverage, senses: ["sight", "hearing", "taste"] };
   const scenario: Scenario = [
     { id: "room", template: "room", overrides: { name: "room" } },
     { id: "taster", template: "human", overrides: { name: "taster", location: "room", support: "room", pos: { x: 0, y: 0 } } },
-    { id: "table", template: "table", overrides: { name: "table", location: "room", support: "room", pos: { x: 10, y: 0 } } },
   ];
+  const refused = (error: unknown) =>
+    error instanceof WorldError &&
+    error.code === "invalid_snapshot" &&
+    error.issues?.[0]?.code === "coverage_not_computable";
 
-  for (const kind of ["store", "memory"] as const) {
-    const world = kind === "store"
-      ? createWorld(join(temporaryDirectory(t), "store"), scenario, customRegistry, { coverage: tasteCoverage })
-      : memoryWorld(
-        createWorld(join(temporaryDirectory(t), "memory"), scenario, customRegistry).snapshot(),
-        customRegistry,
-        { room: "e1", taster: "e2", table: "e3" },
-        { coverage: tasteCoverage },
-      );
-    const taster = world.id("taster");
-    const table = world.id("table");
-    ok(taster !== null && table !== null);
-
-    // The entity form: taste is covered and observer has capacity, but engine has no rule for taste
-    const entityAnswer = world.query({ kind: "perceive", observer: taster, entity: table, sense: "taste" });
-    deepStrictEqual(entityAnswer, { value: "false", basis_code: "unsupported_sense" }, `${kind} entity form`);
-
-    // The event form: move command in same room, then query what the taster perceived
-    const moved = world.command({ command_id: "t1", actor: taster, verb: "move", args: { to: { x: 5, y: 0 } } });
-    strictEqual(moved.status, "ok");
-    const eventId = moved.events[0]?.event_id;
-    ok(eventId !== undefined);
-    const eventAnswer = world.query({ kind: "perceive", observer: taster, event_id: eventId, sense: "taste" });
-    deepStrictEqual(eventAnswer, { value: "false", basis_code: "unsupported_sense" }, `${kind} event form`);
-  }
+  throws(
+    () => createWorld(join(temporaryDirectory(t), "store"), scenario, customRegistry, { coverage: uncapableCoverage }),
+    refused,
+  );
+  const plain = createWorld(join(temporaryDirectory(t), "memory"), scenario, customRegistry).snapshot();
+  throws(() => memoryWorld(plain, customRegistry, { room: "e1", taster: "e2" }, { coverage: uncapableCoverage }), refused);
+  // Asked anyway, of a world that covers only what the engine computes, taste is unknown, not false.
+  const world = memoryWorld(plain, customRegistry, { room: "e1", taster: "e2" });
+  deepStrictEqual(world.query({ kind: "perceive", observer: "e2", entity: "e1", sense: uncapableSense }), {
+    value: "unknown",
+    basis_code: "engine_incapable",
+  });
 });

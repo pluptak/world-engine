@@ -23,5 +23,6 @@ it does not claim to list every condition that made it happen, and there are no 
 entity stores state only where something changed it ([structure.md](structure.md)).
 
 **World state, not knowledge.** The engine answers what is true and what could be sensed. What
-anyone knows, believes, remembers or says belongs to the caller, and `"unknown"` means the world's
-coverage does not model that category, never a guess ([perception.md](perception.md)).
+anyone knows, believes, remembers or says belongs to the caller, and `"unknown"` means the world
+does not model that category or the engine cannot compute it, never a guess
+([perception.md](perception.md)).

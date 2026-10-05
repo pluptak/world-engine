@@ -6,6 +6,7 @@ import type { TemplateRegistry } from "../templates.js";
 import { closedEnclosure, isAgent } from "./verbs/address.js";
 import { isAbstract } from "./resolve.js";
 import { effectivePart } from "./parts.js";
+import { computesSense } from "./capabilities.js";
 
 // The one declared threshold for `near`: two positions in the same room this far apart or closer are
 // near. Squared, because the arithmetic stays integer and no square root is ever taken.
@@ -439,6 +440,11 @@ function perceive(
   if (observer === undefined) {
     return answer("false", "no_such_entity");
   }
+  // Both unknown, for different reasons: a sense the engine has no rule for, or one this world
+  // chose not to model.
+  if (!computesSense(query.sense)) {
+    return answer("unknown", "engine_incapable");
+  }
   if (!snapshot.coverage.senses.includes(query.sense)) {
     return answer("unknown", "uncovered_sense");
   }
@@ -541,7 +547,7 @@ function perceive(
         ? answer("true", "same_location_lit")
         : answer("false", "location_unlit");
     }
-    return answer("false", "unsupported_sense");
+    throw new TypeError(`No rule for sense ${query.sense}`);
   }
 
   if (query.sense === "sight") {
@@ -560,7 +566,8 @@ function perceive(
       ? answer("true", "adjacent_loud_event")
       : answer("false", "not_perceptible");
   }
-  return answer("false", "unsupported_sense");
+  // Only senses the engine computes get this far (`computesSense`), and each has a rule above.
+  throw new TypeError(`No rule for sense ${query.sense}`);
 }
 
 export function query(

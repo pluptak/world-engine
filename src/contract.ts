@@ -210,6 +210,9 @@ export const RequestSchema = z.discriminatedUnion("op", [
   z.object({
     op: z.literal("verbs"),
   }).strict(),
+  z.object({
+    op: z.literal("capabilities"),
+  }).strict(),
 ]);
 
 export const EntitySchema = z.object({
@@ -334,6 +337,12 @@ export const VerbsResponseSchema = z.object({
   verbs: z.array(VerbCatalogEntrySchema),
 }).strict();
 
+export const CapabilitiesResponseSchema = z.object({
+  relations: z.array(z.string()),
+  senses: z.array(z.string()),
+  computed_properties: z.array(z.string()),
+}).strict();
+
 export const ProjectionSchema = z.object({
   observer: IdSchema,
   version: z.number().int(),
@@ -382,6 +391,7 @@ export const ResponseSchema = z.union([
   TraceResponseSchema,
   BeatResponseSchema,
   VerbsResponseSchema,
+  CapabilitiesResponseSchema,
   ProjectionSchema,
   ValidationFailureSchema,
 ]);

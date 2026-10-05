@@ -3,7 +3,9 @@ import { query } from "./query.js";
 import type { Id, Pos, Snapshot, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 
-export const SENSES = ["sight", "hearing", "smell", "touch"] as const;
+import { ENGINE_CAPABILITIES } from "./capabilities.js";
+
+export const SENSES = ENGINE_CAPABILITIES.senses;
 
 // What an observer could sense of one entity now. A thing makes no sound by being there, so an
 // entity is listed by sight, smell and touch, and hearing is reported for events only. `facts`

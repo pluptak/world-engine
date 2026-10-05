@@ -115,8 +115,9 @@ suffixes (NodeNext).
   same sequence of calls writes the same log through any number of handles. A memory world keeps
   past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
-  `check` | `since` | `query` | `observe` | `snapshot` | `verbs`), calls one `World` method or
-  `verbCatalog`, and
+  `check` | `since` | `query` | `observe` | `snapshot` | `verbs` | `capabilities`), calls one
+  `World` method, `verbCatalog` or returns `ENGINE_CAPABILITIES` (`src/engine/capabilities.ts`: the
+  relations and senses the engine computes, which `validateSnapshot` holds coverage to), and
   validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`
   builds a world from spawn specs in `scenarios/*.json`. A failure becomes `{status:"invalid",
   issues}` with exit code 2.

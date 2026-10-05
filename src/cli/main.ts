@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   canonicalJson,
+  ENGINE_CAPABILITIES,
   createWorld,
   openWorld,
   verbs,
@@ -154,6 +155,9 @@ function commandResponse(result: Result, includeSnapshot: boolean) {
 function dispatch(request: Request): unknown {
   if (request.op === "verbs") {
     return { verbs: verbs() };
+  }
+  if (request.op === "capabilities") {
+    return structuredClone(ENGINE_CAPABILITIES);
   }
   if (request.op === "command") {
     const world = openWorld(request.world);

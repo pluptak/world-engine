@@ -501,6 +501,7 @@ export function memoryWorld(
 }
 
 export { canonicalJson, verbCatalog as verbs, WorldError, WORLD_AUTHOR };
+export { ENGINE_CAPABILITIES } from "./engine/capabilities.js";
 export type { WorldErrorCode } from "./errors.js";
 export type { Scenario, ScenarioEntry } from "./scenario.js";
 export type { Command, Result, WorldEdit } from "./engine/command.js";

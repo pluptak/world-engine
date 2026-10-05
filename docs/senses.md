@@ -23,9 +23,9 @@ the world author's own work, which nobody senses, though its consequences (`disp
 `entity-` rows are the entity form, where there is no event and so nothing is loud. `found` is read
 against the concealer it names, `revealed` against the thing revealed. `silent` is the hand acts
 (`take`, `give`, `put`, `search`, `found`, `revealed`), `wait`, `capability_changed`, and a `moved`
-whose cause chain starts at `take`, `give` or `put`; its hearing is `quiet`. A `moved` under
-`move`, `push` or `pull` is footsteps or scraping, and stays `event`. The false bases are
-`no_such_entity`, `no_such_event`, `no_target`, `no_sense_capacity`, `uncovered_sense`, `authored`,
-`odourless`, `quiet`, `not_touching`, `abstract`, `concealed`, `enclosed`, `not_perceptible`,
-`location_unlit`, and `unsupported_sense`; the true ones are `same_location`, `same_location_lit`,
+whose cause chain starts at `take`, `give` or `put`; its hearing is `quiet`. A `moved` under `move`,
+`push` or `pull` is footsteps or scraping, and stays `event`. The false bases are `no_such_entity`,
+`no_such_event`, `no_target`, `no_sense_capacity`, `authored`, `odourless`, `quiet`, `not_touching`,
+`abstract`, `concealed`, `enclosed`, `not_perceptible` and `location_unlit`; the unknown ones are
+`uncovered_sense` and `engine_incapable`; the true ones are `same_location`, `same_location_lit`,
 `adjacent_open_door_lit`, `adjacent_loud_event` and `own_body`.

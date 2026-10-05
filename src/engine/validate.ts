@@ -3,6 +3,7 @@ import type { TemplateRegistry } from "../templates.js";
 import { heldInParts, holderLayout, packGrips, partAvailable } from "./carry.js";
 import { misfit } from "./fit.js";
 import { effectivePart, isDefaultPart } from "./parts.js";
+import { uncomputable } from "./capabilities.js";
 import { isAbstract } from "./resolve.js";
 
 export interface SnapshotIssue {
@@ -361,6 +362,12 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
   // One issue per loop, however many entities sit in it.
   const reportedLoops = new Set<Id>();
   const reportedConcealLoops = new Set<Id>();
+
+  // Coverage chooses among what the engine computes; a name it has no rule for would answer false
+  // where the world meant "modelled", so it is refused rather than answered.
+  for (const { category, name } of uncomputable(snapshot.coverage)) {
+    issues.push(issue("coverage_not_computable", ["coverage", category, name], name));
+  }
 
   for (const id of Object.keys(snapshot.entities).sort()) {
     const entity = snapshot.entities[id];
