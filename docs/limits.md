@@ -15,3 +15,7 @@ shows it. Step letters are the command ids the script uses. Nothing here is a pr
   who may open the chest, or that ann handed it over at all (A7, A12).
 - A spill is all or nothing: the falling cup keeps none of its 30 cm³, and there is no
   half spill (E2).
+- Touch is all or nothing, and snatching from a hand isn't modelled: a pocket theft is unfelt,
+  and taking from a hand is refused (B2c, G2).
+- No act is quiet: hearing takes every event in the same room, so the unfelt pocket theft is
+  still heard by its victim, even in the dark; an unnoticed theft can't be expressed (B2c).

@@ -13,5 +13,6 @@ What is built, nothing aspirational, one concept per file:
 - [space.md](space.md): anchors, offsets and the derived `near` relation.
 - [persistence.md](persistence.md): the CLI and the world directory.
 - [perception.md](perception.md): queries, perception, and coverage.
+- [senses.md](senses.md): the sense table both queries and tests read.
 - [liquids.md](liquids.md): liquid in props, and the `pour` verb.
 - [limits.md](limits.md): what the inn scenario could not express.

@@ -212,36 +212,44 @@ interface Sense {
 interface EventSenses {
   hearing: Sense;
   smell: Sense;
+  // Touch reads the body, not the room: `body` feels what the observer is and holds, and every
+  // other class answers who wrote it.
+  touch: "body" | "never";
 }
 
 // An event that happened: heard next door, smelt nowhere.
 const QUIET_SENSES: EventSenses = {
   hearing: { same: "always", door: "loud", basis: "odourless" },
   smell: { same: "never", door: "never", basis: "odourless" },
+  touch: "body",
 };
 
 // The world author's own work: nobody senses it, and `basis` says why.
 const AUTHORED_SENSES: EventSenses = {
   hearing: { same: "never", door: "never", basis: "authored" },
   smell: { same: "never", door: "never", basis: "authored" },
+  touch: "never",
 };
 
 // A pour releases what it pours, whatever is left in the vessel.
 const POUR_SENSES: EventSenses = {
   hearing: QUIET_SENSES.hearing,
   smell: { same: "always", door: "never", basis: "odourless" },
+  touch: "body",
 };
 
 // A break releases what was inside, so it is smelt when the broken entity smelled.
 const BROKEN_SENSES: EventSenses = {
   hearing: QUIET_SENSES.hearing,
   smell: { same: "odorous", door: "loud", basis: "odourless" },
+  touch: "body",
 };
 
 // The entity form: no event, so nothing is ever loud, and what there is to smell is the entity.
 const ENTITY_SENSES: EventSenses = {
   hearing: { same: "always", door: "never", basis: "odourless" },
   smell: { same: "odorous", door: "never", basis: "odourless" },
+  touch: "body",
 };
 
 // The rows of the sense table, keyed by every event type the engine can emit: a verb's root event
@@ -311,11 +319,37 @@ function isAuthored(event: WorldEvent, events: WorldEvent[]): boolean {
   return cause !== undefined && EVENT_SENSES[cause.type] === AUTHORED_SENSES;
 }
 
-function sensesFor(event: WorldEvent | undefined): EventSenses {
+function sensesFor(event: WorldEvent | undefined, events: WorldEvent[]): EventSenses {
   if (event === undefined) {
     return ENTITY_SENSES;
   }
+  // A spawn the world wrote reads as authored, wherever its row would otherwise point.
+  if (isAuthored(event, events)) {
+    return AUTHORED_SENSES;
+  }
   return EVENT_SENSES[event.type] ?? QUIET_SENSES;
+}
+
+// Whether the observer feels the subject through its body: the subject is the observer itself,
+// or sits in one of the observer's grips. Pockets don't feel, and rooms, light and doors play
+// no part, so this is the whole of touch, in either form.
+function touchesBody(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  observerId: Id,
+  subject: Entity,
+): boolean {
+  if (subject.id === observerId) {
+    return true;
+  }
+  if (subject.contained_in !== observerId || subject.in_part === null) {
+    return false;
+  }
+  const template = registry[snapshot.entities[observerId]?.template ?? ""];
+  return (
+    template?.parts.some((part) => part.name === subject.in_part && part.holds?.kind === "grip") ===
+    true
+  );
 }
 
 // What an entity offers the nose: a liquid it holds, or residue spilled on it.
@@ -381,6 +415,16 @@ function perceive(
   if (authored) {
     return answer("false", "authored");
   }
+  // Touch reads the body instead of the room: the table says which classes can be felt at all,
+  // and the body rule says whether this observer felt this one.
+  if (query.sense === "touch") {
+    if (sensesFor(event, events).touch !== "body") {
+      return answer("false", "authored");
+    }
+    return touchesBody(snapshot, registry, observer.id, subject)
+      ? answer("true", "own_body")
+      : answer("false", "not_touching");
+  }
   // What is hidden under or behind something is not seen, by anybody, until the relation is broken.
   if (query.sense === "sight" && subject.concealed_by !== null) {
     return answer("false", "concealed");
@@ -397,7 +441,7 @@ function perceive(
     return answer("false", "not_perceptible");
   }
   const crossesDoors = query.sense === "hearing" || query.sense === "smell";
-  const rule = sensesFor(event);
+  const rule = sensesFor(event, events);
   // The rule has a column for each of the two senses that read it, and only those two come this far.
   const sense = query.sense === "hearing" ? rule.hearing : rule.smell;
   if (observerLocation === targetLocation) {
@@ -453,7 +497,7 @@ export function eventPerceivers(
   registry: TemplateRegistry,
   events: WorldEvent[],
 ): Array<{ event_id: Id; perceivers: Perceivers }> {
-  const senses = ["sight", "hearing", "smell"];
+  const senses = ["sight", "hearing", "smell", "touch"];
   const unknown_senses = senses.filter((sense) => !after.coverage.senses.includes(sense));
   // Agents at either end: a command can introduce an entity its own events are about.
   const agents = [...new Set([...Object.keys(before.entities), ...Object.keys(after.entities)])]
@@ -467,7 +511,7 @@ export function eventPerceivers(
       sense,
     }).value === "true";
   return events.map((event) => {
-    const seen: Record<string, Id[]> = { sight: [], hearing: [], smell: [] };
+    const seen: Record<string, Id[]> = { sight: [], hearing: [], smell: [], touch: [] };
     for (const observer of agents) {
       for (const sense of senses) {
         if (unknown_senses.includes(sense)) {
@@ -487,6 +531,7 @@ export function eventPerceivers(
         sight: seen.sight ?? [],
         hearing: seen.hearing ?? [],
         smell: seen.smell ?? [],
+        touch: seen.touch ?? [],
         unknown_senses: [...unknown_senses],
       },
     };

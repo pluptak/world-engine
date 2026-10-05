@@ -21,7 +21,9 @@ second grip is derived, never stored, so verbs, validation and loss always agree
   with `reason_data` `{free, need}`.
 - `put … in <actor>.pocket` stows a held item in the actor's own space part, refused `too_large`
   with the numbers when it does not fit; `take` brings it back to a grip. Taking from another
-  agent's grip or pocket is refused `held_by_another`: only `give` moves a thing between agents.
+  agent's grip is refused `held_by_another`, and snatching from a hand is a contest the caller
+  judges; taking from its pocket is allowed into the thief's grip, and the owner doesn't feel it
+  ([senses.md](senses.md)).
 - `drop`, `give` and `pour` act on what is in a grip: a pocketed item is refused `not_in_hand`
   until it is taken out.
 - Losing a part, by an attack or an edit, drops exactly what that part held, plus a two-handed

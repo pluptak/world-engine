@@ -245,6 +245,7 @@ export const PerceiversSchema = z.object({
   sight: z.array(IdSchema),
   hearing: z.array(IdSchema),
   smell: z.array(IdSchema),
+  touch: z.array(IdSchema),
   unknown_senses: z.array(z.string()),
 }).strict();
 

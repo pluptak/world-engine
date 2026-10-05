@@ -102,12 +102,14 @@ test("a break behind a closed door is heard next door, not seen", (t) => {
     deepStrictEqual(broken.perceivers?.hearing, [breaker, listener].sort());
     deepStrictEqual(broken.perceivers?.sight, [breaker]);
     deepStrictEqual(broken.perceivers?.smell, []);
-    deepStrictEqual(broken.perceivers?.unknown_senses, ["smell"]);
+    deepStrictEqual(broken.perceivers?.touch, []);
+    deepStrictEqual(broken.perceivers?.unknown_senses, ["smell", "touch"]);
 
     const sounded = push.events.find((event) => event.type === "push");
     ok(sounded);
     deepStrictEqual(sounded.perceivers?.hearing, [breaker]);
     deepStrictEqual(sounded.perceivers?.sight, [breaker]);
+    deepStrictEqual(sounded.perceivers?.touch, []);
   }
 });
 

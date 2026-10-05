@@ -27,10 +27,11 @@ const inn = JSON.parse(
 ) as Scenario;
 
 // The default coverage plus smell: without it the dog's nose answers unknown for ever, which is why
-// `createWorld` takes the coverage the world declares.
+// `createWorld` takes the coverage the world declares. Touch rides along so every perceiver list
+// is complete.
 const SMELLING: Coverage = {
   relations: ["support", "contained_in", "attached_to", "status", "location", "near"],
-  senses: ["sight", "hearing", "smell"],
+  senses: ["sight", "hearing", "smell", "touch"],
   properties: ["integrity", "residue", "pos"],
 };
 
@@ -90,6 +91,7 @@ interface Perceived {
   sight?: string[];
   hearing?: string[];
   smell?: string[];
+  touch?: string[];
 }
 
 interface Step {
@@ -147,6 +149,14 @@ function play(world: World, ids: Ids, steps: Step[]): Result[] {
           namesOf(ids, found[sense]),
           sensed[sense] ?? [],
           `${step.note} / ${type} / ${sense}`,
+        );
+      }
+      // Touch is asserted only where a step names it: most steps never say who felt what.
+      if (sensed.touch !== undefined) {
+        deepStrictEqual(
+          namesOf(ids, found.touch),
+          sensed.touch,
+          `${step.note} / ${type} / touch`,
         );
       }
     }
@@ -296,6 +306,34 @@ function script(ids: Ids): Step[] {
     expect: [{ status: "ok", events: ["put", "moved"] }],
     then: (world) => {
       strictEqual(world.entity(ids.key)?.contained_in, ids.ann);
+      strictEqual(world.entity(ids.key)?.in_part, "pocket");
+    },
+  });
+  step({
+    note: "bob takes the key out of ann's pocket: a pocket is just a container",
+    run: cmd("B2c-steal-key", "bob", "take", "key"),
+    expect: [{ status: "ok", events: ["take", "moved"] }],
+    perceivers: {
+      // Bob's grip closes on it, so he feels both; ann's pocket never tells her, though in the
+      // lit room she sees and hears it happen like everyone else.
+      take: { sight: ["ann", "bob", "rex"], hearing: ["ann", "bob", "rex"], touch: ["bob"] },
+      moved: { sight: ["ann", "bob", "rex"], hearing: ["ann", "bob", "rex"], touch: ["bob"] },
+    },
+    then: (world) => {
+      strictEqual(world.entity(ids.key)?.contained_in, ids.bob);
+      strictEqual(world.entity(ids.key)?.in_part, "hand_l");
+    },
+  });
+  step({
+    note: "bob hands the key back",
+    run: cmd("B2d-give-back", "bob", "give", "key", { destination: "ann" }),
+    expect: [{ status: "ok", events: ["give", "moved"] }],
+  });
+  step({
+    note: "ann pockets the key again",
+    run: cmd("B2e-pocket-key", "ann", "put", "key", { relation: "in", destination: `${ids.ann}.pocket` }),
+    expect: [{ status: "ok", events: ["put", "moved"] }],
+    then: (world) => {
       strictEqual(world.entity(ids.key)?.in_part, "pocket");
     },
   });
@@ -676,8 +714,8 @@ test("the inn's names are the ids its entries allocate, and its anchors resolved
 test("the script runs step by step in a store world and in a memory world", (t) => {
   const { store, memory, ids } = innWorlds(t);
   const steps = script(ids);
-  // 54 steps, one beat of two among them: 55 submissions, 44 of which move the world.
-  strictEqual(steps.length, 54);
+  // 57 steps, one beat of two among them: 58 submissions, 47 of which move the world.
+  strictEqual(steps.length, 57);
   const fromStore = play(store, ids, steps);
   const fromMemory = play(memory, ids, steps);
 
@@ -685,9 +723,9 @@ test("the script runs step by step in a store world and in a memory world", (t) 
   const oks = (results: Result[]): number => results.filter((result) => result.status === "ok").length;
   strictEqual(store.snapshot().version, oks(fromStore));
   strictEqual(memory.snapshot().version, oks(fromMemory));
-  strictEqual(store.snapshot().version, 44);
+  strictEqual(store.snapshot().version, 47);
   // and the rest of them are one refusal, one stale version, and one beat.
-  strictEqual(fromStore.length, 55);
+  strictEqual(fromStore.length, 58);
   strictEqual(store.snapshot().version, fromStore.length - 11);
 
   // The two worlds agree byte for byte, and they hold the same templates.

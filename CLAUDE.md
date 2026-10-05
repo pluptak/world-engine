@@ -59,8 +59,9 @@ suffixes (NodeNext).
   displacement, falls, breaking into `break_products`, and residue transfer. Verbs call into it.
 - `src/engine/query.ts`: `fact` and `perceive` queries. They answer `"true"`, `"false"` or
   `"unknown"` with a `basis_code`, from the snapshot, the templates, coverage and the replayed event
-  list. Senses are `sight`, `hearing`, and `smell`, read from `EVENT_SENSES` (one row per event type,
-  `docs/perception.md`); smell answers only where coverage declares it, else `"unknown"`. `eventPerceivers` is the
+  list. Senses are `sight`, `hearing`, `smell`, and `touch`, read from `EVENT_SENSES` (one row per event type,
+  `docs/senses.md`); smell answers only where coverage declares it, else `"unknown"`. `touch` reads the
+  observer's own body and grips instead of any room. `eventPerceivers` is the
   batch form: every agent, every covered sense, an agent listed exactly when `perceive` is true for
   it before or after the events' command.
 - `src/engine/capacity.ts` (`capacity` adds part contributions and unexpired modifiers;
@@ -136,7 +137,9 @@ refusal code also touches the shared registration points, one line or one entry 
   `revealConcealed` in `verbs/search.ts` clears it when either end moves, and is called from `take`,
   `push`, the fall path in `physical.ts` and `edit`'s place and remove; sight of a concealed entity
   answers `false` / `concealed`, and a `found` event is perceived against its `concealer`, so it
-  reads as where the search happened. Nothing records who searched or who knows.
+  reads as where the search happened. Nothing records who searched or who knows. `touch` reads the
+  observer's own body and grips (`own_body`, else `not_touching`) instead of any room, with its
+  column in `docs/senses.md`; `take` from another agent's pocket is allowed, from a grip refused.
 - **Templates:** `src/templates.ts`, `src/engine/upgrade.ts`, `templates/*.json`, the hash and
   companion rules above, and `docs/templates.md`: a template may declare `"extends": "<parent id>"`,
   resolved once when a set is loaded or parsed (own field wins, `props` shallow-merged, `parts`

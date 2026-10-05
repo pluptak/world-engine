@@ -1,0 +1,27 @@
+# Senses
+
+One row per class of event, one column per sense and situation: `s`, `h`, `m` and `t` are sight,
+hearing, smell and touch, `A` the same room, `+` an open door and `B` a shut door. `T` is true,
+`L` is true only if the event is loud (`broken`, `detached`, or a `dropped` of 50 cm or more) and
+`F` is false. Touch ignores rooms: `O` is felt when the observer is the subject or holds it in a
+grip, and not felt otherwise.
+
+| row | sA | s+ | sB | hA | h+ | hB | mA | m+ | mB | t |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `authored` | F | F | F | F | F | F | F | F | F | F |
+| `pour` | T | T | F | T | L | L | T | F | F | O |
+| `broken` | T | T | F | T | L | L | T | L | L | O |
+| `event` | T | T | F | T | L | L | F | F | F | O |
+| `entity-odorous` | T | T | F | T | F | F | T | F | F | O |
+| `entity-odourless` | T | T | F | T | F | F | F | F | F | O |
+
+`authored` is `edit`, `placed`, `edited`, `removed`, and a `spawned` whose cause is one of those:
+the world author's own work, which nobody senses, though its consequences (`displaced`, `dropped`,
+`broken`, a product's `spawned`) are sensed as any other event. `pour` is `pour`, `poured` and
+`spilled`; `broken` is a break whose entity held a liquid or residue; `event` is any other. The
+`entity-` rows are the entity form, where there is no event and so nothing is loud. `found` is read
+against the concealer it names, `revealed` against the thing revealed. The false bases are
+`no_such_entity`, `no_such_event`, `no_target`, `no_sense_capacity`, `uncovered_sense`, `authored`,
+`odourless`, `not_touching`, `abstract`, `concealed`, `enclosed`, `not_perceptible`,
+`location_unlit`, and `unsupported_sense`; the true ones are `same_location`, `same_location_lit`,
+`adjacent_open_door_lit`, `adjacent_loud_event` and `own_body`.

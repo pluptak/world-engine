@@ -505,7 +505,8 @@ test("an anchor is not perceived, in the entity form or the event form", (t) => 
       sight: [],
       hearing: [],
       smell: [],
-      unknown_senses: ["smell"],
+      touch: [],
+      unknown_senses: ["smell", "touch"],
     });
   }
 });

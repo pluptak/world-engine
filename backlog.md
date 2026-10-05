@@ -26,17 +26,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 ## Lane Z. After every lane has merged
 
-### Z3. Touch: an agent feels its own body
-- **Why:** an agent cannot perceive what happens to it in the dark, and theft cannot be told apart
-  from the room seeing it: perception has no sense for one's own body.
-- **Scope:** a `touch` sense, declared by coverage, in the sense table as rows: an agent feels
-  events on itself and its parts (`damaged`, `detached`, `capability_changed`) and an item leaving
-  its hand, but not one leaving a pocket or pack. Nobody else feels them. What pain makes it do is
-  the caller's business. Theft needs `take` from another agent's pocket, refused `held_by_another`
-  today; allowing it (and from a hand, felt) is part of this item.
-- **Done when:** ann in an unlit room is a touch perceiver of her hand's `detached`; an item taken
-  from her hand lists her under touch, one taken from her pocket does not; A3's guard still holds.
-
 ### Z4. Reassess
 - What the inn could not express: `docs/limits.md` lists the limits left, each with the step that
   shows it. After Z2 and Z3, take the rest one at a time, or say why none of them is worth a

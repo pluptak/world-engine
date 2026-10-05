@@ -357,5 +357,6 @@ test("a holder who loses all manipulation drops carried items", () => {
     manipulation: 0,
     moving: 100,
     sight: 100,
+    touch: 100,
   });
 });

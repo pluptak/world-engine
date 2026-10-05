@@ -3,7 +3,7 @@
   "size_cm": { "w": 200, "d": 70, "h": 180 },
   "mass_g": 500000,
   "parts": [
-    { "name": "head", "parent": null, "contributes": { "sight": 100, "hearing": 100, "smell": 100 }, "detachable": false, "max_integrity": 100 },
+    { "name": "head", "parent": null, "contributes": { "sight": 100, "hearing": 100, "smell": 100, "touch": 100 }, "detachable": false, "max_integrity": 100 },
     { "name": "jaw", "parent": "head", "contributes": { "mouth_carry": 1 }, "detachable": true, "max_integrity": 60, "holds": { "kind": "grip" } },
     { "name": "leg_fl", "parent": null, "contributes": { "moving": 25 }, "detachable": false, "max_integrity": 100 },
     { "name": "leg_fr", "parent": null, "contributes": { "moving": 25 }, "detachable": false, "max_integrity": 100 },

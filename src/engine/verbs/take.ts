@@ -1,7 +1,7 @@
 import { capacities } from "../capacity.js";
 import { effectivePos } from "../geometry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
-import { carryAlternatives, carryCheck, gripPlacement, heldCount } from "../carry.js";
+import { carryAlternatives, carryCheck, gripPlacement, heldCount, holderLayout } from "../carry.js";
 import { closedEnclosure, isAgent, reachData } from "./address.js";
 import { revealConcealed } from "./search.js";
 
@@ -72,9 +72,13 @@ function preconditions(context: CommandContext): PreconditionResult {
       return { status: "refused", reason_code: "container_closed", reason_data: { enclosure } };
     }
     // Only an agent holds: a container or a piece of furniture keeps what is inside it, and what it
-    // keeps is there to be taken out.
+    // keeps is there to be taken out. A hand is a contest the engine does not judge, but a pocket
+    // is just a container: taking from another agent's space part is allowed, from a grip refused.
     if (isAgent(context.snapshot, holder.id)) {
-      return { status: "refused", reason_code: "held_by_another" };
+      const spaces = holderLayout(context.registry, holder.template).spaces.map((space) => space.name);
+      if (entity.in_part === null || !spaces.includes(entity.in_part)) {
+        return { status: "refused", reason_code: "held_by_another" };
+      }
     }
   }
 

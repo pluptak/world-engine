@@ -84,6 +84,7 @@ export interface Perceivers {
   sight: Id[];
   hearing: Id[];
   smell: Id[];
+  touch: Id[];
   unknown_senses: string[];
 }
 

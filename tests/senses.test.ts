@@ -173,7 +173,7 @@ interface Row {
   name: string;
   event?: string;
   entity?: string;
-  answers: { sight: Answer[]; hearing: Answer[]; smell: Answer[] };
+  answers: { sight: Answer[]; hearing: Answer[]; smell: Answer[]; touch: Answer[] };
 }
 
 const rows: Row[] = [
@@ -184,6 +184,7 @@ const rows: Row[] = [
       sight: [no("authored"), no("authored"), no("authored")],
       hearing: [no("authored"), no("authored"), no("authored")],
       smell: [no("authored"), no("authored"), no("authored")],
+      touch: [no("authored"), no("authored"), no("authored")],
     },
   },
   {
@@ -193,6 +194,7 @@ const rows: Row[] = [
       sight: [yes("same_location_lit"), yes("adjacent_open_door_lit"), no("not_perceptible")],
       hearing: [yes("same_location"), no("not_perceptible"), no("not_perceptible")],
       smell: [yes("same_location"), no("not_perceptible"), no("not_perceptible")],
+      touch: [no("not_touching"), no("not_touching"), no("not_touching")],
     },
   },
   {
@@ -202,6 +204,7 @@ const rows: Row[] = [
       sight: [yes("same_location_lit"), yes("adjacent_open_door_lit"), no("not_perceptible")],
       hearing: [yes("same_location"), yes("adjacent_loud_event"), yes("adjacent_loud_event")],
       smell: [yes("same_location"), yes("adjacent_loud_event"), yes("adjacent_loud_event")],
+      touch: [no("not_touching"), no("not_touching"), no("not_touching")],
     },
   },
   {
@@ -211,6 +214,7 @@ const rows: Row[] = [
       sight: [yes("same_location_lit"), yes("adjacent_open_door_lit"), no("not_perceptible")],
       hearing: [yes("same_location"), no("not_perceptible"), no("not_perceptible")],
       smell: [no("odourless"), no("not_perceptible"), no("not_perceptible")],
+      touch: [no("not_touching"), no("not_touching"), no("not_touching")],
     },
   },
   {
@@ -220,6 +224,7 @@ const rows: Row[] = [
       sight: [yes("same_location_lit"), yes("adjacent_open_door_lit"), no("not_perceptible")],
       hearing: [yes("same_location"), no("not_perceptible"), no("not_perceptible")],
       smell: [yes("same_location"), no("not_perceptible"), no("not_perceptible")],
+      touch: [no("not_touching"), no("not_touching"), no("not_touching")],
     },
   },
   {
@@ -229,6 +234,7 @@ const rows: Row[] = [
       sight: [yes("same_location_lit"), yes("adjacent_open_door_lit"), no("not_perceptible")],
       hearing: [yes("same_location"), no("not_perceptible"), no("not_perceptible")],
       smell: [no("odourless"), no("not_perceptible"), no("not_perceptible")],
+      touch: [no("not_touching"), no("not_touching"), no("not_touching")],
     },
   },
 ];
@@ -281,10 +287,10 @@ function runScript(world: World): void {
   strictEqual(poured.status, "ok", `pour-spare (${poured.status})`);
 }
 
-// Coverage that includes smell.
+// Coverage that includes smell and touch.
 const SMELLING: Coverage = {
   relations: ["support", "contained_in", "attached_to", "status", "location", "near"],
-  senses: ["sight", "hearing", "smell"],
+  senses: ["sight", "hearing", "smell", "touch"],
   properties: ["integrity", "residue", "pos"],
 };
 
@@ -311,7 +317,7 @@ function walkTable(world: World, senses: readonly string[]): void {
       });
       deepStrictEqual(answer, expected, `${row.name} / ${sense} / ${situation.label}`);
     });
-    for (const sense of ["hearing", "smell"] as const) {
+    for (const sense of ["hearing", "smell", "touch"] as const) {
       if (!senses.includes(sense)) {
         continue;
       }
@@ -344,15 +350,19 @@ function walkTable(world: World, senses: readonly string[]): void {
       const expectedSame =
         sense === "smell"
           ? no("odourless")
-          : sense === "sight"
-            ? yes("same_location_lit")
-            : yes("same_location");
+          : sense === "touch"
+            ? no("not_touching")
+            : sense === "sight"
+              ? yes("same_location_lit")
+              : yes("same_location");
       const expectedFar =
         sense === "sight"
           ? yes("adjacent_open_door_lit")
-          : sense === "hearing" && loud
-            ? yes("adjacent_loud_event")
-            : no("not_perceptible");
+          : sense === "touch"
+            ? no("not_touching")
+            : sense === "hearing" && loud
+              ? yes("adjacent_loud_event")
+              : no("not_perceptible");
       deepStrictEqual(same, expectedSame, `${type} / ${sense} / same room`);
       deepStrictEqual(far, expectedFar, `${type} / ${sense} / open door`);
     }
@@ -389,6 +399,12 @@ test("every event type the engine can emit has a row of the sense table", (t) =>
   );
   strictEqual(listed.length, types.length);
 
+  // Every row also says whether touch can feel it: the table, not a chain of conditionals, is
+  // what the sense reads.
+  for (const type of listed) {
+    ok(Object.hasOwn(EVENT_SENSES[type] ?? {}, "touch"), `no touch column for: ${type}`);
+  }
+
   // And the types a world really produces are all of them: a store world and a memory world over the
   // same script, so a type emitted through something the scan cannot see is caught too.
 const store = createWorld(join(tempDir(t), "every-type"), hall);
@@ -423,7 +439,7 @@ test("the sense table holds row by row in a store world and in a memory world", 
     chest: CHEST,
   }, { coverage: SMELLING });
   runScript(smelly);
-  walkTable(smelly, ["sight", "hearing", "smell"]);
+  walkTable(smelly, ["sight", "hearing", "smell", "touch"]);
 
   // The `pour` row is the only row a vessel's own emptiness cannot argue with: the spare bottle is
   // empty by the end of its pour, so read against the present — not the either-end rule — only the
@@ -507,7 +523,7 @@ test("an edit's own events are nobody's, and its fall and break are", (t) => {
   const broken = byType.get("broken");
   ok(broken);
   deepStrictEqual(broken.perceivers?.smell, []);
-  deepStrictEqual(broken.perceivers?.unknown_senses, ["smell"]);
+  deepStrictEqual(broken.perceivers?.unknown_senses, ["smell", "touch"]);
 
   const smelly = memoryWorld(initial, undefined, { ann: "e4", kit: "e5" }, { coverage: SMELLING });
   const again = smelly.edit(
@@ -528,6 +544,7 @@ test("an edit's own events are nobody's, and its fall and break are", (t) => {
   const smellyEdit = smellyByType.get("edit");
   ok(smellyEdit);
   deepStrictEqual(smellyEdit.perceivers?.smell, []);
+  deepStrictEqual(smellyEdit.perceivers?.touch, []);
 });
 
 test("a search and an open are never smelled", (t) => {
