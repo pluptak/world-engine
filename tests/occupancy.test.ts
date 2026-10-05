@@ -64,3 +64,16 @@ test("the nearest of two obstacles stops the push, and a blocked push writes not
   strictEqual(second.reason_code, "blocked");
   strictEqual(canonicalJson(w.snapshot()), before);
 });
+
+test("a footprint has no height: a stone stops at a table's edge instead of passing under it", (t) => {
+  const w = world(t, [
+    { id: "room", template: "room", overrides: { name: "room" } },
+    floor("stone", "stone", 0, 0),
+    floor("table", "table", 100, 0),
+    floor("ann", "human", 0, 60),
+  ]);
+  // Half-widths 10 + 60 against centres 100 apart: 30.
+  const result = push(w, "ann", "stone", "+x", 100);
+  deepStrictEqual(result.events.find((event) => event.type === "moved")?.data, { distance_cm: 30 });
+  deepStrictEqual(result.events.find((event) => event.type === "collided")?.data, { with: w.id("table") });
+});

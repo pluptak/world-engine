@@ -222,3 +222,23 @@ test(
     strictEqual(entity(world, ids.cup).support, ids.bench);
   },
 );
+
+test("rubble still blocks: the broken bottle stops the stone a second time", (t) => {
+  const { world, ids } = open(t);
+  run(world, ids.bob, "push", "stone", { dir: "+x", distance_cm: 150 });
+  strictEqual(entity(world, ids.bottle).status, "broken");
+  strictEqual(run(world, ids.bob, "move", undefined, { to: { x: 200, y: 220 } }).status, "ok");
+  const result = run(world, ids.bob, "push", "stone", { dir: "+x", distance_cm: 10 });
+  strictEqual(result.reason_code, "blocked");
+  deepStrictEqual(result.reason_data, { with: ids.bottle });
+});
+
+test("a struck agent takes no harm: the chair stops at rex, who keeps every point", (t) => {
+  const { world, ids } = open(t);
+  const parts = entity(world, ids.rex).parts;
+  const result = run(world, ids.ann, "push", "chair", { dir: "-y", distance_cm: 100 });
+  deepStrictEqual(eventOf(result, "collided").data, { with: ids.rex });
+  ok(!types(result).includes("damaged"));
+  strictEqual(entity(world, ids.rex).integrity, 100);
+  deepStrictEqual(entity(world, ids.rex).parts, parts);
+});

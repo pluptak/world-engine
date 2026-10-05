@@ -18,3 +18,4 @@ What is built, nothing aspirational, one concept per file:
 - [projection.md](projection.md): what one observer could sense, as one structured answer.
 - [liquids.md](liquids.md): liquid in props, and the `pour` verb.
 - [limits.md](limits.md): what the inn scenario could not express.
+- [limits-workshop.md](limits-workshop.md): what occupancy, impact and landing cannot express.
