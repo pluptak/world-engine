@@ -284,6 +284,7 @@ export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
   wait: SILENT_SENSES,
   search: SILENT_SENSES,
   moved: AUDIBLE_SENSES,
+  collided: AUDIBLE_SENSES,
   dropped: AUDIBLE_SENSES,
   displaced: AUDIBLE_SENSES,
   damaged: AUDIBLE_SENSES,

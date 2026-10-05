@@ -88,7 +88,6 @@ test("an agent's own move is not checked: ann may stand at the bench's centre", 
 
 test(
   "a chair pushed into the bench stops at contact, 67 of 100 cm",
-  { todo: "occupancy" },
   (t) => {
     const { world, ids } = open(t);
     // Centres 150 apart, half-widths 22.5 + 60: the chair may travel 67.5, so 67.
@@ -107,7 +106,6 @@ test(
 
 test(
   "the cup on the bench is no obstacle: it is on another support",
-  { todo: "occupancy" },
   (t) => {
     const { world, ids } = open(t);
     const result = run(world, ids.ann, "push", "chair", { dir: "+x", distance_cm: 100 });
@@ -118,7 +116,6 @@ test(
 
 test(
   "a chair already against the bench refuses blocked and changes nothing",
-  { todo: "occupancy" },
   (t) => {
     const { world, ids } = open(t);
     run(world, ids.ann, "push", "chair", { dir: "+x", distance_cm: 100 });
@@ -135,7 +132,6 @@ test(
 
 test(
   "pulling the chair away from the bench is never blocked by it",
-  { todo: "occupancy" },
   (t) => {
     const { world, ids } = open(t);
     run(world, ids.ann, "push", "chair", { dir: "+x", distance_cm: 100 });
@@ -149,7 +145,6 @@ test(
 
 test(
   "an agent is an obstacle: the chair stops at rex, who stays put",
-  { todo: "occupancy" },
   (t) => {
     const { world, ids } = open(t);
     // Centres 100 apart in y, half-depths 22.5 + 12.5: exactly 65.
@@ -183,7 +178,6 @@ test(
 
 test(
   "a light impact damages nothing: chair against bench leaves both whole",
-  { todo: "impact" },
   (t) => {
     const { world, ids } = open(t);
     const result = run(world, ids.ann, "push", "chair", { dir: "+x", distance_cm: 100 });

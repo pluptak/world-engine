@@ -1,0 +1,23 @@
+# Occupancy: footprints and what stops a push
+
+An entity on a support occupies a footprint: its template's `size_cm.w` along x and `size_cm.d`
+along y, centred on its position, axis-aligned. Two footprints overlap when `2·|Δx| < w₁ + w₂` and
+`2·|Δy| < d₁ + d₂`, compared on doubled coordinates so odd sizes stay integral. Touching edges do
+not overlap. Height plays no part: a stone does not pass under a table.
+
+Overlap is a legal state, not a `validateSnapshot` rule: scenarios may place a dog under a table,
+and an agent's `move` goes to its destination unchecked. Only motion collides, and today the only
+motion that sweeps is `push` and `pull` (`sweep` in `src/engine/geometry.ts`).
+
+A pushed entity meets only what stands on the same support, uncontained, not destroyed and not
+abstract: a cup on a bench is no obstacle to a chair on the floor, and an anchor is a point that
+nothing hits. Agents are obstacles like anything else. A footprint already overlapping the mover
+never blocks it, so whatever starts entangled can always be moved apart.
+
+The mover travels the largest whole distance, up to the one asked for, that leaves no overlap with
+any obstacle ahead; the nearest one stops it, the lowest id on a tie. `moved` carries the distance
+actually travelled, and when something stopped it short a `collided` event follows, caused by
+`moved`, whose entity is the mover and whose `data.with` is the obstacle. The obstacle does not
+move. A push that could not move at all is refused `blocked` with `reason_data.with`, and a push of
+0 cm is never blocked. `collided` is heard and seen like any other event; touch reads only its
+subject, so an agent that is hit does not feel it.

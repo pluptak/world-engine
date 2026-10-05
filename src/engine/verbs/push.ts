@@ -1,14 +1,15 @@
 import { capacity } from "../capacity.js";
-import { effectivePos } from "../geometry.js";
+import { effectivePos, sweep, type Direction, type Sweep } from "../geometry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Pos } from "../../model.js";
 import { propagateSupportLoss } from "../../resolvers/physical.js";
+import { isAbstract } from "../resolve.js";
 import { reachData } from "./address.js";
 import { revealConcealed } from "./search.js";
 
 interface Movement {
   distance: number;
-  direction: "+x" | "-x" | "+y" | "-y";
+  direction: Direction;
 }
 
 function movement(context: CommandContext): Movement | null {
@@ -26,7 +27,21 @@ function movement(context: CommandContext): Movement | null {
   return { distance, direction };
 }
 
-function preconditions(context: CommandContext): PreconditionResult {
+// Pull names the direction it pulls from, so its target travels the other way.
+function travel(move: Movement, reverse: boolean): Direction {
+  if (!reverse) {
+    return move.direction;
+  }
+  return `${move.direction.startsWith("+") ? "-" : "+"}${move.direction.slice(1)}` as Direction;
+}
+
+function swept(context: CommandContext, targetId: string, move: Movement, reverse: boolean): Sweep {
+  return sweep(context.snapshot, context.registry, targetId, travel(move, reverse), move.distance, (id) =>
+    isAbstract(context.registry, context.snapshot.entities[id]),
+  );
+}
+
+function preconditions(context: CommandContext, reverse: boolean): PreconditionResult {
   const move = movement(context);
   if (move === null) {
     return { status: "invalid", reason_code: "invalid_args" };
@@ -79,16 +94,19 @@ function preconditions(context: CommandContext): PreconditionResult {
   if (targetTemplate.mass_g > force * 20) {
     return { status: "refused", reason_code: "too_heavy" };
   }
+  const path = swept(context, target.id, move, reverse);
+  if (move.distance > 0 && path.distance === 0 && path.obstacle !== null) {
+    return { status: "refused", reason_code: "blocked", reason_data: { with: path.obstacle } };
+  }
   return { status: "ok" };
 }
 
-function offset(position: Pos, move: Movement, reverse: boolean): Pos {
-  const directionSign = move.direction.startsWith("+") ? 1 : -1;
-  const sign = reverse ? -directionSign : directionSign;
-  if (move.direction.endsWith("x")) {
-    return { x: position.x + move.distance * sign, y: position.y };
+function offset(position: Pos, direction: Direction, distance: number): Pos {
+  const sign = direction.startsWith("+") ? 1 : -1;
+  if (direction.endsWith("x")) {
+    return { x: position.x + distance * sign, y: position.y };
   }
-  return { x: position.x, y: position.y + move.distance * sign };
+  return { x: position.x, y: position.y + distance * sign };
 }
 
 function makeTransition(reverse: boolean) {
@@ -103,8 +121,12 @@ function makeTransition(reverse: boolean) {
       throw new TypeError("Push target has no position");
     }
 
-    const movedEvent = context.emit("moved", target.entity_id, { distance_cm: move.distance }, context.root_event_id);
-    context.set(target.entity_id, "pos", offset(position, move, reverse), movedEvent);
+    const path = swept(context, target.entity_id, move, reverse);
+    const movedEvent = context.emit("moved", target.entity_id, { distance_cm: path.distance }, context.root_event_id);
+    context.set(target.entity_id, "pos", offset(position, travel(move, reverse), path.distance), movedEvent);
+    if (path.obstacle !== null) {
+      context.emit("collided", target.entity_id, { with: path.obstacle }, movedEvent);
+    }
     revealConcealed(context, target.entity_id, movedEvent);
     propagateSupportLoss(context, target.entity_id, movedEvent);
   };
@@ -120,13 +142,14 @@ const pushRefuses = [
   "insufficient_moving",
   "target_carried",
   "too_heavy",
+  "blocked",
 ] as const;
 
 export const pushVerb: Verb = {
   requires_target: true,
   args: pushArgs,
   refuses: pushRefuses,
-  preconditions,
+  preconditions: (context) => preconditions(context, false),
   transition: makeTransition(false),
 };
 
@@ -134,6 +157,6 @@ export const pullVerb: Verb = {
   requires_target: true,
   args: pushArgs,
   refuses: pushRefuses,
-  preconditions,
+  preconditions: (context) => preconditions(context, true),
   transition: makeTransition(true),
 };

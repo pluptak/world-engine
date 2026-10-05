@@ -66,7 +66,8 @@ suffixes (NodeNext).
   it before or after the events' command.
 - `src/engine/capacity.ts` (`capacity` adds part contributions and unexpired modifiers;
   `structuralCapacity`/`structuralCapacities` skip modifiers), `geometry.ts` (derived position and
-  elevation along support/containment chains), `spawn.ts` (ids from `next_seq`), `residue.ts`,
+  elevation along support/containment chains; `sweep`, how far a footprint slides before it meets
+  another on the same support, which stops `push`/`pull` with `collided` or refuses `blocked`), `spawn.ts` (ids from `next_seq`), `residue.ts`,
   `canonical.ts`, `carry.ts`, `validate.ts` (snapshot invariants: no loops, `pos`/`location` match
   the chain, no dangling references (`detached_from` is history, not a link), detached parts
   accounted for, integrity range, ids below `next_seq`).
