@@ -1,0 +1,39 @@
+[
+  { "id": "shop", "template": "room", "overrides": { "name": "workshop", "props": { "lit": true } } },
+  {
+    "id": "bench",
+    "template": "table",
+    "overrides": { "name": "bench", "location": "shop", "support": "shop", "pos": { "x": 300, "y": 0 } }
+  },
+  { "id": "cup", "template": "cup", "overrides": { "name": "cup", "location": "shop", "support": "bench" } },
+  {
+    "id": "chair",
+    "template": "chair",
+    "overrides": { "name": "chair", "location": "shop", "support": "shop", "pos": { "x": 150, "y": 0 } }
+  },
+  {
+    "id": "stone",
+    "template": "stone",
+    "overrides": { "name": "stone", "location": "shop", "support": "shop", "pos": { "x": 150, "y": 200 } }
+  },
+  {
+    "id": "bottle",
+    "template": "bottle",
+    "overrides": { "name": "bottle", "location": "shop", "support": "shop", "pos": { "x": 250, "y": 200 } }
+  },
+  {
+    "id": "ann",
+    "template": "human",
+    "overrides": { "name": "ann", "location": "shop", "support": "shop", "pos": { "x": 150, "y": 60 } }
+  },
+  {
+    "id": "bob",
+    "template": "human",
+    "overrides": { "name": "bob", "location": "shop", "support": "shop", "pos": { "x": 100, "y": 220 } }
+  },
+  {
+    "id": "rex",
+    "template": "dog",
+    "overrides": { "name": "rex", "location": "shop", "support": "shop", "pos": { "x": 150, "y": -100 } }
+  }
+]
