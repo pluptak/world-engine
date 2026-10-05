@@ -2,7 +2,8 @@
 
 The CLI is a JSON adapter over `World`: one request on stdin, one method, one response. Zod
 validates that boundary, and a failure becomes `{status:"invalid", issues}` with exit code 2.
-`init` builds a world from a scenario of spawn specs.
+`init` builds a world from a scenario of spawn specs, and takes an optional third argument, a
+coverage file, so a world can declare the categories it answers from the first command.
 
 A world directory holds:
 - `initial.json` and canonical `snapshot.json`;

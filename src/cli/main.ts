@@ -7,10 +7,12 @@ import {
   openWorld,
   verbs,
   WorldError,
+  type Coverage,
   type Delta,
   type Result,
 } from "../api.js";
 import {
+  CoverageSchema,
   RequestSchema,
   ResponseSchema,
   ScenarioSchema,
@@ -57,7 +59,7 @@ function parseJson(text: string): { success: true; value: unknown } | { success:
   }
 }
 
-function initializeWorld(dir: string, scenarioPath: string): void {
+function initializeWorld(dir: string, scenarioPath: string, coveragePath?: string): void {
   let scenarioText: string;
   try {
     scenarioText = readFileSync(scenarioPath, "utf8");
@@ -77,7 +79,39 @@ function initializeWorld(dir: string, scenarioPath: string): void {
     return;
   }
 
-  const world = createWorld(dir, parsedScenario.data);
+  // Coverage is optional, and a world that declares none keeps the defaults. Each way the file can
+  // be wrong gets its own code, so a caller knows whether to fix the path, the JSON or the shape.
+  let coverage: Coverage | undefined;
+  if (coveragePath !== undefined) {
+    let coverageText: string;
+    try {
+      coverageText = readFileSync(coveragePath, "utf8");
+    } catch {
+      writeResponse({ status: "invalid", issues: [issue("no_such_coverage")] });
+      return;
+    }
+    const parsedCoverageJson = parseJson(coverageText);
+    if (!parsedCoverageJson.success) {
+      writeResponse({ status: "invalid", issues: [issue("invalid_coverage_json")] });
+      return;
+    }
+    const parsedCoverage = CoverageSchema.safeParse(parsedCoverageJson.value);
+    if (!parsedCoverage.success) {
+      writeResponse({
+        status: "invalid",
+        issues: [issue("invalid_coverage"), ...parsedCoverage.error.issues],
+      });
+      return;
+    }
+    coverage = parsedCoverage.data;
+  }
+
+  const world = createWorld(
+    dir,
+    parsedScenario.data,
+    undefined,
+    coverage === undefined ? undefined : { coverage },
+  );
   process.stdout.write(`${canonicalJson({ status: "ok", world: dir, snapshot_version: world.snapshot().version })}\n`);
 }
 
@@ -176,11 +210,11 @@ function invalidFromIssues(issues: unknown): void {
 
 async function main(argv: string[]): Promise<void> {
   if (argv[0] === "init") {
-    if (argv.length !== 3) {
+    if (argv.length !== 3 && argv.length !== 4) {
       invalidFromIssues([issue("invalid_init_args")]);
       return;
     }
-    initializeWorld(argv[1]!, argv[2]!);
+    initializeWorld(argv[1]!, argv[2]!, argv[3]);
     return;
   }
 

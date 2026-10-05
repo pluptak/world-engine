@@ -15,5 +15,3 @@ shows it. Step letters are the command ids the script uses. Nothing here is a pr
   who may open the chest, or that ann handed it over at all (A7, A12).
 - Only a break releases a vessel's liquid: the cup falls 75 cm when the table is
   removed and keeps its 30 cm³, because it declares no `break_fall_cm` (E2).
-- The CLI's `init` takes a scenario and nothing else, so a world made from the command
-  line always declares the default coverage, and the inn can never smell there.

@@ -46,15 +46,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Files Z2 does not touch, so these run in parallel with it; each merges on its own.
 
-### Y1. Coverage from the CLI, and the unknown sense
-- **Why:** a world built by `init` always declares the default coverage, so it can never smell
-  (`docs/limits.md`); and `unsupported_sense`, the answer for a covered sense the engine has no
-  rules for, has no test.
-- **Scope:** `init <dir> <scenario.json> [coverage.json]`, validated by the contract's schema and
-  passed to `createWorld`; a test that a coverage declaring `taste` answers `false` /
-  `unsupported_sense`.
-- **Done when:** a world made by `init` with smell in its coverage answers smell from the CLI.
-
 ### Y2. A vessel that falls spills
 - **Why:** the inn's cup fell 75 cm off a removed table and kept its 30 cm³, because only a break
   releases liquid (`docs/limits.md`).
