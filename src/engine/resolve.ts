@@ -2,7 +2,7 @@ import type { Entity, Id, Snapshot } from "../model.js";
 import type { TargetAddress } from "./command.js";
 import { WORLD_AUTHOR } from "./command.js";
 import type { TemplateRegistry } from "../templates.js";
-import { partState } from "./parts.js";
+import { effectivePart } from "./parts.js";
 
 export type TargetResolution =
   | { status: "resolved"; target: TargetAddress }
@@ -66,7 +66,7 @@ export function resolveTarget(
     const state =
       skipAbstractTarget || entity === undefined
         ? undefined
-        : partState(registry[entity.template], entity, partName);
+        : effectivePart(registry[entity.template], entity, partName);
     if (state !== undefined && state.status !== "detached") {
       return resolved(entityId, partName);
     }

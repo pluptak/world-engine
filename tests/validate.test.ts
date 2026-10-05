@@ -14,6 +14,7 @@ import {
   type Scenario,
   type Snapshot,
 } from "../src/index.js";
+import { effectivePart } from "../src/engine/parts.js";
 import { spawn } from "../src/engine/spawn.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
@@ -426,7 +427,8 @@ test("a severed limb is accounted for by the entity it became", (t) => {
   const guard = snapshot.entities.e3;
   ok(guard);
   strictEqual(guard.parts.arm_r?.status, "detached");
-  strictEqual(guard.parts.hand_r?.status, "detached");
+  strictEqual(guard.parts.hand_r, undefined);
+  strictEqual(effectivePart(registry.human, guard, "hand_r")?.status, "detached");
   const arm = Object.values(snapshot.entities).find(
     (entity) => entity.detached_from?.entity === "e3",
   );

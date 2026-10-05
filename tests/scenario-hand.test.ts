@@ -2,6 +2,7 @@ import { deepStrictEqual, ok, strictEqual } from "node:assert";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { capacities, capacity } from "../src/engine/capacity.js";
+import { effectivePart } from "../src/engine/parts.js";
 import { apply } from "../src/engine/pipeline.js";
 import { spawn } from "../src/engine/spawn.js";
 import type { Snapshot } from "../src/model.js";
@@ -97,7 +98,10 @@ test("detaching guard.hand_r spawns a hand and reduces manipulation to 50", () =
   strictEqual(newHand.template, "human.hand_r");
   deepStrictEqual(newHand.detached_from, { entity: setup.guardId, part: "hand_r" });
   strictEqual(newHand.support, setup.roomId);
-  strictEqual(finalAttack.snapshot.entities[setup.guardId]?.parts.hand_r?.status, "detached");
+  // The body stores the severed hand alone; the thumb reads as detached through it.
+  const guard = finalAttack.snapshot.entities[setup.guardId]!;
+  deepStrictEqual(Object.keys(guard.parts), ["hand_r"]);
+  strictEqual(effectivePart(registry.human, guard, "thumb_r")?.status, "detached");
   strictEqual(capacity(finalAttack.snapshot, registry, setup.guardId, "manipulation"), 50);
 
   const crate = spawn(finalAttack.snapshot, registry, "stone", {
@@ -182,7 +186,10 @@ test("detaching an arm carries its hand and its manipulation contribution", () =
   // The hand came off untouched, so the arm stores nothing for it.
   deepStrictEqual(detachedArm.parts, {});
   strictEqual(capacity(finalAttack.snapshot, registry, detachedArm.id, "manipulation"), 50);
-  strictEqual(finalAttack.snapshot.entities[setup.guardId]?.parts.hand_r?.status, "detached");
+  // The body stores the severed arm alone; the hand reads as detached through it.
+  const guard = finalAttack.snapshot.entities[setup.guardId]!;
+  deepStrictEqual(Object.keys(guard.parts), ["arm_r"]);
+  strictEqual(effectivePart(registry.human, guard, "hand_r")?.status, "detached");
 });
 
 test("a severed arm cannot act as the actor of a command", () => {

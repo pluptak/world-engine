@@ -23,6 +23,31 @@ export function partState(
   return decl === undefined ? undefined : { integrity: decl.max_integrity, status: "intact" };
 }
 
+// A part as it stands on the body: its own state, unless an ancestor is detached or destroyed, in
+// which case it shares that status (it left with it, or went with it). A severed subtree stores only
+// its root, so this is how a thumb on a severed hand reads as detached.
+export function effectivePart(
+  template: Template | undefined,
+  entity: Entity,
+  name: string,
+): PartState | undefined {
+  const own = partState(template, entity, name);
+  if (own === undefined || own.status === "detached" || own.status === "destroyed") {
+    return own;
+  }
+  const visited = new Set<string>([name]);
+  let parent = template?.parts.find((part) => part.name === name)?.parent ?? null;
+  while (parent !== null && !visited.has(parent)) {
+    visited.add(parent);
+    const above = partState(template, entity, parent);
+    if (above?.status === "detached" || above?.status === "destroyed") {
+      return { integrity: own.integrity, status: above.status };
+    }
+    parent = template?.parts.find((part) => part.name === parent)?.parent ?? null;
+  }
+  return own;
+}
+
 // The record with each named part set to its state, an entry dropped where that is the default.
 export function withParts(
   template: Template,

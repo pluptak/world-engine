@@ -236,16 +236,18 @@ function detachPart(
 
   const subtree = descendantNames(template.parts, partName);
   const subtreeSet = new Set(subtree);
-  const detachedParts: Record<string, PartState> = {};
+  // The body keeps only the severed root; what hung below it reads as detached through it
+  // (effectivePart), and its own state travels with the spawned entity below.
+  const remaining: Record<string, PartState> = { ...entity.parts };
   for (const name of subtree) {
-    const state = partState(template, entity, name)!;
-    detachedParts[name] = {
-      ...state,
-      ...(name === partName && { integrity: nextIntegrity }),
-      status: "detached",
-    };
+    delete remaining[name];
   }
-  context.set(entityId, "parts", withParts(template, entity.parts, detachedParts), eventId);
+  context.set(
+    entityId,
+    "parts",
+    withParts(template, remaining, { [partName]: { integrity: nextIntegrity, status: "detached" } }),
+    eventId,
+  );
 
   const detachedTemplateId = `${entity.template}.${partName}`;
   const detachedTemplate = context.registry[detachedTemplateId];

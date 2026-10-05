@@ -74,7 +74,9 @@ suffixes (NodeNext).
   the chain, no dangling references (`detached_from` is history, not a link), detached parts
   accounted for, no part stored at its default, integrity range, ids below `next_seq`), `parts.ts`
   (part state is sparse: an absent entry is the template default, intact at `max_integrity`; read
-  through `partState`, write through `withParts`, which drops an entry set back to the default).
+  through `partState`, write through `withParts`, which drops an entry set back to the default; a
+  severed subtree is stored as its root alone, and `effectivePart` gives a part under a detached or
+  destroyed ancestor that ancestor's status).
 - `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json`,
   `log.jsonl`, `events.jsonl` and `head.json`. `submit` appends the log line (every command, including
   refused and invalid ones) and the command's events, atomically writes the snapshot, and writes

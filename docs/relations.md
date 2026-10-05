@@ -17,8 +17,8 @@ present, history does not, and a key's `opens` may dangle. `any` means the targe
 R1 — `validateSnapshot`: `support_and_contained_in`, `support_or_containment_cycle`,
 `dangling_reference`; a room support also needs a `pos`, and `put` refuses a loop.
 R2 — `validateSnapshot`: `location_mismatch`; `remove` refuses `occupied_room`.
-R3 — never walked: `detached_from` is history and may name a removed origin; the rule on the part
-that left is `detached_part_without_entity`.
+R3 — never a link: `detached_from` is history and may name a removed origin; the rule on the part
+that left is `detached_part_without_entity`, accounted for back along `detached_from`.
 R4 — `validateSnapshot` on a `door`: `door_side_not_room`, else `dangling_reference`.
 R5 — `validateSnapshot`: `opens_target_not_openable`; a name reaching nothing is left alone.
 R6 — `validateSnapshot`: `concealed_by_abstract` (neither end a mark),

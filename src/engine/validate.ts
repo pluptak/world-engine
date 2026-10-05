@@ -2,7 +2,7 @@ import type { Entity, Id, Snapshot } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import { heldInParts, holderLayout, packGrips, partAvailable } from "./carry.js";
 import { misfit } from "./fit.js";
-import { isDefaultPart } from "./parts.js";
+import { effectivePart, isDefaultPart } from "./parts.js";
 import { isAbstract } from "./resolve.js";
 
 export interface SnapshotIssue {
@@ -97,24 +97,35 @@ function accountedFor(
   ownerId: Id,
   partName: string,
 ): boolean {
-  const owner = snapshot.entities[ownerId];
-  const template = owner === undefined ? undefined : registry[owner.template];
-  const visited = new Set<string>();
-  let name: string | null = partName;
-
-  while (name !== null) {
-    if (visited.has(name)) {
-      throw new TypeError(`Part cycle at ${name}`);
+  // A part already gone when its ancestor was severed rides on the severed entity as detached, and
+  // is accounted for where it left from: the walk follows `detached_from` back to the origin,
+  // stopping below the part that origin lost, so a severed entity never accounts for itself.
+  const owners = new Set<Id>();
+  let current: Id = ownerId;
+  let stopAt: string | null = null;
+  for (;;) {
+    owners.add(current);
+    const owner = snapshot.entities[current];
+    const template = owner === undefined ? undefined : registry[owner.template];
+    const visited = new Set<string>();
+    let name: string | null = partName;
+    while (name !== null && name !== stopAt) {
+      if (visited.has(name)) {
+        throw new TypeError(`Part cycle at ${name}`);
+      }
+      visited.add(name);
+      if (spawned.has(`${current} ${name}`)) {
+        return true;
+      }
+      name = template?.parts.find((part) => part.name === name)?.parent ?? null;
     }
-    visited.add(name);
-
-    if (spawned.has(`${ownerId} ${name}`)) {
-      return true;
+    const origin = owner?.detached_from ?? null;
+    if (origin === null || owners.has(origin.entity)) {
+      return false;
     }
-    name = template?.parts.find((part) => part.name === name)?.parent ?? null;
+    current = origin.entity;
+    stopAt = origin.part;
   }
-
-  return false;
 }
 
 function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIssue[] {
@@ -422,6 +433,14 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
       const decl = template?.parts.find((candidate) => candidate.name === part);
       if (state !== undefined && decl !== undefined && isDefaultPart(decl, state)) {
         issues.push(issue("part_at_default", [...path, "parts", part], "default"));
+      }
+      // A severed subtree is stored as its root alone; below it, state lives on the severed entity.
+      if (
+        state !== undefined &&
+        state.status !== "detached" &&
+        effectivePart(template, entity, part)?.status === "detached"
+      ) {
+        issues.push(issue("part_under_detached", [...path, "parts", part], state.status));
       }
     }
   }

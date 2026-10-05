@@ -726,6 +726,7 @@ export const editVerb: Verb = {
     "integrity_out_of_range",
     "detached_part_without_entity",
     "part_at_default",
+    "part_under_detached",
     "location_mismatch",
     "dangling_reference",
     "id_not_below_next_seq",

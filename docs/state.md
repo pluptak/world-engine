@@ -19,13 +19,13 @@ Templates declare parts, dimensions, mass, properties, break products, and resid
 parts exist. Part state records integrity and whether a part is intact, damaged, detached, or
 destroyed, and is sparse: a part intact at its `max_integrity` is not stored, an absent entry reads
 as that default, and a part set back to it leaves the record (`partState`, `withParts`). A human
-hand carries a thumb that holds 20 of its 50 `manipulation`, so a destroyed thumb leaves the hand's
-grip but costs a fifth of the capacity; an untouched one stores nothing. Detachable subtrees become
-entities of the `<template>.<part>` template and retain their origin in `detached_from`; a registry
-with a detachable part but no such template is rejected. A template prop `abstract` makes its
-entities marks rather than things: no agent may address one, it is not perceived, and it neither
-hides nor lies under anything — abstractness is read from the template, so a registry that gains the
-prop makes the world's own entities abstract.
+hand's thumb holds 20 of its 50 `manipulation`. Detachable subtrees become entities of the
+`<template>.<part>` template and retain their origin in `detached_from`; the body stores the severed
+root alone, and a part under a detached or destroyed one reads that status (`effectivePart`,
+`part_under_detached`); a registry with a detachable part but no such template is rejected. A
+template prop `abstract` makes its entities marks rather than things: no agent may address one, it
+is not perceived, and it neither hides nor lies under anything — abstractness is read from the
+template, so a registry that gains the prop makes the world's own entities abstract.
 
 Capacities sum part contributions and unexpired modifiers, clamped to 0–100; templates with no parts
 have none. Structural capacity leaves the modifiers out, so a stunned carrier keeps hold of what it

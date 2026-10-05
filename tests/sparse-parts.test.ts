@@ -55,11 +55,10 @@ test("a struck hand stores only itself; struck again it updates; severed it stay
   deepStrictEqual(world.entity(ann)?.parts, { hand_r: { integrity: 20, status: "damaged" } });
   const severed = run(world, bob, "attack", `${ann}.hand_r`);
   ok(severed.events.some((event) => event.type === "detached"));
-  // The thumb goes with its hand: the whole subtree is recorded as detached.
-  deepStrictEqual(world.entity(ann)?.parts, {
-    hand_r: { integrity: 0, status: "detached" },
-    thumb_r: { integrity: 50, status: "detached" },
-  });
+  // The body stores the severed root alone; the thumb went with it and reads as detached through it.
+  deepStrictEqual(world.entity(ann)?.parts, { hand_r: { integrity: 0, status: "detached" } });
+  strictEqual(world.query({ kind: "fact", subject: `${ann}.thumb_r`, relation: "status", object: "detached" }).value, "true");
+  strictEqual(world.query({ kind: "fact", subject: `${ann}.thumb_r`, relation: "attached_to" }).value, "false");
   const hand = Object.values(world.snapshot().entities).find((entity) => entity.detached_from?.entity === ann);
   strictEqual(hand?.template, "human.hand_r");
 });
@@ -76,6 +75,41 @@ test("a thumb costs nothing until it is struck, and losing it costs a fifth of t
   deepStrictEqual(world.entity(ann)?.parts, { thumb_r: { integrity: 0, status: "destroyed" } });
   strictEqual(world.query({ ...thumb, object: "destroyed" }).value, "true");
   strictEqual(structuralCapacity(world.snapshot(), registry, ann, "manipulation"), 80);
+});
+
+function strike(world: World, actor: string, address: string, times: number): void {
+  for (let index = 0; index < times; index += 1) {
+    strictEqual(run(world, actor, "attack", address).status, "ok", `${address} ${index}`);
+  }
+}
+
+test("a hand severed first, then its arm: the arm comes away recording the hand as already gone", (t) => {
+  const { world, ann, bob } = open(t);
+  strike(world, bob, `${ann}.hand_r`, 3);
+  strike(world, bob, `${ann}.arm_r`, 3);
+  deepStrictEqual(world.entity(ann)?.parts, { arm_r: { integrity: 0, status: "detached" } });
+  const severed = Object.values(world.snapshot().entities).filter((entity) => entity.detached_from?.entity === ann);
+  deepStrictEqual(severed.map((entity) => entity.template).sort(), ["human.arm_r", "human.hand_r"]);
+  const arm = severed.find((entity) => entity.template === "human.arm_r")!;
+  deepStrictEqual(arm.parts, { hand_r: { integrity: 0, status: "detached" } });
+
+  // Without the hand that left first, the arm cannot account for it on its own.
+  const hand = severed.find((entity) => entity.template === "human.hand_r")!;
+  const entities = { ...world.snapshot().entities };
+  delete entities[hand.id];
+  deepStrictEqual(
+    validateSnapshot({ ...world.snapshot(), entities }, registry).map((issue) => issue.code),
+    ["detached_part_without_entity"],
+  );
+});
+
+test("a part under a destroyed ancestor reads as destroyed and no longer attached", (t) => {
+  const { world, ann, bob } = open(t);
+  strike(world, bob, ann, 3);
+  deepStrictEqual(world.entity(ann)?.parts, { torso: { integrity: 0, status: "destroyed" } });
+  const pocket = { kind: "fact" as const, subject: `${ann}.pocket` };
+  strictEqual(world.query({ ...pocket, relation: "status", object: "destroyed" }).value, "true");
+  strictEqual(world.query({ ...pocket, relation: "attached_to" }).value, "false");
 });
 
 test("reopening, and replaying the log, give the same sparse snapshot byte for byte", (t) => {
@@ -105,4 +139,19 @@ test("a stored part at its default breaks the snapshot's one stored form", (t) =
     entities: { ...snapshot.entities, [ann]: { ...human, parts: { pocket: { integrity: 100, status: "intact" as const } } } },
   };
   deepStrictEqual(validateSnapshot(stored, registry).map((issue) => issue.code), ["part_at_default"]);
+});
+
+test("a severed subtree is stored as its root alone: an entry below a detached part is refused", (t) => {
+  const { world, ann, bob } = open(t);
+  strike(world, bob, `${ann}.hand_r`, 3);
+  const snapshot = world.snapshot();
+  const human = snapshot.entities[ann]!;
+  const stored = {
+    ...snapshot,
+    entities: {
+      ...snapshot.entities,
+      [ann]: { ...human, parts: { ...human.parts, thumb_r: { integrity: 30, status: "damaged" as const } } },
+    },
+  };
+  deepStrictEqual(validateSnapshot(stored, registry).map((issue) => issue.code), ["part_under_detached"]);
 });

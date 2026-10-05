@@ -5,7 +5,7 @@ import type { Entity, Id, Perceivers, Pos, Snapshot, Tri, WorldEvent } from "../
 import type { TemplateRegistry } from "../templates.js";
 import { closedEnclosure, isAgent } from "./verbs/address.js";
 import { isAbstract } from "./resolve.js";
-import { partState } from "./parts.js";
+import { effectivePart } from "./parts.js";
 
 // The one declared threshold for `near`: two positions in the same room this far apart or closer are
 // near. Squared, because the arithmetic stays integer and no square root is ever taken.
@@ -43,7 +43,7 @@ function relationValue(
       if (object === undefined) {
         const template = registry[entity.template];
         return (template?.parts ?? []).some((decl) => {
-          const part = partState(template, entity, decl.name);
+          const part = effectivePart(template, entity, decl.name);
           return part !== undefined && part.status !== "detached" && part.status !== "destroyed";
         });
       }
@@ -56,7 +56,7 @@ function relationValue(
           : object;
       const part =
         typeof partName === "string"
-          ? partState(registry[entity.template], entity, partName)
+          ? effectivePart(registry[entity.template], entity, partName)
           : undefined;
       return part !== undefined && part.status !== "detached" && part.status !== "destroyed";
     }
@@ -154,7 +154,7 @@ function partFact(
   if (entity === undefined) {
     return answer("false", "no_such_entity");
   }
-  const state = partState(registry[entity.template], entity, query.subject.slice(separator + 1));
+  const state = effectivePart(registry[entity.template], entity, query.subject.slice(separator + 1));
   if (state === undefined) {
     return answer("false", "no_such_part");
   }
