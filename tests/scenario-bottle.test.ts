@@ -137,7 +137,14 @@ test("an insufficient fall drops the bottle without breaking it", () => {
   strictEqual(result.events.some((event) => event.type === "dropped"), true);
   strictEqual(result.events.some((event) => event.type === "broken"), false);
   strictEqual(result.snapshot.entities[scenario.bottleId]?.status, "intact");
-  deepStrictEqual(result.snapshot.entities[scenario.roomId]?.residue, {});
+  // The fall that does not break still spills: the vessel empties onto the room.
+  const spilled = result.events.find((event) => event.type === "spilled");
+  ok(spilled !== undefined);
+  strictEqual(spilled.entity, scenario.bottleId);
+  deepStrictEqual(spilled.data, { material: "wine", amount: 75, to: scenario.roomId });
+  strictEqual(result.snapshot.entities[scenario.bottleId]?.props.liquid_material, "");
+  strictEqual(result.snapshot.entities[scenario.bottleId]?.props.liquid_amount, 0);
+  deepStrictEqual(result.snapshot.entities[scenario.roomId]?.residue, { wine: 75 });
 });
 
 test("dropping a bottle from hand height breaks it and spills its contents", () => {

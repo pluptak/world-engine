@@ -25,3 +25,9 @@ no liquid" means everywhere.
 A successful pour emits one `poured` event on the source with `{material, amount, to}`, then writes
 the source's props (amount lowered, material cleared when empty) and either the destination's props
 or its residue under that event.
+
+A vessel that falls or tips without breaking spills instead of pouring: all of its liquid onto its
+landing as residue through `addResidue`, under one `spilled` event on the vessel with
+`{material, amount, to}`, caused by the `dropped` event. A break releases through its own path
+alone — the threshold check does one or the other, never both — and a shut vessel keeps its
+liquid. A spill is all or nothing: no amount is asked for and none is kept.

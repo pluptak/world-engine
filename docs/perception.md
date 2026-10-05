@@ -26,8 +26,8 @@ hearing one in the same room is `T`: it is within earshot of it.
 
 `authored` is `edit`, `placed`, `edited`, `removed`, and a `spawned` whose cause is one of those:
 the world author's own work, which nobody senses, though its consequences (`displaced`, `dropped`,
-`broken`, a product's `spawned`) are sensed as any other event. `pour` is `pour` and `poured`, and
-`broken` is a break whose entity held a liquid or residue; `event` is every other event. The
+`broken`, a product's `spawned`) are sensed as any other event. `pour` is `pour`, `poured` and
+`spilled`; `broken` is a break whose entity held a liquid or residue; `event` is any other. The
 `entity-` rows are the entity form, where there is no event and so nothing is loud. `found` is read
 against the concealer it names, `revealed` against the thing revealed. The false bases are
 `no_such_entity`, `no_such_event`, `no_target`, `no_sense_capacity`, `uncovered_sense`, `authored`,

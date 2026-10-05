@@ -520,7 +520,7 @@ function script(ids: Ids): Step[] {
     run: (world) => [
       world.edit({ kind: "remove", target: ids.table }, { command_id: "E2-remove-table", perceivers: true }),
     ],
-    expect: [{ status: "ok", events: ["edit", "removed", "displaced", "dropped"] }],
+    expect: [{ status: "ok", events: ["edit", "removed", "displaced", "dropped", "spilled"] }],
     perceivers: {
       // The author's own work is nobody's: the world writes it, nobody senses it.
       edit: { sight: [], hearing: [], smell: [] },
@@ -529,12 +529,17 @@ function script(ids: Ids): Step[] {
       displaced: { sight: ["ann", "rex"], hearing: ["ann", "rex"] },
       // The 75 cm fall is loud: heard next door through the open door, and the cellar is dark.
       dropped: { sight: ["ann", "rex"], hearing: ["ann", "bob", "rex"] },
+      // The spill reads the pour row: seen and heard in the room, smelt only by the nose in it.
+      spilled: { sight: ["ann", "rex"], hearing: ["ann", "rex"], smell: ["rex"] },
     },
     then: (world) => {
       strictEqual(world.entity(ids.table), null);
       strictEqual(world.entity(ids.cup)?.support, ids.common);
-      // A vessel that survives its fall keeps what was in it: only a break releases it.
-      strictEqual(world.entity(ids.cup)?.props.liquid_amount, 30);
+      // The fall spills the cup: an unbroken fall empties the vessel onto its landing, on top
+      // of what the earlier pour left on the floor.
+      strictEqual(world.entity(ids.cup)?.props.liquid_material, "");
+      strictEqual(world.entity(ids.cup)?.props.liquid_amount, 0);
+      strictEqual(world.entity(ids.common)?.residue.grape_wine, 75);
       // Existence is modelled: what is gone answers false rather than unknown.
       deepStrictEqual(
         world.query({ kind: "fact", subject: ids.ann, relation: "near", object: ids.table }),

@@ -157,13 +157,6 @@ const script: Command[] = [
   { command_id: "take-bottle", actor: ANN, verb: "take", target: "bottle" },
   { command_id: "drop-bottle", actor: ANN, verb: "drop", target: "bottle" },
   { command_id: "take-spare", actor: ANN, verb: "take", target: "spare" },
-  {
-    command_id: "pour-spare",
-    actor: ANN,
-    verb: "pour",
-    target: "spare",
-    args: { destination: "cup", amount: 75 },
-  },
 ];
 
 interface Answer {
@@ -276,6 +269,16 @@ function runScript(world: World): void {
   strictEqual(placed.status, "ok");
   const removed = world.edit({ kind: "remove", target: TABLE }, { command_id: "remove-table" });
   strictEqual(removed.status, "ok");
+  // The pour comes last: the cup falls empty when the table goes (an empty fall spills nothing),
+  // so it still holds its wine when the rows are walked.
+  const poured = world.command({
+    command_id: "pour-spare",
+    actor: ANN,
+    verb: "pour",
+    target: "spare",
+    args: { destination: "cup", amount: 75 },
+  });
+  strictEqual(poured.status, "ok", `pour-spare (${poured.status})`);
 }
 
 // Coverage that includes smell.

@@ -42,19 +42,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
   shows it. After Z2 and Z3, take the rest one at a time, or say why none of them is worth a
   verb. Facing and a sight cone (an unseen theft in a lit room) are a candidate, the costliest one.
 
-## Lane Y. Beside Z2
-
-Files Z2 does not touch, so these run in parallel with it; each merges on its own.
-
-### Y2. A vessel that falls spills
-- **Why:** the inn's cup fell 75 cm off a removed table and kept its 30 cm³, because only a break
-  releases liquid (`docs/limits.md`).
-- **Scope:** in the fall path of `src/resolvers/physical.ts`, a vessel holding liquid that falls
-  without breaking and is not shut spills all of it as residue on its landing, under a `spilled`
-  event; the sense table gets a `spilled` row, smelled like a pour.
-- **Done when:** the inn's cup ends empty with the floor carrying its liquid; a shut vessel keeps
-  its liquid; a break still releases through its own path, never twice.
-
 ## Out of scope
 
 - Prose or intent → calls, and planning calls toward a goal state: the middleware's job.

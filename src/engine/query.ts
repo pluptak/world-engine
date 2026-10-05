@@ -286,6 +286,8 @@ export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
   // A pour releases what it pours.
   pour: POUR_SENSES,
   poured: POUR_SENSES,
+  // A spill releases what the fall shook loose, smelled like a pour.
+  spilled: POUR_SENSES,
   // A break releases what was inside, so it is smelt when the broken entity smelled.
   broken: BROKEN_SENSES,
   // What the world writes.

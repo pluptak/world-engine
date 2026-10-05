@@ -96,6 +96,7 @@ function breakOnFall(
     typeof threshold !== "number" ||
     fall_cm < threshold
   ) {
+    spillVessel(context, entityId, causeId, fall_cm, landing);
     return;
   }
 
@@ -165,6 +166,52 @@ function breakOnFall(
       });
     }
   }
+}
+
+// A vessel that falls without breaking spills all it holds onto its landing: one `spilled`
+// event caused by the drop, residue through the same path a break uses, and empty props after.
+// A break and a spill are the two arms of the threshold check above, so one fall never does both.
+function spillVessel(
+  context: TransitionContext,
+  entityId: Id,
+  droppedEventId: Id,
+  fall_cm: number,
+  landing: Landing,
+): void {
+  if (fall_cm <= 0) {
+    return;
+  }
+  const entity = requireEntity(context, entityId);
+  const material = entity.props.liquid_material;
+  const amount = entity.props.liquid_amount;
+  if (
+    typeof material !== "string" ||
+    material.length === 0 ||
+    typeof amount !== "number" ||
+    amount <= 0
+  ) {
+    return;
+  }
+  // A shut vessel keeps what it holds, the way a shut destination refuses a pour.
+  if (entity.props.openable === true && entity.props.open !== true) {
+    return;
+  }
+  const surface = landing.support ?? landing.location;
+  const spilledEvent = context.emit(
+    "spilled",
+    entityId,
+    { material, amount, to: surface },
+    droppedEventId,
+  );
+  if (surface !== null) {
+    addResidue(context, surface, { [material]: amount }, spilledEvent);
+  }
+  context.set(
+    entityId,
+    "props",
+    { ...entity.props, liquid_material: "", liquid_amount: 0 },
+    spilledEvent,
+  );
 }
 
 function processLoss(context: TransitionContext, request: LossRequest, queue: LossRequest[]): void {

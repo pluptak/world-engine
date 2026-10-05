@@ -13,5 +13,5 @@ shows it. Step letters are the command ids the script uses. Nothing here is a pr
   note under the book and a lifted book uncovers it, but nothing records which (C1, C2).
 - There is no social state: the key moves because a caller said so, and nothing records
   who may open the chest, or that ann handed it over at all (A7, A12).
-- Only a break releases a vessel's liquid: the cup falls 75 cm when the table is
-  removed and keeps its 30 cm³, because it declares no `break_fall_cm` (E2).
+- A spill is all or nothing: the falling cup keeps none of its 30 cm³, and there is no
+  half spill (E2).
