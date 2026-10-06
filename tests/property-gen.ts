@@ -52,7 +52,23 @@ export const SCENARIO: Scenario = [
   },
   {
     template: "human",
-    overrides: { name: "bob", location: "e1", support: "e1", pos: { x: -40, y: 0 } },
+    // Bob strikes hard enough to take a part off in one blow.
+    overrides: {
+      name: "bob",
+      location: "e1",
+      support: "e1",
+      pos: { x: -40, y: 0 },
+      props: {
+        agent: true,
+        reach_cm: 100,
+        hand_height_cm: 100,
+        attack_damage: 100,
+        default_hit_part: "torso",
+        bleed_damage: 5,
+        bleed_every_ticks: 2,
+        bleed_times: 3,
+      },
+    },
   },
   {
     template: "dog",
@@ -108,6 +124,15 @@ export function mulberry32(seed: number): () => number {
 }
 
 const templates = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+
+// The parts of an entity that can come off and are still on it, sorted.
+function detachableParts(snapshot: Snapshot, id: Id): string[] {
+  const entity = snapshot.entities[id];
+  return (templates[entity?.template ?? ""]?.parts ?? [])
+    .filter((part) => part.detachable && entity?.parts[part.name]?.status !== "detached")
+    .map((part) => part.name)
+    .sort();
+}
 
 // The parts an entity's template declares, sorted. Part state is sparse, so the stored record
 // names only the parts something has changed; the template names every one there is.
@@ -260,6 +285,20 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
   push: (context) => shifted(context, "push"),
   pull: (context) => shifted(context, "pull"),
   attack: (context) => {
+    // Half the blows are aimed at a part that can come off another agent, so wounds open and bleed;
+    // the rest land anywhere, on anything.
+    const aimable = context.agents.filter(
+      (id) => id !== context.actor && detachableParts(context.snapshot, id).length > 0,
+    );
+    if (aimable.length > 0 && context.rand() < 0.5) {
+      const victim = pick(context.rand, aimable);
+      return {
+        command_id: context.commandId,
+        actor: context.actor,
+        verb: "attack",
+        target: `${victim}.${pick(context.rand, detachableParts(context.snapshot, victim))}`,
+      };
+    }
     const victim = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
     const parts = declaredParts(context.snapshot, victim);
     const address =

@@ -19,7 +19,9 @@ so and do nothing. What its grips and mouth held falls where it lies, each fall 
 edit that removes them stops a wound.
 
 `tests/bleeding.test.ts` is the spec, with the inn script, where ann bleeds after losing an arm.
-The property test's attacks rarely sever a part, so it seldom reaches a wound.
+The property test's generator aims half its blows at parts that come off and gives its bob a
+severing blow, so wounds open and bleed under every property; a test there fails if random runs
+stop reaching them.
 
 What it does not do: nothing stops a bleed but its count, the body's end or an edit (there is no
 bandage); a detachment written by `edit` opens no wound; and bleeding costs no capacity, only the

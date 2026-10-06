@@ -216,6 +216,30 @@ function aimedAt(step: WorldEdit, snapshot: Snapshot): string[] {
   return aims;
 }
 
+test("random runs open wounds that bleed, and every step still validates", () => {
+  // Bleeding is a chain of scheduled causes across commands; the generator aims half its blows at
+  // parts that come off, so wounds open and bleed under every property, not only in the spec.
+  let detached = 0;
+  let bleeds = 0;
+  for (let seed = 0; seed < 100; seed += 1) {
+    const rand = mulberry32(seed);
+    const world = memoryWorld(buildInitial(registry));
+    for (let i = 0; i < 60; i += 1) {
+      const step = genStep(rand, world.snapshot(), `wound-${seed}-${i}`);
+      const result = "verb" in step ? world.command(step) : world.edit(step);
+      for (const event of result.status === "ok" ? result.events : []) {
+        detached += event.type === "detached" ? 1 : 0;
+        // A bleed is caused by an event of an earlier command: the wound's opening or its last bleed.
+        const ownCause = result.events.some((other) => other.event_id === event.cause_id);
+        bleeds += (event.type === "damaged" || event.type === "destroyed") && !ownCause ? 1 : 0;
+      }
+      deepStrictEqual(validateSnapshot(world.snapshot(), registry), [], `wound-${seed}-${i}`);
+    }
+  }
+  strictEqual(detached >= 10, true, `detached ${detached}`);
+  strictEqual(bleeds >= 10, true, `bleeds ${bleeds}`);
+});
+
 test("the generator aims an edit at every relation rule, and each step still validates", () => {
   const seen = new Set<string>();
   for (let seed = 0; seed < 100 && seen.size < 12; seed += 1) {

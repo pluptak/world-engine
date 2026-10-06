@@ -78,7 +78,11 @@ destroyed observer as if it saw and heard.
 
 ### 3. Wounds in the random runs
 
-The property test's attacks sever a part about once in 3,000 steps, so bleeding rests on its spec
+Built: half the generated blows aim at a detachable part of another agent and the generated bob
+severs in one blow; 100 seeds × 60 steps open about 27 wounds and 22 bleeds, and a property test
+fails if they drop under 10 each.
+
+The property test's attacks severed a part about once in 3,000 steps, so bleeding rests on its spec
 and the inn script. Making the generated bob hit harder was tried and did not help enough.
 
 - Decided: the spec stays the authority; this is coverage, not behaviour.
