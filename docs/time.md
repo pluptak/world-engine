@@ -7,10 +7,11 @@ none, because the author states facts and no time passes in the world for them.
 
 An ok command resolves at the tick it starts: its preconditions and transition read the snapshot as
 it was given. Then the pipeline advances the clock (`advanceClock` in `src/engine/clock.ts`) through
-every tick in that span that has something due, and ends at start + duration. What falls due today is
-a modifier's expiry, processed in tick, entity, capacity, cause and declaration order. Each expiry
-emits `capability_changed` after the command's own events, caused by the event that made the
-modifier, so a stun wears off during whichever command spans its tick, `wait` or not.
+every tick in that span that has something due, and ends at start + duration. What falls due
+today is a modifier's expiry, processed in tick, entity, capacity, cause and declaration order. Each
+expiry emits `capability_changed` after the command's own events, caused by the event that made the
+modifier, under which the change to `modifiers` is recorded too ([provenance.md](provenance.md)),
+so a stun wears off during whichever command spans its tick, `wait` or not.
 
 A refused, invalid, unresolved or preempted command takes no time, and neither does `check`. A
 `beat` is an ordered batch, so its commands take their time in turn. A command that would carry the

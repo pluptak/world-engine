@@ -107,6 +107,21 @@ test("a stun wears off during whatever command spans its expiry, after that comm
   strictEqual(run(next.snapshot, { actor: guard, verb: "take", target: "crate" }).status, "ok");
 });
 
+test("tracing the modifiers a stun left behind leads to the blow, not to the step it ended during", () => {
+  const { snapshot, attacker, guard } = duel();
+  const world = memoryWorld(snapshot, registry);
+  strictEqual(world.command({ command_id: "hit", actor: attacker, verb: "attack", target: `${guard}.hand_r` }).status, "ok");
+  strictEqual(world.command({ command_id: "s1", actor: attacker, verb: "move", args: { to: { x: -50, y: 0 } } }).status, "ok");
+  strictEqual(world.command({ command_id: "s2", actor: attacker, verb: "move", args: { to: { x: -100, y: 0 } } }).status, "ok");
+  deepStrictEqual(world.entity(guard)?.modifiers, []);
+  const chain = world.trace({ entity: guard, field: "modifiers" }).events;
+  deepStrictEqual(chain.map((event) => [event.command_id, event.type]), [
+    ["hit", "attack"],
+    ["hit", "damaged"],
+    ["s2", "capability_changed"],
+  ]);
+});
+
 test("a beat is an ordered batch: its commands take their time in turn", () => {
   const { snapshot, attacker, guard } = duel();
   const world = memoryWorld(snapshot, registry);

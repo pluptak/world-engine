@@ -7,6 +7,6 @@ transition has run ([time.md](time.md)), bumps its version, and a verb may decla
 `validateResult`, run after its transition: it refuses a result that breaks an invariant. The engine
 is pure: a transition takes a snapshot and returns a new one; I/O stays outside.
 
-Each verb declares its args, its duration, the capacities it needs and the refusal codes it can return; `verbs()`
-is the catalog read from those declarations, and a refusal with an undeclared code is an engine bug
-that throws. Each verb, its arguments and its rules are in [verbs.md](verbs.md).
+Each verb declares its args, its duration, the capacities it needs and the refusal codes it can
+return; `verbs()` is the catalog read from those declarations, and a refusal with an undeclared code
+is an engine bug that throws. Each verb, its arguments and its rules are in [verbs.md](verbs.md).

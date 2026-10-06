@@ -68,29 +68,43 @@ export function advanceClock(context: TransitionContext, ticks: number): void {
     );
 
     context.snapshot = { ...context.snapshot, tick: expirationTick };
-    for (const entityId of affectedEntities) {
-      const entity = context.snapshot.entities[entityId]!;
-      const modifiers = entity.modifiers.filter(
-        (modifier) => modifier.expires_at_tick === null || modifier.expires_at_tick > expirationTick,
-      );
-      context.set(entityId, "modifiers", modifiers, context.root_event_id);
-    }
-    const after = new Map(
+    const remaining = new Map(
       affectedEntities.map((entityId) => [
         entityId,
-        capacities(context.snapshot, context.registry, entityId),
+        context.snapshot.entities[entityId]!.modifiers.filter(
+          (modifier) => modifier.expires_at_tick === null || modifier.expires_at_tick > expirationTick,
+        ),
       ]),
     );
+    const expired: typeof context.snapshot = {
+      ...context.snapshot,
+      entities: { ...context.snapshot.entities },
+    };
+    for (const [entityId, modifiers] of remaining) {
+      expired.entities[entityId] = { ...expired.entities[entityId]!, modifiers };
+    }
+    const after = new Map(
+      affectedEntities.map((entityId) => [entityId, capacities(expired, context.registry, entityId)]),
+    );
 
+    // The events come first so the change to `modifiers` can be recorded under the entity's first
+    // expiry, which names the modifier's cause: a trace of the field and of the event agree.
+    const firstEvent = new Map<string, string>();
     for (const entry of expiringAtTick) {
       const from = before.get(entry.entity)?.[entry.modifier.capacity] ?? 0;
       const to = after.get(entry.entity)?.[entry.modifier.capacity] ?? 0;
-      context.emit(
+      const eventId = context.emit(
         "capability_changed",
         entry.entity,
         { capacity: entry.modifier.capacity, from, to },
         entry.modifier.cause_id,
       );
+      if (!firstEvent.has(entry.entity)) {
+        firstEvent.set(entry.entity, eventId);
+      }
+    }
+    for (const [entityId, modifiers] of remaining) {
+      context.set(entityId, "modifiers", modifiers, firstEvent.get(entityId)!);
     }
   }
 
