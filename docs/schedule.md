@@ -20,12 +20,13 @@ and `close` by hand withdraws the pending close; neither records anything about 
 
 **Overtaken causes.** A cause that finds nothing to do (the door already shut, say by an edit) is
 taken off the schedule and emits nothing. A cause whose entity is removed goes with it, pruned once
-the transition has run. A cause never touches anything but its own entity.
+the transition has run. Only a close touches more than its own entity, moving its gate's occupants.
 
-**In the way.** A close that finds an agent standing in the gate's footprint does not shut: it waits
-and tries again the next time anything can have moved, the next tick something else falls due or
-just after the command ends, as often as it takes, so a long `wait` beside it costs one look. A door
-between rooms has no footprint and always shuts.
+**In the way.** A close moves everything standing on the gate's footprint aside first, agents and
+items alike, just clear along its thin axis (a tie goes positive), each under a `moved` caused by
+the `closed`, uncovering what it hid; what a walk would not meet stays (anything lower than
+`STEP_OVER_CM`, broken or rubble). A door between rooms has no footprint, so a close there moves
+nothing. `close` by hand does the same.
 
 **Stored one way.** `validateSnapshot` refuses an empty list (`empty_schedule`), a cause not ahead
 of the clock (`schedule_not_ahead`, since the clock runs everything due), causes out of due order
@@ -34,6 +35,6 @@ of the clock (`schedule_not_ahead`, since the clock runs everything due), causes
 field of any entity, so like `tick` its changes are not deltas; the events are the record. Stored
 worlds are `schema_version` 3 since.
 
-`tests/schedule.test.ts` is the spec, with the waiting gate in `tests/scenario-cell.test.ts`. The
-property test's door and chest close themselves, so random sequences schedule, withdraw, overtake
-and remove closes, and every step is validated.
+`tests/schedule.test.ts` is the spec, with the pushed-aside gate in
+`tests/scenario-cell.test.ts`. The property test's door and chest close themselves, so random
+sequences schedule, withdraw, overtake and remove closes, and every step is validated.

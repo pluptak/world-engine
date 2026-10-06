@@ -40,8 +40,8 @@ suffixes (NodeNext).
    current `tick`, so an expiry carries the tick it fell due. At each tick it also runs the
    snapshot's `schedule` (`src/engine/schedule.ts`, `docs/schedule.md`): pending causes, absent when
    none: the `close` that `open` schedules on an openable with `closes_after` (`close` withdraws
-   it; one that finds an agent in the gate's footprint, `standingIn` in `geometry.ts`, waits for the
-   next tick anything can change), and the `bleed` a severed part opens on a body with `bleed_*`
+   it; either way a shutting gate moves its footprint's occupants aside first, `pushOccupantsAside`
+   in `verbs/gate.ts`, uncovering what each hid), and the `bleed` a severed part opens on a body with `bleed_*`
    props, each scheduling the next, a body bled out dropping what it held (`docs/bleeding.md`); the
    pipeline prunes causes whose entity is gone, and `isAgent` is false for a destroyed body, and
    `perceive` answers `false` / `observer_destroyed` for one. Stored worlds are `schema_version` 5.

@@ -155,31 +155,30 @@ test("a fist reaches through the bars, a bite does not: a dog's head is its body
   strictEqual(run(world, ids.ann, "attack", rex).status, "ok");
 });
 
-test("a self-closing gate waits for whoever stands in it, then shuts", (t) => {
+test("a self-closing gate moves whoever stands in it aside, then shuts", (t) => {
   const { world, ids } = open(t);
   const gate = world.entity(ids.gate)!;
   const props = { ...gate.props, locked: false, closes_after: 2 };
   strictEqual(world.edit({ kind: "set_props", target: ids.gate, props }).status, "ok");
   strictEqual(walk(world, ids.ann, 50, -60).status, "ok");
   strictEqual(walk(world, ids.bob, 50, 40).status, "ok");
-  strictEqual(run(world, ids.bob, "open", "gate").snapshot.tick, 3);
-  // Ann steps into the gateway; the close falls due at the end of her step, finds her there, and
-  // waits for the next command.
+  const opened = run(world, ids.bob, "open", "gate");
+  strictEqual(opened.snapshot.tick, 3);
+  const openedEvent = opened.events.find((event) => event.type === "opened")!;
+  // Ann steps into the gateway; the close falls due at the end of her step, shuts, and moves
+  // her aside to the tie side. The move is caused by the close, which is caused by the opening.
   const stepIn = walk(world, ids.ann, 50, 0);
-  deepStrictEqual(stepIn.events.map((event) => event.type), ["move", "moved"]);
-  deepStrictEqual(world.snapshot().schedule?.map((cause) => [cause.kind, cause.due_tick]), [["close", 5]]);
-  // However long bob waits, the gate stays open while she stands in it, and looks again after.
-  const waited = run(world, ids.bob, "wait", undefined, { ticks: 50 });
-  deepStrictEqual(waited.events.map((event) => event.type), ["wait"]);
-  strictEqual(world.entity(ids.gate)?.props.open, true);
-  deepStrictEqual(world.snapshot().schedule?.map((cause) => cause.due_tick), [55]);
-  // She steps out, and it swings shut behind her, caused by the opening still.
-  const stepOut = walk(world, ids.ann, 50, -60);
-  deepStrictEqual(stepOut.events.map((event) => [event.type, event.tick]), [
-    ["move", 54],
-    ["moved", 54],
-    ["closed", 55],
-  ]);
+  deepStrictEqual(stepIn.events.map((event) => event.type), ["move", "moved", "closed", "moved"]);
+  const closedEvent = stepIn.events.find((event) => event.type === "closed")!;
+  const movedEvent = stepIn.events.filter((event) => event.type === "moved")[1]!;
+  strictEqual(closedEvent.cause_id, openedEvent.event_id);
+  strictEqual(movedEvent.cause_id, closedEvent.event_id);
+  strictEqual(movedEvent.entity, ids.ann);
+  deepStrictEqual(world.entity(ids.ann)?.pos, { x: 50, y: 18 });
+  strictEqual(world.entity(ids.gate)?.props.open, false);
+  strictEqual(world.snapshot().schedule, undefined);
+  // A later wait finds nothing pending and changes nothing.
+  deepStrictEqual(run(world, ids.bob, "wait", undefined, { ticks: 50 }).events.map((event) => event.type), ["wait"]);
   strictEqual(world.entity(ids.gate)?.props.open, false);
 });
 

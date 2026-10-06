@@ -1,6 +1,6 @@
 import type { TransitionContext } from "./command.js";
 import { inSpacePart } from "./carry.js";
-import { standingIn } from "./geometry.js";
+import { pushOccupantsAside } from "./verbs/gate.js";
 import { dropCarriedItem } from "./verbs/drop.js";
 import type { Id, ScheduledCause, Snapshot } from "../model.js";
 
@@ -75,9 +75,7 @@ export function startBleeding(context: TransitionContext, entity: Id, detachedEv
 
 // Runs one due cause, already taken off the schedule, at the current tick. A cause the world has
 // overtaken (the door already shut, the body already destroyed) does nothing and says nothing.
-// `retryAt` is the next tick the world can have changed: something else falls due, or the next
-// command begins.
-export function runCause(context: TransitionContext, cause: ScheduledCause, retryAt: number): void {
+export function runCause(context: TransitionContext, cause: ScheduledCause): void {
   const entity = context.snapshot.entities[cause.entity];
   if (entity === undefined) {
     return;
@@ -86,16 +84,9 @@ export function runCause(context: TransitionContext, cause: ScheduledCause, retr
     if (entity.props.openable !== true || entity.props.open !== true) {
       return;
     }
-    // Someone in the gateway: the gate waits, and tries again the next time anything can have
-    // moved, as often as it takes.
-    if (standingIn(context.snapshot, context.registry, entity.id) !== null) {
-      if (Number.isSafeInteger(retryAt)) {
-        schedule(context, { ...cause, due_tick: retryAt });
-      }
-      return;
-    }
     const eventId = context.emit("closed", entity.id, {}, cause.cause_id);
     context.set(entity.id, "props", { ...entity.props, open: false }, eventId);
+    pushOccupantsAside(context, entity.id, eventId);
     return;
   }
   const rule = bleeding(entity.props);

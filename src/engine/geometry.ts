@@ -350,28 +350,35 @@ export function gapStop(
   return null;
 }
 
-// The agent standing in an entity's footprint on the same support, the lowest id first, or null:
-// what a gate swinging shut would close on. Both stand on the floor, so both positions are stored
-// and no chain is walked: the clock runs before a broken result is validated away. Something with
-// no position of its own (a door between rooms) has no footprint anyone stands in.
-export function standingIn(snapshot: Snapshot, registry: TemplateRegistry, id: Id): Id | null {
+// What a closing gate moves aside: everything standing on its footprint on the same support,
+// agents and items alike, lowest id first: what a walk would meet there, so carried things ride
+// with their carrier, and what is broken, rubble or lower than STEP_OVER_CM stays where it is. Both stand on the floor, so both positions are
+// stored and no chain is walked. Something with no position of its own (a door between rooms)
+// has no footprint anyone stands in.
+export function occupantsIn(snapshot: Snapshot, registry: TemplateRegistry, id: Id): Id[] {
   const entity = requireEntity(snapshot, id);
   const at = entity.pos;
   if (at === null || entity.support === null) {
-    return null;
+    return [];
   }
   const size = footprint(registry, entity.template);
+  const found: Id[] = [];
   for (const otherId of Object.keys(snapshot.entities).sort()) {
     const other = requireEntity(snapshot, otherId);
     const there = other.pos;
+    const template = registry[other.template];
     if (
       otherId === id ||
       there === null ||
       other.contained_in !== null ||
       other.support !== entity.support ||
-      other.props.agent !== true ||
       other.detached_from !== null ||
-      other.status === "destroyed"
+      other.status === "destroyed" ||
+      other.status === "broken" ||
+      other.props.rubble === true ||
+      template === undefined ||
+      template.props.abstract === true ||
+      template.size_cm.h < STEP_OVER_CM
     ) {
       continue;
     }
@@ -379,8 +386,32 @@ export function standingIn(snapshot: Snapshot, registry: TemplateRegistry, id: I
     const overlaps =
       2 * Math.abs(there.x - at.x) < size.w + theirs.w && 2 * Math.abs(there.y - at.y) < size.d + theirs.d;
     if (overlaps) {
-      return otherId;
+      found.push(otherId);
     }
   }
-  return null;
+  return found;
+}
+
+// Where one occupant goes: just clear of the footprint along the gate's thin axis, on the side
+// its centre is on; a tie takes the positive side, since the engine has no randomness.
+export function pushAsideDestination(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  gateId: Id,
+  occupantId: Id,
+): Pos {
+  const gate = requireEntity(snapshot, gateId);
+  const occupant = requireEntity(snapshot, occupantId);
+  const gateAt = gate.pos!;
+  const there = occupant.pos!;
+  const gateSize = footprint(registry, gate.template);
+  const theirs = footprint(registry, occupant.template);
+  if (gateSize.w >= gateSize.d) {
+    const clearance = Math.floor((gateSize.d + theirs.d + 1) / 2);
+    const sign = there.y > gateAt.y ? 1 : there.y < gateAt.y ? -1 : 1;
+    return { x: there.x, y: gateAt.y + sign * clearance };
+  }
+  const clearance = Math.floor((gateSize.w + theirs.w + 1) / 2);
+  const sign = there.x > gateAt.x ? 1 : there.x < gateAt.x ? -1 : 1;
+  return { x: gateAt.x + sign * clearance, y: there.y };
 }

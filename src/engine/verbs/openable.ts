@@ -3,6 +3,7 @@ import type { Entity, Id } from "../../model.js";
 import type { CapacityRequirement, CommandContext, PreconditionResult, TargetAddress, TransitionContext, Verb } from "../command.js";
 import { insufficientCode, meetsRequirements, unmetRequirement } from "../carry.js";
 import { withinReach, reachData } from "./address.js";
+import { pushOccupantsAside } from "./gate.js";
 import { cancel, schedule } from "../schedule.js";
 
 type Kind = "open" | "close" | "lock" | "unlock";
@@ -134,6 +135,9 @@ function transition(context: TransitionContext, kind: Kind): void {
   const props = { ...context.snapshot.entities[target.entity.id]?.props, [change.prop]: change.value };
   const eventId = context.emit(change.event, target.entity.id, {}, context.root_event_id);
   context.set(target.entity.id, "props", props, eventId);
+  if (kind === "close") {
+    pushOccupantsAside(context, target.entity.id, eventId);
+  }
 
   // A target with `closes_after` swings shut that many ticks after it is opened; opening it again
   // starts the count over, and shutting it by hand leaves nothing to come.

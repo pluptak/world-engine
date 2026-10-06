@@ -2,7 +2,7 @@
 
 What comes next. Each item says what is already decided and what is still open. `docs/` describes
 only what is built; this file is the plan, tracked here in `plans/` (`docs/superpowers/` stays
-ignored for tool scratch). As of `f3e3e69`, pushed.
+ignored for tool scratch). As of `875a1df`, pushed.
 
 ## Done
 
@@ -25,69 +25,31 @@ The time/structure/capability specs and the controller review, taken on in this 
 - Small gaps: a bite must fit the bars, a self-closing gate waits for whoever stands in it, a body
   bled out drops what it held; this file tracked in `plans/` (`f3e3e69`). Stored worlds are
   `schema_version` 5.
+- No verb leans on the validation step: seven paths now refuse or write a valid result, and the
+  property test fails if an accepted command is ever downgraded (`3778007`).
+- A destroyed observer senses nothing, `observer_destroyed` (`f0981a5`).
+- Random runs open wounds: half the generated blows aim at parts that come off (`875a1df`).
+- A closing gate, by hand or by itself, moves what stands on its footprint just clear to the side
+  its centre is on (a tie goes positive), uncovering what it hid; nothing stops it any more.
+  Crushing is postponed.
+
+Checked and not an item: `npm run bench` gives 4.3 ms per command over 10k commands, the same as
+before the clock and the schedule (`fe38460`: 4.3), so the per-command scans they added cost
+nothing measurable.
 
 ## Next
 
-### 1. No verb leans on the validation step
+### 1. One planning file
 
-Built: `take` refuses `circular_placement`, `move` refuses `carried` and steps down from
-furniture, `push`/`pull` refuse `not_on_floor`, `room_placed` keeps rooms out of hands, `move`
-uncovers what it and its load hide, a carried agent drops from its carrier's place; the property
-test now fails if an accepted command is downgraded. 1,000 seeds × 60 steps reach the net zero times.
+There are two: `backlog.md` at the root, which holds the process rules (one item per block, lanes,
+scope line, out of scope) and is now empty of items, and this file, which holds the items. The
+overview links to `backlog.md`; nothing links here. Two lists will drift.
 
-A verb is meant to refuse what it cannot do with a declared code. The store's validation step
-(`resolveSubmission` runs `validateSnapshot` on every accepted result) is a safety net for verb
-bugs: it downgrades a broken result to `invalid` with the rule's code and never writes it. Random
-runs show seven paths that reach the net instead of a refusal (300 seeds × 60 steps):
-
-| Verb | Rule it breaks | Count |
-| --- | --- | --- |
-| `take` | `support_or_containment_cycle` (an agent taking itself) | 60 |
-| `push` | `pos_without_room_support` | 32 |
-| `pull` | `pos_without_room_support` | 32 |
-| `move` | `pos_without_room_support` | 30 |
-| `move` | `support_and_contained_in` | 23 |
-| `drop` | `room_support_without_pos` | 3 |
-| `move` | `concealed_by_not_same_room` | 1 |
-
-The clock now runs before validation, so a broken intermediate snapshot also reaches
-`advanceClock` and the scheduled causes; `standingIn` was hardened against one such crash.
-
-- Decided: each path gets either a declared refusal in its verb's preconditions or a transition
-  that writes a valid result; then the property test asserts that a command `apply` accepts is
-  never downgraded by validation, so a new path fails the suite instead of hiding in the log.
-- Open:
-  - Per path, refuse or fix. A guess to confirm by reading each: taking oneself is a refusal
-    (`cannot_take_self`, like `give`'s `cannot_give_to_self`); `move`, `push` and `pull` of
-    something standing on a non-room support (a table) probably need the walk/push rules to say
-    what happens there, or to refuse it.
-  - Whether the edits that set these states up (an agent placed on a table) are themselves fine.
-
-### 2. A destroyed body as an observer
-
-Built: a destroyed observer senses nothing, `false` / `observer_destroyed`, so `observe` lists
-nothing and `inspect` is `null`; its own end it sensed from the moment before.
-
-Bleeding made destroyed agents reachable in play. `isAgent` is false for them, so they cannot act
-and `perceivers: true` leaves them out; but `perceive`, `observe` and `inspect` still answer for a
-destroyed observer as if it saw and heard.
-
-- Decided: nothing yet.
-- Open: whether a destroyed observer senses nothing (`false` with a basis such as
-  `observer_destroyed`) or whether that belongs to the caller, as knowledge does.
-
-### 3. Wounds in the random runs
-
-Built: half the generated blows aim at a detachable part of another agent and the generated bob
-severs in one blow; 100 seeds × 60 steps open about 27 wounds and 22 bleeds, and a property test
-fails if they drop under 10 each.
-
-The property test's attacks severed a part about once in 3,000 steps, so bleeding rests on its spec
-and the inn script. Making the generated bob hit harder was tried and did not help enough.
-
-- Decided: the spec stays the authority; this is coverage, not behaviour.
-- Open: aim some generated attacks at detachable parts, or start some sequences from a body with a
-  wound already scheduled.
+- Decided: one file.
+- Open: which. Folding these items into `backlog.md` keeps the established place, its rule
+  ("delete an item in the same commit that ships it", so no Done list; git history records it)
+  and the overview's link, and retires `plans/`; keeping this file means moving the process rules
+  here and repointing the overview.
 
 ## Not planned
 
@@ -103,3 +65,9 @@ Raised and set aside; each would come back with a scenario that needs it.
 - Agents acting in parallel: a `beat` is an ordered batch, and two commands never share a tick.
 - An agent slipping through a gap; a head sized apart from the body for bites.
 - A wound from a detachment written by `edit`.
+- A gate or door that crushes what is in its way (a prop that turns it on, the damage deciding
+  whether the thing is destroyed or stops the closure): postponed in favour of pushing aside.
+- Migrating stored worlds between `schema_version`s: a world from an older format is refused, never
+  read as if it matched (AGENTS.md: no silent migration); a tool comes when a world must be kept.
+- Facing and a sight cone: `backlog.md` names it the costliest limit and the first to revisit,
+  when darkness, concealment and staging cannot give what a concrete world needs.
