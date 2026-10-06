@@ -15,6 +15,13 @@ events and log, byte for byte, under any number of reopens and replays. There is
 no wall clock: a caller who wants luck chooses a different command. Time is the integer `tick`, and
 every ok command advances it by its verb's declared duration ([time.md](time.md)).
 
+**Attempts, not assertions.** A command says what an agent tries; the engine decides what happens.
+It checks the attempt against the world and either carries it out or refuses it with a code, and a
+refusal changes nothing and takes no time, though a stored world logs it. The one exception is
+`edit`, the world author's channel, signed `world`: it states facts outright (spawn, remove, place,
+set props or parts), checked against the snapshot's invariants but never reach, capacity or agency,
+and takes no time. An application gives its players commands and keeps `edit` to itself.
+
 **Provenance, not explanation.** Every event names the one event it came from (`cause_id`), back to
 the command that started it, and `trace` walks that chain. The chain says where an event came from;
 it does not claim to list every condition that made it happen, and there are no counterfactuals.
