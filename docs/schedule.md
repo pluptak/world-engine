@@ -22,6 +22,11 @@ and `close` by hand withdraws the pending close; neither records anything about 
 taken off the schedule and emits nothing. A cause whose entity is removed goes with it, pruned once
 the transition has run. A cause never touches anything but its own entity.
 
+**In the way.** A close that finds an agent standing in the gate's footprint does not shut: it waits
+and tries again the next time anything can have moved, the next tick something else falls due or
+just after the command ends, as often as it takes, so a long `wait` beside it costs one look. A door
+between rooms has no footprint and always shuts.
+
 **Stored one way.** `validateSnapshot` refuses an empty list (`empty_schedule`), a cause not ahead
 of the clock (`schedule_not_ahead`, since the clock runs everything due), causes out of due order
 (`schedule_unordered`), a cause on a missing entity (`schedule_dangling`), an unknown kind
@@ -29,8 +34,6 @@ of the clock (`schedule_not_ahead`, since the clock runs everything due), causes
 field of any entity, so like `tick` its changes are not deltas; the events are the record. Stored
 worlds are `schema_version` 3 since.
 
-`tests/schedule.test.ts` is the spec. The property test's door and chest close themselves, so random
-sequences schedule, withdraw, overtake and remove closes, and every step is validated.
-
-What it does not do: a door shuts on whoever stands in a gate's way, since an agent
-already overlapping a barrier is never stopped ([walking.md](walking.md)).
+`tests/schedule.test.ts` is the spec, with the waiting gate in `tests/scenario-cell.test.ts`. The
+property test's door and chest close themselves, so random sequences schedule, withdraw, overtake
+and remove closes, and every step is validated.

@@ -5,15 +5,15 @@ import { carryAlternatives, gripEvictions, insufficientCode, lostCarry } from ".
 import type { PartState } from "../../model.js";
 import type { AttackMode, CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { dropCarriedItem } from "./drop.js";
-import { inReach, reachData } from "./address.js";
+import { gapRefusal, inReach, reachData } from "./address.js";
 import { spawn } from "../spawn.js";
 import { partState, withParts } from "../parts.js";
 import { startBleeding } from "../schedule.js";
 
 // A fist needs hands, a bite a jaw; the damage of the mode used comes from the attacker's template.
 const attackModes: readonly AttackMode[] = [
-  { capacity: "manipulation", at_least: 1, damage_prop: "attack_damage" },
-  { capacity: "mouth_carry", at_least: 1, damage_prop: "bite_damage" },
+  { capacity: "manipulation", at_least: 1, damage_prop: "attack_damage", crosses_gap: "limb" },
+  { capacity: "mouth_carry", at_least: 1, damage_prop: "bite_damage", crosses_gap: "body" },
 ];
 
 interface AttackTarget {
@@ -23,7 +23,7 @@ interface AttackTarget {
 }
 
 type AttackChoice =
-  | { kind: "chosen"; damage: number }
+  | { kind: "chosen"; damage: number; mode: AttackMode }
   | { kind: "no_capacity" }
   | { kind: "no_damage" };
 
@@ -70,7 +70,7 @@ function chooseAttack(context: CommandContext): AttackChoice {
     hadCapacity = true;
     const damage = context.actor.props[mode.damage_prop];
     if (typeof damage === "number" && Number.isSafeInteger(damage) && damage > 0) {
-      return { kind: "chosen", damage };
+      return { kind: "chosen", damage, mode };
     }
   }
   return hadCapacity ? { kind: "no_damage" } : { kind: "no_capacity" };
@@ -112,6 +112,13 @@ function preconditions(context: CommandContext): PreconditionResult {
   }
   if (choice.kind === "no_damage") {
     return { status: "invalid", reason_code: "invalid_attack_target" };
+  }
+  // A fist goes through bars on an arm; a bite needs the head, measured as the attacker's body.
+  if (choice.mode.crosses_gap === "body") {
+    const gap = gapRefusal(context, context.actor.id, context.actor.id, entity.id);
+    if (gap !== null) {
+      return gap;
+    }
   }
   return { status: "ok" };
 }
@@ -391,7 +398,7 @@ export const attackVerb: Verb = {
   duration: { ticks: 1 },
   requires_target: true,
   args: {},
-  refuses: ["out_of_reach", "insufficient_manipulation"],
+  refuses: ["out_of_reach", "insufficient_manipulation", "too_big_for_gap"],
   carry_alternatives: carryAlternatives,
   attack_modes: attackModes,
   preconditions,

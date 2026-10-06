@@ -40,8 +40,9 @@ suffixes (NodeNext).
    current `tick`, so an expiry carries the tick it fell due. At each tick it also runs the
    snapshot's `schedule` (`src/engine/schedule.ts`, `docs/schedule.md`): pending causes, absent when
    none: the `close` that `open` schedules on an openable with `closes_after` (`close` withdraws
-   it), and the `bleed` a severed part opens on a body with `bleed_*` props, each scheduling the
-   next (`docs/bleeding.md`); the pipeline prunes causes whose entity is gone, and `isAgent` is
+   it; one that finds an agent in the gate's footprint, `standingIn` in `geometry.ts`, waits for the
+   next tick anything can change), and the `bleed` a severed part opens on a body with `bleed_*`
+   props, each scheduling the next, a body bled out dropping what it held (`docs/bleeding.md`); the pipeline prunes causes whose entity is gone, and `isAgent` is
    false for a destroyed body. Stored worlds are `schema_version` 5. `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
    a failure returns the input snapshot unchanged. `edit` uses it to refuse results that break a
    snapshot invariant. `move` to another room, `place`, and removals re-derive `location` for the
@@ -85,7 +86,8 @@ suffixes (NodeNext).
   origin is its centre, `blocked` by a `barrier` on the straight path or by anything solid at least
   `STEP_OVER_CM` tall at the destination; `gapStop`, the barrier a thing given, put or taken
   across a room cannot pass, its smallest dimension over the barrier's `gap_cm`, which `take`, `give`
-  and `put` refuse `too_big_for_gap`), `spawn.ts` (ids from `next_seq`), `residue.ts`,
+  and `put` refuse `too_big_for_gap`, as does an `attack` whose mode crosses as the `body`, a bite),
+  `spawn.ts` (ids from `next_seq`), `residue.ts`,
   `canonical.ts`, `carry.ts`, `validate.ts` (snapshot invariants: no loops, `pos`/`location` match
   the chain, no dangling references (`detached_from` is history, not a link), detached parts
   accounted for, no part stored at its default, integrity range, ids below `next_seq`), `parts.ts`

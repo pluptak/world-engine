@@ -1,4 +1,7 @@
 import type { TransitionContext } from "./command.js";
+import { inSpacePart } from "./carry.js";
+import { standingIn } from "./geometry.js";
+import { dropCarriedItem } from "./verbs/drop.js";
 import type { Id, ScheduledCause, Snapshot } from "../model.js";
 
 export const CAUSE_KINDS: readonly ScheduledCause["kind"][] = ["close", "bleed"];
@@ -72,13 +75,23 @@ export function startBleeding(context: TransitionContext, entity: Id, detachedEv
 
 // Runs one due cause, already taken off the schedule, at the current tick. A cause the world has
 // overtaken (the door already shut, the body already destroyed) does nothing and says nothing.
-export function runCause(context: TransitionContext, cause: ScheduledCause): void {
+// `retryAt` is the next tick the world can have changed: something else falls due, or the next
+// command begins.
+export function runCause(context: TransitionContext, cause: ScheduledCause, retryAt: number): void {
   const entity = context.snapshot.entities[cause.entity];
   if (entity === undefined) {
     return;
   }
   if (cause.kind === "close") {
     if (entity.props.openable !== true || entity.props.open !== true) {
+      return;
+    }
+    // Someone in the gateway: the gate waits, and tries again the next time anything can have
+    // moved, as often as it takes.
+    if (standingIn(context.snapshot, context.registry, entity.id) !== null) {
+      if (Number.isSafeInteger(retryAt)) {
+        schedule(context, { ...cause, due_tick: retryAt });
+      }
       return;
     }
     const eventId = context.emit("closed", entity.id, {}, cause.cause_id);
@@ -95,6 +108,18 @@ export function runCause(context: TransitionContext, cause: ScheduledCause): voi
   context.set(entity.id, "integrity", integrity, eventId);
   if (integrity === 0) {
     context.set(entity.id, "status", "destroyed", eventId);
+    // A body that has bled out holds nothing: what its grips and mouth held falls where it stands,
+    // and what is pocketed stays with it.
+    const body = context.snapshot.entities[entity.id]!;
+    const held = Object.keys(context.snapshot.entities)
+      .sort()
+      .filter((id) => {
+        const item = context.snapshot.entities[id]!;
+        return item.contained_in === body.id && !inSpacePart(context.snapshot, context.registry, body, item);
+      });
+    for (const itemId of held) {
+      dropCarriedItem(context, body.id, itemId, eventId);
+    }
     return;
   }
   scheduleBleed(context, entity.id, eventId, cause.remaining - 1);

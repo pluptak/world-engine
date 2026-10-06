@@ -138,6 +138,51 @@ test("between the bars only what fits the 12 cm gap passes, turned edgewise; nev
   strictEqual(run(world, ids.bob, "give", stone, { destination: ids.ann }).status, "ok");
 });
 
+test("a fist reaches through the bars, a bite does not: a dog's head is its body", (t) => {
+  const { world, ids } = open(t);
+  const made = world.edit({
+    kind: "spawn",
+    template: "dog",
+    overrides: { name: "rex", location: ids.block, support: ids.block, pos: { x: -150, y: 25 } },
+  });
+  const rex = made.events[1]!.entity;
+  strictEqual(walk(world, ids.ann, -150, -18).status, "ok");
+  const bite = run(world, rex, "attack", ids.ann);
+  deepStrictEqual([bite.reason_code, bite.reason_data], [
+    "too_big_for_gap",
+    { with: world.id("bars_m150"), size_cm: 25, gap_cm: 12 },
+  ]);
+  strictEqual(run(world, ids.ann, "attack", rex).status, "ok");
+});
+
+test("a self-closing gate waits for whoever stands in it, then shuts", (t) => {
+  const { world, ids } = open(t);
+  const gate = world.entity(ids.gate)!;
+  const props = { ...gate.props, locked: false, closes_after: 2 };
+  strictEqual(world.edit({ kind: "set_props", target: ids.gate, props }).status, "ok");
+  strictEqual(walk(world, ids.ann, 50, -60).status, "ok");
+  strictEqual(walk(world, ids.bob, 50, 40).status, "ok");
+  strictEqual(run(world, ids.bob, "open", "gate").snapshot.tick, 3);
+  // Ann steps into the gateway; the close falls due at the end of her step, finds her there, and
+  // waits for the next command.
+  const stepIn = walk(world, ids.ann, 50, 0);
+  deepStrictEqual(stepIn.events.map((event) => event.type), ["move", "moved"]);
+  deepStrictEqual(world.snapshot().schedule?.map((cause) => [cause.kind, cause.due_tick]), [["close", 5]]);
+  // However long bob waits, the gate stays open while she stands in it, and looks again after.
+  const waited = run(world, ids.bob, "wait", undefined, { ticks: 50 });
+  deepStrictEqual(waited.events.map((event) => event.type), ["wait"]);
+  strictEqual(world.entity(ids.gate)?.props.open, true);
+  deepStrictEqual(world.snapshot().schedule?.map((cause) => cause.due_tick), [55]);
+  // She steps out, and it swings shut behind her, caused by the opening still.
+  const stepOut = walk(world, ids.ann, 50, -60);
+  deepStrictEqual(stepOut.events.map((event) => [event.type, event.tick]), [
+    ["move", 54],
+    ["moved", 54],
+    ["closed", 55],
+  ]);
+  strictEqual(world.entity(ids.gate)?.props.open, false);
+});
+
 test("the locked gate holds until it is unlocked and opened; then it is a way through", (t) => {
   const { world, ids } = open(t);
   strictEqual(walk(world, ids.ann, 50, -60).status, "ok");

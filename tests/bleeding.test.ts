@@ -109,6 +109,30 @@ test("a body bled out is destroyed, acts no more, and the rest of its wound is g
   deepStrictEqual([moved.status, moved.reason_code], ["invalid", "not_an_agent"]);
 });
 
+test("a body bled out drops what its hand held where it lies; the pocket keeps its key", () => {
+  const { world, attacker, guard } = duel(8);
+  const room = world.snapshot().entities[guard]!.location!;
+  const holding = (template: string, name: string, part: string) => {
+    const made = world.edit({
+      kind: "spawn",
+      template,
+      overrides: { name, location: room, contained_in: guard, in_part: part },
+    });
+    strictEqual(made.status, "ok", `${made.reason_code}`);
+    return made.events[1]!.entity;
+  };
+  const cup = holding("cup", "cup", "hand_l");
+  const key = holding("key", "key", "pocket");
+  act(world, attacker, "attack", `${guard}.hand_r`);
+  const waited = act(world, attacker, "wait", undefined, { ticks: 7 });
+  const destroyed = waited.events.find((event) => event.type === "destroyed");
+  ok(destroyed);
+  const fell = waited.events.find((event) => event.entity === cup && event.cause_id === destroyed.event_id);
+  ok(fell, "the cup's fall names the body's end");
+  deepStrictEqual([world.entity(cup)?.contained_in, world.entity(cup)?.support], [null, room]);
+  deepStrictEqual([world.entity(key)?.contained_in, world.entity(key)?.in_part], [guard, "pocket"]);
+});
+
 test("only what declares bleeding bleeds: a dog's lost jaw opens no wound", () => {
   const { world, attacker } = duel();
   const dog = spawn(world.snapshot(), registry, "dog", {

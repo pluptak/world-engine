@@ -54,6 +54,7 @@ test("the catalog reads the live declarations", () => {
     capacity: "mouth_carry",
     at_least: 1,
     damage_prop: "bite_damage",
+    crosses_gap: "body",
   });
 
   const move = catalog.find((entry) => entry.verb === "move");

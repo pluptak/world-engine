@@ -349,3 +349,38 @@ export function gapStop(
   }
   return null;
 }
+
+// The agent standing in an entity's footprint on the same support, the lowest id first, or null:
+// what a gate swinging shut would close on. Both stand on the floor, so both positions are stored
+// and no chain is walked: the clock runs before a broken result is validated away. Something with
+// no position of its own (a door between rooms) has no footprint anyone stands in.
+export function standingIn(snapshot: Snapshot, registry: TemplateRegistry, id: Id): Id | null {
+  const entity = requireEntity(snapshot, id);
+  const at = entity.pos;
+  if (at === null || entity.support === null) {
+    return null;
+  }
+  const size = footprint(registry, entity.template);
+  for (const otherId of Object.keys(snapshot.entities).sort()) {
+    const other = requireEntity(snapshot, otherId);
+    const there = other.pos;
+    if (
+      otherId === id ||
+      there === null ||
+      other.contained_in !== null ||
+      other.support !== entity.support ||
+      other.props.agent !== true ||
+      other.detached_from !== null ||
+      other.status === "destroyed"
+    ) {
+      continue;
+    }
+    const theirs = footprint(registry, other.template);
+    const overlaps =
+      2 * Math.abs(there.x - at.x) < size.w + theirs.w && 2 * Math.abs(there.y - at.y) < size.d + theirs.d;
+    if (overlaps) {
+      return otherId;
+    }
+  }
+  return null;
+}

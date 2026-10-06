@@ -56,7 +56,7 @@ export function advanceClock(context: TransitionContext, ticks: number): void {
     expireAt(context, tick);
     for (let due = pending(context.snapshot)[0]; due?.due_tick === tick; due = pending(context.snapshot)[0]) {
       context.snapshot = withSchedule(context.snapshot, pending(context.snapshot).slice(1));
-      runCause(context, due);
+      runCause(context, due, nextDue(context.snapshot, tick, endTick) ?? endTick + 1);
     }
   }
   context.snapshot = { ...context.snapshot, tick: endTick };

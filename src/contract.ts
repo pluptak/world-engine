@@ -133,6 +133,7 @@ const AttackModeSchema = z.object({
   capacity: z.string(),
   at_least: z.number().int(),
   damage_prop: z.string(),
+  crosses_gap: z.enum(["limb", "body"]),
 }).strict();
 
 const ArgDeclSchema = z.union([

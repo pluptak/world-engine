@@ -157,6 +157,9 @@ export interface AttackMode {
   capacity: string;
   at_least: number;
   damage_prop: string;
+  // Across a barrier's gap: a `limb` reaches through any gap, a `body` strike (a bite) needs the
+  // attacker's own smallest dimension to fit it.
+  crosses_gap: "limb" | "body";
 }
 
 // One entry of a verb's declared args shape; `enum` carries its values.
