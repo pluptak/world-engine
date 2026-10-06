@@ -1,0 +1,9 @@
+{
+  "id": "bars",
+  "size_cm": { "w": 100, "d": 5, "h": 250 },
+  "mass_g": 200000,
+  "parts": [],
+  "props": { "barrier": true },
+  "break_products": [],
+  "break_residue": {}
+}

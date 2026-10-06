@@ -69,7 +69,10 @@ suffixes (NodeNext).
 - `src/engine/capacity.ts` (`capacity` adds part contributions and unexpired modifiers;
   `structuralCapacity`/`structuralCapacities` skip modifiers), `geometry.ts` (derived position and
   elevation along support/containment chains; `sweep`, how far a footprint slides before it meets
-  another on the same support, which stops `push`/`pull` with `collided` or refuses `blocked`), `spawn.ts` (ids from `next_seq`), `residue.ts`,
+  another on the same support, which stops `push`/`pull` with `collided` or refuses `blocked`;
+  `walkStop`, where an agent's `move` is refused: `out_of_bounds` past the room's footprint, whose
+  origin is its centre, `blocked` by a `barrier` on the straight path or by anything solid at least
+  `STEP_OVER_CM` tall at the destination), `spawn.ts` (ids from `next_seq`), `residue.ts`,
   `canonical.ts`, `carry.ts`, `validate.ts` (snapshot invariants: no loops, `pos`/`location` match
   the chain, no dangling references (`detached_from` is history, not a link), detached parts
   accounted for, no part stored at its default, integrity range, ids below `next_seq`), `parts.ts`

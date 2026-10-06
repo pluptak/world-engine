@@ -157,3 +157,135 @@ export function sweep(
   }
   return result;
 }
+
+// Walking: what is lower than this is stepped over or stood on, never in the way of feet.
+export const STEP_OVER_CM = 20;
+
+type Fraction = { num: number; den: number };
+
+const less = (a: Fraction, b: Fraction): boolean => a.num * b.den < b.num * a.den;
+
+// The things an agent's footprint can meet on its own support: what a push would meet, less what
+// is low enough to step over, an open barrier (a gate standing open), and whatever the agent
+// already overlaps where it starts, so an agent never gets stuck in a place it is already in. An
+// agent arriving from another room starts nowhere here, so nothing is skipped for it.
+function walkObstacles(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  id: Id,
+  arriving: boolean,
+): { id: Id; at: Pos; w: number; d: number; barrier: boolean }[] {
+  const mover = requireEntity(snapshot, id);
+  const from = effectivePos(snapshot, id);
+  if (from === null || mover.support === null) {
+    return [];
+  }
+  const size = footprint(registry, mover.template);
+  const found: { id: Id; at: Pos; w: number; d: number; barrier: boolean }[] = [];
+  for (const otherId of Object.keys(snapshot.entities).sort()) {
+    const other = requireEntity(snapshot, otherId);
+    const template = registry[other.template];
+    if (
+      otherId === id ||
+      template === undefined ||
+      other.support !== mover.support ||
+      other.contained_in !== null ||
+      other.status === "destroyed" ||
+      other.status === "broken" ||
+      other.props.rubble === true ||
+      template.props.abstract === true ||
+      (other.props.barrier === true && other.props.open === true) ||
+      (other.props.barrier !== true && template.size_cm.h < STEP_OVER_CM)
+    ) {
+      continue;
+    }
+    const at = effectivePos(snapshot, otherId);
+    if (at === null) {
+      continue;
+    }
+    const { w, d } = template.size_cm;
+    if (!arriving && 2 * Math.abs(at.x - from.x) < size.w + w && 2 * Math.abs(at.y - from.y) < size.d + d) {
+      continue;
+    }
+    found.push({ id: otherId, at, w, d, barrier: other.props.barrier === true });
+  }
+  return found;
+}
+
+// Where an agent walking from its position to `to` is stopped: outside the room's footprint (a
+// room's origin is its centre), across a barrier on the straight way there (the first one met, the
+// lowest id on a tie), or into anything solid standing at the destination (the lowest id). The path
+// meets only barriers: furniture and people are walked around, bars and fences are not. An agent
+// `arriving` through a door is checked where it lands in the new room, with no path inside it.
+export type WalkStop = { reason: "out_of_bounds" } | { reason: "blocked"; with: Id } | null;
+
+export function walkStop(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  id: Id,
+  to: Pos,
+  arriving = false,
+): WalkStop {
+  const mover = requireEntity(snapshot, id);
+  const from = effectivePos(snapshot, id);
+  const room = mover.support === null ? undefined : snapshot.entities[mover.support];
+  if (from === null || room === undefined || room.template !== "room") {
+    return null;
+  }
+  const size = footprint(registry, mover.template);
+  const bounds = footprint(registry, room.template);
+  if (2 * Math.abs(to.x) + size.w > bounds.w || 2 * Math.abs(to.y) + size.d > bounds.d) {
+    return { reason: "out_of_bounds" };
+  }
+
+  const obstacles = walkObstacles(snapshot, registry, id, arriving);
+  // On doubled coordinates the path is S + t·(E − S) for t in [0, 1], and it crosses a barrier
+  // where it enters the open box of half-spans (w₁ + w₂, d₁ + d₂) around the barrier's centre.
+  const sx = 2 * from.x;
+  const sy = 2 * from.y;
+  const dx = 2 * (to.x - from.x);
+  const dy = 2 * (to.y - from.y);
+  let first: { id: Id; t: Fraction } | null = null;
+  for (const obstacle of obstacles.filter((candidate) => candidate.barrier)) {
+    let lo: Fraction = { num: 0, den: 1 };
+    let hi: Fraction = { num: 1, den: 1 };
+    let misses = false;
+    for (const [start, delta, centre, span] of [
+      [sx, dx, 2 * obstacle.at.x, size.w + obstacle.w],
+      [sy, dy, 2 * obstacle.at.y, size.d + obstacle.d],
+    ] as const) {
+      if (delta === 0) {
+        misses ||= Math.abs(start - centre) >= span;
+        continue;
+      }
+      const near = { num: centre - span - start, den: delta };
+      const far = { num: centre + span - start, den: delta };
+      const [enter, leave] = delta > 0 ? [near, far] : [far, near];
+      const positive = (f: Fraction): Fraction => (f.den < 0 ? { num: -f.num, den: -f.den } : f);
+      const entering = positive(enter);
+      const leaving = positive(leave);
+      if (less(lo, entering)) {
+        lo = entering;
+      }
+      if (less(leaving, hi)) {
+        hi = leaving;
+      }
+    }
+    if (misses || !less(lo, hi)) {
+      continue;
+    }
+    if (first === null || less(lo, first.t)) {
+      first = { id: obstacle.id, t: lo };
+    }
+  }
+  if (first !== null) {
+    return { reason: "blocked", with: first.id };
+  }
+
+  for (const obstacle of obstacles) {
+    if (2 * Math.abs(obstacle.at.x - to.x) < size.w + obstacle.w && 2 * Math.abs(obstacle.at.y - to.y) < size.d + obstacle.d) {
+      return { reason: "blocked", with: obstacle.id };
+    }
+  }
+  return null;
+}

@@ -4,8 +4,8 @@ Only an agent holds: agency is the template's `agent` prop, withheld from a deta
 abstract template ([space.md](space.md)) is no target for an agent's verb. A surface declares
 `surface`, sized by its footprint; a container declares `container` and `inner_*_cm`.
 
-- `move`: needs `moving`; `args.to` is a position, `args.location` a room reached through an open
-  door; it emits `moved`, and what it carries moves rooms with it.
+- `move`: needs `moving`; `args.to` a position, `args.location` a room through an open door; refuses
+  `blocked` and `out_of_bounds` ([walking.md](walking.md)); emits `moved`, carrying what it holds.
 - `take`: lifts a thing out of whatever holds it into a free grip ([carrying.md](carrying.md)).
 - `drop`: sets down what a grip holds, at the actor's own position, then resolves the fall.
 - `put`: names `args.destination` and `args.relation` (`on` or `in`); it emits one `moved` and

@@ -2,6 +2,7 @@ import { capacity } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Pos } from "../../model.js";
 import { refreshSubtreeLocations } from "./address.js";
+import { effectivePos, walkStop, type WalkStop } from "../geometry.js";
 
 type MoveDestination = { kind: "position"; pos: Pos } | { kind: "location"; id: string };
 
@@ -74,7 +75,31 @@ function preconditions(context: CommandContext): PreconditionResult {
     }
   }
 
-  return { status: "ok" };
+  return refusedBy(stopFor(context, to));
+}
+
+// Where the walk would stop: a position is walked to in this room, and a room is arrived in at the
+// same coordinates, as `transition` places it.
+function stopFor(context: CommandContext, to: MoveDestination): WalkStop {
+  const { snapshot, registry, actor } = context;
+  if (to.kind === "position") {
+    return walkStop(snapshot, registry, actor.id, to.pos);
+  }
+  const pos = effectivePos(snapshot, actor.id);
+  if (pos === null || to.id === actor.location || actor.support !== actor.location) {
+    return null;
+  }
+  const arrived = { ...actor, location: to.id, support: to.id };
+  return walkStop({ ...snapshot, entities: { ...snapshot.entities, [actor.id]: arrived } }, registry, actor.id, pos, true);
+}
+
+function refusedBy(stop: WalkStop): PreconditionResult {
+  if (stop === null) {
+    return { status: "ok" };
+  }
+  return stop.reason === "blocked"
+    ? { status: "refused", reason_code: "blocked", reason_data: { with: stop.with } }
+    : { status: "refused", reason_code: "out_of_bounds" };
 }
 
 function transition(context: TransitionContext): void {
@@ -97,7 +122,7 @@ function transition(context: TransitionContext): void {
 export const moveVerb: Verb = {
   requires_target: false,
   args: { to: { kind: "pos" }, location: { kind: "room" } },
-  refuses: ["insufficient_moving", "no_open_door"],
+  refuses: ["insufficient_moving", "no_open_door", "blocked", "out_of_bounds"],
   preconditions,
   transition,
 };

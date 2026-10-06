@@ -209,7 +209,7 @@ function script(ids: Ids): Step[] {
   });
   step({
     note: "ann walks to the chest, which is out of reach where she stood",
-    run: cmd("A2-to-chest", "ann", "move", undefined, { to: { x: 200, y: -60 } }),
+    run: cmd("A2-to-chest", "ann", "move", undefined, { to: { x: 200, y: -25 } }),
     expect: [{ status: "ok", events: ["move", "moved"] }],
   });
   step({
@@ -439,7 +439,7 @@ function script(ids: Ids): Step[] {
   });
   step({
     note: "rex walks up to ann",
-    run: cmd("C5-rex-approach", "rex", "move", undefined, { to: { x: 120, y: 40 } }),
+    run: cmd("C5-rex-approach", "rex", "move", undefined, { to: { x: 80, y: 60 } }),
     expect: [{ status: "ok", events: ["move", "moved"] }],
   });
   step({
@@ -622,7 +622,7 @@ function script(ids: Ids): Step[] {
   // F. the key into the chest, which is what a lock is worth.
   step({
     note: "ann walks to the chest again",
-    run: cmd("F1-to-chest", "ann", "move", undefined, { to: { x: 190, y: -50 } }),
+    run: cmd("F1-to-chest", "ann", "move", undefined, { to: { x: 190, y: -25 } }),
     expect: [{ status: "ok", events: ["move", "moved"] }],
   });
   step({
@@ -667,7 +667,7 @@ function script(ids: Ids): Step[] {
   // G. the mouth that carried it cannot take it back off her.
   step({
     note: "rex walks over to ann",
-    run: cmd("G1-rex-to-ann", "rex", "move", undefined, { to: { x: 180, y: -40 } }),
+    run: cmd("G1-rex-to-ann", "rex", "move", undefined, { to: { x: 190, y: 30 } }),
     expect: [{ status: "ok", events: ["move", "moved"] }],
   });
   step({

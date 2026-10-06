@@ -155,7 +155,7 @@ test("events since a version: a push in the hall is seen and heard, a pocket the
       ],
     );
     strictEqual(world.command({ command_id: "go-down", actor: idOf(world, "bob"), verb: "move", args: { location: idOf(world, "cellar") } }).status, "ok");
-    strictEqual(world.command({ command_id: "to-cal", actor: idOf(world, "bob"), verb: "move", args: { to: { x: 50, y: 20 } } }).status, "ok");
+    strictEqual(world.command({ command_id: "to-cal", actor: idOf(world, "bob"), verb: "move", args: { to: { x: 50, y: 30 } } }).status, "ok");
     const before = world.snapshot().version;
     strictEqual(world.command({ command_id: "lift-ring", actor: idOf(world, "bob"), verb: "take", target: "ring" }).status, "ok");
     deepStrictEqual(world.observe(idOf(world, "cal"), { since: before }).events, []);

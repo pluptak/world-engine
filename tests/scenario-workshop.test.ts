@@ -16,8 +16,8 @@ import { loadTemplates } from "../src/templates.js";
 //   overlap is compared on doubled coordinates: two footprints overlap when 2·|Δx| < w₁ + w₂ and
 //   2·|Δy| < d₁ + d₂. Touching edges do not overlap.
 // - Overlap is a legal state, never a `validateSnapshot` rule. Only motion collides.
-// - Only physical motion collides: `push`/`pull` now, falls and drops where they land. An agent's
-//   own `move` is a destination, not a path, and is not checked; agents are still obstacles.
+// - Physical motion collides: `push`/`pull`, falls and drops where they land. An agent's own `move`
+//   is checked at its destination and against barriers only (docs/walking.md, the cell spec).
 // - A pushed thing collides only with things on the same support. It travels the largest whole
 //   distance that leaves no overlap, emits `moved` with that distance, then `collided` (entity: the
 //   mover, data.with: what it hit). An obstacle is not moved. Already touching refuses `blocked`.
@@ -79,11 +79,12 @@ test("the workshop builds into a valid world", (t) => {
   strictEqual(entity(world, ids.cup).support, ids.bench);
 });
 
-test("an agent's own move is not checked: ann may stand at the bench's centre", (t) => {
+test("an agent cannot stand inside the bench: the move is refused and names it", (t) => {
   const { world, ids } = open(t);
   const result = run(world, ids.ann, "move", undefined, { to: { x: 300, y: 0 } });
-  strictEqual(result.status, "ok");
-  deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
+  strictEqual(result.reason_code, "blocked");
+  deepStrictEqual(result.reason_data, { with: ids.bench });
+  deepStrictEqual(entity(world, ids.ann).pos, { x: 150, y: 60 });
 });
 
 test(
@@ -187,12 +188,29 @@ test(
   },
 );
 
+// The drop point is the holder's centre, and an agent cannot walk to stand over a table, so a walking
+// agent drops at its feet and sets things on the bench with `put`. A holder placed over a surface by
+// the world's author (a legal overlap) is how a drop still meets one.
+function placeAnn(world: World, ids: Record<Name, Id>, pos: { x: number; y: number }): void {
+  strictEqual(world.edit({ kind: "place", target: ids.ann, support: ids.shop, pos }).status, "ok");
+}
+
+test("a cup dropped beside the bench falls to the floor; put sets it on the bench", (t) => {
+  const { world, ids } = open(t);
+  strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 300, y: 45 } }).status, "ok");
+  strictEqual(run(world, ids.ann, "take", "cup").status, "ok");
+  deepStrictEqual(eventOf(run(world, ids.ann, "drop", "cup"), "dropped").data, { fall_cm: 100 });
+  strictEqual(entity(world, ids.cup).support, ids.shop);
+  strictEqual(run(world, ids.ann, "take", "cup").status, "ok");
+  strictEqual(run(world, ids.ann, "put", "cup", { relation: "on", destination: "bench" }).status, "ok");
+  strictEqual(entity(world, ids.cup).support, ids.bench);
+});
+
 test("a cup dropped over the bench comes to rest on it, falling 25 cm, not 100", (t) => {
   const { world, ids } = open(t);
   strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 300, y: 60 } }).status, "ok");
   strictEqual(run(world, ids.ann, "take", "cup").status, "ok");
-  // The drop point is the holder's centre, so ann stands at the bench to drop over it.
-  strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 300, y: 20 } }).status, "ok");
+  placeAnn(world, ids, { x: 300, y: 20 });
   const result = run(world, ids.ann, "drop", "cup");
   strictEqual(result.status, "ok");
   // Hand height 100, bench height 75.
@@ -205,7 +223,7 @@ test("a cup dropped over the stone falls past it to the floor: a stone is no sur
   const { world, ids } = open(t);
   strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 300, y: 60 } }).status, "ok");
   strictEqual(run(world, ids.ann, "take", "cup").status, "ok");
-  strictEqual(run(world, ids.ann, "move", undefined, { to: { x: 150, y: 200 } }).status, "ok");
+  placeAnn(world, ids, { x: 150, y: 200 });
   const result = run(world, ids.ann, "drop", "cup");
   deepStrictEqual(eventOf(result, "dropped").data, { fall_cm: 100 });
   strictEqual(entity(world, ids.cup).support, ids.shop);

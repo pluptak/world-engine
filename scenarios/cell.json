@@ -1,0 +1,18 @@
+[
+  {"id": "block", "template": "room", "overrides": {"name": "cell block", "props": {"lit": true}}},
+  {"id": "bars_m450", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": -450, "y": 0}}},
+  {"id": "bars_m350", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": -350, "y": 0}}},
+  {"id": "bars_m250", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": -250, "y": 0}}},
+  {"id": "bars_m150", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": -150, "y": 0}}},
+  {"id": "bars_m50", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": -50, "y": 0}}},
+  {"id": "gate", "template": "gate", "overrides": {"name": "gate", "location": "block", "support": "block", "pos": {"x": 50, "y": 0}, "props": {"barrier": true, "openable": true, "open": false, "locked": true}}},
+  {"id": "bars_150", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": 150, "y": 0}}},
+  {"id": "bars_250", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": 250, "y": 0}}},
+  {"id": "bars_350", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": 350, "y": 0}}},
+  {"id": "bars_450", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": 450, "y": 0}}},
+  {"id": "ann", "template": "human", "overrides": {"name": "ann", "location": "block", "support": "block", "pos": {"x": -200, "y": -100}}},
+  {"id": "cot", "template": "table", "overrides": {"name": "cot", "location": "block", "support": "block", "pos": {"x": -300, "y": -300}}},
+  {"id": "bob", "template": "human", "overrides": {"name": "bob", "location": "block", "support": "block", "pos": {"x": 200, "y": 100}}},
+  {"id": "key", "template": "key", "overrides": {"name": "key", "location": "block", "contained_in": "bob", "props": {"opens": "gate"}}},
+  {"id": "note", "template": "note", "overrides": {"name": "note", "location": "block", "support": "block", "pos": {"x": -150, "y": -100}}}
+]

@@ -240,7 +240,8 @@ test("seeing an arrival in a lit room: the moved event is perceptible at the end
     },
     {
       template: "human",
-      overrides: { name: "carol", location: "e2", support: "e2", pos: { x: 0, y: 0 } },
+      // Clear of where ann arrives: she keeps her coordinates through the door.
+      overrides: { name: "carol", location: "e2", support: "e2", pos: { x: 100, y: 0 } },
     },
   ];
 

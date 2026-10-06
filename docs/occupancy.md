@@ -6,8 +6,8 @@ along y, centred on its position, axis-aligned. Two footprints overlap when `2·
 not overlap. Height plays no part: a stone does not pass under a table.
 
 Overlap is a legal state, not a `validateSnapshot` rule: scenarios may place a dog under a table,
-and an agent's `move` goes to its destination unchecked. Only motion collides, and today the only
-motion that sweeps is `push` and `pull` (`sweep` in `src/engine/geometry.ts`).
+and an agent's `move` is checked at its destination and against barriers ([walking.md](walking.md)).
+The only motion that sweeps is `push` and `pull` (`sweep` in `src/engine/geometry.ts`).
 
 A pushed entity meets only what stands on the same support, uncontained, not destroyed, not
 broken, not declaring `rubble: true` (the glass shard does) and not abstract: rubble is passed
