@@ -120,6 +120,7 @@ function transition(context: TransitionContext): void {
 }
 
 export const moveVerb: Verb = {
+  duration: { ticks: 1 },
   requires_target: false,
   args: { to: { kind: "pos" }, location: { kind: "room" } },
   refuses: ["insufficient_moving", "no_open_door", "blocked", "out_of_bounds"],

@@ -2,7 +2,8 @@
 
 Only an agent holds: agency is the template's `agent` prop, withheld from a detached part, and an
 abstract template ([space.md](space.md)) is no target for an agent's verb. A surface declares
-`surface`, sized by its footprint; a container declares `container` and `inner_*_cm`.
+`surface`, sized by its footprint; a container declares `container` and `inner_*_cm`. Every ok
+command takes one tick unless its verb says otherwise ([time.md](time.md)).
 
 - `move`: needs `moving`; `args.to` a position, `args.location` a room through an open door; refuses
   `blocked` and `out_of_bounds` ([walking.md](walking.md)); emits `moved`, carrying what it holds.
@@ -30,7 +31,8 @@ abstract template ([space.md](space.md)) is no target for an agent's verb. A sur
 - `lock`: sets `locked` under a `locked` event; needs `manipulation` and a carried entity whose
   `opens` is the target's id, else `no_key`.
 - `unlock`: the same requirement, clearing `locked` under `unlocked`.
-- `wait`: advances `args.ticks` ticks and expires every modifier due in that span, in tick order.
+- `wait`: changes nothing itself and takes `args.ticks` ticks, in which every modifier due expires
+  ([time.md](time.md)).
 - `search`: looks under or behind a target; it needs `manipulation` and reach, emits one `found`
   event per hidden thing naming its concealer (none if it hides nothing), and changes nothing —
   who looked and what they were told is the caller's business ([relations.md](relations.md)).

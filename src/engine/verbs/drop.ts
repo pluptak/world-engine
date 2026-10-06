@@ -79,6 +79,7 @@ function transition(context: TransitionContext): void {
 }
 
 export const dropVerb: Verb = {
+  duration: { ticks: 1 },
   requires_target: true,
   args: {},
   refuses: ["not_carried", "not_in_hand"],

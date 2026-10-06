@@ -216,6 +216,7 @@ function transition(context: TransitionContext): void {
 }
 
 export const putVerb: Verb = {
+  duration: { ticks: 1 },
   requires_target: true,
   args: { relation: { kind: "enum", values: ["on", "in"] }, destination: { kind: "address" } },
   refuses: [

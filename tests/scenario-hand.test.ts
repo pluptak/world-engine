@@ -121,7 +121,7 @@ test("detaching guard.hand_r spawns a hand and reduces manipulation to 50", () =
   strictEqual(take.reason_code, "insufficient_manipulation");
 });
 
-test("a sublethal part hit adds a temporary modifier that wait expires", () => {
+test("a sublethal part hit adds a temporary modifier that time expires", () => {
   const setup = duel();
   const hit = attack(setup.snapshot, setup.attackerId, `${setup.guardId}.hand_r`, "sublethal");
   const damaged = hit.events.find((event) => event.type === "damaged");
@@ -139,11 +139,13 @@ test("a sublethal part hit adds a temporary modifier that wait expires", () => {
     },
   ]);
 
+  // The blow itself took tick 0 to 1; two more reach the expiry at 3.
+  strictEqual(hit.snapshot.tick, 1);
   const waited = apply(hit.snapshot, registry, {
-    command_id: "wait-three",
+    command_id: "wait-two",
     actor: setup.attackerId,
     verb: "wait",
-    args: { ticks: 3 },
+    args: { ticks: 2 },
   });
   const recovery = waited.events.find(
     (event) => event.type === "capability_changed" && event.data.capacity === "manipulation",

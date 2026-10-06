@@ -4,7 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { commandDuration } from "../src/engine/clock.js";
 import { apply } from "../src/engine/pipeline.js";
+import { verbRegistry } from "../src/engine/verbs/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import {
   canonicalJson,
@@ -74,6 +76,18 @@ function runSequence(world: World, seed: number, steps: number): { snapshot: str
     deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
     strictEqual(canonicalJson(before), beforeJson);
     checkPartTriggers(before, world.snapshot(), result.status === "ok" ? result.events : []);
+    // Only an ok command takes time, exactly what its verb declares, and nothing due inside that
+    // time is left behind.
+    const after = world.snapshot();
+    const verb = verbRegistry.get(asCommand.verb);
+    const took = result.status === "ok" && verb !== undefined ? commandDuration(verb, asCommand)! : 0;
+    strictEqual(after.tick, before.tick + took);
+    for (const entity of Object.values(after.entities)) {
+      for (const modifier of entity.modifiers) {
+        const due = modifier.expires_at_tick;
+        strictEqual(due !== null && due > before.tick && due <= after.tick, false, entity.id);
+      }
+    }
     // Observing is a read: what an agent could sense writes nothing, parts included.
     if ("verb" in step && world.snapshot().entities[step.actor] !== undefined) {
       const seen = canonicalJson(world.snapshot());

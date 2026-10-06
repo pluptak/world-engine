@@ -219,6 +219,7 @@ function transition(context: TransitionContext): void {
 }
 
 export const pourVerb: Verb = {
+  duration: { ticks: 1 },
   requires_target: true,
   args: { destination: { kind: "address" }, amount: { kind: "int" } },
   refuses: [

@@ -386,6 +386,7 @@ function transition(context: TransitionContext): void {
 }
 
 export const attackVerb: Verb = {
+  duration: { ticks: 1 },
   requires_target: true,
   args: {},
   refuses: ["out_of_reach", "insufficient_manipulation"],

@@ -144,6 +144,10 @@ const VerbCatalogEntrySchema = z.object({
   verb: z.string(),
   requires_target: z.boolean(),
   args: z.record(z.string(), ArgDeclSchema),
+  duration: z.union([
+    z.object({ ticks: z.number().int().nonnegative() }).strict(),
+    z.object({ arg: z.string() }).strict(),
+  ]),
   requires: z.array(CapacityRequirementSchema),
   carry_alternatives: z.array(CarryAlternativeSchema),
   attack_modes: z.array(AttackModeSchema),

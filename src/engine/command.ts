@@ -140,11 +140,15 @@ export interface ArgDecl {
   values?: readonly string[];
 }
 
+// How many ticks an ok command takes: a fixed count, or the value of the named positive int arg.
+export type VerbDuration = { ticks: number } | { arg: string };
+
 // What the engine tells a caller about one verb, read from the verb's own declarations.
 export interface VerbCatalogEntry {
   verb: string;
   requires_target: boolean;
   args: Readonly<Record<string, ArgDecl>>;
+  duration: VerbDuration;
   requires: readonly CapacityRequirement[];
   carry_alternatives: readonly CarryAlternative[];
   attack_modes: readonly AttackMode[];
@@ -155,6 +159,7 @@ export interface Verb {
   requires_target: boolean;
   args: Readonly<Record<string, ArgDecl>>;
   refuses: readonly string[];
+  duration: VerbDuration;
   requires?: readonly CapacityRequirement[];
   carry_alternatives?: readonly CarryAlternative[];
   attack_modes?: readonly AttackMode[];

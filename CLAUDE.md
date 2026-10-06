@@ -33,7 +33,9 @@ suffixes (NodeNext).
   It looks up the verb, then checks the actor, resolves the target (`resolve.ts`: name, alias or
   `entity.part`) and runs `verb.preconditions`. Only after all of those pass does it emit the root
   event and call `verb.transition`. Any status other than `ok` returns the input snapshot unchanged.
-   `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
+   After the transition, `advanceClock` (`src/engine/clock.ts`) moves `tick` on by the verb's
+   declared `duration` (one tick, `wait` its `ticks` arg, `edit` none), expiring every modifier due
+   on the way with a `capability_changed` caused by the modifier's `cause_id`; `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
    a failure returns the input snapshot unchanged. `edit` uses it to refuse results that break a
    snapshot invariant. `move` to another room, `place`, and removals re-derive `location` for the
    whole subtree below the change (`refreshSubtreeLocations` in `verbs/address.ts`); `place` setting

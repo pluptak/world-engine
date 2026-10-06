@@ -38,13 +38,14 @@ export function verbCatalog(registry: VerbRegistry = verbRegistry): VerbCatalogE
   return [...registry.entries()]
     .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
     .map(([name, verb]) => {
-      if (verb.args === undefined || verb.refuses === undefined) {
+      if (verb.args === undefined || verb.refuses === undefined || verb.duration === undefined) {
         throw new TypeError(`Verb ${name} does not describe itself`);
       }
       return structuredClone({
         verb: name,
         requires_target: verb.requires_target,
         args: verb.args,
+        duration: verb.duration,
         requires: verb.requires ?? [],
         carry_alternatives: verb.carry_alternatives ?? [],
         attack_modes: verb.attack_modes ?? [],

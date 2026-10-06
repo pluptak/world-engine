@@ -99,6 +99,7 @@ function transition(context: TransitionContext): void {
 }
 
 export const takeVerb: Verb = {
+  duration: { ticks: 1 },
   requires_target: true,
   args: { part: { kind: "address" } },
   refuses: [

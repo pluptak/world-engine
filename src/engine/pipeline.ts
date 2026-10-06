@@ -1,4 +1,5 @@
 import { canonicalJson } from "./canonical.js";
+import { advanceClock, commandDuration } from "./clock.js";
 import type { Command, CommandContext, Result, TransitionContext } from "./command.js";
 import { WORLD_AUTHOR } from "./command.js";
 import { eventPerceivers } from "./query.js";
@@ -116,6 +117,15 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     );
   }
 
+  // Checked once the verb has accepted its args, so a bad `wait` stays the verb's own refusal.
+  const duration = commandDuration(verb, command);
+  if (duration === null) {
+    throw new TypeError(`Verb ${command.verb} accepted a command without a duration`);
+  }
+  if (!Number.isSafeInteger(snapshot.tick + duration)) {
+    return unchangedResult(snapshot, command, "invalid", null, "clock_overflow");
+  }
+
   let working = snapshot;
   const events: WorldEvent[] = [];
   const deltas: Delta[] = [];
@@ -189,6 +199,9 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     recordDelta,
   };
   verb.transition(transitionContext);
+  // The verb resolves at the tick it was given; only then does its time pass, and whatever falls
+  // due in that time happens after it.
+  advanceClock(transitionContext, duration);
   if (verb.validateResult !== undefined) {
     const validation = verb.validateResult({ ...commandContext, snapshot: working });
     if (validation.status !== "ok") {

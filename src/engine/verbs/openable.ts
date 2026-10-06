@@ -140,6 +140,7 @@ function makeVerb(kind: Kind): Verb {
     requires_target: true,
     args: openableArgs,
     refuses: refuses[kind],
+    duration: { ticks: 1 },
     ...(requirements[kind] !== undefined && { requires: requirements[kind] }),
     preconditions: (context) => preconditions(context, kind),
     transition: (context) => transition(context, kind),

@@ -139,6 +139,7 @@ const pushRefuses = [
 ] as const;
 
 export const pushVerb: Verb = {
+  duration: { ticks: 1 },
   requires_target: true,
   args: pushArgs,
   refuses: pushRefuses,
@@ -147,6 +148,7 @@ export const pushVerb: Verb = {
 };
 
 export const pullVerb: Verb = {
+  duration: { ticks: 1 },
   requires_target: true,
   args: pushArgs,
   refuses: pushRefuses,

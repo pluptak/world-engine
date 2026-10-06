@@ -475,30 +475,20 @@ function script(ids: Ids): Step[] {
     },
   });
 
-  // D. a fight: a torso that costs moving, an arm that comes off, and the wait that undoes the rest.
-  step({
-    note: "bob hits ann's torso, which costs her moving for three ticks",
-    run: cmd("D1-torso-1", "bob", "attack", `${ids.ann}.torso`),
-    expect: [{ status: "ok", events: ["attack", "damaged", "capability_changed"] }],
-  });
-  step({
-    note: "and again: a second modifier, on the same capacity, due at the same tick",
-    run: cmd("D2-torso-2", "bob", "attack", `${ids.ann}.torso`),
-    expect: [{ status: "ok", events: ["attack", "damaged", "capability_changed"] }],
-  });
+  // D. a fight: an arm that comes off, a torso that costs moving, and the wait that undoes that.
   step({
     note: "bob cuts ann's arm: a part that contributes no capacity adds no modifier",
-    run: cmd("D3-arm-1", "bob", "attack", `${ids.ann}.arm_r`),
+    run: cmd("D1-arm-1", "bob", "attack", `${ids.ann}.arm_r`),
     expect: [{ status: "ok", events: ["attack", "damaged"] }],
   });
   step({
     note: "and again",
-    run: cmd("D4-arm-2", "bob", "attack", `${ids.ann}.arm_r`),
+    run: cmd("D2-arm-2", "bob", "attack", `${ids.ann}.arm_r`),
     expect: [{ status: "ok", events: ["attack", "damaged"] }],
   });
   step({
     note: "and the arm comes off, which takes ann's hand with it",
-    run: cmd("D5-arm-off", "bob", "attack", `${ids.ann}.arm_r`),
+    run: cmd("D3-arm-off", "bob", "attack", `${ids.ann}.arm_r`),
     expect: [
       { status: "ok", events: ["attack", "detached", "spawned", "capability_changed", "dropped"] },
     ],
@@ -518,6 +508,21 @@ function script(ids: Ids): Step[] {
     },
   });
   step({
+    note: "bob hits ann's torso, which costs her moving until three ticks after the blow",
+    run: cmd("D4-torso-1", "bob", "attack", `${ids.ann}.torso`),
+    expect: [{ status: "ok", events: ["attack", "damaged", "capability_changed"] }],
+  });
+  step({
+    // Every command takes a tick, so the second blow lands a tick later and wears off a tick later.
+    note: "and again: a second modifier, on the same capacity, due a tick after the first",
+    run: cmd("D5-torso-2", "bob", "attack", `${ids.ann}.torso`),
+    expect: [{ status: "ok", events: ["attack", "damaged", "capability_changed"] }],
+    then: (world) => {
+      const tick = world.snapshot().tick;
+      deepStrictEqual(world.entity(ids.ann)?.modifiers.map((modifier) => modifier.expires_at_tick), [tick + 1, tick + 2]);
+    },
+  });
+  step({
     note: "bob waits three ticks, and both moving modifiers expire in tick order",
     run: cmd("D6-wait", "bob", "wait", undefined, { ticks: 3 }),
     expect: [{ status: "ok", events: ["wait", "capability_changed", "capability_changed"] }],
@@ -528,7 +533,8 @@ function script(ids: Ids): Step[] {
     },
     then: (world) => {
       deepStrictEqual(world.entity(ids.ann)?.modifiers, []);
-      strictEqual(world.snapshot().tick, 3);
+      // A tick for each of the 34 ok commands before it, and three for the wait.
+      strictEqual(world.snapshot().tick, 37);
     },
   });
   step({

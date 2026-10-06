@@ -90,6 +90,7 @@ function transition(context: TransitionContext): void {
 }
 
 export const searchVerb: Verb = {
+  duration: { ticks: 1 },
   requires_target: true,
   args: {},
   refuses: [
