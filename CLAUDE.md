@@ -59,7 +59,9 @@ suffixes (NodeNext).
   displacement, falls, breaking into `break_products`, residue transfer, `resolveImpact`
   (mass × distance against each party's mass × `break_fall_cm`), and `restingPlace` (the surface
   under a fall that catches it). Verbs call into it.
-- `src/engine/query.ts`: `fact` and `perceive` queries (a `fact` subject may be `<entity>.<part>`). They answer `"true"`, `"false"` or
+- `src/engine/query.ts`: `fact` and `perceive` queries (a `fact` subject may be `<entity>.<part>`; `reachable` answers
+  by `inReach` in `verbs/address.ts`, the one reach rule `take`, `give`, `push`, `attack` and the
+  rest apply). They answer `"true"`, `"false"` or
   `"unknown"` with a `basis_code`, from the snapshot, the templates, coverage and the replayed event
   list. Senses are `sight`, `hearing`, `smell`, and `touch`, read from `EVENT_SENSES` (one row per event type,
   `docs/senses.md`); smell answers only where coverage declares it, else `"unknown"`. `touch` reads the
@@ -92,8 +94,10 @@ suffixes (NodeNext).
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
   surface as CLI issue codes.
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
-  `command`/`edit`/`check`/`since`/`query`/`observe`/`snapshot`/`entity`; `observe` is
-  `src/engine/projection.ts` over the world's own `snapshot`, `since` and event-form `query`), re-exported by `src/index.ts` and by
+  `command`/`edit`/`check`/`since`/`query`/`observe`/`inspect`/`snapshot`/`entity`; `observe` is
+  `src/engine/projection.ts` over the world's own `snapshot`, `since` and event-form `query`,
+  `inspect` one entity of it in detail, and `command(c, { observe: true })` attaches the actor's
+  projection since the version the command was applied to), re-exported by `src/index.ts` and by
   the package's `exports`, together with `verbs` (`verbCatalog` in `verbs/index.ts`, which throws on
   a verb that does not declare `args` and `refuses`, and returns structuredClone copies so callers
   cannot mutate the declarations the checks read). Command checks read their own verb's declaration
@@ -118,7 +122,7 @@ suffixes (NodeNext).
   same sequence of calls writes the same log through any number of handles. A memory world keeps
   past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
-  `check` | `since` | `query` | `observe` | `snapshot` | `verbs` | `capabilities`), calls one
+  `check` | `since` | `query` | `observe` | `inspect` | `snapshot` | `verbs` | `capabilities`), calls one
   `World` method, `verbCatalog` or returns `ENGINE_CAPABILITIES` (`src/engine/capabilities.ts`: the
   relations and senses the engine computes, which `validateSnapshot` holds coverage to), and
   validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`

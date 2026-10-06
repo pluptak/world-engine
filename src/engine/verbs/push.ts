@@ -4,7 +4,7 @@ import type { CommandContext, PreconditionResult, TransitionContext, Verb } from
 import type { Pos } from "../../model.js";
 import { propagateSupportLoss, resolveImpact } from "../../resolvers/physical.js";
 import { isAbstract } from "../resolve.js";
-import { reachData } from "./address.js";
+import { inReach, reachData } from "./address.js";
 import { revealConcealed } from "./search.js";
 
 interface Movement {
@@ -57,16 +57,7 @@ function preconditions(context: CommandContext, reverse: boolean): PreconditionR
   if (target === undefined) {
     return { status: "invalid", reason_code: "no_such_entity" };
   }
-  const actorPos = effectivePos(context.snapshot, context.actor.id);
-  const targetPos = effectivePos(context.snapshot, target.id);
-  const reach = context.actor.props.reach_cm;
-  if (
-    actorPos === null ||
-    targetPos === null ||
-    target.location !== context.actor.location ||
-    typeof reach !== "number" ||
-    (actorPos.x - targetPos.x) ** 2 + (actorPos.y - targetPos.y) ** 2 > reach ** 2
-  ) {
+  if (!inReach(context.snapshot, context.actor.id, target.id)) {
     const data = reachData(context.snapshot, context.actor.id, target.id);
     return {
       status: "refused",

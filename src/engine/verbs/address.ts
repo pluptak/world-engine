@@ -113,24 +113,31 @@ export function addressEntity(
 }
 
 export function withinReach(context: CommandContext, destinationId: Id): boolean {
-  const destination = context.snapshot.entities[destinationId];
-  if (destination === undefined) {
+  if (context.snapshot.entities[destinationId] === undefined) {
     throw new TypeError(`Unknown entity ${destinationId}`);
   }
+  return inReach(context.snapshot, context.actor.id, destinationId);
+}
 
-  const actorPos = effectivePos(context.snapshot, context.actor.id);
-  const destinationPos = effectivePos(context.snapshot, destinationId);
-  const reach = context.actor.props.reach_cm;
+// The one reach rule, for the verbs and for the `reachable` fact alike: both positions known, the
+// same room, and centre to centre within the actor's `reach_cm`.
+export function inReach(snapshot: Snapshot, actorId: Id, targetId: Id): boolean {
+  const actor = snapshot.entities[actorId];
+  const target = snapshot.entities[targetId];
+  const actorPos = effectivePos(snapshot, actorId);
+  const targetPos = effectivePos(snapshot, targetId);
+  const reach = actor?.props.reach_cm;
   if (
+    actor === undefined ||
+    target === undefined ||
     actorPos === null ||
-    destinationPos === null ||
-    destination.location !== context.actor.location ||
+    targetPos === null ||
+    target.location !== actor.location ||
     typeof reach !== "number"
   ) {
     return false;
   }
-
-  return (actorPos.x - destinationPos.x) ** 2 + (actorPos.y - destinationPos.y) ** 2 <= reach ** 2;
+  return (actorPos.x - targetPos.x) ** 2 + (actorPos.y - targetPos.y) ** 2 <= reach ** 2;
 }
 
 // Structured data for an out_of_reach refusal, measured only when the quantities exist:

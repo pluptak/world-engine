@@ -1,4 +1,5 @@
 import { effectivePos } from "./geometry.js";
+import { inReach } from "./verbs/address.js";
 import { query } from "./query.js";
 import type { Id, Pos, Snapshot, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
@@ -112,4 +113,48 @@ export function observeEntities(
     observed.facts = facts;
     return observed;
   });
+}
+
+// One entity in more detail than `observe` lists it, for a controller asking about a single thing:
+// the same senses and facts, plus the props the world covers as properties (`open`, `locked`,
+// `liquid_amount`, ... whatever coverage names), whether the observer could reach it, and what it
+// visibly holds or carries. Null when the observer senses nothing of it. Props and holdings come
+// only with sight or touch, as facts do.
+export interface Inspection extends ObservedEntity {
+  props?: Record<string, number | string | boolean>;
+  reachable?: boolean;
+  holds?: Id[];
+}
+
+export function inspectEntity(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  events: WorldEvent[],
+  observer: Id,
+  entityId: Id,
+): Inspection | null {
+  const observed = observeEntities(snapshot, registry, events, observer);
+  const found = observed.find((candidate) => candidate.id === entityId);
+  const entity = snapshot.entities[entityId];
+  if (found === undefined || entity === undefined) {
+    return null;
+  }
+  const inspection: Inspection = { ...found };
+  if (snapshot.coverage.relations.includes("reachable")) {
+    inspection.reachable = inReach(snapshot, observer, entityId);
+  }
+  if (found.facts === undefined) {
+    return inspection;
+  }
+  const props: Record<string, number | string | boolean> = {};
+  for (const key of Object.keys(entity.props).sort()) {
+    if (snapshot.coverage.properties.includes(key)) {
+      props[key] = entity.props[key]!;
+    }
+  }
+  inspection.props = props;
+  inspection.holds = observed
+    .filter((other) => other.facts?.contained_in === entityId || other.facts?.support === entityId)
+    .map((other) => other.id);
+  return inspection;
 }

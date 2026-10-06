@@ -149,6 +149,7 @@ function commandResponse(result: Result, includeSnapshot: boolean) {
     deltas: responseDeltas,
     events: result.events,
     ...(includeSnapshot && { snapshot: result.snapshot }),
+    ...(result.observation !== undefined && { observation: result.observation }),
   };
 }
 
@@ -161,7 +162,10 @@ function dispatch(request: Request): unknown {
   }
   if (request.op === "command") {
     const world = openWorld(request.world);
-    const result = world.command(request.command, { basedOn: request.based_on_version });
+    const result = world.command(request.command, {
+      basedOn: request.based_on_version,
+      observe: request.observe,
+    });
     return commandResponse(result, request.include_snapshot === true);
   }
   if (request.op === "edit") {
@@ -196,6 +200,9 @@ function dispatch(request: Request): unknown {
   const world = openWorld(request.world);
   if (request.op === "query") {
     return world.query(request.query);
+  }
+  if (request.op === "inspect") {
+    return { inspection: openWorld(request.world).inspect(request.observer, request.entity) };
   }
   if (request.op === "observe") {
     return world.observe(request.observer, request.since === undefined ? {} : { since: request.since });

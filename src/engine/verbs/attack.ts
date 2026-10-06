@@ -5,7 +5,7 @@ import { carryAlternatives, gripEvictions, insufficientCode, lostCarry } from ".
 import type { PartState } from "../../model.js";
 import type { AttackMode, CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { dropCarriedItem } from "./drop.js";
-import { reachData } from "./address.js";
+import { inReach, reachData } from "./address.js";
 import { spawn } from "../spawn.js";
 import { partState, withParts } from "../parts.js";
 
@@ -86,16 +86,7 @@ function preconditions(context: CommandContext): PreconditionResult {
   }
 
   const entity = context.snapshot.entities[structure.entityId]!;
-  const actorPos = effectivePos(context.snapshot, context.actor.id);
-  const targetPos = effectivePos(context.snapshot, entity.id);
-  const reach = context.actor.props.reach_cm;
-  if (
-    actorPos === null ||
-    targetPos === null ||
-    entity.location !== context.actor.location ||
-    typeof reach !== "number" ||
-    (actorPos.x - targetPos.x) ** 2 + (actorPos.y - targetPos.y) ** 2 > reach ** 2
-  ) {
+  if (!inReach(context.snapshot, context.actor.id, entity.id)) {
     const data = reachData(context.snapshot, context.actor.id, entity.id);
     return {
       status: "refused",

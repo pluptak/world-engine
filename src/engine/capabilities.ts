@@ -6,7 +6,15 @@ import type { Coverage } from "../model.js";
 // entity's own props, so a world may cover any property it gives its entities.
 // Frozen, because the checks read it: a caller cannot widen what the engine claims to compute.
 export const ENGINE_CAPABILITIES = Object.freeze({
-  relations: Object.freeze(["support", "contained_in", "location", "attached_to", "status", "near"] as const),
+  relations: Object.freeze([
+    "support",
+    "contained_in",
+    "location",
+    "attached_to",
+    "status",
+    "near",
+    "reachable",
+  ] as const),
   senses: Object.freeze(["sight", "hearing", "smell", "touch"] as const),
   computed_properties: Object.freeze(["integrity", "residue", "pos"] as const),
 });

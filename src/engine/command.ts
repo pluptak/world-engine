@@ -1,6 +1,7 @@
 import type { Delta, Entity, Id, PartState, Pos, ReasonData, Snapshot, Status, WorldEvent } from "../model.js";
 import type { EntityOverrides } from "./spawn.js";
 import type { TemplateRegistry } from "../templates.js";
+import type { Projection } from "./projection.js";
 
 // The reserved author of direct world edits: causality, not state, so it never appears in entities.
 export const WORLD_AUTHOR: Id = "world";
@@ -72,6 +73,8 @@ export interface Result {
   snapshot: Snapshot;
   deltas: Delta[];
   events: WorldEvent[];
+  // With `observe: true`: what the actor could sense afterwards, and which of this command's events.
+  observation?: Projection;
 }
 
 export interface TargetAddress {

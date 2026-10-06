@@ -3,7 +3,7 @@ import { canonicalJson } from "./canonical.js";
 import { effectivePos } from "./geometry.js";
 import type { Entity, Id, Perceivers, Pos, Snapshot, Tri, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
-import { closedEnclosure, isAgent } from "./verbs/address.js";
+import { closedEnclosure, inReach, isAgent } from "./verbs/address.js";
 import { isAbstract } from "./resolve.js";
 import { effectivePart } from "./parts.js";
 import { computesSense } from "./capabilities.js";
@@ -132,6 +132,17 @@ function fact(
         return answer("false", "no_such_entity");
       }
       return answer(nearValue(snapshot, entity, other) ? "true" : "false", "derived_near");
+    }
+    // Whether the subject could lay a hand on the object now, by the same rule every verb that
+    // reaches applies, so the answer cannot drift from what `take` or `give` would decide.
+    if (query.relation === "reachable") {
+      if (query.object === undefined) {
+        return answer("false", "no_object");
+      }
+      if (snapshot.entities[query.object] === undefined) {
+        return answer("false", "no_such_entity");
+      }
+      return answer(inReach(snapshot, entity.id, query.object) ? "true" : "false", "derived_reach");
     }
     return answer(relationValue(registry, entity, query.relation, query.object) ? "true" : "false", "relation_state");
   }

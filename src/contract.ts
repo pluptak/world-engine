@@ -157,6 +157,7 @@ export const RequestSchema = z.discriminatedUnion("op", [
     based_on_version: z.number().int().optional(),
     command: CommandSchema,
     include_snapshot: z.boolean().optional(),
+    observe: z.boolean().optional(),
   }).strict(),
   z.object({
     op: z.literal("edit"),
@@ -212,6 +213,12 @@ export const RequestSchema = z.discriminatedUnion("op", [
   }).strict(),
   z.object({
     op: z.literal("capabilities"),
+  }).strict(),
+  z.object({
+    op: z.literal("inspect"),
+    world: z.string().min(1),
+    observer: IdSchema,
+    entity: IdSchema,
   }).strict(),
 ]);
 
@@ -288,6 +295,44 @@ export const StatusSchema = z.enum([
 // Structured refusal data: ints and id strings only, never prose.
 export const ReasonDataSchema = z.record(z.string(), z.union([z.number().int(), z.string()]));
 
+const ObservedEntitySchema = z.object({
+  id: IdSchema,
+  template: z.string(),
+  name: z.string(),
+  senses: z.array(z.string()),
+  facts: z.object({
+    location: IdSchema.nullable().optional(),
+    support: IdSchema.nullable().optional(),
+    contained_in: IdSchema.nullable().optional(),
+    in_part: z.string().nullable().optional(),
+    status: z.string().optional(),
+    integrity: z.number().int().optional(),
+    residue: z.record(z.string(), z.number().int()).optional(),
+    pos: PosSchema.nullable().optional(),
+  }).strict().optional(),
+});
+
+export const ProjectionSchema = z.object({
+  observer: IdSchema,
+  version: z.number().int(),
+  unknown_senses: z.array(z.string()),
+  entities: z.array(ObservedEntitySchema.strict()),
+  events: z.array(z.object({
+    event_id: IdSchema,
+    type: z.string(),
+    entity: IdSchema,
+    senses: z.array(z.string()),
+  }).strict()),
+}).strict();
+
+export const InspectResponseSchema = z.object({
+  inspection: ObservedEntitySchema.extend({
+    props: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).optional(),
+    reachable: z.boolean().optional(),
+    holds: z.array(IdSchema).optional(),
+  }).strict().nullable(),
+}).strict();
+
 export const CommandResponseSchema = z.object({
   status: StatusSchema,
   command_id: IdSchema,
@@ -299,6 +344,7 @@ export const CommandResponseSchema = z.object({
   deltas: z.array(DeltaSchema),
   events: z.array(WorldEventSchema),
   snapshot: SnapshotSchema.optional(),
+  observation: ProjectionSchema.optional(),
 }).strict();
 
 export const AnswerSchema = z.object({
@@ -343,33 +389,6 @@ export const CapabilitiesResponseSchema = z.object({
   computed_properties: z.array(z.string()),
 }).strict();
 
-export const ProjectionSchema = z.object({
-  observer: IdSchema,
-  version: z.number().int(),
-  unknown_senses: z.array(z.string()),
-  entities: z.array(z.object({
-    id: IdSchema,
-    template: z.string(),
-    name: z.string(),
-    senses: z.array(z.string()),
-    facts: z.object({
-      location: IdSchema.nullable().optional(),
-      support: IdSchema.nullable().optional(),
-      contained_in: IdSchema.nullable().optional(),
-      in_part: z.string().nullable().optional(),
-      status: z.string().optional(),
-      integrity: z.number().int().optional(),
-      residue: z.record(z.string(), z.number().int()).optional(),
-      pos: PosSchema.nullable().optional(),
-    }).strict().optional(),
-  }).strict()),
-  events: z.array(z.object({
-    event_id: IdSchema,
-    type: z.string(),
-    entity: IdSchema,
-    senses: z.array(z.string()),
-  }).strict()),
-}).strict();
 
 export const ValidationIssueSchema = z.object({
   code: z.string(),
@@ -392,6 +411,7 @@ export const ResponseSchema = z.union([
   BeatResponseSchema,
   VerbsResponseSchema,
   CapabilitiesResponseSchema,
+  InspectResponseSchema,
   ProjectionSchema,
   ValidationFailureSchema,
 ]);

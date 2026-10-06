@@ -67,7 +67,7 @@ test("spawn supplies default coverage and fact queries use covered state", () =>
   });
 
   deepStrictEqual(bottle.snapshot.coverage, {
-    relations: ["support", "contained_in", "attached_to", "status", "location", "near"],
+    relations: ["support", "contained_in", "attached_to", "status", "location", "near", "reachable"],
     senses: ["sight", "hearing"],
     properties: ["integrity", "residue", "pos"],
   });

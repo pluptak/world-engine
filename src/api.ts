@@ -6,7 +6,14 @@ import {
   type Result,
   type WorldEdit,
 } from "./engine/command.js";
-import { observeEntities, SENSES, type ObservedEvent, type Projection } from "./engine/projection.js";
+import {
+  inspectEntity,
+  observeEntities,
+  SENSES,
+  type Inspection,
+  type ObservedEvent,
+  type Projection,
+} from "./engine/projection.js";
 import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./engine/query.js";
 import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
 import { lostField } from "./engine/upgrade.js";
@@ -37,6 +44,9 @@ const templatesDirectory = fileURLToPath(new URL("../templates/", import.meta.ur
 
 export interface CommandOptions {
   basedOn?: number;
+  // `command` only: attach the actor's view after the command, as `observe` would give it with
+  // `since` the version the command was applied to, so a controller needs no second call.
+  observe?: boolean;
 }
 
 export interface EditOptions {
@@ -85,6 +95,8 @@ export interface World {
   query(query: Query): Answer;
   // What one observer could sense now, and, with `since`, which events after that version it sensed.
   observe(observer: Id, options?: ObserveOptions): Projection;
+  // One entity in detail, as the observer could sense it now; null when nothing of it is sensed.
+  inspect(observer: Id, entity: Id): Inspection | null;
   snapshot(): Snapshot;
   entity(id: Id): Entity | null;
   // The id a scenario gave this world, or null. Names are authoring sugar rather than world state,
@@ -101,6 +113,35 @@ function checkResult(result: Result): CheckResult {
     ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
     ...(result.reason_data !== undefined && { reason_data: result.reason_data }),
   };
+}
+
+// The command's result with the actor's view attached when the caller asked for it. An ok command
+// moved the world one version, so its own events are exactly those after the version before it.
+function withObservation(
+  world: Pick<World, "snapshot" | "since" | "query">,
+  registry: TemplateRegistry,
+  actor: Id,
+  result: Result,
+  options: CommandOptions | undefined,
+): Result {
+  if (options?.observe !== true || world.snapshot().entities[actor] === undefined) {
+    return result;
+  }
+  const since = result.status === "ok" ? result.snapshot.version - 1 : world.snapshot().version;
+  return { ...result, observation: observeThrough(world, registry, actor, { since }) };
+}
+
+function inspectThrough(
+  world: Pick<World, "snapshot">,
+  registry: TemplateRegistry,
+  observer: Id,
+  entity: Id,
+): Inspection | null {
+  const snapshot = world.snapshot();
+  if (snapshot.entities[observer] === undefined) {
+    throw new WorldError("no_such_entity", `Unknown observer ${observer}`);
+  }
+  return inspectEntity(snapshot, registry, [], observer, entity);
 }
 
 // A projection read through a world's own methods, so a store world and a memory world project
@@ -209,7 +250,8 @@ function storeWorld(
   let active = registry;
 
   const world: World = {
-    command: (command, options) => submit(dir, command, options?.basedOn, active),
+    command: (command, options) =>
+      withObservation(world, active, command.actor, submit(dir, command, options?.basedOn, active), options),
     // One shared base version for the whole beat, so later commands see earlier ones as stale;
     // one log line per command, each with its own status.
     beat: (commands, options) => {
@@ -275,6 +317,7 @@ function storeWorld(
       return queryEngine(snapshot, active, readEvents(dir), request);
     },
     observe: (observer, options = {}) => observeThrough(world, active, observer, options),
+    inspect: (observer, entity) => inspectThrough(world, active, observer, entity),
     snapshot: () => load(dir, active),
     entity: (id) => load(dir, active).entities[id] ?? null,
     id: (name) => names[name] ?? null,
@@ -389,7 +432,8 @@ export function memoryWorld(
   }
 
   const world: World = {
-    command: (command, options) => submitMemory(command, options?.basedOn ?? current.version),
+    command: (command, options) =>
+      withObservation(world, templates, command.actor, submitMemory(command, options?.basedOn ?? current.version), options),
     beat: (commands, options) => {
       const base = options?.basedOn ?? current.version;
       return commands.map((command) => submitMemory(command, base));
@@ -493,6 +537,7 @@ export function memoryWorld(
       return queryEngine(current, templates, events, request);
     },
     observe: (observer, options = {}) => observeThrough(world, templates, observer, options),
+    inspect: (observer, entity) => inspectThrough(world, templates, observer, entity),
     snapshot: () => current,
     entity: (id) => current.entities[id] ?? null,
     id: (name) => names[name] ?? null,
@@ -506,7 +551,7 @@ export type { WorldErrorCode } from "./errors.js";
 export type { Scenario, ScenarioEntry } from "./scenario.js";
 export type { Command, Result, WorldEdit } from "./engine/command.js";
 export type { Answer, Query } from "./engine/query.js";
-export type { ObservedEntity, ObservedEvent, Projection } from "./engine/projection.js";
+export type { Inspection, ObservedEntity, ObservedEvent, Projection } from "./engine/projection.js";
 export type { TraceQuery } from "./engine/trace.js";
 export type {
   Coverage,

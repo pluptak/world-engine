@@ -1,8 +1,7 @@
 import { capacities } from "../capacity.js";
-import { effectivePos } from "../geometry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { carryAlternatives, carryCheck, gripPlacement, heldCount, holderLayout } from "../carry.js";
-import { closedEnclosure, isAgent, reachData } from "./address.js";
+import { closedEnclosure, isAgent, inReach, reachData } from "./address.js";
 import { revealConcealed } from "./search.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
@@ -19,16 +18,7 @@ function preconditions(context: CommandContext): PreconditionResult {
     return { status: "invalid", reason_code: "no_such_entity" };
   }
 
-  const actorPos = effectivePos(context.snapshot, context.actor.id);
-  const targetPos = effectivePos(context.snapshot, entity.id);
-  const reach = context.actor.props.reach_cm;
-  if (
-    actorPos === null ||
-    targetPos === null ||
-    entity.location !== context.actor.location ||
-    typeof reach !== "number" ||
-    (actorPos.x - targetPos.x) ** 2 + (actorPos.y - targetPos.y) ** 2 > reach ** 2
-  ) {
+  if (!inReach(context.snapshot, context.actor.id, entity.id)) {
     const data = reachData(context.snapshot, context.actor.id, entity.id);
     return {
       status: "refused",
