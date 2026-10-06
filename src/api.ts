@@ -168,7 +168,15 @@ function observeThrough(
           );
           return senses.length === 0
             ? []
-            : [{ event_id: event.event_id, type: event.type, entity: event.entity, senses }];
+            : [
+                {
+                  event_id: event.event_id,
+                  tick: event.tick,
+                  type: event.type,
+                  entity: event.entity,
+                  senses,
+                },
+              ];
         });
   return {
     observer,

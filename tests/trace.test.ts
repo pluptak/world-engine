@@ -14,7 +14,7 @@ function event(
   type: string,
   command_id = "c1",
 ): WorldEvent {
-  return { event_id, cause_id, command_id, type, entity: "e1", data: {} };
+  return { event_id, cause_id, command_id, tick: 0, type, entity: "e1", data: {} };
 }
 
 test("traceChain returns root-first chain", () => {

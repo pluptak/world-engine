@@ -1,13 +1,17 @@
-import { deepStrictEqual, ok, strictEqual } from "node:assert";
+import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { memoryWorld, verbs } from "../src/index.js";
+import { createWorld, memoryWorld, verbs } from "../src/index.js";
+import { readEvents } from "../src/store/file-store.js";
 import { canonicalJson } from "../src/engine/canonical.js";
 import { capacity } from "../src/engine/capacity.js";
 import { apply } from "../src/engine/pipeline.js";
 import { spawn } from "../src/engine/spawn.js";
 import type { Command } from "../src/engine/command.js";
-import type { Snapshot } from "../src/model.js";
+import { defaultCoverage, type Snapshot } from "../src/model.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
 
 // Every ok command takes the time its verb declares, and the clock advances after the verb has
@@ -25,7 +29,7 @@ function duel(): { snapshot: Snapshot; room: string; attacker: string; guard: st
     coverage: { relations: [], senses: [], properties: [] },
     entities: {},
   };
-  const room = spawn(base, registry, "room", { name: "room" });
+  const room = spawn(base, registry, "room", { name: "room", props: { lit: true } });
   const at = { location: room.id, support: room.id };
   const attacker = spawn(room.snapshot, registry, "human", { name: "attacker", ...at, pos: { x: 0, y: 0 } });
   const guard = spawn(attacker.snapshot, registry, "human", { name: "guard", ...at, pos: { x: 50, y: 0 } });
@@ -120,6 +124,45 @@ test("tracing the modifiers a stun left behind leads to the blow, not to the ste
     ["hit", "damaged"],
     ["s2", "capability_changed"],
   ]);
+});
+
+test("every event carries its tick: the command's start, or the tick something fell due", () => {
+  const { snapshot, attacker, guard } = duel();
+  const world = memoryWorld({ ...snapshot, coverage: defaultCoverage() }, registry);
+  const hit = world.command({ command_id: "hit", actor: attacker, verb: "attack", target: `${guard}.hand_r` });
+  deepStrictEqual(hit.events.map((event) => [event.type, event.tick]), [
+    ["attack", 0],
+    ["damaged", 0],
+    ["capability_changed", 0],
+  ]);
+  // A five-tick wait from tick 1: the stun ends inside it, at 3, and the wait ends at 6.
+  const waited = world.command({ command_id: "rest", actor: attacker, verb: "wait", args: { ticks: 5 } }, { observe: true });
+  deepStrictEqual(waited.events.map((event) => [event.type, event.tick]), [
+    ["wait", 1],
+    ["capability_changed", 3],
+  ]);
+  strictEqual(waited.snapshot.tick, 6);
+  deepStrictEqual(waited.observation?.events.map((event) => [event.type, event.tick]), [
+    ["wait", 1],
+    ["capability_changed", 3],
+  ]);
+  deepStrictEqual(world.since(0).events.map((event) => event.tick), [0, 0, 0, 1, 3]);
+});
+
+test("a stored event without its tick is refused on reading", (t) => {
+  const base = mkdtempSync(join(tmpdir(), "world-engine-clock-"));
+  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const dir = join(base, "w");
+  const world = createWorld(dir, [
+    { id: "room", template: "room", overrides: { name: "room" } },
+    { id: "ann", template: "human", overrides: { name: "ann", location: "room", support: "room", pos: { x: 0, y: 0 } } },
+  ]);
+  strictEqual(world.command({ command_id: "w", actor: world.id("ann")!, verb: "wait", args: { ticks: 2 } }).status, "ok");
+  const path = join(dir, "events.jsonl");
+  deepStrictEqual(readEvents(dir).map((event) => event.tick), [0]);
+  const stripped = readFileSync(path, "utf8").replace(/"tick":0,/, "");
+  writeFileSync(path, stripped, "utf8");
+  throws(() => readEvents(dir), /Invalid event entry at line 1/);
 });
 
 test("a beat is an ordered batch: its commands take their time in turn", () => {

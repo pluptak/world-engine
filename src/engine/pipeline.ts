@@ -153,6 +153,7 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
       event_id: eventId,
       cause_id: causeId,
       command_id: command.command_id,
+      tick: working.tick,
       type,
       entity,
       data: structuredClone(data),

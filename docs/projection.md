@@ -18,9 +18,9 @@ reference names another listed entity, the observer's own room, or is `null` for
 to anything else is left out, so a stone seen through a door into a lit room has no `location`.
 
 `events`, given `since`, lists every event after that version the observer sensed, with its
-`event_id`, `type`, `entity` and the senses, each read through event-form `perceive`, true before
-or after its command. A push in a lit room is seen and heard; lifting a ring from a pocket in the
-dark is not sensed at all. A store world and a memory world project byte for byte alike.
+`event_id`, `tick`, `type`, `entity` and the senses, each read through event-form `perceive`, true
+before or after its command. A push in a lit room is seen and heard; lifting a ring from a pocket in
+the dark is not sensed at all. A store world and a memory world project byte for byte alike.
 
 `world.inspect(observer, entity)` is one listed entity in more detail, or `null` when the observer
 senses nothing of it: the same senses and facts, `reachable` where coverage declares it, and with

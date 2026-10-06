@@ -273,6 +273,7 @@ export const WorldEventSchema = z.object({
   event_id: IdSchema,
   cause_id: IdSchema.nullable(),
   command_id: IdSchema,
+  tick: z.number().int(),
   type: z.string(),
   entity: IdSchema,
   data: z.record(z.string(), z.unknown()),
@@ -323,6 +324,7 @@ export const ProjectionSchema = z.object({
   entities: z.array(ObservedEntitySchema.strict()),
   events: z.array(z.object({
     event_id: IdSchema,
+    tick: z.number().int(),
     type: z.string(),
     entity: IdSchema,
     senses: z.array(z.string()),

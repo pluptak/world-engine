@@ -33,6 +33,7 @@ export interface ObservedEntity {
 
 export interface ObservedEvent {
   event_id: Id;
+  tick: number;
   type: string;
   entity: Id;
   senses: string[];

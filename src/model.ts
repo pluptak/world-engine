@@ -72,6 +72,9 @@ export interface WorldEvent {
   event_id: Id;
   cause_id: Id | null;
   command_id: Id;
+  // When it happened: the command's starting tick for the verb's own events, the tick something
+  // fell due for what the clock does on the way.
+  tick: number;
   type: string;
   entity: Id;
   data: Record<string, unknown>;

@@ -95,8 +95,12 @@ function runSequence(world: World, seed: number, steps: number): { snapshot: str
       strictEqual(canonicalJson(world.snapshot()), seen);
     }
     if (result.status === "ok") {
+      let last = before.tick;
       for (const event of result.events) {
         strictEqual(event.command_id, result.command_id);
+        // A command's events run forward in time, from its start to its end.
+        strictEqual(event.tick >= last && event.tick <= after.tick, true, event.event_id);
+        last = event.tick;
       }
       checkCauseChain(world.since(0).events);
     }

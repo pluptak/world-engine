@@ -31,13 +31,10 @@ command takes one tick unless its verb says otherwise ([time.md](time.md)).
 - `lock`: sets `locked` under a `locked` event; needs `manipulation` and a carried entity whose
   `opens` is the target's id, else `no_key`.
 - `unlock`: the same requirement, clearing `locked` under `unlocked`.
-- `wait`: changes nothing itself and takes `args.ticks` ticks, in which every modifier due expires
-  ([time.md](time.md)).
-- `search`: looks under or behind a target; it needs `manipulation` and reach, emits one `found`
-  event per hidden thing naming its concealer (none if it hides nothing), and changes nothing —
-  who looked and what they were told is the caller's business ([relations.md](relations.md)).
+- `wait`: takes `args.ticks` ticks and changes nothing else ([time.md](time.md)).
+- `search`: looks under or behind a target, with `manipulation` and in reach; one `found` per
+  hidden thing names its concealer, nothing changes, and nothing records who looked.
 - `edit`: carries one `spawn`, `remove`, `place`, `set_props` or `set_part` as `args.edit`, and
   refuses with the code of the first snapshot rule its result breaks ([relations.md](relations.md)).
-  A `place` may write `pos` as `{anchor, dx, dy}`, which resolves to the anchor's position and its
-  room and records nothing of the anchor ([space.md](space.md)), and may write `concealed_by`, which
+  A `place` may write `pos` as `{anchor, dx, dy}` ([space.md](space.md)) and `concealed_by`, which
   hides the placed thing under or behind another in the same room.
