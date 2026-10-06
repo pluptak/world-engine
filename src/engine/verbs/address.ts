@@ -42,20 +42,17 @@ export function closedEnclosure(snapshot: Snapshot, id: Id): Id | null {
 
 // Location is derived state: after relations change, everything below the change belongs to
 // whatever room the new chain leads to. Chains that cannot be read keep their location.
-export function refreshSubtreeLocations(
-  context: TransitionContext,
-  rootId: Id,
-  eventId: Id,
-): void {
+// The root and everything resting on or held inside it, however deep, sorted: what moves with it.
+export function subtreeOf(snapshot: Snapshot, rootId: Id): Id[] {
   const members = new Set<Id>([rootId]);
   let frontier = [rootId];
   while (frontier.length > 0) {
     const next: Id[] = [];
-    for (const id of Object.keys(context.snapshot.entities).sort()) {
+    for (const id of Object.keys(snapshot.entities).sort()) {
       if (members.has(id)) {
         continue;
       }
-      const entity = context.snapshot.entities[id];
+      const entity = snapshot.entities[id];
       if (
         entity !== undefined &&
         ((entity.support !== null && members.has(entity.support)) ||
@@ -67,8 +64,15 @@ export function refreshSubtreeLocations(
     }
     frontier = next;
   }
+  return [...members].sort();
+}
 
-  for (const id of [...members].sort()) {
+export function refreshSubtreeLocations(
+  context: TransitionContext,
+  rootId: Id,
+  eventId: Id,
+): void {
+  for (const id of subtreeOf(context.snapshot, rootId)) {
     const entity = context.snapshot.entities[id];
     if (entity === undefined) {
       continue;

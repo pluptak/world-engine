@@ -101,7 +101,7 @@ suffixes (NodeNext).
   `head.json` last: both files' byte sizes, `log_entries` (all lines, used for default edit ids) and
   `ok_entries`. `resolveSubmission` runs `validateSnapshot` on every accepted result and
   downgrades a breaking one to `invalid` with the rule's code, so a verb bug is logged but never
-  written. `load` trusts the snapshot when the head matches the file sizes and `ok_entries`, without
+  written; no verb leans on it, which the property test holds (an `apply` that is ok must stay ok). `load` trusts the snapshot when the head matches the file sizes and `ok_entries`, without
   reading the log; otherwise it counts `ok` entries, replays and rewrites the events and head if they
   disagree. Store queries read `events.jsonl`; `since`, `trace` and event-time perceive replay. A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
@@ -169,7 +169,7 @@ file it links (`docs/verbs-*.md`; `tests/catalog.test.ts` holds the two in step)
   (one row per relation: kind, exclusivity, loop, live or history, what removal and detaching do,
   the enforcing `validateSnapshot` code and the test). `concealed_by` is that area's relation:
   `revealConcealed` in `verbs/search.ts` clears it when either end moves, and is called from `take`,
-  `push`, the fall path in `physical.ts` and `edit`'s place and remove; sight of a concealed entity
+  `push`, `move` (for the walker and all it carries), the fall path in `physical.ts` and `edit`'s place and remove; sight of a concealed entity
   answers `false` / `concealed`, and a `found` event is perceived against its `concealer`, so it
   reads as where the search happened. Nothing records who searched or who knows. `touch` reads the
   observer's own body and grips (`own_body`, else `not_touching`) instead of any room, with its

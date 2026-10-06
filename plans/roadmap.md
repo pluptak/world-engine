@@ -30,6 +30,11 @@ The time/structure/capability specs and the controller review, taken on in this 
 
 ### 1. No verb leans on the validation step
 
+Built: `take` refuses `circular_placement`, `move` refuses `carried` and steps down from
+furniture, `push`/`pull` refuse `not_on_floor`, `room_placed` keeps rooms out of hands, `move`
+uncovers what it and its load hide, a carried agent drops from its carrier's place; the property
+test now fails if an accepted command is downgraded. 1,000 seeds × 60 steps reach the net zero times.
+
 A verb is meant to refuse what it cannot do with a declared code. The store's validation step
 (`resolveSubmission` runs `validateSnapshot` on every accepted result) is a safety net for verb
 bugs: it downgrades a broken result to `invalid` with the rule's code and never writes it. Random

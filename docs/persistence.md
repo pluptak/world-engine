@@ -19,8 +19,10 @@ A world directory holds:
 
 Replay folds accepted commands over the initial snapshot; it is the source of truth, and a mismatch
 with the head rebuilds the snapshot, events and head from the log. An accepted command whose result
-breaks an invariant is logged `invalid` and never written. A stale command is re-evaluated against
-the current snapshot and becomes `preempted` when it would have succeeded at its base version.
+breaks an invariant is logged `invalid` and never written; that is a net for verb bugs, and the
+property test fails when a command the engine accepts is ever caught by it. A stale command is
+re-evaluated against the current snapshot and becomes `preempted` when it would have succeeded at
+its base version.
 
 A world loads the template set it was created with, so editing `templates/` reaches new worlds only.
 `upgradeTemplates` moves a live world to a new set and refuses if a template lost a field an entity

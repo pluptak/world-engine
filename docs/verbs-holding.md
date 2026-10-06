@@ -4,8 +4,10 @@ Taking, setting down and passing things. Grips, pockets and what losing a part d
 [carrying.md](carrying.md); what fits between bars, refused `too_big_for_gap` by `take`, `put` and
 `give`, is in [walking.md](walking.md).
 
-- `take`: lifts a thing out of whatever holds it into a free grip ([carrying.md](carrying.md)).
-- `drop`: sets down what a grip holds, at the actor's own position, then resolves the fall.
+- `take`: lifts a thing out of whatever holds it into a free grip ([carrying.md](carrying.md));
+  taking oneself, or what holds one, is `circular_placement`.
+- `drop`: sets down what a grip holds, at the actor's own position (a carried agent's is its
+  carrier's), then resolves the fall.
 - `put`: names `args.destination` and `args.relation` (`on` or `in`); it emits one `moved` and
   sets `support` or `contained_in`, never a position, which comes through the chain. Fit compares
   the longest dimensions, ignoring a container's contents; `in` needs `manipulation`, `on` does not.

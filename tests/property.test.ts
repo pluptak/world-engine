@@ -109,8 +109,11 @@ function runSequence(world: World, seed: number, steps: number): { snapshot: str
       canonicalJson(world.snapshot().entities),
     );
     const frozen = deepFreeze(structuredClone(before));
-    apply(frozen, registry, asCommand);
+    const raw = apply(frozen, registry, asCommand);
     strictEqual(canonicalJson(frozen), beforeJson);
+    // Validation is a net for verb bugs, not a rule a verb leans on: what the engine accepts is
+    // valid, so the world never has to downgrade it.
+    strictEqual(raw.status === "ok" ? result.status : "ok", "ok", `${asCommand.verb} ${result.reason_code}`);
   }
   return { snapshot: canonicalJson(world.snapshot()), events: canonicalJson(world.since(0).events) };
 }

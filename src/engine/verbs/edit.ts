@@ -718,6 +718,7 @@ export const editVerb: Verb = {
   requires_target: false,
   args: { edit: { kind: "world_edit" } },
   refuses: [
+    "room_placed",
     "conflicting_placement",
     "room_support_without_pos",
     "pos_without_room_support",

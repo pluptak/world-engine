@@ -11,10 +11,11 @@ for entities supported by a room and derived through the support or containment 
 support is a room, `location` the room at the end of the chain, every reference present (a detached
 entity's origin is history, not a link), detached parts accounted for, no part stored at its default
 (`part_at_default`), integrity in 0–100, and ids below `next_seq`. It also holds the relations to
-their own rules: never both supported and contained, a door's sides are rooms, and what a key's
-`opens` names can be opened. [relations.md](relations.md) names every relation, its kind, and the
-code that enforces it. A world that breaks one rule does not open; the CLI reports
-`invalid_snapshot` and the rule. Every accepted command and edit is checked before it is written.
+their own rules: never both supported and contained, a room never placed (`room_placed`), a door's
+sides are rooms, and what a key's `opens` names can be opened. [relations.md](relations.md) names
+every relation, its kind, and the code that enforces it. A world that breaks one rule does not open;
+the CLI reports `invalid_snapshot` and the rule. Every accepted command and edit is checked before
+it is written.
 
 Templates declare parts, dimensions, mass, properties, break products, and residue. Only declared
 parts exist. Part state records integrity and whether a part is intact, damaged, detached, or
@@ -33,4 +34,4 @@ things name it in `in_part` ([carrying.md](carrying.md)). Residue records amount
 Support loss emits displacement and fall events; high falls break entities, spawn their products,
 and move liquids and solids to the landing surface. Removing a holder passes what it held into the
 relation the holder itself was in. Moving either end of a concealment uncovers it under a `revealed`
-event: taking, pushing, a fall, a placement, or removing what was doing the hiding.
+event: taking, pushing, walking, a fall, a placement, or removing what was doing the hiding.

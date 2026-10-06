@@ -1,7 +1,8 @@
 import { capacity } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Pos } from "../../model.js";
-import { refreshSubtreeLocations } from "./address.js";
+import { refreshSubtreeLocations, subtreeOf } from "./address.js";
+import { revealConcealed } from "./search.js";
 import { effectivePos, walkStop, type WalkStop } from "../geometry.js";
 
 type MoveDestination = { kind: "position"; pos: Pos } | { kind: "location"; id: string };
@@ -55,6 +56,11 @@ function preconditions(context: CommandContext): PreconditionResult {
   if (to === null) {
     return { status: "invalid", reason_code: "invalid_args" };
   }
+  // Held in someone's grip or mouth, an agent goes where it is carried.
+  if (context.actor.contained_in !== null) {
+    const by = context.actor.contained_in;
+    return { status: "refused", reason_code: "carried", reason_data: { by } };
+  }
 
   const moving = capacity(context.snapshot, context.registry, context.actor.id, "moving") ?? 0;
   if (moving < 1) {
@@ -78,19 +84,33 @@ function preconditions(context: CommandContext): PreconditionResult {
   return refusedBy(stopFor(context, to));
 }
 
+// An agent standing on the floor walks; one standing on something else (a table an edit put it on)
+// steps down, and like one arriving through a door is checked only where it lands.
+function onFloor(context: CommandContext): boolean {
+  return context.actor.support !== null && context.actor.support === context.actor.location;
+}
+
+function landing(context: CommandContext, room: string, pos: Pos): WalkStop {
+  const { snapshot, registry, actor } = context;
+  const arrived = { ...actor, location: room, support: room, pos };
+  const there = { ...snapshot, entities: { ...snapshot.entities, [actor.id]: arrived } };
+  return walkStop(there, registry, actor.id, pos, true);
+}
+
 // Where the walk would stop: a position is walked to in this room, and a room is arrived in at the
 // same coordinates, as `transition` places it.
 function stopFor(context: CommandContext, to: MoveDestination): WalkStop {
   const { snapshot, registry, actor } = context;
   if (to.kind === "position") {
-    return walkStop(snapshot, registry, actor.id, to.pos);
+    return onFloor(context)
+      ? walkStop(snapshot, registry, actor.id, to.pos)
+      : landing(context, actor.location!, to.pos);
   }
   const pos = effectivePos(snapshot, actor.id);
-  if (pos === null || to.id === actor.location || actor.support !== actor.location) {
+  if (pos === null || (to.id === actor.location && onFloor(context))) {
     return null;
   }
-  const arrived = { ...actor, location: to.id, support: to.id };
-  return walkStop({ ...snapshot, entities: { ...snapshot.entities, [actor.id]: arrived } }, registry, actor.id, pos, true);
+  return landing(context, to.id, pos);
 }
 
 function refusedBy(stop: WalkStop): PreconditionResult {
@@ -108,22 +128,25 @@ function transition(context: TransitionContext): void {
     throw new TypeError("Move destination changed after validation");
   }
 
+  const from = effectivePos(context.snapshot, context.actor.id);
   const movedEvent = context.emit("moved", context.actor.id, {}, context.root_event_id);
-  if (to.kind === "position") {
-    context.set(context.actor.id, "pos", to.pos, movedEvent);
-  } else {
-    context.set(context.actor.id, "location", to.id, movedEvent);
-    context.set(context.actor.id, "support", to.id, movedEvent);
-  }
+  const room = to.kind === "position" ? context.actor.location! : to.id;
+  context.set(context.actor.id, "location", room, movedEvent);
+  context.set(context.actor.id, "support", room, movedEvent);
+  context.set(context.actor.id, "pos", to.kind === "position" ? to.pos : from, movedEvent);
   // What the actor holds or carries moves rooms with it; a positional move changes nothing.
   refreshSubtreeLocations(context, context.actor.id, movedEvent);
+  // A walker and all it carries uncover themselves and what they were hiding, as every mover does.
+  for (const id of subtreeOf(context.snapshot, context.actor.id)) {
+    revealConcealed(context, id, movedEvent);
+  }
 }
 
 export const moveVerb: Verb = {
   duration: { ticks: 1 },
   requires_target: false,
   args: { to: { kind: "pos" }, location: { kind: "room" } },
-  refuses: ["insufficient_moving", "no_open_door", "blocked", "out_of_bounds"],
+  refuses: ["carried", "insufficient_moving", "no_open_door", "blocked", "out_of_bounds"],
   preconditions,
   transition,
 };

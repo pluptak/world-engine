@@ -1,7 +1,7 @@
 import { capacities } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { carryAlternatives, carryCheck, gripPlacement, heldCount, holderLayout } from "../carry.js";
-import { closedEnclosure, gapRefusal, isAgent, inReach, reachData } from "./address.js";
+import { closedEnclosure, gapRefusal, isAgent, inReach, reachData, wouldLoop } from "./address.js";
 import { revealConcealed } from "./search.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
@@ -18,6 +18,10 @@ function preconditions(context: CommandContext): PreconditionResult {
     return { status: "invalid", reason_code: "no_such_entity" };
   }
 
+  // Taking oneself, or whatever holds one up, would hold the taker inside what it took.
+  if (wouldLoop(context, entity.id, context.actor.id)) {
+    return { status: "refused", reason_code: "circular_placement" };
+  }
   if (!inReach(context.snapshot, context.actor.id, entity.id)) {
     const data = reachData(context.snapshot, context.actor.id, entity.id);
     return {
@@ -108,6 +112,7 @@ export const takeVerb: Verb = {
   args: { part: { kind: "address" } },
   refuses: [
     "target_attached",
+    "circular_placement",
     "out_of_reach",
     "too_big_for_gap",
     "insufficient_manipulation",

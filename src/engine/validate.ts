@@ -386,6 +386,15 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     issues.push(...concealmentIssues(snapshot, registry, reportedConcealLoops, id, path));
     issues.push(...holderIssues(snapshot, registry, id, path));
 
+    // A room is where things are, never a thing somewhere: nothing holds, supports or hides it.
+    if (
+      entity.template === "room" &&
+      (entity.support !== null || entity.contained_in !== null || entity.concealed_by !== null)
+    ) {
+      const where = `support ${entity.support} contained_in ${entity.contained_in}`;
+      issues.push(issue("room_placed", path, where));
+    }
+
     // One entity sits in one place: it is either set down on something or inside something, never
     // both, which also keeps the chain single-valued for the walk below.
     if (entity.support !== null && entity.contained_in !== null) {

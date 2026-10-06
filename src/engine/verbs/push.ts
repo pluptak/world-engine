@@ -76,6 +76,15 @@ function preconditions(context: CommandContext, reverse: boolean): PreconditionR
   if (target.contained_in !== null) {
     return { status: "refused", reason_code: "target_carried" };
   }
+  // A push slides a footprint across a room's floor; a cup on a table moves by `take` and `put`.
+  const support = target.support === null ? undefined : context.snapshot.entities[target.support];
+  if (support?.template !== "room" || target.pos === null) {
+    return {
+      status: "refused",
+      reason_code: "not_on_floor",
+      ...(target.support !== null && { reason_data: { support: target.support } }),
+    };
+  }
 
   const targetTemplate = context.registry[target.template];
   if (targetTemplate === undefined) {
@@ -134,6 +143,7 @@ const pushRefuses = [
   "out_of_reach",
   "insufficient_moving",
   "target_carried",
+  "not_on_floor",
   "too_heavy",
   "blocked",
 ] as const;
