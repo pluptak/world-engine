@@ -5,7 +5,11 @@ What is built, nothing aspirational, one concept per file:
 - [thesis.md](thesis.md): what the engine promises, and the decisions that bound it.
 - [overview.md](overview.md): the problem, who it is for, one worked example, scale and non-goals.
 - [pipeline.md](pipeline.md): the transition pipeline.
-- [verbs.md](verbs.md): every verb, its arguments and its rules.
+- [verbs.md](verbs.md): the index of verbs, one line each, and the rules every verb shares.
+- [verbs-moving.md](verbs-moving.md): `move`, `push`, `pull`.
+- [verbs-holding.md](verbs-holding.md): `take`, `drop`, `put`, `give`, `pour`.
+- [verbs-openables.md](verbs-openables.md): `open`, `close`, `lock`, `unlock`.
+- [verbs-other.md](verbs-other.md): `attack`, `search`, `wait`, `edit`.
 - [state.md](state.md): snapshots, validation, templates, parts, capacities, physical consequences.
 - [structure.md](structure.md): parts, sparse part state, what writes it, and severing.
 - [templates.md](templates.md): template fields, `extends`, companions, frozen sets and upgrades.

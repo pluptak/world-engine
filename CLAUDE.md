@@ -155,7 +155,8 @@ where a snapshot's coverage declares it.
 One bullet per area, and an area is extended by appending to its own bullet only. A new verb or
 refusal code also touches the shared registration points, one line or one entry each:
 `src/engine/verbs/index.ts`, `src/errors.ts`, `src/contract.ts`, the verb table in
-`tests/property-gen.ts`, and one bullet in `docs/verbs.md`.
+`tests/property-gen.ts`, and one line in the `docs/verbs.md` index, whose rules go in the family
+file it links (`docs/verbs-*.md`; `tests/catalog.test.ts` holds the two in step).
 
 - **Relations and perception:** `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception
   half of `src/engine/query.ts`, `docs/state.md`, `docs/perception.md`, `docs/relations.md`

@@ -32,5 +32,5 @@ second grip is derived, never stored, so verbs, validation and loss always agree
 - A scenario entry or an edit that sets `contained_in` to a holder with grips and no `in_part`
   takes the first free grip, the way `location` is filled from the chain.
 
-The rules and their codes are in [relations.md](relations.md); the per-verb bullets are in
-[verbs.md](verbs.md).
+The rules and their codes are in [relations.md](relations.md); the verbs that take, set down and
+pass things are in [verbs-holding.md](verbs-holding.md).

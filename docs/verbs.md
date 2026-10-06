@@ -5,36 +5,21 @@ abstract template ([space.md](space.md)) is no target for an agent's verb. A sur
 `surface`, sized by its footprint; a container declares `container` and `inner_*_cm`. Every ok
 command takes one tick unless its verb says otherwise ([time.md](time.md)).
 
-- `move`: needs `moving`; `args.to` a position, `args.location` a room through an open door; refuses
-  `blocked` and `out_of_bounds` ([walking.md](walking.md)); emits `moved`, carrying what it holds.
-- `take`: lifts a thing out of whatever holds it into a free grip ([carrying.md](carrying.md)).
-- `drop`: sets down what a grip holds, at the actor's own position, then resolves the fall.
-- `put`: names `args.destination` and `args.relation` (`on` or `in`); it emits one `moved` and
-  sets `support` or `contained_in`, never a position, which comes through the chain. Fit compares
-  the longest dimensions, ignoring a container's contents; `in` needs `manipulation`, `on` does not.
-  `in` the actor's own pocket stows a held item.
-- `give`: hands a held thing to `args.destination`, another agent in reach, under `take`'s rules.
-- `pour`: moves `args.amount` (all of it by default) of a carried liquid into a container's
-  `liquid_*` props or onto residue; the model is in [liquids.md](liquids.md).
-- `push`: shifts a target by `args.distance_cm` along `args.dir`, stopping short at the first
-  footprint in its path ([occupancy.md](occupancy.md)); what stands on it rides along, and only a
-  stop short jolts off what topples. It needs `moving`, and refuses what it cannot reach or lift,
-  or `blocked` when it cannot move at all.
-- `pull`: the same shift in the opposite direction.
-- `attack`: picks the first mode its attacker can use (fist, bite), with damage from the template;
-  a lost part drops what it held, and a stunned victim keeps the rest.
-- `open`: sets `open` on an `openable` target under an `opened` event, and with `closes_after` a
-  close is scheduled ([schedule.md](schedule.md)); `locked` is refused. A door joins two rooms
-  through its `from` and `to` props and is in reach and in view from either.
-- `close`: sets that prop false under `closed`; a shut container hides its chain, so `take` and
-  `put` refuse `container_closed` and sight inside is `false`.
-- `lock`: sets `locked` under a `locked` event; needs `manipulation` and a carried entity whose
-  `opens` is the target's id, else `no_key`.
-- `unlock`: the same requirement, clearing `locked` under `unlocked`.
-- `wait`: takes `args.ticks` ticks and changes nothing else ([time.md](time.md)).
-- `search`: looks under or behind a target, with `manipulation` and in reach; one `found` per
-  hidden thing names its concealer, nothing changes, and nothing records who looked.
-- `edit`: carries one `spawn`, `remove`, `place`, `set_props` or `set_part` as `args.edit`, and
-  refuses with the code of the first snapshot rule its result breaks ([relations.md](relations.md)).
-  A `place` may write `pos` as `{anchor, dx, dy}` ([space.md](space.md)) and `concealed_by`, which
-  hides the placed thing under or behind another in the same room.
+This is the index: one line per verb, its rules in the family file it links to.
+
+- `move`: walks to a position, or through an open door ([verbs-moving.md](verbs-moving.md)).
+- `push`: shifts a target along a direction until it stops ([verbs-moving.md](verbs-moving.md)).
+- `pull`: the same shift the other way ([verbs-moving.md](verbs-moving.md)).
+- `take`: lifts a thing into a free grip ([verbs-holding.md](verbs-holding.md)).
+- `drop`: lets go of a held thing at the actor's feet ([verbs-holding.md](verbs-holding.md)).
+- `put`: sets a held thing on a surface or in a container ([verbs-holding.md](verbs-holding.md)).
+- `give`: hands a held thing to another agent ([verbs-holding.md](verbs-holding.md)).
+- `pour`: moves a carried liquid out ([verbs-holding.md](verbs-holding.md)).
+- `open`: opens an openable target ([verbs-openables.md](verbs-openables.md)).
+- `close`: shuts it ([verbs-openables.md](verbs-openables.md)).
+- `lock`: locks it with a carried key ([verbs-openables.md](verbs-openables.md)).
+- `unlock`: unlocks it with a carried key ([verbs-openables.md](verbs-openables.md)).
+- `attack`: strikes with the first mode the attacker can use ([verbs-other.md](verbs-other.md)).
+- `search`: looks under or behind a target ([verbs-other.md](verbs-other.md)).
+- `wait`: lets ticks pass ([verbs-other.md](verbs-other.md)).
+- `edit`: the world author's one change ([verbs-other.md](verbs-other.md)).

@@ -9,4 +9,5 @@ is pure: a transition takes a snapshot and returns a new one; I/O stays outside.
 
 Each verb declares its args, its duration, the capacities it needs and the refusal codes it can
 return; `verbs()` is the catalog read from those declarations, and a refusal with an undeclared code
-is an engine bug that throws. Each verb, its arguments and its rules are in [verbs.md](verbs.md).
+is an engine bug that throws. Every verb is indexed in [verbs.md](verbs.md), with its rules in a
+family file.

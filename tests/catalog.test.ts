@@ -124,3 +124,23 @@ test("docs/verbs.md has one bullet per registered verb and none for a missing on
   const documented = [...text.matchAll(/^- `([a-z_]+)`:/gm)].map((match) => match[1]);
   deepStrictEqual([...documented].sort(), verbCatalog().map((entry) => entry.verb));
 });
+
+test("each verb's index line links to the one family file that holds its rules", () => {
+  const docs = join(root, "docs");
+  const index = readFileSync(join(docs, "verbs.md"), "utf8");
+  const linked = new Map(
+    [...index.matchAll(/^- `([a-z_]+)`:.*\]\((verbs-[a-z]+\.md)\)\)\.$/gm)].map((match) => [match[1]!, match[2]!]),
+  );
+  const families = [...new Set(linked.values())].sort();
+  const describedIn = new Map<string, string[]>();
+  for (const family of families) {
+    const text = readFileSync(join(docs, family), "utf8");
+    for (const match of text.matchAll(/^- `([a-z_]+)`:/gm)) {
+      describedIn.set(match[1]!, [...(describedIn.get(match[1]!) ?? []), family]);
+    }
+  }
+  for (const { verb } of verbCatalog()) {
+    deepStrictEqual(describedIn.get(verb), [linked.get(verb)], verb);
+  }
+  deepStrictEqual([...describedIn.keys()].sort(), verbCatalog().map((entry) => entry.verb));
+});
