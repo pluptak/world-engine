@@ -1,5 +1,6 @@
 import { canonicalJson } from "./canonical.js";
 import { advanceClock, commandDuration } from "./clock.js";
+import { pruneSchedule } from "./schedule.js";
 import type { Command, CommandContext, Result, TransitionContext } from "./command.js";
 import { WORLD_AUTHOR } from "./command.js";
 import { eventPerceivers } from "./query.js";
@@ -200,6 +201,7 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     recordDelta,
   };
   verb.transition(transitionContext);
+  pruneSchedule(transitionContext);
   // The verb resolves at the tick it was given; only then does its time pass, and whatever falls
   // due in that time happens after it.
   advanceClock(transitionContext, duration);

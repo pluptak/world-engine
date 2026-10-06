@@ -59,6 +59,14 @@ export function defaultCoverage(): Coverage {
   };
 }
 
+// Something the world will do by itself at `due_tick`, named by the event that set it going.
+export interface ScheduledCause {
+  due_tick: number;
+  kind: "close";
+  entity: Id;
+  cause_id: Id;
+}
+
 export interface Snapshot {
   version: number;
   tick: number;
@@ -66,6 +74,8 @@ export interface Snapshot {
   templates_hash: string;
   coverage: Coverage;
   entities: Record<Id, Entity>;
+  // Ordered by due tick, then by when each was scheduled; absent when nothing is pending.
+  schedule?: ScheduledCause[];
 }
 
 export interface WorldEvent {

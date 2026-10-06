@@ -1,6 +1,7 @@
 # State model
 
-A snapshot contains entities, a tick, a version, a sequence number, the template hash, and coverage.
+A snapshot contains entities, a tick, a version, a sequence number, the template hash, coverage,
+and what is scheduled, when anything is ([schedule.md](schedule.md)).
 Entities refer to room locations, support surfaces, and containers by ID, and may be hidden under or
 behind something by ID (`concealed_by`, a row in [relations.md](relations.md)). Position is stored
 for entities supported by a room and derived through the support or containment chain otherwise;

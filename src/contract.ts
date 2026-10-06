@@ -259,6 +259,12 @@ export const SnapshotSchema = z.object({
   templates_hash: z.string(),
   coverage: CoverageSchema,
   entities: z.record(z.string(), EntitySchema),
+  schedule: z.array(z.object({
+    due_tick: z.number().int(),
+    kind: z.enum(["close"]),
+    entity: IdSchema,
+    cause_id: IdSchema,
+  }).strict()).optional(),
 }).strict();
 
 export const PerceiversSchema = z.object({

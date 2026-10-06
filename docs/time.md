@@ -25,5 +25,6 @@ An attack's modifier expires three ticks after the tick of the blow, and the blo
 them. `tests/clock.test.ts` is the spec; the property test checks every generated command's
 duration and that nothing due inside it is left behind.
 
-What it does not do: nothing but a modifier is ever due (no fuses, spreading fire or doors that
-close themselves), and agents do not act in parallel: two commands in a beat never share a tick.
+Modifiers are not all that falls due: a door can close itself ([schedule.md](schedule.md)), and at
+a tick with both, the modifiers expire first. What it does not do: agents do not act in parallel;
+two commands in a beat never share a tick.

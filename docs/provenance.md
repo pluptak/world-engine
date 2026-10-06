@@ -20,7 +20,9 @@ root first.
 whichever command spans its tick ([time.md](time.md)), its `capability_changed` names the event
 that made the modifier, and the change to `modifiers` is recorded under that `capability_changed`.
 A trace from the field or from the event therefore reaches the blow, not the step the stun ended
-during; `command_id` and `tick` still say when it happened. Every chain ends at some command's root.
+during; `command_id` and `tick` still say when it happened. A door that closes itself is the same:
+its `closed` names the `opened` ([schedule.md](schedule.md)). Every chain ends at some command's
+root.
 
 **What has no events.** A refused, invalid, unresolved or preempted command changes nothing and
 emits nothing. A stored world's `log.jsonl` keeps it with its status and reason code, but `since`

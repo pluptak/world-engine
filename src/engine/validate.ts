@@ -5,6 +5,7 @@ import { misfit } from "./fit.js";
 import { effectivePart, isDefaultPart } from "./parts.js";
 import { uncomputable } from "./capabilities.js";
 import { isAbstract } from "./resolve.js";
+import { CAUSE_KINDS } from "./schedule.js";
 
 export interface SnapshotIssue {
   code: string;
@@ -453,6 +454,36 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
   }
 
   issues.push(...holderPackingIssues(snapshot, registry));
+  issues.push(...scheduleIssues(snapshot));
 
+  return issues;
+}
+
+// What is pending is stored one way: no empty list, every cause still ahead of the clock (the
+// clock runs what falls due, so nothing due is ever left), in due order, on an entity that exists.
+function scheduleIssues(snapshot: Snapshot): SnapshotIssue[] {
+  if (snapshot.schedule === undefined) {
+    return [];
+  }
+  if (snapshot.schedule.length === 0) {
+    return [issue("empty_schedule", ["schedule"], "empty")];
+  }
+  const issues: SnapshotIssue[] = [];
+  let previous = -Infinity;
+  snapshot.schedule.forEach((cause, index) => {
+    const path = ["schedule", String(index)];
+    if (!CAUSE_KINDS.includes(cause.kind)) {
+      issues.push(issue("unknown_cause_kind", path, String(cause.kind)));
+    }
+    if (!Number.isSafeInteger(cause.due_tick) || cause.due_tick <= snapshot.tick) {
+      issues.push(issue("schedule_not_ahead", path, `due ${cause.due_tick} at tick ${snapshot.tick}`));
+    } else if (cause.due_tick < previous) {
+      issues.push(issue("schedule_unordered", path, `due ${cause.due_tick} after ${previous}`));
+    }
+    previous = Math.max(previous, cause.due_tick);
+    if (snapshot.entities[cause.entity] === undefined) {
+      issues.push(issue("schedule_dangling", path, cause.entity));
+    }
+  });
   return issues;
 }

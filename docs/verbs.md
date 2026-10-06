@@ -23,9 +23,9 @@ command takes one tick unless its verb says otherwise ([time.md](time.md)).
 - `pull`: the same shift in the opposite direction.
 - `attack`: picks the first mode its attacker can use (fist, bite), with damage from the template;
   a lost part drops what it held, and a stunned victim keeps the rest.
-- `open`: sets `open` on a target that declares `openable`, as a `props` delta under an `opened`
-  event; a locked target is refused `locked`. A door joins two rooms through its `from` and `to`
-  props and is in reach and in view from either.
+- `open`: sets `open` on an `openable` target under an `opened` event, and with `closes_after` a
+  close is scheduled ([schedule.md](schedule.md)); `locked` is refused. A door joins two rooms
+  through its `from` and `to` props and is in reach and in view from either.
 - `close`: sets that prop false under `closed`; a shut container hides its chain, so `take` and
   `put` refuse `container_closed` and sight inside is `false`.
 - `lock`: sets `locked` under a `locked` event; needs `manipulation` and a carried entity whose

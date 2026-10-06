@@ -38,7 +38,7 @@ const snapshots = {
 
 // Bumped when a stored file's shape changes; a world written under another number is refused,
 // never read as if it matched.
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 // A world is created from the templates directory and then never reads it again: the copy beside
 // the log is the one it is bound to.
@@ -141,7 +141,8 @@ function readSnapshot(path: string): Snapshot {
     !Array.isArray(value.coverage.relations) ||
     !Array.isArray(value.coverage.senses) ||
     !Array.isArray(value.coverage.properties) ||
-    !isRecord(value.entities)
+    !isRecord(value.entities) ||
+    (value.schedule !== undefined && !Array.isArray(value.schedule))
   ) {
     throw new TypeError(`Invalid snapshot file ${path}`);
   }

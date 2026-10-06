@@ -14,7 +14,8 @@ export const SCENARIO: Scenario = [
   { template: "room", overrides: { name: "room-b", props: { lit: true } } },
   {
     template: "door",
-    overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2" } },
+    // Both openables shut themselves, so random sequences schedule, withdraw and overtake closes.
+    overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2", closes_after: 2 } },
   },
   {
     template: "table",
@@ -35,6 +36,7 @@ export const SCENARIO: Scenario = [
         inner_h_cm: 35,
         openable: true,
         open: true,
+        closes_after: 3,
       },
     },
   },

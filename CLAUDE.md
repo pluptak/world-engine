@@ -37,8 +37,11 @@ suffixes (NodeNext).
    declared `duration` (one tick, `wait` its `ticks` arg, `edit` none), expiring every modifier due
    on the way with a `capability_changed` caused by the modifier's `cause_id`, under which the
    `modifiers` delta is recorded too (`docs/provenance.md`); `emit` stamps each event with the
-   current `tick`, so an expiry carries the tick it fell due (stored worlds are `schema_version` 2
-   since); `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
+   current `tick`, so an expiry carries the tick it fell due. At each tick it also runs the
+   snapshot's `schedule` (`src/engine/schedule.ts`, `docs/schedule.md`): pending causes, absent when
+   none, today only the `close` that `open` schedules on an openable with `closes_after`; `close`
+   withdraws it, and the pipeline prunes causes whose entity is gone. Stored worlds are
+   `schema_version` 3. `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
    a failure returns the input snapshot unchanged. `edit` uses it to refuse results that break a
    snapshot invariant. `move` to another room, `place`, and removals re-derive `location` for the
    whole subtree below the change (`refreshSubtreeLocations` in `verbs/address.ts`); `place` setting
