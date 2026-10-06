@@ -212,6 +212,56 @@ function walkObstacles(
   return found;
 }
 
+interface Box {
+  id: Id;
+  at: Pos;
+  w: number;
+  d: number;
+}
+
+// The boxes a straight segment from `from` to `to` enters, carrying a footprint of `size` (zero for
+// a thing passed hand to hand), in the order it meets them, the lowest id first on a tie.
+function crossings(from: Pos, to: Pos, size: { w: number; d: number }, boxes: Box[]): Id[] {
+  // On doubled coordinates the path is S + t·(E − S) for t in [0, 1], and it crosses a box where
+  // it enters the open box of half-spans (w₁ + w₂, d₁ + d₂) around the box's centre.
+  const sx = 2 * from.x;
+  const sy = 2 * from.y;
+  const dx = 2 * (to.x - from.x);
+  const dy = 2 * (to.y - from.y);
+  const met: { id: Id; t: Fraction }[] = [];
+  for (const box of boxes) {
+    let lo: Fraction = { num: 0, den: 1 };
+    let hi: Fraction = { num: 1, den: 1 };
+    let misses = false;
+    for (const [start, delta, centre, span] of [
+      [sx, dx, 2 * box.at.x, size.w + box.w],
+      [sy, dy, 2 * box.at.y, size.d + box.d],
+    ] as const) {
+      if (delta === 0) {
+        misses ||= Math.abs(start - centre) >= span;
+        continue;
+      }
+      const near = { num: centre - span - start, den: delta };
+      const far = { num: centre + span - start, den: delta };
+      const [enter, leave] = delta > 0 ? [near, far] : [far, near];
+      const positive = (f: Fraction): Fraction => (f.den < 0 ? { num: -f.num, den: -f.den } : f);
+      const entering = positive(enter);
+      const leaving = positive(leave);
+      if (less(lo, entering)) {
+        lo = entering;
+      }
+      if (less(leaving, hi)) {
+        hi = leaving;
+      }
+    }
+    if (!misses && less(lo, hi)) {
+      met.push({ id: box.id, t: lo });
+    }
+  }
+  met.sort((left, right) => (less(left.t, right.t) ? -1 : less(right.t, left.t) ? 1 : left.id < right.id ? -1 : 1));
+  return met.map((entry) => entry.id);
+}
+
 // Where an agent walking from its position to `to` is stopped: outside the room's footprint (a
 // room's origin is its centre), across a barrier on the straight way there (the first one met, the
 // lowest id on a tie), or into anything solid standing at the destination (the lowest id). The path
@@ -239,52 +289,62 @@ export function walkStop(
   }
 
   const obstacles = walkObstacles(snapshot, registry, id, arriving);
-  // On doubled coordinates the path is S + t·(E − S) for t in [0, 1], and it crosses a barrier
-  // where it enters the open box of half-spans (w₁ + w₂, d₁ + d₂) around the barrier's centre.
-  const sx = 2 * from.x;
-  const sy = 2 * from.y;
-  const dx = 2 * (to.x - from.x);
-  const dy = 2 * (to.y - from.y);
-  let first: { id: Id; t: Fraction } | null = null;
-  for (const obstacle of obstacles.filter((candidate) => candidate.barrier)) {
-    let lo: Fraction = { num: 0, den: 1 };
-    let hi: Fraction = { num: 1, den: 1 };
-    let misses = false;
-    for (const [start, delta, centre, span] of [
-      [sx, dx, 2 * obstacle.at.x, size.w + obstacle.w],
-      [sy, dy, 2 * obstacle.at.y, size.d + obstacle.d],
-    ] as const) {
-      if (delta === 0) {
-        misses ||= Math.abs(start - centre) >= span;
-        continue;
-      }
-      const near = { num: centre - span - start, den: delta };
-      const far = { num: centre + span - start, den: delta };
-      const [enter, leave] = delta > 0 ? [near, far] : [far, near];
-      const positive = (f: Fraction): Fraction => (f.den < 0 ? { num: -f.num, den: -f.den } : f);
-      const entering = positive(enter);
-      const leaving = positive(leave);
-      if (less(lo, entering)) {
-        lo = entering;
-      }
-      if (less(leaving, hi)) {
-        hi = leaving;
-      }
-    }
-    if (misses || !less(lo, hi)) {
-      continue;
-    }
-    if (first === null || less(lo, first.t)) {
-      first = { id: obstacle.id, t: lo };
-    }
-  }
-  if (first !== null) {
-    return { reason: "blocked", with: first.id };
+  const first = crossings(from, to, size, obstacles.filter((candidate) => candidate.barrier))[0];
+  if (first !== undefined) {
+    return { reason: "blocked", with: first };
   }
 
   for (const obstacle of obstacles) {
     if (2 * Math.abs(obstacle.at.x - to.x) < size.w + obstacle.w && 2 * Math.abs(obstacle.at.y - to.y) < size.d + obstacle.d) {
       return { reason: "blocked", with: obstacle.id };
+    }
+  }
+  return null;
+}
+
+// A thing passed between two entities in one room (handed over, set down, lifted) goes straight from
+// one's position to the other's, and every shut barrier on that line must leave a gap it fits:
+// the thing turned edgewise, its smallest dimension at most the barrier's `gap_cm` (none, nothing
+// passes). The first barrier it does not fit names the refusal. An agent never passes a gap.
+export type GapStop = { with: Id; size_cm: number; gap_cm: number } | null;
+
+export function gapStop(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  thingId: Id,
+  fromId: Id,
+  toId: Id,
+): GapStop {
+  const thing = registry[requireEntity(snapshot, thingId).template];
+  const from = effectivePos(snapshot, fromId);
+  const to = effectivePos(snapshot, toId);
+  const room = requireEntity(snapshot, fromId).location;
+  const sameRoom = room !== null && requireEntity(snapshot, toId).location === room;
+  if (thing === undefined || from === null || to === null || !sameRoom) {
+    return null;
+  }
+  const barriers: Box[] = [];
+  for (const id of Object.keys(snapshot.entities).sort()) {
+    const other = requireEntity(snapshot, id);
+    const template = registry[other.template];
+    const at = effectivePos(snapshot, id);
+    if (
+      template !== undefined &&
+      at !== null &&
+      other.support === room &&
+      other.props.barrier === true &&
+      other.props.open !== true
+    ) {
+      barriers.push({ id, at, w: template.size_cm.w, d: template.size_cm.d });
+    }
+  }
+  const size = Math.min(thing.size_cm.w, thing.size_cm.d, thing.size_cm.h);
+  // The hand's line is a centimetre wide, so the seam where two sections meet is no way through.
+  for (const id of crossings(from, to, { w: 1, d: 1 }, barriers)) {
+    const gap = requireEntity(snapshot, id).props.gap_cm;
+    const gapCm = typeof gap === "number" && Number.isSafeInteger(gap) && gap > 0 ? gap : 0;
+    if (size > gapCm) {
+      return { with: id, size_cm: size, gap_cm: gapCm };
     }
   }
   return null;

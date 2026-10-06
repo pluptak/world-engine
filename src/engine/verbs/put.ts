@@ -4,7 +4,7 @@ import type { Entity } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { insufficientCode, meetsRequirements, spaceRefusal, unmetRequirement } from "../carry.js";
 import { resolveTarget } from "../resolve.js";
-import { addressEntity, addressText, closedEnclosure, reachData, wouldLoop, withinReach } from "./address.js";
+import { addressEntity, addressText, closedEnclosure, gapRefusal, reachData, wouldLoop, withinReach } from "./address.js";
 
 type Relation = "on" | "in";
 
@@ -69,6 +69,10 @@ function placementRefusal(
       reason_code: "out_of_reach",
       ...(data !== null && { reason_data: data }),
     };
+  }
+  const gap = gapRefusal(context, item.id, context.actor.id, destination.id);
+  if (gap !== null) {
+    return gap;
   }
 
   if (relation === "on") {
@@ -223,6 +227,7 @@ export const putVerb: Verb = {
     "not_carried",
     "circular_placement",
     "out_of_reach",
+    "too_big_for_gap",
     "not_a_surface",
     "container_closed",
     "too_large",

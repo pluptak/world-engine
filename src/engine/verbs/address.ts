@@ -1,4 +1,4 @@
-import { effectivePos } from "../geometry.js";
+import { effectivePos, gapStop } from "../geometry.js";
 import { resolveTarget } from "../resolve.js";
 import { derivedLocationOf } from "../validate.js";
 import type { Entity, Id, Snapshot } from "../../model.js";
@@ -191,4 +191,15 @@ export function wouldLoop(context: CommandContext, itemId: Id, destinationId: Id
   }
 
   return false;
+}
+// A thing crossing a barrier between `from` and `to` must fit its gap (docs/walking.md): refused
+// `too_big_for_gap`, naming the barrier, the thing's smallest dimension and the gap.
+export function gapRefusal(
+  context: CommandContext,
+  thingId: Id,
+  fromId: Id,
+  toId: Id,
+): PreconditionResult | null {
+  const stop = gapStop(context.snapshot, context.registry, thingId, fromId, toId);
+  return stop === null ? null : { status: "refused", reason_code: "too_big_for_gap", reason_data: stop };
 }

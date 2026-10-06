@@ -1,7 +1,7 @@
 import { capacities } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { carryAlternatives, carryCheck, gripPlacement, heldCount, inSpacePart } from "../carry.js";
-import { addressEntity, addressText, isAgent, reachData, wouldLoop, withinReach } from "./address.js";
+import { addressEntity, addressText, gapRefusal, isAgent, reachData, wouldLoop, withinReach } from "./address.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
   const destinationText = addressText(context, "destination");
@@ -51,6 +51,10 @@ function preconditions(context: CommandContext): PreconditionResult {
       reason_code: "out_of_reach",
       ...(data !== null && { reason_data: data }),
     };
+  }
+  const gap = gapRefusal(context, item.id, context.actor.id, recipient.id);
+  if (gap !== null) {
+    return gap;
   }
   const carry = carryCheck(
     capacities(context.snapshot, context.registry, recipient.id),
@@ -123,6 +127,7 @@ export const giveVerb: Verb = {
     "not_an_actor",
     "circular_placement",
     "out_of_reach",
+    "too_big_for_gap",
     "insufficient_manipulation",
     "two_hands_required",
     "too_heavy",

@@ -3,7 +3,7 @@
   "size_cm": { "w": 100, "d": 5, "h": 250 },
   "mass_g": 200000,
   "parts": [],
-  "props": { "barrier": true },
+  "props": { "barrier": true, "gap_cm": 12 },
   "break_products": [],
   "break_residue": {}
 }

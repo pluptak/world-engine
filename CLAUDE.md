@@ -82,7 +82,9 @@ suffixes (NodeNext).
   another on the same support, which stops `push`/`pull` with `collided` or refuses `blocked`;
   `walkStop`, where an agent's `move` is refused: `out_of_bounds` past the room's footprint, whose
   origin is its centre, `blocked` by a `barrier` on the straight path or by anything solid at least
-  `STEP_OVER_CM` tall at the destination), `spawn.ts` (ids from `next_seq`), `residue.ts`,
+  `STEP_OVER_CM` tall at the destination; `gapStop`, the barrier a thing given, put or taken
+  across a room cannot pass, its smallest dimension over the barrier's `gap_cm`, which `take`, `give`
+  and `put` refuse `too_big_for_gap`), `spawn.ts` (ids from `next_seq`), `residue.ts`,
   `canonical.ts`, `carry.ts`, `validate.ts` (snapshot invariants: no loops, `pos`/`location` match
   the chain, no dangling references (`detached_from` is history, not a link), detached parts
   accounted for, no part stored at its default, integrity range, ids below `next_seq`), `parts.ts`

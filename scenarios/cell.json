@@ -5,7 +5,7 @@
   {"id": "bars_m250", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": -250, "y": 0}}},
   {"id": "bars_m150", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": -150, "y": 0}}},
   {"id": "bars_m50", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": -50, "y": 0}}},
-  {"id": "gate", "template": "gate", "overrides": {"name": "gate", "location": "block", "support": "block", "pos": {"x": 50, "y": 0}, "props": {"barrier": true, "openable": true, "open": false, "locked": true}}},
+  {"id": "gate", "template": "gate", "overrides": {"name": "gate", "location": "block", "support": "block", "pos": {"x": 50, "y": 0}, "props": {"barrier": true, "gap_cm": 12, "openable": true, "open": false, "locked": true}}},
   {"id": "bars_150", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": 150, "y": 0}}},
   {"id": "bars_250", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": 250, "y": 0}}},
   {"id": "bars_350", "template": "bars", "overrides": {"name": "bars", "location": "block", "support": "block", "pos": {"x": 350, "y": 0}}},

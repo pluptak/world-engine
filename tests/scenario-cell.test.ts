@@ -93,6 +93,51 @@ test("across the bars they see each other and hand things over within reach", (t
   strictEqual(run(world, ids.ann, "attack", ids.bob).status, "ok");
 });
 
+test("between the bars only what fits the 12 cm gap passes, turned edgewise; never an agent", (t) => {
+  const { world, ids } = open(t);
+  const make = (template: string, name: string, x: number, y: number): Id => {
+    const made = world.edit({
+      kind: "spawn",
+      template,
+      overrides: { name, location: ids.block, support: ids.block, pos: { x, y } },
+    });
+    const id = made.events[1]?.entity;
+    ok(typeof id === "string", name);
+    return id;
+  };
+  // However wide the gap, an agent does not slip through it.
+  const bars = world.entity(ids.bars_m250)!;
+  strictEqual(world.edit({ kind: "set_props", target: ids.bars_m250, props: { ...bars.props, gap_cm: 80 } }).status, "ok");
+  strictEqual(walk(world, ids.ann, -250, -100).status, "ok");
+  deepStrictEqual(walk(world, ids.ann, -250, 100).reason_data, { with: ids.bars_m250 });
+
+  // Face to face across the seam where two sections meet, which is no way through either.
+  strictEqual(walk(world, ids.ann, -300, -18).status, "ok");
+  strictEqual(walk(world, ids.bob, -300, 18).status, "ok");
+  const cup = make("cup", "cup", -280, 50);
+  const stone = make("stone", "stone", -320, 50);
+  const shelf = make("table", "shelf", -300, -70);
+  const stuck = { with: ids.bars_m350, size_cm: 20, gap_cm: 12 };
+
+  // An 8 cm cup goes hand to hand; a 20 cm stone neither off his floor, nor from his hand, nor
+  // onto her side's shelf.
+  strictEqual(run(world, ids.bob, "take", cup).status, "ok");
+  strictEqual(run(world, ids.bob, "give", cup, { destination: ids.ann }).status, "ok");
+  strictEqual(world.entity(cup)?.contained_in, ids.ann);
+  const reached = run(world, ids.ann, "take", stone);
+  deepStrictEqual([reached.reason_code, reached.reason_data], ["too_big_for_gap", stuck]);
+  strictEqual(run(world, ids.bob, "take", stone).status, "ok");
+  deepStrictEqual(run(world, ids.bob, "give", stone, { destination: ids.ann }).reason_data, stuck);
+  deepStrictEqual(run(world, ids.bob, "put", stone, { relation: "on", destination: shelf }).reason_data, stuck);
+
+  // The open gate is no barrier: through it the stone goes.
+  const gate = world.entity(ids.gate)!;
+  strictEqual(world.edit({ kind: "set_props", target: ids.gate, props: { ...gate.props, locked: false, open: true } }).status, "ok");
+  strictEqual(walk(world, ids.ann, 50, -40).status, "ok");
+  strictEqual(walk(world, ids.bob, 50, 40).status, "ok");
+  strictEqual(run(world, ids.bob, "give", stone, { destination: ids.ann }).status, "ok");
+});
+
 test("the locked gate holds until it is unlocked and opened; then it is a way through", (t) => {
   const { world, ids } = open(t);
   strictEqual(walk(world, ids.ann, 50, -60).status, "ok");

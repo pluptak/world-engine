@@ -17,12 +17,20 @@ Overlap an agent already has never stops it, so whatever a scenario or an edit p
 something can always walk out. A move to another room needs an open door, keeps its coordinates,
 and is checked where it lands there, with no path; a door is not a barrier inside either room.
 
-`templates/bars.json` is a 100 cm section of bars, `barrier: true`, too heavy to push or carry;
-`gate.json` extends it with `openable`, so `open`, `close`, `lock` and `unlock` work on it with a
-key that `opens` it. Bars block walking and pushing but not sight, hearing or reach: two agents on
-either side within reach can see each other, `give` and `attack` through them. `scenarios/cell.json`
-cuts a room in two with ten sections, wall to wall; `tests/scenario-cell.test.ts` is its spec.
+`templates/bars.json` is a 100 cm section of bars, `barrier: true` with `gap_cm: 12`, too heavy to
+push or carry; `gate.json` extends it with `openable`, so `open`, `close`, `lock` and `unlock` work
+on it with a key that `opens` it. Bars block walking and pushing but not sight, hearing or reach:
+two agents on either side within reach see each other and `attack` through them.
 
-What it does not do: there is no pathfinding (a caller routes round a barrier in several moves), a
-drop still falls from the holder's centre so a walking agent drops at its feet and sets things on a
-table with `put`, and a push is stopped by what stands in the room, never by its walls.
+**The gap.** A thing handed over (`give`), set down (`put`) or lifted (`take`) goes on a straight,
+centimetre-wide line between the two positions, and every shut barrier on it must fit the thing
+turned edgewise: its smallest dimension at most `gap_cm`, else `too_big_for_gap` naming the first
+barrier, the size and the gap (`gapStop` in `geometry.ts`). A key, cup or book passes 12 cm bars; a
+stone does not. A barrier without `gap_cm` passes nothing, and no gap ever lets an agent through.
+`scenarios/cell.json` cuts a room in two with ten sections, wall to wall;
+`tests/scenario-cell.test.ts` is its spec.
+
+What it does not do: a strike or a bite through bars ignores the gap, there is no pathfinding (a
+caller routes round a barrier in several moves), a drop still falls from the holder's centre so a
+walking agent drops at its feet and sets things on a table with `put`, and a push is stopped by what
+stands in the room, never by its walls.
