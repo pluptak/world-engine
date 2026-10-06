@@ -12,10 +12,11 @@ body's `integrity` walks it. Every bleed falls during whichever command spans it
 `wait` runs a whole wound. Two wounds bleed side by side, each on its own count.
 
 **Bleeding out.** A bleed that brings `integrity` to 0 emits `destroyed` and sets `status`; a
-destroyed body is no agent any more, so its own commands are `invalid` with `not_an_agent`, and its
-other bleeds find it so and do nothing. What its grips and mouth held falls where it lies, each fall
-caused by the `destroyed`; what is pocketed stays with the body. The props are read when each bleed
-runs, so an edit that removes them stops a wound.
+destroyed body is no agent any more, so its own commands are `invalid` with `not_an_agent`, it
+senses nothing (`observer_destroyed`, [perception.md](perception.md)), and its other bleeds find it
+so and do nothing. What its grips and mouth held falls where it lies, each fall caused by the
+`destroyed`; what is pocketed stays with the body. The props are read when each bleed runs, so an
+edit that removes them stops a wound.
 
 `tests/bleeding.test.ts` is the spec, with the inn script, where ann bleeds after losing an arm.
 The property test's attacks rarely sever a part, so it seldom reaches a wound.

@@ -21,4 +21,5 @@ authored event, and anything else is `not_touching`.
 
 An event-form perceive reads the world at both ends of the command that produced it and is true if
 it is true at either; `perceivers: true` names, per event and by sense, every agent that could have
-sensed it.
+sensed it. A destroyed observer senses nothing, `false` / `observer_destroyed`, so `observe` lists
+nothing for it and `inspect` is `null`; its own end it still sensed, from the moment before.

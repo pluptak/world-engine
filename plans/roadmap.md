@@ -65,6 +65,9 @@ The clock now runs before validation, so a broken intermediate snapshot also rea
 
 ### 2. A destroyed body as an observer
 
+Built: a destroyed observer senses nothing, `false` / `observer_destroyed`, so `observe` lists
+nothing and `inspect` is `null`; its own end it sensed from the moment before.
+
 Bleeding made destroyed agents reachable in play. `isAgent` is false for them, so they cannot act
 and `perceivers: true` leaves them out; but `perceive`, `observe` and `inspect` still answer for a
 destroyed observer as if it saw and heard.

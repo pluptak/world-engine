@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { memoryWorld, type World } from "../src/index.js";
 import { spawn } from "../src/engine/spawn.js";
 import { validateSnapshot } from "../src/engine/validate.js";
-import type { Snapshot } from "../src/model.js";
+import { defaultCoverage, type Snapshot } from "../src/model.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
 
 // Bleeding is the second scheduled cause, and the first that chains. A human who loses a part
@@ -131,6 +131,24 @@ test("a body bled out drops what its hand held where it lies; the pocket keeps i
   ok(fell, "the cup's fall names the body's end");
   deepStrictEqual([world.entity(cup)?.contained_in, world.entity(cup)?.support], [null, room]);
   deepStrictEqual([world.entity(key)?.contained_in, world.entity(key)?.in_part], [guard, "pocket"]);
+});
+
+test("a body bled out senses nothing: perceive, observe and inspect all say so", () => {
+  const { world: seed, attacker, guard } = duel(8);
+  const world = memoryWorld({ ...seed.snapshot(), coverage: defaultCoverage() }, registry);
+  const sees = () => world.query({ kind: "perceive", observer: guard, entity: attacker, sense: "sight" });
+  deepStrictEqual(sees(), { value: "true", basis_code: "same_location_lit" });
+  act(world, attacker, "attack", `${guard}.hand_r`);
+  const waited = act(world, attacker, "wait", undefined, { ticks: 7 });
+  const end = waited.events.find((event) => event.type === "destroyed");
+  ok(end);
+  deepStrictEqual(sees(), { value: "false", basis_code: "observer_destroyed" });
+  deepStrictEqual(world.observe(guard).entities, []);
+  strictEqual(world.inspect(guard, attacker), null);
+  // Its own end it sensed, from the moment before it: an event is perceived at either end.
+  strictEqual(world.query({ kind: "perceive", observer: guard, event_id: end.event_id, sense: "sight" }).value, "true");
+  // The attacker, alive, still sees the body.
+  strictEqual(world.query({ kind: "perceive", observer: attacker, entity: guard, sense: "sight" }).value, "true");
 });
 
 test("only what declares bleeding bleeds: a dog's lost jaw opens no wound", () => {

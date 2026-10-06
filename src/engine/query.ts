@@ -459,6 +459,10 @@ function perceive(
   if (!snapshot.coverage.senses.includes(query.sense)) {
     return answer("unknown", "uncovered_sense");
   }
+  // A destroyed body senses nothing, whatever its parts: the same end that stops it acting.
+  if (observer.status === "destroyed") {
+    return answer("false", "observer_destroyed");
+  }
   if ((capacity(snapshot, registry, observer.id, query.sense) ?? 0) === 0) {
     return answer("false", "no_sense_capacity");
   }
