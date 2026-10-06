@@ -1,7 +1,9 @@
 ﻿import { fileURLToPath } from "node:url";
 import { canonicalJson } from "./engine/canonical.js";
 import {
+  attemptOf,
   WORLD_AUTHOR,
+  type Attempt,
   type Command,
   type Result,
   type WorldEdit,
@@ -24,6 +26,7 @@ import { validateSnapshot } from "./engine/validate.js";
 import { WorldError } from "./errors.js";
 import { defaultCoverage, type Coverage, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type Status, type WorldEvent } from "./model.js";
 import {
+  attempts as readAttempts,
   create,
   entryCount,
   replayFold,
@@ -90,6 +93,8 @@ export interface World {
   edit(edit: WorldEdit, options?: EditOptions): Result;
   check(command: Command): CheckResult;
   since(version: number): SinceResult;
+  // Every submission decided at that version or later, ok or not, with its status and reason.
+  attempts(version: number): Attempt[];
   trace(query: TraceQuery): TraceResult;
   upgradeTemplates(registry?: TemplateRegistry): Snapshot;
   query(query: Query): Answer;
@@ -280,6 +285,7 @@ function storeWorld(
     },
     check: (command) => checkResult(dryRun(load(dir, active), active, command)),
     since: (version) => foldSince(dir, version, active),
+    attempts: (version) => readAttempts(dir, version, active),
     trace: (query) => foldTrace(dir, query, active),
     upgradeTemplates: (next) => {
       const target = next ?? loadTemplates(templatesDirectory);
@@ -397,6 +403,8 @@ export function memoryWorld(
   let submissions = 0;
   // Each ok submission keeps its deltas and events, so since(version) can answer without a fold.
   const applied: Array<{ base: number; deltas: Delta[]; events: WorldEvent[] }> = [];
+  // Every submission, ok or not, as a store world's log would hold it.
+  const tried: Attempt[] = [];
   // The version this world started from: anything older predates its records, however valid, so
   // asking below it is an error rather than an empty answer.
   const firstVersion = initial.version;
@@ -430,6 +438,7 @@ export function memoryWorld(
       basedOn,
       (version) => history.get(version) ?? null,
     );
+    tried.push(attemptOf(command, basedOn, base, result));
     if (result.status === "ok") {
       current = result.snapshot;
       events.push(...result.events);
@@ -535,6 +544,18 @@ export function memoryWorld(
       }
       return { deltas, events: sinceEvents };
     },
+    attempts: (version) => {
+      if (!Number.isSafeInteger(version) || version < 0) {
+        throw new WorldError("invalid_version", `Invalid version ${version}`);
+      }
+      if (version < firstVersion) {
+        throw new WorldError("history_unavailable", `No records before version ${firstVersion}`);
+      }
+      if (version > current.version) {
+        throw new WorldError("future_version", `Version ${version} is ahead of ${current.version}`);
+      }
+      return structuredClone(tried.filter((attempt) => attempt.version >= version));
+    },
     query: (request) => {
       if (request.kind === "perceive" && request.event_id !== undefined) {
         const atEvent = snapshotAtEvent(request.event_id);
@@ -557,7 +578,7 @@ export { canonicalJson, verbCatalog as verbs, WorldError, WORLD_AUTHOR };
 export { ENGINE_CAPABILITIES } from "./engine/capabilities.js";
 export type { WorldErrorCode } from "./errors.js";
 export type { Scenario, ScenarioEntry } from "./scenario.js";
-export type { Command, Result, WorldEdit } from "./engine/command.js";
+export type { Attempt, Command, Result, WorldEdit } from "./engine/command.js";
 export type { Answer, Query } from "./engine/query.js";
 export type { Inspection, ObservedEntity, ObservedEvent, Projection } from "./engine/projection.js";
 export type { TraceQuery } from "./engine/trace.js";

@@ -94,7 +94,7 @@ suffixes (NodeNext).
   destroyed ancestor that ancestor's status).
 - `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json`,
   `log.jsonl`, `events.jsonl` and `head.json`. `submit` appends the log line (every command, including
-  refused and invalid ones) and the command's events, atomically writes the snapshot, and writes
+  refused and invalid ones, as an `Attempt` with the version it was decided at and its reason) and the command's events, atomically writes the snapshot, and writes
   `head.json` last: both files' byte sizes, `log_entries` (all lines, used for default edit ids) and
   `ok_entries`. `resolveSubmission` runs `validateSnapshot` on every accepted result and
   downgrades a breaking one to `invalid` with the rule's code, so a verb bug is logged but never
@@ -104,7 +104,9 @@ suffixes (NodeNext).
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
   surface as CLI issue codes.
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
-  `command`/`edit`/`check`/`since`/`query`/`observe`/`inspect`/`snapshot`/`entity`; `observe` is
+  `command`/`edit`/`check`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`;
+  `attempts(version)` is every submission decided at that version or later, ok or not, as an
+  `Attempt` (`engine/command.ts`): a store world's log lines, a memory world's own record; `observe` is
   `src/engine/projection.ts` over the world's own `snapshot`, `since` and event-form `query`,
   `inspect` one entity of it in detail, and `command(c, { observe: true })` attaches the actor's
   projection since the version the command was applied to), re-exported by `src/index.ts` and by
@@ -132,7 +134,8 @@ suffixes (NodeNext).
   same sequence of calls writes the same log through any number of handles. A memory world keeps
   past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
-  `check` | `since` | `query` | `observe` | `inspect` | `snapshot` | `verbs` | `capabilities`), calls one
+  `check` | `since` | `attempts` | `query` | `observe` | `inspect` | `snapshot` | `verbs` |
+  `capabilities`), calls one
   `World` method, `verbCatalog` or returns `ENGINE_CAPABILITIES` (`src/engine/capabilities.ts`: the
   relations and senses the engine computes, which `validateSnapshot` holds coverage to), and
   validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`

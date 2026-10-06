@@ -17,7 +17,7 @@ every ok command advances it by its verb's declared duration ([time.md](time.md)
 
 **Attempts, not assertions.** A command says what an agent tries; the engine decides what happens.
 It checks the attempt against the world and either carries it out or refuses it with a code, and a
-refusal changes nothing and takes no time, though a stored world logs it. The one exception is
+refusal changes nothing and takes no time, though the world keeps the attempt. The one exception is
 `edit`, the world author's channel, signed `world`: it states facts outright (spawn, remove, place,
 set props or parts), checked against the snapshot's invariants but never reach, capacity or agency,
 and takes no time. An application gives its players commands and keeps `edit` to itself.

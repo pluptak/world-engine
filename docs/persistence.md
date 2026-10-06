@@ -8,10 +8,11 @@ coverage file, so a world can declare the categories it answers from the first c
 A world directory holds:
 - `initial.json` and canonical `snapshot.json`;
 - `templates.json`, the resolved template set the world was created with;
-- `format.json`, `{"schema_version": 3}` (3 since the snapshot can hold a `schedule`): a world with
+- `format.json`, `{"schema_version": 4}` (4 since a log line records its outcome): a world with
   another number, or none, is refused `unsupported_schema` instead of being read;
 - `ids.json`, when the scenario named anything;
-- `log.jsonl`, every command with its base version and status, refused ones included;
+- `log.jsonl`, every command as an attempt, refused ones included: its base version, the version it
+  was decided at, status, and any reason code, data and candidates;
 - `events.jsonl`, every emitted event, which queries read instead of replaying;
 - `head.json`, written last: both JSONL files' sizes, all and accepted entry counts, and the
   template hash, so opening a world detects a crash without reading the log.

@@ -250,6 +250,7 @@ test("load recovers a logged accepted command after a snapshot-write crash", (t)
     `${canonicalJson({
       command,
       based_on_version: scenario.snapshot.version,
+      version: scenario.snapshot.version,
       status: "ok",
     })}\n`,
     "utf8",
@@ -471,6 +472,7 @@ test("stale head.json: load recovers correctly and rewrites it", (t) => {
     `${canonicalJson({
       command,
       based_on_version: 1,
+      version: 1,
       status: "ok",
     })}\n`,
     "utf8",

@@ -1,15 +1,18 @@
 # The library API
 
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)`, `openWorld(dir)`, and
-`memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `since`, `trace`, `beat`,
-`upgradeTemplates`, `query`, `observe` and `inspect` ([projection.md](projection.md)), `snapshot`,
-`entity`, and `id`. `verbs()` is the verb catalog and `ENGINE_CAPABILITIES` what the engine
-computes; the CLI answers both (`op` `verbs`, `capabilities`). Store worlds share a directory, so
-handles see each other; memory worlds hold their own. A missing directory, a changed hash, or a bad
-version is a `WorldError` with a code.
+`memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `since`, `attempts`,
+`trace`, `beat`, `upgradeTemplates`, `query`, `observe` and `inspect`
+([projection.md](projection.md)), `snapshot`, `entity`, and `id`. `verbs()` is the verb catalog and
+`ENGINE_CAPABILITIES` what the engine computes; the CLI answers both (`op` `verbs`, `capabilities`).
+Store worlds share a directory, so handles see each other; memory worlds hold their own. A missing
+directory, a changed hash, or a bad version is a `WorldError` with a code.
 
 - `check` agrees with `command` on the verdict without writing or logging.
-- `since` gives the deltas and events of every ok command after a version.
+- `since` gives the deltas and events of every ok command after a version; `attempts` lists every
+  submission decided at a version or later, refused, invalid, unresolved and preempted ones
+  included, with the command, its base, the version it was decided at, its status, reason code and
+  data, and candidates; a dry run is not one. The CLI's `attempts` op answers it.
 - `beat` runs commands in array order against one shared base, one log line each, each with its
   status, so a command an earlier one made fail is `preempted`.
 - `trace` follows `cause_id` root-first from an event, or from the last delta of an entity field,

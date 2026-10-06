@@ -122,6 +122,7 @@ test("removing the table under the bottle produces the break chain caused by the
       args: { edit: { kind: "remove", target: "e2" } },
     },
     based_on_version: 0,
+    version: 0,
     status: "ok",
   });
 });

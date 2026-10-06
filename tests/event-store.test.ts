@@ -81,7 +81,7 @@ test("version-skew recovery rewrites a short event file", (t) => {
   strictEqual(world.command({ command_id: "wait-1", actor: "e4", verb: "wait", args: { ticks: 1 } }).status, "ok");
   strictEqual(world.command({ command_id: "wait-2", actor: "e4", verb: "wait", args: { ticks: 1 } }).status, "ok");
   // Simulate a crash after the log append: a third ok entry with no events and a stale snapshot.
-  const entry = { command: { command_id: "wait-3", actor: "e4", verb: "wait", args: { ticks: 1 } }, based_on_version: 2, status: "ok" };
+  const entry = { command: { command_id: "wait-3", actor: "e4", verb: "wait", args: { ticks: 1 } }, based_on_version: 2, version: 2, status: "ok" };
   appendFileSync(join(dir, "log.jsonl"), `${canonicalJson(entry)}\n`, "utf8");
   // The next open detects the version skew and replays: snapshot and event file both recover.
   const recovered = openWorld(dir).snapshot();

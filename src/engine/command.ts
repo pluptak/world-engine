@@ -77,6 +77,31 @@ export interface Result {
   observation?: Projection;
 }
 
+// One submission as the world recorded it: what was tried, against which version, and how it came
+// out. A store world keeps it as a log line; a failed one has no events and took no time.
+export interface Attempt {
+  command: Command;
+  based_on_version: number;
+  // The world's version when the command was decided; an ok one produced version + 1.
+  version: number;
+  status: Status;
+  reason_code?: string;
+  reason_data?: ReasonData;
+  candidates?: Id[];
+}
+
+export function attemptOf(command: Command, basedOn: number, version: number, result: Result): Attempt {
+  return {
+    command,
+    based_on_version: basedOn,
+    version,
+    status: result.status,
+    ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
+    ...(result.reason_data !== undefined && { reason_data: result.reason_data }),
+    ...(result.candidates !== undefined && { candidates: result.candidates }),
+  };
+}
+
 export interface TargetAddress {
   entity_id: Id;
   part: string | null;

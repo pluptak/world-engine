@@ -6,16 +6,13 @@ import { canonicalJson } from "../engine/canonical.js";
 import { traceQuery, type TraceQuery } from "../engine/trace.js";
 import { validateSnapshot } from "../engine/validate.js";
 import { lostField } from "../engine/upgrade.js";
-import type { Command, Result } from "../engine/command.js";
+import { attemptOf, type Attempt, type Command, type Result } from "../engine/command.js";
 import { WorldError } from "../errors.js";
 import type { Delta, Id, Snapshot, Status, WorldEvent } from "../model.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../templates.js";
 
-interface LogEntry {
-  command: Command;
-  based_on_version: number;
-  status: Status;
-}
+// A log line is the attempt itself: every submission, refused and invalid ones included.
+type LogEntry = Attempt;
 
 interface Head {
   log_bytes: number;
@@ -38,7 +35,7 @@ const snapshots = {
 
 // Bumped when a stored file's shape changes; a world written under another number is refused,
 // never read as if it matched.
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 // A world is created from the templates directory and then never reads it again: the copy beside
 // the log is the one it is bound to.
@@ -178,7 +175,11 @@ function parseLogLine(line: string, lineNumber: number): LogEntry {
   if (
     !isRecord(value) ||
     typeof value.based_on_version !== "number" ||
+    !Number.isSafeInteger(value.version) ||
     typeof value.status !== "string" ||
+    (value.reason_code !== undefined && typeof value.reason_code !== "string") ||
+    (value.reason_data !== undefined && !isRecord(value.reason_data)) ||
+    (value.candidates !== undefined && !Array.isArray(value.candidates)) ||
     !Object.hasOwn(value, "command")
   ) {
     throw new TypeError(`Invalid log entry at line ${lineNumber}`);
@@ -467,11 +468,7 @@ export function submit(
     snapshotAtVersion(dir, version, templates),
   );
 
-  const entry: LogEntry = {
-    command,
-    based_on_version: basedOn,
-    status: result.status,
-  };
+  const entry: LogEntry = attemptOf(command, basedOn, current.version, result);
   const logPath = join(dir, snapshots.log);
   const eventsPath = join(dir, snapshots.events);
 
@@ -663,6 +660,19 @@ export function trace(
 // Every ok command after `version`, folded from the log: their deltas and events in command order.
 // A command counts when it was applied at `version` or later, so the fold walks the whole log and
 // only collects past the cut.
+// Every submission decided at `version` or later, in the order it came, ok or not: what was tried
+// and how it came out, read straight from the log with no replay.
+export function attempts(dir: string, version: number, registry?: TemplateRegistry): Attempt[] {
+  if (!Number.isSafeInteger(version) || version < 0) {
+    throw new WorldError("invalid_version", `Invalid version ${version}`);
+  }
+  const current = load(dir, activeRegistry(dir, registry));
+  if (version > current.version) {
+    throw new WorldError("future_version", `Version ${version} is ahead of ${current.version}`);
+  }
+  return readLogEntries(dir).filter((entry) => entry.version >= version);
+}
+
 export function since(
   dir: string,
   version: number,
