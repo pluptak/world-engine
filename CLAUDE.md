@@ -39,9 +39,10 @@ suffixes (NodeNext).
    `modifiers` delta is recorded too (`docs/provenance.md`); `emit` stamps each event with the
    current `tick`, so an expiry carries the tick it fell due. At each tick it also runs the
    snapshot's `schedule` (`src/engine/schedule.ts`, `docs/schedule.md`): pending causes, absent when
-   none, today only the `close` that `open` schedules on an openable with `closes_after`; `close`
-   withdraws it, and the pipeline prunes causes whose entity is gone. Stored worlds are
-   `schema_version` 3. `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
+   none: the `close` that `open` schedules on an openable with `closes_after` (`close` withdraws
+   it), and the `bleed` a severed part opens on a body with `bleed_*` props, each scheduling the
+   next (`docs/bleeding.md`); the pipeline prunes causes whose entity is gone, and `isAgent` is
+   false for a destroyed body. Stored worlds are `schema_version` 5. `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
    a failure returns the input snapshot unchanged. `edit` uses it to refuse results that break a
    snapshot invariant. `move` to another room, `place`, and removals re-derive `location` for the
    whole subtree below the change (`refreshSubtreeLocations` in `verbs/address.ts`); `place` setting

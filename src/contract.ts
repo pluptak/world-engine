@@ -264,12 +264,16 @@ export const SnapshotSchema = z.object({
   templates_hash: z.string(),
   coverage: CoverageSchema,
   entities: z.record(z.string(), EntitySchema),
-  schedule: z.array(z.object({
-    due_tick: z.number().int(),
-    kind: z.enum(["close"]),
-    entity: IdSchema,
-    cause_id: IdSchema,
-  }).strict()).optional(),
+  schedule: z.array(z.discriminatedUnion("kind", [
+    z.object({ due_tick: z.number().int(), kind: z.literal("close"), entity: IdSchema, cause_id: IdSchema }).strict(),
+    z.object({
+      due_tick: z.number().int(),
+      kind: z.literal("bleed"),
+      entity: IdSchema,
+      cause_id: IdSchema,
+      remaining: z.number().int(),
+    }).strict(),
+  ])).optional(),
 }).strict();
 
 export const PerceiversSchema = z.object({

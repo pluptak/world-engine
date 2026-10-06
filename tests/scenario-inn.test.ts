@@ -510,7 +510,9 @@ function script(ids: Ids): Step[] {
   step({
     note: "bob hits ann's torso, which costs her moving until three ticks after the blow",
     run: cmd("D4-torso-1", "bob", "attack", `${ids.ann}.torso`),
-    expect: [{ status: "ok", events: ["attack", "damaged", "capability_changed"] }],
+    // The lost arm bleeds two ticks after it came off: 5 integrity, at the end of this blow.
+    expect: [{ status: "ok", events: ["attack", "damaged", "capability_changed", "damaged"] }],
+    then: (world) => strictEqual(world.entity(ids.ann)?.integrity, 95),
   });
   step({
     // Every command takes a tick, so the second blow lands a tick later and wears off a tick later.
@@ -523,9 +525,14 @@ function script(ids: Ids): Step[] {
     },
   });
   step({
-    note: "bob waits three ticks, and both moving modifiers expire in tick order",
+    note: "bob waits three ticks: both moving modifiers expire in tick order, and ann bleeds twice more",
     run: cmd("D6-wait", "bob", "wait", undefined, { ticks: 3 }),
-    expect: [{ status: "ok", events: ["wait", "capability_changed", "capability_changed"] }],
+    expect: [
+      {
+        status: "ok",
+        events: ["wait", "capability_changed", "damaged", "capability_changed", "damaged"],
+      },
+    ],
     perceivers: {
       // Waiting makes no sound, and neither does a modifier fading: the room hears nothing.
       wait: { sight: ["ann", "bob", "rex"], hearing: [] },
@@ -533,6 +540,9 @@ function script(ids: Ids): Step[] {
     },
     then: (world) => {
       deepStrictEqual(world.entity(ids.ann)?.modifiers, []);
+      // Three bleeds of 5, and the wound has stopped.
+      strictEqual(world.entity(ids.ann)?.integrity, 85);
+      strictEqual(world.snapshot().schedule, undefined);
       // A tick for each of the 34 ok commands before it, and three for the wait.
       strictEqual(world.snapshot().tick, 37);
     },

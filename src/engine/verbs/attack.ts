@@ -8,6 +8,7 @@ import { dropCarriedItem } from "./drop.js";
 import { inReach, reachData } from "./address.js";
 import { spawn } from "../spawn.js";
 import { partState, withParts } from "../parts.js";
+import { startBleeding } from "../schedule.js";
 
 // A fist needs hands, a bite a jaw; the damage of the mode used comes from the attacker's template.
 const attackModes: readonly AttackMode[] = [
@@ -299,6 +300,7 @@ function transition(context: TransitionContext): void {
       damageEvent = context.emit("detached", target.id, { part: attack.partName }, context.root_event_id);
       detachEvent = damageEvent;
       detachPart(context, target.id, attack.partName, integrity, damageEvent);
+      startBleeding(context, target.id, damageEvent);
     } else if (integrity === 0) {
       damageEvent = context.emit("destroyed", target.id, { part: attack.partName }, context.root_event_id);
       context.set(

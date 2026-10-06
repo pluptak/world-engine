@@ -20,6 +20,7 @@ What is built, nothing aspirational, one concept per file:
 - [space.md](space.md): anchors, offsets and the derived `near` relation.
 - [provenance.md](provenance.md): what `cause_id` records, how `trace` walks it, and its limits.
 - [schedule.md](schedule.md): what the world does by itself later: the self-closing door.
+- [bleeding.md](bleeding.md): a severed part's wound, bleeding by itself until its count runs out.
 - [time.md](time.md): the clock, what each verb takes, and what falls due as it advances.
 - [walking.md](walking.md): where an agent may walk: room bounds, barriers, and the destination.
 - [occupancy.md](occupancy.md): footprints, what stops a push, and where a fall lands.

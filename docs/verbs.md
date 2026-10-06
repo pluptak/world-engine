@@ -1,9 +1,10 @@
 # Verbs
 
-Only an agent holds: agency is the template's `agent` prop, withheld from a detached part, and an
-abstract template ([space.md](space.md)) is no target for an agent's verb. A surface declares
-`surface`, sized by its footprint; a container declares `container` and `inner_*_cm`. Every ok
-command takes one tick unless its verb says otherwise ([time.md](time.md)).
+Only an agent holds: agency is the template's `agent` prop, withheld from a detached part and a
+destroyed body (one bled out, say), and an abstract template ([space.md](space.md)) is no target for
+an agent's verb. A surface declares `surface`, sized by its footprint; a container declares
+`container` and `inner_*_cm`. Every ok command takes one tick unless its verb says otherwise
+([time.md](time.md)).
 
 This is the index: one line per verb, its rules in the family file it links to.
 

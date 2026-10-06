@@ -59,13 +59,11 @@ export function defaultCoverage(): Coverage {
   };
 }
 
-// Something the world will do by itself at `due_tick`, named by the event that set it going.
-export interface ScheduledCause {
-  due_tick: number;
-  kind: "close";
-  entity: Id;
-  cause_id: Id;
-}
+// Something the world will do by itself at `due_tick`, named by the event that set it going. A
+// bleed carries how many bleeds are left, this one included; each schedules the next.
+export type ScheduledCause =
+  | { due_tick: number; kind: "close"; entity: Id; cause_id: Id }
+  | { due_tick: number; kind: "bleed"; entity: Id; cause_id: Id; remaining: number };
 
 export interface Snapshot {
   version: number;

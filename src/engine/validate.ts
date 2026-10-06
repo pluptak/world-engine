@@ -484,6 +484,9 @@ function scheduleIssues(snapshot: Snapshot): SnapshotIssue[] {
     if (snapshot.entities[cause.entity] === undefined) {
       issues.push(issue("schedule_dangling", path, cause.entity));
     }
+    if (cause.kind === "bleed" && !(Number.isSafeInteger(cause.remaining) && cause.remaining > 0)) {
+      issues.push(issue("bleed_not_remaining", path, `remaining ${cause.remaining}`));
+    }
   });
   return issues;
 }

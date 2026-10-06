@@ -11,7 +11,8 @@ export function isAgent(snapshot: Snapshot, id: Id): boolean {
   if (entity === undefined) {
     throw new TypeError(`Unknown entity ${id}`);
   }
-  return entity.props.agent === true && entity.detached_from === null;
+  // A body destroyed, bled out or beaten, acts no more.
+  return entity.props.agent === true && entity.detached_from === null && entity.status !== "destroyed";
 }
 
 // The first container up the containment chain that is shut: what is inside it is out of the world

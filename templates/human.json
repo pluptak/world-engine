@@ -13,7 +13,7 @@
     { "name": "thumb_r", "parent": "hand_r", "contributes": { "manipulation": 20 }, "detachable": false, "max_integrity": 50 },
     { "name": "pocket", "parent": "torso", "contributes": {}, "detachable": false, "max_integrity": 100, "holds": { "kind": "space", "inner_w_cm": 18, "inner_d_cm": 12, "inner_h_cm": 4 } }
   ],
-  "props": { "agent": true, "reach_cm": 100, "hand_height_cm": 100, "attack_damage": 40, "default_hit_part": "torso" },
+  "props": { "agent": true, "reach_cm": 100, "hand_height_cm": 100, "attack_damage": 40, "default_hit_part": "torso", "bleed_damage": 5, "bleed_every_ticks": 2, "bleed_times": 3 },
   "break_products": [],
   "break_residue": {}
 }

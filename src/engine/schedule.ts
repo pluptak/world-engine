@@ -1,7 +1,7 @@
 import type { TransitionContext } from "./command.js";
 import type { Id, ScheduledCause, Snapshot } from "../model.js";
 
-export const CAUSE_KINDS: readonly ScheduledCause["kind"][] = ["close"];
+export const CAUSE_KINDS: readonly ScheduledCause["kind"][] = ["close", "bleed"];
 
 export function pending(snapshot: Snapshot): readonly ScheduledCause[] {
   return snapshot.schedule ?? [];
@@ -40,15 +40,62 @@ export function pruneSchedule(context: TransitionContext): void {
   }
 }
 
+// A body's bleeding, read from its props when each bleed runs: so much integrity every so many
+// ticks, so many times. Any of the three missing or not a positive integer, and it does not bleed.
+function bleeding(props: Record<string, unknown>): { damage: number; every: number; times: number } | null {
+  const read = (name: string): number | null => {
+    const value = props[name];
+    return typeof value === "number" && Number.isSafeInteger(value) && value > 0 ? value : null;
+  };
+  const damage = read("bleed_damage");
+  const every = read("bleed_every_ticks");
+  const times = read("bleed_times");
+  return damage === null || every === null || times === null ? null : { damage, every, times };
+}
+
+function scheduleBleed(context: TransitionContext, entity: Id, causeId: Id, remaining: number): void {
+  const rule = bleeding(context.snapshot.entities[entity]?.props ?? {});
+  const due = context.snapshot.tick + (rule?.every ?? 0);
+  if (rule !== null && remaining > 0 && Number.isSafeInteger(due)) {
+    schedule(context, { due_tick: due, kind: "bleed", entity, cause_id: causeId, remaining });
+  }
+}
+
+// A lost part starts a wound of its own: the first bleed falls due `bleed_every_ticks` after the
+// `detached` that opened it, and two wounds bleed side by side.
+export function startBleeding(context: TransitionContext, entity: Id, detachedEvent: Id): void {
+  const rule = bleeding(context.snapshot.entities[entity]?.props ?? {});
+  if (rule !== null) {
+    scheduleBleed(context, entity, detachedEvent, rule.times);
+  }
+}
+
 // Runs one due cause, already taken off the schedule, at the current tick. A cause the world has
-// overtaken (the door already shut) does nothing and says nothing.
+// overtaken (the door already shut, the body already destroyed) does nothing and says nothing.
 export function runCause(context: TransitionContext, cause: ScheduledCause): void {
   const entity = context.snapshot.entities[cause.entity];
+  if (entity === undefined) {
+    return;
+  }
   if (cause.kind === "close") {
-    if (entity === undefined || entity.props.openable !== true || entity.props.open !== true) {
+    if (entity.props.openable !== true || entity.props.open !== true) {
       return;
     }
     const eventId = context.emit("closed", entity.id, {}, cause.cause_id);
     context.set(entity.id, "props", { ...entity.props, open: false }, eventId);
+    return;
   }
+  const rule = bleeding(entity.props);
+  if (rule === null || entity.status === "destroyed") {
+    return;
+  }
+  // Each bleed names the one before it, back to the `detached` that opened the wound.
+  const integrity = Math.max(0, entity.integrity - rule.damage);
+  const eventId = context.emit(integrity === 0 ? "destroyed" : "damaged", entity.id, { integrity }, cause.cause_id);
+  context.set(entity.id, "integrity", integrity, eventId);
+  if (integrity === 0) {
+    context.set(entity.id, "status", "destroyed", eventId);
+    return;
+  }
+  scheduleBleed(context, entity.id, eventId, cause.remaining - 1);
 }
