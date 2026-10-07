@@ -160,8 +160,9 @@ test("a light shut in a closed container gives none, and opening it lets the lig
   const chestId = world.id("chest")!;
   const placed = world.edit({ kind: "place", target: lantern, contained_in: chestId, pos: null });
   strictEqual(placed.status, "ok", String(placed.reason_code));
-  // Ann cannot reach in to light it, but the author can set it burning.
-  strictEqual(run(world, ann, "light", "lantern").reason_code, "container_closed");
+  // Ann can neither see nor grope for it in the shut chest, so she cannot name it; the author can
+  // set it burning.
+  strictEqual(run(world, ann, "light", "lantern").status, "unresolved");
   strictEqual(world.edit({ kind: "set_props", target: lantern, props: { ...world.entity(lantern)!.props, burning: true } }).status, "ok");
   deepStrictEqual(sees(world, bob, note), { value: "false", basis_code: "location_unlit" });
   const opened = run(world, ann, "open", "chest");
@@ -177,10 +178,13 @@ test("light and douse refuse with declared codes", (t) => {
   const dog = world.id("dog")!;
   const code = (result: Result) => [result.status, result.reason_code];
   deepStrictEqual(code(run(world, ann, "light", "note")), ["refused", "not_a_light"]);
-  deepStrictEqual(code(run(world, ann, "light", "far")), ["refused", "out_of_reach"]);
+  // In the dark the far candle is neither seen nor in reach; lit by the lantern, it is seen and out
+  // of reach.
+  deepStrictEqual(code(run(world, ann, "light", "far")), ["unresolved", undefined]);
   deepStrictEqual(code(run(world, ann, "douse", "lantern")), ["refused", "not_burning"]);
   deepStrictEqual(code(run(world, dog, "light", "lantern")), ["refused", "insufficient_manipulation"]);
   strictEqual(run(world, ann, "light", "lantern").status, "ok");
+  deepStrictEqual(code(run(world, ann, "light", "far")), ["refused", "out_of_reach"]);
   deepStrictEqual(code(run(world, ann, "light", "lantern")), ["refused", "already_burning"]);
   world.edit({ kind: "set_props", target: lantern, props: { ...world.entity(lantern)!.props, burning: false, fuel: 0 } });
   deepStrictEqual(code(run(world, ann, "light", "lantern")), ["refused", "no_fuel"]);

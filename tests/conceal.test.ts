@@ -177,9 +177,18 @@ test("lifting the book uncovers the note for everyone in the room", (t) => {
   }
 });
 
-test("taking the hidden thing takes it out of hiding", (t) => {
+test("the hidden thing is named only by the id a search finds, and taking it takes it out of hiding", (t) => {
   for (const world of hiddenWorlds(t)) {
-    const taken = world.command({ command_id: "take-note", actor: "e6", verb: "take", target: "note" });
+    const byName = world.command({ command_id: "take-by-name", actor: "e6", verb: "take", target: "note" });
+    strictEqual(byName.status, "unresolved");
+    strictEqual(byName.resolved_target, null);
+    // Out of reach, in the cell, not even the id names it.
+    const fromAfar = world.command({ command_id: "take-from-afar", actor: "e9", verb: "take", target: NOTE });
+    strictEqual(fromAfar.status, "unresolved");
+
+    const searched = world.command({ command_id: "search-book", actor: "e6", verb: "search", target: "book" });
+    strictEqual(searched.events.find((event) => event.type === "found")?.entity, NOTE);
+    const taken = world.command({ command_id: "take-note", actor: "e6", verb: "take", target: NOTE });
     strictEqual(taken.status, "ok");
     strictEqual(world.entity(NOTE)?.concealed_by, null);
     const revealed = taken.events.find((event) => event.type === "revealed");
@@ -415,10 +424,10 @@ test("a thing in a shut container cannot be searched", (t) => {
     },
   ]);
   for (const world of [store, memoryWorld(store.snapshot(), undefined, { chest: "e3" })]) {
+    // Shut in, the book is neither seen nor groped for, so it cannot even be named.
     const searched = world.command({ command_id: "search-in-chest", actor: "e4", verb: "search", target: "book" });
-    strictEqual(searched.status, "refused");
-    strictEqual(searched.reason_code, "container_closed");
-    strictEqual(canonicalJson(searched.reason_data), canonicalJson({ enclosure: "e2" }));
+    strictEqual(searched.status, "unresolved");
+    strictEqual(searched.reason_data, undefined);
   }
 });
 

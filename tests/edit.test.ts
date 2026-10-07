@@ -241,8 +241,9 @@ test("place clears the other relation and follows the chain across rooms", (t) =
     verb: "take",
     target: "e3",
   });
-  strictEqual(reach.status, "refused");
-  strictEqual(reach.reason_code, "out_of_reach");
+  // In another room it is neither sensed nor in reach: even its id names nothing.
+  strictEqual(reach.status, "unresolved");
+  strictEqual(reach.reason_code, undefined);
 });
 
 test("removing a held container passes its contents to the holder", (t) => {
@@ -310,8 +311,8 @@ test("removing a container inside a chest keeps its contents shut inside", (t) =
     verb: "take",
     target: "pebble",
   });
-  strictEqual(take.status, "refused");
-  strictEqual(take.reason_code, "container_closed");
+  // Shut in the chest, the pebble cannot be named until it is opened.
+  strictEqual(take.status, "unresolved");
 });
 
 test("a detached part outlives its origin, but not the other way round", (t) => {

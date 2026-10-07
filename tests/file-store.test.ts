@@ -165,7 +165,9 @@ test("a stale take is preempted after the bottle is broken and moved out of reac
     basedOn,
   );
   strictEqual(staleTake.status, "preempted");
-  strictEqual(staleTake.reason_code, "out_of_reach");
+  // Out of reach in an unlit room, the bottle is no longer one the actor can name, so the command
+  // fails now as unresolved and carries no refusal code.
+  strictEqual(staleTake.reason_code, undefined);
   strictEqual(staleTake.snapshot.version, pushed.snapshot.version);
   strictEqual(load(dir).version, pushed.snapshot.version);
   const entries = readFileSync(join(dir, "log.jsonl"), "utf8")
@@ -199,7 +201,9 @@ test("a stale unknown verb remains invalid", (t) => {
 
 test("a stale take that fails reach at both versions remains refused", (t) => {
   const dir = temporaryDirectory(t);
-  const room = spawn(initialSnapshot(), registry, "room", { name: "room" });
+  // Lit and seen, so the far bottle is named and refused rather than unresolved.
+  const seeing = { ...initialSnapshot(), coverage: { relations: [], senses: ["sight"], properties: [] } };
+  const room = spawn(seeing, registry, "room", { name: "room", props: { lit: true } });
   const actor = spawn(room.snapshot, registry, "human", {
     name: "actor",
     location: room.id,

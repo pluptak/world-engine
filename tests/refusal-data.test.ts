@@ -145,29 +145,41 @@ test("a chair into a chest reports the failing pair", (t) => {
   deepStrictEqual(put.reason_data, { item_cm: 90, space_cm: 55 });
 });
 
-test("a take from a shut chest names the enclosure", (t) => {
-  const world = createWorld(join(tempDir(t), "shut"), [
-    { template: "room", overrides: { name: "room", props: { lit: true } } },
-    {
-      template: "human",
-      overrides: { name: "actor", location: "e1", support: "e1", pos: { x: 0, y: 0 } },
+test("a take from a shut chest names the enclosure to one who smells what is in it", (t) => {
+  const chest = (): Scenario[number] => ({
+    template: "chest",
+    overrides: {
+      name: "chest",
+      location: "e1",
+      support: "e1",
+      pos: { x: 20, y: 0 },
+      props: { container: true, openable: true, open: false },
     },
-    {
-      template: "chest",
-      overrides: {
-        name: "chest",
-        location: "e1",
-        support: "e1",
-        pos: { x: 20, y: 0 },
-        props: { container: true, openable: true, open: false },
-      },
-    },
-    {
-      template: "bottle",
-      overrides: { name: "bottle", location: "e1", support: null, contained_in: "e3" },
-    },
-  ]);
-  const taken = world.command({ command_id: "take", actor: "e2", verb: "take", target: "bottle" });
+  });
+  const at = (template: string, name: string) => ({
+    template,
+    overrides: { name, location: "e1", support: "e1", pos: { x: 0, y: 0 } },
+  });
+  const inChest = (template: string) => ({
+    template,
+    overrides: { name: "bottle", location: "e1", support: null, contained_in: "e3" },
+  });
+  const room = { template: "room", overrides: { name: "room", props: { lit: true } } };
+
+  // A plain bottle in the shut chest is neither seen nor smelt: there is nothing to name.
+  const blind = createWorld(join(tempDir(t), "shut"), [room, at("human", "actor"), chest(), inChest("bottle")]);
+  const unnamed = blind.command({ command_id: "take", actor: "e2", verb: "take", target: "bottle" });
+  strictEqual(unnamed.status, "unresolved");
+  strictEqual(unnamed.reason_data, undefined);
+
+  // Wine smells through the lid, so a dog in a world that covers smell can name it, and is refused.
+  const nosed = createWorld(
+    join(tempDir(t), "shut-smelt"),
+    [room, at("dog", "rex"), chest(), inChest("wine_bottle")],
+    undefined,
+    { coverage: { relations: [], senses: ["sight", "hearing", "smell"], properties: [] } },
+  );
+  const taken = nosed.command({ command_id: "take", actor: "e2", verb: "take", target: "bottle" });
   strictEqual(taken.status, "refused");
   strictEqual(taken.reason_code, "container_closed");
   deepStrictEqual(taken.reason_data, { enclosure: "e3" });

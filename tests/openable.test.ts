@@ -266,9 +266,10 @@ test("a closed container refuses the take of what it holds", () => {
       target: "bottle",
     });
 
+  // Shut in, the bottle is neither seen nor groped for, so it cannot be named until the chest opens.
   const closed = take(bottle.snapshot);
-  strictEqual(closed.status, "refused");
-  strictEqual(closed.reason_code, "container_closed");
+  strictEqual(closed.status, "unresolved");
+  strictEqual(closed.reason_code, undefined);
 
   const opened = apply(bottle.snapshot, registry, {
     command_id: "open-chest",
@@ -351,8 +352,7 @@ test("a coin in an open cup inside a closed chest is out of reach and out of sig
       sense: "sight",
     });
 
-  strictEqual(takeCoin(coin.snapshot).status, "refused");
-  strictEqual(takeCoin(coin.snapshot).reason_code, "container_closed");
+  strictEqual(takeCoin(coin.snapshot).status, "unresolved");
   deepStrictEqual(sightOfCoin(coin.snapshot), { value: "false", basis_code: "enclosed" });
 
   const opened = apply(coin.snapshot, registry, {

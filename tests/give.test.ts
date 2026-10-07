@@ -116,7 +116,15 @@ test("giving out of reach is refused", () => {
     support: world.roomId,
     pos: { x: 900, y: 0 },
   });
-  const result = give(world, { destination: far.id }, far.snapshot);
+  // Unseen in the dark room, the stranger cannot be named; seen, it is out of reach.
+  strictEqual(give(world, { destination: far.id }, far.snapshot).status, "unresolved");
+  const room = far.snapshot.entities[world.roomId]!;
+  const seen: Snapshot = {
+    ...far.snapshot,
+    coverage: { ...far.snapshot.coverage, senses: ["sight"] },
+    entities: { ...far.snapshot.entities, [room.id]: { ...room, props: { ...room.props, lit: true } } },
+  };
+  const result = give(world, { destination: far.id }, seen);
 
   strictEqual(result.status, "refused");
   strictEqual(result.reason_code, "out_of_reach");
@@ -260,10 +268,10 @@ test("giving refuses what the recipient cannot be or accept", () => {
   strictEqual(toSelf.reason_code, "cannot_give_to_self");
 
   const uncarried = apply(world.snapshot, world.registry, {
-    command_id: "give-table",
+    command_id: "give-chair",
     actor: world.giverId,
     verb: "give",
-    target: "table",
+    target: "chair",
     args: { destination: "recipient" },
   });
   strictEqual(uncarried.status, "refused");

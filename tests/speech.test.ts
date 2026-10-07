@@ -131,11 +131,13 @@ test("a dark room lets an observer hear the speaker but not see them", (t) => {
 
 test("the addressee is recorded as a fact of the act, and the event stays on the speaker", (t) => {
   const h = hall(t);
-  const event = spoken(say(h.world, h.ann, { utterance: "hello", volume: "whisper" }, h.dan));
+  const event = spoken(say(h.world, h.ann, { utterance: "hello", volume: "whisper" }, h.carol));
   strictEqual(event.entity, h.ann);
-  deepStrictEqual(event.data, { utterance: "hello", volume: "whisper", to: h.dan });
-  // Naming dan claims nothing about whether dan heard.
-  strictEqual(hears(h.world, h.dan, event.event_id), false);
+  deepStrictEqual(event.data, { utterance: "hello", volume: "whisper", to: h.carol });
+  // Naming carol claims nothing about whether carol heard.
+  strictEqual(hears(h.world, h.carol, event.event_id), false);
+  // Dan, behind the shut door, is no one ann can tell is there, so she cannot address him.
+  strictEqual(say(h.world, h.ann, { utterance: "hello" }, h.dan).status, "unresolved");
 });
 
 test("the words reach an observer's projection only when they heard", (t) => {

@@ -255,10 +255,10 @@ test("a shut container refuses the pour, and so does what one holds", () => {
     location: world.roomId,
     contained_in: world.chestId,
   }).snapshot;
+  // What the shut chest holds is neither seen nor groped for, so it cannot be named at all.
   const enclosed = pour(world, { destination: "inner cup" }, inChest);
-  strictEqual(enclosed.status, "refused");
-  strictEqual(enclosed.reason_code, "container_closed");
-  deepStrictEqual(enclosed.reason_data, { enclosure: world.chestId });
+  strictEqual(enclosed.status, "unresolved");
+  strictEqual(enclosed.reason_data, undefined);
 
   // A surface inside a shut container is hidden the same way, as it is for `put ... on`.
   const tray = spawn(inChest, world.registry, "table", {
@@ -267,9 +267,8 @@ test("a shut container refuses the pour, and so does what one holds", () => {
     contained_in: world.chestId,
   }).snapshot;
   const hidden = pour(world, { destination: "tray" }, tray);
-  strictEqual(hidden.status, "refused");
-  strictEqual(hidden.reason_code, "container_closed");
-  deepStrictEqual(hidden.reason_data, { enclosure: world.chestId });
+  strictEqual(hidden.status, "unresolved");
+  strictEqual(hidden.reason_data, undefined);
 });
 
 test("a pour the actor cannot do is refused with its own code", () => {
@@ -309,7 +308,15 @@ strictEqual(
     support: world.roomId,
     pos: { x: 900, y: 0 },
   }).snapshot;
-  const outOfReach = pour(world, { destination: "far table" }, far);
+  // The room is dark and no sense is covered: the far table is named only once it can be seen.
+  strictEqual(pour(world, { destination: "far table" }, far).status, "unresolved");
+  const room = far.entities[world.roomId]!;
+  const seen: Snapshot = {
+    ...far,
+    coverage: { ...far.coverage, senses: ["sight"] },
+    entities: { ...far.entities, [room.id]: { ...room, props: { ...room.props, lit: true } } },
+  };
+  const outOfReach = pour(world, { destination: "far table" }, seen);
   strictEqual(outOfReach.reason_code, "out_of_reach");
   deepStrictEqual(outOfReach.reason_data, { distance_cm: 900, reach_cm: 100 });
 

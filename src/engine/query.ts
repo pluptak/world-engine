@@ -665,6 +665,46 @@ export function query(
   return q.kind === "fact" ? fact(snapshot, registry, q) : perceive(snapshot, registry, events, q);
 }
 
+// What an agent can name in a command: itself, the room it stands in, what it senses now by a
+// covered sight, smell or touch (as `observe` lists it), or what it could grope for, in reach and
+// not shut away. A door has no position and is groped for from either room it joins. A hidden
+// thing in reach is named only by id: nothing records that it was found, and a `found` event is
+// how a searcher learns the id. Anything else resolves as though it did not exist, so no candidate
+// list or refusal names it.
+export function addressable(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  actorId: Id,
+  entityId: Id,
+  byId: boolean,
+): boolean {
+  const actor = snapshot.entities[actorId];
+  const entity = snapshot.entities[entityId];
+  if (actor === undefined || entity === undefined) {
+    return false;
+  }
+  if (entityId === actorId || entityId === actor.location) {
+    return true;
+  }
+  const sensed = ["sight", "smell", "touch"].some(
+    (sense) =>
+      snapshot.coverage.senses.includes(sense) &&
+      perceive(snapshot, registry, [], { kind: "perceive", observer: actorId, entity: entityId, sense })
+        .value === "true",
+  );
+  if (sensed) {
+    return true;
+  }
+  if ((entity.concealed_by !== null && !byId) || closedEnclosure(snapshot, entityId) !== null) {
+    return false;
+  }
+  const here = actor.location;
+  const doorway = typeof entity.props.from === "string" && typeof entity.props.to === "string";
+  return doorway && entity.pos === null
+    ? here !== null && (entity.props.from === here || entity.props.to === here)
+    : inReach(snapshot, actorId, entityId);
+}
+
 // Who could have sensed each event: every agent, every covered sense, true before or after the
 // events' command — the caller passes both snapshots, as in item 5. An agent is listed exactly
 // when perceive would answer true for it at either end.

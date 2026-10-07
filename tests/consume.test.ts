@@ -135,7 +135,8 @@ test("what is carried is eaten from the hand, and refusals are declared", (t) =>
   strictEqual(stored.status, "ok");
   deepStrictEqual(code(run(world, ann, "consume", "stone")), ["refused", "not_consumable"]);
   deepStrictEqual(code(run(world, ann, "consume", "far")), ["refused", "out_of_reach"]);
-  deepStrictEqual(code(run(world, ann, "consume", "hidden")), ["refused", "container_closed"]);
+  // Shut in the chest, the bread is neither seen nor groped for: there is nothing to name.
+  deepStrictEqual(code(run(world, ann, "consume", "hidden")), ["unresolved", undefined]);
   deepStrictEqual(code(run(world, ann, "consume", `${gus}.head`)), ["refused", "not_consumable"]);
   deepStrictEqual(code(run(world, ann, "consume", "bread", { amount: 5 })), ["invalid", "invalid_args"]);
   // Picked up, the bread is in hand and eaten there.

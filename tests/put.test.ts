@@ -315,7 +315,16 @@ test("a put refuses what the actor cannot do", () => {
   strictEqual(uncarried.reason_code, "not_carried");
 
   const farTable = onRoom(world.snapshot, world.registry, "table", "far table", 900);
-  const outOfReach = put(world, { relation: "on", destination: farTable.id }, farTable.snapshot);
+  // Unseen in the dark room, the far table is no destination the actor can name.
+  const unseen = put(world, { relation: "on", destination: farTable.id }, farTable.snapshot);
+  strictEqual(unseen.status, "unresolved");
+  const room = farTable.snapshot.entities[world.roomId]!;
+  const seen: Snapshot = {
+    ...farTable.snapshot,
+    coverage: { ...farTable.snapshot.coverage, senses: ["sight"] },
+    entities: { ...farTable.snapshot.entities, [room.id]: { ...room, props: { ...room.props, lit: true } } },
+  };
+  const outOfReach = put(world, { relation: "on", destination: farTable.id }, seen);
   strictEqual(outOfReach.status, "refused");
   strictEqual(outOfReach.reason_code, "out_of_reach");
 

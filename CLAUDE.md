@@ -32,7 +32,7 @@ suffixes (NodeNext).
   responses, the snapshot). Zod is used only there and in `src/cli/`.
 - `src/engine/pipeline.ts` `apply(snapshot, registry, command)`: the single transition entry point.
   It looks up the verb, then checks the actor, resolves the target (`resolve.ts`: name, alias or
-  `entity.part`) and runs `verb.preconditions`. Only after all of those pass does it emit the root
+  `entity.part`, among what the actor can address: `addressable` in `query.ts`, `docs/perception.md`) and runs `verb.preconditions`. Only after all of those pass does it emit the root
   event and call `verb.transition`. Any status other than `ok` returns the input snapshot unchanged.
    After the transition, `advanceClock` (`src/engine/clock.ts`; a verb's `wake_on` names agents whose senses end the time early, as `advance`'s `stop_on_perceived` does, `sensedBy` in `query.ts`) moves `tick` on by the verb's
    declared `duration` (one tick, `wait` and the author's `advance` their `ticks` arg, `edit` none), expiring every modifier due

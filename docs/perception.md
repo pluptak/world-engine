@@ -30,3 +30,10 @@ An event-form perceive reads the world at both ends of the command that produced
 it is true at either; `perceivers: true` names, per event and by sense, every agent that could have
 sensed it. A destroyed observer senses nothing, `false` / `observer_destroyed`, so `observe` lists
 nothing for it and `inspect` is `null`; its own end it still sensed, from the moment before.
+
+What an agent can name in a command is a perception question too (`addressable`): itself, its room,
+what it senses now by a covered sight, smell or touch, or what it could grope for, in reach and not
+shut in a closed container (a door from either room it joins). A hidden thing in reach is named
+by id only, the id its `found` event carries, and never by name. Anything else, by name, alias, id
+or `<entity>.<part>`, is `unresolved` as if it did not exist, so no candidate or refusal names it;
+the world author names anything. A dog that smells wine in a shut chest names it and is refused.

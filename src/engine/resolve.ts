@@ -3,6 +3,7 @@ import type { TargetAddress } from "./command.js";
 import { WORLD_AUTHOR } from "./command.js";
 import type { TemplateRegistry } from "../templates.js";
 import { effectivePart } from "./parts.js";
+import { addressable } from "./query.js";
 
 export type TargetResolution =
   | { status: "resolved"; target: TargetAddress }
@@ -49,12 +50,13 @@ export function resolveTarget(
   text: string,
 ): TargetResolution {
   const skipAbstract = actorId !== WORLD_AUTHOR;
+  // The author names anything; an agent only what it could tell is there (`addressable`).
+  const named = (id: Id, byId: boolean): boolean =>
+    !skipAbstract ||
+    (!isAbstract(registry, snapshot.entities[id]) && addressable(snapshot, registry, actorId, id, byId));
 
-  if (Object.hasOwn(snapshot.entities, text)) {
-    const entity = snapshot.entities[text];
-    if (!skipAbstract || !isAbstract(registry, entity)) {
-      return resolved(text);
-    }
+  if (Object.hasOwn(snapshot.entities, text) && named(text, true)) {
+    return resolved(text);
   }
 
   const separator = text.lastIndexOf(".");
@@ -62,9 +64,8 @@ export function resolveTarget(
     const entityId = text.slice(0, separator);
     const partName = text.slice(separator + 1);
     const entity = snapshot.entities[entityId];
-    const skipAbstractTarget = skipAbstract && isAbstract(registry, entity);
     const state =
-      skipAbstractTarget || entity === undefined
+      entity === undefined || !named(entityId, true)
         ? undefined
         : effectivePart(registry[entity.template], entity, partName);
     if (state !== undefined && state.status !== "detached") {
@@ -82,12 +83,13 @@ export function resolveTarget(
     .sort()
     .filter((id) => {
       const entity = snapshot.entities[id];
-      if (entity === undefined || (skipAbstract && isAbstract(registry, entity)) || !inViewOf(entity, actor.location)) {
+      if (entity === undefined || !inViewOf(entity, actor.location)) {
         return false;
       }
       return (
-        entity.name.toLowerCase() === search ||
-        entity.aliases.some((alias) => alias.toLowerCase() === search)
+        (entity.name.toLowerCase() === search ||
+          entity.aliases.some((alias) => alias.toLowerCase() === search)) &&
+        named(id, false)
       );
     });
 

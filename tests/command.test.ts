@@ -12,19 +12,24 @@ import { loadTemplates, templatesHash } from "../src/templates.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
-function initialSnapshot(): Snapshot {
+function initialSnapshot(senses: string[] = []): Snapshot {
   return {
     version: 0,
     tick: 0,
     next_seq: 1,
     templates_hash: templatesHash(registry),
-    coverage: { relations: [], senses: [], properties: [] },
+    coverage: { relations: [], senses, properties: [] },
     entities: {},
   };
 }
 
-function world(bottlePositions: Array<{ x: number; y: number }> = [{ x: 1, y: 0 }]) {
-  const room = spawn(initialSnapshot(), registry, "room", { name: "hall" });
+// Unlit and with no sense covered, the guard addresses only what it reaches; `lit` lets it see the
+// whole hall.
+function world(bottlePositions: Array<{ x: number; y: number }> = [{ x: 1, y: 0 }], lit = false) {
+  const room = spawn(initialSnapshot(lit ? ["sight"] : []), registry, "room", {
+    name: "hall",
+    ...(lit && { props: { lit: true } }),
+  });
   const actor = spawn(room.snapshot, registry, "human", {
     name: "guard",
     location: room.id,
@@ -93,12 +98,47 @@ test("ambiguous targets return sorted candidates and do not change the snapshot"
 });
 
 test("take refuses a target outside reach without changing the snapshot", () => {
-  const { snapshot, actorId } = world([{ x: 200, y: 0 }]);
+  const { snapshot, actorId } = world([{ x: 200, y: 0 }], true);
   const result = apply(snapshot, registry, command(actorId, "take", "bottle"));
 
   strictEqual(result.status, "refused");
   strictEqual(result.reason_code, "out_of_reach");
   strictEqual(result.snapshot, snapshot);
+});
+
+test("what the actor neither senses nor reaches resolves as though it did not exist", () => {
+  const setup = world([{ x: 200, y: 0 }]);
+  const far = setup.bottleIds[0]!;
+  const chair = spawn(setup.snapshot, registry, "chair", {
+    name: "chair",
+    location: setup.roomId,
+    support: setup.roomId,
+    pos: { x: -200, y: 0 },
+  });
+  const { snapshot } = chair;
+  const actorId = setup.actorId;
+
+  for (const target of ["bottle", far, `${chair.id}.leg_fl`]) {
+    const result = apply(snapshot, registry, command(actorId, "take", target));
+    strictEqual(result.status, "unresolved", target);
+    strictEqual(result.resolved_target, null, target);
+    strictEqual(result.snapshot, snapshot, target);
+  }
+  strictEqual(resolveTarget(snapshot, registry, "world", far).status, "resolved");
+  strictEqual(resolveTarget(snapshot, registry, "world", `${chair.id}.leg_fl`).status, "resolved");
+});
+
+test("candidates name only what the actor could tell is there", () => {
+  const positions = [{ x: 1, y: 0 }, { x: 200, y: 0 }];
+  const dark = world(positions);
+  const near = apply(dark.snapshot, registry, command(dark.actorId, "take", "bottle"));
+  strictEqual(near.status, "ok");
+  strictEqual(near.resolved_target, dark.bottleIds[0]);
+
+  const lit = world(positions, true);
+  const both = apply(lit.snapshot, registry, command(lit.actorId, "take", "bottle"));
+  strictEqual(both.status, "ambiguous");
+  deepStrictEqual(both.candidates, lit.bottleIds);
 });
 
 test("take and drop record field deltas and causal events", () => {
