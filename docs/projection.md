@@ -40,5 +40,5 @@ was refused. The CLI's `command` op takes `observe` alike.
 that must not see the rest: `observe`, `inspect`, `check` and `command`, all as that actor. A
 command's actor is the view's own and `perceivers` is never sent. A result is the verdict and
 `observation` alone, no `snapshot`, `deltas` or `events`, and a `reason_data` value naming an
-entity outside the actor's view (itself, its room, what it named, `observation.entities`) is left
-out: in the dark, `blocked` by an unseen chest names no chest.
+entity the actor could not name itself (`addressable`: its view, or what it could grope for) is
+left out: in the dark, `blocked` by an unseen chest names no chest, and `carried` names the holder.

@@ -1,5 +1,6 @@
 import type { CommandOptions, ObserveOptions, World } from "./api.js";
 import type { Command, Result } from "./engine/command.js";
+import { gropable } from "./engine/query.js";
 import type { Inspection, Projection } from "./engine/projection.js";
 import { WorldError } from "./errors.js";
 import type { Id, ReasonData, Status } from "./model.js";
@@ -9,8 +10,9 @@ import type { Id, ReasonData, Status } from "./model.js";
 export type ActorCommand = Pick<Command, "command_id" | "verb" | "target" | "args">;
 
 // A verdict as the actor could know it: no snapshot, deltas or events, only what it sensed of its
-// own command in `observation`. A `reason_data` value naming an entity the observation does not
-// list is left out, so every id here is the actor, its room, what it named, or in its view.
+// own command in `observation`. A `reason_data` value naming an entity the actor could not name
+// itself is left out, so every id here is the actor, its room, what it named, in its view, or
+// within its groping reach.
 export interface ActorResult {
   status: Status;
   command_id: Id;
@@ -59,10 +61,18 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
         known.add(address.split(".")[0]!);
       }
     }
+    // Besides what it senses, an actor could name what it can grope for (`addressable`), so a
+    // holder felt for in the dark is named as a refusal's `carried` by.
+    const snapshot = world.snapshot();
     const data: ReasonData = {};
     for (const key of Object.keys(result.reason_data ?? {}).sort()) {
       const value = result.reason_data![key]!;
-      if (typeof value !== "string" || world.entity(value) === null || known.has(value)) {
+      if (
+        typeof value !== "string" ||
+        snapshot.entities[value] === undefined ||
+        known.has(value) ||
+        gropable(snapshot, actor, value, false)
+      ) {
         data[key] = value;
       }
     }

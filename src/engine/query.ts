@@ -692,8 +692,16 @@ export function addressable(
       perceive(snapshot, registry, [], { kind: "perceive", observer: actorId, entity: entityId, sense })
         .value === "true",
   );
-  if (sensed) {
-    return true;
+  return sensed || gropable(snapshot, actorId, entityId, byId);
+}
+
+// The half of `addressable` that needs no senses and no templates: what the actor could grope for.
+// A caller that already holds the actor's projection has the other half in its `entities`.
+export function gropable(snapshot: Snapshot, actorId: Id, entityId: Id, byId: boolean): boolean {
+  const actor = snapshot.entities[actorId];
+  const entity = snapshot.entities[entityId];
+  if (actor === undefined || entity === undefined) {
+    return false;
   }
   if ((entity.concealed_by !== null && !byId) || closedEnclosure(snapshot, entityId) !== null) {
     return false;

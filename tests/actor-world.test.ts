@@ -96,3 +96,23 @@ test("observe and inspect are the actor's own, and an unknown actor has no view"
     throws(() => actorWorld(world, "e99"), (error: { code?: string }) => error.code === "no_such_entity");
   }
 });
+
+test("a carried actor is told who carries it, felt for in the dark", (t) => {
+  // Ann holds a cat in her left hand in a dark hall; the chest stands 300 cm off.
+  const carried: Scenario = [
+    ...hall(false),
+    { id: "tib", template: "cat", overrides: { name: "tib", location: "hall", contained_in: "ann", in_part: "hand_l" } },
+  ];
+  const store = createWorld(join(tempDir(t), "carried"), carried);
+  for (const world of [store, memoryWorld(store.snapshot(), undefined, { tib: "e6" })]) {
+    const tib = actorWorld(world, "e6");
+    const walk: ActorCommand = { command_id: "walk-off", verb: "move", args: { to: { x: 100, y: 0 } } };
+    // Ann is neither seen nor felt (touch is uncovered), but she is within the cat's reach, so the cat
+    // could name her itself: the view names her as the holder.
+    ok(tib.observe().entities.every((entity) => entity.id !== ANN));
+    for (const verdict of [tib.check(walk), tib.command(walk)]) {
+      deepStrictEqual([verdict.status, verdict.reason_code, verdict.reason_data], ["refused", "carried", { by: ANN }]);
+    }
+    strictEqual(tib.command({ command_id: "nose-ann", verb: "attack", target: "ann" }).resolved_target, ANN);
+  }
+});

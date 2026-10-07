@@ -542,6 +542,7 @@ test("nobody learns words they did not hear: a projection carries a token exactl
 
 test("an actor is told only of what it can sense or address: an actor view names nothing else", () => {
   let named = 0;
+  let groped = 0;
   let withheld = 0;
   for (let seed = 0; seed < 200; seed += 1) {
     const rand = mulberry32(seed + 8000);
@@ -557,7 +558,7 @@ test("an actor is told only of what it can sense or address: an actor view names
       const result = actorWorld(world, step.actor).command(step);
       strictEqual(["snapshot", "deltas", "events"].some((key) => key in result), false);
       // What it named resolved by the resolution rule, read independently of the view; what else it
-      // is told is in its own observation, its own body, or the room it stands in.
+      // is told is in its own observation or is one it could name by that same rule.
       const told = new Set([step.actor, ...result.observation.entities.map((entity) => entity.id)]);
       const room = before.entities[step.actor]?.location;
       for (const address of [result.resolved_target, ...(result.candidates ?? [])]) {
@@ -571,9 +572,12 @@ test("an actor is told only of what it can sense or address: an actor view names
         if (typeof value !== "string" || before.entities[value] === undefined) {
           continue;
         }
-        if (told.has(value) || value === room) {
+        if (told.has(value) || value === room || addressable(before, registry, step.actor, value, false)) {
           strictEqual(result.reason_data?.[key], value, `${step.command_id} kept ${key}`);
           named += 1;
+          if (!told.has(value) && value !== room) {
+            groped += 1;
+          }
         } else {
           strictEqual(result.reason_data?.[key], undefined, `${step.command_id} told of ${value}`);
           withheld += 1;
@@ -582,5 +586,6 @@ test("an actor is told only of what it can sense or address: an actor view names
     }
   }
   strictEqual(named >= 100, true, `named ${named}`);
+  strictEqual(groped >= 1, true, `groped ${groped}`);
   strictEqual(withheld >= 5, true, `withheld ${withheld}`);
 });
