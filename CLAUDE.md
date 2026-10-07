@@ -153,7 +153,7 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
   `check` | `options` | `since` | `attempts` | `query` | `observe` | `inspect` | `snapshot` | `verbs` |
-  `capabilities`), calls one
+  `capabilities`, and the five `actor_*` ops of `docs/actor-view.md`, through `actorWorld`), calls one
   `World` method, `verbCatalog` or returns `ENGINE_CAPABILITIES` (`src/engine/capabilities.ts`: the
   relations and senses the engine computes, which `validateSnapshot` holds coverage to), and
   validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`

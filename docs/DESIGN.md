@@ -32,7 +32,7 @@ What is built, nothing aspirational, one concept per file:
 - [persistence.md](persistence.md): the CLI and the world directory.
 - [perception.md](perception.md): queries, perception, and coverage.
 - [senses.md](senses.md): the sense table both queries and tests read.
-- [projection.md](projection.md): what one observer could sense, as one structured answer.
+- [projection.md](projection.md), [actor-view.md](actor-view.md): observation; one actor's side.
 - [liquids.md](liquids.md): liquid in props, and the `pour` verb.
 - [limits.md](limits.md): what the inn scenario could not express.
 - [limits-workshop.md](limits-workshop.md): what occupancy, impact and landing cannot express.

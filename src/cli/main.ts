@@ -13,6 +13,7 @@ import {
   type Result,
   type WorldEdit,
 } from "../api.js";
+import { actorWorld } from "../actor-world.js";
 import {
   CoverageSchema,
   RequestSchema,
@@ -217,6 +218,21 @@ function dispatch(request: Request): unknown {
   }
   if (request.op === "observe") {
     return world.observe(request.observer, request.since === undefined ? {} : { since: request.since });
+  }
+  if (request.op === "actor_observe") {
+    return actorWorld(world, request.actor).observe(request.since === undefined ? {} : { since: request.since });
+  }
+  if (request.op === "actor_inspect") {
+    return { inspection: actorWorld(world, request.actor).inspect(request.entity) };
+  }
+  if (request.op === "actor_options") {
+    return actorWorld(world, request.actor).options(request.refused === undefined ? {} : { refused: request.refused });
+  }
+  if (request.op === "actor_check") {
+    return actorWorld(world, request.actor).check(request.command);
+  }
+  if (request.op === "actor_command") {
+    return actorWorld(world, request.actor).command(request.command, { basedOn: request.based_on_version });
   }
   return world.snapshot();
 }

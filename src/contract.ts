@@ -39,6 +39,10 @@ export const CommandSchema = z.object({
   perceivers: z.boolean().optional(),
 }).strict();
 
+// What an actor op may send: the actor is the request's own, and `perceivers` is the world's record,
+// so a command that names either is invalid rather than quietly obeyed.
+const ActorCommandSchema = CommandSchema.pick({ command_id: true, verb: true, target: true, args: true }).strict();
+
 export const QuerySchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("fact"),
@@ -258,6 +262,39 @@ export const RequestSchema = z.discriminatedUnion("op", [
     actor: IdSchema,
     refused: z.boolean().optional(),
   }).strict(),
+  // One actor's side of the world (`actorWorld`): a runtime limited to these five ops learns only what
+  // that actor could sense or name.
+  z.object({
+    op: z.literal("actor_observe"),
+    world: z.string().min(1),
+    actor: IdSchema,
+    since: z.number().int().optional(),
+  }).strict(),
+  z.object({
+    op: z.literal("actor_inspect"),
+    world: z.string().min(1),
+    actor: IdSchema,
+    entity: IdSchema,
+  }).strict(),
+  z.object({
+    op: z.literal("actor_options"),
+    world: z.string().min(1),
+    actor: IdSchema,
+    refused: z.boolean().optional(),
+  }).strict(),
+  z.object({
+    op: z.literal("actor_check"),
+    world: z.string().min(1),
+    actor: IdSchema,
+    command: ActorCommandSchema,
+  }).strict(),
+  z.object({
+    op: z.literal("actor_command"),
+    world: z.string().min(1),
+    actor: IdSchema,
+    based_on_version: z.number().int().optional(),
+    command: ActorCommandSchema,
+  }).strict(),
 ]);
 
 export const EntitySchema = z.object({
@@ -443,6 +480,11 @@ export const CheckResponseSchema = z.object({
   reason_data: ReasonDataSchema.optional(),
 }).strict();
 
+// An actor command's verdict and what the actor sensed of it: never the snapshot, deltas or events.
+export const ActorCommandResponseSchema = CheckResponseSchema.extend({
+  observation: ProjectionSchema,
+}).strict();
+
 export const SinceResponseSchema = z.object({
   deltas: z.array(DeltaSchema),
   events: z.array(WorldEventSchema),
@@ -500,6 +542,7 @@ export const ResponseSchema = z.union([
   AnswerSchema,
   SnapshotSchema,
   CheckResponseSchema,
+  ActorCommandResponseSchema,
   SinceResponseSchema,
   AttemptsResponseSchema,
   TraceResponseSchema,
