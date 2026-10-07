@@ -31,16 +31,34 @@ export interface ObservedEntity {
   };
 }
 
+// An event names its entity when the observer sensed it by sight, smell or touch, which tell what it
+// was. One only heard says where the sound came from instead, `from`, and names nobody: a voice in the
+// dark carries no identity, and the source of a footstep is not told because it is in the world.
+export type HeardFrom = "here" | "next_door";
+
 export interface ObservedEvent {
   event_id: Id;
   tick: number;
   type: string;
-  entity: Id;
+  entity?: Id;
+  from?: HeardFrom;
   senses: string[];
   // A speech act's token and volume, present only when the observer heard it: one who only saw the
   // speaker has the event and the sense `sight`, and not what was said.
   utterance?: string;
   volume?: string;
+}
+
+// Where a sound came from, by the basis of the hearing that is true: the observer's own room, or
+// through a doorway. Any other basis for a true hearing is a rule this table does not know.
+export function heardFrom(basis: string): HeardFrom {
+  if (basis === "same_location") {
+    return "here";
+  }
+  if (basis === "adjacent_loud_event") {
+    return "next_door";
+  }
+  throw new TypeError(`Hearing is true with basis ${basis}`);
 }
 
 export interface Projection {

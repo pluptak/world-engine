@@ -10,8 +10,8 @@ step that shows it: `S` is `tests/scenario-watch.test.ts`. Nothing here is a pro
   lantern burns, not because someone is awake to see them go (S step B).
 - The lights are a prop of the room, not of its sources: a beat that darkens the gatehouse cannot douse a
   flame, so a lit lantern keeps the room lit and the chain has to ask first (S steps B, C).
-- Whoever hears a speech act is told who spoke: the heard `say` names the speaker's entity even in the
-  dark, and a voice carries no identity of its own to mistake or disguise (S step C).
+- A voice heard in the dark names nobody: the controller knows who spoke only because it issued the
+  command, and a voice carries no identity of its own to mistake or disguise (S step C).
 - Volume is a distance, not an intent: a whisper reaches within `NEAR_THRESHOLD_CM` of the speaker whoever
   the addressee is, so the one it is whispered to (`to`) hears it only by standing close, and a bystander
   who happens to stand as close hears it too (S step B).

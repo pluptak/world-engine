@@ -162,6 +162,46 @@ test("events since a version: a push in the hall is seen and heard, a pocket the
   }
 });
 
+test("footsteps heard in the dark name no walker; in the light the walker is named", (t) => {
+  for (const world of worlds(t)) {
+    const ann = idOf(world, "ann");
+    const bob = idOf(world, "bob");
+    const cal = idOf(world, "cal");
+    const row = (event: { type: string; senses: string[]; entity?: string; from?: string }) => [
+      event.type,
+      event.senses,
+      "entity" in event ? event.entity : null,
+      "from" in event ? event.from : null,
+    ];
+    const walk = (actor: string, to: { x: number; y: number }, id: string) =>
+      strictEqual(world.command({ command_id: id, actor, verb: "move", args: { to } }).status, "ok");
+
+    // In the lit hall bob sees ann walk, so the steps are hers.
+    let since = world.snapshot().version;
+    walk(ann, { x: -30, y: 0 }, "ann-steps");
+    const lit = world.observe(bob, { since }).events;
+    ok(lit.length > 0);
+    deepStrictEqual(
+      lit.map(row),
+      lit.map((event) => [event.type, ["sight", "hearing"], ann, null]),
+    );
+
+    // In the dark cellar bob hears cal's steps and cannot see him: they came from the room, from nobody.
+    strictEqual(world.command({ command_id: "go-down", actor: bob, verb: "move", args: { location: idOf(world, "cellar") } }).status, "ok");
+    walk(bob, { x: 50, y: 30 }, "to-cal");
+    since = world.snapshot().version;
+    walk(cal, { x: 90, y: 0 }, "cal-steps");
+    const dark = ProjectionSchema.parse(world.observe(bob, { since }));
+    ok(dark.events.length > 0);
+    deepStrictEqual(
+      dark.events.map(row),
+      dark.events.map((event) => [event.type, ["hearing"], null, "here"]),
+    );
+    // The omniscient record still says whose they were.
+    ok(world.since(since).events.every((event) => event.entity === cal || event.type === "move"));
+  }
+});
+
 test("store and memory worlds project byte for byte alike, and the CLI contract accepts it", (t) => {
   const [store, memory] = worlds(t);
   ok(store !== undefined && memory !== undefined);
@@ -177,4 +217,21 @@ test("an unknown observer is refused", (t) => {
       (error: unknown) => error instanceof WorldError && error.code === "no_such_entity",
     );
   }
+});
+
+test("the CLI contract holds an observed event to naming its entity or saying where it was heard from", () => {
+  const view = (event: Record<string, unknown>) =>
+    ProjectionSchema.safeParse({
+      observer: "e1",
+      version: 1,
+      unknown_senses: [],
+      entities: [],
+      events: [{ event_id: "ev1", tick: 0, type: "moved", senses: ["hearing"], ...event }],
+    }).success;
+  strictEqual(view({ entity: "e2" }), true);
+  strictEqual(view({ from: "here" }), true);
+  strictEqual(view({ from: "next_door" }), true);
+  strictEqual(view({}), false);
+  strictEqual(view({ entity: "e2", from: "here" }), false);
+  strictEqual(view({ from: "far_away" }), false);
 });

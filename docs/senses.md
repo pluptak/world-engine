@@ -35,3 +35,7 @@ whose cause chain starts at `take`, `give` or `put`; its hearing is `quiet`. A `
 `location_unlit`; the unknown ones are `uncovered_sense` and `engine_incapable`; the true ones are
 `same_location`, `same_location_lit`, `adjacent_open_door_lit`, `adjacent_loud_event` and
 `own_body`.
+
+A projection ([projection.md](projection.md)) names an event's entity only to an observer who sensed it
+by something besides hearing; one who only heard it is told `here` (`same_location`) or `next_door`
+(`adjacent_loud_event`) in place of the entity.

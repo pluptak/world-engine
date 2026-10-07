@@ -41,29 +41,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### A projection names only what the observer senses
-
-`limits-watch.md`: whoever hears a `say` is told who spoke, even in the dark. The same holds for every event
-only heard: `ObservedEvent.entity` names the source of a footstep in a dark room, the door of a knock the
-observer cannot see. `docs/projection.md` says a projection must not list what the observer cannot tell is
-there; its events do.
-
-- **Rule:** an event keeps its `entity` when the observer senses it by sight, smell or touch (event-form
-  `perceive`, as now). An event sensed by hearing alone has no `entity`; it carries `from` instead,
-  `"here"` (the observer's own room, basis `same_location`) or `"next_door"` (`adjacent_loud_event`). Make
-  `entity` optional in `ObservedEvent` (`src/engine/projection.ts`), `ProjectionSchema`
-  (`src/contract.ts`) and `observeThrough` (`src/api.ts`), which already reads the hearing answer and its
-  basis; `command(c, { observe: true })` shares the path.
-- **What does not change:** `Result.events`, `since`, `trace` and `perceivers` stay the omniscient record and
-  name every entity; `perceive` itself is untouched.
-- **Docs and tests:** `docs/projection.md`, `docs/speech.md`, `docs/senses.md`; `docs/limits-watch.md` loses
-  the speaker line and gains "a voice heard in the dark names nobody: the controller knows who spoke only
-  because it issued the command". `tests/speech.test.ts` and `tests/scenario-watch.test.ts` change to the
-  new rule (step C asserts no `entity`, `from: "here"`); a footstep heard in a dark room names no walker;
-  a lit room still names both. The property check in `tests/property.test.ts` gains: no view event whose
-  senses are exactly `["hearing"]` has an `entity`, every other has.
-- **Depends on:** nothing.
-
 ### Options: what an agent can do now
 
 A middleware choosing an agent's next action has to try verbs to learn which are possible. `check` dry-runs one

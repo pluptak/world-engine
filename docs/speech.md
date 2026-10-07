@@ -33,7 +33,8 @@ a speaker it cannot see.
 
 **The words stay out of a projection that did not hear them.** `ObservedEvent` carries `utterance` and
 `volume` only when the observer's hearing of that event is true; an observer who only saw the speaker has
-the event, with `sight` among its senses, and no token. `Result.events` and `since` stay the omniscient
+the event, with `sight` among its senses, and no token. An observer who only heard is not told who spoke
+either: its event has `from`, not `entity` ([projection.md](projection.md)). `Result.events` and `since` stay the omniscient
 record and carry the token, as they carry every event's data. `perceivers: true` names, by sense, who
 heard.
 

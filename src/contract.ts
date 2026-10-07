@@ -383,11 +383,14 @@ export const ProjectionSchema = z.object({
     event_id: IdSchema,
     tick: z.number().int(),
     type: z.string(),
-    entity: IdSchema,
+    entity: IdSchema.optional(),
+    from: z.enum(["here", "next_door"]).optional(),
     senses: z.array(z.string()),
     utterance: z.string().optional(),
     volume: z.string().optional(),
-  }).strict()),
+  }).strict().refine((event) => (event.entity === undefined) !== (event.from === undefined), {
+    message: "an observed event names its entity or says where it was heard from, never both or neither",
+  })),
 }).strict();
 
 export const InspectResponseSchema = z.object({

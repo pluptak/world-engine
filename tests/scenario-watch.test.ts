@@ -114,6 +114,14 @@ test("a knock stops the guard's wait, a shout crosses the door, and a lit lanter
   deepStrictEqual([w.ann, w.cal, w.dee, w.bob].map((who) => heard(w.world, who, knock.event_id)), [true, true, true, true]);
   strictEqual(w.world.query({ kind: "perceive", observer: w.ann, event_id: knock.event_id, sense: "sight" }).basis_code, "unseen");
   strictEqual(w.world.snapshot().tick, 5);
+  // A knock is never seen, so no hearer is told the door it came from, whether the room is theirs or the
+  // next one: only where it was heard from.
+  const knocked = (who: Id) => w.world.observe(who, { since: 0 }).events.filter((event) => event.type === "sounded");
+  deepStrictEqual(
+    [w.ann, w.bob].map((who) => knocked(who).map((event) => [event.senses, "entity" in event, event.from])),
+    [[[["hearing"], false, "here"]], [[["hearing"], false, "next_door"]]],
+  );
+  strictEqual(knock.entity, w.door);
 
   // B. ann shouts a token and bob in the yard hears it; she whispers another to cal, and dee, 300 cm
   // off, hears nothing of it.
@@ -165,8 +173,13 @@ test("with the lantern out the same chain darkens the gatehouse: still heard, no
   const projected = w.world.observe(w.ann, { since: w.world.snapshot().version - 1 });
   const overheard = projected.events.filter((candidate) => candidate.type === "say");
   deepStrictEqual(overheard.map((candidate) => candidate.utterance), ["who.goes"]);
-  // Hearing names the speaker, in the dark as in the light.
-  deepStrictEqual(overheard.map((candidate) => candidate.entity), [w.cal]);
+  // A voice heard in the dark names nobody: the controller knows it was cal only because it issued the
+  // command, and ann's view says only that the sound came from her own room.
+  deepStrictEqual(overheard.map((candidate) => [candidate.senses, "entity" in candidate, candidate.from]), [
+    [["hearing"], false, "here"],
+  ]);
+  // The omniscient record still names the speaker.
+  strictEqual(event.entity, w.cal);
 
   // The lights stay out once the lantern is lit: a flame, not the room's prop, gives light now.
   strictEqual(run(w.world, w.ann, "light", "lantern").status, "ok");

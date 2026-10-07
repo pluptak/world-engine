@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { canonicalJson, createWorld, verbs, type Id, type Result, type World } from "../src/index.js";
 import { replay } from "../src/store/file-store.js";
+import { ProjectionSchema } from "../src/contract.js";
 
 // Speech is a perception question the engine can answer; what it means is not. A speech act carries
 // an opaque token the caller made up, and the engine never reads it.
@@ -152,11 +153,53 @@ test("the words reach an observer's projection only when they heard", (t) => {
   const seen = far.events.find((event) => event.type === "say");
   ok(seen !== undefined);
   deepStrictEqual(seen.senses, ["sight"]);
+  // Whoever saw the speaker is told who it was, heard or not.
+  deepStrictEqual([heard.entity, seen.entity], [h.ann, h.ann]);
   strictEqual("utterance" in seen, false);
   strictEqual("volume" in seen, false);
   strictEqual(JSON.stringify(far).includes("secretword"), false);
   // The omniscient record keeps it, as it keeps every event's data.
   ok(h.world.since(before).events.some((event) => event.type === "say" && event.data.utterance === "secretword"));
+});
+
+test("a voice that is heard and not seen names nobody; one that is seen keeps its speaker", (t) => {
+  const h = hall(t);
+  const row = (event: { senses: string[]; entity?: Id; from?: string }) => [
+    event.senses,
+    "entity" in event ? event.entity : null,
+    "from" in event ? event.from : null,
+  ];
+  const said = (observer: Id, since: number) =>
+    h.world.observe(observer, { since }).events.filter((event) => event.type === "say").map(row);
+
+  // The lit hall: bob and ann see ann, and dan, behind the shut door, only hears her shout.
+  let before = h.world.snapshot().version;
+  strictEqual(say(h.world, h.ann, { utterance: "alarm", volume: "shout" }).status, "ok");
+  deepStrictEqual(said(h.bob, before), [[["sight", "hearing"], h.ann, null]]);
+  deepStrictEqual(said(h.ann, before), [[["sight", "hearing"], h.ann, null]]);
+  deepStrictEqual(said(h.dan, before), [[["hearing"], null, "next_door"]]);
+
+  // The dark cellar: fay hears erin and sees nothing, so her view says only that it came from her own
+  // room, and erin's view of her own words says no more.
+  before = h.world.snapshot().version;
+  const spoke = h.world.command(
+    { command_id: "cellar-say", actor: h.erin, verb: "say", args: { utterance: "anyone" } },
+    { observe: true },
+  );
+  strictEqual(spoke.status, "ok");
+  deepStrictEqual(said(h.fay, before), [[["hearing"], null, "here"]]);
+  deepStrictEqual(spoke.observation?.events.filter((event) => event.type === "say").map(row), [[["hearing"], null, "here"]]);
+  // Fay's whole view, which the CLI contract accepts, has nothing of erin in it.
+  const unseen = ProjectionSchema.parse(h.world.observe(h.fay, { since: before }));
+  strictEqual(unseen.entities.some((entity) => entity.id === h.erin), false);
+  strictEqual(unseen.events.some((event) => event.entity === h.erin), false);
+  ProjectionSchema.parse(spoke.observation);
+
+  // The omniscient record is untouched: it names the speaker, and so does the sense-by-sense list.
+  deepStrictEqual(
+    h.world.since(before).events.filter((event) => event.type === "say").map((event) => event.entity),
+    [h.erin],
+  );
 });
 
 test("a speaker's own view of the command carries the token", (t) => {

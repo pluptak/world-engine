@@ -9,6 +9,7 @@ import {
   type WorldEdit,
 } from "./engine/command.js";
 import {
+  heardFrom,
   inspectEntity,
   observeEntities,
   SENSES,
@@ -177,11 +178,15 @@ function observeThrough(
     options.since === undefined
       ? []
       : world.since(options.since).events.flatMap((event) => {
-          const senses = covered.filter(
-            (sense) =>
-              world.query({ kind: "perceive", observer, event_id: event.event_id, sense }).value ===
-              "true",
-          );
+          const senses: string[] = [];
+          let hearing = "";
+          for (const sense of covered) {
+            const answer = world.query({ kind: "perceive", observer, event_id: event.event_id, sense });
+            if (answer.value === "true") {
+              senses.push(sense);
+              hearing = sense === "hearing" ? answer.basis_code : hearing;
+            }
+          }
           return senses.length === 0
             ? []
             : [
@@ -189,7 +194,9 @@ function observeThrough(
                   event_id: event.event_id,
                   tick: event.tick,
                   type: event.type,
-                  entity: event.entity,
+                  ...(senses.length === 1 && senses[0] === "hearing"
+                    ? { from: heardFrom(hearing) }
+                    : { entity: event.entity }),
                   senses,
                   ...(event.type === "say" && senses.includes("hearing") && typeof event.data.utterance === "string"
                     ? { utterance: event.data.utterance, volume: String(event.data.volume) }
@@ -629,7 +636,7 @@ export type { Scenario, ScenarioEntry } from "./scenario.js";
 export { startProcesses } from "./engine/process.js";
 export type { Attempt, Command, Result, WorldEdit } from "./engine/command.js";
 export type { Answer, Query } from "./engine/query.js";
-export type { Inspection, ObservedEntity, ObservedEvent, Projection } from "./engine/projection.js";
+export type { HeardFrom, Inspection, ObservedEntity, ObservedEvent, Projection } from "./engine/projection.js";
 export type { TraceQuery } from "./engine/trace.js";
 export type {
   Coverage,
