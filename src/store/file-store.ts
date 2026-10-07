@@ -1,4 +1,18 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readdirSync,
+  readFileSync,
+  readSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { apply } from "../engine/pipeline.js";
@@ -127,7 +141,10 @@ function emptyHead(): Head {
 }
 
 function readSnapshot(path: string): Snapshot {
-  const value: unknown = JSON.parse(readFileSync(path, "utf8"));
+  return checkedSnapshot(JSON.parse(readFileSync(path, "utf8")), path);
+}
+
+function checkedSnapshot(value: unknown, path: string): Snapshot {
   if (
     !isRecord(value) ||
     typeof value.templates_hash !== "string" ||
@@ -228,18 +245,237 @@ function readLogEntries(dir: string): LogEntry[] {
   return entries;
 }
 
+// Checkpoints are a cache of the log, never a source of truth: every CHECKPOINT_EVERY accepted
+// commands `submit` also writes the snapshot it just made as `checkpoints/<version>-<next_seq>.json`,
+// bound to the exact bytes of the log that made it (their length, line count and SHA-256), to the
+// world's `initial.json` (its SHA-256, since a log means nothing without where it started) and to the
+// template set. A read that wants history from some version on starts from the newest checkpoint at
+// or before it and replays only the log after it, so its cost no longer grows with the world's age.
+// One that does not parse, is for another set, is ahead of the log, or whose bytes are not the log's
+// own prefix is ignored, and with none usable the read replays from `initial.json` as it always did.
+const CHECKPOINT_EVERY = 256;
+const checkpointsDirectory = "checkpoints";
+const CHECKPOINT_NAME = /^(\d+)-(\d+)\.json$/;
+
+function digest(bytes: Buffer): string {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
+function writeCheckpoint(dir: string, snapshot: Snapshot, logBytes: number): void {
+  const log = readFileSync(join(dir, snapshots.log)).subarray(0, logBytes);
+  let lines = 0;
+  for (const byte of log) {
+    lines += byte === 10 ? 1 : 0;
+  }
+  const folder = join(dir, checkpointsDirectory);
+  mkdirSync(folder, { recursive: true });
+  atomicWrite(
+    join(folder, `${snapshot.version}-${snapshot.next_seq}.json`),
+    canonicalJson({
+      version: snapshot.version,
+      templates_hash: snapshot.templates_hash,
+      log_bytes: log.length,
+      log_lines: lines,
+      log_sha256: digest(log),
+      initial_sha256: digest(readFileSync(join(dir, snapshots.initial))),
+      snapshot,
+    }),
+  );
+}
+
+function dropCheckpoints(dir: string): void {
+  rmSync(join(dir, checkpointsDirectory), { recursive: true, force: true });
+}
+
+interface Checkpoint {
+  snapshot: Snapshot;
+  log_bytes: number;
+  log_lines: number;
+}
+
+function readCheckpoint(
+  path: string,
+  version: number,
+  nextSeq: number,
+  hash: string,
+  log: Buffer,
+  initialDigest: string,
+): Checkpoint | null {
+  try {
+    const value: unknown = JSON.parse(readFileSync(path, "utf8"));
+    if (
+      !isRecord(value) ||
+      value.version !== version ||
+      value.templates_hash !== hash ||
+      !Number.isSafeInteger(value.log_bytes) ||
+      !Number.isSafeInteger(value.log_lines) ||
+      typeof value.log_sha256 !== "string" ||
+      value.initial_sha256 !== initialDigest
+    ) {
+      return null;
+    }
+    const bytes = value.log_bytes as number;
+    const prefix = log.subarray(0, bytes);
+    if (bytes < 0 || bytes > log.length || (bytes > 0 && log[bytes - 1] !== 10) || digest(prefix) !== value.log_sha256) {
+      return null;
+    }
+    const snapshot = checkedSnapshot(value.snapshot, path);
+    if (snapshot.version !== version || snapshot.next_seq !== nextSeq || snapshot.templates_hash !== hash) {
+      return null;
+    }
+    return { snapshot, log_bytes: bytes, log_lines: value.log_lines as number };
+  } catch {
+    return null;
+  }
+}
+
+// Where a replay begins: a snapshot and the log entries after it (each with its line number), and
+// whether that snapshot is `initial.json` itself.
+interface ReplayStart {
+  snapshot: Snapshot;
+  entries: Array<{ entry: LogEntry; line: number }>;
+  fromInitial: boolean;
+}
+
+function initialStart(dir: string, templates: TemplateRegistry): ReplayStart {
+  const snapshot = readSnapshot(join(dir, snapshots.initial));
+  assertTemplates(snapshot, templates);
+  return {
+    snapshot,
+    entries: readLogEntries(dir).map((entry, index) => ({ entry, line: index + 1 })),
+    fromInitial: true,
+  };
+}
+
+// The newest checkpoint the caller can use (`accept` sees its version and `next_seq`, both in its
+// name, so nothing is parsed to choose), or `initial.json` when none is usable.
+function replayStart(
+  dir: string,
+  templates: TemplateRegistry,
+  accept: (version: number, nextSeq: number) => boolean,
+): ReplayStart {
+  let names: string[];
+  try {
+    names = readdirSync(join(dir, checkpointsDirectory));
+  } catch {
+    return initialStart(dir, templates);
+  }
+  const candidates = names
+    .flatMap((name) => {
+      const found = CHECKPOINT_NAME.exec(name);
+      return found === null ? [] : [{ name, version: Number(found[1]), next: Number(found[2]) }];
+    })
+    .filter((candidate) => accept(candidate.version, candidate.next))
+    .sort((left, right) => right.version - left.version);
+  if (candidates.length === 0) {
+    return initialStart(dir, templates);
+  }
+  const log = readFileSync(join(dir, snapshots.log));
+  const hash = templatesHash(templates);
+  const initialDigest = digest(readFileSync(join(dir, snapshots.initial)));
+  for (const candidate of candidates) {
+    const checkpoint = readCheckpoint(
+      join(dir, checkpointsDirectory, candidate.name),
+      candidate.version,
+      candidate.next,
+      hash,
+      log,
+      initialDigest,
+    );
+    if (checkpoint === null) {
+      continue;
+    }
+    const entries: ReplayStart["entries"] = [];
+    const lines = log.subarray(checkpoint.log_bytes).toString("utf8").split(/\r?\n/);
+    for (const text of lines) {
+      if (text.length > 0) {
+        const line = checkpoint.log_lines + entries.length + 1;
+        entries.push({ entry: parseLogLine(text, line), line });
+      }
+    }
+    return { snapshot: checkpoint.snapshot, entries, fromInitial: false };
+  }
+  return initialStart(dir, templates);
+}
+
+// events.jsonl only grows, so what a handle has parsed of it is kept, with the bytes before its end
+// (an anchor) to notice a file that was rewritten rather than extended. A change in size or time
+// reads just the new lines; anything else reads the file again.
+const ANCHOR_BYTES = 256;
+interface EventCache {
+  size: number;
+  mtimeMs: number;
+  anchor: Buffer;
+  lines: number;
+  events: WorldEvent[];
+}
+const eventCaches = new Map<string, EventCache>();
+
+function parseEventLines(text: string, firstLine: number): WorldEvent[] {
+  const events: WorldEvent[] = [];
+  for (const [index, line] of text.split(/\r?\n/).entries()) {
+    if (line.length > 0) {
+      events.push(parseEventLine(line, firstLine + index));
+    }
+  }
+  return events;
+}
+
+function cachedEvents(dir: string): readonly WorldEvent[] {
+  const path = join(dir, snapshots.events);
+  const stat = statSync(path);
+  const kept = eventCaches.get(path);
+  if (kept !== undefined && kept.size === stat.size && kept.mtimeMs === stat.mtimeMs) {
+    return kept.events;
+  }
+  // A file that only grew is read from the anchor on; anything else, whole.
+  let base: EventCache | undefined;
+  let tail: Buffer | undefined;
+  if (kept !== undefined && stat.size > kept.size) {
+    const from = Math.max(0, kept.size - ANCHOR_BYTES);
+    const bytes = Buffer.alloc(stat.size - from);
+    const fd = openSync(path, "r");
+    try {
+      readSync(fd, bytes, 0, bytes.length, from);
+    } finally {
+      closeSync(fd);
+    }
+    if (bytes.subarray(0, kept.size - from).equals(kept.anchor)) {
+      base = kept;
+      tail = bytes.subarray(kept.size - from);
+    }
+  }
+  tail ??= readFileSync(path);
+  const fresh = parseEventLines(tail.toString("utf8"), (base?.lines ?? 0) + 1);
+  const events = base === undefined ? fresh : [...base.events, ...fresh];
+  // A file that does not end on a line is being written, or damaged: answer from it, keep nothing.
+  if (tail.length > 0 && tail[tail.length - 1] !== 10) {
+    eventCaches.delete(path);
+    return events;
+  }
+  const seen = base === undefined ? tail : Buffer.concat([base.anchor, tail]);
+  eventCaches.set(path, {
+    size: (base?.size ?? 0) + tail.length,
+    mtimeMs: stat.mtimeMs,
+    anchor: Buffer.from(seen.subarray(Math.max(0, seen.length - ANCHOR_BYTES))),
+    lines: events.length,
+    events,
+  });
+  return events;
+}
+
 function snapshotAtVersion(
   dir: string,
   version: number,
   registry: TemplateRegistry,
 ): Snapshot | null {
-  let snapshot = readSnapshot(join(dir, snapshots.initial));
-  assertTemplates(snapshot, registry);
+  const start = replayStart(dir, registry, (candidate) => candidate <= version);
+  let snapshot = start.snapshot;
   if (snapshot.version > version) {
     return null;
   }
 
-  for (const [index, entry] of readLogEntries(dir).entries()) {
+  for (const { entry, line } of start.entries) {
     if (snapshot.version === version) {
       return snapshot;
     }
@@ -248,7 +484,7 @@ function snapshotAtVersion(
     }
     const result = apply(snapshot, registry, entry.command);
     if (result.status !== "ok") {
-      throw new TypeError(`Accepted command failed during replay at line ${index + 1}`);
+      throw new TypeError(`Accepted command failed during replay at line ${line}`);
     }
     snapshot = result.snapshot;
   }
@@ -354,6 +590,7 @@ export function load(dir: string, registry?: TemplateRegistry, setIsTheWorlds = 
     ) {
       throw new WorldError("templates_changed", "Template hash mismatch");
     }
+    dropCheckpoints(dir);
     atomicWrite(initialPath, canonicalJson({ ...readSnapshot(initialPath), templates_hash: frozenHash }));
     atomicWrite(join(dir, snapshots.current), canonicalJson({ ...snapshot, templates_hash: frozenHash }));
     writeHead(dir, { ...head, templates_hash: frozenHash });
@@ -513,6 +750,14 @@ export function submit(
     ok_entries: okEntries,
     templates_hash: templatesHash(templates),
   });
+  // The cache is written last and may fail without costing the command anything.
+  if (result.status === "ok" && result.snapshot.version % CHECKPOINT_EVERY === 0) {
+    try {
+      writeCheckpoint(dir, result.snapshot, logStat.size);
+    } catch {
+      // A missing checkpoint only means a longer replay.
+    }
+  }
 
   return result;
 }
@@ -520,16 +765,8 @@ export function submit(
 // The stored event list in file order: what submit() appended, one canonical line per event.
 export function readEvents(dir: string): WorldEvent[] {
   assertWorldExists(dir);
-  const events: WorldEvent[] = [];
-  for (const [index, line] of readFileSync(join(dir, snapshots.events), "utf8")
-    .split(/\r?\n/)
-    .entries()) {
-    if (line.length === 0) {
-      continue;
-    }
-    events.push(parseEventLine(line, index + 1));
-  }
-  return events;
+  // A copy of the list the handle keeps; the events in it are shared and never written to.
+  return [...cachedEvents(dir)];
 }
 
 function parseEventLine(line: string, lineNumber: number): WorldEvent {
@@ -562,6 +799,7 @@ export function writeWorldTemplates(dir: string, registry: TemplateRegistry): vo
   const hash = templatesHash(registry);
   const initial = readSnapshot(join(dir, snapshots.initial));
   const snapshot = readSnapshot(join(dir, snapshots.current));
+  dropCheckpoints(dir);
   atomicWrite(join(dir, snapshots.templates), canonicalJson(registry));
   atomicWrite(join(dir, snapshots.initial), canonicalJson({ ...initial, templates_hash: hash }));
   atomicWrite(join(dir, snapshots.current), canonicalJson({ ...snapshot, templates_hash: hash }));
@@ -612,27 +850,48 @@ export function replayUntilEvent(
   registry?: TemplateRegistry,
 ): { before: Snapshot; snapshot: Snapshot; events: WorldEvent[] } | null {
   const templates = activeRegistry(dir, registry);
-  let snapshot = readSnapshot(join(dir, snapshots.initial));
-  assertTemplates(snapshot, templates);
+  // Event ids number the same counter the snapshot's `next_seq` does, so a checkpoint whose
+  // `next_seq` is at or below the event's number was made before the command that wrote it.
+  const number = /^ev(\d+)$/.exec(eventId);
+  const start =
+    number === null
+      ? initialStart(dir, templates)
+      : replayStart(dir, templates, (_, next) => next <= Number(number[1]));
+  let snapshot = start.snapshot;
   const events: WorldEvent[] = [];
 
-  for (const [index, entry] of readLogEntries(dir).entries()) {
+  for (const { entry, line } of start.entries) {
     if (entry.status !== "ok") {
       continue;
     }
     const before = snapshot;
     const result = apply(snapshot, templates, entry.command);
     if (result.status !== "ok") {
-      throw new TypeError(`Accepted command failed during replay at line ${index + 1}`);
+      throw new TypeError(`Accepted command failed during replay at line ${line}`);
     }
     events.push(...result.events);
     snapshot = result.snapshot;
     if (result.events.some((event) => event.event_id === eventId)) {
-      return { before, snapshot, events };
+      return { before, snapshot, events: start.fromInitial ? events : eventsThrough(dir, eventId) ?? events };
     }
   }
 
   return null;
+}
+
+// Every event up to the end of the command that wrote this one, from the events file: what a replay
+// from the start would have collected, without replaying. Null when the file does not hold it.
+function eventsThrough(dir: string, eventId: Id): WorldEvent[] | null {
+  const stored = cachedEvents(dir);
+  const at = stored.findIndex((event) => event.event_id === eventId);
+  if (at < 0) {
+    return null;
+  }
+  let end = at;
+  while (end + 1 < stored.length && stored[end + 1]!.command_id === stored[at]!.command_id) {
+    end += 1;
+  }
+  return stored.slice(0, end + 1);
 }
 
 // The cause chain for one event or one entity field, folded from the whole log in command
@@ -646,10 +905,14 @@ export function trace(
 ): { events: WorldEvent[] } {
   const templates = activeRegistry(dir, registry);
   const current = load(dir, templates);
-  const initial = readSnapshot(join(dir, snapshots.initial));
+  const initial = readInitialMeta(join(dir, snapshots.initial));
   assertTemplates(current, templates);
   assertTemplates(initial, templates);
-  let snapshot = initial;
+  // A chain of events needs no deltas, so it needs no replay either; the history of a field does.
+  if ("event_id" in query) {
+    return { events: traceQuery([...cachedEvents(dir)], [], query) };
+  }
+  let snapshot = readSnapshot(join(dir, snapshots.initial));
   const deltas: Delta[] = [];
   const events: WorldEvent[] = [];
   for (const [index, entry] of readLogEntries(dir).entries()) {
@@ -706,17 +969,17 @@ export function since(
     throw new WorldError("future_version", `Version ${version} is ahead of ${current.version}`);
   }
 
-  let snapshot = readSnapshot(join(dir, snapshots.initial));
-  assertTemplates(snapshot, templates);
+  const start = replayStart(dir, templates, (candidate) => candidate <= version);
+  let snapshot = start.snapshot;
   const deltas: Delta[] = [];
   const events: WorldEvent[] = [];
-  for (const [index, entry] of readLogEntries(dir).entries()) {
+  for (const { entry, line } of start.entries) {
     if (entry.status !== "ok") {
       continue;
     }
     const result = apply(snapshot, templates, entry.command);
     if (result.status !== "ok") {
-      throw new TypeError(`Accepted command failed during replay at line ${index + 1}`);
+      throw new TypeError(`Accepted command failed during replay at line ${line}`);
     }
     if (snapshot.version >= version) {
       deltas.push(...result.deltas);

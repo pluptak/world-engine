@@ -20,6 +20,7 @@ npm run world -- init data/w1 scenarios/bottle.json                          # c
 echo '{"op":"snapshot","world":"data/w1"}' | npm run world --silent          # one JSON request on stdin
 npm run bench                                   # 10k store commands; ms/cmd for the first and last 1k
 npm run bench:scale                             # 500 entities, 20 rooms: ms/cmd and a pipeline/validate/rest split
+npm run bench:reads                             # cost of since/observe/query/trace as the log grows to 10k
 ```
 
 There's no lint step and no build output (`noEmit`; everything runs through `tsx`). Imports use `.js`
@@ -109,7 +110,9 @@ suffixes (NodeNext).
   downgrades a breaking one to `invalid` with the rule's code, so a verb bug is logged but never
   written; no verb leans on it, which the property test holds (an `apply` that is ok must stay ok). `load` trusts the snapshot when the head matches the file sizes and `ok_entries`, without
   reading the log; otherwise it counts `ok` entries, replays and rewrites the events and head if they
-  disagree. Store queries read `events.jsonl`; `since`, `trace` and event-time perceive replay. A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
+  disagree. Store queries read `events.jsonl`; `since` and event-time perceive replay only from the newest usable
+checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the log bytes, `initial.json` and template set;
+`docs/persistence.md`), and a `trace` of a field replays the whole log. A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
   surface as CLI issue codes.
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with

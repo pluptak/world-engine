@@ -284,6 +284,24 @@ function storeWorld(
   // left behind.
   let active = registry;
 
+  // What happened at an event never changes once it has happened, and one observation asks about the
+  // same event once per sense, so the last few replays are kept, newest last.
+  const replays = new Map<string, NonNullable<ReturnType<typeof replayUntilEvent>>>();
+  const replayedAt = (eventId: Id): ReturnType<typeof replayUntilEvent> => {
+    const kept = replays.get(eventId);
+    if (kept !== undefined) {
+      return kept;
+    }
+    const replayed = replayUntilEvent(dir, eventId, active);
+    if (replayed !== null) {
+      if (replays.size >= 16) {
+        replays.delete(replays.keys().next().value!);
+      }
+      replays.set(eventId, replayed);
+    }
+    return replayed;
+  };
+
   const world: World = {
     command: (command, options) =>
       withObservation(world, active, command.actor, submit(dir, command, options?.basedOn, active), options),
@@ -338,13 +356,14 @@ function storeWorld(
       }
       writeWorldTemplates(dir, target);
       active = target;
+      replays.clear();
       return load(dir, active);
     },
     query: (request) => {
       // An event-form perceive reads the world at either end of that event's command: perceptible
       // if perceptible before or after it. The entity form and unknown events read the present.
       if (request.kind === "perceive" && request.event_id !== undefined) {
-        const atEvent = replayUntilEvent(dir, request.event_id, active);
+        const atEvent = replayedAt(request.event_id);
         if (atEvent !== null) {
           return queryAtEvent(atEvent.before, atEvent.snapshot, active, atEvent.events, request);
         }

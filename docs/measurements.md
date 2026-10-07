@@ -4,6 +4,31 @@ Numbers taken from this code, kept apart from the backlog (which holds only what
 the docs that say how the engine behaves. Each is a baseline for the machine named, not a threshold; a
 new measurement is added here with the command that produced it, and a change that moves one updates it.
 
+## Store: cost of a read
+
+`npm run bench:reads` (`scripts/bench.ts --reads`): the four-entity world with a watcher beside the actor,
+driven by alternating take and drop, and at each log length one call of each read a controller makes,
+each timed once. `since` is `since(version - 10)`; `observe` is the watcher's, `since(version - 3)`, which
+asks an event-form query for each event and each covered sense; `perceive` is one event-form query of an
+event the observation did not ask about (a cold replay); `trace` is of an event's chain, or of a field's
+history. Same machine as below, ms:
+
+| log (accepted commands) | 1000 | 5000 | 10000 |
+|---|---|---|---|
+| `since`, before / after checkpoints | 49 / 15 | 181 / 9 | 343 / 4 |
+| `observe`, before / after | 509 / 102 | 2227 / 73 | 4486 / 44 |
+| event-form `perceive`, before / after | 41 / 3 | 168 / 9 | 324 / 5 |
+| `trace` of an event's chain, before / after | 41 / 2 | 181 / 3 | 366 / 3 |
+| `trace` of a field's history, before / after | 41 / 52 | 181 / 213 | 366 / 379 |
+| `attempts` (reads the log, replays nothing), before / after | 4.5 / 4 | 7 / 7 | 12 / 13 |
+
+Before, every read replayed the whole log, so each grew in step with it and an `observe` of three
+commands cost 4.5 s at ten thousand. After, the replay is at most 256 commands from the nearest
+checkpoint, so `since`, `perceive` and `observe` stay flat (the small-log rows are dominated by the
+process still warming up). A field's history is the one read that still replays everything: its deltas
+are not stored. The cost of a checkpoint is one more write of the snapshot, and one read of the log, in
+every 256 commands.
+
 ## Store: cost of a command
 
 `npm run bench:scale` (`scripts/bench.ts --scale`) runs 10k mixed commands (open, take,

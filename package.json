@@ -14,6 +14,7 @@
     "check": "npm run typecheck && npm test",
     "bench": "node --import tsx scripts/bench.ts",
     "bench:scale": "node --import tsx scripts/bench.ts --scale",
+    "bench:reads": "node --import tsx scripts/bench.ts --reads",
     "world": "node --import tsx src/cli/main.ts"
   },
   "devDependencies": {

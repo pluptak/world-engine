@@ -41,34 +41,25 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Reads that do not replay the whole log
+### The history of a field without replaying the log
 
-A store world answers `since`, `observe` with `since`, an event-form `query` and `trace` by replaying every
-accepted command from `initial.json` (`since`, `replayUntilEvent`, `trace` in `src/store/file-store.ts`), and
-`observe` asks an event-form `query` for each event and each sense, each a replay of its own. A controller
-that observes after every command pays a cost that grows with the length of the world's whole history.
-Nothing has measured it; measure first.
+`docs/measurements.md` (cost of a read): after checkpoints, `trace` of a field's history is the one read that
+still replays the whole log (379 ms at ten thousand commands), because the deltas it follows are not stored
+anywhere but in the replay.
 
-- **Measure:** `npm run bench:scale` gains a read phase after the writes (or `bench:reads`): time per call of
-  `since(version - 10)`, `observe(agent, { since })` over a few events, one event-form `perceive`, and `trace`,
-  at a log of 1k, 5k and 10k accepted commands. The numbers, with the machine, go in
-  `docs/measurements.md` ("Store: cost of a read"), before and after.
-- **Fix, if the numbers show what the code suggests (cost linear in the log):** derived checkpoints.
-  Every 256 accepted commands `submit` also writes `checkpoints/<ok_entries>.json`, the canonical snapshot at
-  that version. `since`, `replayUntilEvent`, `trace` and `attempts` start from the nearest checkpoint at or
-  below the version they need instead of `initial.json`, and an event-form query finds its event's command
-  from `events.jsonl` and the log instead of folding to it from the start.
-- **A checkpoint is a cache, never a source of truth:** it names the `templates_hash` and version it was made
-  at, and is ignored if either disagrees with the world, if it is ahead of the log (a crash between the two
-  writes), or if it does not parse; with no usable checkpoint the answer is the full replay's, byte for byte
-  (`canonicalJson`). `upgradeTemplates` and a settled template move drop them. `fork` and memory worlds
-  are unaffected.
-- **Tests** (`tests/checkpoint.test.ts`): answers with checkpoints equal answers without them (delete the
-  directory, truncate a checkpoint, plant one from another world, plant one ahead of the log) for `since`,
-  event-form `perceive`, `trace` and `attempts` over a store world driven by the property generator; a world
-  reopened by a second handle uses and extends them; the read phase of the bench shows cost flat in log length.
-- **Not in this item:** compacting or truncating the log, and a delta log for writes (see
-  `docs/measurements.md` for why that is separate).
+- **Store the deltas:** `deltas.jsonl`, one canonical line per delta, appended by `submit` beside the events and
+  written before the snapshot, with its byte size in `head.json` (`deltas_bytes`). A stored world made before
+  it has none: `load` rebuilds it from the log as it rebuilds events, and `schema_version` goes to 6 with an
+  upgrade path that does exactly that, so older worlds open.
+- **Read it like the events:** a handle parses it once and extends it by the lines appended since
+  (`cachedEvents` in `src/store/file-store.ts` is the pattern, with its anchor check), and `trace` of an entity's
+  field is answered from the cached events and deltas with no replay. `since`'s deltas can then come from the
+  file as well when the checkpoints are not needed.
+- **Crash rules:** the recovery in `load` compares deltas as it does events, and a mismatch rebuilds both from
+  the log. Replay stays the source of truth.
+- **Tests and numbers:** answers equal the replay's byte for byte (property-driven store world, with the file
+  deleted and truncated); a world at schema 5 opens and gains the file; `bench:reads` shows the field trace flat.
+  The numbers replace the field-history row in `docs/measurements.md`.
 - **Depends on:** nothing.
 
 ### A projection names only what the observer senses

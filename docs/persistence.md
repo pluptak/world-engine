@@ -14,6 +14,8 @@ A world directory holds:
 - `log.jsonl`, every command as an attempt, refused ones included: its base version, the version it
   was decided at, status, and any reason code, data and candidates;
 - `events.jsonl`, every emitted event, which queries read instead of replaying;
+- `checkpoints/`, a cache and never a source of truth, made by `submit` after the head: every 256
+  accepted commands the snapshot just written as `<version>-<next_seq>.json`;
 - `head.json`, written last: both JSONL files' sizes, all and accepted entry counts, and the
   template hash, so opening a world detects a crash without reading the log.
 
@@ -23,6 +25,22 @@ breaks an invariant is logged `invalid` and never written; that is a net for ver
 property test fails when a command the engine accepts is ever caught by it. A stale command is
 re-evaluated against the current snapshot and becomes `preempted` when it would have succeeded at
 its base version.
+
+**Checkpoints.** A read that wants history from some version on (`since`, an event-form `query`, the
+snapshot a stale command was based on) starts from the newest checkpoint at or before that point and
+replays only the log after it, not the log from the start. A checkpoint carries the version, the template
+hash, the length, line count and SHA-256 of the log bytes that made it, and the SHA-256 of
+`initial.json`; one that does not parse, names another template set, is ahead of the log, or whose
+log prefix or initial snapshot is not the world's own is ignored, and with none usable the read replays
+from `initial.json` as before, with the same answer byte for byte. A new template set (`upgradeTemplates`,
+or a settled move) removes them, so the next ones are made under it. An event-form `query` finds its
+event's checkpoint by number alone, since event ids count the same sequence as the snapshot's
+`next_seq`, and the events it needs for cause chains come from `events.jsonl`, which a handle parses once
+and then extends by the lines appended since (checked against the bytes just before them, so a file
+that was rewritten is read again). A store world keeps its last sixteen event replays, so one observation
+asks the log once per event rather than once per sense. `trace` of an event's chain reads `events.jsonl`
+alone; `trace` of a field's history still replays the whole log, because the deltas it needs are not
+stored. What a read costs as the log grows is in [measurements.md](measurements.md).
 
 A world loads the template set it was created with, so editing `templates/` reaches new worlds only.
 `upgradeTemplates` moves a live world to a new set and refuses if a template lost a field an entity
