@@ -116,7 +116,9 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
   surface as CLI issue codes.
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
-  `command`/`edit`/`check`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`;
+  `command`/`edit`/`check`/`options`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`;
+  `options` (`src/options.ts`) dry-runs every non-author verb against everything the actor can name
+  (`addressable`) and sorts the verdicts into `ready`, `needs_args` and, on request, `blocked`;
   `attempts(version)` is every submission decided at that version or later, ok or not, as an
   `Attempt` (`engine/command.ts`): a store world's log lines, a memory world's own record; `observe` is
   `src/engine/projection.ts` over the world's own `snapshot`, `since` and event-form `query`,
@@ -150,7 +152,7 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   same sequence of calls writes the same log through any number of handles. A memory world keeps
   past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
-  `check` | `since` | `attempts` | `query` | `observe` | `inspect` | `snapshot` | `verbs` |
+  `check` | `options` | `since` | `attempts` | `query` | `observe` | `inspect` | `snapshot` | `verbs` |
   `capabilities`), calls one
   `World` method, `verbCatalog` or returns `ENGINE_CAPABILITIES` (`src/engine/capabilities.ts`: the
   relations and senses the engine computes, which `validateSnapshot` holds coverage to), and

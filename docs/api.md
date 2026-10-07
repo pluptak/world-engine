@@ -1,14 +1,22 @@
 # The library API
 
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)`, `openWorld(dir)`, and
-`memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `since`, `attempts`,
-`trace`, `beat`, `upgradeTemplates`, `query`, `observe` and `inspect`
+`memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `options`, `since`,
+`attempts`, `trace`, `beat`, `upgradeTemplates`, `query`, `observe` and `inspect`
 ([projection.md](projection.md)), `snapshot`, `entity`, `id` and `fork`. `verbs()` is the verb catalog and
 `ENGINE_CAPABILITIES` what the engine computes; the CLI answers both (`op` `verbs`, `capabilities`).
 Store worlds share a directory, so handles see each other; memory worlds hold their own. A missing
 directory, a changed hash, or a bad version is a `WorldError` with a code.
 
 - `check` agrees with `command` on the verdict without writing or logging.
+- `options(actor, { refused? })` is what an actor can try now (`src/options.ts`): `ready`, the commands
+  (`{ verb, target? }`) a dry run accepts as they stand; `needs_args`, the verbs it cannot judge
+  without args (`give`, `put`, `move`, `say`, `wait`); and with `refused`, `blocked`, the rest with their
+  `reason_code`. It tries every verb but the author's against each thing the actor could name
+  (`addressable`, [perception.md](perception.md): nothing hidden or out of sight and reach, an anchor
+  never) and, for a verb that takes no target, once without one. Sorted by verb, then target. A
+  destroyed body or a thing that is no agent has none; an unknown actor is `no_such_entity`. A read:
+  nothing is logged. The CLI's `options` op takes `actor` and `refused`.
 - `since` gives the deltas and events of every ok command after a version; `attempts` lists every
   submission decided at a version or later, refused, invalid, unresolved and preempted ones
   included, with the command, its base, the version it was decided at, its status, reason code and

@@ -1,4 +1,5 @@
 import type { CommandOptions, ObserveOptions, World } from "./api.js";
+import type { Options, OptionsRequest } from "./options.js";
 import type { Command, Result } from "./engine/command.js";
 import { gropable } from "./engine/query.js";
 import type { Inspection, Projection } from "./engine/projection.js";
@@ -32,6 +33,8 @@ export interface ActorWorld {
   observe(options?: ObserveOptions): Projection;
   inspect(entity: Id): Inspection | null;
   check(command: ActorCommand): ActorCheck;
+  // What it can try now, by verb and target, from what it can name: no reason carries data.
+  options(request?: OptionsRequest): Options;
   command(command: ActorCommand, options?: Pick<CommandOptions, "basedOn">): ActorResult;
 }
 
@@ -91,6 +94,7 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
     observe: (options) => world.observe(actor, options),
     inspect: (entity) => world.inspect(actor, entity),
     check: (command) => verdict(world.check(toCommand(command)), world.observe(actor)),
+    options: (request) => world.options(actor, request),
     command: (command, options) => {
       const result = world.command(toCommand(command), { ...options, observe: true });
       const observation = result.observation ?? world.observe(actor);

@@ -37,7 +37,7 @@ with `since` the version it was applied to: its own events as the actor sensed t
 was refused. The CLI's `command` op takes `observe` alike.
 
 `actorWorld(world, actor)` (`src/actor-world.ts`) is one actor's side of a world, for a controller
-that must not see the rest: `observe`, `inspect`, `check` and `command`, all as that actor. A
+that must not see the rest: `observe`, `inspect`, `check`, `options` and `command`, all as that actor. A
 command's actor is the view's own and `perceivers` is never sent. A result is the verdict and
 `observation` alone, no `snapshot`, `deltas` or `events`, and a `reason_data` value naming an
 entity the actor could not name itself (`addressable`: its view, or what it could grope for) is

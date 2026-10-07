@@ -212,6 +212,9 @@ function dispatch(request: Request): unknown {
   if (request.op === "inspect") {
     return { inspection: openWorld(request.world).inspect(request.observer, request.entity) };
   }
+  if (request.op === "options") {
+    return world.options(request.actor, request.refused === undefined ? {} : { refused: request.refused });
+  }
   if (request.op === "observe") {
     return world.observe(request.observer, request.since === undefined ? {} : { since: request.since });
   }

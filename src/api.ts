@@ -46,6 +46,7 @@ import {
   writeWorldTemplates,
 } from "./store/file-store.js";
 import { loadTemplates, missingCompanions, templatesHash, type TemplateRegistry } from "./templates.js";
+import { listOptions, type Options, type OptionsRequest } from "./options.js";
 
 const templatesDirectory = fileURLToPath(new URL("../templates/", import.meta.url));
 
@@ -100,6 +101,9 @@ export interface World {
   beat(commands: Command[], options?: CommandOptions): Result[];
   edit(edit: WorldEdit, options?: EditOptions): Result;
   check(command: Command): CheckResult;
+  // What the actor can try now: the commands that would be accepted, the verbs that need args to be
+  // judged, and with `refused` the ones that would be refused and why. Nothing is logged.
+  options(actor: Id, options?: OptionsRequest): Options;
   since(version: number): SinceResult;
   // Every submission decided at that version or later, ok or not, with its status and reason.
   attempts(version: number): Attempt[];
@@ -332,6 +336,10 @@ function storeWorld(
       );
     },
     check: (command) => checkResult(dryRun(load(dir, active), active, command)),
+    options: (actor, request = {}) => {
+      const snapshot = load(dir, active);
+      return listOptions(snapshot, active, actor, request, (command) => dryRun(snapshot, active, command));
+    },
     since: (version) => foldSince(dir, version, active),
     attempts: (version) => readAttempts(dir, version, active),
     trace: (query) => foldTrace(dir, query, active),
@@ -515,6 +523,8 @@ export function memoryWorld(
         options?.basedOn ?? current.version,
       ),
     check: (command) => checkResult(dryRun(current, templates, command)),
+    options: (actor, request = {}) =>
+      listOptions(current, templates, actor, request, (command) => dryRun(current, templates, command)),
     // A memory world keeps its snapshots rather than a log, so its past cannot be falsified by a
     // new set: only commands from here on resolve against it. The lost-field rule still applies,
     // because the entities it would orphan are the ones these snapshots hold.
@@ -637,6 +647,7 @@ export { startProcesses } from "./engine/process.js";
 export type { Attempt, Command, Result, WorldEdit } from "./engine/command.js";
 export type { Answer, Query } from "./engine/query.js";
 export type { HeardFrom, Inspection, ObservedEntity, ObservedEvent, Projection } from "./engine/projection.js";
+export type { BlockedOption, Options, OptionsRequest, ReadyOption } from "./options.js";
 export type { TraceQuery } from "./engine/trace.js";
 export type {
   Coverage,

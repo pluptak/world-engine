@@ -40,31 +40,3 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 ## Items
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
-
-### Options: what an agent can do now
-
-A middleware choosing an agent's next action has to try verbs to learn which are possible. `check` dry-runs one
-command; nothing lists the commands that would work. (The scope line allows describing and dry-running
-commands; choosing among them stays the middleware's.)
-
-- **API:** `world.options(actor, { refused? })` returns `{ actor, version, ready, needs_args, blocked? }`.
-  Candidates are every verb in the catalog that is not `author_only`, against each entity the actor can
-  address (`addressable` in `src/engine/query.ts`, the rule target resolution applies, which never
-  names a hidden thing, so none is offered), excluding the actor, and once with no
-  target for a verb that does not `requires_target`. Not the projection's `entities`: those miss what the
-  actor can only grope for in the dark, which a command can name, so options would offer less than
-  `command` accepts. Each candidate is dry-run with no args through `check`'s
-  path (never logged): `ok` goes in `ready` as `{ verb, target? }`; `invalid` / `invalid_args` means the verb
-  needs arguments and its name goes in `needs_args` (sorted, once); anything else is a refusal, listed in
-  `blocked` as `{ verb, target?, reason_code }` only when `refused: true`. Sorted by verb, then target id.
-  A destroyed body has no options. An unknown actor is `no_such_entity`.
-- **CLI:** an `options` op (`actor`, `refused?`), response schema in `src/contract.ts`; `docs/api.md`,
-  `CLAUDE.md`.
-- **Tests** (`tests/options.test.ts`): in a lit room with a chest, a lantern and a stone in reach: `take` the
-  stone, `open` the chest, `light` the lantern are ready; a stone out of reach is blocked `out_of_reach` and
-  absent without `refused`; `give`, `put`, `move`, `say`, `wait` appear in `needs_args`; in the dark the stone
-  in reach is offered, nothing out of reach is (not even as blocked) and a hidden thing in reach is not;
-  a destroyed actor has none; a store world and a memory world answer alike. The property
-  test asks for the options of a random agent each step and applies one random `ready` option for real: it is
-  `ok` (with the dice seeded, so a roll cannot refuse it).
-- **Depends on:** nothing.

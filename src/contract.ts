@@ -252,6 +252,12 @@ export const RequestSchema = z.discriminatedUnion("op", [
     observer: IdSchema,
     entity: IdSchema,
   }).strict(),
+  z.object({
+    op: z.literal("options"),
+    world: z.string().min(1),
+    actor: IdSchema,
+    refused: z.boolean().optional(),
+  }).strict(),
 ]);
 
 export const EntitySchema = z.object({
@@ -401,6 +407,14 @@ export const InspectResponseSchema = z.object({
   }).strict().nullable(),
 }).strict();
 
+export const OptionsResponseSchema = z.object({
+  actor: IdSchema,
+  version: z.number().int(),
+  ready: z.array(z.object({ verb: z.string(), target: IdSchema.optional() }).strict()),
+  needs_args: z.array(z.string()),
+  blocked: z.array(z.object({ verb: z.string(), target: IdSchema.optional(), reason_code: z.string() }).strict()).optional(),
+}).strict();
+
 export const CommandResponseSchema = z.object({
   status: StatusSchema,
   command_id: IdSchema,
@@ -493,6 +507,7 @@ export const ResponseSchema = z.union([
   VerbsResponseSchema,
   CapabilitiesResponseSchema,
   InspectResponseSchema,
+  OptionsResponseSchema,
   ProjectionSchema,
   ValidationFailureSchema,
 ]);
