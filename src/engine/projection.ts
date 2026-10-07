@@ -37,6 +37,10 @@ export interface ObservedEvent {
   type: string;
   entity: Id;
   senses: string[];
+  // A speech act's token and volume, present only when the observer heard it: one who only saw the
+  // speaker has the event and the sense `sight`, and not what was said.
+  utterance?: string;
+  volume?: string;
 }
 
 export interface Projection {

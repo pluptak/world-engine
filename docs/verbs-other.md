@@ -17,6 +17,13 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
   itself at 0, a `candle` is the same with less.
 - `douse`: the same the other way, under a `doused` event; it refuses `not_burning` and the same
   four others.
+- `say`: an opaque `args.utterance` token (1-64 of letters, digits and `_.:-`, the caller's own, never read by the
+  engine) at `args.volume` `whisper`, `normal` (the default) or `shout`, optionally to the target as the
+  addressee. It needs a `speech` capacity of 50 from the speaker's parts (a human's head gives it,
+  animals have none) and takes one tick. A missing or malformed token or an unknown volume is
+  `invalid_args`, too little speech `insufficient_speech`; a destroyed body is no agent. It changes
+  nothing: the `say` event on the speaker is the whole act, with `{ utterance, volume, to? }`, `to` a fact
+  of the act and no claim that anyone understood ([speech.md](speech.md)).
 - `wait`: takes `args.ticks` ticks and changes nothing else ([time.md](time.md)).
 - `advance`: the same for the world author (`actor: "world"`), which has no body and so cannot
   `wait`: `args.ticks` ticks pass, and whatever falls due in them runs under its own cause, a wait's

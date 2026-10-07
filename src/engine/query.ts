@@ -272,6 +272,7 @@ function loudEvent(event: WorldEvent | undefined): boolean {
     event.type === "broken" ||
     event.type === "detached" ||
     (event.type === "sounded" && event.data.loud === true) ||
+    (event.type === "say" && event.data.volume === "shout") ||
     (event.type === "dropped" && typeof event.data.fall_cm === "number" && event.data.fall_cm >= 50)
   );
 }
@@ -280,7 +281,7 @@ function loudEvent(event: WorldEvent | undefined): boolean {
 // observer's own room, `door` decides across a doorway, and `basis` is what a false answer says when
 // nothing about where the observer stands is wrong.
 interface Sense {
-  same: "always" | "odorous" | "never";
+  same: "always" | "odorous" | "never" | "volume";
   door: "loud" | "never";
   basis: string;
 }
@@ -312,6 +313,14 @@ const SOUNDED_SENSES: EventSenses = {
   hearing: AUDIBLE_SENSES.hearing,
   smell: { same: "never", door: "never", basis: "odourless" },
   touch: "never",
+};
+
+// Speech is heard by volume: a whisper only near the speaker, normal speech through the room, a
+// shout across a doorway too. The words are not seen, but the speaking is, as any event is.
+const SAY_SENSES: EventSenses = {
+  hearing: { same: "volume", door: "loud", basis: "too_far" },
+  smell: { same: "never", door: "never", basis: "odourless" },
+  touch: "body",
 };
 
 // A pour releases what it pours, whatever is left in the vessel.
@@ -410,6 +419,7 @@ export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
   removed: AUTHORED_SENSES,
   // An authored beat: a sound is heard, a skipped beat is the author's bookkeeping.
   sounded: SOUNDED_SENSES,
+  say: SAY_SENSES,
   beat_skipped: AUTHORED_SENSES,
 };
 
@@ -483,6 +493,18 @@ function smells(subject: Entity): boolean {
     return true;
   }
   return Object.keys(subject.residue).some((name) => (subject.residue[name] ?? 0) > 0);
+}
+
+// Whether speech at its volume reaches this observer in the speaker's room: a whisper only within
+// `NEAR_THRESHOLD_CM` of the speaker (both positions known), anything louder the whole room. A
+// speaker hears their own.
+function heardAtVolume(snapshot: Snapshot, observer: Entity, speaker: Entity, event: WorldEvent | undefined): boolean {
+  if (event?.data.volume !== "whisper" || observer.id === speaker.id) {
+    return true;
+  }
+  const here = effectivePos(snapshot, observer.id);
+  const there = effectivePos(snapshot, speaker.id);
+  return here !== null && there !== null && withinThreshold(here, there);
 }
 
 function perceive(
@@ -599,7 +621,11 @@ function perceive(
   const sense = query.sense === "hearing" ? rule.hearing : rule.smell;
   if (observerLocation === targetLocation) {
     if (crossesDoors) {
-      if (sense.same === "always" || (sense.same === "odorous" && smells(subject))) {
+      if (
+        sense.same === "always" ||
+        (sense.same === "odorous" && smells(subject)) ||
+        (sense.same === "volume" && heardAtVolume(snapshot, observer, subject, event))
+      ) {
         return answer("true", "same_location");
       }
       return answer("false", sense.basis);

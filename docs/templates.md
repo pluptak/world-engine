@@ -36,3 +36,6 @@ keep the mouth rules), while `{ "kind": "space", "inner_*_cm": … }` holds what
 `upgradeTemplates` compares a new set against the live world by resolved field: a part a live entity
 has in use and a break product that can no longer be spawned are what a new set may not take away.
 Dropping `props.default_hit_part` only makes an attack naming no part `invalid_attack_target`.
+
+A human's `head` contributes `speech` ([speech.md](speech.md)). That changed the `human` template and so
+`templates_hash`: a world stored before it reports `templates_changed` until `upgradeTemplates` (or a re-init).

@@ -60,7 +60,7 @@ export const advanceVerb: Verb = {
   requires_target: false,
   // `ticks` is an upper bound when `stop_on_perceived` names agents: time ends at the first tick one
   // of them could sense an event of.
-  args: { ticks: { kind: "int" }, stop_on_perceived: { kind: "address_list" } },
+  args: { ticks: { kind: "int" }, stop_on_perceived: { kind: "address_list", optional: true } },
   refuses: [],
   duration: { arg: "ticks" },
   wake_on: (command) => listed(command) ?? [],

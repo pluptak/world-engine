@@ -190,6 +190,9 @@ function observeThrough(
                   type: event.type,
                   entity: event.entity,
                   senses,
+                  ...(event.type === "say" && senses.includes("hearing") && typeof event.data.utterance === "string"
+                    ? { utterance: event.data.utterance, volume: String(event.data.volume) }
+                    : {}),
                 },
               ];
         });

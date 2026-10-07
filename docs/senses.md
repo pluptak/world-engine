@@ -23,11 +23,13 @@ the world author's own work, which nobody senses, though its consequences (`disp
 `entity-` rows are the entity form, where there is no event and so nothing is loud. `found` is read
 against the concealer it names, `revealed` against the thing revealed. `sounded` (an authored beat's knock or bang, [beats.md](beats.md)) is the `event` row for hearing and
 nothing else: never seen (`unseen`), never smelt, never touched, and heard next door only when its data says
-`loud`. `silent` is `changed` (a template's process moving a prop, [processes.md](processes.md)), `light`, `douse`,
+`loud`. `say` (speech, [speech.md](speech.md)) is the `event` row for sight and smell and is heard by volume: a `whisper`
+only within `NEAR_THRESHOLD_CM` of the speaker (`too_far` otherwise), `normal` throughout the room, a `shout`
+across a doorway as well (it counts as loud). A speaker hears their own. `silent` is `changed` (a template's process moving a prop, [processes.md](processes.md)), `light`, `douse`,
 `lit` and `doused`, `consume` and `consumed`, the hand acts
 (`take`, `give`, `put`, `search`, `found`, `revealed`), `wait`, `capability_changed`, and a `moved`
 whose cause chain starts at `take`, `give` or `put`; its hearing is `quiet`. A `moved` under `move`,
-`push` or `pull` is footsteps or scraping, and stays `event`. The false bases are `no_such_entity`,
+`push` or `pull` is footsteps or scraping, and stays `event`. The false bases are `too_far`, `no_such_entity`,
 `no_such_event`, `no_target`, `observer_destroyed`, `no_sense_capacity`, `authored`, `odourless`,
 `quiet`, `not_touching`, `abstract`, `concealed`, `enclosed`, `not_perceptible` and
 `location_unlit`; the unknown ones are `uncovered_sense` and `engine_incapable`; the true ones are

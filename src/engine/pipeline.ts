@@ -187,8 +187,9 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     recordDelta(entityId, field, from, to, eventId);
   };
 
-  const rootEntity = target?.entity_id ?? actor.id;
-  const rootEventId = emit(command.verb, rootEntity, {}, null);
+  const root = verb.rootEvent?.(command, actor, target);
+  const rootEntity = root?.entity ?? target?.entity_id ?? actor.id;
+  const rootEventId = emit(command.verb, rootEntity, root?.data ?? {}, null);
   const transitionContext: TransitionContext = {
     ...commandContext,
     get snapshot() {

@@ -226,10 +226,13 @@ export interface AttackMode {
   crosses_gap: "limb" | "body";
 }
 
-// One entry of a verb's declared args shape; `enum` carries its values.
+// One entry of a verb's declared args shape; `enum` carries its values. A `token` is an opaque
+// string of 1-64 letters, digits and `_.:-` that the engine stores and never reads. `optional` says
+// the command may leave the arg out.
 export interface ArgDecl {
-  kind: "address" | "address_list" | "pos" | "room" | "int" | "enum" | "world_edit";
+  kind: "address" | "address_list" | "pos" | "room" | "int" | "enum" | "world_edit" | "token";
   values?: readonly string[];
+  optional?: boolean;
 }
 
 // How many ticks an ok command takes: a fixed count, or the value of the named positive int arg.
@@ -257,6 +260,9 @@ export interface Verb {
   // Agents whose senses end this command's time early, read from the command: the clock stops at
   // the first tick one of them could sense something, and the root event says how long it ran.
   wake_on?: (command: Command) => readonly Id[];
+  // Where the root event lands and what it carries, when it is not the target (or the actor) with no
+  // data: a speaker's `say` is on the speaker even when it is addressed to another.
+  rootEvent?: (command: Command, actor: Entity, target: TargetAddress | null) => { entity: Id; data: Record<string, unknown> };
   requires?: readonly CapacityRequirement[];
   carry_alternatives?: readonly CarryAlternative[];
   attack_modes?: readonly AttackMode[];

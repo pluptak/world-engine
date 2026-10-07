@@ -25,6 +25,7 @@ This is the index: one line per verb, its rules in the family file it links to.
 - `search`: looks under or behind a target ([verbs-other.md](verbs-other.md)).
 - `light`: sets a light source burning ([verbs-other.md](verbs-other.md)).
 - `douse`: puts it out ([verbs-other.md](verbs-other.md)).
+- `say`: says an opaque token at a volume, heard by who can hear it ([verbs-other.md](verbs-other.md)).
 - `wait`: lets ticks pass ([verbs-other.md](verbs-other.md)).
 - `advance`: the world author lets ticks pass, with no one acting ([verbs-other.md](verbs-other.md)).
 - `edit`: the world author's one change ([verbs-other.md](verbs-other.md)).

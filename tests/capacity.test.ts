@@ -35,6 +35,7 @@ test("an intact human has its declared capacities", () => {
     manipulation: 100,
     moving: 100,
     sight: 100,
+    speech: 100,
     touch: 100,
   });
   strictEqual(capacity(snapshot, registry, id, "manipulation"), 100);

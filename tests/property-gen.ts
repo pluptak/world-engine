@@ -391,6 +391,18 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     };
   },
   wait: (context, options) => waiting(context, options?.ticks),
+  // A token from a small pool, at any volume now and then a bad one, to someone or to no one.
+  say: (context) => {
+    const volume = pick(context.rand, ["whisper", "normal", "normal", "shout", "murmur"] as const);
+    const utterance = context.rand() < 0.05 ? "not a token" : `u${int(context.rand, 0, 9)}`;
+    return {
+      command_id: context.commandId,
+      actor: context.actor,
+      verb: "say",
+      ...(context.rand() < 0.5 ? { target: context.target } : {}),
+      args: { utterance, volume },
+    };
+  },
   // Half of these are aimed at something edible or drinkable, an amount asked for half the time.
   consume: (context) => {
     const edible = context.ids.filter((id) => {
@@ -730,7 +742,7 @@ const SLOTS: readonly { below: number; verbs: readonly string[] }[] = [
   { below: 0.69, verbs: ["attack"] },
   { below: 0.75, verbs: ["open", "close", "lock", "unlock"] },
   { below: 0.81, verbs: ["pour", "consume"] },
-  { below: 0.84, verbs: ["search", "light", "douse"] },
+  { below: 0.84, verbs: ["search", "light", "douse", "say"] },
   { below: 1, verbs: ["edit"] },
 ];
 

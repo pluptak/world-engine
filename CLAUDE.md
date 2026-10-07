@@ -161,7 +161,7 @@ suffixes (NodeNext).
 A detachable part needs a companion template named `<template>.<part>.json` (for example
 `human.hand_l.json`). The registry is rejected when loading, in a world's templates.json, or by
 `upgradeTemplates` if a detached part has no companion. Detaching spawns that template.
-`dog`, `cat`, and `horse` are agents with `moving`, `sight`, `hearing`, `smell` and a detachable
+A human's `head` contributes `speech`, which `say` requires (`docs/speech.md`; the verb's `rootEvent` puts its event on the speaker even when addressed). `dog`, `cat`, and `horse` are agents with `moving`, `sight`, `hearing`, `smell` and a detachable
 `jaw` that provides `mouth_carry`; default coverage stays `sight`+`hearing`, so smell answers only
 where a snapshot's coverage declares it.
 

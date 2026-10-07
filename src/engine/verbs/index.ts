@@ -13,6 +13,7 @@ import { consumeVerb } from "./consume.js";
 import { douseVerb, lightVerb } from "./light.js";
 import { searchVerb } from "./search.js";
 import { advanceVerb, waitVerb } from "./wait.js";
+import { sayVerb } from "./say.js";
 
 export const verbRegistry: VerbRegistry = new Map([
   ["move", moveVerb],
@@ -32,6 +33,7 @@ export const verbRegistry: VerbRegistry = new Map([
   ["push", pushVerb],
   ["pull", pullVerb],
   ["attack", attackVerb],
+  ["say", sayVerb],
   ["wait", waitVerb],
   ["advance", advanceVerb],
   ["edit", editVerb],

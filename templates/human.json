@@ -3,7 +3,7 @@
   "size_cm": { "w": 45, "d": 30, "h": 180 },
   "mass_g": 70000,
   "parts": [
-    { "name": "head", "parent": null, "contributes": { "sight": 100, "hearing": 100 }, "detachable": false, "max_integrity": 100 },
+    { "name": "head", "parent": null, "contributes": { "sight": 100, "hearing": 100, "speech": 100 }, "detachable": false, "max_integrity": 100 },
     { "name": "torso", "parent": null, "contributes": { "moving": 100, "touch": 100 }, "detachable": false, "max_integrity": 100 },
     { "name": "arm_l", "parent": null, "contributes": {}, "detachable": true, "max_integrity": 100 },
     { "name": "hand_l", "parent": "arm_l", "contributes": { "manipulation": 30 }, "detachable": true, "max_integrity": 100, "holds": { "kind": "grip" } },
