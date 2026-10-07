@@ -29,10 +29,11 @@ import {
   genStep,
   mulberry32,
   SCENARIO,
+  withProcessFixtures,
 } from "./property-gen.js";
 
-const registry: TemplateRegistry = loadTemplates(
-  fileURLToPath(new URL("../templates/", import.meta.url)),
+const registry: TemplateRegistry = withProcessFixtures(
+  loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))),
 );
 
 function tempDir(t: { after(callback: () => void): void }): string {
@@ -223,7 +224,7 @@ test("random runs open wounds that bleed, and every step still validates", () =>
   let bleeds = 0;
   for (let seed = 0; seed < 100; seed += 1) {
     const rand = mulberry32(seed);
-    const world = memoryWorld(buildInitial(registry));
+    const world = memoryWorld(buildInitial(registry), registry);
     for (let i = 0; i < 60; i += 1) {
       const step = genStep(rand, world.snapshot(), `wound-${seed}-${i}`);
       const result = "verb" in step ? world.command(step) : world.edit(step);
@@ -240,11 +241,43 @@ test("random runs open wounds that bleed, and every step still validates", () =>
   strictEqual(bleeds >= 10, true, `bleeds ${bleeds}`);
 });
 
+test("random runs run processes, start and stop them, and every step still validates", () => {
+  // The scenario's candle burns while a prop edit has it burning, and its moss grows from the start;
+  // the generator's prop edits flip `burning`, so runs start, withdraw and restart a process.
+  let grown = 0;
+  let burned = 0;
+  let withdrawn = 0;
+  for (let seed = 0; seed < 100; seed += 1) {
+    const rand = mulberry32(seed);
+    const world = memoryWorld(buildInitial(registry), registry);
+    for (let i = 0; i < 60; i += 1) {
+      const before = world.snapshot().schedule?.filter((cause) => cause.kind === "process").length ?? 0;
+      const step = genStep(rand, world.snapshot(), `proc-${seed}-${i}`);
+      const result = "verb" in step ? world.command(step) : world.edit(step);
+      let ran = 0;
+      for (const event of result.status === "ok" ? result.events : []) {
+        if (event.type === "changed") {
+          ran += 1;
+          grown += event.data.process === "grow" ? 1 : 0;
+          burned += event.data.process === "burn" ? 1 : 0;
+        }
+      }
+      const after = world.snapshot().schedule?.filter((cause) => cause.kind === "process").length ?? 0;
+      // A process pending before and gone after, with no run of it to explain it, was withdrawn.
+      withdrawn += after < before && ran === 0 ? 1 : 0;
+      deepStrictEqual(validateSnapshot(world.snapshot(), registry), [], `proc-${seed}-${i}`);
+    }
+  }
+  strictEqual(grown >= 10, true, `grown ${grown}`);
+  strictEqual(burned >= 5, true, `burned ${burned}`);
+  strictEqual(withdrawn >= 1, true, `withdrawn ${withdrawn}`);
+});
+
 test("the generator aims an edit at every relation rule, and each step still validates", () => {
   const seen = new Set<string>();
   for (let seed = 0; seed < 100 && seen.size < 12; seed += 1) {
     const rand = mulberry32(seed);
-    const world = memoryWorld(buildInitial(registry));
+    const world = memoryWorld(buildInitial(registry), registry);
     for (let i = 0; i < 30 && seen.size < 12; i += 1) {
       const step = genStep(rand, world.snapshot(), `aim-${seed}-${i}`);
       if (!("verb" in step)) {
@@ -311,8 +344,8 @@ test("foldEntities replays raw deltas exactly", () => {
 
 test("same seed twice is byte-identical", () => {
   for (const seed of [0, 7, 499]) {
-    const first = runSequence(memoryWorld(buildInitial(registry)), seed, 30);
-    const second = runSequence(memoryWorld(buildInitial(registry)), seed, 30);
+    const first = runSequence(memoryWorld(buildInitial(registry), registry), seed, 30);
+    const second = runSequence(memoryWorld(buildInitial(registry), registry), seed, 30);
     deepStrictEqual(second, first);
   }
 });
@@ -340,10 +373,10 @@ test("latent structure nothing touches changes nothing", () => {
   const human = Object.values(initial.entities).find((entity) => entity.template === "human")!;
   const hair = { kind: "fact" as const, subject: `${human.id}.hair`, relation: "status" };
   strictEqual(memoryWorld(initial, enriched).query(hair).value, "true");
-  strictEqual(memoryWorld(buildInitial(registry)).query(hair).basis_code, "no_such_part");
+  strictEqual(memoryWorld(buildInitial(registry), registry).query(hair).basis_code, "no_such_part");
   const unhashed = (snapshot: string) => canonicalJson({ ...(JSON.parse(snapshot) as object), templates_hash: "" });
   for (let seed = 0; seed < 100; seed += 1) {
-    const plain = runSequence(memoryWorld(buildInitial(registry)), seed, 30);
+    const plain = runSequence(memoryWorld(buildInitial(registry), registry), seed, 30);
     const deeper = runSequence(memoryWorld(buildInitial(enriched), enriched), seed, 30);
     strictEqual(deeper.events, plain.events, `seed ${seed}`);
     strictEqual(unhashed(deeper.snapshot), unhashed(plain.snapshot), `seed ${seed}`);
@@ -352,15 +385,15 @@ test("latent structure nothing touches changes nothing", () => {
 
 for (let seed = 0; seed < 500; seed += 1) {
   test(`property seed ${seed}`, () => {
-    runSequence(memoryWorld(buildInitial(registry)), seed, 30);
+    runSequence(memoryWorld(buildInitial(registry), registry), seed, 30);
   });
 }
 
 test("store subset matches memory and the event file", (t) => {
   for (let seed = 0; seed < 25; seed += 1) {
     const dir = join(tempDir(t), `seed-${seed}`);
-    const fromStore = runSequence(createWorld(dir, SCENARIO), seed, 30);
-    const fromMemory = runSequence(memoryWorld(buildInitial(registry)), seed, 30);
+    const fromStore = runSequence(createWorld(dir, SCENARIO, registry), seed, 30);
+    const fromMemory = runSequence(memoryWorld(buildInitial(registry), registry), seed, 30);
     deepStrictEqual(fromStore, fromMemory);
     strictEqual(
       canonicalJson(readEvents(dir)),

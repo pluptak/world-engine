@@ -21,6 +21,7 @@ import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace
 import { lostField } from "./engine/upgrade.js";
 import { verbCatalog } from "./engine/verbs/index.js";
 import { spawn } from "./engine/spawn.js";
+import { startProcesses } from "./engine/process.js";
 import { resolveScenario, type Scenario } from "./scenario.js";
 import { validateSnapshot } from "./engine/validate.js";
 import { WorldError } from "./errors.js";
@@ -365,6 +366,8 @@ export function createWorld(
   for (const entry of resolved.scenario) {
     snapshot = spawn(snapshot, templates, entry.template, entry.overrides).snapshot;
   }
+  // What the templates set going has no event behind it yet; its first `changed` is a root.
+  snapshot = startProcesses(snapshot, templates);
   assertValid(snapshot, templates);
   create(dir, snapshot, templates, resolved.ids);
   return storeWorld(dir, templates, resolved.ids);
@@ -578,6 +581,7 @@ export { canonicalJson, verbCatalog as verbs, WorldError, WORLD_AUTHOR };
 export { ENGINE_CAPABILITIES } from "./engine/capabilities.js";
 export type { WorldErrorCode } from "./errors.js";
 export type { Scenario, ScenarioEntry } from "./scenario.js";
+export { startProcesses } from "./engine/process.js";
 export type { Attempt, Command, Result, WorldEdit } from "./engine/command.js";
 export type { Answer, Query } from "./engine/query.js";
 export type { Inspection, ObservedEntity, ObservedEvent, Projection } from "./engine/projection.js";

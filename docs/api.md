@@ -19,6 +19,8 @@ directory, a changed hash, or a bad version is a `WorldError` with a code.
   else its spawn; an initial entity's field has an empty chain, and a memory world answers
   `history_unavailable` for what predates it.
 - `perceivers: true` on a command or edit names who sensed each of its events.
+- `createWorld` starts the processes its templates declare (`startProcesses`, also exported, for a
+  caller that builds a snapshot itself and opens it with `memoryWorld`; [processes.md](processes.md)).
 - `createWorld` and `memoryWorld` take an optional `coverage`, which the world's initial snapshot
   declares in place of `defaultCoverage()`; a category it leaves out answers `unknown`.
 

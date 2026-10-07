@@ -1,7 +1,8 @@
 # Templates
 
 A template declares `id`, `size_cm`, `mass_g`, `parts`, `props`, `break_products` and
-`break_residue`. Every one of them is data, read from `templates/*.json` by `src/templates.ts`.
+`break_residue`, and optionally `processes` ([processes.md](processes.md); merged by id through
+`extends`, absent from a template that declares none). Every one of them is data, read from `templates/*.json` by `src/templates.ts`.
 
 A template may declare `"extends": "<parent id>"`. Resolution runs once, when the set is loaded or
 parsed:

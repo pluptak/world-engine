@@ -63,7 +63,9 @@ export function defaultCoverage(): Coverage {
 // bleed carries how many bleeds are left, this one included; each schedules the next.
 export type ScheduledCause =
   | { due_tick: number; kind: "close"; entity: Id; cause_id: Id }
-  | { due_tick: number; kind: "bleed"; entity: Id; cause_id: Id; remaining: number };
+  | { due_tick: number; kind: "bleed"; entity: Id; cause_id: Id; remaining: number }
+  // A template's process, running on the entity; `cause_id` is null when the initial state started it.
+  | { due_tick: number; kind: "process"; entity: Id; cause_id: Id | null; process: string };
 
 export interface Snapshot {
   version: number;

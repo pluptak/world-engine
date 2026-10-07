@@ -14,6 +14,17 @@ export interface PartDecl {
   holds?: HoldsDecl;
 }
 
+export type ProcessOp = "eq" | "ne" | "lt" | "lte" | "gt" | "gte";
+
+// Something a thing does by itself while a condition on its props holds: every `every_ticks`, move
+// the integer prop `adjust_prop.prop` by `by`, stopping at `min` or `max` when given.
+export interface ProcessDecl {
+  id: string;
+  every_ticks: number;
+  while?: { prop: string; op: ProcessOp; value: number | string | boolean };
+  effect: { adjust_prop: { prop: string; by: number; min?: number; max?: number } };
+}
+
 export interface Template {
   id: string;
   size_cm: { w: number; d: number; h: number };
@@ -22,6 +33,8 @@ export interface Template {
   props: Record<string, number | string | boolean>;
   break_products: { template: string; count: number }[];
   break_residue: Record<string, number>;
+  // Absent when a template declares none, so a template without processes hashes as it always did.
+  processes?: ProcessDecl[];
 }
 
 export type TemplateRegistry = Record<string, Template>;
@@ -37,6 +50,7 @@ interface TemplateDecl {
   props?: Record<string, number | string | boolean>;
   break_products?: { template: string; count: number }[];
   break_residue?: Record<string, number>;
+  processes?: ProcessDecl[];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -163,7 +177,117 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
     decl.break_residue = { ...value.break_residue };
   }
 
+  if (Object.hasOwn(value, "processes")) {
+    decl.processes = parseProcesses(value.processes, `${source}.processes`);
+  }
+
   return decl;
+}
+
+const PROCESS_OPS: readonly ProcessOp[] = ["eq", "ne", "lt", "lte", "gt", "gte"];
+
+function assertOnlyKeys(value: Record<string, unknown>, allowed: readonly string[], label: string): void {
+  const stray = Object.keys(value).find((key) => !allowed.includes(key));
+  if (stray !== undefined) {
+    throw new TypeError(`${label} has unknown field ${stray}`);
+  }
+}
+
+function assertInteger(value: unknown, label: string): asserts value is number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value)) {
+    throw new TypeError(`${label} must be an integer`);
+  }
+}
+
+function parseProcesses(value: unknown, label: string): ProcessDecl[] {
+  if (!Array.isArray(value)) {
+    throw new TypeError(`${label} must be an array`);
+  }
+  const seen = new Set<string>();
+  return value.map((entry, index): ProcessDecl => {
+    const at = `${label}[${index}]`;
+    if (!isRecord(entry)) {
+      throw new TypeError(`${at} must be an object`);
+    }
+    assertOnlyKeys(entry, ["id", "every_ticks", "while", "effect"], at);
+    if (typeof entry.id !== "string" || entry.id.length === 0) {
+      throw new TypeError(`${at}.id must be a non-empty string`);
+    }
+    if (seen.has(entry.id)) {
+      throw new TypeError(`${label} declares process ${entry.id} twice`);
+    }
+    seen.add(entry.id);
+    const named = `${label}.${entry.id}`;
+    assertInteger(entry.every_ticks, `${named}.every_ticks`);
+    if (entry.every_ticks < 1) {
+      throw new TypeError(`${named}.every_ticks must be at least 1`);
+    }
+    const parsed: ProcessDecl = {
+      id: entry.id,
+      every_ticks: entry.every_ticks,
+      effect: parseEffect(entry.effect, `${named}.effect`),
+    };
+    if (entry.while !== undefined) {
+      const clause = entry.while;
+      if (!isRecord(clause)) {
+        throw new TypeError(`${named}.while must be an object`);
+      }
+      assertOnlyKeys(clause, ["prop", "op", "value"], `${named}.while`);
+      if (typeof clause.prop !== "string" || clause.prop.length === 0) {
+        throw new TypeError(`${named}.while.prop must be a non-empty string`);
+      }
+      if (!PROCESS_OPS.includes(clause.op as ProcessOp)) {
+        throw new TypeError(`${named}.while.op must be one of ${PROCESS_OPS.join(", ")}`);
+      }
+      const wanted = clause.value;
+      if (typeof wanted !== "string" && typeof wanted !== "number" && typeof wanted !== "boolean") {
+        throw new TypeError(`${named}.while.value must be a primitive`);
+      }
+      if (clause.op !== "eq" && clause.op !== "ne" && typeof wanted !== "number") {
+        throw new TypeError(`${named}.while.value must be a number for ${String(clause.op)}`);
+      }
+      parsed.while = { prop: clause.prop, op: clause.op as ProcessOp, value: wanted };
+    }
+    return parsed;
+  });
+}
+
+function parseEffect(value: unknown, label: string): ProcessDecl["effect"] {
+  if (!isRecord(value)) {
+    throw new TypeError(`${label} must be an object`);
+  }
+  assertOnlyKeys(value, ["adjust_prop"], label);
+  const adjust = value.adjust_prop;
+  if (!isRecord(adjust)) {
+    throw new TypeError(`${label}.adjust_prop must be an object`);
+  }
+  assertOnlyKeys(adjust, ["prop", "by", "min", "max"], `${label}.adjust_prop`);
+  if (typeof adjust.prop !== "string" || adjust.prop.length === 0) {
+    throw new TypeError(`${label}.adjust_prop.prop must be a non-empty string`);
+  }
+  assertInteger(adjust.by, `${label}.adjust_prop.by`);
+  if (adjust.by === 0) {
+    throw new TypeError(`${label}.adjust_prop.by must not be 0`);
+  }
+  const result: { prop: string; by: number; min?: number; max?: number } = { prop: adjust.prop, by: adjust.by };
+  for (const bound of ["min", "max"] as const) {
+    if (adjust[bound] !== undefined) {
+      assertInteger(adjust[bound], `${label}.adjust_prop.${bound}`);
+      result[bound] = adjust[bound] as number;
+    }
+  }
+  if (result.min !== undefined && result.max !== undefined && result.min > result.max) {
+    throw new TypeError(`${label}.adjust_prop.min must not exceed max`);
+  }
+  return { adjust_prop: result };
+}
+
+function copyProcesses(processes: readonly ProcessDecl[]): ProcessDecl[] {
+  return processes.map((decl) => ({
+    ...decl,
+    ...(decl.while !== undefined && { while: { ...decl.while } }),
+    effect: { adjust_prop: { ...decl.effect.adjust_prop } },
+  }));
 }
 
 function parseHolds(value: unknown, label: string): { holds?: HoldsDecl } {
@@ -222,12 +346,14 @@ function requireResolved(decl: TemplateDecl, source: string): Template {
     props: { ...decl.props! },
     break_products: decl.break_products!.map((product) => ({ ...product })),
     break_residue: { ...decl.break_residue! },
+    ...(decl.processes !== undefined && decl.processes.length > 0 && { processes: copyProcesses(decl.processes) }),
   };
 }
 
 // The child's own field wins, props are shallow-merged over the parent's, and parts are replaced
 // rather than merged: a child that declares parts declares the whole part tree it has.
 function overParent(parent: Template, decl: TemplateDecl): Template {
+  const processes = mergeProcesses(parent.processes ?? [], decl.processes ?? []);
   return {
     id: decl.id,
     size_cm: decl.size_cm === undefined ? parent.size_cm : { ...decl.size_cm },
@@ -242,7 +368,17 @@ function overParent(parent: Template, decl: TemplateDecl): Template {
       decl.break_residue === undefined
         ? parent.break_residue
         : { ...decl.break_residue },
+    ...(processes.length > 0 && { processes }),
   };
+}
+
+// Processes merge by id like props: the parent's list, each replaced by a child's of the same id,
+// then the child's new ones in the order it declares them.
+function mergeProcesses(parent: readonly ProcessDecl[], own: readonly ProcessDecl[]): ProcessDecl[] {
+  const replaced = new Map(own.map((decl) => [decl.id, decl]));
+  const merged = parent.map((decl) => replaced.get(decl.id) ?? decl);
+  const inherited = new Set(parent.map((decl) => decl.id));
+  return copyProcesses([...merged, ...own.filter((decl) => !inherited.has(decl.id))]);
 }
 
 // The ids from a template up to its root, child first. A cycle or a parent no template declares is

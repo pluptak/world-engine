@@ -1,7 +1,9 @@
 import { capacities } from "./capacity.js";
 import type { Command, TransitionContext, Verb, VerbDuration } from "./command.js";
 import type { Modifier, Snapshot } from "../model.js";
-import { pending, runCause, withSchedule } from "./schedule.js";
+import { pending, withSchedule } from "./pending.js";
+import { reconcileSince } from "./process.js";
+import { runCause } from "./schedule.js";
 
 // Every verb declares how many ticks it takes: a fixed count, or the value of one of its int args.
 // Only an ok command takes time; a refused or invalid one leaves `tick` where it was.
@@ -56,7 +58,9 @@ export function advanceClock(context: TransitionContext, ticks: number): void {
     expireAt(context, tick);
     for (let due = pending(context.snapshot)[0]; due?.due_tick === tick; due = pending(context.snapshot)[0]) {
       context.snapshot = withSchedule(context.snapshot, pending(context.snapshot).slice(1));
+      const mark = context.deltas.length;
       runCause(context, due);
+      reconcileSince(context, mark);
     }
   }
   context.snapshot = { ...context.snapshot, tick: endTick };

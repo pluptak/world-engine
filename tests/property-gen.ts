@@ -5,9 +5,38 @@ import { fileURLToPath } from "node:url";
 import { WORLD_AUTHOR, type Command, type WorldEdit } from "../src/engine/command.js";
 import { spawn } from "../src/engine/spawn.js";
 import { resolveScenario } from "../src/scenario.js";
-import { loadTemplates, templatesHash, type TemplateRegistry } from "../src/templates.js";
+import { startProcesses } from "../src/engine/process.js";
+import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../src/templates.js";
 import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../src/model.js";
 import type { Scenario } from "../src/api.js";
+
+// Two templates that exist for the property test: a candle that burns down while `burning` is true
+// (the generator's prop edits flip it), and moss that grows from the start up to a cap. Random runs
+// start, withdraw, restart and overtake processes under every property.
+export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
+  return parseRegistry({
+    ...base,
+    candle: {
+      id: "candle",
+      extends: "stone",
+      props: { burning: false, fuel: 5 },
+      processes: [
+        {
+          id: "burn",
+          every_ticks: 2,
+          while: { prop: "burning", op: "eq", value: true },
+          effect: { adjust_prop: { prop: "fuel", by: -1, min: 0 } },
+        },
+      ],
+    },
+    moss: {
+      id: "moss",
+      extends: "stone",
+      props: { size: 1 },
+      processes: [{ id: "grow", every_ticks: 3, effect: { adjust_prop: { prop: "size", by: 1, max: 4 } } }],
+    },
+  });
+}
 
 export const SCENARIO: Scenario = [
   { template: "room", overrides: { name: "room-a", props: { lit: true } } },
@@ -94,6 +123,8 @@ export const SCENARIO: Scenario = [
     template: "anchor",
     overrides: { name: "mark", location: "e1", support: "e1", pos: { x: 90, y: 0 } },
   },
+  { template: "candle", overrides: { name: "candle", location: "e1", support: "e1", pos: { x: 110, y: 20 } } },
+  { template: "moss", overrides: { name: "moss", location: "e2", support: "e2", pos: { x: -60, y: 20 } } },
 ];
 
 export function buildInitial(registry: TemplateRegistry): Snapshot {
@@ -109,7 +140,7 @@ export function buildInitial(registry: TemplateRegistry): Snapshot {
   for (const entry of resolveScenario(SCENARIO).scenario) {
     snapshot = spawn(snapshot, registry, entry.template, entry.overrides).snapshot;
   }
-  return snapshot;
+  return startProcesses(snapshot, registry);
 }
 
 export function mulberry32(seed: number): () => number {
@@ -373,7 +404,10 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
         : { kind: "place", target: context.target, contained_in: anchor };
     }
     if (context.roll < 0.56) {
-      const subject = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+      // Some of these edits are aimed at whatever can burn, so a process is started and withdrawn.
+      const burners = context.ids.filter((id) => typeof context.snapshot.entities[id]?.props.burning === "boolean");
+      const aimed = burners.length > 0 && context.rand() < 0.4;
+      const subject = aimed ? pick(context.rand, burners) : context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
       const entity = context.snapshot.entities[subject];
       const boolKeys =
         entity === undefined

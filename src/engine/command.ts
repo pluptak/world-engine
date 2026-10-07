@@ -119,6 +119,8 @@ export interface CommandContext {
 
 export interface TransitionContext extends CommandContext {
   root_event_id: Id;
+  // Every change recorded so far in this command, in order: a live view, not a copy.
+  deltas: readonly Delta[];
   recordDelta(entity: Id, field: string, from: unknown, to: unknown, eventId: Id): void;
   emit(type: string, entity: Id, data: Record<string, unknown>, causeId: Id | null): Id;
   set(entity: Id, field: string, value: unknown, eventId: Id): void;

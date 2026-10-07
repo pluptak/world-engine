@@ -479,6 +479,7 @@ function scheduleIssues(snapshot: Snapshot): SnapshotIssue[] {
   }
   const issues: SnapshotIssue[] = [];
   let previous = -Infinity;
+  const running = new Set<string>();
   snapshot.schedule.forEach((cause, index) => {
     const path = ["schedule", String(index)];
     if (!CAUSE_KINDS.includes(cause.kind)) {
@@ -492,6 +493,14 @@ function scheduleIssues(snapshot: Snapshot): SnapshotIssue[] {
     previous = Math.max(previous, cause.due_tick);
     if (snapshot.entities[cause.entity] === undefined) {
       issues.push(issue("schedule_dangling", path, cause.entity));
+    }
+    // A process runs at most once at a time on an entity: reconcile never schedules a second.
+    if (cause.kind === "process") {
+      const key = `${cause.entity}/${cause.process}`;
+      if (running.has(key)) {
+        issues.push(issue("duplicate_process", path, key));
+      }
+      running.add(key);
     }
     const broken = causeInvalid(cause);
     if (broken !== null) {

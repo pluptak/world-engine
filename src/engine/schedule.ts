@@ -2,25 +2,14 @@ import type { TransitionContext } from "./command.js";
 import { inSpacePart } from "./carry.js";
 import { pushOccupantsAside } from "./verbs/gate.js";
 import { dropCarriedItem } from "./verbs/drop.js";
-import type { Id, ScheduledCause, Snapshot } from "../model.js";
+import type { Id, ScheduledCause } from "../model.js";
+import { pending, withCause, withSchedule } from "./pending.js";
+import { runProcess } from "./process.js";
 
-export function pending(snapshot: Snapshot): readonly ScheduledCause[] {
-  return snapshot.schedule ?? [];
-}
+export { pending, withSchedule };
 
-// The one way the schedule is written: an empty schedule is stored as no field at all.
-export function withSchedule(snapshot: Snapshot, schedule: ScheduledCause[]): Snapshot {
-  const { schedule: _dropped, ...rest } = snapshot;
-  return schedule.length === 0 ? rest : { ...rest, schedule };
-}
-
-// A new cause goes after every cause due at or before its tick, so two due together run in the
-// order they were scheduled.
 export function schedule(context: TransitionContext, cause: ScheduledCause): void {
-  const list = [...pending(context.snapshot)];
-  const at = list.findIndex((entry) => entry.due_tick > cause.due_tick);
-  list.splice(at === -1 ? list.length : at, 0, cause);
-  context.snapshot = withSchedule(context.snapshot, list);
+  context.snapshot = withCause(context.snapshot, cause);
 }
 
 // Withdrawn at the source, recording nothing: a door shut by hand has no close left to come.
@@ -127,6 +116,10 @@ function runBleed(context: TransitionContext, cause: CauseOf<"bleed">): void {
   scheduleBleed(context, entity.id, eventId, cause.remaining - 1);
 }
 
+function runProcessCause(context: TransitionContext, cause: CauseOf<"process">): void {
+  runProcess(context, cause);
+}
+
 const CAUSE_TABLE: { [K in CauseKindName]: CauseKind<K> } = {
   close: { run: runClose, invalid: () => null },
   bleed: {
@@ -135,6 +128,13 @@ const CAUSE_TABLE: { [K in CauseKindName]: CauseKind<K> } = {
       Number.isSafeInteger(cause.remaining) && cause.remaining > 0
         ? null
         : { code: "bleed_not_remaining", detail: `remaining ${cause.remaining}` },
+  },
+  process: {
+    run: runProcessCause,
+    invalid: (cause) =>
+      typeof cause.process === "string" && cause.process.length > 0
+        ? null
+        : { code: "invalid_process", detail: String(cause.process) },
   },
 };
 

@@ -1,5 +1,6 @@
 import { canonicalJson } from "./canonical.js";
 import { advanceClock, commandDuration } from "./clock.js";
+import { reconcileSince } from "./process.js";
 import { pruneSchedule } from "./schedule.js";
 import type { Command, CommandContext, Result, TransitionContext } from "./command.js";
 import { WORLD_AUTHOR } from "./command.js";
@@ -196,11 +197,14 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
       working = value;
     },
     root_event_id: rootEventId,
+    deltas,
     emit,
     set,
     recordDelta,
   };
   verb.transition(transitionContext);
+  // A process whose condition the verb just made true starts, and one it made false stops.
+  reconcileSince(transitionContext, 0);
   pruneSchedule(transitionContext);
   // The verb resolves at the tick it was given; only then does its time pass, and whatever falls
   // due in that time happens after it.

@@ -37,43 +37,9 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 ## Items
 
-Each item names what it depends on. Ready now, in any order: Template processes, Fork a world, Scale
-benchmark, Advance stops when an agent would notice, Speech, Authored beats. Then, in a chain: Template
-processes → Process effects → Light sources and Consume (parallel) → Camp scenario. Seeded randomness
-follows Template processes.
-
-### Template processes: a prop that changes by itself
-
-Nothing in the world changes over time except modifiers, doors and wounds. Let a template declare a
-process that runs while a condition holds, so spoilage, fuel, hunger and decay are data.
-
-- **Template field:** `processes: [{ id, every_ticks, while?: { prop, op, value }, effect:
-  { adjust_prop: { prop, by, min?, max? } } }]`, all numbers integers, `op` one of `eq ne lt lte gt
-  gte`. Validated in `src/templates.ts` (a bad shape is refused by template id and process id);
-  inherited by `extends` like `props` (merged by `id`, child wins); part of the resolved template, so
-  it enters `templates_hash` only for templates that declare it.
-- **Cause kind `process`** (a row in `CAUSE_TABLE`): `{ kind: "process", entity, process: <id>, due_tick,
-  cause_id }`. Each run re-checks `while` against the entity's current `props`; if false it does
-  nothing and is not rescheduled; if true it applies the effect, emits `changed` `{ prop, from, to }`
-  under the cause's `cause_id` with a delta on `props`, and schedules the next run `every_ticks` later.
-- **No polling.** The condition is reconciled when it can change, not on a timer: after any `props`
-  write (`context.set` in `src/engine/pipeline.ts`) and after a spawn, the entity's processes are
-  evaluated, scheduling one that is now true and has none pending, and withdrawing (`cancel`) one that
-  is now false. A process with no `while` starts at spawn and runs until the entity is removed.
-- **Clamping:** `adjust_prop` clamps to `min`/`max` when given; a run that changes nothing emits
-  nothing and stops the process (it has reached its bound).
-- **Perception:** one new `process` row in `EVENT_SENSES` / `docs/senses.md`: sight as `event`,
-  hearing false (`quiet`), smell false, touch `O`. `changed` is the event type.
-- **Storage:** a `process` cause is additive; bump `SCHEMA_VERSION` (now 5, in
-  `src/store/file-store.ts`, which refuses any other value) only if an older stored world could not be
-  read, and say which in the commit.
-- **Docs and tests:** `docs/processes.md` (index line in `docs/DESIGN.md`), the new event in the
-  property test's accounting, `tests/process.test.ts`: runs every N ticks across one long `advance`;
-  stops at a bound; starts when a `set_props` edit makes `while` true and stops when it goes false;
-  survives a template `extends`; a removed entity's process is pruned; replay from the log reproduces
-  it; every random step stays valid.
-- **Depends on:** nothing (the cause-kind table has shipped). **Blocks:** Process effects, Light sources, Consume,
-  Seeded randomness (its chance gate).
+Each item names what it depends on. Ready now, in any order: Process effects, Seeded randomness, Fork a
+world, Scale benchmark, Advance stops when an agent would notice, Speech, Authored beats. Then, in a
+chain: Process effects → Light sources and Consume (parallel) → Camp scenario.
 
 ### Process effects beyond adjusting a prop
 
@@ -92,7 +58,7 @@ A decaying value is only useful if reaching it does something. Add the consequen
 - **Tests:** a fuel prop counting to 0 sets `lit` false; a hunger prop reaching its cap damages a
   human to destruction over a long `advance`, dropping what it held; `remove` on a spoiled item;
   the cause chain reads process, `changed`, `damaged`, `destroyed` under `trace`.
-- **Depends on:** Template processes.
+- **Depends on:** nothing (template processes have shipped).
 
 ### Light sources
 
@@ -117,7 +83,7 @@ source, and let a light burn out.
 - **Tests:** a dark room becomes lit when the lantern is lit and an observer then sees a note; a
   carried lantern lights the room its carrier stands in and follows a `move`; it burns out during one
   long `advance` and the room goes dark, with the chain `lit`, `changed`, `changed` and so on; refusals.
-- **Depends on:** Template processes, Process effects.
+- **Depends on:** Process effects.
 
 ### Consume: eating and drinking
 
@@ -174,7 +140,7 @@ the snapshot, not in `Math.random`.
 - **Tests:** same seed and commands give a byte-identical snapshot and log through two handles and
   through replay; a different seed differs; a refused or `check`ed command leaves `rng` alone; a
   preempted command does not roll; the property test seeds its worlds.
-- **Depends on:** Template processes.
+- **Depends on:** nothing (template processes have shipped).
 
 ### Fork a world
 
@@ -236,7 +202,7 @@ runs on every accepted result.
   work for entities a command did not touch if the deltas prove it safe, avoiding re-serialising
   unchanged parts. Anything larger is written up as a new backlog item with the measurement, not done
   here.
-- **Depends on:** nothing; best run after Template processes, so processes are in the measure.
+- **Depends on:** nothing; processes have shipped, so they are in the measure.
 
 ### Authored beats: the architect's scheduled interventions
 

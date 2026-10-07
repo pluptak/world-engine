@@ -1,8 +1,10 @@
 # Scheduled causes
 
-Something the world does by itself, later: a self-closing door, and a wound that bleeds. A
-snapshot's `schedule` lists what is pending, each cause with its `due_tick`, `kind` (`close` or
-`bleed`), `entity` and `cause_id`, the event that set it going; a bleed also carries `remaining`. It
+Something the world does by itself, later: a self-closing door, a wound that bleeds, and a template's
+process ([processes.md](processes.md)). A snapshot's `schedule` lists what is pending, each cause with
+its `due_tick`, `kind` (`close`, `bleed` or `process`), `entity` and `cause_id`, the event that set it
+going (null for a process the initial state started); a bleed also carries `remaining` and a process
+its `process` id. It
 is ordered by due tick, then by when each was scheduled, and absent when nothing is pending, so a
 world that never schedules anything stores nothing for it (`src/engine/schedule.ts`).
 
@@ -20,6 +22,9 @@ that many ticks after an `open`: a door opened at tick 4 with `closes_after: 2` 
 during whichever command spans 6, caused by its `opened`. Opening it again starts the count over,
 and `close` by hand withdraws the pending close; neither records anything about the withdrawal.
 
+**Processes.** A template's processes run as a third kind, scheduled and withdrawn as the props that
+govern them change ([processes.md](processes.md)).
+
 **Bleeding.** A severed part opens a wound that bleeds a few times, each bleed scheduling the next
 ([bleeding.md](bleeding.md)).
 
@@ -36,7 +41,8 @@ nothing. `close` by hand does the same.
 **Stored one way.** `validateSnapshot` refuses an empty list (`empty_schedule`), a cause not ahead
 of the clock (`schedule_not_ahead`, since the clock runs everything due), causes out of due order
 (`schedule_unordered`), a cause on a missing entity (`schedule_dangling`), an unknown kind
-(`unknown_cause_kind`) and a bleed with none left (`bleed_not_remaining`). The schedule is not a
+(`unknown_cause_kind`), a bleed with none left (`bleed_not_remaining`), and a process with no id
+(`invalid_process`) or pending twice on one entity (`duplicate_process`). The schedule is not a
 field of any entity, so like `tick` its changes are not deltas; the events are the record. Stored
 worlds are `schema_version` 3 since.
 

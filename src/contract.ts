@@ -274,6 +274,13 @@ export const SnapshotSchema = z.object({
       cause_id: IdSchema,
       remaining: z.number().int(),
     }).strict(),
+    z.object({
+      due_tick: z.number().int(),
+      kind: z.literal("process"),
+      entity: IdSchema,
+      cause_id: IdSchema.nullable(),
+      process: z.string(),
+    }).strict(),
   ])).optional(),
 }).strict();
 

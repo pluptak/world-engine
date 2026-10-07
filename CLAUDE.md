@@ -43,7 +43,9 @@ suffixes (NodeNext).
    it; either way a shutting gate moves its footprint's occupants aside first, `pushOccupantsAside`
    in `verbs/gate.ts`, uncovering what each hid), and the `bleed` a severed part opens on a body with `bleed_*`
    props, each scheduling the next, a body bled out dropping what it held (`docs/bleeding.md`); the
-   pipeline prunes causes whose entity is gone, and `isAgent` is false for a destroyed body, and
+   pipeline prunes causes whose entity is gone, a template's `processes` (`src/engine/process.ts`,
+   `docs/processes.md`) are the third kind, reconciled against the props of every entity a command
+   or a cause touched (`reconcileSince`; `createWorld` calls `startProcesses`), and `isAgent` is false for a destroyed body, and
    `perceive` answers `false` / `observer_destroyed` for one. Stored worlds are `schema_version` 5.
    `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
    a failure returns the input snapshot unchanged. `edit` uses it to refuse results that break a

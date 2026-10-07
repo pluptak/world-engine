@@ -167,6 +167,7 @@ test("every cause kind the engine runs is a shape the snapshot schema accepts", 
   const samples: { [K in ScheduledCause["kind"]]: Extract<ScheduledCause, { kind: K }> } = {
     close: { due_tick: 3, kind: "close", entity: "e1", cause_id: "ev1" },
     bleed: { due_tick: 3, kind: "bleed", entity: "e1", cause_id: "ev1", remaining: 2 },
+    process: { due_tick: 3, kind: "process", entity: "e1", cause_id: null, process: "burn" },
   };
   deepStrictEqual([...CAUSE_KINDS].sort(), Object.keys(samples).sort());
   const base = { version: 0, tick: 0, next_seq: 2, templates_hash: "h", coverage: { relations: [], senses: [], properties: [] }, entities: {} };

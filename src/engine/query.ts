@@ -338,6 +338,8 @@ export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
   wait: SILENT_SENSES,
   // The author's clock: time passing for the world, which nobody senses; what it runs is sensed.
   advance: AUTHORED_SENSES,
+  // A prop a template's process moved: seen like any event, never heard or smelt.
+  changed: SILENT_SENSES,
   search: SILENT_SENSES,
   moved: AUDIBLE_SENSES,
   collided: AUDIBLE_SENSES,
