@@ -39,25 +39,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Cheaper submit at scale
-
-`docs/persistence.md` (Scale) measures a 500-entity world at 10.6 ms per command, of which the engine is
-about 2 ms (pipeline 1.2, validate 1.0) and the rest, 8.2 ms, is the store: reading and parsing
-`snapshot.json` (about 2.4 ms in `load`), serialising the result (1.4 ms in `canonicalJson`), and the
-writes and stats around it. A world several times larger is several times slower per command.
-
-- **Handle cache:** a store handle keeps the last snapshot it loaded or wrote, and reuses it while
-  `snapshot.json`'s size and modification time and `head.json`'s counts still match what it saw, so
-  another handle's write is still noticed (the store tests that open two handles on one directory
-  must pass unchanged). Saves the read and parse of `load` on the commands a handle makes in a row.
-- **One head read:** `submit` reads `head.json` in `load` and again to build the next head; pass the
-  first read on.
-- **Measure:** `npm run bench:scale` before and after, both numbers added to the Scale table.
-- **Not in this item:** a delta log instead of rewriting the snapshot, and `validateSnapshot` limited
-  to touched entities. Either changes what a crash leaves on disk or what the validator promises, so
-  each is its own item once this one's numbers show what is left.
-- **Depends on:** nothing.
-
 ### Authored beats: the architect's scheduled interventions
 
 An architect needs to say "at tick 305 someone knocks at the door, at 310 the lights fail" and have
