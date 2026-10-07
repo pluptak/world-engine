@@ -9,7 +9,7 @@ What is built, nothing aspirational, one concept per file:
 - [verbs-moving.md](verbs-moving.md): `move`, `push`, `pull`.
 - [verbs-holding.md](verbs-holding.md): `take`, `drop`, `put`, `give`, `pour`.
 - [verbs-openables.md](verbs-openables.md): `open`, `close`, `lock`, `unlock`.
-- [verbs-other.md](verbs-other.md): `attack`, `search`, `wait`, `edit`.
+- [verbs-other.md](verbs-other.md): `attack`, `search`, `wait`, `advance`, `edit`.
 - [state.md](state.md): snapshots, validation, templates, parts, capacities, physical consequences.
 - [structure.md](structure.md): parts, sparse part state, what writes it, and severing.
 - [templates.md](templates.md): template fields, `extends`, companions, frozen sets and upgrades.

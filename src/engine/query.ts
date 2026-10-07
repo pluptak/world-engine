@@ -336,6 +336,8 @@ export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
   pull: AUDIBLE_SENSES,
   attack: AUDIBLE_SENSES,
   wait: SILENT_SENSES,
+  // The author's clock: time passing for the world, which nobody senses; what it runs is sensed.
+  advance: AUTHORED_SENSES,
   search: SILENT_SENSES,
   moved: AUDIBLE_SENSES,
   collided: AUDIBLE_SENSES,

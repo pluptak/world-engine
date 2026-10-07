@@ -23,4 +23,5 @@ This is the index: one line per verb, its rules in the family file it links to.
 - `attack`: strikes with the first mode the attacker can use ([verbs-other.md](verbs-other.md)).
 - `search`: looks under or behind a target ([verbs-other.md](verbs-other.md)).
 - `wait`: lets ticks pass ([verbs-other.md](verbs-other.md)).
+- `advance`: the world author lets ticks pass, with no one acting ([verbs-other.md](verbs-other.md)).
 - `edit`: the world author's one change ([verbs-other.md](verbs-other.md)).

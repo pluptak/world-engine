@@ -48,10 +48,10 @@ function run(snapshot: Snapshot, command: Omit<Command, "command_id">) {
   return apply(snapshot, registry, { command_id: `c${seq}`, ...command });
 }
 
-test("each verb declares its duration: one tick, wait its argument, an edit none", () => {
+test("each verb declares its duration: one tick, wait and advance their argument, an edit none", () => {
   const durations = Object.fromEntries(verbs().map((entry) => [entry.verb, entry.duration]));
   for (const [verb, duration] of Object.entries(durations)) {
-    const expected = verb === "wait" ? { arg: "ticks" } : verb === "edit" ? { ticks: 0 } : { ticks: 1 };
+    const expected = verb === "wait" || verb === "advance" ? { arg: "ticks" } : verb === "edit" ? { ticks: 0 } : { ticks: 1 };
     deepStrictEqual(duration, expected, verb);
   }
 

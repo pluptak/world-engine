@@ -10,7 +10,7 @@ import { giveVerb } from "./give.js";
 import { putVerb } from "./put.js";
 import { pourVerb } from "./pour.js";
 import { searchVerb } from "./search.js";
-import { waitVerb } from "./wait.js";
+import { advanceVerb, waitVerb } from "./wait.js";
 
 export const verbRegistry: VerbRegistry = new Map([
   ["move", moveVerb],
@@ -28,6 +28,7 @@ export const verbRegistry: VerbRegistry = new Map([
   ["pull", pullVerb],
   ["attack", attackVerb],
   ["wait", waitVerb],
+  ["advance", advanceVerb],
   ["edit", editVerb],
 ]);
 

@@ -16,7 +16,7 @@ grip, and not felt otherwise; a `collided` is felt through what it hit as well.
 | `entity-odorous` | T | T | F | T | F | F | T | F | F | O |
 | `entity-odourless` | T | T | F | T | F | F | F | F | F | O |
 
-`authored` is `edit`, `placed`, `edited`, `removed`, and a `spawned` whose cause is one of those:
+`authored` is `edit`, `advance`, `placed`, `edited`, `removed`, and a `spawned` whose cause is one of those:
 the world author's own work, which nobody senses, though its consequences (`displaced`, `dropped`,
 `broken`, a product's `spawned`) are sensed as any other event. `pour` is `pour`, `poured` and
 `spilled`; `broken` is a break whose entity held a liquid or residue; `event` is any other. The

@@ -34,7 +34,7 @@ suffixes (NodeNext).
   `entity.part`) and runs `verb.preconditions`. Only after all of those pass does it emit the root
   event and call `verb.transition`. Any status other than `ok` returns the input snapshot unchanged.
    After the transition, `advanceClock` (`src/engine/clock.ts`) moves `tick` on by the verb's
-   declared `duration` (one tick, `wait` its `ticks` arg, `edit` none), expiring every modifier due
+   declared `duration` (one tick, `wait` and the author's `advance` their `ticks` arg, `edit` none), expiring every modifier due
    on the way with a `capability_changed` caused by the modifier's `cause_id`, under which the
    `modifiers` delta is recorded too (`docs/provenance.md`); `emit` stamps each event with the
    current `tick`, so an expiry carries the tick it fell due. At each tick it also runs the
@@ -121,7 +121,7 @@ suffixes (NodeNext).
   through `context.verb`; a refusal with an undeclared code throws in `pipeline.ts`, which makes the
   whole suite a drift check for the declared lists. `src/errors.ts` holds `WorldError`, whose
   codes surface as CLI issue codes. `edit` sends one `spawn`/`remove`/`place`/`set_props`/`set_part`
-  through the pipeline as the reserved non-agent author `world` (`WORLD_AUTHOR`), which skips the
+  through the pipeline as the reserved non-agent author `world` (`WORLD_AUTHOR`, which also alone may issue `advance`: time with no agent waiting; a verb opts in with `author_only`), which skips the
   agency check; `src/engine/verbs/edit.ts` holds it. `check` runs `resolveSubmission` against the
   current version with the same validation gate, but never writes or logs; `since` folds the store's
   log, or a memory world's per-command records, into the deltas and events of every ok command after

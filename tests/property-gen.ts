@@ -2,7 +2,7 @@
 // state-aware-lite step generator (reads the snapshot, never Math.random), a delta-fold check,
 // and a cause-chain check. Nothing here ships in src/.
 import { fileURLToPath } from "node:url";
-import type { Command, WorldEdit } from "../src/engine/command.js";
+import { WORLD_AUTHOR, type Command, type WorldEdit } from "../src/engine/command.js";
 import { spawn } from "../src/engine/spawn.js";
 import { resolveScenario } from "../src/scenario.js";
 import { loadTemplates, templatesHash, type TemplateRegistry } from "../src/templates.js";
@@ -311,6 +311,13 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     };
   },
   wait: (context, options) => waiting(context, options?.ticks),
+  // The author's clock: time passes with no one acting.
+  advance: (context) => ({
+    command_id: context.commandId,
+    actor: WORLD_AUTHOR,
+    verb: "advance",
+    args: { ticks: int(context.rand, 1, 6) },
+  }),
   // The five edit kinds, not five verbs: the roll that chose `edit` chooses among them too.
   edit: (context) => {
     if (context.roll < 0.08) {
@@ -549,7 +556,7 @@ function shifted(context: GenContext, verb: "push" | "pull"): Command {
 
 // One slot per band of the roll; a slot with several verbs spends a draw to choose between them.
 const SLOTS: readonly { below: number; verbs: readonly string[] }[] = [
-  { below: 0.14, verbs: ["wait"] },
+  { below: 0.14, verbs: ["wait", "advance"] },
   { below: 0.26, verbs: ["move"] },
   { below: 0.36, verbs: ["take"] },
   { below: 0.42, verbs: ["drop"] },

@@ -32,7 +32,7 @@ function unchangedResult(
   };
 }
 
-// The reserved author signs edits but lives in no snapshot; the edit verb never reads it.
+// The reserved author signs edits and time but lives in no snapshot; its verbs never read it.
 const worldAuthor: Entity = {
   id: WORLD_AUTHOR,
   template: "world",
@@ -74,12 +74,12 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     return unchangedResult(snapshot, command, "invalid", null, "unknown_verb");
   }
 
-  const worldEdit = command.actor === WORLD_AUTHOR && command.verb === "edit";
-  const actor = worldEdit ? worldAuthor : snapshot.entities[command.actor];
+  const authored = command.actor === WORLD_AUTHOR && verb.author_only === true;
+  const actor = authored ? worldAuthor : snapshot.entities[command.actor];
   if (actor === undefined) {
     return unchangedResult(snapshot, command, "invalid", null, "no_such_actor");
   }
-  if (!worldEdit && !isAgent(snapshot, actor.id)) {
+  if (!authored && !isAgent(snapshot, actor.id)) {
     return unchangedResult(snapshot, command, "invalid", null, "not_an_agent");
   }
 

@@ -185,6 +185,8 @@ export interface VerbCatalogEntry {
 
 export interface Verb {
   requires_target: boolean;
+  // Only the reserved author `world` may issue it, and it needs no agent body: `edit` and `advance`.
+  author_only?: boolean;
   args: Readonly<Record<string, ArgDecl>>;
   refuses: readonly string[];
   duration: VerbDuration;

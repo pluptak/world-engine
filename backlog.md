@@ -37,38 +37,11 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 ## Items
 
-Each item names what it depends on. Ready now, in any order: Advance, Cause kinds as a registry, Fork
+Each item names what it depends on. Ready now, in any order: Cause kinds as a registry, Fork
 a world, Scale benchmark. Then, in a chain: Cause kinds → Template processes → Process effects →
 Light sources and Consume (parallel) → Camp scenario. Seeded randomness follows Template processes;
-Advance stops when an agent would notice follows Advance. Speech is ready now; Authored beats
-follows Cause kinds as a registry and Advance.
-
-### Advance: time with no actor
-
-A controller that syncs several agents (human, AI) needs to move the clock without making someone
-wait. Today only an agent's `wait` does that; `edit` is fixed at `duration: { ticks: 0 }` and the
-`world` author is accepted only for `edit` (`src/engine/pipeline.ts`, `worldEdit`), so a `world`
-`wait` is `no_such_actor`. The workaround, waiting as a living agent, is logged as that agent's act,
-is perceived as it, and fails once the agent is destroyed.
-
-- **Verb:** a new `advance` verb with `args: { ticks: { kind: "int" } }`, `duration: { arg: "ticks" }`,
-  no target, no refusals beyond `invalid_args` for a missing or non-positive count. Like `edit`, only
-  the reserved author `world` (`WORLD_AUTHOR`) may issue it; an agent issuing it is refused, and the
-  code is declared in the verb's `refuses`.
-- **Pipeline:** accept `WORLD_AUTHOR` as the actor for `advance` as well as `edit` (generalise
-  `worldEdit`, don't special-case a second verb); `advanceClock` is unchanged, so expiries and
-  scheduled causes run and emit under their own `cause_id`s exactly as for `wait`.
-- **Events:** `advance` emits no root event of its own beyond what the pipeline emits for any ok
-  command; what the span runs (closes, bleeds, expiries) is perceived like any other event.
-- **API and CLI:** `world.command` carries it with no new method; check the CLI `command` op and
-  `verbs` catalog list it; `check` dry-runs it.
-- **Registration points:** one line each in `src/engine/verbs/index.ts`, `src/errors.ts` if a new
-  code, `src/contract.ts`, the verb table in `tests/property-gen.ts`, and the `docs/verbs.md` index
-  with its rule in the matching `docs/verbs-*.md` and `docs/time.md`.
-- **Tests:** advancing runs a due self-close and a bleed and expires a modifier at the right ticks;
-  `advance` by an agent is refused; `advance` with no agents in the world works; a stale
-  `based_on_version` preempts as usual; replay from the log reproduces it; the property test mixes
-  it in and every step stays valid.
+Advance stops when an agent would notice is ready now (Advance shipped). Speech is ready now; Authored beats
+follows Cause kinds as a registry.
 
 ### Cause kinds as a registry
 
@@ -195,7 +168,7 @@ limits list is written from a real world.
   the first `changed`; replay of `log.jsonl` from `initial.json` equals `snapshot.json`.
 - **`docs/limits-camp.md`:** one line per thing the scenario wanted and could not say, in the form of
   `docs/limits.md`; link it from `docs/limits.md` and `docs/DESIGN.md`. Nothing there is a proposal.
-- **Depends on:** Advance, Light sources, Consume.
+- **Depends on:** Light sources, Consume.
 
 ### Seeded randomness
 
@@ -258,7 +231,7 @@ something happens that agent could sense, not after a fixed count.
   and not for one in a sealed room; with no event the full count elapses; the stop never splits one
   tick's events; two advances end where one would have; replay of the log reproduces the early stop;
   the property test mixes it in.
-- **Depends on:** Advance.
+- **Depends on:** nothing (`advance` has shipped).
 
 ### Scale benchmark and the first fixes
 
@@ -329,7 +302,7 @@ this one a *scheduled beat* in code and docs, `ScheduledBeat`, cause kind `beat`
   cancel; two beats due at one tick run in the order scheduled; a long `advance` runs a whole chain;
   replay from the log reproduces it; `perceivers: true` names who sensed a knock; the property test
   schedules, cancels and fires beats and every step stays valid.
-- **Depends on:** Cause kinds as a registry, Advance (to let time pass with no actor in the tests).
+- **Depends on:** Cause kinds as a registry (tests move time with `advance`).
 
 ### Speech: saying something without the engine reading it
 

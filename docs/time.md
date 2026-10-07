@@ -2,7 +2,8 @@
 
 The clock is the snapshot's integer `tick`: logical time, never the wall clock. Every verb declares
 its `duration` in the catalog, either a fixed `{ticks}` or `{arg}`, the positive int argument that
-sets it. Every verb takes one tick, except `wait`, which takes `args.ticks`, and `edit`, which takes
+sets it. Every verb takes one tick, except `wait` and the author's `advance`, which take `args.ticks`
+(`advance` is time with no agent acting, so a controller can move the clock alone), and `edit`, which takes
 none, because the author states facts and no time passes in the world for them.
 
 An ok command resolves at the tick it starts: its preconditions and transition read the snapshot as

@@ -713,6 +713,7 @@ function validateResult(context: CommandContext): PreconditionResult {
 }
 
 export const editVerb: Verb = {
+  author_only: true,
   // The author states facts; no time passes in the world for them.
   duration: { ticks: 0 },
   requires_target: false,
