@@ -6,6 +6,7 @@ import { test } from "node:test";
 import {
   canonicalJson,
   createWorld,
+  memoryWorld,
   WORLD_AUTHOR,
   type Id,
   type Result,
@@ -16,6 +17,7 @@ import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
 import { replay } from "../src/store/file-store.js";
 import { fileURLToPath } from "node:url";
+import { buildInitial, genStep, mulberry32, withProcessFixtures } from "./property-gen.js";
 
 // A scheduled beat is the architect's intention kept in the snapshot: "at tick 5 someone knocks".
 // When it falls due it becomes ordinary events, sensed (or not) like any others.
@@ -417,4 +419,215 @@ test("a repeating beat whose action removes its own subject runs once more at mo
   deepStrictEqual(types(run).filter((type) => type !== "advance"), ["removed"]);
   strictEqual(h.world.snapshot().schedule, undefined);
   deepStrictEqual(validateSnapshot(h.world.snapshot(), registry), []);
+});
+
+test("a beat can ask who is where: a knock sounds only while the yard is occupied", (t) => {
+  const h = inn(t);
+  const yard = h.world.id("yard")!;
+  const sound = { kind: "sound" as const, entity: h.door };
+  const schedule = (id: string, at_tick: number, only_if: unknown, then?: unknown) =>
+    edit(h.world, { kind: "schedule_beat", id, at_tick, action: sound, only_if, ...(then === undefined ? {} : { then }) } as WorldEdit);
+  // bob is in the yard, so the knock sounds; ann is in the hall, so the echo that wants it empty is skipped.
+  strictEqual(
+    schedule("knock", 2, { room: yard, occupied: true }, [
+      { id: "echo", delay_ticks: 1, action: sound, only_if: { room: h.hall, occupied: false } },
+    ]).status,
+    "ok",
+  );
+  const first = advance(h.world, 4);
+  deepStrictEqual(types(first).filter((type) => type !== "advance"), ["sounded", "beat_skipped"]);
+  deepStrictEqual(first.events.find((event) => event.type === "beat_skipped")?.data, { id: "echo", reason: "condition" });
+
+  // Two beats are waiting when bob leaves the yard: the one that wanted it occupied is skipped, and
+  // the one that wanted it empty sounds.
+  strictEqual(schedule("while-there", 8, { room: yard, occupied: true }).status, "ok");
+  strictEqual(schedule("once-gone", 8, { room: yard, occupied: false }).status, "ok");
+  strictEqual(edit(h.world, { kind: "place", target: h.bob, support: h.hall, pos: { x: 200, y: 0 } }).status, "ok");
+  strictEqual(h.world.entity(h.bob)?.location, h.hall);
+  const second = advance(h.world, 6);
+  deepStrictEqual(
+    second.events.filter((event) => event.type === "sounded" || event.type === "beat_skipped").map((event) => [event.type, event.data.id]),
+    [
+      ["beat_skipped", "while-there"],
+      ["sounded", undefined],
+    ],
+  );
+  strictEqual(h.world.snapshot().schedule, undefined);
+  strictEqual(canonicalJson(replay(h.dir)), canonicalJson(h.world.snapshot()));
+});
+
+test("a beat can ask where an entity is, and follows it to another room", (t) => {
+  const h = inn(t);
+  const yard = h.world.id("yard")!;
+  const sound = { kind: "sound" as const, entity: h.door };
+  const outcome = (result: Result, id: string): "ran" | "skipped" =>
+    result.events.some((event) => event.type === "beat_skipped" && event.data.id === id) ? "skipped" : "ran";
+  const ask = (id: string, only_if: unknown, at_tick: number) =>
+    strictEqual(edit(h.world, { kind: "schedule_beat", id, at_tick, action: sound, only_if } as WorldEdit).status, "ok");
+  ask("note-in-hall", { entity: h.note, in: h.hall }, 2);
+  ask("note-in-yard", { entity: h.note, in: yard }, 2);
+  const before = advance(h.world, 3);
+  deepStrictEqual([outcome(before, "note-in-hall"), outcome(before, "note-in-yard")], ["ran", "skipped"]);
+
+  // ann picks the note up and is set down in the yard: what she carries is where she is.
+  strictEqual(h.world.command({ command_id: "take-note", actor: h.ann, verb: "take", target: "note" }).status, "ok");
+  strictEqual(edit(h.world, { kind: "place", target: h.ann, support: yard, pos: { x: 100, y: 0 } }).status, "ok");
+  strictEqual(h.world.entity(h.note)?.location, yard);
+  ask("carried-in-hall", { entity: h.note, in: h.hall }, 8);
+  ask("carried-in-yard", { entity: h.note, in: yard }, 8);
+  const after = advance(h.world, 6);
+  deepStrictEqual([outcome(after, "carried-in-hall"), outcome(after, "carried-in-yard")], ["skipped", "ran"]);
+});
+
+test("a missing entity or room is false, and a destroyed body does not occupy a room", (t) => {
+  const h = inn(t);
+  const sound = { kind: "sound" as const, entity: h.door };
+  const forms: Array<[string, unknown]> = [
+    ["no-entity", { entity: "e999", in: h.hall }],
+    ["no-room", { entity: h.note, in: "e999" }],
+    ["no-room-occupied", { room: "e999", occupied: true }],
+    ["no-room-empty", { room: "e999", occupied: false }],
+  ];
+  for (const [id, only_if] of forms) {
+    strictEqual(edit(h.world, { kind: "schedule_beat", id, at_tick: 2, action: sound, only_if } as WorldEdit).status, "ok");
+  }
+  const run = advance(h.world, 3);
+  deepStrictEqual(
+    run.events.filter((event) => event.type === "beat_skipped").map((event) => [event.data.id, event.data.reason]),
+    forms.map(([id]) => [id, "condition"]),
+  );
+  strictEqual(types(run).includes("sounded"), false);
+
+  // The same hall with ann's body destroyed holds no one: only "empty" is true of it.
+  const snapshot = h.world.snapshot();
+  const fallen = memoryWorld(
+    { ...snapshot, entities: { ...snapshot.entities, [h.ann]: { ...snapshot.entities[h.ann]!, integrity: 0, status: "destroyed" } } },
+    registry,
+  );
+  const room = (id: string, occupied: boolean) =>
+    fallen.edit({ kind: "schedule_beat", id, at_tick: snapshot.tick + 2, action: sound, only_if: { room: h.hall, occupied } });
+  strictEqual(room("hall-occupied", true).status, "ok");
+  strictEqual(room("hall-empty", false).status, "ok");
+  const result = fallen.command({ command_id: "wait-on", actor: WORLD_AUTHOR, verb: "advance", args: { ticks: 3 } });
+  deepStrictEqual(
+    result.events.filter((event) => event.type === "sounded" || event.type === "beat_skipped").map((event) => [event.type, event.data.id]),
+    [
+      ["beat_skipped", "hall-occupied"],
+      ["sounded", undefined],
+    ],
+  );
+});
+
+test("a condition of two forms, or of none, is malformed; the validator holds a stored one to the same shapes", (t) => {
+  const h = inn(t);
+  const sound = { kind: "sound" as const, entity: h.door };
+  const code = (only_if: unknown, where: "beat" | "follower" = "beat"): [string, string | undefined] => {
+    const wanted =
+      where === "beat"
+        ? { kind: "schedule_beat", id: "x", at_tick: 3, action: sound, only_if }
+        : { kind: "schedule_beat", id: "x", at_tick: 3, action: sound, then: [{ id: "y", delay_ticks: 1, action: sound, only_if }] };
+    const result = edit(h.world, wanted as WorldEdit);
+    if (result.status === "ok") {
+      strictEqual(edit(h.world, { kind: "cancel_beat", id: "x" }).status, "ok");
+    }
+    return [result.status, result.reason_code];
+  };
+  const bad: unknown[] = [
+    {},
+    { entity: h.note },
+    { entity: h.note, in: h.hall, prop: "lit", op: "eq", value: true },
+    { entity: h.note, in: h.hall, occupied: true },
+    { entity: h.note, in: "" },
+    { entity: h.note, in: 7 },
+    { in: h.hall },
+    { entity: h.note, in: h.hall, extra: 1 },
+    { room: h.hall },
+    { occupied: true },
+    { room: h.hall, occupied: "yes" },
+    { room: "", occupied: true },
+    { room: h.hall, occupied: true, entity: h.note },
+    { room: h.hall, occupied: true, prop: "lit" },
+  ];
+  for (const only_if of bad) {
+    deepStrictEqual(code(only_if), ["invalid", "invalid_args"], JSON.stringify(only_if));
+    deepStrictEqual(code(only_if, "follower"), ["invalid", "invalid_args"], JSON.stringify(only_if));
+  }
+  deepStrictEqual(code({ entity: h.note, in: h.hall }), ["ok", undefined]);
+  deepStrictEqual(code({ room: h.hall, occupied: false }, "follower"), ["ok", undefined]);
+
+  strictEqual(edit(h.world, { kind: "schedule_beat", id: "knock", at_tick: 5, action: sound }).status, "ok");
+  const base = h.world.snapshot();
+  const [cause] = base.schedule!;
+  ok(cause !== undefined && cause.kind === "beat");
+  const codes = (only_if: unknown): string[] =>
+    validateSnapshot({ ...base, schedule: [{ ...cause, only_if } as typeof cause] }, registry).map((issue) => issue.code);
+  deepStrictEqual(codes({ entity: h.note, in: h.hall }), []);
+  deepStrictEqual(codes({ room: h.hall, occupied: true }), []);
+  deepStrictEqual(codes({ room: h.hall }), ["invalid_beat"]);
+  deepStrictEqual(codes({ entity: h.note, in: h.hall, occupied: true }), ["invalid_beat"]);
+});
+
+// The truth of a presence condition, asked of the states the generator reaches: every entity against
+// every room, and every room occupied and empty, each as a beat due next tick that sounds or is skipped.
+test("property: a presence condition holds exactly when the snapshot says so, over random worlds", () => {
+  const fixtures = withProcessFixtures(registry);
+  const seen: Record<"in" | "occupied", [number, number]> = { in: [0, 0], occupied: [0, 0] };
+  let worlds = 0;
+  for (let seed = 0; seed < 60; seed += 1) {
+    const rand = mulberry32(seed + 9500);
+    const world = memoryWorld(buildInitial(fixtures), fixtures);
+    for (let i = 0; i < 25; i += 1) {
+      const step = genStep(rand, world.snapshot(), `pc-${seed}-${i}`);
+      if ("verb" in step) {
+        world.command(step);
+      } else {
+        world.edit(step);
+      }
+    }
+    const snapshot = world.snapshot();
+    // Anything already due next tick could change the world before these are read.
+    if (snapshot.schedule?.some((cause) => cause.due_tick <= snapshot.tick + 1)) {
+      continue;
+    }
+    const everything = Object.values(snapshot.entities);
+    const rooms = everything.filter((entity) => entity.template === "room").map((entity) => entity.id);
+    if (rooms.length === 0) {
+      continue;
+    }
+    // A world holds at most 256 beats, those already pending counted.
+    const entities = everything.slice(0, Math.max(1, Math.floor((250 - (snapshot.schedule?.length ?? 0)) / rooms.length) - 2));
+    worlds += 1;
+    const sound = { kind: "sound" as const, entity: rooms[0]! };
+    const wanted: Array<{ id: string; form: "in" | "occupied"; only_if: Record<string, unknown>; expected: boolean }> = [];
+    for (const room of rooms) {
+      for (const entity of entities) {
+        wanted.push({ id: `in-${room}-${entity.id}`, form: "in", only_if: { entity: entity.id, in: room }, expected: entity.location === room });
+      }
+      const standing = everything.some(
+        (entity) => entity.location === room && entity.props.agent === true && entity.detached_from === null && entity.status !== "destroyed",
+      );
+      for (const occupied of [true, false]) {
+        wanted.push({ id: `room-${room}-${occupied}`, form: "occupied", only_if: { room, occupied }, expected: standing === occupied });
+      }
+    }
+    for (const { id, only_if } of wanted) {
+      const scheduled = world.edit({ kind: "schedule_beat", id, at_tick: snapshot.tick + 1, action: sound, only_if } as unknown as WorldEdit);
+      strictEqual(scheduled.status, "ok", id);
+    }
+    const run = world.command({ command_id: `pc-adv-${seed}`, actor: WORLD_AUTHOR, verb: "advance", args: { ticks: 1 } });
+    strictEqual(run.status, "ok");
+    const skipped = new Set(
+      run.events.filter((event) => event.type === "beat_skipped").map((event) => `${String(event.data.id)}:${String(event.data.reason)}`),
+    );
+    strictEqual(run.events.filter((event) => event.type === "beat_skipped").length, skipped.size);
+    for (const { id, form, only_if, expected } of wanted) {
+      strictEqual(skipped.has(`${id}:condition`), !expected, `seed ${seed} ${JSON.stringify(only_if)}`);
+      seen[form][expected ? 0 : 1] += 1;
+    }
+    strictEqual(run.events.filter((event) => event.type === "sounded").length, wanted.filter((one) => one.expected).length);
+    strictEqual(world.snapshot().schedule?.some((cause) => cause.kind === "beat") ?? false, false);
+  }
+  ok(worlds >= 20, `worlds ${worlds}`);
+  ok(seen.in[0] >= 40 && seen.in[1] >= 200, `in ${seen.in}`);
+  ok(seen.occupied[0] >= 40 && seen.occupied[1] >= 40, `occupied ${seen.occupied}`);
 });

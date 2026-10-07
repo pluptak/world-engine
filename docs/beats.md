@@ -33,9 +33,18 @@ before it falls due is pruned with it, as every cause is, recording nothing.
 next door only when `loud`; never seen (`false` / `unseen`, wherever the observer stands); no smell;
 no touch.
 
-**Conditions.** `only_if { entity, prop, op, value }` (`op`: `eq ne lt lte gt gte`; the orderings need
-a number) is read against the entity's `props` at the due tick. A missing entity or prop is false. When
-false the beat does nothing and emits `beat_skipped { id, reason: "condition" }`.
+**Conditions.** `only_if` is read at the due tick, in one of three forms told apart by their keys; a
+mix of forms, or none, is `invalid_args`, and a stored one is held to the same shapes (`invalid_beat`):
+
+- `{ entity, prop, op, value }` (`op`: `eq ne lt lte gt gte`; the orderings need a number) against the
+  entity's `props`. A missing entity or prop is false.
+- `{ entity, in: <room> }` is true when the entity exists and its `location` is that room, so a thing
+  carried into another room is there with its carrier.
+- `{ room, occupied: <boolean> }` is true when a live agent standing in the room is what `occupied` says:
+  a destroyed or bled-out body and a severed part are not live agents. A missing room is false for both
+  values.
+
+When false the beat does nothing and emits `beat_skipped { id, reason: "condition" }`.
 
 **Failure.** If the action's edit is refused when it runs, by its own checks or by the snapshot rule it
 would break, nothing it did is kept and the beat emits `beat_skipped { id, reason: "failed", code }`

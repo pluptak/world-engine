@@ -585,7 +585,13 @@ function beatEdit(context: GenContext): WorldEdit {
     action: first,
   };
   if (context.rand() < 0.3) {
-    edit.only_if = { entity: subject, prop: "lit", op: "eq", value: context.rand() < 0.5 };
+    const form = context.rand();
+    edit.only_if =
+      form < 0.5 || context.rooms.length === 0
+        ? { entity: subject, prop: "lit", op: "eq", value: context.rand() < 0.5 }
+        : form < 0.75
+          ? { entity: subject, in: pick(context.rand, context.rooms) }
+          : { room: pick(context.rand, context.rooms), occupied: context.rand() < 0.5 };
   }
   if (context.rand() < 0.4) {
     const follower = action();

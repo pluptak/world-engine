@@ -1,4 +1,4 @@
-import type { Id, ScheduledCause, WorldEvent } from "../model.js";
+import type { Id, ScheduledCause, Snapshot, WorldEvent } from "../model.js";
 import {
   WORLD_AUTHOR,
   type BeatAction,
@@ -6,11 +6,13 @@ import {
   type BeatCondition,
   type BeatRepeat,
   type Command,
+  type PropCondition,
   type ScheduleBeatEdit,
   type TransitionContext,
 } from "./command.js";
 import { withCause } from "./pending.js";
 import { resolveTarget } from "./resolve.js";
+import { isAgent } from "./verbs/address.js";
 import { editVerb, parseEdit } from "./verbs/edit.js";
 
 // An authored beat is the architect's intention, kept in the snapshot's schedule as a cause of kind
@@ -41,9 +43,30 @@ export function isBeatId(value: unknown): value is string {
   return typeof value === "string" && BEAT_ID.test(value);
 }
 
+function nonEmpty(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
+}
+
+// One of three forms, told apart by their keys; a mix of forms, or none, is malformed.
 function parseCondition(value: unknown): BeatCondition | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+  if ("in" in value) {
+    return onlyKeys(value, ["entity", "in"]) && nonEmpty(value.entity) && nonEmpty(value.in)
+      ? (value as unknown as BeatCondition)
+      : null;
+  }
+  if ("room" in value || "occupied" in value) {
+    return onlyKeys(value, ["room", "occupied"]) && nonEmpty(value.room) && typeof value.occupied === "boolean"
+      ? (value as unknown as BeatCondition)
+      : null;
+  }
+  return parsePropCondition(value);
+}
+
+function parsePropCondition(value: Record<string, unknown>): PropCondition | null {
   if (
-    !isRecord(value) ||
     !onlyKeys(value, ["entity", "prop", "op", "value"]) ||
     typeof value.entity !== "string" ||
     value.entity.length === 0 ||
@@ -62,7 +85,7 @@ function parseCondition(value: unknown): BeatCondition | null {
   ) {
     return null;
   }
-  return value as unknown as BeatCondition;
+  return value as unknown as PropCondition;
 }
 
 function parseRepeat(value: unknown): BeatRepeat | null {
@@ -238,8 +261,20 @@ export function editBeatIds(edit: ScheduleBeatEdit): string[] {
   return nodeIds(edit.id, edit.then);
 }
 
-function holds(condition: BeatCondition, entity: { props: Record<string, unknown> } | undefined): boolean {
-  const have = entity?.props[condition.prop];
+// Whether a live agent stands in the room: a destroyed body, a bled-out one and a severed part do not.
+function occupied(snapshot: Snapshot, room: Id): boolean {
+  return Object.values(snapshot.entities).some((entity) => entity.location === room && isAgent(snapshot, entity.id));
+}
+
+function holds(condition: BeatCondition, snapshot: Snapshot): boolean {
+  if ("in" in condition) {
+    // A room that is not there holds nothing, so asking after it needs no check of its own.
+    return snapshot.entities[condition.entity]?.location === condition.in;
+  }
+  if ("room" in condition) {
+    return snapshot.entities[condition.room] !== undefined && occupied(snapshot, condition.room) === condition.occupied;
+  }
+  const have = snapshot.entities[condition.entity]?.props[condition.prop];
   if (have === undefined) {
     return false;
   }
@@ -363,7 +398,7 @@ function scheduleNextRun(context: TransitionContext, cause: BeatCause): void {
 }
 
 export function runBeat(context: TransitionContext, cause: BeatCause): void {
-  if (cause.only_if !== undefined && !holds(cause.only_if, context.snapshot.entities[cause.only_if.entity])) {
+  if (cause.only_if !== undefined && !holds(cause.only_if, context.snapshot)) {
     skipped(context, cause, { reason: "condition" });
   } else {
     const fired = fire(context, cause);

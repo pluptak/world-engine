@@ -67,13 +67,26 @@ export interface SoundAction {
 
 export type BeatAction = SoundAction | SpawnEdit | RemoveEdit | PlaceEdit | PropsEdit | PartEdit;
 
-// Read against an entity's props at the due tick.
-export interface BeatCondition {
+// Read at the due tick, in one of three forms: an entity's prop against a value, whether an entity
+// stands in a room, and whether a live agent does.
+export interface PropCondition {
   entity: Id;
   prop: string;
   op: "eq" | "ne" | "lt" | "lte" | "gt" | "gte";
   value: number | string | boolean;
 }
+
+export interface InCondition {
+  entity: Id;
+  in: Id;
+}
+
+export interface OccupiedCondition {
+  room: Id;
+  occupied: boolean;
+}
+
+export type BeatCondition = PropCondition | InCondition | OccupiedCondition;
 
 // A beat that follows another, `delay_ticks` after its parent runs.
 export interface BeatChild {

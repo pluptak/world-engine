@@ -6,8 +6,6 @@ step that shows it: `S` is `tests/scenario-watch.test.ts`. Nothing here is a pro
 
 - A sound names its source entity, not "whoever is nearest": the architect's knock is a `sounded` on the
   door, and a beat cannot aim at the person standing closest (S step A).
-- A beat's condition reads one entity's prop, never who is present: the lights beat skips because the
-  lantern burns, not because someone is awake to see them go (S step B).
 - The lights are a prop of the room, not of its sources: a beat that darkens the gatehouse cannot douse a
   flame, so a lit lantern keeps the room lit and the chain has to ask first (S steps B, C).
 - A voice heard in the dark names nobody: the controller knows who spoke only because it issued the

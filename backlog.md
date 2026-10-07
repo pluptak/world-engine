@@ -68,19 +68,3 @@ commands; choosing among them stays the middleware's.)
   test asks for the options of a random agent each step and applies one random `ready` option for real: it is
   `ok` (with the dice seeded, so a roll cannot refuse it).
 - **Depends on:** nothing.
-
-### Beat conditions on who is where
-
-`limits-watch.md`: a beat's `only_if` reads one entity's prop, never who is present, so "the lights fail only if
-someone is in the yard" cannot be said.
-
-- **Two more forms** beside the prop comparison, all in `src/engine/beats.ts` (`parseCondition`, `holds`) and
-  the `BeatCondition` union in `src/engine/command.ts`: `{ entity, in: <room> }` is true when the entity exists
-  and its `location` is that room; `{ room, occupied: <boolean> }` is true when a live agent (not a destroyed
-  body) being in that room equals `occupied`. A missing entity or room is false for both. A condition with keys of
-  more than one form, or neither, is `invalid_args`; `beatInvalid` holds a stored one to the same shapes.
-- **Docs and tests:** `docs/beats.md`; `docs/limits-watch.md` loses the line; `tests/scheduled-beat.test.ts`: a
-  knock that only sounds when the yard is occupied, skipping with `condition` when bob has left; `in` follows an
-  entity that was carried to another room; the generator sometimes uses the new forms and every step validates.
-- **Depends on:** nothing.
-
