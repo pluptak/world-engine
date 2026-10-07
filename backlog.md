@@ -40,3 +40,96 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 ## Items
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
+
+### Reads that do not replay the whole log
+
+A store world answers `since`, `observe` with `since`, an event-form `query` and `trace` by replaying every
+accepted command from `initial.json` (`since`, `replayUntilEvent`, `trace` in `src/store/file-store.ts`), and
+`observe` asks an event-form `query` for each event and each sense, each a replay of its own. A controller
+that observes after every command pays a cost that grows with the length of the world's whole history.
+Nothing has measured it; measure first.
+
+- **Measure:** `npm run bench:scale` gains a read phase after the writes (or `bench:reads`): time per call of
+  `since(version - 10)`, `observe(agent, { since })` over a few events, one event-form `perceive`, and `trace`,
+  at a log of 1k, 5k and 10k accepted commands. The numbers, with the machine, go in
+  `docs/measurements.md` ("Store: cost of a read"), before and after.
+- **Fix, if the numbers show what the code suggests (cost linear in the log):** derived checkpoints.
+  Every 256 accepted commands `submit` also writes `checkpoints/<ok_entries>.json`, the canonical snapshot at
+  that version. `since`, `replayUntilEvent`, `trace` and `attempts` start from the nearest checkpoint at or
+  below the version they need instead of `initial.json`, and an event-form query finds its event's command
+  from `events.jsonl` and the log instead of folding to it from the start.
+- **A checkpoint is a cache, never a source of truth:** it names the `templates_hash` and version it was made
+  at, and is ignored if either disagrees with the world, if it is ahead of the log (a crash between the two
+  writes), or if it does not parse; with no usable checkpoint the answer is the full replay's, byte for byte
+  (`canonicalJson`). `upgradeTemplates` and a settled template move drop them. `fork` and memory worlds
+  are unaffected.
+- **Tests** (`tests/checkpoint.test.ts`): answers with checkpoints equal answers without them (delete the
+  directory, truncate a checkpoint, plant one from another world, plant one ahead of the log) for `since`,
+  event-form `perceive`, `trace` and `attempts` over a store world driven by the property generator; a world
+  reopened by a second handle uses and extends them; the read phase of the bench shows cost flat in log length.
+- **Not in this item:** compacting or truncating the log, and a delta log for writes (see
+  `docs/measurements.md` for why that is separate).
+- **Depends on:** nothing.
+
+### A projection names only what the observer senses
+
+`limits-watch.md`: whoever hears a `say` is told who spoke, even in the dark. The same holds for every event
+only heard: `ObservedEvent.entity` names the source of a footstep in a dark room, the door of a knock the
+observer cannot see. `docs/projection.md` says a projection must not list what the observer cannot tell is
+there; its events do.
+
+- **Rule:** an event keeps its `entity` when the observer senses it by sight, smell or touch (event-form
+  `perceive`, as now). An event sensed by hearing alone has no `entity`; it carries `from` instead,
+  `"here"` (the observer's own room, basis `same_location`) or `"next_door"` (`adjacent_loud_event`). Make
+  `entity` optional in `ObservedEvent` (`src/engine/projection.ts`), `ProjectionSchema`
+  (`src/contract.ts`) and `observeThrough` (`src/api.ts`), which already reads the hearing answer and its
+  basis; `command(c, { observe: true })` shares the path.
+- **What does not change:** `Result.events`, `since`, `trace` and `perceivers` stay the omniscient record and
+  name every entity; `perceive` itself is untouched.
+- **Docs and tests:** `docs/projection.md`, `docs/speech.md`, `docs/senses.md`; `docs/limits-watch.md` loses
+  the speaker line and gains "a voice heard in the dark names nobody: the controller knows who spoke only
+  because it issued the command". `tests/speech.test.ts` and `tests/scenario-watch.test.ts` change to the
+  new rule (step C asserts no `entity`, `from: "here"`); a footstep heard in a dark room names no walker;
+  a lit room still names both. The property check in `tests/property.test.ts` gains: no view event whose
+  senses are exactly `["hearing"]` has an `entity`, every other has.
+- **Depends on:** nothing.
+
+### Options: what an agent can do now
+
+A middleware choosing an agent's next action has to try verbs to learn which are possible. `check` dry-runs one
+command; nothing lists the commands that would work. (The scope line allows describing and dry-running
+commands; choosing among them stays the middleware's.)
+
+- **API:** `world.options(actor, { refused? })` returns `{ actor, version, ready, needs_args, blocked? }`.
+  Candidates are every verb in the catalog that is not `author_only`, against each entity in the actor's own
+  projection (`entities`, so nothing the actor cannot sense is offered), excluding the actor, and once with no
+  target for a verb that does not `requires_target`. Each candidate is dry-run with no args through `check`'s
+  path (never logged): `ok` goes in `ready` as `{ verb, target? }`; `invalid` / `invalid_args` means the verb
+  needs arguments and its name goes in `needs_args` (sorted, once); anything else is a refusal, listed in
+  `blocked` as `{ verb, target?, reason_code }` only when `refused: true`. Sorted by verb, then target id.
+  A destroyed body has no options. An unknown actor is `no_such_entity`.
+- **CLI:** an `options` op (`actor`, `refused?`), response schema in `src/contract.ts`; `docs/api.md`,
+  `CLAUDE.md`.
+- **Tests** (`tests/options.test.ts`): in a lit room with a chest, a lantern and a stone in reach: `take` the
+  stone, `open` the chest, `light` the lantern are ready; a stone out of reach is blocked `out_of_reach` and
+  absent without `refused`; `give`, `put`, `move`, `say`, `wait` appear in `needs_args`; in the dark nothing
+  unseen is offered; a destroyed actor has none; a store world and a memory world answer alike. The property
+  test asks for the options of a random agent each step and applies one random `ready` option for real: it is
+  `ok` (with the dice seeded, so a roll cannot refuse it).
+- **Depends on:** nothing.
+
+### Beat conditions on who is where
+
+`limits-watch.md`: a beat's `only_if` reads one entity's prop, never who is present, so "the lights fail only if
+someone is in the yard" cannot be said.
+
+- **Two more forms** beside the prop comparison, all in `src/engine/beats.ts` (`parseCondition`, `holds`) and
+  the `BeatCondition` union in `src/engine/command.ts`: `{ entity, in: <room> }` is true when the entity exists
+  and its `location` is that room; `{ room, occupied: <boolean> }` is true when a live agent (not a destroyed
+  body) being in that room equals `occupied`. A missing entity or room is false for both. A condition with keys of
+  more than one form, or neither, is `invalid_args`; `beatInvalid` holds a stored one to the same shapes.
+- **Docs and tests:** `docs/beats.md`; `docs/limits-watch.md` loses the line; `tests/scheduled-beat.test.ts`: a
+  knock that only sounds when the yard is occupied, skipping with `condition` when bob has left; `in` follows an
+  entity that was carried to another room; the generator sometimes uses the new forms and every step validates.
+- **Depends on:** nothing.
+
