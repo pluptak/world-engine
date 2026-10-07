@@ -41,31 +41,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### The watch: a night scenario for beats and speech
-
-`scenarios/camp.json` proved processes and eating end to end and wrote down what it could not say. Beats
-and speech have only unit tests; a whole scene is what shows whether they compose, and what they still
-cannot say.
-
-- **Scenario `scenarios/watch.json`:** a lit gatehouse (`ann`, a guard, and `cal`, who is meant to be asleep), a door to a dark
-  yard (`bob`, a traveller), a lantern, a table with a note. No seed needed.
-- **Script** (`tests/scenario-watch.test.ts`, step letters as the other scenario tests use):
-  - A: `schedule_beat` a loud knock on the door at tick 5, with a follower 3 ticks later that fails the
-    lights (`set_props` `lit: false` on the gatehouse) `only_if` the lantern is not burning; `advance`
-    with `stop_on_perceived: [ann]` ends at the knock (`advanced` is 5) and `ann` hears it, `bob` hears it
-    too (loud, through the door), and so does `cal`, since sleep is not modelled.
-  - B: `ann` shouts a token, `bob` hears it across the doorway; she whispers to `cal` and a bystander at
-    300 cm does not; her `light` on the lantern makes the follower skip with `beat_skipped` / `condition`.
-  - C: with the lantern left unlit the same chain darkens the gatehouse and `ann` can still hear `cal` say
-    a token but cannot see the note or him.
-  - D: the log replays to the same world, and `observe` for `bob` carries the shout's token and not the
-    whisper's.
-- **Limits file** `docs/limits-watch.md` (linked from `docs/limits.md`, `docs/DESIGN.md`), one line per
-  limit with the step that shows it, as `limits-camp.md` does. Expected: a sound names its source entity
-  and not "whoever is nearest"; a voice carries no identity (the token is all a hearer gets); a beat's
-  action cannot depend on who is present; sleep is not modelled.
-- **Depends on:** nothing (beats and speech have shipped).
-
 ### Repeating beats
 
 A bell every ten ticks, a patrol that comes back: today that is a beat scheduled by hand each time.

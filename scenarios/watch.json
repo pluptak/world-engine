@@ -1,0 +1,26 @@
+[
+  { "id": "gatehouse", "template": "room", "overrides": { "name": "gatehouse", "props": { "lit": true } } },
+  { "id": "yard", "template": "room", "overrides": { "name": "yard", "props": { "lit": false } } },
+  {
+    "id": "door",
+    "template": "door",
+    "overrides": {
+      "name": "door",
+      "location": "gatehouse",
+      "support": "gatehouse",
+      "pos": { "x": 400, "y": 0 },
+      "props": { "openable": true, "open": false, "from": "gatehouse", "to": "yard" }
+    }
+  },
+  {
+    "id": "table",
+    "template": "table",
+    "overrides": { "name": "table", "location": "gatehouse", "support": "gatehouse", "pos": { "x": -80, "y": 0 } }
+  },
+  { "id": "lantern", "template": "lantern", "overrides": { "name": "lantern", "location": "gatehouse", "support": "table" } },
+  { "id": "note", "template": "note", "overrides": { "name": "note", "location": "gatehouse", "support": "table" } },
+  { "id": "ann", "template": "human", "overrides": { "name": "ann", "location": "gatehouse", "support": "gatehouse", "pos": { "x": 0, "y": 0 } } },
+  { "id": "cal", "template": "human", "overrides": { "name": "cal", "location": "gatehouse", "support": "gatehouse", "pos": { "x": 40, "y": 0 } } },
+  { "id": "dee", "template": "human", "overrides": { "name": "dee", "location": "gatehouse", "support": "gatehouse", "pos": { "x": 300, "y": 0 } } },
+  { "id": "bob", "template": "human", "overrides": { "name": "bob", "location": "yard", "support": "yard", "pos": { "x": 0, "y": 0 } } }
+]

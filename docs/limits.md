@@ -4,7 +4,8 @@ What `scenarios/inn.json` could not say, and what the engine did instead. One li
 limit: what was wanted, what happens, and the step in `tests/scenario-inn.test.ts` that
 shows it. Step letters are the command ids the script uses. Nothing here is a proposal.
 What the workshop's physics cannot say is in [limits-workshop.md](limits-workshop.md); what time-driven
-change in the camp cannot is in [limits-camp.md](limits-camp.md).
+change in the camp cannot is in [limits-camp.md](limits-camp.md); what beats and speech cannot, in
+[limits-watch.md](limits-watch.md).
 
 - Smell is holding a liquid or carrying residue, never a property of the material:
   wanted the floor to smell of wine, got a room that smells because it carries residue,
