@@ -3,7 +3,7 @@ import type { Command, TransitionContext, Verb, VerbDuration } from "./command.j
 import type { Modifier, Snapshot } from "../model.js";
 import { pending, withSchedule } from "./pending.js";
 import { reconcileSince } from "./process.js";
-import { runCause } from "./schedule.js";
+import { pruneSchedule, runCause } from "./schedule.js";
 
 // Every verb declares how many ticks it takes: a fixed count, or the value of one of its int args.
 // Only an ok command takes time; a refused or invalid one leaves `tick` where it was.
@@ -61,6 +61,7 @@ export function advanceClock(context: TransitionContext, ticks: number): void {
       const mark = context.deltas.length;
       runCause(context, due);
       reconcileSince(context, mark);
+      pruneSchedule(context);
     }
   }
   context.snapshot = { ...context.snapshot, tick: endTick };

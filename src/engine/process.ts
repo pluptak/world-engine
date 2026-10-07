@@ -1,5 +1,7 @@
 import type { TransitionContext } from "./command.js";
+import { hurt } from "./harm.js";
 import { pending, withCause, withSchedule } from "./pending.js";
+import { removeEntity } from "./verbs/edit.js";
 import type { Entity, Id, ScheduledCause, Snapshot } from "../model.js";
 import type { ProcessDecl, TemplateRegistry } from "../templates.js";
 
@@ -44,11 +46,13 @@ function whileHolds(decl: ProcessDecl, props: Record<string, unknown>): boolean 
 }
 
 // A process can run when its condition holds and the prop it adjusts is an integer not yet at the
-// bound it is moving toward. A prop at its bound is where the process ends, not something to poll.
-function runnable(decl: ProcessDecl, props: Record<string, unknown>): boolean {
+// bound it is moving toward, on something not destroyed. A prop at its bound is where the process
+// ends, not something to poll.
+function runnable(decl: ProcessDecl, entity: Entity): boolean {
+  const props = entity.props;
   const adjust = decl.effect.adjust_prop;
   const value = props[adjust.prop];
-  if (!isInt(value) || !whileHolds(decl, props)) {
+  if (entity.status === "destroyed" || !isInt(value) || !whileHolds(decl, props)) {
     return false;
   }
   if (adjust.by < 0 && adjust.min !== undefined && value <= adjust.min) {
@@ -80,7 +84,7 @@ export function reconcile(
   let result = snapshot;
   for (const decl of declsOf(registry, entity)) {
     const waiting = pending(result).some((cause) => isPendingFor(cause, entityId, decl.id));
-    const can = runnable(decl, entity.props);
+    const can = runnable(decl, entity);
     if (can && !waiting) {
       const due = snapshot.tick + decl.every_ticks;
       if (Number.isSafeInteger(due)) {
@@ -126,7 +130,7 @@ export function reconcileSince(context: TransitionContext, mark: number): void {
 export function runProcess(context: TransitionContext, cause: ProcessCause): void {
   const entity = context.snapshot.entities[cause.entity];
   const decl = entity === undefined ? undefined : declsOf(context.registry, entity).find((d) => d.id === cause.process);
-  if (entity === undefined || decl === undefined || !runnable(decl, entity.props)) {
+  if (entity === undefined || decl === undefined || !runnable(decl, entity)) {
     return;
   }
   const adjust = decl.effect.adjust_prop;
@@ -141,4 +145,30 @@ export function runProcess(context: TransitionContext, cause: ProcessCause): voi
   }
   const eventId = context.emit("changed", entity.id, { prop: adjust.prop, from, to, process: decl.id }, cause.cause_id);
   context.set(entity.id, "props", { ...entity.props, [adjust.prop]: to }, eventId);
+  const reached = adjust.by < 0 ? to === adjust.min : to === adjust.max;
+  if (reached && decl.then !== undefined) {
+    runThen(context, entity.id, decl, eventId);
+  }
+}
+
+// What a process does once, on reaching its bound, under the `changed` that reached it: write a prop
+// (a second `changed`), take integrity (the same chain a bleed makes), or take the entity out of the
+// world. Each can start or stop other processes through the reconcile that follows.
+function runThen(context: TransitionContext, entityId: Id, decl: ProcessDecl, causeId: Id): void {
+  const then = decl.then!;
+  const entity = context.snapshot.entities[entityId];
+  if (entity === undefined) {
+    return;
+  }
+  if ("set_prop" in then) {
+    const { prop, value } = then.set_prop;
+    if (entity.props[prop] !== value) {
+      const eventId = context.emit("changed", entityId, { prop, from: entity.props[prop] ?? null, to: value, process: decl.id }, causeId);
+      context.set(entityId, "props", { ...entity.props, [prop]: value }, eventId);
+    }
+  } else if ("damage" in then) {
+    hurt(context, entityId, then.damage.amount, causeId);
+  } else {
+    removeEntity(context, entityId, causeId);
+  }
 }

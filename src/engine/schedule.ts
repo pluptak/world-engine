@@ -1,7 +1,6 @@
 import type { TransitionContext } from "./command.js";
-import { inSpacePart } from "./carry.js";
 import { pushOccupantsAside } from "./verbs/gate.js";
-import { dropCarriedItem } from "./verbs/drop.js";
+import { hurt } from "./harm.js";
 import type { Id, ScheduledCause } from "../model.js";
 import { pending, withCause, withSchedule } from "./pending.js";
 import { runProcess } from "./process.js";
@@ -86,34 +85,15 @@ function runClose(context: TransitionContext, cause: CauseOf<"close">): void {
 
 function runBleed(context: TransitionContext, cause: CauseOf<"bleed">): void {
   const entity = context.snapshot.entities[cause.entity];
-  if (entity === undefined) {
-    return;
-  }
-  const rule = bleeding(entity.props);
-  if (rule === null || entity.status === "destroyed") {
+  const rule = entity === undefined ? null : bleeding(entity.props);
+  if (entity === undefined || rule === null) {
     return;
   }
   // Each bleed names the one before it, back to the `detached` that opened the wound.
-  const integrity = Math.max(0, entity.integrity - rule.damage);
-  const eventId = context.emit(integrity === 0 ? "destroyed" : "damaged", entity.id, { integrity }, cause.cause_id);
-  context.set(entity.id, "integrity", integrity, eventId);
-  if (integrity === 0) {
-    context.set(entity.id, "status", "destroyed", eventId);
-    // A body that has bled out holds nothing: what its grips and mouth held falls where it stands,
-    // and what is pocketed stays with it.
-    const body = context.snapshot.entities[entity.id]!;
-    const held = Object.keys(context.snapshot.entities)
-      .sort()
-      .filter((id) => {
-        const item = context.snapshot.entities[id]!;
-        return item.contained_in === body.id && !inSpacePart(context.snapshot, context.registry, body, item);
-      });
-    for (const itemId of held) {
-      dropCarriedItem(context, body.id, itemId, eventId);
-    }
-    return;
+  const harm = hurt(context, entity.id, rule.damage, cause.cause_id);
+  if (harm !== null && !harm.destroyed) {
+    scheduleBleed(context, entity.id, harm.eventId, cause.remaining - 1);
   }
-  scheduleBleed(context, entity.id, eventId, cause.remaining - 1);
 }
 
 function runProcessCause(context: TransitionContext, cause: CauseOf<"process">): void {

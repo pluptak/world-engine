@@ -23,7 +23,14 @@ export interface ProcessDecl {
   every_ticks: number;
   while?: { prop: string; op: ProcessOp; value: number | string | boolean };
   effect: { adjust_prop: { prop: string; by: number; min?: number; max?: number } };
+  // Once, when a run brings the prop to the bound it was moving toward.
+  then?: ProcessThen;
 }
+
+export type ProcessThen =
+  | { set_prop: { prop: string; value: number | string | boolean } }
+  | { damage: { amount: number } }
+  | { remove: true };
 
 export interface Template {
   id: string;
@@ -209,7 +216,7 @@ function parseProcesses(value: unknown, label: string): ProcessDecl[] {
     if (!isRecord(entry)) {
       throw new TypeError(`${at} must be an object`);
     }
-    assertOnlyKeys(entry, ["id", "every_ticks", "while", "effect"], at);
+    assertOnlyKeys(entry, ["id", "every_ticks", "while", "effect", "then"], at);
     if (typeof entry.id !== "string" || entry.id.length === 0) {
       throw new TypeError(`${at}.id must be a non-empty string`);
     }
@@ -248,8 +255,55 @@ function parseProcesses(value: unknown, label: string): ProcessDecl[] {
       }
       parsed.while = { prop: clause.prop, op: clause.op as ProcessOp, value: wanted };
     }
+    if (entry.then !== undefined) {
+      const bound = parsed.effect.adjust_prop.by < 0 ? parsed.effect.adjust_prop.min : parsed.effect.adjust_prop.max;
+      if (bound === undefined) {
+        throw new TypeError(`${named}.then needs the bound the process moves toward (min for a negative by, max for a positive)`);
+      }
+      parsed.then = parseThen(entry.then, `${named}.then`);
+    }
     return parsed;
   });
+}
+
+function parseThen(value: unknown, label: string): ProcessThen {
+  if (!isRecord(value)) {
+    throw new TypeError(`${label} must be an object`);
+  }
+  const keys = Object.keys(value);
+  if (keys.length !== 1 || !["set_prop", "damage", "remove"].includes(keys[0]!)) {
+    throw new TypeError(`${label} must declare exactly one of set_prop, damage or remove`);
+  }
+  if (keys[0] === "remove") {
+    if (value.remove !== true) {
+      throw new TypeError(`${label}.remove must be true`);
+    }
+    return { remove: true };
+  }
+  if (keys[0] === "damage") {
+    const damage = value.damage;
+    if (!isRecord(damage)) {
+      throw new TypeError(`${label}.damage must be an object`);
+    }
+    assertOnlyKeys(damage, ["amount"], `${label}.damage`);
+    assertInteger(damage.amount, `${label}.damage.amount`);
+    if (damage.amount < 1) {
+      throw new TypeError(`${label}.damage.amount must be at least 1`);
+    }
+    return { damage: { amount: damage.amount } };
+  }
+  const set = value.set_prop;
+  if (!isRecord(set)) {
+    throw new TypeError(`${label}.set_prop must be an object`);
+  }
+  assertOnlyKeys(set, ["prop", "value"], `${label}.set_prop`);
+  if (typeof set.prop !== "string" || set.prop.length === 0) {
+    throw new TypeError(`${label}.set_prop.prop must be a non-empty string`);
+  }
+  if (typeof set.value !== "string" && typeof set.value !== "number" && typeof set.value !== "boolean") {
+    throw new TypeError(`${label}.set_prop.value must be a primitive`);
+  }
+  return { set_prop: { prop: set.prop, value: set.value } };
 }
 
 function parseEffect(value: unknown, label: string): ProcessDecl["effect"] {
@@ -287,6 +341,7 @@ function copyProcesses(processes: readonly ProcessDecl[]): ProcessDecl[] {
     ...decl,
     ...(decl.while !== undefined && { while: { ...decl.while } }),
     effect: { adjust_prop: { ...decl.effect.adjust_prop } },
+    ...(decl.then !== undefined && { then: structuredClone(decl.then) }),
   }));
 }
 

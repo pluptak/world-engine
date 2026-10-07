@@ -10,8 +10,9 @@ import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } fr
 import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../src/model.js";
 import type { Scenario } from "../src/api.js";
 
-// Two templates that exist for the property test: a candle that burns down while `burning` is true
-// (the generator's prop edits flip it), and moss that grows from the start up to a cap. Random runs
+// Three templates that exist for the property test: a candle that burns down while `burning` is true
+// (the generator's prop edits flip it) and snuffs itself when the fuel is gone, moss that grows from
+// the start up to a cap and is then hurt, and mold that spreads once and is then removed. Random runs
 // start, withdraw, restart and overtake processes under every property.
 export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
   return parseRegistry({
@@ -26,6 +27,7 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
           every_ticks: 2,
           while: { prop: "burning", op: "eq", value: true },
           effect: { adjust_prop: { prop: "fuel", by: -1, min: 0 } },
+          then: { set_prop: { prop: "burning", value: false } },
         },
       ],
     },
@@ -33,7 +35,28 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
       id: "moss",
       extends: "stone",
       props: { size: 1 },
-      processes: [{ id: "grow", every_ticks: 3, effect: { adjust_prop: { prop: "size", by: 1, max: 4 } } }],
+      processes: [
+        {
+          id: "grow",
+          every_ticks: 3,
+          effect: { adjust_prop: { prop: "size", by: 1, max: 4 } },
+          then: { damage: { amount: 60 } },
+        },
+      ],
+    },
+    // Grows to its cap quickly and is then gone.
+    mold: {
+      id: "mold",
+      extends: "stone",
+      props: { size: 3 },
+      processes: [
+        {
+          id: "spread",
+          every_ticks: 2,
+          effect: { adjust_prop: { prop: "size", by: 1, max: 4 } },
+          then: { remove: true },
+        },
+      ],
     },
   });
 }
@@ -125,6 +148,7 @@ export const SCENARIO: Scenario = [
   },
   { template: "candle", overrides: { name: "candle", location: "e1", support: "e1", pos: { x: 110, y: 20 } } },
   { template: "moss", overrides: { name: "moss", location: "e2", support: "e2", pos: { x: -60, y: 20 } } },
+  { template: "mold", overrides: { name: "mold", location: "e1", support: "e1", pos: { x: 130, y: -20 } } },
 ];
 
 export function buildInitial(registry: TemplateRegistry): Snapshot {

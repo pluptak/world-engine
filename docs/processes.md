@@ -15,6 +15,25 @@ nothing else). Without `while` the process runs whenever the prop can move. A ba
 field, a repeated id, `min` above `max` or a zero `by` is refused when the templates load, naming the
 template and the process.
 
+**Then.** A process may declare `then`, once, for the run that brings the prop to the bound it was
+moving toward (`min` for a negative `by`, `max` for a positive one, so a `then` with no such bound is
+refused when the templates load). Exactly one of:
+
+- `{ set_prop: { prop, value } }`: a second `changed` under the first, writing a prop of the entity
+  (`from` is `null` when the prop was absent). Writing the prop a condition reads is how a candle
+  snuffs itself: `edited` → `changed` (fuel 0) → `changed` (burning false).
+- `{ damage: { amount } }`: takes integrity under a `damaged`, or a `destroyed` that sets the status
+  when none is left and drops what the body held, each fall caused by the `destroyed`. It is the same
+  function a bleed uses (`hurt` in `src/engine/harm.ts`), so a body that starves out reads like one
+  that bled out.
+- `{ remove: true }`: a `removed` under the run, the author's removal (`removeEntity` in
+  `src/engine/verbs/edit.ts`): what it hid is uncovered and what it held or carried is let go. A room
+  someone is in is not removed, as for the author, and the `then` does nothing. Whatever else was
+  scheduled on a removed entity goes with it.
+
+An entity that is destroyed runs no process: it is no longer reconciled, so a starved body's hunger
+stays where it ended.
+
 **Extends.** `extends` merges processes by id, as it does props: the parent's list, each replaced by a
 child's of the same id, then the child's new ones. A template that declares none has no `processes`
 key at all, so its place in `templates_hash` is what it was before processes existed.
@@ -49,8 +68,9 @@ of one process on one entity (`duplicate_process`). It does not check the templa
 process: after an upgrade that drops it the cause finds nothing to do and ends.
 
 `tests/process.test.ts` is the spec; the property test's scenario has a candle the generator's prop
-edits light and snuff, and moss that grows from the start, so random runs start, withdraw and restart
-processes under every property.
+edits light and that snuffs itself when its fuel is gone, moss that grows from the start and is then
+hurt, and mold that spreads once and is then removed, so random runs start, withdraw, restart and
+end processes under every property.
 
-What it does not do yet: a bound only ends the process (no `then`), nothing but a prop moves, and a
+What it does not do yet: nothing but a prop moves (no spreading to a neighbour, no spawning), and a
 run is not random.

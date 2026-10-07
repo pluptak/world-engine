@@ -247,6 +247,9 @@ test("random runs run processes, start and stop them, and every step still valid
   let grown = 0;
   let burned = 0;
   let withdrawn = 0;
+  let snuffed = 0;
+  let hurt = 0;
+  let gone = 0;
   for (let seed = 0; seed < 100; seed += 1) {
     const rand = mulberry32(seed);
     const world = memoryWorld(buildInitial(registry), registry);
@@ -260,6 +263,15 @@ test("random runs run processes, start and stop them, and every step still valid
           ran += 1;
           grown += event.data.process === "grow" ? 1 : 0;
           burned += event.data.process === "burn" ? 1 : 0;
+          // A `then` write is a `changed` under the `changed` of its own run.
+          const cause = result.events.find((other) => other.event_id === event.cause_id);
+          snuffed += cause?.type === "changed" && event.data.prop === "burning" ? 1 : 0;
+        }
+        // Integrity taken, or an entity removed, under a process's run.
+        const parent = result.events.find((other) => other.event_id === event.cause_id);
+        if (parent?.type === "changed") {
+          hurt += event.type === "damaged" || event.type === "destroyed" ? 1 : 0;
+          gone += event.type === "removed" ? 1 : 0;
         }
       }
       const after = world.snapshot().schedule?.filter((cause) => cause.kind === "process").length ?? 0;
@@ -271,6 +283,9 @@ test("random runs run processes, start and stop them, and every step still valid
   strictEqual(grown >= 10, true, `grown ${grown}`);
   strictEqual(burned >= 5, true, `burned ${burned}`);
   strictEqual(withdrawn >= 1, true, `withdrawn ${withdrawn}`);
+  strictEqual(snuffed >= 1, true, `snuffed ${snuffed}`);
+  strictEqual(hurt >= 5, true, `hurt ${hurt}`);
+  strictEqual(gone >= 5, true, `gone ${gone}`);
 });
 
 test("the generator aims an edit at every relation rule, and each step still validates", () => {

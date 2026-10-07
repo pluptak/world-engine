@@ -572,11 +572,20 @@ function transitionSpawn(context: TransitionContext, edit: SpawnEdit): void {
 }
 
 function transitionRemove(context: TransitionContext, targetId: Id): void {
-  const doomed = context.snapshot.entities[targetId];
-  if (doomed === undefined) {
+  if (!removeEntity(context, targetId, context.root_event_id)) {
     throw new TypeError("Edit subject changed after validation");
   }
-  const removedEvent = context.emit("removed", targetId, {}, context.root_event_id);
+}
+
+// Takes one entity out of the world under a `removed` event caused by `causeId`, uncovering what it
+// hid and letting go of what it held or carried. False, and nothing written, for an entity that is
+// gone or a room someone is in: the same rule the author's `remove` is held to.
+export function removeEntity(context: TransitionContext, targetId: Id, causeId: Id): boolean {
+  const doomed = context.snapshot.entities[targetId];
+  if (doomed === undefined || removeRefusal(context, doomed).status !== "ok") {
+    return false;
+  }
+  const removedEvent = context.emit("removed", targetId, {}, causeId);
   context.recordDelta(targetId, "entity", doomed, null, removedEvent);
   // What the removed thing was hiding is uncovered rather than orphaned: the hidden things stay in
   // the world, and stay where they were.
@@ -586,6 +595,7 @@ function transitionRemove(context: TransitionContext, targetId: Id): void {
   const entities = { ...context.snapshot.entities };
   delete entities[targetId];
   context.snapshot = { ...context.snapshot, entities };
+  return true;
 }
 
 function samePosition(left: Pos | null, right: Pos | null): boolean {

@@ -37,28 +37,9 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 ## Items
 
-Each item names what it depends on. Ready now, in any order: Process effects, Seeded randomness, Fork a
-world, Scale benchmark, Advance stops when an agent would notice, Speech, Authored beats. Then, in a
-chain: Process effects → Light sources and Consume (parallel) → Camp scenario.
-
-### Process effects beyond adjusting a prop
-
-A decaying value is only useful if reaching it does something. Add the consequences, still as data.
-
-- **`then`:** an optional `then` on a process, run once when an `adjust_prop` run reaches its `min` or
-  `max`: `{ set_prop: { prop, value } }`, `{ damage: { amount } }` (takes `integrity`, emits `damaged`
-  or `destroyed` the way a bleed does, so a body that starves out drops what it held, reusing the
-  destroyed-body path in `runCause`), or `{ remove: true }` (the entity is removed under a `removed`
-  event). Each emits under the process cause; `then` writes may start or stop other processes through
-  the reconcile step.
-- **Reuse, don't copy:** factor the "integrity reaches 0, destroyed, drop what it held" tail of the
-  bleed run into one function used by both.
-- **Validation:** a `then` that names a prop no template of that entity declares is allowed (props are
-  free-form); `damage.amount` and every `by` are positive/non-zero integers.
-- **Tests:** a fuel prop counting to 0 sets `lit` false; a hunger prop reaching its cap damages a
-  human to destruction over a long `advance`, dropping what it held; `remove` on a spoiled item;
-  the cause chain reads process, `changed`, `damaged`, `destroyed` under `trace`.
-- **Depends on:** nothing (template processes have shipped).
+Each item names what it depends on. Ready now, in any order: Light sources, Consume, Seeded randomness,
+Fork a world, Scale benchmark, Advance stops when an agent would notice, Speech, Authored beats. The
+Camp scenario follows Light sources and Consume.
 
 ### Light sources
 
@@ -83,7 +64,7 @@ source, and let a light burn out.
 - **Tests:** a dark room becomes lit when the lantern is lit and an observer then sees a note; a
   carried lantern lights the room its carrier stands in and follows a `move`; it burns out during one
   long `advance` and the room goes dark, with the chain `lit`, `changed`, `changed` and so on; refusals.
-- **Depends on:** Process effects.
+- **Depends on:** nothing (process effects have shipped).
 
 ### Consume: eating and drinking
 
@@ -102,7 +83,7 @@ Hunger needs a counterweight. Add one verb that removes an item and applies its 
   `human` itself unchanged so existing worlds keep their hash; decide in review whether to fold it in.
 - **Tests:** eating bread lowers hunger and removes it; a full-hunger human takes damage over a long
   `advance`; consume refusals; a held bottle drunk down in two commands.
-- **Depends on:** Process effects.
+- **Depends on:** nothing (process effects have shipped).
 
 ### Camp scenario: the three together
 

@@ -263,3 +263,185 @@ test("validation refuses a second run of one process and a nameless one", (t) =>
   const nameless: Snapshot = { ...snapshot, schedule: [{ due_tick: 3, kind: "process", entity: moss, cause_id: null, process: "" }] };
   deepStrictEqual(validateSnapshot(nameless, registry).map((issue) => issue.code), ["invalid_process"]);
 });
+
+// What a process does on reaching its bound (`then`), under the run that reached it.
+
+// A detachable part of a child of `human` needs a template of its own (the companion rule).
+const starverParts = Object.fromEntries(
+  ["arm_l", "arm_l.hand_l", "arm_r", "arm_r.hand_r", "hand_l", "hand_r"].map((part) => [
+    `starver.${part}`,
+    { id: `starver.${part}`, extends: `human.${part}` },
+  ]),
+);
+
+const withThen = parseRegistry({
+  ...base,
+  ...starverParts,
+  candle: {
+    id: "candle",
+    extends: "stone",
+    props: { burning: false, fuel: 2 },
+    processes: [
+      {
+        id: "burn",
+        every_ticks: 2,
+        while: { prop: "burning", op: "eq", value: true },
+        effect: { adjust_prop: { prop: "fuel", by: -1, min: 0 } },
+        then: { set_prop: { prop: "burning", value: false } },
+      },
+    ],
+  },
+  // A body that starves: hunger rises each tick and, at its cap, takes everything it has left.
+  starver: {
+    id: "starver",
+    extends: "human",
+    props: { hunger: 97 },
+    processes: [
+      {
+        id: "hunger",
+        every_ticks: 1,
+        effect: { adjust_prop: { prop: "hunger", by: 1, max: 100 } },
+        then: { damage: { amount: 100 } },
+      },
+    ],
+  },
+  // Fruit that spoils away to nothing.
+  fruit: {
+    id: "fruit",
+    extends: "stone",
+    props: { fresh: 2 },
+    processes: [
+      {
+        id: "spoil",
+        every_ticks: 2,
+        effect: { adjust_prop: { prop: "fresh", by: -1, min: 0 } },
+        then: { remove: true },
+      },
+    ],
+  },
+});
+
+type ThenIds = Record<"tent" | "starver" | "stone" | "candle" | "fruit" | "bowl", Id>;
+
+function thenWorld(t: { after(callback: () => void): void }): { world: World; ids: ThenIds } {
+  const root = mkdtempSync(join(tmpdir(), "world-engine-then-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const world = createWorld(
+    join(root, "w"),
+    [
+      { id: "tent", template: "room", overrides: { name: "tent", props: { lit: true } } },
+      { id: "starver", template: "starver", overrides: { name: "starver", location: "tent", support: "tent", pos: { x: 0, y: 0 } } },
+      { id: "stone", template: "stone", overrides: { name: "pebble", location: "tent", contained_in: "starver", in_part: "hand_l" } },
+      { id: "candle", template: "candle", overrides: { name: "candle", location: "tent", support: "tent", pos: { x: 100, y: 0 } } },
+      { id: "fruit", template: "fruit", overrides: { name: "fruit", location: "tent", support: "tent", pos: { x: -100, y: 0 } } },
+      { id: "bowl", template: "stone", overrides: { name: "bowl", location: "tent", support: "tent", pos: { x: -100, y: 60 } } },
+    ],
+    withThen,
+  );
+  const ids = {} as ThenIds;
+  for (const name of ["tent", "starver", "stone", "candle", "fruit", "bowl"] as const) {
+    const found = world.id(name);
+    ok(found !== null, name);
+    ids[name] = found;
+  }
+  return { world, ids };
+}
+
+test("a process's then is declared with the bound it waits for, and exactly one effect", () => {
+  const bad = (process: Record<string, unknown>) => () =>
+    parseRegistry({
+      ...base,
+      odd: { id: "odd", extends: "stone", processes: [{ id: "p", every_ticks: 1, effect: { adjust_prop: { prop: "x", by: -1, min: 0 } }, ...process }] },
+    });
+  throws(bad({ then: {} }), /exactly one/);
+  throws(bad({ then: { remove: true, damage: { amount: 1 } } }), /exactly one/);
+  throws(bad({ then: { remove: false } }), /remove must be true/);
+  throws(bad({ then: { damage: { amount: 0 } } }), /at least 1/);
+  throws(bad({ then: { set_prop: { prop: "", value: 1 } } }), /prop/);
+  throws(bad({ then: { set_prop: { prop: "a", value: null } } }), /primitive/);
+  // A negative `by` waits for `min`; with only a `max` it would never fire.
+  throws(
+    () =>
+      parseRegistry({
+        ...base,
+        odd: { id: "odd", extends: "stone", processes: [{ id: "p", every_ticks: 1, effect: { adjust_prop: { prop: "x", by: -1, max: 9 } }, then: { remove: true } }] },
+      }),
+    /needs the bound/,
+  );
+  // A child that redeclares the process replaces its then along with the rest.
+  const child = parseRegistry({
+    ...withThen,
+    stub: { id: "stub", extends: "candle", processes: [{ id: "burn", every_ticks: 2, while: { prop: "burning", op: "eq", value: true }, effect: { adjust_prop: { prop: "fuel", by: -1, min: 0 } } }] },
+  });
+  strictEqual(child.candle!.processes![0]!.then !== undefined, true);
+  strictEqual(child.stub!.processes![0]!.then, undefined);
+});
+
+test("reaching the bound writes a prop, under the run that reached it", (t) => {
+  const { world, ids } = thenWorld(t);
+  const edited = world.edit({ kind: "set_props", target: ids.candle!, props: { burning: true, fuel: 2 } });
+  strictEqual(edited.status, "ok");
+  const run = advance(world, 10);
+  const changed = run.events.filter((event) => event.type === "changed" && event.entity === ids.candle);
+  deepStrictEqual(
+    changed.map((event) => [event.tick, event.data.prop, event.data.from, event.data.to]),
+    [
+      [2, "fuel", 2, 1],
+      [4, "fuel", 1, 0],
+      [4, "burning", true, false],
+    ],
+  );
+  strictEqual(changed[2]?.cause_id, changed[1]?.event_id);
+  deepStrictEqual(
+    [world.entity(ids.candle!)?.props.burning, world.entity(ids.candle!)?.props.fuel],
+    [false, 0],
+  );
+  // The write stopped the process through the condition, so nothing is pending for it.
+  strictEqual(pendingFor(world, ids.candle!), false);
+  // Lit again with fuel, it burns once more: the end of one burn is not the end of the candle.
+  world.edit({ kind: "set_props", target: ids.candle!, props: { burning: true, fuel: 1 } });
+  strictEqual(pendingFor(world, ids.candle!), true);
+});
+
+test("reaching the bound can take integrity: a starved body drops what it held", (t) => {
+  const { world, ids } = thenWorld(t);
+  strictEqual(world.entity(ids.stone!)?.contained_in, ids.starver);
+  const run = advance(world, 6);
+  const types = run.events.filter((event) => event.entity === ids.starver || event.entity === ids.stone).map((event) => [event.type, event.tick]);
+  deepStrictEqual(types, [
+    ["changed", 1],
+    ["changed", 2],
+    ["changed", 3],
+    ["destroyed", 3],
+    ["dropped", 3],
+  ]);
+  const [third, destroyed, dropped] = run.events.filter((event) => ["changed", "destroyed", "dropped"].includes(event.type) && event.tick === 3 && (event.entity === ids.starver || event.entity === ids.stone));
+  strictEqual(destroyed?.cause_id, third?.event_id);
+  strictEqual(dropped?.cause_id, destroyed?.event_id);
+  strictEqual(world.entity(ids.starver)?.status, "destroyed");
+  strictEqual(world.entity(ids.stone)?.contained_in, null);
+  // A destroyed body is not run on: its hunger stays where it ended.
+  strictEqual(world.entity(ids.starver)?.props.hunger, 100);
+  strictEqual(pendingFor(world, ids.starver!), false);
+  deepStrictEqual(validateSnapshot(world.snapshot(), withThen), []);
+  // The chain from the first run to the fall reads back through trace.
+  const trace = world.trace({ entity: ids.stone!, field: "contained_in" }).events.map((event) => event.type);
+  strictEqual(trace.includes("dropped"), true);
+});
+
+test("reaching the bound can take the entity out of the world, with its other causes", (t) => {
+  const { world, ids } = thenWorld(t);
+  const run = advance(world, 5);
+  const spoil = run.events.filter((event) => event.entity === ids.fruit);
+  deepStrictEqual(spoil.map((event) => [event.type, event.tick]), [
+    ["changed", 2],
+    ["changed", 4],
+    ["removed", 4],
+  ]);
+  strictEqual(spoil[2]?.cause_id, spoil[1]?.event_id);
+  strictEqual(world.entity(ids.fruit!), null);
+  strictEqual(pendingFor(world, ids.fruit!), false);
+  deepStrictEqual(validateSnapshot(world.snapshot(), withThen), []);
+  // The bowl beside it is untouched, and the starver kept running.
+  ok(world.entity(ids.bowl!) !== null);
+});
