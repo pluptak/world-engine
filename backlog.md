@@ -69,26 +69,68 @@ container or a room the actor could in fact name, which is the kind of trial and
   also issues ready options that carry `args`, and every one is `ok`.
 - **Depends on:** nothing. (It changes `OptionsResponseSchema`, which the CLI's `actor_options` answers with too.)
 
-### The night shift, seen from inside
+### A wait that ends when its actor senses something
 
-Each scenario so far (`inn`, `workshop`, `camp`, `watch`) was written from outside, with the whole `World` in hand, and
-each produced a limits file. None has been played the way a middleware would: through `actorWorld` alone, deciding
-from `observe` and `options`. That is the test of whether the controller-facing API says enough.
+`docs/limits-actor.md`: an idle character waits a tick at a time, because `wait` runs its whole count and only
+the author's `advance` stops on what an agent senses; a controller has no other clock than its turns.
 
-- **The script** (`tests/scenario-night.test.ts`, on `scenarios/watch.json`): the test holds the `World` only to
-  schedule the architect's beats and to assert at the end; ann (the guard), cal and bob (in the dark yard) each
-  hold only an `actorWorld`. A policy for each is a pure function of that actor's last `observe` and `options` (for
-  example: a guard who hears a `sounded` event from `here` or `next_door` lights the lantern before the lights
-  fail, walks to the door and opens it; bob, hearing a shout, answers with a whisper), written without reading any
-  entity the view did not list. Where a policy cannot choose from what it was given, the step says so.
-- **What it asserts:** the night plays out (the knock, the lantern, the door, the words heard by exactly who could
-  hear them); every id in everything an actor was ever sent (views, options, verdicts) is the actor, its room, or
-  something its own views or options listed or it named itself; two runs from the same seed give the same record.
-- **Findings:** `docs/limits-actor.md`, one line per thing the controller could not decide from inside and the step
-  that shows it, as the other limits files do (nothing in it is a proposal); anything that is a plain defect is
-  fixed in the same change with its test, and anything that is a gap goes to this backlog as its own item.
-- **Depends on:** nothing. (It runs better once options carry arguments, but does not need them: it records the
-  gap if it lands first.)
+- **Verb:** `wait` takes an optional `args.until`, declared `{ kind: "enum", values: ["sensed"], optional: true }`.
+  With it, `ticks` is an upper bound and `wake_on` names the actor itself, the rule `advance`'s
+  `stop_on_perceived` applies (`advanceClock` in `src/engine/clock.ts`), and the `wait` event's data says
+  `{ advanced: n }` as `advance`'s does. Without it, nothing changes.
+- **Tests:** in `scenarios/watch.json` with the knock at tick 5, ann's `wait` of 20 `until: "sensed"` ends at tick 5
+  with `advanced: 5`, the knock in its view; without `until` it runs to 20. `tests/scenario-night.test.ts`
+  step A: the guard's idle turns become one such wait, and the limits line goes. The property test's duration
+  check holds a wait that woke early.
+- **Docs:** `docs/verbs-other.md` (the `wait` line), `docs/time.md`.
+- **Depends on:** nothing.
+
+### Open and close refuse what would change nothing
+
+`docs/limits-actor.md`: `open` on an open door is `ok`, changes nothing and takes a tick, so options offer `open`
+and `close` alike and a controller cannot read the door's state from them; `light` already refuses
+`already_burning`.
+
+- **Verbs:** `open` on an open target is refused `already_open`, `close` on a shut one `already_closed`, both
+  declared in `refuses` (`src/engine/verbs/openable.ts`) and checked after reach. The schedule's own close
+  (`runClose` in `src/engine/schedule.ts`) is not the verb and is unchanged.
+- **Tests:** both refusals in `tests/openable.test.ts`; any test that opens what is open, or closes what is shut,
+  changes to expect the refusal. `tests/scenario-night.test.ts` step C: the guard reads the open door from
+  options (`close` ready, `open` blocked `already_open`) instead of remembering it, and the limits line goes.
+- **Docs:** `docs/verbs-openables.md`.
+- **Depends on:** nothing.
+
+### From the far side of a door
+
+`docs/limits-actor.md`: a door with a position stands in one room, so from the room it leads to nobody sees,
+gropes for or reaches it, and nothing names the room behind it: bob in the dark yard cannot come in through
+the door the guard opened. An unpositioned door is already reached from either room.
+
+- **Reach:** in `gropable` (`src/engine/query.ts`) and openable's `inReach` (`src/engine/verbs/openable.ts`), a
+  doorway whose `from` or `to` is the actor's room but which stands in the other one is reached as an
+  unpositioned door is, from anywhere in the actor's room. In its own room it keeps its position.
+- **Walking:** `move` takes `args.through`, an address resolved like a target (a name works), naming a door of
+  the actor's room; the agent lands in the room on its other side, checked where it lands as a move by
+  `location` is. A shut door is `no_open_door`; anything but a door of its room is `unresolved` or
+  `invalid_location` as `location` answers. `args.location` stays.
+- **Tests:** bob in the dark yard names, opens and closes the gatehouse door and walks in `through` it;
+  `tests/scenario-night.test.ts` step E becomes bob coming in, and the limits line goes. A door of a third room
+  is neither reached nor walked through.
+- **Docs:** `docs/verbs-openables.md`, `docs/verbs-moving.md`, `docs/perception.md` (the door in `addressable`).
+- **Depends on:** nothing.
+
+### An inspection gives the footprint
+
+`docs/limits-actor.md`: the view gives positions, not footprints, so the guard finds a free spot by the door by
+trial, her first `move` refused `blocked`.
+
+- **API:** `Inspection` (`src/engine/projection.ts`) gains `size_cm` (`w`, `d`, `h`, the template's), only with
+  sight or touch, as `props` are; `InspectResponseSchema` in `src/contract.ts` takes it.
+- **Tests:** `inspect` of the watch's door gives 90 × 10 × 200 to the guard in the lit gatehouse and nothing in
+  the dark; `tests/scenario-night.test.ts` step C: the guard computes a free spot from dee's and the door's
+  footprints and her first `move` is `ok`, and the limits line goes.
+- **Docs:** `docs/projection.md` (the `inspect` paragraph).
+- **Depends on:** nothing.
 
 ### The docs say what is built
 

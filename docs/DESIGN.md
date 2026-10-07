@@ -37,4 +37,4 @@ What is built, nothing aspirational, one concept per file:
 - [limits.md](limits.md): what the inn scenario could not express.
 - [limits-workshop.md](limits-workshop.md): what occupancy, impact and landing cannot express.
 - [limits-camp.md](limits-camp.md): what light, processes and eating cannot express.
-- [limits-watch.md](limits-watch.md): what scheduled beats and speech cannot express.
+- [limits-watch.md](limits-watch.md), [limits-actor.md](limits-actor.md): the watch, outside and in.
