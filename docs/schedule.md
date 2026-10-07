@@ -2,7 +2,7 @@
 
 Something the world does by itself, later: a self-closing door, a wound that bleeds, and a template's
 process ([processes.md](processes.md)). A snapshot's `schedule` lists what is pending, each cause with
-its `due_tick`, `kind` (`close`, `bleed` or `process`), `entity` and `cause_id`, the event that set it
+its `due_tick`, `kind` (`close`, `bleed`, `process` or `beat`), `entity` and `cause_id`, the event that set it
 going (null for a process the initial state started); a bleed also carries `remaining` and a process
 its `process` id. It
 is ordered by due tick, then by when each was scheduled, and absent when nothing is pending, so a
@@ -25,6 +25,10 @@ and `close` by hand withdraws the pending close; neither records anything about 
 **Processes.** A template's processes run as a third kind, scheduled and withdrawn as the props that
 govern them change ([processes.md](processes.md)).
 
+**Beats.** The author's own interventions, `schedule_beat` and `cancel_beat`, are the fourth kind
+([beats.md](beats.md)): a sound or an edit at a tick, with conditions and followers. A beat pruned with its
+subject records nothing, and a beat with an unmet condition or a refused action emits `beat_skipped`.
+
 **Bleeding.** A severed part opens a wound that bleeds a few times, each bleed scheduling the next
 ([bleeding.md](bleeding.md)).
 
@@ -42,7 +46,8 @@ nothing. `close` by hand does the same.
 of the clock (`schedule_not_ahead`, since the clock runs everything due), causes out of due order
 (`schedule_unordered`), a cause on a missing entity (`schedule_dangling`), an unknown kind
 (`unknown_cause_kind`), a bleed with none left (`bleed_not_remaining`), and a process with no id
-(`invalid_process`) or pending twice on one entity (`duplicate_process`). The schedule is not a
+(`invalid_process`) or pending twice on one entity (`duplicate_process`), and a malformed beat
+(`invalid_beat`), a beat id used twice (`duplicate_beat`) or more than 256 of them (`too_many_beats`). The schedule is not a
 field of any entity, so like `tick` its changes are not deltas; the events are the record. Stored
 worlds are `schema_version` 3 since.
 

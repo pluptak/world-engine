@@ -4,6 +4,7 @@ import { hurt } from "./harm.js";
 import type { Id, ScheduledCause } from "../model.js";
 import { pending, withCause, withSchedule } from "./pending.js";
 import { runProcess } from "./process.js";
+import { beatInvalid, runBeat } from "./beats.js";
 
 export { pending, withSchedule };
 
@@ -100,6 +101,10 @@ function runProcessCause(context: TransitionContext, cause: CauseOf<"process">):
   runProcess(context, cause);
 }
 
+function runBeatCause(context: TransitionContext, cause: CauseOf<"beat">): void {
+  runBeat(context, cause);
+}
+
 const CAUSE_TABLE: { [K in CauseKindName]: CauseKind<K> } = {
   close: { run: runClose, invalid: () => null },
   bleed: {
@@ -115,6 +120,13 @@ const CAUSE_TABLE: { [K in CauseKindName]: CauseKind<K> } = {
       typeof cause.process === "string" && cause.process.length > 0
         ? null
         : { code: "invalid_process", detail: String(cause.process) },
+  },
+  beat: {
+    run: runBeatCause,
+    invalid: (cause) => {
+      const broken = beatInvalid(cause);
+      return broken === null ? null : { code: "invalid_beat", detail: broken };
+    },
   },
 };
 

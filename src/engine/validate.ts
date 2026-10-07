@@ -7,6 +7,7 @@ import { uncomputable } from "./capabilities.js";
 import { isAbstract } from "./resolve.js";
 import { isRngState } from "./rng.js";
 import { CAUSE_KINDS, causeInvalid } from "./schedule.js";
+import { MAX_BEATS, pendingBeatIds } from "./beats.js";
 
 export interface SnapshotIssue {
   code: string;
@@ -511,5 +512,17 @@ function scheduleIssues(snapshot: Snapshot): SnapshotIssue[] {
       issues.push(issue(broken.code, path, broken.detail));
     }
   });
+  // Beats share one namespace of ids, their followers' included, and a bounded number of them.
+  const ids = pendingBeatIds(snapshot.schedule);
+  const seen = new Set<string>();
+  for (const id of ids) {
+    if (seen.has(id)) {
+      issues.push(issue("duplicate_beat", ["schedule"], id));
+    }
+    seen.add(id);
+  }
+  if (ids.length > MAX_BEATS) {
+    issues.push(issue("too_many_beats", ["schedule"], String(ids.length)));
+  }
   return issues;
 }

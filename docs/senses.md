@@ -16,12 +16,14 @@ grip, and not felt otherwise; a `collided` is felt through what it hit as well.
 | `entity-odorous` | T | T | F | T | F | F | T | F | F | O |
 | `entity-odourless` | T | T | F | T | F | F | F | F | F | O |
 
-`authored` is `edit`, `advance`, `placed`, `edited`, `removed`, and a `spawned` whose cause is one of those:
+`authored` is `edit`, `advance`, `placed`, `edited`, `removed`, `beat_skipped`, and a `spawned` whose cause is one of those:
 the world author's own work, which nobody senses, though its consequences (`displaced`, `dropped`,
 `broken`, a product's `spawned`) are sensed as any other event. `pour` is `pour`, `poured` and
 `spilled`; `broken` is a break whose entity held a liquid or residue; `event` is any other. The
 `entity-` rows are the entity form, where there is no event and so nothing is loud. `found` is read
-against the concealer it names, `revealed` against the thing revealed. `silent` is `changed` (a template's process moving a prop, [processes.md](processes.md)), `light`, `douse`,
+against the concealer it names, `revealed` against the thing revealed. `sounded` (an authored beat's knock or bang, [beats.md](beats.md)) is the `event` row for hearing and
+nothing else: never seen (`unseen`), never smelt, never touched, and heard next door only when its data says
+`loud`. `silent` is `changed` (a template's process moving a prop, [processes.md](processes.md)), `light`, `douse`,
 `lit` and `doused`, `consume` and `consumed`, the hand acts
 (`take`, `give`, `put`, `search`, `found`, `revealed`), `wait`, `capability_changed`, and a `moved`
 whose cause chain starts at `take`, `give` or `put`; its hearing is `quiet`. A `moved` under `move`,

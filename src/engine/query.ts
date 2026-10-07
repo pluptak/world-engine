@@ -271,6 +271,7 @@ function loudEvent(event: WorldEvent | undefined): boolean {
   return (
     event.type === "broken" ||
     event.type === "detached" ||
+    (event.type === "sounded" && event.data.loud === true) ||
     (event.type === "dropped" && typeof event.data.fall_cm === "number" && event.data.fall_cm >= 50)
   );
 }
@@ -303,6 +304,13 @@ const AUDIBLE_SENSES: EventSenses = {
 const AUTHORED_SENSES: EventSenses = {
   hearing: { same: "never", door: "never", basis: "authored" },
   smell: { same: "never", door: "never", basis: "authored" },
+  touch: "never",
+};
+
+// A knock, a bang, a bell: heard in the room and, when loud, next door; a sound is never seen.
+const SOUNDED_SENSES: EventSenses = {
+  hearing: AUDIBLE_SENSES.hearing,
+  smell: { same: "never", door: "never", basis: "odourless" },
   touch: "never",
 };
 
@@ -400,6 +408,9 @@ export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
   placed: AUTHORED_SENSES,
   edited: AUTHORED_SENSES,
   removed: AUTHORED_SENSES,
+  // An authored beat: a sound is heard, a skipped beat is the author's bookkeeping.
+  sounded: SOUNDED_SENSES,
+  beat_skipped: AUTHORED_SENSES,
 };
 
 // Whether the world authored this event. It is decided from the event's own type and one step up its
@@ -552,6 +563,10 @@ function perceive(
       (struck !== undefined && touchesBody(snapshot, registry, observer.id, struck))
       ? answer("true", "own_body")
       : answer("false", "not_touching");
+  }
+  // A sound is heard, never seen, wherever the observer stands.
+  if (query.sense === "sight" && event?.type === "sounded") {
+    return answer("false", "unseen");
   }
   // What is hidden under or behind something is not seen, by anybody, until the relation is broken.
   if (query.sense === "sight" && subject.concealed_by !== null) {

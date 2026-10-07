@@ -11,6 +11,7 @@ import {
   type Coverage,
   type Delta,
   type Result,
+  type WorldEdit,
 } from "../api.js";
 import {
   CoverageSchema,
@@ -173,8 +174,9 @@ function dispatch(request: Request): unknown {
   }
   if (request.op === "edit") {
     const world = openWorld(request.world);
+    // A beat's action is read by the engine, which refuses a malformed one `invalid_args`.
     const result = world.edit(
-      request.edit,
+      request.edit as WorldEdit,
       { command_id: request.command_id, basedOn: request.based_on_version, perceivers: request.perceivers },
     );
     return commandResponse(result, request.include_snapshot === true);

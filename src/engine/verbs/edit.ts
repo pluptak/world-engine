@@ -11,10 +11,21 @@ import {
   type PlaceEdit,
   type PreconditionResult,
   type SpawnEdit,
+  type CancelBeatEdit,
+  type ScheduleBeatEdit,
   type TransitionContext,
   type Verb,
   type WorldEdit,
 } from "../command.js";
+import {
+  MAX_BEATS,
+  actionSubject,
+  editBeatIds,
+  isBeatId,
+  parseScheduleBeat,
+  pendingBeatIds,
+} from "../beats.js";
+import { pending, withCause, withSchedule } from "../pending.js";
 import { refreshSubtreeLocations, wouldLoop } from "./address.js";
 import { dropCarriedItem } from "./drop.js";
 import { revealConcealed } from "./search.js";
@@ -177,7 +188,7 @@ function onlyKeys(value: Record<string, unknown>, allowed: string[]): boolean {
   return Object.keys(value).every((key) => allowed.includes(key));
 }
 
-function parseEdit(value: unknown): WorldEdit | null {
+export function parseEdit(value: unknown): WorldEdit | null {
   if (!isRecord(value) || typeof value.kind !== "string") {
     return null;
   }
@@ -197,6 +208,12 @@ function parseEdit(value: unknown): WorldEdit | null {
       return null;
     }
     return { kind: "set_seed", seed: value.seed };
+  }
+  if (value.kind === "schedule_beat") {
+    return parseScheduleBeat(value);
+  }
+  if (value.kind === "cancel_beat") {
+    return onlyKeys(value, ["kind", "id"]) && isBeatId(value.id) ? { kind: "cancel_beat", id: value.id } : null;
   }
   if (value.kind === "remove") {
     if (!onlyKeys(value, ["kind", "target"]) || !isId(value.target)) {
@@ -450,6 +467,27 @@ function partRefusal(
     : refused("unknown_part");
 }
 
+function scheduleBeatRefusal(context: CommandContext, edit: ScheduleBeatEdit): PreconditionResult {
+  const subject = actionSubject(edit.action);
+  if (subject === null || context.snapshot.entities[subject] === undefined) {
+    return invalid("no_such_entity");
+  }
+  if (edit.at_tick <= context.snapshot.tick) {
+    return refused("beat_in_past");
+  }
+  const ids = editBeatIds(edit);
+  const taken = pendingBeatIds(pending(context.snapshot));
+  if (new Set(ids).size !== ids.length || ids.some((id) => taken.includes(id))) {
+    return refused("duplicate_beat");
+  }
+  return ids.length + taken.length > MAX_BEATS ? refused("too_many_beats") : { status: "ok" };
+}
+
+function cancelBeatRefusal(context: CommandContext, edit: CancelBeatEdit): PreconditionResult {
+  const waiting = pending(context.snapshot).some((cause) => cause.kind === "beat" && cause.id === edit.id);
+  return waiting ? { status: "ok" } : refused("no_such_beat");
+}
+
 function preconditions(context: CommandContext): PreconditionResult {
   if (context.command.actor !== WORLD_AUTHOR) {
     return invalid("invalid_author");
@@ -466,6 +504,12 @@ function preconditions(context: CommandContext): PreconditionResult {
   }
   if (edit.kind === "set_seed") {
     return context.target === null ? { status: "ok" } : invalid("unexpected_target");
+  }
+  if (edit.kind === "schedule_beat" || edit.kind === "cancel_beat") {
+    if (context.target !== null) {
+      return invalid("unexpected_target");
+    }
+    return edit.kind === "schedule_beat" ? scheduleBeatRefusal(context, edit) : cancelBeatRefusal(context, edit);
   }
   if (
     context.target === null ||
@@ -678,6 +722,25 @@ function transition(context: TransitionContext): void {
     context.snapshot = { ...context.snapshot, rng: edit.seed };
     return;
   }
+  if (edit.kind === "schedule_beat") {
+    // The beat is the `edit` event's to cause: what it does when due names that event.
+    const { kind: _kind, at_tick, ...beat } = edit;
+    context.snapshot = withCause(context.snapshot, {
+      ...beat,
+      due_tick: at_tick,
+      kind: "beat",
+      entity: actionSubject(edit.action)!,
+      cause_id: context.root_event_id,
+    });
+    return;
+  }
+  if (edit.kind === "cancel_beat") {
+    context.snapshot = withSchedule(
+      context.snapshot,
+      pending(context.snapshot).filter((cause) => cause.kind !== "beat" || cause.id !== edit.id),
+    );
+    return;
+  }
   const target = context.target;
   if (target === null || target.part !== null || target.entity_id !== edit.target) {
     throw new TypeError("Edit target changed after validation");
@@ -772,6 +835,11 @@ export const editVerb: Verb = {
     "in_part_unavailable",
     "grip_occupied",
     "part_contents_too_large",
+    "beat_in_past",
+    "duplicate_beat",
+    "too_many_beats",
+    "no_such_beat",
+    "invalid_beat",
   ],
   preconditions,
   transition,

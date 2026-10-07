@@ -4,6 +4,8 @@ One item = one small block: plan it, build it, `npm run check`, review the diff,
 keeps every invariant in AGENTS.md (determinism, pure core, `canonicalJson`, no prose,
 coverage-governed `"unknown"`). Delete an item in the same commit that ships it — git history
 records it; `docs/` describes what is built (index: `docs/DESIGN.md`).
+Measurements and test results live in `docs/measurements.md`, not here; an item quotes a number only
+when the item is about that number.
 
 **Scope line.** The engine is a library: a typed, in-process API through which a caller manipulates
 objects, humans and animals and asks about the world. The CLI is one thin adapter over that API, and
@@ -38,56 +40,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 ## Items
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
-
-### Authored beats: the architect's scheduled interventions
-
-An architect needs to say "at tick 305 someone knocks at the door, at 310 the lights fail" and have
-the world do it, without scripting any character. A beat is the architect's intention, stored in the
-snapshot; when it falls due it becomes ordinary events that every observer senses as it would any
-others. (Not the same thing as the existing `beat` of `World`, an ordered batch of commands; call
-this one a *scheduled beat* in code and docs, `ScheduledBeat`, cause kind `beat`.)
-
-- **Authoring:** two new `WorldEdit` kinds, carried by `edit` like the rest (`src/engine/command.ts`,
-  `src/engine/verbs/edit.ts`, `parseEdit`): `schedule_beat` `{ id, at_tick, action, only_if?, then? }`
-  and `cancel_beat` `{ id }`. `id` is a caller-chosen token unique among pending beats
-  (`duplicate_beat`; `no_such_beat` on cancel); `at_tick` must be ahead of the clock
-  (`beat_in_past`), since the schedule only holds causes ahead of it. Mapping a tick to a wall-clock
-  time such as 20:05 is the controller's job; the engine knows ticks only.
-- **Actions (a closed set, data, never code):** `sound` `{ entity, loud? }` emits `sounded` on the
-  entity (a knock, a bang, a bell); or any existing `WorldEdit` (`set_props`, `place`, `spawn`,
-  `remove`, `set_part`) applied through the same edit transition at the due tick, so a power failure
-  is `set_props` `lit: false` on a room and every consequence of the edit is sensed as usual.
-- **`sounded` perception:** a new `EVENT_SENSES` row: hearing true in the entity's room, through a
-  door only when `loud` (extend `loudEvent` in `src/engine/query.ts`); sight false with a new
-  `basis_code` `unseen` (a sound is not seen); smell false; touch `never`. Add it to the table in
-  `docs/senses.md`; `tests/senses.test.ts` fails until the row exists.
-- **Conditional beats:** `only_if: { entity, prop, op, value }` (`op` one of `eq ne lt lte gt gte`)
-  is read against the entity's `props` at the due tick. If false the beat does nothing and emits
-  `beat_skipped` `{ id, reason: "condition" }`. If its edit is refused when it runs it emits
-  `beat_skipped` `{ id, reason: "failed", code }` with the refusal code and changes nothing. Both
-  events are authored work: use the `authored` sense row, nobody senses them.
-- **Chained beats:** `then: [{ id, delay_ticks, action, only_if?, then? }]` are scheduled
-  `delay_ticks` (positive) after the parent *runs*, each with the parent's event as its cause. A parent
-  that is cancelled, skipped, or pruned schedules none of them. Bound the nesting depth at 4 and the
-  total pending beats at 256 (`too_many_beats`) so a world cannot be made to schedule without end.
-- **Cause kind `beat`** (a row in `CAUSE_TABLE`): `{ kind: "beat", due_tick, entity, cause_id, id, action,
-  only_if?, then? }`, `entity` the action's subject (a spawn's `location`), `cause_id` the event the
-  `schedule_beat` edit emitted. A beat whose subject is removed is pruned with it, as every cause is
-  (`pruneSchedule`), recording nothing; say so in `docs/schedule.md`. `cancel_beat` withdraws through
-  `cancel`.
-- **Validation:** `validateSnapshot` checks a beat's shape, a unique `id`, and the nesting and count
-  limits (`invalid_beat`, `duplicate_beat`, `too_many_beats`). Declare every new refusal code in the
-  edit verb's `refuses`, `src/errors.ts` and `src/contract.ts`; the CLI `edit` op carries both new
-  kinds.
-- **Docs and tests:** `docs/beats.md` (index line in `docs/DESIGN.md`), a paragraph in
-  `docs/schedule.md`. `tests/beat.test.ts`: a knock at tick 5 is heard by an observer in the room and
-  by one next door only when loud, never seen; a `set_props` beat darkens a room and an observer's
-  `perceive` of a note flips to `location_unlit`; `only_if` false skips and emits `beat_skipped`; a
-  refused edit at fire time skips with its code; `then` runs after its parent's delay and not after a
-  cancel; two beats due at one tick run in the order scheduled; a long `advance` runs a whole chain;
-  replay from the log reproduces it; `perceivers: true` names who sensed a knock; the property test
-  schedules, cancels and fires beats and every step stays valid.
-- **Depends on:** nothing (the cause-kind table and `advance` have shipped).
 
 ### Speech: saying something without the engine reading it
 

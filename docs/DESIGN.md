@@ -21,6 +21,8 @@ What is built, nothing aspirational, one concept per file:
 - [provenance.md](provenance.md): what `cause_id` records, how `trace` walks it, and its limits.
 - [schedule.md](schedule.md): what the world does by itself later: the self-closing door.
 - [processes.md](processes.md): a template's prop that changes by itself while a condition holds: candles, moss.
+- [beats.md](beats.md): the architect's scheduled interventions: a knock at tick 305, the lights failing at 310.
+- [measurements.md](measurements.md): timings and other measured results, with the command that makes each.
 - [rng.md](rng.md): the world's dice, a seed in the snapshot, so chance replays exactly.
 - [bleeding.md](bleeding.md): a severed part's wound, bleeding by itself until its count runs out.
 - [time.md](time.md): the clock, what each verb takes, and what falls due as it advances.

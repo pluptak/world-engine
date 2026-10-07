@@ -30,8 +30,9 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
   caller can resume with another `advance`. A listed id that is no entity or no agent is `invalid`
   with `no_such_actor`, a destroyed body `observer_destroyed`, and anything but a list of ids
   `invalid_args`. `clock_overflow` is judged on the upper bound.
-- `edit`: carries one `spawn`, `remove`, `place`, `set_props`, `set_part` or `set_seed` as `args.edit`
-  (`set_seed` gives the world's dice a state, [rng.md](rng.md)), and
+- `edit`: carries one `spawn`, `remove`, `place`, `set_props`, `set_part`, `set_seed`, `schedule_beat` or
+  `cancel_beat` as `args.edit` (`set_seed` gives the world's dice a state, [rng.md](rng.md); the beats put
+  the author's own interventions on the schedule, [beats.md](beats.md)), and
   refuses with the code of the first snapshot rule its result breaks ([relations.md](relations.md)).
   A `place` may write `pos` as `{anchor, dx, dy}` ([space.md](space.md)) and `concealed_by`, which
   hides the placed thing under or behind another in the same room.

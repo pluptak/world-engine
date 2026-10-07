@@ -263,6 +263,10 @@ test("random runs run processes, start and stop them, and every step still valid
   let starved = 0;
   let rolled = 0;
   let missed = 0;
+  let sounded = 0;
+  let skippedBeats = 0;
+  let followed = 0;
+  let scheduledBeats = 0;
   for (let seed = 0; seed < 100; seed += 1) {
     const rand = mulberry32(seed);
     const world = memoryWorld(buildInitial(registry), registry);
@@ -281,6 +285,10 @@ test("random runs run processes, start and stop them, and every step still valid
           const cause = result.events.find((other) => other.event_id === event.cause_id);
           snuffed += cause?.type === "changed" && event.data.prop === "burning" ? 1 : 0;
         }
+        sounded += event.type === "sounded" ? 1 : 0;
+        skippedBeats += event.type === "beat_skipped" ? 1 : 0;
+        // A follower names the event its parent beat wrote, which an earlier command may have.
+        followed += (event.type === "sounded" || event.type === "edited") && event.cause_id !== null && !result.events.some((other) => other.event_id === event.cause_id) ? 1 : 0;
         eaten += event.type === "consumed" && event.data.amount === undefined ? 1 : 0;
         drunk += event.type === "consumed" && event.data.amount !== undefined ? 1 : 0;
         starved += event.type === "changed" && event.data.process === "starve" ? 1 : 0;
@@ -298,6 +306,7 @@ test("random runs run processes, start and stop them, and every step still valid
       strictEqual(moved && result.status !== "ok", false, `rolled without landing ${i}`);
       rolled += moved && !edited ? 1 : 0;
       missed += moved && !edited && ran === 0 ? 1 : 0;
+      scheduledBeats += world.snapshot().schedule?.some((cause) => cause.kind === "beat") === true ? 1 : 0;
       const after = world.snapshot().schedule?.filter((cause) => cause.kind === "process").length ?? 0;
       // A process pending before and gone after, with no run of it to explain it, was withdrawn.
       withdrawn += after < before && ran === 0 ? 1 : 0;
@@ -315,6 +324,10 @@ test("random runs run processes, start and stop them, and every step still valid
   strictEqual(starved >= 3, true, `starved ${starved}`);
   strictEqual(rolled >= 20, true, `rolled ${rolled}`);
   strictEqual(missed >= 1, true, `missed ${missed}`);
+  strictEqual(sounded >= 5, true, `sounded ${sounded}`);
+  strictEqual(skippedBeats >= 3, true, `skipped beats ${skippedBeats}`);
+  strictEqual(followed >= 5, true, `beat events under an earlier command ${followed}`);
+  strictEqual(scheduledBeats >= 20, true, `steps with a beat pending ${scheduledBeats}`);
 });
 
 test("the generator aims an edit at every relation rule, and each step still validates", () => {

@@ -1,3 +1,5 @@
+import type { BeatAction, BeatChild, BeatCondition } from "./engine/command.js";
+
 export type Id = string;
 export type Tri = "true" | "false" | "unknown";
 
@@ -65,7 +67,19 @@ export type ScheduledCause =
   | { due_tick: number; kind: "close"; entity: Id; cause_id: Id }
   | { due_tick: number; kind: "bleed"; entity: Id; cause_id: Id; remaining: number }
   // A template's process, running on the entity; `cause_id` is null when the initial state started it.
-  | { due_tick: number; kind: "process"; entity: Id; cause_id: Id | null; process: string };
+  | { due_tick: number; kind: "process"; entity: Id; cause_id: Id | null; process: string }
+  // An authored beat (`engine/beats.ts`): `entity` is the action's subject, `cause_id` the event of the
+  // `schedule_beat` edit, or of the parent beat's action for a chained one.
+  | {
+      due_tick: number;
+      kind: "beat";
+      entity: Id;
+      cause_id: Id;
+      id: string;
+      action: BeatAction;
+      only_if?: BeatCondition;
+      then?: BeatChild[];
+    };
 
 export interface Snapshot {
   version: number;

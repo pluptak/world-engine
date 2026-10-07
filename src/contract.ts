@@ -115,6 +115,16 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
     props: z.record(z.string(), PrimitiveSchema),
   }).strict(),
   z.object({ kind: z.literal("set_seed"), seed: z.number().int().min(0).max(4294967295) }).strict(),
+  // The action and the followers are checked by the engine, which answers `invalid_args`.
+  z.object({
+    kind: z.literal("schedule_beat"),
+    id: z.string(),
+    at_tick: z.number().int(),
+    action: z.record(z.string(), z.unknown()),
+    only_if: z.record(z.string(), z.unknown()).optional(),
+    then: z.array(z.record(z.string(), z.unknown())).optional(),
+  }).strict(),
+  z.object({ kind: z.literal("cancel_beat"), id: z.string() }).strict(),
   z.object({
     kind: z.literal("set_part"),
     target: IdSchema,
@@ -288,6 +298,16 @@ export const SnapshotSchema = z.object({
       entity: IdSchema,
       cause_id: IdSchema.nullable(),
       process: z.string(),
+    }).strict(),
+    z.object({
+      due_tick: z.number().int(),
+      kind: z.literal("beat"),
+      entity: IdSchema,
+      cause_id: IdSchema,
+      id: z.string(),
+      action: z.record(z.string(), z.unknown()),
+      only_if: z.record(z.string(), z.unknown()).optional(),
+      then: z.array(z.record(z.string(), z.unknown())).optional(),
     }).strict(),
   ])).optional(),
   rng: z.number().int().optional(),

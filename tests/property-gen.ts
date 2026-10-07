@@ -2,7 +2,7 @@
 // state-aware-lite step generator (reads the snapshot, never Math.random), a delta-fold check,
 // and a cause-chain check. Nothing here ships in src/.
 import { fileURLToPath } from "node:url";
-import { WORLD_AUTHOR, type Command, type WorldEdit } from "../src/engine/command.js";
+import { WORLD_AUTHOR, type BeatAction, type Command, type ScheduleBeatEdit, type WorldEdit } from "../src/engine/command.js";
 import { spawn } from "../src/engine/spawn.js";
 import { resolveScenario } from "../src/scenario.js";
 import { startProcesses } from "../src/engine/process.js";
@@ -424,6 +424,10 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
   }),
   // The five edit kinds, not five verbs: the roll that chose `edit` chooses among them too.
   edit: (context) => {
+    // Beats first, so a run schedules and fires enough of them to see what they do.
+    if (context.roll < 0.06) {
+      return beatEdit(context);
+    }
     if (context.roll < 0.08) {
       const template = pick(context.rand, [
         "bottle",
@@ -529,13 +533,56 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     if (context.roll < 0.96) {
       return holderPartEdit(context);
     }
-    // The rest are a removal, or now and then a new state for the dice.
-    if (context.rand() < 0.3) {
+    // The rest are a removal, now and then a new state for the dice, or an authored beat.
+    const last = context.rand();
+    if (last < 0.3) {
       return { kind: "set_seed", seed: int(context.rand, 0, 2 ** 32 - 1) };
+    }
+    if (last < 0.5) {
+      return beatEdit(context);
     }
     return { kind: "remove", target: context.target };
   },
 };
+
+// A beat scheduled a few ticks ahead (now and then in the past, or under an id already taken), a
+// withdrawal of one that may not exist, and chains: sounds, a prop set on an entity, and followers.
+// Ids come from a small pool so that clashes happen.
+function beatEdit(context: GenContext): WorldEdit {
+  const id = `b${int(context.rand, 0, 12)}`;
+  if (context.rand() < 0.25) {
+    return { kind: "cancel_beat", id };
+  }
+  const subject = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+  const action = (): BeatAction => {
+    const roll = context.rand();
+    if (roll < 0.6) {
+      return { kind: "sound", entity: subject, ...(context.rand() < 0.5 ? { loud: true } : {}) };
+    }
+    if (roll < 0.9) {
+      return { kind: "set_props", target: subject, props: { lit: context.rand() < 0.5 } };
+    }
+    return { kind: "remove", target: subject };
+  };
+  const first = action();
+  const edit: ScheduleBeatEdit = {
+    kind: "schedule_beat",
+    id,
+    at_tick: context.snapshot.tick + int(context.rand, -1, 6),
+    action: first,
+  };
+  if (context.rand() < 0.3) {
+    edit.only_if = { entity: subject, prop: "lit", op: "eq", value: context.rand() < 0.5 };
+  }
+  if (context.rand() < 0.4) {
+    const follower = action();
+    const subjectOf = "entity" in follower ? follower.entity : "target" in follower ? follower.target : subject;
+    if (subjectOf === subject || context.ids.includes(subjectOf)) {
+      edit.then = [{ id: `${id}f${int(context.rand, 0, 3)}`, delay_ticks: int(context.rand, 1, 4), action: follower }];
+    }
+  }
+  return edit;
+}
 
 // Both relations at once, which no entity holds: refused conflicting_placement before anything runs.
 function conflictingPlacement(context: GenContext): Command | WorldEdit {

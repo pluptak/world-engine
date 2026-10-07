@@ -57,7 +57,58 @@ export interface SeedEdit {
   seed: number;
 }
 
-export type WorldEdit = SpawnEdit | RemoveEdit | PlaceEdit | PropsEdit | PartEdit | SeedEdit;
+// What a scheduled beat does when it falls due: a sound on an entity, or one of the author's own
+// edits, applied through the same edit transition.
+export interface SoundAction {
+  kind: "sound";
+  entity: Id;
+  loud?: boolean;
+}
+
+export type BeatAction = SoundAction | SpawnEdit | RemoveEdit | PlaceEdit | PropsEdit | PartEdit;
+
+// Read against an entity's props at the due tick.
+export interface BeatCondition {
+  entity: Id;
+  prop: string;
+  op: "eq" | "ne" | "lt" | "lte" | "gt" | "gte";
+  value: number | string | boolean;
+}
+
+// A beat that follows another, `delay_ticks` after its parent runs.
+export interface BeatChild {
+  id: string;
+  delay_ticks: number;
+  action: BeatAction;
+  only_if?: BeatCondition;
+  then?: BeatChild[];
+}
+
+// Puts a beat on the schedule for `at_tick`, which must be ahead of the clock.
+export interface ScheduleBeatEdit {
+  kind: "schedule_beat";
+  id: string;
+  at_tick: number;
+  action: BeatAction;
+  only_if?: BeatCondition;
+  then?: BeatChild[];
+}
+
+// Withdraws a pending beat by id.
+export interface CancelBeatEdit {
+  kind: "cancel_beat";
+  id: string;
+}
+
+export type WorldEdit =
+  | SpawnEdit
+  | RemoveEdit
+  | PlaceEdit
+  | PropsEdit
+  | PartEdit
+  | SeedEdit
+  | ScheduleBeatEdit
+  | CancelBeatEdit;
 
 export interface Command {
   command_id: Id;
