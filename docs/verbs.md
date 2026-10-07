@@ -16,6 +16,7 @@ This is the index: one line per verb, its rules in the family file it links to.
 - `put`: sets a held thing on a surface or in a container ([verbs-holding.md](verbs-holding.md)).
 - `give`: hands a held thing to another agent ([verbs-holding.md](verbs-holding.md)).
 - `pour`: moves a carried liquid out ([verbs-holding.md](verbs-holding.md)).
+- `consume`: eats or drinks what the actor carries or reaches ([verbs-holding.md](verbs-holding.md)).
 - `open`: opens an openable target ([verbs-openables.md](verbs-openables.md)).
 - `close`: shuts it ([verbs-openables.md](verbs-openables.md)).
 - `lock`: locks it with a carried key ([verbs-openables.md](verbs-openables.md)).

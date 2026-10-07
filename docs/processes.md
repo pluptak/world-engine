@@ -74,3 +74,11 @@ end processes under every property.
 
 What it does not do yet: nothing but a prop moves (no spreading to a neighbour, no spawning), and a
 run is not random.
+
+**What ships.** `templates/lantern.json` burns a point of fuel a tick while `burning` and snuffs itself
+at 0, and `candle` extends it with less ([verbs-other.md](verbs-other.md), `light`). `human_hungry`
+extends `human` (and needs its own companions, `human_hungry.arm_l` and the rest) with `hunger` and
+`starvation`: hunger rises a point every 10 ticks to 100, and at 100 `starvation` rises every 5 ticks
+to 20, whose `then` takes all of the body's integrity. Eating lowers `hunger` below 100, which withdraws
+the starving and starts the rise again ([verbs-holding.md](verbs-holding.md), `consume`); `starvation`
+itself does not fall. `human` is unchanged, so worlds without a hungry body keep their hash.

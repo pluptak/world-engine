@@ -363,6 +363,9 @@ export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
   changed: SILENT_SENSES,
   search: SILENT_SENSES,
   // Striking a flame or pinching one out is a hand act; the light it gives is read from the room.
+  // Eating or drinking is a hand-and-mouth act the ear does not report.
+  consume: SILENT_SENSES,
+  consumed: SILENT_SENSES,
   light: SILENT_SENSES,
   douse: SILENT_SENSES,
   lit: SILENT_SENSES,

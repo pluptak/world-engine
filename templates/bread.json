@@ -1,0 +1,9 @@
+{
+  "id": "bread",
+  "size_cm": { "w": 20, "d": 10, "h": 8 },
+  "mass_g": 400,
+  "parts": [],
+  "props": { "nutrition": 40 },
+  "break_products": [],
+  "break_residue": {}
+}

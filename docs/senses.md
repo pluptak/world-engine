@@ -22,7 +22,7 @@ the world author's own work, which nobody senses, though its consequences (`disp
 `spilled`; `broken` is a break whose entity held a liquid or residue; `event` is any other. The
 `entity-` rows are the entity form, where there is no event and so nothing is loud. `found` is read
 against the concealer it names, `revealed` against the thing revealed. `silent` is `changed` (a template's process moving a prop, [processes.md](processes.md)), `light`, `douse`,
-`lit` and `doused`, the hand acts
+`lit` and `doused`, `consume` and `consumed`, the hand acts
 (`take`, `give`, `put`, `search`, `found`, `revealed`), `wait`, `capability_changed`, and a `moved`
 whose cause chain starts at `take`, `give` or `put`; its hearing is `quiet`. A `moved` under `move`,
 `push` or `pull` is footsteps or scraping, and stays `event`. The false bases are `no_such_entity`,

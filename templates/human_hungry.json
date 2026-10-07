@@ -1,0 +1,19 @@
+{
+  "id": "human_hungry",
+  "extends": "human",
+  "props": { "hunger": 0, "starvation": 0 },
+  "processes": [
+    {
+      "id": "hunger",
+      "every_ticks": 10,
+      "effect": { "adjust_prop": { "prop": "hunger", "by": 1, "max": 100 } }
+    },
+    {
+      "id": "starve",
+      "every_ticks": 5,
+      "while": { "prop": "hunger", "op": "gte", "value": 100 },
+      "effect": { "adjust_prop": { "prop": "starvation", "by": 1, "max": 20 } },
+      "then": { "damage": { "amount": 100 } }
+    }
+  ]
+}

@@ -7,7 +7,7 @@ What is built, nothing aspirational, one concept per file:
 - [pipeline.md](pipeline.md): the transition pipeline.
 - [verbs.md](verbs.md): the index of verbs, one line each, and the rules every verb shares.
 - [verbs-moving.md](verbs-moving.md): `move`, `push`, `pull`.
-- [verbs-holding.md](verbs-holding.md): `take`, `drop`, `put`, `give`, `pour`.
+- [verbs-holding.md](verbs-holding.md): `take`, `drop`, `put`, `give`, `pour`, `consume`.
 - [verbs-openables.md](verbs-openables.md): `open`, `close`, `lock`, `unlock`.
 - [verbs-other.md](verbs-other.md): `attack`, `search`, `light`, `douse`, `wait`, `advance`, `edit`.
 - [state.md](state.md): snapshots, validation, templates, parts, capacities, physical consequences.

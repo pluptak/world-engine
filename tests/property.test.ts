@@ -222,7 +222,7 @@ test("random runs open wounds that bleed, and every step still validates", () =>
   // parts that come off, so wounds open and bleed under every property, not only in the spec.
   let detached = 0;
   let bleeds = 0;
-  for (let seed = 0; seed < 100; seed += 1) {
+  for (let seed = 0; seed < 200; seed += 1) {
     const rand = mulberry32(seed);
     const world = memoryWorld(buildInitial(registry), registry);
     for (let i = 0; i < 60; i += 1) {
@@ -250,6 +250,9 @@ test("random runs run processes, start and stop them, and every step still valid
   let snuffed = 0;
   let hurt = 0;
   let gone = 0;
+  let eaten = 0;
+  let drunk = 0;
+  let starved = 0;
   for (let seed = 0; seed < 100; seed += 1) {
     const rand = mulberry32(seed);
     const world = memoryWorld(buildInitial(registry), registry);
@@ -267,6 +270,9 @@ test("random runs run processes, start and stop them, and every step still valid
           const cause = result.events.find((other) => other.event_id === event.cause_id);
           snuffed += cause?.type === "changed" && event.data.prop === "burning" ? 1 : 0;
         }
+        eaten += event.type === "consumed" && event.data.amount === undefined ? 1 : 0;
+        drunk += event.type === "consumed" && event.data.amount !== undefined ? 1 : 0;
+        starved += event.type === "changed" && event.data.process === "starve" ? 1 : 0;
         // Integrity taken, or an entity removed, under a process's run.
         const parent = result.events.find((other) => other.event_id === event.cause_id);
         if (parent?.type === "changed") {
@@ -286,11 +292,14 @@ test("random runs run processes, start and stop them, and every step still valid
   strictEqual(snuffed >= 1, true, `snuffed ${snuffed}`);
   strictEqual(hurt >= 5, true, `hurt ${hurt}`);
   strictEqual(gone >= 5, true, `gone ${gone}`);
+  strictEqual(eaten >= 3, true, `eaten ${eaten}`);
+  strictEqual(drunk >= 3, true, `drunk ${drunk}`);
+  strictEqual(starved >= 3, true, `starved ${starved}`);
 });
 
 test("the generator aims an edit at every relation rule, and each step still validates", () => {
   const seen = new Set<string>();
-  for (let seed = 0; seed < 100 && seen.size < 12; seed += 1) {
+  for (let seed = 0; seed < 300 && seen.size < 12; seed += 1) {
     const rand = mulberry32(seed);
     const world = memoryWorld(buildInitial(registry), registry);
     for (let i = 0; i < 30 && seen.size < 12; i += 1) {

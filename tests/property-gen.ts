@@ -148,6 +148,19 @@ export const SCENARIO: Scenario = [
   },
   { template: "candle", overrides: { name: "candle", location: "e1", support: "e1", pos: { x: 110, y: 20 } } },
   { template: "moss", overrides: { name: "moss", location: "e2", support: "e2", pos: { x: -60, y: 20 } } },
+  // Something to eat, and a body that goes hungry and starves, so `consume` and the hunger processes
+  // run under every property.
+  { template: "bread", overrides: { name: "bread", location: "e1", support: "e1", pos: { x: 25, y: -30 } } },
+  {
+    template: "human_hungry",
+    overrides: {
+      name: "gus",
+      location: "e2",
+      support: "e2",
+      pos: { x: 40, y: 40 },
+      props: { agent: true, reach_cm: 100, hand_height_cm: 100, attack_damage: 40, default_hit_part: "torso", hunger: 96, starvation: 17 },
+    },
+  },
   { template: "mold", overrides: { name: "mold", location: "e1", support: "e1", pos: { x: 130, y: -20 } } },
 ];
 
@@ -366,6 +379,21 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     };
   },
   wait: (context, options) => waiting(context, options?.ticks),
+  // Half of these are aimed at something edible or drinkable, an amount asked for half the time.
+  consume: (context) => {
+    const edible = context.ids.filter((id) => {
+      const props = context.snapshot.entities[id]?.props ?? {};
+      return props.nutrition !== undefined || props.liquid_nutrition !== undefined;
+    });
+    const target = edible.length > 0 && context.rand() < 0.5 ? pick(context.rand, edible) : context.target;
+    return {
+      command_id: context.commandId,
+      actor: context.actor,
+      verb: "consume",
+      target,
+      ...(context.rand() < 0.5 ? { args: { amount: int(context.rand, 1, 90) } } : {}),
+    };
+  },
   // Half the strikes and snuffs are aimed at something that gives light, the rest at anything.
   light: (context) => lighting(context, "light"),
   douse: (context) => lighting(context, "douse"),
@@ -632,7 +660,7 @@ const SLOTS: readonly { below: number; verbs: readonly string[] }[] = [
   { below: 0.63, verbs: ["give"] },
   { below: 0.69, verbs: ["attack"] },
   { below: 0.75, verbs: ["open", "close", "lock", "unlock"] },
-  { below: 0.81, verbs: ["pour"] },
+  { below: 0.81, verbs: ["pour", "consume"] },
   { below: 0.84, verbs: ["search", "light", "douse"] },
   { below: 1, verbs: ["edit"] },
 ];

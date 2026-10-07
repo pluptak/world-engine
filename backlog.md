@@ -37,28 +37,7 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 ## Items
 
-Each item names what it depends on. Ready now, in any order: Consume, Seeded randomness,
-Fork a world, Scale benchmark, Advance stops when an agent would notice, Speech, Authored beats. The
-Camp scenario follows Consume.
-
-### Consume: eating and drinking
-
-Hunger needs a counterweight. Add one verb that removes an item and applies its effect to the actor.
-
-- **Verb `consume`:** target an item the actor holds or can reach (`inReach`), with `props.nutrition`
-  (integer); effect: the actor's `props.hunger` goes down by `nutrition`, floored at 0, and the item
-  is removed under a `consumed` event caused by the verb's root event. Refuses `not_consumable`,
-  `not_in_reach`, and `mouth_full` for a creature whose jaw already holds something, all declared in
-  `refuses`; one tick.
-- **A liquid vessel** (`liquid_amount` > 0, `liquid_material`) consumed with `args.amount` takes that
-  much from the vessel instead of removing it; refuse `invalid_args` beyond what it holds. Reuse the
-  prop updates `pour` already does (`docs/liquids.md`).
-- **Templates:** `templates/bread.json`, `nutrition` 40; a `human_hungry` template extending `human`
-  with `hunger: 0` and a process `every 10 ticks, adjust hunger +1 to max 100, then damage 5`. Keep
-  `human` itself unchanged so existing worlds keep their hash; decide in review whether to fold it in.
-- **Tests:** eating bread lowers hunger and removes it; a full-hunger human takes damage over a long
-  `advance`; consume refusals; a held bottle drunk down in two commands.
-- **Depends on:** nothing (process effects have shipped).
+Every item is ready now, and names anything it leans on; they can be taken in any order.
 
 ### Camp scenario: the three together
 
@@ -74,7 +53,7 @@ limits list is written from a real world.
   the first `changed`; replay of `log.jsonl` from `initial.json` equals `snapshot.json`.
 - **`docs/limits-camp.md`:** one line per thing the scenario wanted and could not say, in the form of
   `docs/limits.md`; link it from `docs/limits.md` and `docs/DESIGN.md`. Nothing there is a proposal.
-- **Depends on:** Consume.
+- **Depends on:** nothing (processes, light and consume have shipped).
 
 ### Seeded randomness
 
