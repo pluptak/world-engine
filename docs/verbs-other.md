@@ -23,7 +23,13 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
   way. An agent issuing it is `invalid` with `invalid_author`, a missing or non-positive count
   `invalid_args`. Its own `advance` event is authored work nobody senses; what the clock runs is
   sensed as usual. It is the controller's way to move time without an agent waiting
-  ([time.md](time.md)).
+  ([time.md](time.md)). With `args.stop_on_perceived`, a non-empty list of agent ids, `ticks` is only
+  an upper bound: the clock ends at the first tick whose events one of them could sense (the rule
+  `perceivers: true` applies, a covered sense true before or after), once everything due at that
+  tick has run, and the `advance` event's data says `{ advanced: n }`, the ticks that passed, so the
+  caller can resume with another `advance`. A listed id that is no entity or no agent is `invalid`
+  with `no_such_actor`, a destroyed body `observer_destroyed`, and anything but a list of ids
+  `invalid_args`. `clock_overflow` is judged on the upper bound.
 - `edit`: carries one `spawn`, `remove`, `place`, `set_props`, `set_part` or `set_seed` as `args.edit`
   (`set_seed` gives the world's dice a state, [rng.md](rng.md)), and
   refuses with the code of the first snapshot rule its result breaks ([relations.md](relations.md)).

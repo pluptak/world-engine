@@ -1,6 +1,7 @@
 import { capacities } from "./capacity.js";
 import type { Command, TransitionContext, Verb, VerbDuration } from "./command.js";
-import type { Modifier, Snapshot } from "../model.js";
+import type { Id, Modifier, Snapshot } from "../model.js";
+import { sensedBy } from "./query.js";
 import { pending, withSchedule } from "./pending.js";
 import { reconcileSince } from "./process.js";
 import { pruneSchedule, runCause } from "./schedule.js";
@@ -47,13 +48,20 @@ function nextDue(snapshot: Snapshot, after: number, until: number): number | nul
 // first, in (entity, capacity, cause, order) order, each `capability_changed` naming the event that
 // made the modifier; then the scheduled causes due run in schedule order, each naming the event
 // that scheduled it. A cause may schedule another, which runs in turn if it falls due in the span.
-export function advanceClock(context: TransitionContext, ticks: number): void {
-  const endTick = context.snapshot.tick + ticks;
+//
+// With `wake` (agent ids), the clock ends early at the first tick whose events one of them could
+// sense, after everything due at that tick has run, so a tick's events are never split. The span is
+// then only an upper bound. Returns the ticks that passed.
+export function advanceClock(context: TransitionContext, ticks: number, wake: readonly Id[] = []): number {
+  const startTick = context.snapshot.tick;
+  const endTick = startTick + ticks;
   for (;;) {
     const tick = nextDue(context.snapshot, context.snapshot.tick, endTick);
     if (tick === null) {
       break;
     }
+    const before = context.snapshot;
+    const firstNew = context.events.length;
     context.snapshot = { ...context.snapshot, tick };
     expireAt(context, tick);
     for (let due = pending(context.snapshot)[0]; due?.due_tick === tick; due = pending(context.snapshot)[0]) {
@@ -63,8 +71,15 @@ export function advanceClock(context: TransitionContext, ticks: number): void {
       reconcileSince(context, mark);
       pruneSchedule(context);
     }
+    if (wake.length > 0 && context.events.length > firstNew) {
+      const fresh = context.events.slice(firstNew);
+      if (sensedBy(before, context.snapshot, context.registry, context.events, fresh, wake)) {
+        return tick - startTick;
+      }
+    }
   }
   context.snapshot = { ...context.snapshot, tick: endTick };
+  return ticks;
 }
 
 function expireAt(context: TransitionContext, expirationTick: number): void {

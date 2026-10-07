@@ -674,6 +674,36 @@ export function eventPerceivers(
   });
 }
 
+// Whether any of these observers could sense any of `fresh`, by the rule `eventPerceivers` applies:
+// a covered sense answers true before or after. `events` is every event of the command so far, for
+// perceive to find them in; an observer absent from a snapshot is not asked of it.
+export function sensedBy(
+  before: Snapshot,
+  after: Snapshot,
+  registry: TemplateRegistry,
+  events: readonly WorldEvent[],
+  fresh: readonly WorldEvent[],
+  observers: readonly Id[],
+): boolean {
+  const senses = ["sight", "hearing", "smell", "touch"].filter((sense) => after.coverage.senses.includes(sense));
+  const all = [...events];
+  for (const event of fresh) {
+    for (const observer of observers) {
+      for (const sense of senses) {
+        for (const snapshot of [before, after]) {
+          if (
+            snapshot.entities[observer] !== undefined &&
+            perceive(snapshot, registry, all, { kind: "perceive", observer, event_id: event.event_id, sense }).value === "true"
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
 // For event-form perceive: evaluate against both snapshot before and after the command that
 // produced the event. Return true if true at either end, otherwise the after answer.
 export function queryAtEvent(

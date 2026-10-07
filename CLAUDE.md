@@ -33,7 +33,7 @@ suffixes (NodeNext).
   It looks up the verb, then checks the actor, resolves the target (`resolve.ts`: name, alias or
   `entity.part`) and runs `verb.preconditions`. Only after all of those pass does it emit the root
   event and call `verb.transition`. Any status other than `ok` returns the input snapshot unchanged.
-   After the transition, `advanceClock` (`src/engine/clock.ts`) moves `tick` on by the verb's
+   After the transition, `advanceClock` (`src/engine/clock.ts`; a verb's `wake_on` names agents whose senses end the time early, as `advance`'s `stop_on_perceived` does, `sensedBy` in `query.ts`) moves `tick` on by the verb's
    declared `duration` (one tick, `wait` and the author's `advance` their `ticks` arg, `edit` none), expiring every modifier due
    on the way with a `capability_changed` caused by the modifier's `cause_id`, under which the
    `modifiers` delta is recorded too (`docs/provenance.md`); `emit` stamps each event with the

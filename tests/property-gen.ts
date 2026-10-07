@@ -414,7 +414,13 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     command_id: context.commandId,
     actor: WORLD_AUTHOR,
     verb: "advance",
-    args: { ticks: int(context.rand, 1, 6) },
+    args: {
+      ticks: int(context.rand, 1, 6),
+      // Now and then it asks to stop when someone would notice, naming an agent, or anything at all.
+      ...(context.rand() < 0.4 && context.ids.length > 0
+        ? { stop_on_perceived: [pick(context.rand, context.ids.filter((id) => context.snapshot.entities[id]?.props.agent === true).concat(context.ids))] }
+        : {}),
+    },
   }),
   // The five edit kinds, not five verbs: the roll that chose `edit` chooses among them too.
   edit: (context) => {

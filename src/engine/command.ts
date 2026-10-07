@@ -127,6 +127,8 @@ export interface TransitionContext extends CommandContext {
   root_event_id: Id;
   // Every change recorded so far in this command, in order: a live view, not a copy.
   deltas: readonly Delta[];
+  // Every event emitted so far in this command, in order: also a live view.
+  events: readonly WorldEvent[];
   recordDelta(entity: Id, field: string, from: unknown, to: unknown, eventId: Id): void;
   emit(type: string, entity: Id, data: Record<string, unknown>, causeId: Id | null): Id;
   set(entity: Id, field: string, value: unknown, eventId: Id): void;
@@ -175,7 +177,7 @@ export interface AttackMode {
 
 // One entry of a verb's declared args shape; `enum` carries its values.
 export interface ArgDecl {
-  kind: "address" | "pos" | "room" | "int" | "enum" | "world_edit";
+  kind: "address" | "address_list" | "pos" | "room" | "int" | "enum" | "world_edit";
   values?: readonly string[];
 }
 
@@ -201,6 +203,9 @@ export interface Verb {
   args: Readonly<Record<string, ArgDecl>>;
   refuses: readonly string[];
   duration: VerbDuration;
+  // Agents whose senses end this command's time early, read from the command: the clock stops at
+  // the first tick one of them could sense something, and the root event says how long it ran.
+  wake_on?: (command: Command) => readonly Id[];
   requires?: readonly CapacityRequirement[];
   carry_alternatives?: readonly CarryAlternative[];
   attack_modes?: readonly AttackMode[];

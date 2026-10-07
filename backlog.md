@@ -39,29 +39,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Advance stops when an agent would notice
-
-A controller that hands the turn to a human or an AI wants to run time forward and stop the moment
-something happens that agent could sense, not after a fixed count.
-
-- **Args:** `advance` gains optional `args.stop_on_perceived`: a list of agent ids. The `ticks` count
-  stays the upper bound.
-- **Behaviour:** the clock steps through due ticks as now; after each tick's events are emitted, if
-  any new event is perceived by a listed agent (`eventPerceivers`, the existing batch form, so the
-  same rule as `perceivers: true`) the clock stops at that tick and the command ends there. The
-  result states the ticks actually elapsed (`advanced`), so a caller can resume with another
-  `advance`. A listed agent that does not exist or is destroyed is `invalid` (`no_such_actor`, or
-  `observer_destroyed` as `perceive` answers it).
-- **Clock change:** `advanceClock` takes an optional stop predicate evaluated after each due tick; the
-  duration `commandDuration` reports becomes an upper bound for this verb only. Check that
-  `validateSnapshot`'s `schedule_not_ahead` still holds at an early stop (causes after the stop tick
-  remain pending), and that `clock_overflow` is judged on the upper bound.
-- **Tests:** a door set to close at tick 6 stops a 20-tick advance at 6 for an observer in the room
-  and not for one in a sealed room; with no event the full count elapses; the stop never splits one
-  tick's events; two advances end where one would have; replay of the log reproduces the early stop;
-  the property test mixes it in.
-- **Depends on:** nothing (`advance` has shipped).
-
 ### Scale benchmark and the first fixes
 
 `npm run bench` runs 10k commands on a four-entity world, so nothing says how the engine behaves with

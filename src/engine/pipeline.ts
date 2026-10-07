@@ -199,6 +199,7 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     },
     root_event_id: rootEventId,
     deltas,
+    events,
     emit,
     set,
     recordDelta,
@@ -218,7 +219,12 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     pruneSchedule(transitionContext);
     // The verb resolves at the tick it was given; only then does its time pass, and whatever falls
     // due in that time happens after it.
-    advanceClock(transitionContext, duration);
+    const wake = verb.wake_on?.(command) ?? [];
+    const elapsed = advanceClock(transitionContext, duration, wake);
+    // A command that asked to be woken says how long it ran, on its own event.
+    if (wake.length > 0) {
+      events[0] = { ...events[0]!, data: { advanced: elapsed } };
+    }
   } catch (error) {
     // A roll in a world with no seed, wherever in the command it fell (the verb's own transition
     // or a cause that ran as the clock moved): the whole command is refused and nothing is kept.

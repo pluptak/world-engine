@@ -82,7 +82,14 @@ function runSequence(world: World, seed: number, steps: number): { snapshot: str
     // time is left behind.
     const after = world.snapshot();
     const verb = verbRegistry.get(asCommand.verb);
-    const took = result.status === "ok" && verb !== undefined ? commandDuration(verb, asCommand)! : 0;
+    const declared = result.status === "ok" && verb !== undefined ? commandDuration(verb, asCommand)! : 0;
+    // A command that asked to be woken may end early, and then says how long it ran; the declared
+    // time is its upper bound.
+    const advanced = result.status === "ok" ? result.events[0]?.data.advanced : undefined;
+    if (advanced !== undefined) {
+      strictEqual(typeof advanced === "number" && advanced >= 1 && advanced <= declared, true, `advanced ${advanced}`);
+    }
+    const took = typeof advanced === "number" ? advanced : declared;
     strictEqual(after.tick, before.tick + took);
     for (const entity of Object.values(after.entities)) {
       for (const modifier of entity.modifiers) {

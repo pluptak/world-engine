@@ -29,3 +29,8 @@ duration and that nothing due inside it is left behind.
 Modifiers are not all that falls due: a door can close itself ([schedule.md](schedule.md)), and at
 a tick with both, the modifiers expire first. What it does not do: agents do not act in parallel;
 two commands in a beat never share a tick.
+
+**Waking early.** `advance` may name agents (`stop_on_perceived`) and then ends at the first tick whose
+events one of them could sense, after everything due at that tick has run; `ticks` is the upper bound
+and the `advance` event's `advanced` the ticks that passed. What was due later stays pending
+([verbs-other.md](verbs-other.md)). Two advances that end where one would have leave the same world.

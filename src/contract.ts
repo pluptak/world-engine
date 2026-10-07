@@ -145,7 +145,7 @@ const AttackModeSchema = z.object({
 }).strict();
 
 const ArgDeclSchema = z.union([
-  z.object({ kind: z.enum(["address", "pos", "room", "int", "world_edit"]) }).strict(),
+  z.object({ kind: z.enum(["address", "address_list", "pos", "room", "int", "world_edit"]) }).strict(),
   z.object({ kind: z.literal("enum"), values: z.array(z.string()) }).strict(),
 ]);
 
