@@ -49,8 +49,8 @@ commands; choosing among them stays the middleware's.)
 
 - **API:** `world.options(actor, { refused? })` returns `{ actor, version, ready, needs_args, blocked? }`.
   Candidates are every verb in the catalog that is not `author_only`, against each entity the actor can
-  address (`addressable` in `src/engine/query.ts`, the rule target resolution applies, with `byId: false`
-  so a hidden thing is never offered: listing it would reveal it), excluding the actor, and once with no
+  address (`addressable` in `src/engine/query.ts`, the rule target resolution applies, which never
+  names a hidden thing, so none is offered), excluding the actor, and once with no
   target for a verb that does not `requires_target`. Not the projection's `entities`: those miss what the
   actor can only grope for in the dark, which a command can name, so options would offer less than
   `command` accepts. Each candidate is dry-run with no args through `check`'s
