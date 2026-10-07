@@ -31,6 +31,8 @@ type LogEntry = Attempt;
 interface Head {
   log_bytes: number;
   events_bytes: number;
+  // Absent from a head written before deltas.jsonl existed: the file is then rebuilt, not trusted.
+  deltas_bytes?: number;
   log_entries: number;
   ok_entries: number;
   templates_hash: string;
@@ -41,6 +43,7 @@ const snapshots = {
   initial: "initial.json",
   log: "log.jsonl",
   events: "events.jsonl",
+  deltas: "deltas.jsonl",
   head: "head.json",
   templates: "templates.json",
   ids: "ids.json",
@@ -126,7 +129,8 @@ function readHead(dir: string): Head | null {
     ) {
       return null;
     }
-    return value as unknown as Head;
+    const { deltas_bytes: deltas, ...rest } = value;
+    return (typeof deltas === "number" ? { ...rest, deltas_bytes: deltas } : rest) as unknown as Head;
   } catch {
     return null;
   }
@@ -398,38 +402,45 @@ function replayStart(
   return initialStart(dir, templates);
 }
 
-// events.jsonl only grows, so what a handle has parsed of it is kept, with the bytes before its end
-// (an anchor) to notice a file that was rewritten rather than extended. A change in size or time
-// reads just the new lines; anything else reads the file again.
+// events.jsonl and deltas.jsonl only grow, so what a handle has parsed of one is kept, with the bytes
+// before its end (an anchor) to notice a file that was rewritten rather than extended. A change in
+// size or time reads just the new lines; anything else reads the file again.
 const ANCHOR_BYTES = 256;
-interface EventCache {
+interface LineCache {
   size: number;
   mtimeMs: number;
   anchor: Buffer;
   lines: number;
-  events: WorldEvent[];
+  records: unknown[];
 }
-const eventCaches = new Map<string, EventCache>();
+const lineCaches = new Map<string, LineCache>();
 
-function parseEventLines(text: string, firstLine: number): WorldEvent[] {
-  const events: WorldEvent[] = [];
+function parseLines<T>(text: string, firstLine: number, parse: (line: string, lineNumber: number) => T): T[] {
+  const records: T[] = [];
   for (const [index, line] of text.split(/\r?\n/).entries()) {
     if (line.length > 0) {
-      events.push(parseEventLine(line, firstLine + index));
+      records.push(parse(line, firstLine + index));
     }
   }
-  return events;
+  return records;
 }
 
 function cachedEvents(dir: string): readonly WorldEvent[] {
-  const path = join(dir, snapshots.events);
+  return cachedLines(join(dir, snapshots.events), parseEventLine);
+}
+
+function cachedDeltas(dir: string): readonly Delta[] {
+  return cachedLines(join(dir, snapshots.deltas), parseDeltaLine);
+}
+
+function cachedLines<T>(path: string, parse: (line: string, lineNumber: number) => T): readonly T[] {
   const stat = statSync(path);
-  const kept = eventCaches.get(path);
+  const kept = lineCaches.get(path);
   if (kept !== undefined && kept.size === stat.size && kept.mtimeMs === stat.mtimeMs) {
-    return kept.events;
+    return kept.records as T[];
   }
   // A file that only grew is read from the anchor on; anything else, whole.
-  let base: EventCache | undefined;
+  let base: LineCache | undefined;
   let tail: Buffer | undefined;
   if (kept !== undefined && stat.size > kept.size) {
     const from = Math.max(0, kept.size - ANCHOR_BYTES);
@@ -446,22 +457,22 @@ function cachedEvents(dir: string): readonly WorldEvent[] {
     }
   }
   tail ??= readFileSync(path);
-  const fresh = parseEventLines(tail.toString("utf8"), (base?.lines ?? 0) + 1);
-  const events = base === undefined ? fresh : [...base.events, ...fresh];
+  const fresh = parseLines(tail.toString("utf8"), (base?.lines ?? 0) + 1, parse);
+  const records = base === undefined ? fresh : [...(base.records as T[]), ...fresh];
   // A file that does not end on a line is being written, or damaged: answer from it, keep nothing.
   if (tail.length > 0 && tail[tail.length - 1] !== 10) {
-    eventCaches.delete(path);
-    return events;
+    lineCaches.delete(path);
+    return records;
   }
   const seen = base === undefined ? tail : Buffer.concat([base.anchor, tail]);
-  eventCaches.set(path, {
+  lineCaches.set(path, {
     size: (base?.size ?? 0) + tail.length,
     mtimeMs: stat.mtimeMs,
     anchor: Buffer.from(seen.subarray(Math.max(0, seen.length - ANCHOR_BYTES))),
-    lines: events.length,
-    events,
+    lines: records.length,
+    records,
   });
-  return events;
+  return records;
 }
 
 function snapshotAtVersion(
@@ -512,9 +523,11 @@ export function create(
   }
   writeFileSync(join(dir, snapshots.log), "", "utf8");
   writeFileSync(join(dir, snapshots.events), "", "utf8");
+  writeFileSync(join(dir, snapshots.deltas), "", "utf8");
   writeHead(dir, {
     log_bytes: 0,
     events_bytes: 0,
+    deltas_bytes: 0,
     log_entries: 0,
     ok_entries: 0,
     templates_hash: templatesHash(templates),
@@ -559,6 +572,7 @@ export function load(dir: string, registry?: TemplateRegistry, setIsTheWorlds = 
   const head = readHead(dir);
   const logPath = join(dir, snapshots.log);
   const eventsPath = join(dir, snapshots.events);
+  const deltasPath = join(dir, snapshots.deltas);
   const frozenHash = templatesHash(templates);
 
   // An upgrade stamps the snapshots before the head, so a head still naming the old hash means the
@@ -586,7 +600,10 @@ export function load(dir: string, registry?: TemplateRegistry, setIsTheWorlds = 
     if (
       canonicalJson({ ...folded.snapshot, templates_hash: frozenHash }) !==
       canonicalJson({ ...snapshot, templates_hash: frozenHash }) ||
-      canonicalJson(folded.events) !== canonicalJson(readEvents(dir))
+      canonicalJson(folded.events) !== canonicalJson(readEvents(dir)) ||
+      (head.deltas_bytes !== undefined &&
+        existsSync(join(dir, snapshots.deltas)) &&
+        canonicalJson(folded.deltas) !== canonicalJson(readDeltas(dir)))
     ) {
       throw new WorldError("templates_changed", "Template hash mismatch");
     }
@@ -604,7 +621,12 @@ export function load(dir: string, registry?: TemplateRegistry, setIsTheWorlds = 
     try {
       const logStat = statSync(logPath);
       const eventsStat = statSync(eventsPath);
-      if (logStat.size === head.log_bytes && eventsStat.size === head.events_bytes) {
+      const deltasStat = statSync(deltasPath);
+      if (
+        logStat.size === head.log_bytes &&
+        eventsStat.size === head.events_bytes &&
+        deltasStat.size === head.deltas_bytes
+      ) {
         const expectedVersion = initial.version + head.ok_entries;
         if (snapshot.version === expectedVersion) {
           return snapshot;
@@ -615,36 +637,52 @@ export function load(dir: string, registry?: TemplateRegistry, setIsTheWorlds = 
     }
   }
 
-  // A crash between the log, event, and snapshot appends leaves them disagreeing; the log is
-  // the source of truth, so replay rebuilds both files, events first, and any later open finds
-  // them consistent again.
+  // A crash between the log, event, delta, and snapshot appends leaves them disagreeing; the log is
+  // the source of truth, so replay rebuilds the files, events and deltas first, and any later open
+  // finds them consistent again.
   const entries = readLogEntries(dir);
   const okEntries = entries.filter((entry) => entry.status === "ok");
   const expectedVersion = initial.version + okEntries.length;
   if (snapshot.version !== expectedVersion) {
-    const { snapshot: recovered, events } = replayWithEvents(dir, templates);
-    atomicWrite(
-      join(dir, snapshots.events),
-      events.map((event) => `${canonicalJson(event)}\n`).join(""),
-    );
+    const { snapshot: recovered, events, deltas } = replayWithEvents(dir, templates);
+    atomicWrite(eventsPath, events.map((event) => `${canonicalJson(event)}\n`).join(""));
+    atomicWrite(deltasPath, deltaLines(deltas));
     atomicWrite(join(dir, snapshots.current), canonicalJson(recovered));
     writeHead(dir, {
       log_bytes: statSync(logPath).size,
       events_bytes: statSync(eventsPath).size,
+      deltas_bytes: statSync(deltasPath).size,
       log_entries: entries.length,
       ok_entries: okEntries.length,
       templates_hash: frozenHash,
     });
     return recovered;
   }
+  // The deltas are appended after the events and before the snapshot, so with the snapshot at the
+  // log's version they are whole unless the file is missing, was never kept (a head with no size for
+  // it: a world made before the file existed, or a lost head), or is shorter than the head says it
+  // was, which no crash can do. Then they are rebuilt from the log.
+  if (
+    head === null ||
+    head.deltas_bytes === undefined ||
+    !existsSync(deltasPath) ||
+    statSync(deltasPath).size < head.deltas_bytes
+  ) {
+    atomicWrite(deltasPath, deltaLines(replayWithEvents(dir, templates).deltas));
+  }
   writeHead(dir, {
     log_bytes: statSync(logPath).size,
     events_bytes: statSync(eventsPath).size,
+    deltas_bytes: statSync(deltasPath).size,
     log_entries: entries.length,
     ok_entries: okEntries.length,
     templates_hash: frozenHash,
   });
   return snapshot;
+}
+
+function deltaLines(deltas: readonly Delta[]): string {
+  return deltas.map((delta) => `${canonicalJson(delta)}\n`).join("");
 }
 
 // Log entries so far: every submission appends exactly one line, refused or not, so this count is
@@ -727,10 +765,16 @@ export function submit(
   const entry: LogEntry = attemptOf(command, basedOn, current.version, result);
   const logPath = join(dir, snapshots.log);
   const eventsPath = join(dir, snapshots.events);
+  const deltasPath = join(dir, snapshots.deltas);
 
   appendFileSync(logPath, `${canonicalJson(entry)}\n`, "utf8");
   for (const event of result.events) {
     appendFileSync(eventsPath, `${canonicalJson(event)}\n`, "utf8");
+  }
+  // Only an accepted command's deltas are history; load() trusts the file once the snapshot below
+  // has been written after it.
+  if (result.status === "ok" && result.deltas.length > 0) {
+    appendFileSync(deltasPath, deltaLines(result.deltas), "utf8");
   }
 
   if (result.status === "ok") {
@@ -739,6 +783,7 @@ export function submit(
 
   const logStat = statSync(logPath);
   const eventsStat = statSync(eventsPath);
+  const deltasStat = statSync(deltasPath);
   const head = readHead(dir);
   const logEntries = head !== null ? head.log_entries + 1 : 1;
   const okEntries =
@@ -746,6 +791,7 @@ export function submit(
   writeHead(dir, {
     log_bytes: logStat.size,
     events_bytes: eventsStat.size,
+    deltas_bytes: deltasStat.size,
     log_entries: logEntries,
     ok_entries: okEntries,
     templates_hash: templatesHash(templates),
@@ -769,6 +815,26 @@ export function readEvents(dir: string): WorldEvent[] {
   return [...cachedEvents(dir)];
 }
 
+// The stored deltas in file order: every accepted command's, one canonical line each.
+export function readDeltas(dir: string): Delta[] {
+  assertWorldExists(dir);
+  // A copy of the list the handle keeps, as readEvents does.
+  return [...cachedDeltas(dir)];
+}
+
+function parseDeltaLine(line: string, lineNumber: number): Delta {
+  const value: unknown = JSON.parse(line);
+  if (
+    !isRecord(value) ||
+    typeof value.event_id !== "string" ||
+    typeof value.entity !== "string" ||
+    typeof value.field !== "string"
+  ) {
+    throw new TypeError(`Invalid delta entry at line ${lineNumber}`);
+  }
+  return value as unknown as Delta;
+}
+
 function parseEventLine(line: string, lineNumber: number): WorldEvent {
   const value: unknown = JSON.parse(line);
   if (
@@ -787,6 +853,7 @@ function parseEventLine(line: string, lineNumber: number): WorldEvent {
 }
 
 export interface Fold {
+  deltas: Delta[];
   snapshot: Snapshot;
   events: WorldEvent[];
 }
@@ -813,6 +880,7 @@ export function writeWorldTemplates(dir: string, registry: TemplateRegistry): vo
 export function replayFold(dir: string, registry: TemplateRegistry): Fold {
   let snapshot = readSnapshot(join(dir, snapshots.initial));
   const events: WorldEvent[] = [];
+  const deltas: Delta[] = [];
 
   for (const [index, entry] of readLogEntries(dir).entries()) {
     if (entry.status !== "ok") {
@@ -826,10 +894,11 @@ export function replayFold(dir: string, registry: TemplateRegistry): Fold {
       );
     }
     events.push(...result.events);
+    deltas.push(...result.deltas);
     snapshot = result.snapshot;
   }
 
-  return { snapshot, events };
+  return { snapshot, events, deltas };
 }
 
 export function replayWithEvents(dir: string, registry?: TemplateRegistry): Fold {
@@ -894,10 +963,11 @@ function eventsThrough(dir: string, eventId: Id): WorldEvent[] | null {
   return stored.slice(0, end + 1);
 }
 
-// The cause chain for one event or one entity field, folded from the whole log in command
-// order; field mode resolves to the last raw delta for that entity and field, or the entity
-// spawn event if the field was never explicitly set. A field with no delta and no spawn
-// event returns an empty chain (entity existed in the initial snapshot).
+// The cause chain for one event or one entity field, read from the stored events and deltas in
+// command order, which are what replaying the log would collect; field mode resolves to the last raw
+// delta for that entity and field, or the entity spawn event if the field was never explicitly set.
+// A field with no delta and no spawn event returns an empty chain (entity existed in the initial
+// snapshot).
 export function trace(
   dir: string,
   query: TraceQuery,
@@ -908,25 +978,11 @@ export function trace(
   const initial = readInitialMeta(join(dir, snapshots.initial));
   assertTemplates(current, templates);
   assertTemplates(initial, templates);
-  // A chain of events needs no deltas, so it needs no replay either; the history of a field does.
+  const events = cachedEvents(dir);
   if ("event_id" in query) {
-    return { events: traceQuery([...cachedEvents(dir)], [], query) };
+    return { events: traceQuery(events, [], query) };
   }
-  let snapshot = readSnapshot(join(dir, snapshots.initial));
-  const deltas: Delta[] = [];
-  const events: WorldEvent[] = [];
-  for (const [index, entry] of readLogEntries(dir).entries()) {
-    if (entry.status !== "ok") {
-      continue;
-    }
-    const result = apply(snapshot, templates, entry.command);
-    if (result.status !== "ok") {
-      throw new TypeError(`Accepted command failed during replay at line ${index + 1}`);
-    }
-    deltas.push(...result.deltas);
-    events.push(...result.events);
-    snapshot = result.snapshot;
-  }
+  const deltas = cachedDeltas(dir);
   if ("entity" in query) {
     const known =
       current.entities[query.entity] !== undefined ||

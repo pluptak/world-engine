@@ -41,27 +41,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### The history of a field without replaying the log
-
-`docs/measurements.md` (cost of a read): after checkpoints, `trace` of a field's history is the one read that
-still replays the whole log (379 ms at ten thousand commands), because the deltas it follows are not stored
-anywhere but in the replay.
-
-- **Store the deltas:** `deltas.jsonl`, one canonical line per delta, appended by `submit` beside the events and
-  written before the snapshot, with its byte size in `head.json` (`deltas_bytes`). A stored world made before
-  it has none: `load` rebuilds it from the log as it rebuilds events, and `schema_version` goes to 6 with an
-  upgrade path that does exactly that, so older worlds open.
-- **Read it like the events:** a handle parses it once and extends it by the lines appended since
-  (`cachedEvents` in `src/store/file-store.ts` is the pattern, with its anchor check), and `trace` of an entity's
-  field is answered from the cached events and deltas with no replay. `since`'s deltas can then come from the
-  file as well when the checkpoints are not needed.
-- **Crash rules:** the recovery in `load` compares deltas as it does events, and a mismatch rebuilds both from
-  the log. Replay stays the source of truth.
-- **Tests and numbers:** answers equal the replay's byte for byte (property-driven store world, with the file
-  deleted and truncated); a world at schema 5 opens and gains the file; `bench:reads` shows the field trace flat.
-  The numbers replace the field-history row in `docs/measurements.md`.
-- **Depends on:** nothing.
-
 ### A projection names only what the observer senses
 
 `limits-watch.md`: whoever hears a `say` is told who spoke, even in the dark. The same holds for every event

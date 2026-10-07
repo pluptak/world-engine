@@ -103,16 +103,16 @@ suffixes (NodeNext).
   severed subtree is stored as its root alone, and `effectivePart` gives a part under a detached or
   destroyed ancestor that ancestor's status).
 - `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json`,
-  `log.jsonl`, `events.jsonl` and `head.json`. `submit` appends the log line (every command, including
-  refused and invalid ones, as an `Attempt` with the version it was decided at and its reason) and the command's events, atomically writes the snapshot, and writes
-  `head.json` last: both files' byte sizes, `log_entries` (all lines, used for default edit ids) and
+  `log.jsonl`, `events.jsonl`, `deltas.jsonl` and `head.json`. `submit` appends the log line (every command, including
+  refused and invalid ones, as an `Attempt` with the version it was decided at and its reason), the command's events and an accepted command's deltas, atomically writes the snapshot, and writes
+  `head.json` last: the three files' byte sizes, `log_entries` (all lines, used for default edit ids) and
   `ok_entries`. `resolveSubmission` runs `validateSnapshot` on every accepted result and
   downgrades a breaking one to `invalid` with the rule's code, so a verb bug is logged but never
   written; no verb leans on it, which the property test holds (an `apply` that is ok must stay ok). `load` trusts the snapshot when the head matches the file sizes and `ok_entries`, without
-  reading the log; otherwise it counts `ok` entries, replays and rewrites the events and head if they
-  disagree. Store queries read `events.jsonl`; `since` and event-time perceive replay only from the newest usable
+  reading the log; otherwise it counts `ok` entries, replays and rewrites the events, deltas and head if they
+  disagree (a missing or short `deltas.jsonl`, or a head with no size for it, is rebuilt, which is why a world made before it still opens at `schema_version` 5). Store queries read `events.jsonl`, and `trace` of a field `deltas.jsonl`, each parsed once per handle and extended by the lines appended since; `since` and event-time perceive replay only from the newest usable
 checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the log bytes, `initial.json` and template set;
-`docs/persistence.md`), and a `trace` of a field replays the whole log. A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
+`docs/persistence.md`). A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
   surface as CLI issue codes.
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with

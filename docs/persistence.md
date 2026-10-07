@@ -14,13 +14,15 @@ A world directory holds:
 - `log.jsonl`, every command as an attempt, refused ones included: its base version, the version it
   was decided at, status, and any reason code, data and candidates;
 - `events.jsonl`, every emitted event, which queries read instead of replaying;
+- `deltas.jsonl`, the deltas of every accepted command, one canonical line each, which the history of a
+  field reads instead of replaying;
 - `checkpoints/`, a cache and never a source of truth, made by `submit` after the head: every 256
   accepted commands the snapshot just written as `<version>-<next_seq>.json`;
-- `head.json`, written last: both JSONL files' sizes, all and accepted entry counts, and the
+- `head.json`, written last: the three JSONL files' sizes, all and accepted entry counts, and the
   template hash, so opening a world detects a crash without reading the log.
 
 Replay folds accepted commands over the initial snapshot; it is the source of truth, and a mismatch
-with the head rebuilds the snapshot, events and head from the log. An accepted command whose result
+with the head rebuilds the snapshot, events, deltas and head from the log. An accepted command whose result
 breaks an invariant is logged `invalid` and never written; that is a net for verb bugs, and the
 property test fails when a command the engine accepts is ever caught by it. A stale command is
 re-evaluated against the current snapshot and becomes `preempted` when it would have succeeded at
@@ -38,9 +40,19 @@ event's checkpoint by number alone, since event ids count the same sequence as t
 `next_seq`, and the events it needs for cause chains come from `events.jsonl`, which a handle parses once
 and then extends by the lines appended since (checked against the bytes just before them, so a file
 that was rewritten is read again). A store world keeps its last sixteen event replays, so one observation
-asks the log once per event rather than once per sense. `trace` of an event's chain reads `events.jsonl`
-alone; `trace` of a field's history still replays the whole log, because the deltas it needs are not
-stored. What a read costs as the log grows is in [measurements.md](measurements.md).
+asks the log once per event rather than once per sense. What a read costs as the log grows is in
+[measurements.md](measurements.md).
+
+**Deltas.** `submit` appends an accepted command's deltas after its events and before the snapshot,
+so a snapshot at the log's version means the file is whole. `trace` of an event's chain reads
+`events.jsonl` alone and `trace` of a field's history reads `deltas.jsonl` with it, each parsed
+once per handle and extended by the lines appended since, with no replay. `load` trusts the file
+when its size is the head's `deltas_bytes`; it rebuilds it from the log when it is missing, shorter
+than the head says (appends only grow it, so no crash does that), or the head has no size for it (a
+world made before the file existed, or whose head was lost). The file is derived from the log, as
+the events are, so `schema_version` stays 5: an older world opens and gains it. `upgradeTemplates`
+and a settled template move hold it to the replay as they hold the events. `since` still replays,
+from a checkpoint.
 
 A world loads the template set it was created with, so editing `templates/` reaches new worlds only.
 `upgradeTemplates` moves a live world to a new set and refuses if a template lost a field an entity

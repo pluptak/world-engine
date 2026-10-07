@@ -284,6 +284,7 @@ function runReads(): void {
       perceive_event_ms: time(() => world.query({ kind: "perceive", observer: watcher, event_id: olderEvent, sense: "sight" })),
       trace_event_ms: time(() => world.trace({ event_id: olderEvent })),
       trace_field_ms: time(() => world.trace({ entity: bottle, field: "contained_in" })),
+      trace_field_again_ms: time(() => world.trace({ entity: bottle, field: "contained_in" })),
       attempts_ms: time(() => world.attempts(version - 10)),
     });
   }

@@ -33,6 +33,7 @@ import {
   entryCount,
   replayFold,
   load,
+  readDeltas,
   readEvents,
   readWorldIds,
   readWorldTemplates,
@@ -347,7 +348,8 @@ function storeWorld(
       const replayed = replayFold(dir, target);
       if (
         canonicalJson(replayed.snapshot) !== canonicalJson(current) ||
-        canonicalJson(replayed.events) !== canonicalJson(readEvents(dir))
+        canonicalJson(replayed.events) !== canonicalJson(readEvents(dir)) ||
+        canonicalJson(replayed.deltas) !== canonicalJson(readDeltas(dir))
       ) {
         throw new WorldError(
           "replay_diverges",
