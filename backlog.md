@@ -39,24 +39,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Fork a world
-
-A caller running what-ifs or many rollouts should not hand-copy snapshots.
-
-- **API:** `world.fork(): World` on both world kinds, returning a `memoryWorld` seeded from the
-  current snapshot, with the same templates, names and coverage, whose own history starts at the
-  fork's version (`since`, `attempts` and `trace` below it throw `history_unavailable`, as for any
-  memory world). The fork shares nothing mutable with its parent: advancing one never touches the
-  other, checked by deep-freezing the parent's snapshot in a test.
-- **Store worlds** fork to memory, never to a directory; writing a fork out is the caller's job
-  through `snapshot()`. A pending `rng` forks with it, so the fork continues the same dice.
-- **CLI:** none; a fork lives in a process.
-- **Docs:** `docs/api.md`, one paragraph; `docs/persistence.md` for what a fork is not.
-- **Tests:** two forks given the same commands end byte-identical; given different commands they
-  diverge and the parent is unchanged; a fork of a memory world after many commands answers `query`
-  and `observe` as the parent did at that version; stale-command preemption still works inside a fork.
-- **Depends on:** nothing (seeded randomness has shipped).
-
 ### Advance stops when an agent would notice
 
 A controller that hands the turn to a human or an AI wants to run time forward and stop the moment

@@ -30,3 +30,10 @@ uses (a part counts only with stored state or something in it), or if the log no
 the stored snapshot and event stream.
 
 `npm run bench` runs 10k store commands and holds about 3.6 ms per command from first to last.
+
+**A fork is not a copy on disk.** `world.fork()` (on a store world and a memory world alike) returns a
+memory world that starts from a deep copy of the snapshot as it is now, with the same templates,
+names, coverage and `rng`, so it continues the same dice. Its history begins at that version: `since`,
+`attempts` and a `trace` of anything older throw `history_unavailable`, as for any memory world. It
+writes no directory and appends to no log, and nothing it does reaches its parent or its other forks.
+Keeping a fork is the caller's job through `snapshot()`.

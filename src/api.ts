@@ -113,6 +113,10 @@ export interface World {
   // The id a scenario gave this world, or null. Names are authoring sugar rather than world state,
   // so a store world keeps them in ids.json and a memory world is handed them.
   id(name: string): Id | null;
+  // A memory world that starts from this world's snapshot as it is now, with the same templates,
+  // names, coverage and dice state. Its history begins at this version, and it shares nothing mutable
+  // with its parent: what either does afterwards the other never sees.
+  fork(): World;
 }
 
 function checkResult(result: Result): CheckResult {
@@ -350,6 +354,7 @@ function storeWorld(
     snapshot: () => load(dir, active),
     entity: (id) => load(dir, active).entities[id] ?? null,
     id: (name) => names[name] ?? null,
+    fork: () => memoryWorld(structuredClone(load(dir, active)), active, names),
   };
   return world;
 }
@@ -588,6 +593,7 @@ export function memoryWorld(
     snapshot: () => current,
     entity: (id) => current.entities[id] ?? null,
     id: (name) => names[name] ?? null,
+    fork: () => memoryWorld(structuredClone(current), templates, names),
   };
   return world;
 }

@@ -3,7 +3,7 @@
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)`, `openWorld(dir)`, and
 `memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `since`, `attempts`,
 `trace`, `beat`, `upgradeTemplates`, `query`, `observe` and `inspect`
-([projection.md](projection.md)), `snapshot`, `entity`, and `id`. `verbs()` is the verb catalog and
+([projection.md](projection.md)), `snapshot`, `entity`, `id` and `fork`. `verbs()` is the verb catalog and
 `ENGINE_CAPABILITIES` what the engine computes; the CLI answers both (`op` `verbs`, `capabilities`).
 Store worlds share a directory, so handles see each other; memory worlds hold their own. A missing
 directory, a changed hash, or a bad version is a `WorldError` with a code.
@@ -42,3 +42,8 @@ plus the offset, in the anchor's room, before the first spawn. Naming a holder b
 in a room `anchor_not_room_supported`; an `edit place` takes the same shape in `pos` by id and
 refuses a bad anchor the same way, with `no_such_entity` for one that does not exist. See
 [space.md](space.md).
+
+`fork()` on either kind of world returns a memory world seeded from the current snapshot, with the
+same templates, names, coverage and dice, whose own history starts at that version; it shares nothing
+mutable with its parent, so a caller can run what-ifs or many rollouts without copying snapshots by
+hand ([persistence.md](persistence.md)).
