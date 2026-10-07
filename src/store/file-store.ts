@@ -146,7 +146,25 @@ function readSnapshot(path: string): Snapshot {
   return value as unknown as Snapshot;
 }
 
-function assertTemplates(snapshot: Snapshot, registry: TemplateRegistry): void {
+// What load() needs of initial.json on the way in: its version and its hash. The file is written once
+// and again only when a template set is settled, and parsing a large one on every submission is the
+// cost, so its two fields are kept against the file's size and modification time.
+const initialMeta = new Map<string, { stamp: string; version: number; templates_hash: string }>();
+
+function readInitialMeta(path: string): { version: number; templates_hash: string } {
+  const stat = statSync(path);
+  const stamp = `${stat.size}:${stat.mtimeMs}`;
+  const kept = initialMeta.get(path);
+  if (kept !== undefined && kept.stamp === stamp) {
+    return kept;
+  }
+  const { version, templates_hash } = readSnapshot(path);
+  const meta = { stamp, version, templates_hash };
+  initialMeta.set(path, meta);
+  return meta;
+}
+
+function assertTemplates(snapshot: Pick<Snapshot, "templates_hash">, registry: TemplateRegistry): void {
   if (snapshot.templates_hash !== templatesHash(registry)) {
     throw new WorldError("templates_changed", "Template hash mismatch");
   }
@@ -299,7 +317,8 @@ export function load(dir: string, registry?: TemplateRegistry, setIsTheWorlds = 
   assertWorldExists(dir);
   const templates = activeRegistry(dir, registry);
   const snapshot = readSnapshot(join(dir, snapshots.current));
-  const initial = readSnapshot(join(dir, snapshots.initial));
+  const initialPath = join(dir, snapshots.initial);
+  const initial = readInitialMeta(initialPath);
 
   const head = readHead(dir);
   const logPath = join(dir, snapshots.log);
@@ -335,7 +354,7 @@ export function load(dir: string, registry?: TemplateRegistry, setIsTheWorlds = 
     ) {
       throw new WorldError("templates_changed", "Template hash mismatch");
     }
-    atomicWrite(join(dir, snapshots.initial), canonicalJson({ ...initial, templates_hash: frozenHash }));
+    atomicWrite(initialPath, canonicalJson({ ...readSnapshot(initialPath), templates_hash: frozenHash }));
     atomicWrite(join(dir, snapshots.current), canonicalJson({ ...snapshot, templates_hash: frozenHash }));
     writeHead(dir, { ...head, templates_hash: frozenHash });
     return load(dir);

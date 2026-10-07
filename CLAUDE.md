@@ -19,6 +19,7 @@ node --import tsx --test --test-name-pattern="<regex>" tests/query.test.ts   # o
 npm run world -- init data/w1 scenarios/bottle.json                          # create a world
 echo '{"op":"snapshot","world":"data/w1"}' | npm run world --silent          # one JSON request on stdin
 npm run bench                                   # 10k store commands; ms/cmd for the first and last 1k
+npm run bench:scale                             # 500 entities, 20 rooms: ms/cmd and a pipeline/validate/rest split
 ```
 
 There's no lint step and no build output (`noEmit`; everything runs through `tsx`). Imports use `.js`

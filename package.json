@@ -13,6 +13,7 @@
     "test": "node --import tsx --test \"tests/**/*.test.ts\"",
     "check": "npm run typecheck && npm test",
     "bench": "node --import tsx scripts/bench.ts",
+    "bench:scale": "node --import tsx scripts/bench.ts --scale",
     "world": "node --import tsx src/cli/main.ts"
   },
   "devDependencies": {

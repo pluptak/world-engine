@@ -29,7 +29,31 @@ A world loads the template set it was created with, so editing `templates/` reac
 uses (a part counts only with stored state or something in it), or if the log no longer replays to
 the stored snapshot and event stream.
 
-`npm run bench` runs 10k store commands and holds about 3.6 ms per command from first to last.
+`npm run bench` runs 10k store commands on a four-entity world and holds about 4 ms per command from
+first to last.
+
+**Scale.** `npm run bench:scale` (`scripts/bench.ts --scale`) runs 10k mixed commands (open, take,
+put, take, drop, close, move, wait, each agent in turn) on a generated world of 20 rooms and 500
+entities, 20 agents among tables, chests and stones, with 20 growing sprouts so processes run
+throughout. Every 20th command is also run alone through the pipeline and the validator, so the
+store's time splits into pipeline, validate and the rest (loading the snapshot, the log and event
+appends, the snapshot write, the head). Measured on a Ryzen 5 5600 (12 threads), 32 GB, Windows 11,
+Node 24, a baseline and not a threshold:
+
+| | before | after the first fixes |
+|---|---|---|
+| four-entity workload, ms per command (first / last 1k) | 4.2 / 4.1 | 3.9 / 4.0 |
+| 500 entities, ms per command (first / last 1k) | 13.7 / 13.6 | 10.6 / 10.6 |
+| of which pipeline | 1.3 | 1.2 |
+| of which validate | 1.0 | 1.0 |
+| of which the rest (load, serialise, write) | 11.3 | 8.2 |
+
+The snapshot is 152 kB at 500 entities. Cost does not grow along the run (first and last thousand
+agree); it grows with the size of the world, and nearly all of it is reading, serialising and writing
+the whole snapshot, not the engine: the pipeline is under 1.3 ms. The first fixes changed no behaviour:
+`canonicalJson` quotes each key once instead of per object (3.4 to 1.4 ms for this snapshot), and
+`load` keeps the version and hash of `initial.json` against the file's size and time instead of parsing
+the whole file on every submission (4.1 to 2.4 ms).
 
 **A fork is not a copy on disk.** `world.fork()` (on a store world and a memory world alike) returns a
 memory world that starts from a deep copy of the snapshot as it is now, with the same templates,
