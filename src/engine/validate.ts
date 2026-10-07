@@ -5,7 +5,7 @@ import { misfit } from "./fit.js";
 import { effectivePart, isDefaultPart } from "./parts.js";
 import { uncomputable } from "./capabilities.js";
 import { isAbstract } from "./resolve.js";
-import { CAUSE_KINDS } from "./schedule.js";
+import { CAUSE_KINDS, causeInvalid } from "./schedule.js";
 
 export interface SnapshotIssue {
   code: string;
@@ -493,8 +493,9 @@ function scheduleIssues(snapshot: Snapshot): SnapshotIssue[] {
     if (snapshot.entities[cause.entity] === undefined) {
       issues.push(issue("schedule_dangling", path, cause.entity));
     }
-    if (cause.kind === "bleed" && !(Number.isSafeInteger(cause.remaining) && cause.remaining > 0)) {
-      issues.push(issue("bleed_not_remaining", path, `remaining ${cause.remaining}`));
+    const broken = causeInvalid(cause);
+    if (broken !== null) {
+      issues.push(issue(broken.code, path, broken.detail));
     }
   });
   return issues;

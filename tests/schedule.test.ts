@@ -6,7 +6,9 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { createWorld, openWorld, type Id, type Result, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
-import type { Snapshot } from "../src/model.js";
+import type { ScheduledCause, Snapshot } from "../src/model.js";
+import { CAUSE_KINDS } from "../src/engine/schedule.js";
+import { SnapshotSchema } from "../src/contract.js";
 import { loadTemplates } from "../src/templates.js";
 
 // The self-closing door is the spec for scheduled causes. A door with `closes_after: 2` swings shut
@@ -156,4 +158,23 @@ test("the schedule is stored one way: ahead of the clock, in due order, on entit
   deepStrictEqual(codes([cause, { ...cause, due_tick: 3 }]), ["schedule_unordered"]);
   deepStrictEqual(codes([{ ...cause, entity: "e999" }]), ["schedule_dangling"]);
   deepStrictEqual(codes([{ ...cause, kind: "explode" as "close" }]), ["unknown_cause_kind"]);
+});
+
+// The table in `src/engine/schedule.ts` is the one place a cause kind lives; the response schema
+// repeats the stored shapes, so this holds the two in step: each kind the engine runs is accepted
+// there, and a kind it does not run is not.
+test("every cause kind the engine runs is a shape the snapshot schema accepts", () => {
+  const samples: { [K in ScheduledCause["kind"]]: Extract<ScheduledCause, { kind: K }> } = {
+    close: { due_tick: 3, kind: "close", entity: "e1", cause_id: "ev1" },
+    bleed: { due_tick: 3, kind: "bleed", entity: "e1", cause_id: "ev1", remaining: 2 },
+  };
+  deepStrictEqual([...CAUSE_KINDS].sort(), Object.keys(samples).sort());
+  const base = { version: 0, tick: 0, next_seq: 2, templates_hash: "h", coverage: { relations: [], senses: [], properties: [] }, entities: {} };
+  for (const sample of Object.values(samples)) {
+    strictEqual(SnapshotSchema.safeParse({ ...base, schedule: [sample] }).success, true, sample.kind);
+  }
+  strictEqual(
+    SnapshotSchema.safeParse({ ...base, schedule: [{ due_tick: 3, kind: "tide", entity: "e1", cause_id: "ev1" }] }).success,
+    false,
+  );
 });

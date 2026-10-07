@@ -37,26 +37,10 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 ## Items
 
-Each item names what it depends on. Ready now, in any order: Cause kinds as a registry, Fork
-a world, Scale benchmark. Then, in a chain: Cause kinds → Template processes → Process effects →
-Light sources and Consume (parallel) → Camp scenario. Seeded randomness follows Template processes;
-Advance stops when an agent would notice is ready now (Advance shipped). Speech is ready now; Authored beats
-follows Cause kinds as a registry.
-
-### Cause kinds as a registry
-
-`ScheduledCause` is a closed union (`src/model.ts`), `CAUSE_KINDS` and `runCause` in
-`src/engine/schedule.ts` branch on `"close"` and `"bleed"`, and `validateSnapshot`
-(`unknown_cause_kind`) and `src/contract.ts` repeat the list. A third kind means editing all four.
-Make the kind a single table so the next item adds a row, not a branch. No behaviour change.
-
-- One `CauseKind` table in `schedule.ts`: `{ kind, run(context, cause), valid(snapshot, cause) }`;
-  `runCause`, `CAUSE_KINDS`, the `unknown_cause_kind` check and the `ResponseSchema` cause union all
-  derive from it. `close` and `bleed` move into it unchanged, with their `remaining` rule.
-- `ScheduledCause` stays a typed union; add a compile-time check that the table covers it.
-- **Done when:** `npm run check` passes with no test edited except for import paths; the stored form
-  and `SCHEMA_VERSION` are unchanged; `docs/schedule.md` names the table as the one place a kind lives.
-- **Depends on:** nothing. **Blocks:** Template processes.
+Each item names what it depends on. Ready now, in any order: Template processes, Fork a world, Scale
+benchmark, Advance stops when an agent would notice, Speech, Authored beats. Then, in a chain: Template
+processes → Process effects → Light sources and Consume (parallel) → Camp scenario. Seeded randomness
+follows Template processes.
 
 ### Template processes: a prop that changes by itself
 
@@ -68,7 +52,7 @@ process that runs while a condition holds, so spoilage, fuel, hunger and decay a
   gte`. Validated in `src/templates.ts` (a bad shape is refused by template id and process id);
   inherited by `extends` like `props` (merged by `id`, child wins); part of the resolved template, so
   it enters `templates_hash` only for templates that declare it.
-- **Cause kind `process`** (a registry row): `{ kind: "process", entity, process: <id>, due_tick,
+- **Cause kind `process`** (a row in `CAUSE_TABLE`): `{ kind: "process", entity, process: <id>, due_tick,
   cause_id }`. Each run re-checks `while` against the entity's current `props`; if false it does
   nothing and is not rescheduled; if true it applies the effect, emits `changed` `{ prop, from, to }`
   under the cause's `cause_id` with a delta on `props`, and schedules the next run `every_ticks` later.
@@ -88,7 +72,7 @@ process that runs while a condition holds, so spoilage, fuel, hunger and decay a
   stops at a bound; starts when a `set_props` edit makes `while` true and stops when it goes false;
   survives a template `extends`; a removed entity's process is pruned; replay from the log reproduces
   it; every random step stays valid.
-- **Depends on:** Cause kinds as a registry. **Blocks:** Process effects, Light sources, Consume,
+- **Depends on:** nothing (the cause-kind table has shipped). **Blocks:** Process effects, Light sources, Consume,
   Seeded randomness (its chance gate).
 
 ### Process effects beyond adjusting a prop
@@ -285,7 +269,7 @@ this one a *scheduled beat* in code and docs, `ScheduledBeat`, cause kind `beat`
   `delay_ticks` (positive) after the parent *runs*, each with the parent's event as its cause. A parent
   that is cancelled, skipped, or pruned schedules none of them. Bound the nesting depth at 4 and the
   total pending beats at 256 (`too_many_beats`) so a world cannot be made to schedule without end.
-- **Cause kind `beat`** (a registry row): `{ kind: "beat", due_tick, entity, cause_id, id, action,
+- **Cause kind `beat`** (a row in `CAUSE_TABLE`): `{ kind: "beat", due_tick, entity, cause_id, id, action,
   only_if?, then? }`, `entity` the action's subject (a spawn's `location`), `cause_id` the event the
   `schedule_beat` edit emitted. A beat whose subject is removed is pruned with it, as every cause is
   (`pruneSchedule`), recording nothing; say so in `docs/schedule.md`. `cancel_beat` withdraws through
@@ -302,7 +286,7 @@ this one a *scheduled beat* in code and docs, `ScheduledBeat`, cause kind `beat`
   cancel; two beats due at one tick run in the order scheduled; a long `advance` runs a whole chain;
   replay from the log reproduces it; `perceivers: true` names who sensed a knock; the property test
   schedules, cancels and fires beats and every step stays valid.
-- **Depends on:** Cause kinds as a registry (tests move time with `advance`).
+- **Depends on:** nothing (the cause-kind table and `advance` have shipped).
 
 ### Speech: saying something without the engine reading it
 

@@ -6,6 +6,11 @@ snapshot's `schedule` lists what is pending, each cause with its `due_tick`, `ki
 is ordered by due tick, then by when each was scheduled, and absent when nothing is pending, so a
 world that never schedules anything stores nothing for it (`src/engine/schedule.ts`).
 
+**Kinds.** A kind lives in one table, `CAUSE_TABLE` in `src/engine/schedule.ts`, which must name
+every member of `ScheduledCause` (a missing one does not compile) and gives each its `run` and the
+rule a stored cause of it can break (`invalid`, read by `validateSnapshot`). The response schema in
+`src/contract.ts` repeats the stored shapes, and `tests/schedule.test.ts` holds the two in step.
+
 **Running.** The clock runs causes as it passes their tick ([time.md](time.md)): at each tick with
 something due, the modifiers due expire first, then the causes due run in schedule order, each
 emitting under its `cause_id`.

@@ -4,8 +4,6 @@ import { pushOccupantsAside } from "./verbs/gate.js";
 import { dropCarriedItem } from "./verbs/drop.js";
 import type { Id, ScheduledCause, Snapshot } from "../model.js";
 
-export const CAUSE_KINDS: readonly ScheduledCause["kind"][] = ["close", "bleed"];
-
 export function pending(snapshot: Snapshot): readonly ScheduledCause[] {
   return snapshot.schedule ?? [];
 }
@@ -73,20 +71,33 @@ export function startBleeding(context: TransitionContext, entity: Id, detachedEv
   }
 }
 
-// Runs one due cause, already taken off the schedule, at the current tick. A cause the world has
-// overtaken (the door already shut, the body already destroyed) does nothing and says nothing.
-export function runCause(context: TransitionContext, cause: ScheduledCause): void {
+type CauseKindName = ScheduledCause["kind"];
+type CauseOf<K extends CauseKindName> = Extract<ScheduledCause, { kind: K }>;
+
+// What a kind owes the engine: how its due cause runs, and what makes a stored one invalid beyond
+// the fields every cause shares. The table below is the one place a kind lives, and it must name
+// every member of `ScheduledCause`, so a new kind that is not in it does not compile.
+interface CauseKind<K extends CauseKindName> {
+  // Runs one due cause, already taken off the schedule, at the current tick. A cause the world has
+  // overtaken (the door already shut, the body already destroyed) does nothing and says nothing.
+  run(context: TransitionContext, cause: CauseOf<K>): void;
+  // A rule a stored cause of this kind breaks, as a `validateSnapshot` code and its detail; null if none.
+  invalid(cause: CauseOf<K>): { code: string; detail: string } | null;
+}
+
+function runClose(context: TransitionContext, cause: CauseOf<"close">): void {
   const entity = context.snapshot.entities[cause.entity];
-  if (entity === undefined) {
+  if (entity === undefined || entity.props.openable !== true || entity.props.open !== true) {
     return;
   }
-  if (cause.kind === "close") {
-    if (entity.props.openable !== true || entity.props.open !== true) {
-      return;
-    }
-    const eventId = context.emit("closed", entity.id, {}, cause.cause_id);
-    context.set(entity.id, "props", { ...entity.props, open: false }, eventId);
-    pushOccupantsAside(context, entity.id, eventId);
+  const eventId = context.emit("closed", entity.id, {}, cause.cause_id);
+  context.set(entity.id, "props", { ...entity.props, open: false }, eventId);
+  pushOccupantsAside(context, entity.id, eventId);
+}
+
+function runBleed(context: TransitionContext, cause: CauseOf<"bleed">): void {
+  const entity = context.snapshot.entities[cause.entity];
+  if (entity === undefined) {
     return;
   }
   const rule = bleeding(entity.props);
@@ -114,4 +125,31 @@ export function runCause(context: TransitionContext, cause: ScheduledCause): voi
     return;
   }
   scheduleBleed(context, entity.id, eventId, cause.remaining - 1);
+}
+
+const CAUSE_TABLE: { [K in CauseKindName]: CauseKind<K> } = {
+  close: { run: runClose, invalid: () => null },
+  bleed: {
+    run: runBleed,
+    invalid: (cause) =>
+      Number.isSafeInteger(cause.remaining) && cause.remaining > 0
+        ? null
+        : { code: "bleed_not_remaining", detail: `remaining ${cause.remaining}` },
+  },
+};
+
+export const CAUSE_KINDS: readonly CauseKindName[] = Object.keys(CAUSE_TABLE) as CauseKindName[];
+
+// The kind's own rule for a stored cause, or null; a kind the table does not know has none, which
+// `validateSnapshot` reports as `unknown_cause_kind` before it asks.
+export function causeInvalid(cause: ScheduledCause): { code: string; detail: string } | null {
+  const kind = CAUSE_TABLE[cause.kind] as CauseKind<CauseKindName> | undefined;
+  return kind === undefined ? null : kind.invalid(cause as never);
+}
+
+export function runCause(context: TransitionContext, cause: ScheduledCause): void {
+  const kind = CAUSE_TABLE[cause.kind] as CauseKind<CauseKindName> | undefined;
+  if (kind !== undefined) {
+    kind.run(context, cause as never);
+  }
 }
