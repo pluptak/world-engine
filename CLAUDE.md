@@ -121,7 +121,8 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   `Attempt` (`engine/command.ts`): a store world's log lines, a memory world's own record; `observe` is
   `src/engine/projection.ts` over the world's own `snapshot`, `since` and event-form `query`,
   `inspect` one entity of it in detail, and `command(c, { observe: true })` attaches the actor's
-  projection since the version the command was applied to), re-exported by `src/index.ts` and by
+  projection since the version the command was applied to), re-exported by `src/index.ts` (with `actorWorld`,
+  `src/actor-world.ts`: one actor's side of a `World`, results without the world's record) and by
   the package's `exports`, together with `verbs` (`verbCatalog` in `verbs/index.ts`, which throws on
   a verb that does not declare `args` and `refuses`, and returns structuredClone copies so callers
   cannot mutate the declarations the checks read). Command checks read their own verb's declaration

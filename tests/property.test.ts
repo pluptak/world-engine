@@ -6,9 +6,11 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { commandDuration } from "../src/engine/clock.js";
 import { apply } from "../src/engine/pipeline.js";
+import { addressable } from "../src/engine/query.js";
 import { verbRegistry } from "../src/engine/verbs/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import {
+  actorWorld,
   canonicalJson,
   createWorld,
   memoryWorld,
@@ -536,4 +538,49 @@ test("nobody learns words they did not hear: a projection carries a token exactl
   strictEqual(heardSays >= 100, true, `heard ${heardSays}`);
   strictEqual(onlySeen >= 20, true, `only seen ${onlySeen}`);
   strictEqual(ownViews >= 20, true, `own views ${ownViews}`);
+});
+
+test("an actor is told only of what it can sense or address: an actor view names nothing else", () => {
+  let named = 0;
+  let withheld = 0;
+  for (let seed = 0; seed < 200; seed += 1) {
+    const rand = mulberry32(seed + 8000);
+    const world = memoryWorld(buildInitial(registry), registry);
+    for (let i = 0; i < 50; i += 1) {
+      const before = world.snapshot();
+      const step = genStep(rand, before, `view-${seed}-${i}`);
+      if (!("verb" in step) || step.actor === WORLD_AUTHOR || before.entities[step.actor] === undefined) {
+        "verb" in step ? world.command(step) : world.edit(step);
+        continue;
+      }
+      const raw = world.check(step);
+      const result = actorWorld(world, step.actor).command(step);
+      strictEqual(["snapshot", "deltas", "events"].some((key) => key in result), false);
+      // What it named resolved by the resolution rule, read independently of the view; what else it
+      // is told is in its own observation, its own body, or the room it stands in.
+      const told = new Set([step.actor, ...result.observation.entities.map((entity) => entity.id)]);
+      const room = before.entities[step.actor]?.location;
+      for (const address of [result.resolved_target, ...(result.candidates ?? [])]) {
+        if (address !== null) {
+          const id = address.split(".")[0]!;
+          strictEqual(addressable(before, registry, step.actor, id, true), true, `${step.command_id} named ${id}`);
+          told.add(id);
+        }
+      }
+      for (const [key, value] of Object.entries(raw.reason_data ?? {})) {
+        if (typeof value !== "string" || before.entities[value] === undefined) {
+          continue;
+        }
+        if (told.has(value) || value === room) {
+          strictEqual(result.reason_data?.[key], value, `${step.command_id} kept ${key}`);
+          named += 1;
+        } else {
+          strictEqual(result.reason_data?.[key], undefined, `${step.command_id} told of ${value}`);
+          withheld += 1;
+        }
+      }
+    }
+  }
+  strictEqual(named >= 100, true, `named ${named}`);
+  strictEqual(withheld >= 5, true, `withheld ${withheld}`);
 });

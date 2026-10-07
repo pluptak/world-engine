@@ -1,4 +1,5 @@
 export * from "./api.js";
+export * from "./actor-world.js";
 
 export const PIPELINE = [
   "command",

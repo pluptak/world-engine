@@ -29,3 +29,10 @@ sight or touch the props whose names coverage declares as properties (`open`, `l
 `command(c, { observe: true })` attaches `observation`, the actor's projection after the command
 with `since` the version it was applied to: its own events as the actor sensed them, none if it
 was refused. The CLI's `command` op takes `observe` alike.
+
+`actorWorld(world, actor)` (`src/actor-world.ts`) is one actor's side of a world, for a controller
+that must not see the rest: `observe`, `inspect`, `check` and `command`, all as that actor. A
+command's actor is the view's own and `perceivers` is never sent. A result is the verdict and
+`observation` alone, no `snapshot`, `deltas` or `events`, and a `reason_data` value naming an
+entity outside the actor's view (itself, its room, what it named, `observation.entities`) is left
+out: in the dark, `blocked` by an unseen chest names no chest.
