@@ -24,6 +24,7 @@ import { attemptOf, type Attempt, type Command, type Result } from "../engine/co
 import { WorldError } from "../errors.js";
 import type { Delta, Id, Snapshot, Status, WorldEvent } from "../model.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../templates.js";
+import { pause, withLock } from "./lock.js";
 
 // A log line is the attempt itself: every submission, refused and invalid ones included.
 type LogEntry = Attempt;
@@ -191,10 +192,25 @@ function assertTemplates(snapshot: Pick<Snapshot, "templates_hash">, registry: T
   }
 }
 
+// The temporary is named for the process, so a writer that does not hold the turn (a world being
+// made) cannot rename another's file out from under it.
 function atomicWrite(path: string, contents: string): void {
-  const temporary = `${path}.tmp`;
+  const temporary = `${path}.${process.pid}.tmp`;
   writeFileSync(temporary, contents, "utf8");
-  renameSync(temporary, path);
+  // Windows will not replace a file another process has open at that instant, and a reader that
+  // found the world whole holds no turn, so the replacement is asked for again for a moment.
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      renameSync(temporary, path);
+      return;
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (attempt >= 50 || (code !== "EPERM" && code !== "EACCES" && code !== "EBUSY")) {
+        throw error;
+      }
+      pause(Math.min(attempt, 10));
+    }
+  }
 }
 
 function invalidResult(snapshot: Snapshot, command: Command, reason_code: string): Result {
@@ -559,12 +575,67 @@ export function readWorldIds(dir: string): Readonly<Record<string, Id>> {
   }
 }
 
+// Run `body` as the one writer of the world at `dir`: other processes' writers wait their turn, and
+// one that waits past `WORLD_LOCK_TIMEOUT_MS` fails `store_busy`. Re-entrant. Reads that find the
+// files agreeing take no turn (load()); a caller that decides from the world and then writes, as
+// `edit` does with the next default id, takes it around both.
+export function withWorldLock<T>(dir: string, body: () => T): T {
+  // Only enough to keep a lock out of a directory that is no world: the body's own load() checks
+  // the rest, and a full check here would be paid twice by every submission.
+  if (!existsSync(join(dir, snapshots.format))) {
+    assertWorldExists(dir);
+  }
+  return withLock(dir, body);
+}
+
+// The snapshot, if the files agree on it without a rebuild: the head names this template set, the
+// three JSONL files are the sizes it says, and the snapshot is at the version its accepted entries
+// make. Otherwise null, and the caller settles it under the turn. A writer mid-command always
+// disagrees (it appends the log before the head), so a read that overlaps one lands there and waits.
+function trustedSnapshot(dir: string, templates: TemplateRegistry): Snapshot | null {
+  const snapshot = readSnapshot(join(dir, snapshots.current));
+  const initial = readInitialMeta(join(dir, snapshots.initial));
+  const head = readHead(dir);
+  if (head === null || head.templates_hash !== templatesHash(templates)) {
+    return null;
+  }
+  assertTemplates(snapshot, templates);
+  assertTemplates(initial, templates);
+  try {
+    if (
+      statSync(join(dir, snapshots.log)).size === head.log_bytes &&
+      statSync(join(dir, snapshots.events)).size === head.events_bytes &&
+      statSync(join(dir, snapshots.deltas)).size === head.deltas_bytes &&
+      snapshot.version === initial.version + head.ok_entries
+    ) {
+      return snapshot;
+    }
+  } catch {
+    // Fall through to the full check
+  }
+  return null;
+}
+
 // `setIsTheWorlds` says the registry came from the world's own templates.json rather than from a
 // caller, which is what lets load() settle a moved set instead of refusing it: only the world's own
 // file may take the world over.
 export function load(dir: string, registry?: TemplateRegistry, setIsTheWorlds = false): Snapshot {
   assertWorldExists(dir);
   const templates = activeRegistry(dir, registry);
+  const trusted = trustedSnapshot(dir, templates);
+  if (trusted !== null) {
+    return trusted;
+  }
+  // Anything below rewrites files, so only the one writer may do it, and it looks again first: the
+  // writer it waited for may have left the world whole.
+  return withLock(dir, () => settle(dir, templates, setIsTheWorlds));
+}
+
+function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolean): Snapshot {
+  const trusted = trustedSnapshot(dir, templates);
+  if (trusted !== null) {
+    return trusted;
+  }
   const snapshot = readSnapshot(join(dir, snapshots.current));
   const initialPath = join(dir, snapshots.initial);
   const initial = readInitialMeta(initialPath);
@@ -616,26 +687,6 @@ export function load(dir: string, registry?: TemplateRegistry, setIsTheWorlds = 
 
   assertTemplates(snapshot, templates);
   assertTemplates(initial, templates);
-
-  if (head !== null) {
-    try {
-      const logStat = statSync(logPath);
-      const eventsStat = statSync(eventsPath);
-      const deltasStat = statSync(deltasPath);
-      if (
-        logStat.size === head.log_bytes &&
-        eventsStat.size === head.events_bytes &&
-        deltasStat.size === head.deltas_bytes
-      ) {
-        const expectedVersion = initial.version + head.ok_entries;
-        if (snapshot.version === expectedVersion) {
-          return snapshot;
-        }
-      }
-    } catch {
-      // Fall through to full check
-    }
-  }
 
   // A crash between the log, event, delta, and snapshot appends leaves them disagreeing; the log is
   // the source of truth, so replay rebuilds the files, events and deltas first, and any later open
@@ -755,6 +806,15 @@ export function submit(
   based_on_version?: number,
   registry?: TemplateRegistry,
 ): Result {
+  return withWorldLock(dir, () => submitLocked(dir, command, based_on_version, registry));
+}
+
+function submitLocked(
+  dir: string,
+  command: Command,
+  based_on_version: number | undefined,
+  registry: TemplateRegistry | undefined,
+): Result {
   const templates = activeRegistry(dir, registry);
   const current = load(dir, templates);
   const basedOn = based_on_version ?? current.version;
@@ -863,14 +923,16 @@ export interface Fold {
 // event file, and every version are untouched, because an upgrade changes what the world may spawn,
 // never what it has been.
 export function writeWorldTemplates(dir: string, registry: TemplateRegistry): void {
-  const hash = templatesHash(registry);
-  const initial = readSnapshot(join(dir, snapshots.initial));
-  const snapshot = readSnapshot(join(dir, snapshots.current));
-  dropCheckpoints(dir);
-  atomicWrite(join(dir, snapshots.templates), canonicalJson(registry));
-  atomicWrite(join(dir, snapshots.initial), canonicalJson({ ...initial, templates_hash: hash }));
-  atomicWrite(join(dir, snapshots.current), canonicalJson({ ...snapshot, templates_hash: hash }));
-  writeHead(dir, { ...(readHead(dir) ?? emptyHead()), templates_hash: hash });
+  withWorldLock(dir, () => {
+    const hash = templatesHash(registry);
+    const initial = readSnapshot(join(dir, snapshots.initial));
+    const snapshot = readSnapshot(join(dir, snapshots.current));
+    dropCheckpoints(dir);
+    atomicWrite(join(dir, snapshots.templates), canonicalJson(registry));
+    atomicWrite(join(dir, snapshots.initial), canonicalJson({ ...initial, templates_hash: hash }));
+    atomicWrite(join(dir, snapshots.current), canonicalJson({ ...snapshot, templates_hash: hash }));
+    writeHead(dir, { ...(readHead(dir) ?? emptyHead()), templates_hash: hash });
+  });
 }
 
 // Every ok command folded over the initial snapshot. Deliberately without the hash assertion the

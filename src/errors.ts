@@ -20,7 +20,8 @@ export type WorldErrorCode =
   | "unknown_anchor"
   | "anchor_not_room_supported"
   | "conflicting_placement"
-  | "invalid_ids";
+  | "invalid_ids"
+  | "store_busy";
 
 export class WorldError extends Error {
   constructor(

@@ -19,7 +19,8 @@ A world directory holds:
 - `checkpoints/`, a cache and never a source of truth, made by `submit` after the head: every 256
   accepted commands the snapshot just written as `<version>-<next_seq>.json`;
 - `head.json`, written last: the three JSONL files' sizes, all and accepted entry counts, and the
-  template hash, so opening a world detects a crash without reading the log.
+  template hash, so opening a world detects a crash without reading the log;
+- `lock`, there only while a process is writing: writers take turns ([locking.md](locking.md)).
 
 Replay folds accepted commands over the initial snapshot; it is the source of truth, and a mismatch
 with the head rebuilds the snapshot, events, deltas and head from the log. An accepted command whose result

@@ -43,6 +43,7 @@ import {
   since as foldSince,
   submit,
   trace as foldTrace,
+  withWorldLock,
   writeWorldTemplates,
 } from "./store/file-store.js";
 import { loadTemplates, missingCompanions, templatesHash, type TemplateRegistry } from "./templates.js";
@@ -326,13 +327,15 @@ function storeWorld(
     edit: (edit, options) => {
       // The count of logged submissions names the next edit: every submission appends exactly one
       // line, so the id follows the world rather than the handle, and the same sequence of calls
-      // writes the same log through any number of handles.
-      const prior = entryCount(dir);
-      return submit(
-        dir,
-        editCommand(edit, options?.command_id ?? `edit-${prior + 1}`, options?.perceivers),
-        options?.basedOn,
-        active,
+      // writes the same log through any number of handles. The count and the submission are one turn,
+      // or two processes editing at once would both name the same next edit.
+      return withWorldLock(dir, () =>
+        submit(
+          dir,
+          editCommand(edit, options?.command_id ?? `edit-${entryCount(dir) + 1}`, options?.perceivers),
+          options?.basedOn,
+          active,
+        ),
       );
     },
     check: (command) => checkResult(dryRun(load(dir, active), active, command)),
@@ -350,31 +353,35 @@ function storeWorld(
         const [first] = missing;
         throw new WorldError("invalid_templates", `Missing detached part template ${first}`);
       }
-      const current = load(dir, active);
-      const lost = lostField(current, target);
-      if (lost !== null) {
-        throw new WorldError(
-          "templates_lost_field",
-          `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`,
-        );
-      }
-      // The log was produced under the old set, so a set that folds it to anything else would
-      // leave a world whose history no longer reproduces its own snapshot.
-      const replayed = replayFold(dir, target);
-      if (
-        canonicalJson(replayed.snapshot) !== canonicalJson(current) ||
-        canonicalJson(replayed.events) !== canonicalJson(readEvents(dir)) ||
-        canonicalJson(replayed.deltas) !== canonicalJson(readDeltas(dir))
-      ) {
-        throw new WorldError(
-          "replay_diverges",
-          `History replays to version ${replayed.snapshot.version}, not ${current.version}`,
-        );
-      }
-      writeWorldTemplates(dir, target);
-      active = target;
-      replays.clear();
-      return load(dir, active);
+      // The proof and the write are one turn: a command logged between them would not have been
+      // replayed under the new set.
+      return withWorldLock(dir, () => {
+        const current = load(dir, active);
+        const lost = lostField(current, target);
+        if (lost !== null) {
+          throw new WorldError(
+            "templates_lost_field",
+            `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`,
+          );
+        }
+        // The log was produced under the old set, so a set that folds it to anything else would
+        // leave a world whose history no longer reproduces its own snapshot.
+        const replayed = replayFold(dir, target);
+        if (
+          canonicalJson(replayed.snapshot) !== canonicalJson(current) ||
+          canonicalJson(replayed.events) !== canonicalJson(readEvents(dir)) ||
+          canonicalJson(replayed.deltas) !== canonicalJson(readDeltas(dir))
+        ) {
+          throw new WorldError(
+            "replay_diverges",
+            `History replays to version ${replayed.snapshot.version}, not ${current.version}`,
+          );
+        }
+        writeWorldTemplates(dir, target);
+        active = target;
+        replays.clear();
+        return load(dir, active);
+      });
     },
     query: (request) => {
       // An event-form perceive reads the world at either end of that event's command: perceptible

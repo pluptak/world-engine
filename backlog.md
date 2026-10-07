@@ -41,34 +41,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Writers take turns
-
-`src/store/file-store.ts` has no lock, and the CLI is one process per request, so a caller that issues two at once
-has two writers on one world. `submit` is load, decide, append the log, events and deltas, write the snapshot, write
-the head; a second process that loads between those steps decides against a version already left, and `load`'s
-repair rewrites files under a writer it raced. Measured (a scratch run, four processes of 50 `take`/`drop` each on
-one world): three exit with `EPERM` on the rename of `snapshot.json.tmp`, a name every writer shares, and the log
-holds 57 `ok` lines at 54 distinct versions. Commands that conflict could make the next open replay one that
-no longer applies, which throws; that case was not reproduced.
-
-- **Lock:** a `lock/` directory in the world, made with `mkdirSync` (atomic across processes), with `owner.json`
-  (`{ pid, since_ms }`: the one use of the wall clock, never read into world state). Taken by `submit` around its
-  whole body, by `writeWorldTemplates` and the template settle in `load`, and by `load`'s repair: the fast path
-  stays lock-free, the slow path takes the lock and looks again before it rewrites anything. Re-entrant within a
-  process (`submit` calls `load`). Temporary files take the pid in their name.
-- **Waiting:** polls every few ms (`Atomics.wait` as a synchronous sleep) up to a timeout (5 s by default,
-  `WORLD_LOCK_TIMEOUT_MS` to change it), then `WorldError("store_busy")`, which surfaces as a CLI issue code. A lock
-  whose pid is gone, or older than a minute, is removed and retaken; a crash inside a submit is settled by the
-  recovery `load` already has (the log is the truth).
-- **Tests** (`tests/store-lock.test.ts`, children spawned with `node --import tsx`): six processes of twenty
-  commands each against one world end with 120 log lines, 120 distinct versions, a snapshot that equals the replay,
-  and no `.tmp` files; a lock held by a live process makes another fail `store_busy` after a short timeout; a lock
-  left by a dead pid is taken over; a reader that opens mid-write waits instead of repairing. `npm run bench`
-  before and after goes in `docs/measurements.md` (one `mkdir` and `rmdir` per command).
-- **Docs:** `docs/persistence.md` ("Writers take turns"), `CLAUDE.md`. Memory worlds hold their own state and are
-  untouched.
-- **Depends on:** nothing.
-
 ### Options name the arguments they can
 
 `options` lists what a dry run accepts as it stands. The six verbs that need arguments (`give`, `put`, `move`,

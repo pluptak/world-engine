@@ -29,7 +29,7 @@ What is built, nothing aspirational, one concept per file:
 - [time.md](time.md): the clock, what each verb takes, and what falls due as it advances.
 - [walking.md](walking.md): where an agent may walk: room bounds, barriers, and the destination.
 - [occupancy.md](occupancy.md): footprints, what stops a push, and where a fall lands.
-- [persistence.md](persistence.md): the CLI and the world directory.
+- [persistence.md](persistence.md), [locking.md](locking.md): the CLI and world directory; writers' turns.
 - [perception.md](perception.md): queries, perception, and coverage.
 - [senses.md](senses.md): the sense table both queries and tests read.
 - [projection.md](projection.md), [actor-view.md](actor-view.md): observation; one actor's side.
