@@ -37,34 +37,9 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 ## Items
 
-Each item names what it depends on. Ready now, in any order: Light sources, Consume, Seeded randomness,
+Each item names what it depends on. Ready now, in any order: Consume, Seeded randomness,
 Fork a world, Scale benchmark, Advance stops when an agent would notice, Speech, Authored beats. The
-Camp scenario follows Light sources and Consume.
-
-### Light sources
-
-`lit` is a hand-set prop on a room (`src/engine/query.ts`, `same_location_lit`, `location_unlit`), so
-darkness can never fall by itself. Make a room lit when it is declared lit or holds a burning light
-source, and let a light burn out.
-
-- **Derived light:** a room is lit if `props.lit === true` or any entity located in it, or carried by
-  something located in it, has `props.light_source === true` and `props.burning === true`. One helper
-  (`isLit(snapshot, room)`) used by both `sight` branches; adjacent-room sight keeps requiring both
-  sides lit. Document the rule in `docs/perception.md` and `docs/senses.md`.
-- **Verbs `light` and `douse`** (rules in `docs/verbs-other.md`, registered at the shared points):
-  target must have `light_source: true`; `light` refuses `no_fuel` when `props.fuel` is declared and 0,
-  and `already_burning`; `douse` refuses `not_burning`; both need the actor to reach the target
-  (`inReach`) and `manipulation`, take one tick, and set `burning`, emitting `lit` / `doused`.
-- **Templates:** `templates/lantern.json` (`light_source: true`, `burning: false`, `fuel: 20`) with a
-  process `while burning eq true` adjusting `fuel` by -1 every tick to min 0, `then` set `burning`
-  false. Add a `candle` extending it with less fuel.
-- **Perception of the change:** `lit` and `doused` are sight-perceived in the room, so the standard
-  row is fine; check `eventPerceivers` for an observer left in the dark after a `doused` (event-form
-  perceive is true if perceptible before or after).
-- **Tests:** a dark room becomes lit when the lantern is lit and an observer then sees a note; a
-  carried lantern lights the room its carrier stands in and follows a `move`; it burns out during one
-  long `advance` and the room goes dark, with the chain `lit`, `changed`, `changed` and so on; refusals.
-- **Depends on:** nothing (process effects have shipped).
+Camp scenario follows Consume.
 
 ### Consume: eating and drinking
 
@@ -99,7 +74,7 @@ limits list is written from a real world.
   the first `changed`; replay of `log.jsonl` from `initial.json` equals `snapshot.json`.
 - **`docs/limits-camp.md`:** one line per thing the scenario wanted and could not say, in the form of
   `docs/limits.md`; link it from `docs/limits.md` and `docs/DESIGN.md`. Nothing there is a proposal.
-- **Depends on:** Light sources, Consume.
+- **Depends on:** Consume.
 
 ### Seeded randomness
 

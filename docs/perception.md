@@ -15,6 +15,13 @@ reaches applies: same room, centre to centre within `reach_cm`, bars or not; it 
 nothing; any other field is `false` / `not_a_part_field`, and a part the template does not declare
 is `false` / `no_such_part`.
 
+Sight needs light. A room is lit when its `lit` prop is true, or when something located in it has
+`light_source: true` and `burning: true` (`isLit` in `src/engine/query.ts`): on the floor, on a
+table, in a hand or a pocket, but not shut in a closed container and not once destroyed. Nothing
+stores the answer, so a lantern that is lit, carried out, or burnt out changes it at once; seeing
+across an open door still needs both rooms lit (`adjacent_open_door_lit`), and an unlit room is
+`location_unlit`. `light` and `douse` set `burning` ([verbs-other.md](verbs-other.md)).
+
 The sense table lives in [senses.md](senses.md): one row per event class, with a touch column
 that ignores rooms — touch reads the observer's own body and grips (`own_body`), never an
 authored event, and anything else is `not_touching`.

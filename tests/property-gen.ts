@@ -20,7 +20,7 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
     candle: {
       id: "candle",
       extends: "stone",
-      props: { burning: false, fuel: 5 },
+      props: { light_source: true, burning: false, fuel: 5 },
       processes: [
         {
           id: "burn",
@@ -366,6 +366,9 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     };
   },
   wait: (context, options) => waiting(context, options?.ticks),
+  // Half the strikes and snuffs are aimed at something that gives light, the rest at anything.
+  light: (context) => lighting(context, "light"),
+  douse: (context) => lighting(context, "douse"),
   // The author's clock: time passes with no one acting.
   advance: (context) => ({
     command_id: context.commandId,
@@ -590,6 +593,12 @@ function waiting(context: GenContext, ticks?: number): Command {
   };
 }
 
+function lighting(context: GenContext, verb: "light" | "douse"): Command {
+  const lights = context.ids.filter((id) => context.snapshot.entities[id]?.props.light_source === true);
+  const target = lights.length > 0 && context.rand() < 0.5 ? pick(context.rand, lights) : context.target;
+  return { command_id: context.commandId, actor: context.actor, verb, target };
+}
+
 function openable(context: GenContext, verb: "open" | "close" | "lock" | "unlock"): Command {
   return {
     command_id: context.commandId,
@@ -624,7 +633,7 @@ const SLOTS: readonly { below: number; verbs: readonly string[] }[] = [
   { below: 0.69, verbs: ["attack"] },
   { below: 0.75, verbs: ["open", "close", "lock", "unlock"] },
   { below: 0.81, verbs: ["pour"] },
-  { below: 0.84, verbs: ["search"] },
+  { below: 0.84, verbs: ["search", "light", "douse"] },
   { below: 1, verbs: ["edit"] },
 ];
 

@@ -1,0 +1,7 @@
+{
+  "id": "candle",
+  "extends": "lantern",
+  "size_cm": { "w": 3, "d": 3, "h": 12 },
+  "mass_g": 50,
+  "props": { "fuel": 8 }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "lantern",
+  "size_cm": { "w": 15, "d": 15, "h": 25 },
+  "mass_g": 800,
+  "parts": [],
+  "props": { "light_source": true, "burning": false, "fuel": 20 },
+  "break_products": [],
+  "break_residue": {},
+  "processes": [
+    {
+      "id": "burn",
+      "every_ticks": 1,
+      "while": { "prop": "burning", "op": "eq", "value": true },
+      "effect": { "adjust_prop": { "prop": "fuel", "by": -1, "min": 0 } },
+      "then": { "set_prop": { "prop": "burning", "value": false } }
+    }
+  ]
+}

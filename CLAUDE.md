@@ -79,7 +79,7 @@ suffixes (NodeNext).
   rest apply). They answer `"true"`, `"false"` or
   `"unknown"` with a `basis_code`, from the snapshot, the templates, coverage and the replayed event
   list. Senses are `sight`, `hearing`, `smell`, and `touch`, read from `EVENT_SENSES` (one row per event type,
-  `docs/senses.md`); smell answers only where coverage declares it, else `"unknown"`. `touch` reads the
+  `docs/senses.md`); sight needs a lit room (`isLit`: its `lit` prop, or a burning `light_source` in it that is not shut in a container; the `light` and `douse` verbs set `burning`); smell answers only where coverage declares it, else `"unknown"`. `touch` reads the
   observer's own body and grips instead of any room. `eventPerceivers` is the
   batch form: every agent, every covered sense, an agent listed exactly when `perceive` is true for
   it before or after the events' command.

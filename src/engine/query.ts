@@ -243,6 +243,27 @@ function targetLocationForPerception(
   return null;
 }
 
+// Whether a room is lit: it says so itself, or something burning in it gives light. A burning light
+// counts wherever it is in the room (on the floor, on a table, in a hand or a pocket) but not shut
+// away in a closed container, and not once destroyed. Nothing stores the answer.
+export function isLit(snapshot: Snapshot, roomId: Id): boolean {
+  const room = snapshot.entities[roomId];
+  if (room === undefined) {
+    return false;
+  }
+  if (room.props.lit === true) {
+    return true;
+  }
+  return Object.values(snapshot.entities).some(
+    (entity) =>
+      entity.location === roomId &&
+      entity.props.light_source === true &&
+      entity.props.burning === true &&
+      entity.status !== "destroyed" &&
+      closedEnclosure(snapshot, entity.id) === null,
+  );
+}
+
 function loudEvent(event: WorldEvent | undefined): boolean {
   if (event === undefined) {
     return false;
@@ -341,6 +362,11 @@ export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
   // A prop a template's process moved: seen like any event, never heard or smelt.
   changed: SILENT_SENSES,
   search: SILENT_SENSES,
+  // Striking a flame or pinching one out is a hand act; the light it gives is read from the room.
+  light: SILENT_SENSES,
+  douse: SILENT_SENSES,
+  lit: SILENT_SENSES,
+  doused: SILENT_SENSES,
   moved: AUDIBLE_SENSES,
   collided: AUDIBLE_SENSES,
   dropped: AUDIBLE_SENSES,
@@ -561,8 +587,7 @@ function perceive(
       return answer("false", sense.basis);
     }
     if (query.sense === "sight") {
-      const location = snapshot.entities[observerLocation];
-      return location?.props.lit === true
+      return isLit(snapshot, observerLocation)
         ? answer("true", "same_location_lit")
         : answer("false", "location_unlit");
     }
@@ -571,9 +596,7 @@ function perceive(
 
   if (query.sense === "sight") {
     const connected = connectedByDoor(snapshot, observerLocation, targetLocation, true);
-    const observerRoom = snapshot.entities[observerLocation];
-    const targetRoom = snapshot.entities[targetLocation];
-    const bothLit = observerRoom?.props.lit === true && targetRoom?.props.lit === true;
+    const bothLit = isLit(snapshot, observerLocation) && isLit(snapshot, targetLocation);
     return connected && bothLit
       ? answer("true", "adjacent_open_door_lit")
       : answer("false", connected ? "location_unlit" : "not_perceptible");
