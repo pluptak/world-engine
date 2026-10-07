@@ -84,7 +84,14 @@ export interface BeatChild {
   then?: BeatChild[];
 }
 
-// Puts a beat on the schedule for `at_tick`, which must be ahead of the clock.
+// A beat that comes round again: `times` more runs, `every_ticks` apart, after the first.
+export interface BeatRepeat {
+  every_ticks: number;
+  times: number;
+}
+
+// Puts a beat on the schedule for `at_tick`, which must be ahead of the clock. A repeating beat has
+// no followers: its runs would schedule the same ids again while the last run's were still pending.
 export interface ScheduleBeatEdit {
   kind: "schedule_beat";
   id: string;
@@ -92,6 +99,7 @@ export interface ScheduleBeatEdit {
   action: BeatAction;
   only_if?: BeatCondition;
   then?: BeatChild[];
+  repeat?: BeatRepeat;
 }
 
 // Withdraws a pending beat by id.

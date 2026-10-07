@@ -41,62 +41,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Repeating beats
-
-A bell every ten ticks, a patrol that comes back: today that is a beat scheduled by hand each time.
-
-- **Edit field:** `schedule_beat` (and a follower in `then`) takes `repeat: { every_ticks, times }`:
-  `every_ticks` a positive integer, `times` an integer from 1 to 1000, the runs that come after the first. When
-  the beat falls due, whatever happens (it ran, was skipped by its condition, or its action was refused),
-  the next run is scheduled `every_ticks` later with `times - 1`, the same id, and the cause of the run
-  before; at 0 nothing follows. Followers (`then`) are scheduled on each run that ran.
-- **Counting:** a repeating beat is one pending beat and one id however many runs are left, so the 256
-  bound and `duplicate_beat` are unchanged; `cancel_beat` withdraws the next run and so all of them.
-  A repeat whose subject is gone ends with it, as every cause does.
-- **Shape:** `parseScheduleBeat` / `parseChildren` in `src/engine/beats.ts`, the `beat` cause in
-  `src/model.ts` and the schedule schema in `src/contract.ts` gain `repeat`; `beatInvalid` rejects a stored
-  repeat out of range (`invalid_beat`); `beats.md` and `schedule.md` say so.
-- **Tests** (`tests/scheduled-beat.test.ts`): a bell every 10 ticks three times rings at 10, 20, 30 and
-  stops; a skipped run still schedules the next; cancel withdraws the rest; a long `advance` runs all of
-  them; a repeat with followers; bounds (`every_ticks` 0, `times` 0 or 1001) are `invalid_args`; the
-  property generator adds `repeat` to some beats and every step stays valid.
-- **Depends on:** nothing.
-
-### Rates that read a prop
-
-`limits-camp.md`: hunger rises a point every ten ticks whatever the body does. A rate fixed in the
-template cannot follow rest, work or cold.
-
-- **Template field:** a process may declare `every_ticks_prop` (a prop name) beside `every_ticks`, which
-  stays the default: when the process is scheduled, its delay is the entity's integer prop of that name
-  if it is a positive integer, else `every_ticks`. The pending run keeps the delay it was scheduled with;
-  the next run uses the prop's value then (`reconcile` / `runProcess` in `src/engine/process.ts`,
-  `parseProcess` in `src/templates.ts`, which refuses a non-string or empty name).
-- **Use it:** `human_hungry` hunger reads `hunger_every` (default prop 10), so `set_props` `hunger_every: 20`
-  halves the rate for a resting body. This changes `human_hungry`'s hash; note it in the commit.
-- **Docs and tests:** `docs/processes.md`, `docs/templates.md`, `docs/limits-camp.md` (the limit is
-  removed); `tests/process.test.ts`: the delay follows the prop, a bad prop value falls back to
-  `every_ticks`, a pending run is not retimed, the property fixtures include one such process.
-- **Depends on:** nothing.
-
-### Eating by portion, and recovering from starvation
-
-Two more camp limits: bread is eaten whole, and a body that has eaten never recovers (`starvation` stays
-where it reached).
-
-- **Portions:** a solid may declare `portions` (a positive integer prop) and `nutrition` per portion: one
-  `consume` eats one portion, lowers `hunger` by `nutrition`, emits `consumed` with `{ portions_left }`,
-  and removes the thing with the last portion; without `portions` it is eaten whole as now
-  (`src/engine/verbs/consume.ts`). Give `bread` `portions: 4`; its `nutrition` becomes per portion.
-- **Recovery, template data only:** `human_hungry` gains a process `recover`, `while` `hunger` `lt` 100,
-  `effect` `starvation` by -1 to `min` 0 every 5 ticks, so eating after a lapse winds the count down. This
-  changes `human_hungry`'s hash; note it in the commit.
-- **Docs and tests:** `docs/verbs-holding.md`, `docs/processes.md` if needed, `docs/limits-camp.md` (two
-  limits removed); `tests/consume.test.ts`: four bites, `portions_left` counts down, the last removes the
-  loaf, an unportioned thing is still eaten whole; `tests/scenario-camp.test.ts`: after eating, starvation
-  falls to 0 over time instead of staying; the property fixtures cover a portioned food.
-- **Depends on:** nothing.
-
 ### Property check: nobody learns words they did not hear
 
 `tests/speech.test.ts` shows one whisper not reaching one observer. The rule is general, so the property

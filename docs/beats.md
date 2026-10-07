@@ -48,6 +48,15 @@ scheduled. Nesting is at most four levels, the beat itself counted, and a world 
 followers counted from the moment their parent is scheduled (`too_many_beats`), so none can be made to
 schedule without end. Ids share one namespace across a beat and its followers.
 
+**Repeating.** `repeat: { every_ticks, times }` on a `schedule_beat` (`every_ticks` from 1, `times` from 1 to
+1000) makes the beat come round again `times` more times, `every_ticks` apart. Whatever a run does (it
+sounds, its condition skips it, its edit is refused) the next is scheduled that far on, with the same id
+and the same cause, one fewer run to come; the stored cause carries the runs still to come and drops
+`repeat` on the last. It is one pending beat and one id however many runs are left, so the bound and
+`duplicate_beat` are as before, `cancel_beat` withdraws every run still to come, and a beat whose
+subject is gone ends there. A repeating beat has no `then` (`invalid_args`): a run would schedule its
+followers' ids again while the last run's were still pending, and ids share one namespace.
+
 **Order.** The cause kind is `beat`: `{ due_tick, kind, entity, cause_id, id, action, only_if?, then? }`,
 where `cause_id` is the event the `schedule_beat` edit emitted. Two beats due at one tick run in the
 order they were scheduled, and a long `advance` runs a whole chain, each follower at its own tick.

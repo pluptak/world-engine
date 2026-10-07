@@ -3,7 +3,7 @@
   "size_cm": { "w": 20, "d": 10, "h": 8 },
   "mass_g": 400,
   "parts": [],
-  "props": { "nutrition": 40 },
+  "props": { "nutrition": 10, "portions": 4 },
   "break_products": [],
   "break_residue": {}
 }

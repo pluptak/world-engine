@@ -4,11 +4,11 @@ import type { Entity } from "../../model.js";
 import { closedEnclosure, reachData, withinReach } from "./address.js";
 import { removeEntity } from "./edit.js";
 
-// What one `consume` takes: a solid thing (`nutrition`, gone whole) or an amount of a liquid
-// (`liquid_nutrition` per 100 cm³ of what the vessel holds, which stays). Either lowers the actor's
-// `hunger`, if it declares one, by what it gives.
+// What one `consume` takes: a solid thing (`nutrition`, gone whole, or one of its `portions` at a
+// time) or an amount of a liquid (`liquid_nutrition` per 100 cm³ of what the vessel holds, which
+// stays). Either lowers the actor's `hunger`, if it declares one, by what it gives.
 type Plan =
-  | { kind: "solid"; nutrition: number }
+  | { kind: "solid"; nutrition: number; portions: number | null }
   | { kind: "liquid"; amount: number; available: number; material: string; nutrition: number };
 
 type Refusal = Exclude<PreconditionResult, { status: "ok" }>;
@@ -39,11 +39,15 @@ function plan(item: Entity, requested: unknown): { plan: Plan } | Refusal {
   if (!wholeNumber(nutrition) || nutrition <= 0) {
     return { status: "refused", reason_code: "not_consumable" };
   }
-  // A solid thing is eaten whole: an amount of it means nothing.
+  // A solid thing is eaten whole, or a portion at a time: an amount of it means nothing.
   if (requested !== undefined) {
     return { status: "invalid", reason_code: "invalid_args" };
   }
-  return { plan: { kind: "solid", nutrition } };
+  const portions = item.props.portions;
+  if (portions !== undefined && !(wholeNumber(portions) && portions > 0)) {
+    return { status: "refused", reason_code: "not_consumable" };
+  }
+  return { plan: { kind: "solid", nutrition, portions: portions ?? null } };
 }
 
 // A creature whose mouth already holds something else cannot eat: the jaw is one grip, and the
@@ -106,7 +110,7 @@ function transition(context: TransitionContext): void {
     "consumed",
     item.id,
     taken.kind === "solid"
-      ? { nutrition: taken.nutrition }
+      ? { nutrition: taken.nutrition, ...(taken.portions !== null && { portions_left: taken.portions - 1 }) }
       : { nutrition: taken.nutrition, material: taken.material, amount: taken.amount },
     context.root_event_id,
   );
@@ -116,7 +120,11 @@ function transition(context: TransitionContext): void {
     context.set(context.actor.id, "props", { ...context.actor.props, hunger: Math.max(0, hunger - taken.nutrition) }, eaten);
   }
   if (taken.kind === "solid") {
-    removeEntity(context, item.id, eaten);
+    if (taken.portions !== null && taken.portions > 1) {
+      context.set(item.id, "props", { ...item.props, portions: taken.portions - 1 }, eaten);
+    } else {
+      removeEntity(context, item.id, eaten);
+    }
     return;
   }
   const remaining = taken.available - taken.amount;

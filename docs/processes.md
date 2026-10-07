@@ -72,6 +72,12 @@ edits light and that snuffs itself when its fuel is gone, moss that grows from t
 hurt, and mold that spreads once and is then removed, so random runs start, withdraw, restart and
 end processes under every property.
 
+**Rate from a prop.** A process may declare `every_ticks_prop`, the name of a prop of the entity. When a
+run is scheduled, its delay is that prop if it is a positive whole number, else `every_ticks`. The run
+already pending keeps the delay it was given; the one after it reads the prop then. So a body that
+rests can hunger slower (`hunger_every: 20`) or an ember burn faster, set by an edit or by whatever
+else writes the prop. A non-string or empty name is refused when the templates load.
+
 **Chance.** A process may declare `chance_pct`, a whole number from 1 to 99: each run rolls the world's
 dice ([rng.md](rng.md)), and a miss writes and emits nothing while the next run is scheduled as
 though it had happened. Without a seed, a run that would roll refuses the command `no_seed`.
@@ -82,6 +88,7 @@ What it does not do yet: nothing but a prop moves (no spreading to a neighbour, 
 at 0, and `candle` extends it with less ([verbs-other.md](verbs-other.md), `light`). `human_hungry`
 extends `human` (and needs its own companions, `human_hungry.arm_l` and the rest) with `hunger` and
 `starvation`: hunger rises a point every 10 ticks to 100, and at 100 `starvation` rises every 5 ticks
-to 20, whose `then` takes all of the body's integrity. Eating lowers `hunger` below 100, which withdraws
-the starving and starts the rise again ([verbs-holding.md](verbs-holding.md), `consume`); `starvation`
-itself does not fall. `human` is unchanged, so worlds without a hungry body keep their hash.
+to 20, whose `then` takes all of the body's integrity. The rise reads `hunger_every` (10 by default) for
+its delay. Eating lowers `hunger` below 100, which withdraws the starving and starts the rise again
+([verbs-holding.md](verbs-holding.md), `consume`); and while `hunger` is below 100 a `recover` process
+winds `starvation` back down a point every 5 ticks to 0, so a body that eats after a lapse recovers. `human` is unchanged, so worlds without a hungry body keep their hash.

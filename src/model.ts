@@ -1,4 +1,4 @@
-import type { BeatAction, BeatChild, BeatCondition } from "./engine/command.js";
+import type { BeatAction, BeatChild, BeatCondition, BeatRepeat } from "./engine/command.js";
 
 export type Id = string;
 export type Tri = "true" | "false" | "unknown";
@@ -79,6 +79,8 @@ export type ScheduledCause =
       action: BeatAction;
       only_if?: BeatCondition;
       then?: BeatChild[];
+      // Runs still to come after this one, `every_ticks` apart; absent on the last.
+      repeat?: BeatRepeat;
     };
 
 export interface Snapshot {

@@ -267,6 +267,9 @@ test("random runs run processes, start and stop them, and every step still valid
   let skippedBeats = 0;
   let followed = 0;
   let scheduledBeats = 0;
+  let repeating = 0;
+  let bites = 0;
+  let recovered = 0;
   for (let seed = 0; seed < 100; seed += 1) {
     const rand = mulberry32(seed);
     const world = memoryWorld(buildInitial(registry), registry);
@@ -289,6 +292,8 @@ test("random runs run processes, start and stop them, and every step still valid
         skippedBeats += event.type === "beat_skipped" ? 1 : 0;
         // A follower names the event its parent beat wrote, which an earlier command may have.
         followed += (event.type === "sounded" || event.type === "edited") && event.cause_id !== null && !result.events.some((other) => other.event_id === event.cause_id) ? 1 : 0;
+        bites += event.type === "consumed" && event.data.portions_left !== undefined ? 1 : 0;
+        recovered += event.type === "changed" && event.data.process === "recover" ? 1 : 0;
         eaten += event.type === "consumed" && event.data.amount === undefined ? 1 : 0;
         drunk += event.type === "consumed" && event.data.amount !== undefined ? 1 : 0;
         starved += event.type === "changed" && event.data.process === "starve" ? 1 : 0;
@@ -307,6 +312,7 @@ test("random runs run processes, start and stop them, and every step still valid
       rolled += moved && !edited ? 1 : 0;
       missed += moved && !edited && ran === 0 ? 1 : 0;
       scheduledBeats += world.snapshot().schedule?.some((cause) => cause.kind === "beat") === true ? 1 : 0;
+      repeating += world.snapshot().schedule?.some((cause) => cause.kind === "beat" && cause.repeat !== undefined) === true ? 1 : 0;
       const after = world.snapshot().schedule?.filter((cause) => cause.kind === "process").length ?? 0;
       // A process pending before and gone after, with no run of it to explain it, was withdrawn.
       withdrawn += after < before && ran === 0 ? 1 : 0;
@@ -327,6 +333,9 @@ test("random runs run processes, start and stop them, and every step still valid
   strictEqual(sounded >= 5, true, `sounded ${sounded}`);
   strictEqual(skippedBeats >= 3, true, `skipped beats ${skippedBeats}`);
   strictEqual(followed >= 5, true, `beat events under an earlier command ${followed}`);
+  strictEqual(bites >= 3, true, `bites ${bites}`);
+  strictEqual(recovered >= 1, true, `recovered ${recovered}`);
+  strictEqual(repeating >= 5, true, `steps with a repeating beat pending ${repeating}`);
   strictEqual(scheduledBeats >= 20, true, `steps with a beat pending ${scheduledBeats}`);
 });
 

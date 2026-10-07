@@ -344,3 +344,77 @@ test("replaying the log reproduces a world with beats, and perceivers name who h
   ok(types(advance(copy, 5)).includes("sounded"));
   strictEqual(pending.world.snapshot().schedule?.length, 1);
 });
+
+test("a repeating beat comes round on its own and stops after its runs", (t) => {
+  const h = inn(t);
+  const sound = { kind: "sound" as const, entity: h.door };
+  strictEqual(
+    edit(h.world, { kind: "schedule_beat", id: "bell", at_tick: 10, action: sound, repeat: { every_ticks: 10, times: 2 } }).status,
+    "ok",
+  );
+  // One id, one pending beat, however many runs are left.
+  strictEqual(h.world.snapshot().schedule?.length, 1);
+  const rung = advance(h.world, 60).events.filter((event) => event.type === "sounded");
+  deepStrictEqual(rung.map((event) => event.tick), [10, 20, 30]);
+  strictEqual(h.world.snapshot().schedule, undefined);
+  // Each run names the event that scheduled the beat.
+  deepStrictEqual(new Set(rung.map((event) => event.cause_id)).size, 1);
+});
+
+test("a skipped or refused run still schedules the next, and cancel withdraws the rest", (t) => {
+  const h = inn(t);
+  strictEqual(
+    edit(h.world, {
+      kind: "schedule_beat",
+      id: "check",
+      at_tick: 3,
+      action: { kind: "sound", entity: h.door },
+      only_if: { entity: h.hall, prop: "lit", op: "eq", value: false },
+      repeat: { every_ticks: 2, times: 3 },
+    }).status,
+    "ok",
+  );
+  const skipped = advance(h.world, 4).events.filter((event) => event.type === "beat_skipped");
+  deepStrictEqual(skipped.map((event) => event.tick), [3]);
+  // The condition holds from here on: the second run, at 5, sounds.
+  strictEqual(edit(h.world, { kind: "set_props", target: h.hall, props: { lit: false } }).status, "ok");
+  const next = advance(h.world, 2);
+  ok(types(next).includes("sounded"));
+  strictEqual(h.world.snapshot().schedule?.length, 1);
+  strictEqual(edit(h.world, { kind: "cancel_beat", id: "check" }).status, "ok");
+  strictEqual(h.world.snapshot().schedule, undefined);
+  deepStrictEqual(types(advance(h.world, 20)), ["advance"]);
+});
+
+test("a repeat that is out of range, or has followers, is invalid_args; a removed subject ends it", (t) => {
+  const h = inn(t);
+  const sound = { kind: "sound" as const, entity: h.note };
+  const code = (repeat: unknown, then?: unknown): string | undefined =>
+    edit(h.world, { kind: "schedule_beat", id: "r", at_tick: 3, action: sound, repeat, ...(then === undefined ? {} : { then }) } as never).reason_code;
+  strictEqual(code({ every_ticks: 0, times: 2 }), "invalid_args");
+  strictEqual(code({ every_ticks: 2, times: 0 }), "invalid_args");
+  strictEqual(code({ every_ticks: 2, times: 1001 }), "invalid_args");
+  strictEqual(code({ every_ticks: 2 }), "invalid_args");
+  strictEqual(code({ every_ticks: 2, times: 2 }, [{ id: "f", delay_ticks: 1, action: sound }]), "invalid_args");
+  strictEqual(code({ every_ticks: 2, times: 1000 }), undefined);
+  strictEqual(edit(h.world, { kind: "remove", target: h.note }).status, "ok");
+  strictEqual(h.world.snapshot().schedule, undefined);
+});
+
+test("a repeating beat whose action removes its own subject runs once more at most", (t) => {
+  const h = inn(t);
+  strictEqual(
+    edit(h.world, {
+      kind: "schedule_beat",
+      id: "gone",
+      at_tick: 2,
+      action: { kind: "remove", target: h.note },
+      repeat: { every_ticks: 2, times: 5 },
+    }).status,
+    "ok",
+  );
+  const run = advance(h.world, 20);
+  deepStrictEqual(types(run).filter((type) => type !== "advance"), ["removed"]);
+  strictEqual(h.world.snapshot().schedule, undefined);
+  deepStrictEqual(validateSnapshot(h.world.snapshot(), registry), []);
+});

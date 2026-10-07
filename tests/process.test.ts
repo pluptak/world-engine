@@ -445,3 +445,80 @@ test("reaching the bound can take the entity out of the world, with its other ca
   // The bowl beside it is untouched, and the starver kept running.
   ok(world.entity(ids.bowl!) !== null);
 });
+
+// A rate that follows the body: the delay of the next run is read from a prop when it is scheduled.
+const withRate = parseRegistry({
+  ...base,
+  ember: {
+    id: "ember",
+    extends: "stone",
+    props: { glow: 0, rate: 4 },
+    processes: [{ id: "glow", every_ticks: 5, every_ticks_prop: "rate", effect: { adjust_prop: { prop: "glow", by: 1, max: 100 } } }],
+  },
+});
+
+function ember(t: { after(callback: () => void): void }, props?: Record<string, number | string | boolean>): { world: World; ember: Id } {
+  const root = mkdtempSync(join(tmpdir(), "world-engine-rate-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const world = createWorld(
+    join(root, "w"),
+    [
+      { id: "tent", template: "room", overrides: { name: "tent", props: { lit: true } } },
+      { id: "ember", template: "ember", overrides: { name: "ember", location: "tent", support: "tent", pos: { x: 0, y: 0 }, ...(props === undefined ? {} : { props }) } },
+    ],
+    withRate,
+  );
+  return { world, ember: world.id("ember")! };
+}
+
+test("a process's delay follows the prop it names, and a pending run is not retimed", (t) => {
+  const { world, ember: id } = ember(t);
+  // The prop says 4: runs at 4 and 8.
+  deepStrictEqual(changes(advance(world, 8)).map((row) => row[1]), [4, 8]);
+  // Speeding it up changes the run after the pending one: the pending run (due 12) keeps its delay.
+  strictEqual(world.edit({ kind: "set_props", target: id, props: { ...world.entity(id)!.props, rate: 1 } }).status, "ok");
+  deepStrictEqual(changes(advance(world, 5)).map((row) => row[1]), [12, 13]);
+});
+
+test("a prop that is not a positive integer falls back to every_ticks", (t) => {
+  const { world, ember: id } = ember(t);
+  strictEqual(world.edit({ kind: "set_props", target: id, props: { glow: 0, rate: 0 } }).status, "ok");
+  // The run pending from the start (due 4) is not retimed; the next ones wait every_ticks.
+  deepStrictEqual(changes(advance(world, 10)).map((row) => row[1]), [4, 9]);
+  strictEqual(world.edit({ kind: "set_props", target: id, props: { glow: 0, rate: "fast" } }).status, "ok");
+  deepStrictEqual(changes(advance(world, 5)).map((row) => row[1]), [14]);
+  strictEqual(world.edit({ kind: "set_props", target: id, props: { glow: 0 } }).status, "ok");
+  deepStrictEqual(changes(advance(world, 5)).map((row) => row[1]), [19]);
+  deepStrictEqual(validateSnapshot(world.snapshot(), withRate), []);
+});
+
+test("every_ticks_prop must name a prop", () => {
+  const effect = { adjust_prop: { prop: "x", by: 1 } };
+  for (const bad of ["", 3, null]) {
+    throws(
+      () => parseRegistry({ ...base, odd: { id: "odd", extends: "stone", processes: [{ id: "p", every_ticks: 1, every_ticks_prop: bad, effect }] } }),
+      /every_ticks_prop/,
+    );
+  }
+});
+
+test("a hungry body's rate follows hunger_every: a resting body hungers at half the pace", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "world-engine-rate-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const world = createWorld(
+    join(root, "w"),
+    [
+      { id: "tent", template: "room", overrides: { name: "tent", props: { lit: true } } },
+      { id: "busy", template: "human_hungry", overrides: { name: "busy", location: "tent", support: "tent", pos: { x: 0, y: 0 } } },
+      {
+        id: "rest",
+        template: "human_hungry",
+        overrides: { name: "rest", location: "tent", support: "tent", pos: { x: 100, y: 0 }, props: { agent: true, hunger: 0, starvation: 0, hunger_every: 20 } },
+      },
+    ],
+    base,
+  );
+  advance(world, 100);
+  strictEqual(world.entity(world.id("busy")!)?.props.hunger, 10);
+  strictEqual(world.entity(world.id("rest")!)?.props.hunger, 5);
+});

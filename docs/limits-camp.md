@@ -6,11 +6,10 @@ not say, and what the engine does instead. One line per limit, with the test tha
 
 - Light has no reach or strength: a burning lantern lights the whole room, so anyone in the tent sees
   everything in it, and one burnt out leaves it entirely dark (C step B, D).
-- A rate is fixed in the template: hunger rises a point every ten ticks whatever the body does, so
-  resting, working or being cold changes nothing (C step C).
-- Starvation never falls: eating withdraws the starving and hunger drops, but the count a body has
-  reached stays where it was (C "a body that eats").
-- A thing is eaten whole or by the amount of a liquid: bread cannot be half eaten, and nothing
-  but `hunger` is lowered by it, with no thirst, no spoilage, no difference between foods.
+- A rate follows a prop, not the body's doing: hunger rises at `hunger_every` whatever the body does, so
+  resting, working or being cold changes the rate only when a caller writes the prop (C step C).
+- A thing is eaten whole, by portions or by the amount of a liquid, and nothing but `hunger` is lowered
+  by it: no thirst, no spoilage, no difference between foods, and a portion is a count, not a size
+  (C "a body that eats").
 - A search changes nothing and records no finder: the note stays under the book, and the `found`
   event names the book (C step B).

@@ -21,6 +21,8 @@ export type ProcessOp = "eq" | "ne" | "lt" | "lte" | "gt" | "gte";
 export interface ProcessDecl {
   id: string;
   every_ticks: number;
+  // A prop of the entity that, when it is a positive integer, is the delay instead of `every_ticks`.
+  every_ticks_prop?: string;
   // The chance, from 1 to 99, that a run takes effect; a run rolls the world's dice, so it needs a seed.
   chance_pct?: number;
   while?: { prop: string; op: ProcessOp; value: number | string | boolean };
@@ -218,7 +220,7 @@ function parseProcesses(value: unknown, label: string): ProcessDecl[] {
     if (!isRecord(entry)) {
       throw new TypeError(`${at} must be an object`);
     }
-    assertOnlyKeys(entry, ["id", "every_ticks", "chance_pct", "while", "effect", "then"], at);
+    assertOnlyKeys(entry, ["id", "every_ticks", "every_ticks_prop", "chance_pct", "while", "effect", "then"], at);
     if (typeof entry.id !== "string" || entry.id.length === 0) {
       throw new TypeError(`${at}.id must be a non-empty string`);
     }
@@ -236,6 +238,12 @@ function parseProcesses(value: unknown, label: string): ProcessDecl[] {
       every_ticks: entry.every_ticks,
       effect: parseEffect(entry.effect, `${named}.effect`),
     };
+    if (entry.every_ticks_prop !== undefined) {
+      if (typeof entry.every_ticks_prop !== "string" || entry.every_ticks_prop.length === 0) {
+        throw new TypeError(`${named}.every_ticks_prop must be a non-empty string`);
+      }
+      parsed.every_ticks_prop = entry.every_ticks_prop;
+    }
     if (entry.chance_pct !== undefined) {
       assertInteger(entry.chance_pct, `${named}.chance_pct`);
       if (entry.chance_pct < 1 || entry.chance_pct > 99) {

@@ -64,6 +64,14 @@ function runnable(decl: ProcessDecl, entity: Entity): boolean {
   return true;
 }
 
+// How long the next run waits: the entity's prop named by `every_ticks_prop` when it is a positive
+// integer, else `every_ticks`. Read when the run is scheduled, so a run already pending keeps the
+// delay it was given.
+function delayOf(decl: ProcessDecl, entity: Entity): number {
+  const rate = decl.every_ticks_prop === undefined ? undefined : entity.props[decl.every_ticks_prop];
+  return isInt(rate) && rate >= 1 ? rate : decl.every_ticks;
+}
+
 function isPendingFor(cause: ScheduledCause, entity: Id, process: string): boolean {
   return cause.kind === "process" && cause.entity === entity && cause.process === process;
 }
@@ -86,7 +94,7 @@ export function reconcile(
     const waiting = pending(result).some((cause) => isPendingFor(cause, entityId, decl.id));
     const can = runnable(decl, entity);
     if (can && !waiting) {
-      const due = snapshot.tick + decl.every_ticks;
+      const due = snapshot.tick + delayOf(decl, entity);
       if (Number.isSafeInteger(due)) {
         result = withCause(result, { due_tick: due, kind: "process", entity: entityId, cause_id: causeId, process: decl.id });
       }

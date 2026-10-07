@@ -16,7 +16,11 @@ Taking, setting down, passing and eating things. Grips, pockets and what losing 
 - `pour`: moves `args.amount` (all of it by default) of a carried liquid into a container's
   `liquid_*` props or onto residue; the model is in [liquids.md](liquids.md).
 - `consume`: eats or drinks what the actor carries or reaches. A thing with a positive `nutrition`
-  is eaten whole: a `consumed` event on it, then it is removed (`removed`, caused by `consumed`). A
+  is eaten whole: a `consumed` event on it, then it is removed (`removed`, caused by `consumed`). One
+  that also has a `portions` prop (a positive whole number) is eaten a portion at a time: each `consume`
+  lowers hunger by `nutrition`, emits `consumed` with `{ nutrition, portions_left }`, and leaves the thing
+  with one portion fewer; the last portion removes it as above. A `portions` that is anything else is
+  `not_consumable`. A
   vessel holding a liquid and declaring `liquid_nutrition` (per 100 cm³, a whole number) gives up
   `args.amount` of it (all by default; more than it holds is `insufficient_liquid`, anything but a
   whole positive number `invalid_args`), and keeps the vessel, emptied of its material at 0 as a pour

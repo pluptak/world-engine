@@ -26,7 +26,7 @@ and `close` by hand withdraws the pending close; neither records anything about 
 govern them change ([processes.md](processes.md)).
 
 **Beats.** The author's own interventions, `schedule_beat` and `cancel_beat`, are the fourth kind
-([beats.md](beats.md)): a sound or an edit at a tick, with conditions and followers. A beat pruned with its
+([beats.md](beats.md)): a sound or an edit at a tick, with conditions, followers, or a repeat. A beat pruned with its
 subject records nothing, and a beat with an unmet condition or a refused action emits `beat_skipped`.
 
 **Bleeding.** A severed part opens a wound that bleeds a few times, each bleed scheduling the next

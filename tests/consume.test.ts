@@ -6,9 +6,9 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { createWorld, WORLD_AUTHOR, type Id, type Result, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
-import { loadTemplates } from "../src/templates.js";
+import { loadTemplates, parseRegistry } from "../src/templates.js";
 
-// Eating and drinking: a solid thing with `nutrition` is eaten whole, a vessel's liquid is drunk by
+// Eating and drinking: a solid thing with `nutrition` is eaten whole or a portion at a time, a vessel's liquid is drunk by
 // the amount, and either lowers the eater's `hunger`, which a hungry body raises by itself.
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
@@ -64,15 +64,23 @@ const advance = (world: World, ticks: number): Result => {
 
 const code = (result: Result) => [result.status, result.reason_code];
 
-test("bread is eaten whole: the hunger it lowers, the item it takes, and the chain between them", (t) => {
+test("bread is eaten a portion at a time: the hunger each lowers, the loaf that shrinks, and the last bite that removes it", (t) => {
   const { world, gus, bread } = table(t, { hunger: 50 });
+  for (const left of [3, 2, 1]) {
+    const bite = run(world, gus, "consume", "bread");
+    strictEqual(bite.status, "ok");
+    deepStrictEqual(bite.events.map((event) => event.type), ["consume", "consumed"]);
+    deepStrictEqual(bite.events[1]?.data, { nutrition: 10, portions_left: left });
+    strictEqual(world.entity(bread)?.props.portions, left);
+    strictEqual(world.entity(gus)?.props.hunger, 50 - 10 * (4 - left));
+  }
   const eaten = run(world, gus, "consume", "bread");
   strictEqual(eaten.status, "ok");
   deepStrictEqual(eaten.events.map((event) => event.type), ["consume", "consumed", "removed"]);
   const [root, consumed, removed] = eaten.events;
   strictEqual(consumed?.cause_id, root?.event_id);
   strictEqual(removed?.cause_id, consumed?.event_id);
-  deepStrictEqual(consumed?.data, { nutrition: 40 });
+  deepStrictEqual(consumed?.data, { nutrition: 10, portions_left: 0 });
   strictEqual(world.entity(bread), null);
   strictEqual(world.entity(gus)?.props.hunger, 10);
   // The write to hunger is recorded under the `consumed` event.
@@ -81,15 +89,37 @@ test("bread is eaten whole: the hunger it lowers, the item it takes, and the cha
   deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
 });
 
+test("a thing with no portions is eaten whole, and a malformed portions is not food", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "world-engine-consume-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const kinds = parseRegistry({ ...registry, apple: { id: "apple", extends: "stone", props: { nutrition: 15 } } });
+  const world = createWorld(
+    join(root, "w"),
+    [
+      { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
+      { id: "gus", template: "human_hungry", overrides: { name: "gus", location: "hall", support: "hall", pos: { x: 0, y: 0 }, props: { ...hungry, hunger: 50 } } },
+      { id: "apple", template: "apple", overrides: { name: "apple", location: "hall", support: "hall", pos: { x: 40, y: 0 } } },
+      { id: "odd", template: "apple", overrides: { name: "odd", location: "hall", support: "hall", pos: { x: -40, y: 0 }, props: { nutrition: 15, portions: 0 } } },
+    ],
+    kinds,
+  );
+  const gus = world.id("gus")!;
+  const eaten = run(world, gus, "consume", "apple");
+  deepStrictEqual(eaten.events.map((event) => event.type), ["consume", "consumed", "removed"]);
+  deepStrictEqual(eaten.events[1]?.data, { nutrition: 15 });
+  strictEqual(world.entity(gus)?.props.hunger, 35);
+  deepStrictEqual(code(run(world, gus, "consume", "odd")), ["refused", "not_consumable"]);
+});
+
 test("hunger is floored at 0, and a body with no hunger eats all the same", (t) => {
-  const { world, ann, gus } = table(t, { hunger: 10 }, [
+  const { world, ann, gus } = table(t, { hunger: 5 }, [
     { id: "crust", template: "bread", overrides: { name: "crust", location: "hall", support: "hall", pos: { x: 20, y: 0 } } },
   ]);
   strictEqual(run(world, gus, "consume", "bread").status, "ok");
   strictEqual(world.entity(gus)?.props.hunger, 0);
   // Ann is an ordinary human: no hunger to lower, and the crust is eaten anyway.
   strictEqual(run(world, ann, "consume", "crust").status, "ok");
-  strictEqual(world.entity(world.id("crust")!), null);
+  strictEqual(world.entity(world.id("crust")!)?.props.portions, 3);
   strictEqual("hunger" in (world.entity(ann)?.props ?? {}), false);
 });
 
@@ -155,7 +185,7 @@ test("a creature whose jaw holds something else cannot eat, and one with a free 
   strictEqual(run(world, rex, "drop", "stick").status, "ok");
   strictEqual(run(world, rex, "consume", "scrap").status, "ok");
   // A dog needs no hands: eating asks for no capacity at all.
-  strictEqual(world.entity(world.id("scrap")!), null);
+  strictEqual(world.entity(world.id("scrap")!)?.props.portions, 3);
 });
 
 test("a hungry body's hunger rises by itself, and eating lowers it and starts the rise again", (t) => {
@@ -170,7 +200,7 @@ test("a hungry body's hunger rises by itself, and eating lowers it and starts th
   strictEqual(world.snapshot().schedule?.some((cause) => cause.kind === "process" && cause.process === "hunger"), false);
 
   strictEqual(run(world, gus, "consume", "bread").status, "ok");
-  strictEqual(world.entity(gus)?.props.hunger, 60);
+  strictEqual(world.entity(gus)?.props.hunger, 90);
   // Eating withdrew the starving and started the rise again.
   strictEqual(world.snapshot().schedule?.some((cause) => cause.kind === "process" && cause.process === "starve"), false);
   strictEqual(world.snapshot().schedule?.some((cause) => cause.kind === "process" && cause.process === "hunger"), true);

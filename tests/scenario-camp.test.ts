@@ -111,17 +111,43 @@ test("a dark tent: light the lantern, search, let it burn out, and the body left
   strictEqual(canonicalJson(replay(dir, registry)), canonicalJson(world.snapshot()));
 });
 
-test("a body that eats does not starve: bread lowers hunger and the starving is withdrawn", (t) => {
+test("a body that eats does not starve: bread lowers hunger a bite at a time and the starving is withdrawn", (t) => {
   const { world, gus, bread } = open(t);
   advance(world, 20);
   strictEqual(world.entity(gus)?.props.starvation, 4);
+  // The first bite already takes hunger off the cap, which withdraws the starving.
   strictEqual(run(world, gus, "consume", "bread").status, "ok");
+  strictEqual(world.entity(gus)?.props.hunger, 90);
+  strictEqual(world.entity(bread)?.props.portions, 3);
+  for (let bite = 0; bite < 3; bite += 1) {
+    strictEqual(run(world, gus, "consume", "bread").status, "ok");
+  }
   strictEqual(world.entity(bread), null);
   strictEqual(world.entity(gus)?.props.hunger, 60);
   advance(world, 150);
   strictEqual(world.entity(gus)?.status, "intact");
-  // Hunger has risen again, one point per ten ticks, and never reached the cap.
-  strictEqual(world.entity(gus)?.props.starvation, 4);
+  // Hunger has risen again, one point per ten ticks, and never reached the cap; the count the body
+  // had reached wound back down to nothing.
+  strictEqual(world.entity(gus)?.props.starvation, 0);
   strictEqual((world.entity(gus)?.props.hunger as number) < 100, true);
+  deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
+});
+
+test("a body that has eaten recovers from starving by degrees, and starves again when hunger returns", (t) => {
+  const { world, gus } = open(t);
+  advance(world, 40);
+  const reached = world.entity(gus)?.props.starvation as number;
+  strictEqual(reached, 8);
+  strictEqual(run(world, gus, "consume", "bread").status, "ok");
+  // Recovery is a process of its own: a point every five ticks while hunger is below the cap.
+  const recovering = advance(world, 10);
+  deepStrictEqual(
+    recovering.events.filter((event) => event.type === "changed" && event.data.prop === "starvation").map((event) => [event.tick, event.data.to]),
+    [[45, 7], [50, 6]],
+  );
+  // Left alone, hunger climbs back to the cap (nine more points, a tick each ten) and the starving resumes.
+  advance(world, 120);
+  strictEqual(world.entity(gus)?.props.hunger, 100);
+  strictEqual((world.entity(gus)?.props.starvation as number) > 0, true);
   deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
 });

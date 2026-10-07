@@ -20,11 +20,12 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
     candle: {
       id: "candle",
       extends: "stone",
-      props: { light_source: true, burning: false, fuel: 5 },
+      props: { light_source: true, burning: false, fuel: 5, burn_every: 2 },
       processes: [
         {
           id: "burn",
           every_ticks: 2,
+          every_ticks_prop: "burn_every",
           while: { prop: "burning", op: "eq", value: true },
           effect: { adjust_prop: { prop: "fuel", by: -1, min: 0 } },
           then: { set_prop: { prop: "burning", value: false } },
@@ -592,6 +593,10 @@ function beatEdit(context: GenContext): WorldEdit {
     if (subjectOf === subject || context.ids.includes(subjectOf)) {
       edit.then = [{ id: `${id}f${int(context.rand, 0, 3)}`, delay_ticks: int(context.rand, 1, 4), action: follower }];
     }
+  }
+  // A repeating beat has no followers; now and then one comes round a few times.
+  if (edit.then === undefined && context.rand() < 0.3) {
+    edit.repeat = { every_ticks: int(context.rand, 1, 5), times: int(context.rand, 1, 4) };
   }
   return edit;
 }

@@ -4,6 +4,7 @@ import {
   type BeatAction,
   type BeatChild,
   type BeatCondition,
+  type BeatRepeat,
   type Command,
   type ScheduleBeatEdit,
   type TransitionContext,
@@ -19,6 +20,8 @@ import { editVerb, parseEdit } from "./verbs/edit.js";
 export const MAX_BEATS = 256;
 // Levels of nesting, the beat itself counted: a beat, its `then`, theirs, and theirs.
 export const MAX_DEPTH = 4;
+// Runs a repeating beat may have after its first.
+export const MAX_REPEATS = 1000;
 
 type BeatCause = Extract<ScheduledCause, { kind: "beat" }>;
 
@@ -60,6 +63,21 @@ function parseCondition(value: unknown): BeatCondition | null {
     return null;
   }
   return value as unknown as BeatCondition;
+}
+
+function parseRepeat(value: unknown): BeatRepeat | null {
+  if (
+    !isRecord(value) ||
+    !onlyKeys(value, ["every_ticks", "times"]) ||
+    !Number.isSafeInteger(value.every_ticks) ||
+    (value.every_ticks as number) < 1 ||
+    !Number.isSafeInteger(value.times) ||
+    (value.times as number) < 1 ||
+    (value.times as number) > MAX_REPEATS
+  ) {
+    return null;
+  }
+  return { every_ticks: value.every_ticks as number, times: value.times as number };
 }
 
 function parseAction(value: unknown): BeatAction | null {
@@ -144,7 +162,7 @@ function parseChildren(value: unknown, depth: number): BeatChild[] | null {
 // The body of a `schedule_beat` edit, or null for one that is malformed.
 export function parseScheduleBeat(value: Record<string, unknown>): ScheduleBeatEdit | null {
   if (
-    !onlyKeys(value, ["kind", "id", "at_tick", "action", "only_if", "then"]) ||
+    !onlyKeys(value, ["kind", "id", "at_tick", "action", "only_if", "then", "repeat"]) ||
     !isBeatId(value.id) ||
     !Number.isSafeInteger(value.at_tick)
   ) {
@@ -169,6 +187,13 @@ export function parseScheduleBeat(value: Record<string, unknown>): ScheduleBeatE
     }
     edit.then = then;
   }
+  if (value.repeat !== undefined) {
+    const repeat = parseRepeat(value.repeat);
+    if (repeat === null || edit.then !== undefined) {
+      return null;
+    }
+    edit.repeat = repeat;
+  }
   return edit;
 }
 
@@ -182,6 +207,7 @@ export function beatInvalid(cause: BeatCause): string | null {
     action: cause.action,
     only_if: cause.only_if,
     then: cause.then,
+    repeat: cause.repeat,
   });
   if (shaped === null) {
     return `beat ${String(cause.id)} is malformed`;
@@ -320,15 +346,32 @@ function scheduleFollowers(context: TransitionContext, children: BeatChild[] | u
   }
 }
 
+// The next run of a repeating beat, whatever this one did: it ran, was skipped by its condition, or
+// was refused. It keeps the id (this run is off the schedule) and the cause of the run before.
+function scheduleNextRun(context: TransitionContext, cause: BeatCause): void {
+  const repeat = cause.repeat;
+  const due = context.snapshot.tick + (repeat?.every_ticks ?? 0);
+  if (repeat === undefined || context.snapshot.entities[cause.entity] === undefined || !Number.isSafeInteger(due)) {
+    return;
+  }
+  const { repeat: _spent, ...rest } = cause;
+  const next: BeatCause = { ...rest, due_tick: due };
+  if (repeat.times > 1) {
+    next.repeat = { every_ticks: repeat.every_ticks, times: repeat.times - 1 };
+  }
+  context.snapshot = withCause(context.snapshot, next);
+}
+
 export function runBeat(context: TransitionContext, cause: BeatCause): void {
   if (cause.only_if !== undefined && !holds(cause.only_if, context.snapshot.entities[cause.only_if.entity])) {
     skipped(context, cause, { reason: "condition" });
-    return;
+  } else {
+    const fired = fire(context, cause);
+    if (!fired.ok) {
+      skipped(context, cause, { reason: "failed", code: fired.code });
+    } else {
+      scheduleFollowers(context, cause.then, fired.eventId);
+    }
   }
-  const fired = fire(context, cause);
-  if (!fired.ok) {
-    skipped(context, cause, { reason: "failed", code: fired.code });
-    return;
-  }
-  scheduleFollowers(context, cause.then, fired.eventId);
+  scheduleNextRun(context, cause);
 }

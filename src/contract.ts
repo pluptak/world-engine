@@ -123,6 +123,7 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
     action: z.record(z.string(), z.unknown()),
     only_if: z.record(z.string(), z.unknown()).optional(),
     then: z.array(z.record(z.string(), z.unknown())).optional(),
+    repeat: z.record(z.string(), z.unknown()).optional(),
   }).strict(),
   z.object({ kind: z.literal("cancel_beat"), id: z.string() }).strict(),
   z.object({
@@ -311,6 +312,7 @@ export const SnapshotSchema = z.object({
       action: z.record(z.string(), z.unknown()),
       only_if: z.record(z.string(), z.unknown()).optional(),
       then: z.array(z.record(z.string(), z.unknown())).optional(),
+      repeat: z.record(z.string(), z.unknown()).optional(),
     }).strict(),
   ])).optional(),
   rng: z.number().int().optional(),
