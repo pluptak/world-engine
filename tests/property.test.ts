@@ -29,6 +29,7 @@ import {
   genStep,
   mulberry32,
   SCENARIO,
+  SEED,
   withProcessFixtures,
 } from "./property-gen.js";
 
@@ -253,10 +254,13 @@ test("random runs run processes, start and stop them, and every step still valid
   let eaten = 0;
   let drunk = 0;
   let starved = 0;
+  let rolled = 0;
+  let missed = 0;
   for (let seed = 0; seed < 100; seed += 1) {
     const rand = mulberry32(seed);
     const world = memoryWorld(buildInitial(registry), registry);
     for (let i = 0; i < 60; i += 1) {
+      const dice = world.snapshot().rng;
       const before = world.snapshot().schedule?.filter((cause) => cause.kind === "process").length ?? 0;
       const step = genStep(rand, world.snapshot(), `proc-${seed}-${i}`);
       const result = "verb" in step ? world.command(step) : world.edit(step);
@@ -280,6 +284,13 @@ test("random runs run processes, start and stop them, and every step still valid
           gone += event.type === "removed" ? 1 : 0;
         }
       }
+      // The dice move only in a step that rolled, and only when it landed; a roll that missed
+      // moved them and wrote nothing.
+      const moved = world.snapshot().rng !== dice;
+      const edited = "kind" in step && step.kind === "set_seed";
+      strictEqual(moved && result.status !== "ok", false, `rolled without landing ${i}`);
+      rolled += moved && !edited ? 1 : 0;
+      missed += moved && !edited && ran === 0 ? 1 : 0;
       const after = world.snapshot().schedule?.filter((cause) => cause.kind === "process").length ?? 0;
       // A process pending before and gone after, with no run of it to explain it, was withdrawn.
       withdrawn += after < before && ran === 0 ? 1 : 0;
@@ -295,6 +306,8 @@ test("random runs run processes, start and stop them, and every step still valid
   strictEqual(eaten >= 3, true, `eaten ${eaten}`);
   strictEqual(drunk >= 3, true, `drunk ${drunk}`);
   strictEqual(starved >= 3, true, `starved ${starved}`);
+  strictEqual(rolled >= 20, true, `rolled ${rolled}`);
+  strictEqual(missed >= 1, true, `missed ${missed}`);
 });
 
 test("the generator aims an edit at every relation rule, and each step still validates", () => {
@@ -416,7 +429,7 @@ for (let seed = 0; seed < 500; seed += 1) {
 test("store subset matches memory and the event file", (t) => {
   for (let seed = 0; seed < 25; seed += 1) {
     const dir = join(tempDir(t), `seed-${seed}`);
-    const fromStore = runSequence(createWorld(dir, SCENARIO, registry), seed, 30);
+    const fromStore = runSequence(createWorld(dir, SCENARIO, registry, { seed: SEED }), seed, 30);
     const fromMemory = runSequence(memoryWorld(buildInitial(registry), registry), seed, 30);
     deepStrictEqual(fromStore, fromMemory);
     strictEqual(

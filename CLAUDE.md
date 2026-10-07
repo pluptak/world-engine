@@ -123,7 +123,10 @@ suffixes (NodeNext).
   cannot mutate the declarations the checks read). Command checks read their own verb's declaration
   through `context.verb`; a refusal with an undeclared code throws in `pipeline.ts`, which makes the
   whole suite a drift check for the declared lists. `src/errors.ts` holds `WorldError`, whose
-  codes surface as CLI issue codes. `edit` sends one `spawn`/`remove`/`place`/`set_props`/`set_part`
+  codes surface as CLI issue codes. The world's dice are `Snapshot.rng` (`src/engine/rng.ts`,
+  `docs/rng.md`): `TransitionContext.random()` advances it, a world with no seed refuses a command
+  that rolls `no_seed` (caught in `pipeline.ts`, a code no verb declares), `createWorld` and
+  `memoryWorld` take `seed`, and a template process's `chance_pct` is the first roll. `edit` sends one `spawn`/`remove`/`place`/`set_props`/`set_part`/`set_seed`
   through the pipeline as the reserved non-agent author `world` (`WORLD_AUTHOR`, which also alone may issue `advance`: time with no agent waiting; a verb opts in with `author_only`), which skips the
   agency check; `src/engine/verbs/edit.ts` holds it. `check` runs `resolveSubmission` against the
   current version with the same validation gate, but never writes or logs; `since` folds the store's

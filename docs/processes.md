@@ -6,7 +6,7 @@ it burns, moss that grows. A template declares it as data, the third kind of sch
 anything else.
 
 **Declaring.** A template's optional `processes` is a list of
-`{ id, every_ticks, while?, effect }`. `every_ticks` is an integer of at least 1. `effect` is
+`{ id, every_ticks, chance_pct?, while?, effect }`. `every_ticks` is an integer of at least 1. `effect` is
 `{ adjust_prop: { prop, by, min?, max? } }`: every `every_ticks` ticks the entity's integer prop
 `prop` moves by the non-zero integer `by`, clamped at `min` when `by` is negative and `max` when it is
 positive. `while` is `{ prop, op, value }` with `op` one of `eq ne lt lte gt gte`; `eq` and `ne`
@@ -72,8 +72,11 @@ edits light and that snuffs itself when its fuel is gone, moss that grows from t
 hurt, and mold that spreads once and is then removed, so random runs start, withdraw, restart and
 end processes under every property.
 
-What it does not do yet: nothing but a prop moves (no spreading to a neighbour, no spawning), and a
-run is not random.
+**Chance.** A process may declare `chance_pct`, a whole number from 1 to 99: each run rolls the world's
+dice ([rng.md](rng.md)), and a miss writes and emits nothing while the next run is scheduled as
+though it had happened. Without a seed, a run that would roll refuses the command `no_seed`.
+
+What it does not do yet: nothing but a prop moves (no spreading to a neighbour, no spawning).
 
 **What ships.** `templates/lantern.json` burns a point of fuel a tick while `burning` and snuffs itself
 at 0, and `candle` extends it with less ([verbs-other.md](verbs-other.md), `light`). `human_hungry`

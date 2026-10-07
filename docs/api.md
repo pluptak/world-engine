@@ -22,10 +22,12 @@ directory, a changed hash, or a bad version is a `WorldError` with a code.
 - `createWorld` starts the processes its templates declare (`startProcesses`, also exported, for a
   caller that builds a snapshot itself and opens it with `memoryWorld`; [processes.md](processes.md)).
 - `createWorld` and `memoryWorld` take an optional `coverage`, which the world's initial snapshot
-  declares in place of `defaultCoverage()`; a category it leaves out answers `unknown`.
+  declares in place of `defaultCoverage()`; a category it leaves out answers `unknown`. They also take
+  an optional `seed` for the world's dice, and without one anything that rolls is refused `no_seed`
+  ([rng.md](rng.md)).
 
 Refusals carry a machine `reason_code` and optional `reason_data` (reach, fit, enclosure, capacity
-numbers), never prose. Edits (`spawn`, `remove`, `place`, `set_props`, `set_part`) are logged under
+numbers), never prose. Edits (`spawn`, `remove`, `place`, `set_props`, `set_part`, `set_seed`) are logged under
 the reserved non-agent author `world` and refused when they break an invariant.
 
 A scenario entry may declare `"id"`, and `location`, `support`, `contained_in`, `concealed_by`,

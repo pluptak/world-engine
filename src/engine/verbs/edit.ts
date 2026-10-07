@@ -20,6 +20,7 @@ import { dropCarriedItem } from "./drop.js";
 import { revealConcealed } from "./search.js";
 import { claimGrip, gripEvictions, holderLayout } from "../carry.js";
 import { withParts } from "../parts.js";
+import { isRngState } from "../rng.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -190,6 +191,12 @@ function parseEdit(value: unknown): WorldEdit | null {
     return value.overrides === undefined
       ? { kind: "spawn", template: value.template }
       : { kind: "spawn", template: value.template, overrides: value.overrides };
+  }
+  if (value.kind === "set_seed") {
+    if (!onlyKeys(value, ["kind", "seed"]) || !isRngState(value.seed)) {
+      return null;
+    }
+    return { kind: "set_seed", seed: value.seed };
   }
   if (value.kind === "remove") {
     if (!onlyKeys(value, ["kind", "target"]) || !isId(value.target)) {
@@ -457,6 +464,9 @@ function preconditions(context: CommandContext): PreconditionResult {
     }
     return spawnRefusal(context, edit);
   }
+  if (edit.kind === "set_seed") {
+    return context.target === null ? { status: "ok" } : invalid("unexpected_target");
+  }
   if (
     context.target === null ||
     context.target.part !== null ||
@@ -661,6 +671,11 @@ function transition(context: TransitionContext): void {
   }
   if (edit.kind === "spawn") {
     transitionSpawn(context, edit);
+    return;
+  }
+  if (edit.kind === "set_seed") {
+    // The state is the world's, not an entity's: the `edit` event is the whole record of it.
+    context.snapshot = { ...context.snapshot, rng: edit.seed };
     return;
   }
   const target = context.target;

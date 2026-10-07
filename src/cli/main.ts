@@ -17,6 +17,7 @@ import {
   RequestSchema,
   ResponseSchema,
   ScenarioSchema,
+  SeededScenarioSchema,
   ValidationFailureSchema,
   type Request,
 } from "../contract.js";
@@ -74,11 +75,15 @@ function initializeWorld(dir: string, scenarioPath: string, coveragePath?: strin
     writeResponse({ status: "invalid", issues: [issue("invalid_scenario_json")] });
     return;
   }
-  const parsedScenario = ScenarioSchema.safeParse(parsedJson.value);
+  const parsedScenario = Array.isArray(parsedJson.value)
+    ? ScenarioSchema.safeParse(parsedJson.value)
+    : SeededScenarioSchema.safeParse(parsedJson.value);
   if (!parsedScenario.success) {
     writeResponse({ status: "invalid", issues: parsedScenario.error.issues });
     return;
   }
+  const entities = Array.isArray(parsedScenario.data) ? parsedScenario.data : parsedScenario.data.entities;
+  const seed = Array.isArray(parsedScenario.data) ? undefined : parsedScenario.data.seed;
 
   // Coverage is optional, and a world that declares none keeps the defaults. Each way the file can
   // be wrong gets its own code, so a caller knows whether to fix the path, the JSON or the shape.
@@ -107,12 +112,10 @@ function initializeWorld(dir: string, scenarioPath: string, coveragePath?: strin
     coverage = parsedCoverage.data;
   }
 
-  const world = createWorld(
-    dir,
-    parsedScenario.data,
-    undefined,
-    coverage === undefined ? undefined : { coverage },
-  );
+  const world = createWorld(dir, entities, undefined, {
+    ...(coverage === undefined ? {} : { coverage }),
+    ...(seed === undefined ? {} : { seed }),
+  });
   process.stdout.write(`${canonicalJson({ status: "ok", world: dir, snapshot_version: world.snapshot().version })}\n`);
 }
 

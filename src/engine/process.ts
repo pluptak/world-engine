@@ -133,6 +133,12 @@ export function runProcess(context: TransitionContext, cause: ProcessCause): voi
   if (entity === undefined || decl === undefined || !runnable(decl, entity)) {
     return;
   }
+  // A chance process rolls each run: a miss does nothing and says nothing, and the next run is
+  // scheduled as though this one had happened, since no write will do it.
+  if (decl.chance_pct !== undefined && context.random() * 100 >= decl.chance_pct) {
+    context.snapshot = reconcile(context.snapshot, context.registry, entity.id, cause.cause_id);
+    return;
+  }
   const adjust = decl.effect.adjust_prop;
   const from = entity.props[adjust.prop] as number;
   const moved = from + adjust.by;

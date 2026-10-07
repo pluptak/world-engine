@@ -39,28 +39,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Seeded randomness
-
-Chance (a hit that can miss, a spread that may not happen) must replay exactly, so the dice live in
-the snapshot, not in `Math.random`.
-
-- **State:** an optional `rng: number` on `Snapshot` (a 32-bit state), absent in a world that never
-  rolls. `TransitionContext` gains `random(): number` (a small fixed generator such as mulberry32,
-  written out in `src/engine/rng.ts`, no dependency), advancing `snapshot.rng`; the transition that
-  rolled writes the new state, so `check` and a refused command never advance it.
-- **Seeding:** `Scenario` gets an optional top-level `seed` (integer), carried by `createWorld`,
-  `memoryWorld` options and `init`; `edit` can set it under the existing author rules. A world with no
-  seed that reaches a roll refuses `no_seed` rather than inventing one.
-- **First consumer:** an optional `chance_pct` (1-99) on a process, rolled each run: a failed roll
-  skips the effect but still schedules the next run and emits nothing. Attack hit chance is not in
-  this item.
-- **Validation:** `validateSnapshot` accepts only an integer in range (`invalid_rng`); bump
-  `SCHEMA_VERSION` only if needed.
-- **Tests:** same seed and commands give a byte-identical snapshot and log through two handles and
-  through replay; a different seed differs; a refused or `check`ed command leaves `rng` alone; a
-  preempted command does not roll; the property test seeds its worlds.
-- **Depends on:** nothing (template processes have shipped).
-
 ### Fork a world
 
 A caller running what-ifs or many rollouts should not hand-copy snapshots.
@@ -77,7 +55,7 @@ A caller running what-ifs or many rollouts should not hand-copy snapshots.
 - **Tests:** two forks given the same commands end byte-identical; given different commands they
   diverge and the parent is unchanged; a fork of a memory world after many commands answers `query`
   and `observe` as the parent did at that version; stale-command preemption still works inside a fork.
-- **Depends on:** nothing (cleaner after Seeded randomness).
+- **Depends on:** nothing (seeded randomness has shipped).
 
 ### Advance stops when an agent would notice
 

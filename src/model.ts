@@ -76,6 +76,8 @@ export interface Snapshot {
   entities: Record<Id, Entity>;
   // Ordered by due tick, then by when each was scheduled; absent when nothing is pending.
   schedule?: ScheduledCause[];
+  // The dice's 32-bit state (`engine/rng.ts`); absent in a world that was never given a seed.
+  rng?: number;
 }
 
 export interface WorldEvent {

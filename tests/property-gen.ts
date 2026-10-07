@@ -44,6 +44,13 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
         },
       ],
     },
+    // Grows on some runs only, so the world's dice are rolled (and sometimes missed) under every property.
+    lichen: {
+      id: "lichen",
+      extends: "stone",
+      props: { size: 1 },
+      processes: [{ id: "sprout", every_ticks: 1, chance_pct: 50, effect: { adjust_prop: { prop: "size", by: 1, max: 6 } } }],
+    },
     // Grows to its cap quickly and is then gone.
     mold: {
       id: "mold",
@@ -162,7 +169,11 @@ export const SCENARIO: Scenario = [
     },
   },
   { template: "mold", overrides: { name: "mold", location: "e1", support: "e1", pos: { x: 130, y: -20 } } },
+  { template: "lichen", overrides: { name: "lichen", location: "e2", support: "e2", pos: { x: 60, y: -30 } } },
 ];
+
+// Every property world rolls from the same seed; a seed edit may replace it mid-run.
+export const SEED = 20260101;
 
 export function buildInitial(registry: TemplateRegistry): Snapshot {
   let snapshot: Snapshot = {
@@ -172,6 +183,7 @@ export function buildInitial(registry: TemplateRegistry): Snapshot {
     templates_hash: templatesHash(registry),
     coverage: { relations: [], senses: [], properties: [] },
     entities: {},
+    rng: SEED,
   };
   // The scenario goes through the resolver every world is built from, anchors and all.
   for (const entry of resolveScenario(SCENARIO).scenario) {
@@ -510,6 +522,10 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     }
     if (context.roll < 0.96) {
       return holderPartEdit(context);
+    }
+    // The rest are a removal, or now and then a new state for the dice.
+    if (context.rand() < 0.3) {
+      return { kind: "set_seed", seed: int(context.rand, 0, 2 ** 32 - 1) };
     }
     return { kind: "remove", target: context.target };
   },

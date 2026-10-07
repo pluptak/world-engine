@@ -51,7 +51,13 @@ export interface PartEdit {
   state: PartState;
 }
 
-export type WorldEdit = SpawnEdit | RemoveEdit | PlaceEdit | PropsEdit | PartEdit;
+// Gives the world's dice a state, replacing the one it has: an integer from 0 to 2^32 - 1.
+export interface SeedEdit {
+  kind: "set_seed";
+  seed: number;
+}
+
+export type WorldEdit = SpawnEdit | RemoveEdit | PlaceEdit | PropsEdit | PartEdit | SeedEdit;
 
 export interface Command {
   command_id: Id;
@@ -124,6 +130,9 @@ export interface TransitionContext extends CommandContext {
   recordDelta(entity: Id, field: string, from: unknown, to: unknown, eventId: Id): void;
   emit(type: string, entity: Id, data: Record<string, unknown>, causeId: Id | null): Id;
   set(entity: Id, field: string, value: unknown, eventId: Id): void;
+  // The next number in [0, 1) from the world's own dice, advancing `snapshot.rng`. A world with no
+  // seed refuses the whole command with `no_seed`; nothing here ever invents one.
+  random(): number;
 }
 
 export type PreconditionResult =

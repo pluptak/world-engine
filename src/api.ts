@@ -22,6 +22,7 @@ import { lostField } from "./engine/upgrade.js";
 import { verbCatalog } from "./engine/verbs/index.js";
 import { spawn } from "./engine/spawn.js";
 import { startProcesses } from "./engine/process.js";
+import { isRngState } from "./engine/rng.js";
 import { resolveScenario, type Scenario } from "./scenario.js";
 import { validateSnapshot } from "./engine/validate.js";
 import { WorldError } from "./errors.js";
@@ -63,6 +64,10 @@ export interface EditOptions {
 // answer, so a category left out of `senses` is `unknown` rather than `false` from the first command.
 export interface WorldOptions {
   coverage?: Coverage;
+  // The state the world's dice start from, a whole number from 0 to 2^32 - 1. Without one the world
+  // has none, and anything that would roll is refused `no_seed`. For `memoryWorld` it replaces the
+  // snapshot's own.
+  seed?: number;
 }
 
 // What a dry run reports: the verdict a command would get now, without state or a log line.
@@ -237,7 +242,15 @@ function assertCoverage(coverage: Coverage): Coverage {
   return coverage;
 }
 
-function initialSnapshot(registry: TemplateRegistry, coverage?: Coverage): Snapshot {
+// A seed that is no state is a caller's mistake, refused before anything is built.
+function assertSeed(seed: number): number {
+  if (!isRngState(seed)) {
+    throw new TypeError("Seed must be a whole number from 0 to 4294967295");
+  }
+  return seed;
+}
+
+function initialSnapshot(registry: TemplateRegistry, coverage?: Coverage, seed?: number): Snapshot {
   return {
     version: 0,
     tick: 0,
@@ -245,6 +258,7 @@ function initialSnapshot(registry: TemplateRegistry, coverage?: Coverage): Snaps
     templates_hash: templatesHash(registry),
     coverage: coverage === undefined ? defaultCoverage() : assertCoverage(coverage),
     entities: {},
+    ...(seed !== undefined && { rng: assertSeed(seed) }),
   };
 }
 
@@ -359,7 +373,7 @@ export function createWorld(
   options?: WorldOptions,
 ): World {
   const templates = activeRegistry(registry);
-  const initial = initialSnapshot(templates, options?.coverage);
+  const initial = initialSnapshot(templates, options?.coverage, options?.seed);
   // Names resolve before the first spawn, so a bad name is refused before anything is written.
   const resolved = resolveScenario(scenario, initial.next_seq);
   let snapshot = initial;
@@ -388,10 +402,11 @@ export function memoryWorld(
   let templates = activeRegistry(registry);
   // What the caller handed in is the whole world, so a coverage option says the same thing about a
   // snapshot it came from: this memory world's initial snapshot declares that instead.
-  const initial =
-    options?.coverage === undefined
-      ? snapshot
-      : { ...snapshot, coverage: assertCoverage(options.coverage) };
+  const initial: Snapshot = {
+    ...snapshot,
+    ...(options?.coverage !== undefined && { coverage: assertCoverage(options.coverage) }),
+    ...(options?.seed !== undefined && { rng: assertSeed(options.seed) }),
+  };
   if (initial.templates_hash !== templatesHash(templates)) {
     throw new WorldError("templates_changed", "Template hash mismatch");
   }

@@ -21,6 +21,8 @@ export type ProcessOp = "eq" | "ne" | "lt" | "lte" | "gt" | "gte";
 export interface ProcessDecl {
   id: string;
   every_ticks: number;
+  // The chance, from 1 to 99, that a run takes effect; a run rolls the world's dice, so it needs a seed.
+  chance_pct?: number;
   while?: { prop: string; op: ProcessOp; value: number | string | boolean };
   effect: { adjust_prop: { prop: string; by: number; min?: number; max?: number } };
   // Once, when a run brings the prop to the bound it was moving toward.
@@ -216,7 +218,7 @@ function parseProcesses(value: unknown, label: string): ProcessDecl[] {
     if (!isRecord(entry)) {
       throw new TypeError(`${at} must be an object`);
     }
-    assertOnlyKeys(entry, ["id", "every_ticks", "while", "effect", "then"], at);
+    assertOnlyKeys(entry, ["id", "every_ticks", "chance_pct", "while", "effect", "then"], at);
     if (typeof entry.id !== "string" || entry.id.length === 0) {
       throw new TypeError(`${at}.id must be a non-empty string`);
     }
@@ -234,6 +236,13 @@ function parseProcesses(value: unknown, label: string): ProcessDecl[] {
       every_ticks: entry.every_ticks,
       effect: parseEffect(entry.effect, `${named}.effect`),
     };
+    if (entry.chance_pct !== undefined) {
+      assertInteger(entry.chance_pct, `${named}.chance_pct`);
+      if (entry.chance_pct < 1 || entry.chance_pct > 99) {
+        throw new TypeError(`${named}.chance_pct must be from 1 to 99`);
+      }
+      parsed.chance_pct = entry.chance_pct;
+    }
     if (entry.while !== undefined) {
       const clause = entry.while;
       if (!isRecord(clause)) {

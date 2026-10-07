@@ -5,6 +5,7 @@ import { misfit } from "./fit.js";
 import { effectivePart, isDefaultPart } from "./parts.js";
 import { uncomputable } from "./capabilities.js";
 import { isAbstract } from "./resolve.js";
+import { isRngState } from "./rng.js";
 import { CAUSE_KINDS, causeInvalid } from "./schedule.js";
 
 export interface SnapshotIssue {
@@ -464,6 +465,9 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
 
   issues.push(...holderPackingIssues(snapshot, registry));
   issues.push(...scheduleIssues(snapshot));
+  if (snapshot.rng !== undefined && !isRngState(snapshot.rng)) {
+    issues.push(issue("invalid_rng", ["rng"], String(snapshot.rng)));
+  }
 
   return issues;
 }

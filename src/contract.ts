@@ -86,6 +86,13 @@ export const ScenarioSchema = z.array(z.object({
   overrides: ScenarioOverridesSchema.optional(),
 }).strict());
 
+// A scenario file is the list above, or that list as `entities` beside the `seed` the world's dice
+// start from (a whole number from 0 to 2^32 - 1); a list alone gives a world no seed.
+export const SeededScenarioSchema = z.object({
+  seed: z.number().int().min(0).max(4294967295).optional(),
+  entities: ScenarioSchema,
+}).strict();
+
 export const WorldEditSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("spawn"),
@@ -107,6 +114,7 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
     target: IdSchema,
     props: z.record(z.string(), PrimitiveSchema),
   }).strict(),
+  z.object({ kind: z.literal("set_seed"), seed: z.number().int().min(0).max(4294967295) }).strict(),
   z.object({
     kind: z.literal("set_part"),
     target: IdSchema,
@@ -282,6 +290,7 @@ export const SnapshotSchema = z.object({
       process: z.string(),
     }).strict(),
   ])).optional(),
+  rng: z.number().int().optional(),
 }).strict();
 
 export const PerceiversSchema = z.object({

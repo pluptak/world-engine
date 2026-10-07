@@ -24,7 +24,8 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
   `invalid_args`. Its own `advance` event is authored work nobody senses; what the clock runs is
   sensed as usual. It is the controller's way to move time without an agent waiting
   ([time.md](time.md)).
-- `edit`: carries one `spawn`, `remove`, `place`, `set_props` or `set_part` as `args.edit`, and
+- `edit`: carries one `spawn`, `remove`, `place`, `set_props`, `set_part` or `set_seed` as `args.edit`
+  (`set_seed` gives the world's dice a state, [rng.md](rng.md)), and
   refuses with the code of the first snapshot rule its result breaks ([relations.md](relations.md)).
   A `place` may write `pos` as `{anchor, dx, dy}` ([space.md](space.md)) and `concealed_by`, which
   hides the placed thing under or behind another in the same room.
