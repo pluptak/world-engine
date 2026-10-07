@@ -35,6 +35,25 @@ function destination(context: CommandContext): MoveDestination | null {
   return null;
 }
 
+// The rooms an agent can name: its own, and those a doorway of its own room leads to, open or shut,
+// as `addressable` gropes for a door from either room it joins. Any other room id answers as one
+// that does not exist, so `move` cannot be used to map the world.
+function nameableRoom(context: CommandContext, to: string): boolean {
+  const here = context.actor.location;
+  if (to === here) {
+    return true;
+  }
+  return Object.keys(context.snapshot.entities)
+    .sort()
+    .some((id) => {
+      const props = context.snapshot.entities[id]?.props;
+      return (
+        props !== undefined &&
+        ((props.from === here && props.to === to) || (props.from === to && props.to === here))
+      );
+    });
+}
+
 function hasOpenDoor(context: CommandContext, to: string): boolean {
   const from = context.actor.location;
   return Object.keys(context.snapshot.entities)
@@ -73,7 +92,7 @@ function preconditions(context: CommandContext): PreconditionResult {
 
   if (to.kind === "location") {
     const location = context.snapshot.entities[to.id];
-    if (location === undefined || location.template !== "room") {
+    if (location === undefined || location.template !== "room" || !nameableRoom(context, to.id)) {
       return { status: "invalid", reason_code: "invalid_location" };
     }
     if (to.id !== context.actor.location && !hasOpenDoor(context, to.id)) {

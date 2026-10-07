@@ -205,11 +205,18 @@ test("move updates position and a location change needs an open door", () => {
   deepStrictEqual(moved.snapshot.entities[setup.actorId]?.pos, { x: 25, y: 10 });
 
   const otherRoom = spawn(moved.snapshot, registry, "room", { name: "kitchen" });
-  const noDoor = apply(
-    otherRoom.snapshot,
-    registry,
-    command(setup.actorId, "move", undefined, { location: otherRoom.id }),
-  );
+  const toKitchen = command(setup.actorId, "move", undefined, { location: otherRoom.id });
+  // With no doorway to it, the kitchen is no room the guard can name: it answers as an id that
+  // names nothing, or names no room, so a move cannot map the world.
+  for (const location of [otherRoom.id, "e999", setup.actorId]) {
+    const probe = apply(otherRoom.snapshot, registry, command(setup.actorId, "move", undefined, { location }));
+    deepStrictEqual([probe.status, probe.reason_code], ["invalid", "invalid_location"], location);
+  }
+
+  const shut = spawn(otherRoom.snapshot, registry, "door", {
+    props: { open: false, from: setup.roomId, to: otherRoom.id },
+  });
+  const noDoor = apply(shut.snapshot, registry, toKitchen);
   strictEqual(noDoor.status, "refused");
   strictEqual(noDoor.reason_code, "no_open_door");
 
