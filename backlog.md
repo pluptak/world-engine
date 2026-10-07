@@ -39,22 +39,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Camp scenario: the three together
-
-A scenario that exercises time-driven change end to end, as `inn` did for the verbs, so the next
-limits list is written from a real world.
-
-- **`scenarios/camp.json`:** a dark room with a lantern, a note under a book, bread, a hungry human
-  (`human_hungry`) and a second observer, built with the existing spawn specs and `ScenarioOverrides`.
-- **`tests/scenario-camp.test.ts`:** step letters like `scenario-inn.test.ts`: light the lantern and
-  search; `advance` ten ticks and watch fuel fall; `advance` past burn-out and the room goes dark, the
-  observer's `perceive` flipping `true` to `false` with `location_unlit`; the human starves to
-  destruction, or eats and does not; `trace` of the starved human's integrity reads one chain back to
-  the first `changed`; replay of `log.jsonl` from `initial.json` equals `snapshot.json`.
-- **`docs/limits-camp.md`:** one line per thing the scenario wanted and could not say, in the form of
-  `docs/limits.md`; link it from `docs/limits.md` and `docs/DESIGN.md`. Nothing there is a proposal.
-- **Depends on:** nothing (processes, light and consume have shipped).
-
 ### Seeded randomness
 
 Chance (a hit that can miss, a spread that may not happen) must replay exactly, so the dice live in

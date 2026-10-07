@@ -1,0 +1,39 @@
+[
+  { "id": "tent", "template": "room", "overrides": { "name": "tent" } },
+  {
+    "id": "table",
+    "template": "table",
+    "overrides": { "name": "table", "location": "tent", "support": "tent", "pos": { "x": 120, "y": 0 } }
+  },
+  { "id": "lantern", "template": "lantern", "overrides": { "name": "lantern", "location": "tent", "support": "table" } },
+  { "id": "book", "template": "book", "overrides": { "name": "book", "location": "tent", "support": "table" } },
+  {
+    "id": "note",
+    "template": "note",
+    "overrides": { "name": "note", "location": "tent", "support": "table", "concealed_by": "book" }
+  },
+  { "id": "bread", "template": "bread", "overrides": { "name": "bread", "location": "tent", "support": "table" } },
+  {
+    "id": "gus",
+    "template": "human_hungry",
+    "overrides": {
+      "name": "gus",
+      "location": "tent",
+      "support": "tent",
+      "pos": { "x": 40, "y": 0 },
+      "props": {
+        "agent": true,
+        "reach_cm": 100,
+        "hand_height_cm": 100,
+        "attack_damage": 40,
+        "default_hit_part": "torso",
+        "bleed_damage": 5,
+        "bleed_every_ticks": 2,
+        "bleed_times": 3,
+        "hunger": 100,
+        "starvation": 0
+      }
+    }
+  },
+  { "id": "ann", "template": "human", "overrides": { "name": "ann", "location": "tent", "support": "tent", "pos": { "x": -100, "y": 0 } } }
+]
