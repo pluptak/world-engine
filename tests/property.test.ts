@@ -564,7 +564,7 @@ test("an actor is told only of what it can sense or address: an actor view names
       for (const address of [result.resolved_target, ...(result.candidates ?? [])]) {
         if (address !== null) {
           const id = address.split(".")[0]!;
-          strictEqual(addressable(before, registry, step.actor, id, true), true, `${step.command_id} named ${id}`);
+          strictEqual(addressable(before, registry, step.actor, id), true, `${step.command_id} named ${id}`);
           told.add(id);
         }
       }
@@ -572,7 +572,7 @@ test("an actor is told only of what it can sense or address: an actor view names
         if (typeof value !== "string" || before.entities[value] === undefined) {
           continue;
         }
-        if (told.has(value) || value === room || addressable(before, registry, step.actor, value, false)) {
+        if (told.has(value) || value === room || addressable(before, registry, step.actor, value)) {
           strictEqual(result.reason_data?.[key], value, `${step.command_id} kept ${key}`);
           named += 1;
           if (!told.has(value) && value !== room) {

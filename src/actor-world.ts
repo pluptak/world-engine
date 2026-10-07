@@ -71,7 +71,7 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
         typeof value !== "string" ||
         snapshot.entities[value] === undefined ||
         known.has(value) ||
-        gropable(snapshot, actor, value, false)
+        gropable(snapshot, actor, value)
       ) {
         data[key] = value;
       }

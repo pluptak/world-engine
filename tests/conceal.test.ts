@@ -177,23 +177,25 @@ test("lifting the book uncovers the note for everyone in the room", (t) => {
   }
 });
 
-test("the hidden thing is named only by the id a search finds, and taking it takes it out of hiding", (t) => {
+test("the hidden thing is named by nobody, by name or id, until what hides it moves", (t) => {
   for (const world of hiddenWorlds(t)) {
-    const byName = world.command({ command_id: "take-by-name", actor: "e6", verb: "take", target: "note" });
-    strictEqual(byName.status, "unresolved");
-    strictEqual(byName.resolved_target, null);
-    // Out of reach, in the cell, not even the id names it.
-    const fromAfar = world.command({ command_id: "take-from-afar", actor: "e9", verb: "take", target: NOTE });
-    strictEqual(fromAfar.status, "unresolved");
-
+    // Ids are sequential, so an id is no secret: in reach or out, before a search or after, it
+    // names nothing while the note is hidden.
     const searched = world.command({ command_id: "search-book", actor: "e6", verb: "search", target: "book" });
     strictEqual(searched.events.find((event) => event.type === "found")?.entity, NOTE);
-    const taken = world.command({ command_id: "take-note", actor: "e6", verb: "take", target: NOTE });
+    for (const [actor, target] of [["e6", "note"], ["e6", NOTE], ["e7", NOTE], ["e9", NOTE]] as const) {
+      const named = world.command({ command_id: `take-${actor}-${target}`, actor, verb: "take", target });
+      strictEqual(named.status, "unresolved", `${actor} ${target}`);
+      strictEqual(named.resolved_target, null);
+    }
+    strictEqual(world.entity(NOTE)?.concealed_by, BOOK);
+
+    // Lifting the book uncovers the note, and then it is there to take.
+    const lifted = world.command({ command_id: "lift-book", actor: "e6", verb: "take", target: "book" });
+    strictEqual(lifted.events.find((event) => event.type === "revealed")?.entity, NOTE);
+    const taken = world.command({ command_id: "take-note", actor: "e7", verb: "take", target: "note" });
     strictEqual(taken.status, "ok");
-    strictEqual(world.entity(NOTE)?.concealed_by, null);
-    const revealed = taken.events.find((event) => event.type === "revealed");
-    ok(revealed);
-    strictEqual(revealed.entity, NOTE);
+    strictEqual(taken.resolved_target, NOTE);
   }
 });
 

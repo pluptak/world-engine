@@ -51,11 +51,11 @@ export function resolveTarget(
 ): TargetResolution {
   const skipAbstract = actorId !== WORLD_AUTHOR;
   // The author names anything; an agent only what it could tell is there (`addressable`).
-  const named = (id: Id, byId: boolean): boolean =>
+  const named = (id: Id): boolean =>
     !skipAbstract ||
-    (!isAbstract(registry, snapshot.entities[id]) && addressable(snapshot, registry, actorId, id, byId));
+    (!isAbstract(registry, snapshot.entities[id]) && addressable(snapshot, registry, actorId, id));
 
-  if (Object.hasOwn(snapshot.entities, text) && named(text, true)) {
+  if (Object.hasOwn(snapshot.entities, text) && named(text)) {
     return resolved(text);
   }
 
@@ -65,7 +65,7 @@ export function resolveTarget(
     const partName = text.slice(separator + 1);
     const entity = snapshot.entities[entityId];
     const state =
-      entity === undefined || !named(entityId, true)
+      entity === undefined || !named(entityId)
         ? undefined
         : effectivePart(registry[entity.template], entity, partName);
     if (state !== undefined && state.status !== "detached") {
@@ -89,7 +89,7 @@ export function resolveTarget(
       return (
         (entity.name.toLowerCase() === search ||
           entity.aliases.some((alias) => alias.toLowerCase() === search)) &&
-        named(id, false)
+        named(id)
       );
     });
 
