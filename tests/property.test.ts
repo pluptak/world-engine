@@ -468,3 +468,72 @@ test("store subset matches memory and the event file", (t) => {
     strictEqual(canonicalJson(openWorld(dir).snapshot()), fromStore.snapshot);
   }
 });
+
+test("nobody learns words they did not hear: a projection carries a token exactly when its observer heard it", () => {
+  const volumes = ["whisper", "normal", "normal", "shout"] as const;
+  let heardSays = 0;
+  let onlySeen = 0;
+  let ownViews = 0;
+  for (let seed = 0; seed < 60; seed += 1) {
+    const rand = mulberry32(seed + 7000);
+    const world = memoryWorld(buildInitial(registry), registry);
+    for (let i = 0; i < 50; i += 1) {
+      const snapshot = world.snapshot();
+      const agents = Object.keys(snapshot.entities)
+        .sort()
+        .filter((id) => snapshot.entities[id]?.props.agent === true && snapshot.entities[id]?.detached_from === null);
+      // A third of the steps are a speech act by a random agent, so there is something to hear; the
+      // rest are the generator's own, which move the speakers and listeners about.
+      const speaks = agents.length > 0 && rand() < 0.35;
+      const actor = agents[Math.floor(rand() * agents.length)] ?? "e999";
+      const volume = volumes[Math.floor(rand() * volumes.length)]!;
+      const step: Command | WorldEdit = speaks
+        ? { command_id: `leak-${seed}-${i}`, actor, verb: "say", args: { utterance: `w${seed}x${i}`, volume } }
+        : genStep(rand, snapshot, `leak-${seed}-${i}`);
+      const before = snapshot.version;
+      const result = "verb" in step ? world.command(step, { observe: true }) : world.edit(step);
+      if (result.status !== "ok") {
+        continue;
+      }
+      const says = result.events.filter((event) => event.type === "say");
+      if (says.length === 0) {
+        continue;
+      }
+      const after = world.snapshot();
+      const views: [string, { events: { event_id: string; senses: string[]; utterance?: string; volume?: string }[] }][] = [];
+      for (const id of Object.keys(after.entities).sort()) {
+        if (after.entities[id]?.props.agent === true) {
+          views.push([id, world.observe(id, { since: before })]);
+        }
+      }
+      // The view a command hands back to its actor obeys the same rule.
+      if ("observation" in result && result.observation !== undefined) {
+        views.push([(step as Command).actor, result.observation]);
+        ownViews += 1;
+      }
+      for (const [observer, view] of views) {
+        let withWords = 0;
+        for (const say of says) {
+          const heard = world.query({ kind: "perceive", observer, event_id: say.event_id, sense: "hearing" }).value === "true";
+          const shown = view.events.find((event) => event.event_id === say.event_id);
+          if (heard) {
+            heardSays += 1;
+            strictEqual(shown?.utterance, say.data.utterance, `${observer} heard ${say.event_id}`);
+            strictEqual(shown?.volume, say.data.volume);
+            withWords += 1;
+          } else if (shown !== undefined) {
+            // Seen, or felt, and not heard: the event is there and the words are not.
+            onlySeen += 1;
+            strictEqual("utterance" in shown, false, `${observer} was told ${say.event_id}`);
+            strictEqual("volume" in shown, false);
+          }
+        }
+        // Nothing in the view carries a token but what was heard, however it is nested.
+        strictEqual(JSON.stringify(view).split('"utterance"').length - 1, withWords, `${observer} view at ${i}`);
+      }
+    }
+  }
+  strictEqual(heardSays >= 100, true, `heard ${heardSays}`);
+  strictEqual(onlySeen >= 20, true, `only seen ${onlySeen}`);
+  strictEqual(ownViews >= 20, true, `own views ${ownViews}`);
+});

@@ -42,4 +42,6 @@ heard.
 the capacity changed the human template and so `templates_hash`: a stored world made before it reports
 `templates_changed` and needs `upgradeTemplates` or a re-init ([templates.md](templates.md)).
 
-`tests/speech.test.ts` is the spec; the property test generates `say` and every step stays valid.
+`tests/speech.test.ts` is the spec; the property test generates `say` and every step stays valid, and holds the
+rule over random runs: every agent's `observe`, and the view a command hands its actor, carries a token
+exactly for the speech acts that agent heard, and nowhere else in the view.

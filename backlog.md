@@ -40,19 +40,3 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 ## Items
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
-
-### Property check: nobody learns words they did not hear
-
-`tests/speech.test.ts` shows one whisper not reaching one observer. The rule is general, so the property
-test should hold it over random runs.
-
-- **Check** (in `tests/property.test.ts`, with the generator's `say` already in the verb table): after each
-  step of a run, for every agent: each `say` in `since(0)` whose hearing is not true for that agent
-  (`perceive` with the event, either end) appears in `observe(agent, { since: 0 })` without `utterance` and
-  `volume`, and each one it did hear appears with both; and the agent's `command(..., { observe: true })`
-  projection obeys the same. Counters assert that the run produced both kinds (heard and only-seen) so
-  the check cannot pass empty.
-- **Generator:** add a `say` weight where agents are in different rooms or at distances over the
-  threshold, if the existing scenario does not already produce whispers out of earshot.
-- **Depends on:** nothing.
-
