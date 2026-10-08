@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli, cliProcess } from "./cli-run.js";
 import {
   AnswerSchema,
   CommandResponseSchema,
@@ -24,11 +25,7 @@ const bottleScenario = fileURLToPath(new URL("../scenarios/bottle.json", import.
 const handScenario = fileURLToPath(new URL("../scenarios/hand.json", import.meta.url));
 
 function runCli(input?: string, args: string[] = []) {
-  return spawnSync(process.execPath, ["--import", "tsx", cliPath, ...args], {
-    cwd: root,
-    encoding: "utf8",
-    ...(input !== undefined && { input }),
-  });
+  return cli(input, args);
 }
 
 function temporaryDirectory(t: { after(callback: () => void): void }): string {
@@ -399,4 +396,16 @@ test("a real answer to every op parses with the schema the contract gives that o
     const parsed = RESPONSES[op].safeParse(answer);
     ok(parsed.success, `${op}: ${parsed.success ? "" : parsed.error.message}`);
   }
+});
+
+test("the process entry answers exactly as runCli does, exit code included", (t) => {
+  const dir = join(temporaryDirectory(t), "w");
+  const inited = cliProcess(undefined, ["init", dir, bottleScenario]);
+  strictEqual(inited.status, 0, inited.stderr);
+  const request = JSON.stringify({ op: "snapshot", world: dir });
+  const spawned = cliProcess(request);
+  strictEqual(spawned.status, 0, spawned.stderr);
+  strictEqual(spawned.stdout, cli(request).stdout);
+  const broken = cliProcess("{not json");
+  deepStrictEqual([broken.status, broken.stdout], [2, cli("{not json").stdout]);
 });

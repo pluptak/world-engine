@@ -1,3 +1,4 @@
+// test-select: reads docs/verbs*.md
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -5,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import type { VerbRegistry } from "../src/engine/command.js";
 import { verbCatalog, verbRegistry } from "../src/engine/verbs/index.js";
 import { VerbsResponseSchema } from "../src/contract.js";
@@ -81,11 +83,7 @@ test("a verb without a description cannot be cataloged", () => {
 });
 
 test("the CLI answers the verb catalog", () => {
-  const cli = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({ op: "verbs" }),
-  });
+  const cli = cliRequest(JSON.stringify({ op: "verbs" }));
   strictEqual(cli.status, 0, cli.stderr);
   const parsed = VerbsResponseSchema.parse(JSON.parse(cli.stdout));
   // The CLI reads the same registry through a Zod boundary, so its answer must be the catalog.

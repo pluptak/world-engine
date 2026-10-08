@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import { createWorld, memoryWorld, type Command, type Scenario } from "../src/index.js";
 import { CheckResponseSchema } from "../src/contract.js";
 
@@ -90,11 +91,7 @@ test("a memory world answers checks without moving", () => {
 test("the CLI answers a check", (t) => {
   const dir = join(tempDir(t), "cli");
   createWorld(dir, scenario);
-  const cli = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({ op: "check", world: dir, command: { command_id: "probe", actor: "e4", verb: "take", target: "bottle" } }),
-  });
+  const cli = cliRequest(JSON.stringify({ op: "check", world: dir, command: { command_id: "probe", actor: "e4", verb: "take", target: "bottle" } }));
   strictEqual(cli.status, 0, cli.stderr);
   const parsed = CheckResponseSchema.parse(JSON.parse(cli.stdout));
   strictEqual(parsed.status, "ok");

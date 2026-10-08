@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli } from "./cli-run.js";
 import { actorWorld, canonicalJson, createWorld, openWorld, type Scenario } from "../src/index.js";
 import { ActorCommandResponseSchema, ResponseSchema } from "../src/contract.js";
 
@@ -12,11 +13,7 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
 
 function runCli(request: unknown) {
-  return spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify(request),
-  });
+  return cli(JSON.stringify(request));
 }
 
 function respond(request: unknown): unknown {

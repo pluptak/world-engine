@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import { AttemptsResponseSchema } from "../src/contract.js";
 import { canonicalJson, createWorld, memoryWorld, WorldError, type Scenario, type World } from "../src/index.js";
 
@@ -106,11 +107,7 @@ test("a log line without the version it was decided at is refused on reading", (
 test("the CLI answers attempts", (t) => {
   const { dir, worlds: both } = worlds(t);
   play(both[0]!);
-  const run = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({ op: "attempts", world: dir, version: 1 }),
-  });
+  const run = cliRequest(JSON.stringify({ op: "attempts", world: dir, version: 1 }));
   strictEqual(run.status, 0, run.stderr);
   const response = AttemptsResponseSchema.parse(JSON.parse(run.stdout));
   deepStrictEqual(response.attempts.map((attempt) => attempt.status), ["preempted", "refused", "invalid", "unresolved", "ok"]);

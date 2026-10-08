@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import { createWorld, memoryWorld, type Scenario } from "../src/index.js";
 
 function tempDir(t: { after(callback: () => void): void }): string {
@@ -111,18 +112,14 @@ test("the CLI answers a beat with per-command results", async (t) => {
   const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
   const dir = join(tempDir(t), "cli");
   createWorld(dir, bottleScenario);
-  const beat = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({
+  const beat = cliRequest(JSON.stringify({
       op: "beat",
       world: dir,
       commands: [
         { command_id: "take-1", actor: "e4", verb: "take", target: "bottle" },
         { command_id: "take-2", actor: "e5", verb: "take", target: "bottle" },
       ],
-    }),
-  });
+    }));
   strictEqual(beat.status, 0, beat.stderr);
   const parsed = BeatResponseSchema.parse(JSON.parse(beat.stdout));
   strictEqual(parsed.results.length, 2);
@@ -138,18 +135,14 @@ test("the CLI continues a beat past an unknown verb", async (t) => {
   const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
   const dir = join(tempDir(t), "cli-invalid");
   createWorld(dir, bottleScenario);
-  const beat = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({
+  const beat = cliRequest(JSON.stringify({
       op: "beat",
       world: dir,
       commands: [
         { command_id: "fly", actor: "e4", verb: "fly" },
         { command_id: "wait", actor: "e4", verb: "wait", args: { ticks: 1 } },
       ],
-    }),
-  });
+    }));
   strictEqual(beat.status, 0, beat.stderr);
   const parsed = BeatResponseSchema.parse(JSON.parse(beat.stdout));
   strictEqual(parsed.results[0]?.status, "invalid");

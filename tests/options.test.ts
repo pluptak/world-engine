@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import { OptionsResponseSchema } from "../src/contract.js";
 import type { Command, Result } from "../src/engine/command.js";
 import { listOptions } from "../src/options.js";
@@ -245,11 +246,7 @@ test("the CLI's options op answers what the library does, and the contract holds
   const world = createWorld(dir, hall(true), undefined, { seed: 11 });
   const ann = world.id("ann")!;
   const cli = (request: object): unknown => {
-    const run = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-      cwd: fileURLToPath(new URL("../", import.meta.url)),
-      encoding: "utf8",
-      input: JSON.stringify(request),
-    });
+    const run = cliRequest(JSON.stringify(request));
     // A request the contract refuses exits 2 with its issues on stdout.
     ok(run.status === 0 || run.status === 2, run.stderr);
     return JSON.parse(run.stdout) as unknown;
@@ -444,11 +441,7 @@ test("an actor holding nothing is offered no arguments but a room; on a table sh
 test("the CLI's options op carries the arguments the library suggests", (t) => {
   const { world, id, dir } = holding(t);
   const ann = id("ann");
-  const run = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: fileURLToPath(new URL("../", import.meta.url)),
-    encoding: "utf8",
-    input: JSON.stringify({ op: "options", world: dir, actor: ann, refused: true }),
-  });
+  const run = cliRequest(JSON.stringify({ op: "options", world: dir, actor: ann, refused: true }));
   strictEqual(run.status, 0, run.stderr);
   deepStrictEqual(OptionsResponseSchema.parse(JSON.parse(run.stdout)), world.options(ann, { refused: true }));
 });

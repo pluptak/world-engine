@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import {
   createWorld,
   memoryWorld,
@@ -174,13 +175,7 @@ test("a CLI command with perceivers reports them through the contract", (t) => {
   const breaker = idOf(seed, "breaker");
   const listener = idOf(seed, "listener");
 
-  const cli = spawnSync(
-    process.execPath,
-    ["--import", "tsx", cliPath],
-    {
-      cwd: root,
-      encoding: "utf8",
-      input: JSON.stringify({
+  const cli = cliRequest(JSON.stringify({
         op: "command",
         world: join(dir, "w"),
         command: {
@@ -190,9 +185,7 @@ test("a CLI command with perceivers reports them through the contract", (t) => {
           target: "table",
           perceivers: true,
         },
-      }),
-    },
-  );
+      }));
   strictEqual(cli.status, 0, cli.stderr);
   const parsed = CommandResponseSchema.parse(JSON.parse(cli.stdout));
   strictEqual(parsed.status, "ok");
@@ -239,21 +232,13 @@ test("a CLI edit with perceivers: true returns events carrying perceivers", (t) 
   const listener = idOf(seed, "listener");
   const breaker = idOf(seed, "breaker");
 
-  const cli = spawnSync(
-    process.execPath,
-    ["--import", "tsx", cliPath],
-    {
-      cwd: root,
-      encoding: "utf8",
-      input: JSON.stringify({
+  const cli = cliRequest(JSON.stringify({
         op: "edit",
         world: join(dir, "w"),
         command_id: "remove-table",
         edit: { kind: "remove", target: "e4" },
         perceivers: true,
-      }),
-    },
-  );
+      }));
   strictEqual(cli.status, 0, cli.stderr);
   const parsed = CommandResponseSchema.parse(JSON.parse(cli.stdout));
   strictEqual(parsed.status, "ok");

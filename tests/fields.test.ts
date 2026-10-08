@@ -1,3 +1,4 @@
+// test-select: reads src/**/*.ts
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";

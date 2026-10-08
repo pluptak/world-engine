@@ -1,3 +1,4 @@
+// test-select: reads src/**/*.ts
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";

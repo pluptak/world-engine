@@ -11,7 +11,10 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test \"tests/**/*.test.ts\"",
-    "check": "npm run typecheck && npm test",
+    "check": "npm run typecheck && npm run test:map",
+    "check:changed": "node --import tsx scripts/test-select.ts run --typecheck",
+    "test:changed": "node --import tsx scripts/test-select.ts run",
+    "test:map": "node --import tsx scripts/test-select.ts map",
     "bench": "node --import tsx scripts/bench.ts",
     "bench:scale": "node --import tsx scripts/bench.ts --scale",
     "bench:reads": "node --import tsx scripts/bench.ts --reads",

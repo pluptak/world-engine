@@ -3,7 +3,7 @@ import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, wri
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { test } from "node:test";
+import { after, test } from "node:test";
 import { canonicalJson, createWorld, openWorld, type Scenario, type World } from "../src/index.js";
 import { verbRegistry } from "../src/engine/verbs/index.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
@@ -28,22 +28,48 @@ function root(t: { after(callback: () => void): void }): string {
 
 let seq = 0;
 
-// A world of exactly `count` accepted commands, every one a take or a drop.
-function built(t: { after(callback: () => void): void }, count: number): { dir: string; world: World } {
-  const dir = join(root(t), "w");
-  const world = createWorld(dir, scenario);
-  seq = 1;
-  for (let index = 0; index < count; index += 1) {
-    seq += 1;
+// Each length of the workload is built once per file, by extending a copy of the longest shorter
+// one, since every world here runs the same commands from the start; a test gets its own copy.
+const LENGTHS = [300, 512, 600, 602];
+const masters = new Map<number, string>();
+const masterRoot = mkdtempSync(join(tmpdir(), "world-engine-checkpoint-master-"));
+after(() => rmSync(masterRoot, { recursive: true, force: true }));
+
+function master(count: number): string {
+  const kept = masters.get(count);
+  if (kept !== undefined) {
+    return kept;
+  }
+  // The lengths the tests ask for are built as one chain, so asking for the longest first builds
+  // the shorter ones on the way.
+  for (const length of LENGTHS.filter((length) => length < count)) {
+    master(length);
+  }
+  const dir = join(masterRoot, `w${count}`);
+  const shorter = [...masters.keys()].filter((length) => length < count).sort((a, b) => b - a)[0];
+  if (shorter !== undefined) {
+    cpSync(masters.get(shorter)!, dir, { recursive: true });
+  }
+  const world = shorter === undefined ? createWorld(dir, scenario) : openWorld(dir);
+  for (let index = shorter ?? 0; index < count; index += 1) {
     const result = world.command({
-      command_id: `cp-${seq}`,
+      command_id: `cp-${index + 2}`,
       actor: world.id("ann")!,
       verb: index % 2 === 0 ? "take" : "drop",
       target: "bottle",
     });
     strictEqual(result.status, "ok", `${index}`);
   }
-  return { dir, world };
+  masters.set(count, dir);
+  return dir;
+}
+
+// A world of exactly `count` accepted commands, every one a take or a drop.
+function built(t: { after(callback: () => void): void }, count: number): { dir: string; world: World } {
+  const dir = join(root(t), "w");
+  cpSync(master(count), dir, { recursive: true });
+  seq = count + 1;
+  return { dir, world: openWorld(dir) };
 }
 
 function checkpointNames(dir: string): string[] {

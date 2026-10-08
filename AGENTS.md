@@ -28,7 +28,8 @@ Guidance for coding agents in this directory.
 
 ### Verification (before the commit)
 
-1. `npm run check` in `world-engine` passes.
+1. `npm run check:changed` passes: typecheck and the tests the change can reach. Run the full
+   `npm run check` when it selects nearly everything anyway, or when the map is old.
 2. Deliberately break one new test to confirm it can fail, then restore it.
 3. Read the staged diff: only this block's changes.
 
@@ -36,7 +37,8 @@ Guidance for coding agents in this directory.
 
 - TypeScript `strict` + `noUncheckedIndexedAccess`, `module`/`moduleResolution` NodeNext, target ES2022,
   Node ≥ 20. Test runner is `node:test` via `tsx`. **Zod only at the JSON boundary.**
-- `npm run check` = `typecheck` (`tsc --noEmit`) + `npm test`. That is the gate; there is no lint step.
+- `npm run check` = `typecheck` (`tsc --noEmit`) + every test, writing `.test-map.json`;
+  `npm run check:changed` runs only the tests the change can reach (`CLAUDE.md`). No lint step.
 - `npm test` = `node --import tsx --test "tests/**/*.test.ts"` — the script already globs everything, so
   a focused run needs a direct `node --import tsx --test tests/<file>.test.ts` instead of appending a
   path to `npm test`.

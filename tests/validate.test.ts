@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import {
   canonicalJson,
   createWorld,
@@ -465,11 +466,7 @@ test("a corrupted snapshot fixture fails to open and names the rule", (t) => {
     }
   }
 
-  const cli = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({ op: "snapshot", world: dir }),
-  });
+  const cli = cliRequest(JSON.stringify({ op: "snapshot", world: dir }));
   strictEqual(cli.status, 2, cli.stderr);
   const response = JSON.parse(cli.stdout) as { issues: Array<{ code: string; path: string[] }> };
   strictEqual(response.issues[0]?.code, "invalid_snapshot");

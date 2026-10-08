@@ -10,7 +10,10 @@ Priorities section of `backlog.md`.
 ## Commands
 
 ```bash
-npm run check                                   # the gate: tsc --noEmit + all tests
+npm run check:changed                           # the usual gate: tsc + the tests the change can reach
+npm run check                                   # tsc + every test, refreshing .test-map.json
+npm run test:changed -- --list                  # which tests a change selects, and why
+npm run test:changed -- --list --paths src/engine/verbs/pour.ts   # what a change to a file would run
 npm run typecheck
 npm test                                        # globs tests/**/*.test.ts; don't append a path
 node --import tsx --test tests/query.test.ts    # one file
@@ -21,6 +24,15 @@ npm run bench                                   # 10k store commands; ms/cmd for
 npm run bench:scale                             # 500 entities, 20 rooms: ms/cmd and a pipeline/validate/rest split
 npm run bench:reads                             # cost of since/observe/query/trace as the log grows to 10k
 ```
+
+`scripts/test-select.ts` picks tests by `.test-map.json` (gitignored, written by `npm run check` or
+`npm run test:map`): the project files each test file ran under V8 coverage, beyond what loading
+every module runs. A change selects the test files that ran a changed file, a changed test file, a
+test naming a changed `scenarios/`/`docs/` path, or one whose `// test-select: reads <glob>` line
+matches (`fields`, `senses`, `catalog` read source and docs as text). Templates, `package.json`,
+`tsconfig.json` or no map run everything; files no test reads run nothing. The diff is taken from
+the commit the map was built at, so a stale map selects more, never less. Tests call the CLI in
+process (`tests/cli-run.ts`, `runCli` in `src/cli/main.ts`); `cliProcess` and `store-lock` spawn.
 
 There's no lint step and no build output (`noEmit`; everything runs through `tsx`). Imports use `.js`
 suffixes (NodeNext).

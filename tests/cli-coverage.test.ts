@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli } from "./cli-run.js";
 import { createWorld, memoryWorld, openWorld, WorldError, type Scenario } from "../src/api.js";
 import { CoverageSchema, ResponseSchema } from "../src/contract.js";
 import { loadTemplates } from "../src/templates.js";
@@ -16,11 +17,7 @@ const innScenario = fileURLToPath(new URL("../scenarios/inn.json", import.meta.u
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
 function runCli(input?: string, args: string[] = []) {
-  return spawnSync(process.execPath, ["--import", "tsx", cliPath, ...args], {
-    cwd: root,
-    encoding: "utf8",
-    ...(input !== undefined && { input }),
-  });
+  return cli(input, args);
 }
 
 function temporaryDirectory(t: { after(callback: () => void): void }): string {

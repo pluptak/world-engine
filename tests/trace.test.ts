@@ -3,6 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import { fieldEventId, traceChain, traceQuery } from "../src/engine/trace.js";
 import { WorldError } from "../src/errors.js";
 import { createWorld, memoryWorld } from "../src/index.js";
@@ -186,11 +187,7 @@ test("CLI trace answers event_id and entity/field", async (t) => {
   const brokenId = pushed.events.find((e) => e.type === "broken")?.event_id;
   ok(brokenId);
 
-  const byEvent = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({ op: "trace", world: dir, query: { event_id: brokenId } }),
-  });
+  const byEvent = cliRequest(JSON.stringify({ op: "trace", world: dir, query: { event_id: brokenId } }));
   strictEqual(byEvent.status, 0, byEvent.stderr);
   const parsedEvent = TraceResponseSchema.parse(JSON.parse(byEvent.stdout));
   deepStrictEqual(
@@ -198,11 +195,7 @@ test("CLI trace answers event_id and entity/field", async (t) => {
     ["push", "moved", "collided", "displaced", "dropped", "broken"],
   );
 
-  const byField = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({ op: "trace", world: dir, query: { entity: "e1", field: "residue" } }),
-  });
+  const byField = cliRequest(JSON.stringify({ op: "trace", world: dir, query: { entity: "e1", field: "residue" } }));
   strictEqual(byField.status, 0, byField.stderr);
   const parsedField = TraceResponseSchema.parse(JSON.parse(byField.stdout));
   deepStrictEqual(
@@ -218,11 +211,7 @@ test("CLI trace rejects a missing query as invalid", async (t) => {
   const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
   const dir = join(tempDir(t), "cli-invalid");
   createWorld(dir, [...bottleScenario]);
-  const bad = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({ op: "trace", world: dir }),
-  });
+  const bad = cliRequest(JSON.stringify({ op: "trace", world: dir }));
   strictEqual(bad.status, 2);
   ok(/"status":"invalid"/.test(bad.stdout));
 });

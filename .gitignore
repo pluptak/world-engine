@@ -2,3 +2,4 @@ node_modules/
 data/
 docs/superpowers/
 .superpowers/
+.test-map.json

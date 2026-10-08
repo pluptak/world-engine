@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import {
   createWorld,
   memoryWorld,
@@ -145,11 +146,7 @@ test("the CLI answers since", (t) => {
   const taken = world.command(chain[0]!);
   strictEqual(taken.status, "ok");
 
-  const cli = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({ op: "since", world: dir, version: 0 }),
-  });
+  const cli = cliRequest(JSON.stringify({ op: "since", world: dir, version: 0 }));
   strictEqual(cli.status, 0, cli.stderr);
   const parsed = SinceResponseSchema.parse(JSON.parse(cli.stdout));
   deepStrictEqual(parsed.events, taken.events);

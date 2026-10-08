@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import { CommandResponseSchema, InspectResponseSchema } from "../src/contract.js";
 import { canonicalJson, createWorld, WorldError, type Coverage, type Id, type Scenario, type World } from "../src/index.js";
 import { defaultCoverage } from "../src/model.js";
@@ -148,11 +149,7 @@ test("a command can bring back what its actor sensed of it, refused or not", (t)
 test("the CLI carries the observation and answers inspect", (t) => {
   const { dir, id } = open(t, "workshop");
   const cli = (request: unknown): unknown => {
-    const run = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-      cwd: root,
-      encoding: "utf8",
-      input: JSON.stringify(request),
-    });
+    const run = cliRequest(JSON.stringify(request));
     strictEqual(run.status, 0, run.stderr);
     return JSON.parse(run.stdout) as unknown;
   };

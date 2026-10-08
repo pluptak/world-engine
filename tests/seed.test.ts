@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli } from "./cli-run.js";
 import { canonicalJson, createWorld, memoryWorld, openWorld, WORLD_AUTHOR, type Id, type Result, type World } from "../src/index.js";
 import { nextRandom } from "../src/engine/rng.js";
 import { validateSnapshot } from "../src/engine/validate.js";
@@ -159,8 +160,7 @@ test("a scenario file may carry a seed, and init gives the world its dice", (t) 
   const root = mkdtempSync(join(tmpdir(), "world-engine-seed-cli-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
-  const run = (args: string[], input?: string) =>
-    spawnSync(process.execPath, ["--import", "tsx", cliPath, ...args], { encoding: "utf8", ...(input === undefined ? {} : { input }) });
+  const run = (args: string[], input?: string) => cli(input, args);
   const file = join(root, "seeded.json");
   writeFileSync(file, JSON.stringify({ seed: 123, entities: [{ id: "tent", template: "room", overrides: { name: "tent" } }] }));
   const made = run(["init", join(root, "w1"), file]);

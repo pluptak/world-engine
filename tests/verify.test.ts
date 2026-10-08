@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import { VerifyResponseSchema } from "../src/contract.js";
 import {
   canonicalJson,
@@ -136,11 +137,7 @@ test("a world after a mixed run verifies against its own log, past a checkpoint"
   strictEqual(world.snapshot().version, 2 + WAITS);
   // A new handle says the same, and so does the CLI, which answers with the schema's own shape.
   deepStrictEqual(openWorld(dir).verify(), verified);
-  const run = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({ op: "verify", world: dir }),
-  });
+  const run = cliRequest(JSON.stringify({ op: "verify", world: dir }));
   strictEqual(run.status, 0, run.stderr);
   deepStrictEqual(VerifyResponseSchema.parse(JSON.parse(run.stdout)), verified);
 });
@@ -336,11 +333,7 @@ test("the CLI names a divergence the way the library does, and an unknown world 
   lines[at] = lines[at]!.replace('"status":"refused"', '"status":"ok"');
   write(dir, "log.jsonl", withLines(lines));
   const ask = (world: string) =>
-    spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-      cwd: root,
-      encoding: "utf8",
-      input: JSON.stringify({ op: "verify", world }),
-    });
+    cliRequest(JSON.stringify({ op: "verify", world }));
   const run = ask(dir);
   strictEqual(run.status, 0, run.stderr);
   deepStrictEqual(VerifyResponseSchema.parse(JSON.parse(run.stdout)), {

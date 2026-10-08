@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli } from "./cli-run.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -12,11 +13,7 @@ const bottleScenario = fileURLToPath(new URL("../scenarios/bottle.json", import.
 const handScenario = fileURLToPath(new URL("../scenarios/hand.json", import.meta.url));
 
 function runCli(input?: string, args: string[] = []) {
-  return spawnSync(process.execPath, ["--import", "tsx", cliPath, ...args], {
-    cwd: root,
-    encoding: "utf8",
-    ...(input !== undefined && { input }),
-  });
+  return cli(input, args);
 }
 
 function tempRoot(t: { after(callback: () => void): void }): string {

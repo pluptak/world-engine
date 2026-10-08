@@ -40,20 +40,26 @@ function errorIssues(error: unknown): unknown[] {
   return [issue(errorCode(error)), ...rules];
 }
 
-function writeResponse(response: unknown): void {
+// What one run of the CLI answers: the text it writes to stdout and its exit code.
+export interface CliOutput {
+  stdout: string;
+  status: number;
+}
+
+function writeResponse(out: CliOutput, response: unknown): void {
   const parsed = ResponseSchema.safeParse(response);
   if (!parsed.success) {
     const failure = {
       status: "invalid",
       issues: [issue("invalid_response")],
     };
-    process.stdout.write(`${canonicalJson(ValidationFailureSchema.parse(failure))}\n`);
-    process.exitCode = 2;
+    out.stdout += `${canonicalJson(ValidationFailureSchema.parse(failure))}\n`;
+    out.status = 2;
     return;
   }
-  process.stdout.write(`${canonicalJson(parsed.data)}\n`);
+  out.stdout += `${canonicalJson(parsed.data)}\n`;
   if ("status" in parsed.data && parsed.data.status === "invalid") {
-    process.exitCode = 2;
+    out.status = 2;
   }
 }
 
@@ -65,25 +71,25 @@ function parseJson(text: string): { success: true; value: unknown } | { success:
   }
 }
 
-function initializeWorld(dir: string, scenarioPath: string, coveragePath?: string): void {
+function initializeWorld(out: CliOutput, dir: string, scenarioPath: string, coveragePath?: string): void {
   let scenarioText: string;
   try {
     scenarioText = readFileSync(scenarioPath, "utf8");
   } catch {
-    writeResponse({ status: "invalid", issues: [issue("no_such_scenario")] });
+    writeResponse(out, { status: "invalid", issues: [issue("no_such_scenario")] });
     return;
   }
 
   const parsedJson = parseJson(scenarioText);
   if (!parsedJson.success) {
-    writeResponse({ status: "invalid", issues: [issue("invalid_scenario_json")] });
+    writeResponse(out, { status: "invalid", issues: [issue("invalid_scenario_json")] });
     return;
   }
   const parsedScenario = Array.isArray(parsedJson.value)
     ? ScenarioSchema.safeParse(parsedJson.value)
     : SeededScenarioSchema.safeParse(parsedJson.value);
   if (!parsedScenario.success) {
-    writeResponse({ status: "invalid", issues: parsedScenario.error.issues });
+    writeResponse(out, { status: "invalid", issues: parsedScenario.error.issues });
     return;
   }
   const entities = Array.isArray(parsedScenario.data) ? parsedScenario.data : parsedScenario.data.entities;
@@ -97,17 +103,17 @@ function initializeWorld(dir: string, scenarioPath: string, coveragePath?: strin
     try {
       coverageText = readFileSync(coveragePath, "utf8");
     } catch {
-      writeResponse({ status: "invalid", issues: [issue("no_such_coverage")] });
+      writeResponse(out, { status: "invalid", issues: [issue("no_such_coverage")] });
       return;
     }
     const parsedCoverageJson = parseJson(coverageText);
     if (!parsedCoverageJson.success) {
-      writeResponse({ status: "invalid", issues: [issue("invalid_coverage_json")] });
+      writeResponse(out, { status: "invalid", issues: [issue("invalid_coverage_json")] });
       return;
     }
     const parsedCoverage = CoverageSchema.safeParse(parsedCoverageJson.value);
     if (!parsedCoverage.success) {
-      writeResponse({
+      writeResponse(out, {
         status: "invalid",
         issues: [issue("invalid_coverage"), ...parsedCoverage.error.issues],
       });
@@ -120,7 +126,7 @@ function initializeWorld(dir: string, scenarioPath: string, coveragePath?: strin
     ...(coverage === undefined ? {} : { coverage }),
     ...(seed === undefined ? {} : { seed }),
   });
-  process.stdout.write(`${canonicalJson({ status: "ok", world: dir, snapshot_version: world.snapshot().version })}\n`);
+  out.stdout += `${canonicalJson({ status: "ok", world: dir, snapshot_version: world.snapshot().version })}\n`;
 }
 
 // A spawned entity arrives as one delta on the field "entity"; the contract also reports the relation
@@ -254,42 +260,48 @@ async function stdinText(): Promise<string> {
   return text;
 }
 
-function invalidFromIssues(issues: unknown): void {
-  writeResponse({ status: "invalid", issues });
+function invalidFromIssues(out: CliOutput, issues: unknown): void {
+  writeResponse(out, { status: "invalid", issues });
+}
+
+// One run of the CLI in process: `init` from its arguments, any other request from `input`. The
+// process entry below only feeds it stdin and writes out what it returns, so tests call it directly.
+export function runCli(argv: readonly string[], input: string): CliOutput {
+  const out: CliOutput = { stdout: "", status: 0 };
+  try {
+    if (argv[0] === "init") {
+      if (argv.length !== 3 && argv.length !== 4) {
+        invalidFromIssues(out, [issue("invalid_init_args")]);
+        return out;
+      }
+      initializeWorld(out, argv[1]!, argv[2]!, argv[3]);
+      return out;
+    }
+
+    const parsedJson = parseJson(input);
+    if (!parsedJson.success) {
+      invalidFromIssues(out, [issue("invalid_json")]);
+      return out;
+    }
+    const parsedRequest = RequestSchema.safeParse(parsedJson.value);
+    if (!parsedRequest.success) {
+      invalidFromIssues(out, parsedRequest.error.issues);
+      return out;
+    }
+    writeResponse(out, dispatch(parsedRequest.data));
+  } catch (error) {
+    invalidFromIssues(out, errorIssues(error));
+  }
+  return out;
 }
 
 async function main(argv: string[]): Promise<void> {
-  if (argv[0] === "init") {
-    if (argv.length !== 3 && argv.length !== 4) {
-      invalidFromIssues([issue("invalid_init_args")]);
-      return;
-    }
-    initializeWorld(argv[1]!, argv[2]!, argv[3]);
-    return;
-  }
-
-  const parsedJson = parseJson(await stdinText());
-  if (!parsedJson.success) {
-    invalidFromIssues([issue("invalid_json")]);
-    return;
-  }
-  const parsedRequest = RequestSchema.safeParse(parsedJson.value);
-  if (!parsedRequest.success) {
-    invalidFromIssues(parsedRequest.error.issues);
-    return;
-  }
-
-  try {
-    const response = dispatch(parsedRequest.data);
-    writeResponse(response);
-  } catch (error) {
-    invalidFromIssues(errorIssues(error));
-  }
+  const out = runCli(argv, argv[0] === "init" ? "" : await stdinText());
+  process.stdout.write(out.stdout);
+  process.exitCode = out.status;
 }
 
 const invokedPath = process.argv[1];
 if (invokedPath !== undefined && pathToFileURL(resolve(invokedPath)).href === import.meta.url) {
-  void main(process.argv.slice(2)).catch((error: unknown) => {
-    invalidFromIssues(errorIssues(error));
-  });
+  void main(process.argv.slice(2));
 }

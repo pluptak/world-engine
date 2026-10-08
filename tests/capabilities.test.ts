@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { cli as cliRequest } from "./cli-run.js";
 import { CapabilitiesResponseSchema } from "../src/contract.js";
 import {
   createWorld,
@@ -87,11 +88,7 @@ test("the capability list is frozen, and the CLI answers it", () => {
   throws(() => {
     (ENGINE_CAPABILITIES.senses as unknown as string[]).push("taste");
   }, TypeError);
-  const cli = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
-    cwd: root,
-    encoding: "utf8",
-    input: JSON.stringify({ op: "capabilities" }),
-  });
+  const cli = cliRequest(JSON.stringify({ op: "capabilities" }));
   strictEqual(cli.status, 0, cli.stderr);
   deepStrictEqual(CapabilitiesResponseSchema.parse(JSON.parse(cli.stdout)), structuredClone(ENGINE_CAPABILITIES));
 });
