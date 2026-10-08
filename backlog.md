@@ -53,27 +53,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### A stored world verifies against its own log
-
-A deterministic store should be able to prove it: replay the log from `initial.json` and see that the files agree.
-`load` replays only when the head and the files disagree, and `upgradeTemplates` proves a template change that way,
-but a caller cannot check a world after an engine change, a restore or a hand edit.
-
-- **API:** `World.verify()` on a store world answers `{ ok: true, entries, version }` or
-  `{ ok: false, divergence: { file, line, code } }`, the first difference between what the log replays to and what
-  is stored. `file` is `snapshot.json`, `events.jsonl`, `deltas.jsonl` or `log.jsonl`; `line` is 1-based (0 for the
-  snapshot); `code` is `differs`, `missing`, `extra`, or `status_differs` (a log entry whose re-decided status or
-  reason code is not the recorded one). It reuses `replayFold` in `src/store/file-store.ts`, extended to compare each
-  entry's recorded outcome, and compares canonical bytes. It writes nothing and holds the world's turn while it
-  reads, since a writer half done would read as a divergence. A memory world answers `history_unavailable`. The CLI's
-  `verify` op takes `world`; `VerifyResponseSchema` is in `src/contract.ts`.
-- **Tests** (`tests/verify.test.ts`): a world after a mixed run (accepted, refused, invalid and preempted commands,
-  edits, past a checkpoint at 256) verifies ok; one changed byte in `snapshot.json`, a deleted event line, an extra
-  delta line and a log line with its status changed each report their divergence; a changed template set is
-  `templates_changed` as elsewhere; no file's bytes change.
-- **Docs:** `docs/persistence.md`, `docs/api.md`, `CLAUDE.md` (the store sentence).
-- **Depends on:** nothing.
-
 ### The CLI describes its requests and responses
 
 `verbs` and `capabilities` tell a caller what the engine can do; the shape of the CLI's own JSON is known only from

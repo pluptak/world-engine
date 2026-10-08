@@ -49,7 +49,7 @@ const snapshots = {
   templates: "templates.json",
   ids: "ids.json",
   format: "format.json",
-};
+} as const;
 
 // Bumped when a stored file's shape changes; a world written under another number is refused,
 // never read as if it matched.
@@ -961,6 +961,119 @@ export function replayFold(dir: string, registry: TemplateRegistry): Fold {
   }
 
   return { snapshot, events, deltas };
+}
+
+// The first place a stored world disagrees with its own log. `file` is the file that disagrees and
+// `line` its 1-based line (0 for snapshot.json, which has none); `code` says how: `differs` (the bytes
+// are not the ones the log makes), `missing` (the file ends before the log's line), `extra` (it goes on
+// past it), or `status_differs` (a log line whose command, decided again, comes out otherwise).
+export interface Divergence {
+  file: "snapshot.json" | "events.jsonl" | "deltas.jsonl" | "log.jsonl";
+  line: number;
+  code: "differs" | "missing" | "extra" | "status_differs";
+}
+
+export type Verification =
+  | { ok: true; entries: number; version: number }
+  | { ok: false; divergence: Divergence };
+
+// The complete lines of a file's text, and what follows the last newline: nothing, unless a write
+// was cut off or the file was edited.
+function storedLines(text: string | null): { lines: string[]; tail: string } {
+  const lines = (text ?? "").split("\n");
+  const tail = lines.pop() ?? "";
+  return { lines, tail };
+}
+
+// A file against the lines the log makes of it, byte for byte.
+function divergenceOf(file: Divergence["file"], expected: readonly string[], text: string | null): Divergence | null {
+  const { lines, tail } = storedLines(text);
+  for (let index = 0; index < Math.min(lines.length, expected.length); index += 1) {
+    if (lines[index] !== expected[index]) {
+      return { file, line: index + 1, code: "differs" };
+    }
+  }
+  if (lines.length < expected.length) {
+    return { file, line: lines.length + 1, code: tail === "" ? "missing" : "differs" };
+  }
+  if (lines.length > expected.length || tail !== "") {
+    return { file, line: expected.length + 1, code: "extra" };
+  }
+  return null;
+}
+
+function textOrNull(path: string): string | null {
+  return existsSync(path) ? readFileSync(path, "utf8") : null;
+}
+
+// Replay the log from initial.json, deciding every line again as submit() did, and compare what that
+// makes with what is stored: the log's own lines first, then events.jsonl, deltas.jsonl and
+// snapshot.json. It writes nothing, not even the repairs load() would make (they would hide what it
+// is asked to find), and holds the turn while it reads, since a writer half done reads as a divergence.
+// Head and checkpoints are caches of these files and are not compared.
+export function verify(dir: string, registry?: TemplateRegistry): Verification {
+  return withWorldLock(dir, () => verifyLocked(dir, activeRegistry(dir, registry)));
+}
+
+function verifyLocked(dir: string, templates: TemplateRegistry): Verification {
+  const initial = readSnapshot(join(dir, snapshots.initial));
+  assertTemplates(initial, templates);
+  const log = storedLines(readFileSync(join(dir, snapshots.log), "utf8"));
+  const diverges = (file: Divergence["file"], line: number, code: Divergence["code"]): Verification => ({
+    ok: false,
+    divergence: { file, line, code },
+  });
+
+  const entries: LogEntry[] = [];
+  for (const [index, text] of log.lines.entries()) {
+    try {
+      entries.push(parseLogLine(text, index + 1));
+    } catch {
+      return diverges("log.jsonl", index + 1, "differs");
+    }
+  }
+
+  // A command that raced is judged against the version it was based on, so those snapshots are kept
+  // as the replay passes them; the rest are let go.
+  const based = new Set(entries.map((entry) => entry.based_on_version));
+  const kept = new Map<number, Snapshot>();
+  const events: string[] = [];
+  const deltas: string[] = [];
+  let snapshot = initial;
+  for (const [index, entry] of entries.entries()) {
+    if (based.has(snapshot.version)) {
+      kept.set(snapshot.version, snapshot);
+    }
+    const result = resolveSubmission(snapshot, templates, entry.command, entry.based_on_version, (version) => kept.get(version) ?? null);
+    const decided = attemptOf(entry.command, entry.based_on_version, snapshot.version, result);
+    if (canonicalJson(decided) !== log.lines[index]) {
+      const same = decided.status === entry.status && decided.reason_code === entry.reason_code;
+      return diverges("log.jsonl", index + 1, same ? "differs" : "status_differs");
+    }
+    events.push(...result.events.map((event) => canonicalJson(event)));
+    if (result.status === "ok") {
+      deltas.push(...result.deltas.map((delta) => canonicalJson(delta)));
+      snapshot = result.snapshot;
+    }
+  }
+  if (log.tail !== "") {
+    return diverges("log.jsonl", log.lines.length + 1, "differs");
+  }
+
+  for (const [file, expected] of [
+    [snapshots.events, events],
+    [snapshots.deltas, deltas],
+  ] as const) {
+    const found = divergenceOf(file, expected, textOrNull(join(dir, file)));
+    if (found !== null) {
+      return { ok: false, divergence: found };
+    }
+  }
+  const stored = textOrNull(join(dir, snapshots.current));
+  if (stored !== canonicalJson(snapshot)) {
+    return diverges("snapshot.json", 0, stored === null ? "missing" : "differs");
+  }
+  return { ok: true, entries: entries.length, version: snapshot.version };
 }
 
 export function replayWithEvents(dir: string, registry?: TemplateRegistry): Fold {

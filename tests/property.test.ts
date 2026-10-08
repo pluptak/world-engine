@@ -15,6 +15,7 @@ import {
   createWorld,
   memoryWorld,
   openWorld,
+  verifyWorld,
   WORLD_AUTHOR,
   type Command,
   type Snapshot,
@@ -468,6 +469,8 @@ test("store subset matches memory and the event file", (t) => {
       canonicalJson(replayWithEvents(dir).events),
     );
     strictEqual(canonicalJson(openWorld(dir).snapshot()), fromStore.snapshot);
+    // Whatever the run did, accepted or not, the log replays to the files it left.
+    deepStrictEqual(verifyWorld(dir), { ok: true, entries: 30, version: openWorld(dir).snapshot().version });
   }
 });
 

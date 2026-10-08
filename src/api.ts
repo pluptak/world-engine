@@ -43,6 +43,8 @@ import {
   since as foldSince,
   submit,
   trace as foldTrace,
+  verify as verifyStore,
+  type Verification,
   withWorldLock,
   writeWorldTemplates,
 } from "./store/file-store.js";
@@ -110,6 +112,10 @@ export interface World {
   attempts(version: number): Attempt[];
   trace(query: TraceQuery): TraceResult;
   upgradeTemplates(registry?: TemplateRegistry): Snapshot;
+  // A store world replays its log from initial.json and compares what that makes with the files:
+  // the first place they differ, or the entries and version they agree on. Writes nothing. A memory
+  // world keeps no log to replay and throws `history_unavailable`.
+  verify(): Verification;
   query(query: Query): Answer;
   // What one observer could sense now, and, with `since`, which events after that version it sensed.
   observe(observer: Id, options?: ObserveOptions): Projection;
@@ -383,6 +389,7 @@ function storeWorld(
         return load(dir, active);
       });
     },
+    verify: () => verifyStore(dir, active),
     query: (request) => {
       // An event-form perceive reads the world at either end of that event's command: perceptible
       // if perceptible before or after it. The entity form and unknown events read the present.
@@ -440,6 +447,13 @@ export function createWorld(
 
 export function openWorld(dir: string): World {
   return storeWorld(dir, readWorldTemplates(dir), readWorldIds(dir));
+}
+
+// `World.verify()` for a world that is not open. Opening settles a world whose files disagree, which
+// puts right the very differences verify looks for, and refuses one it cannot settle; this reads the
+// files as they are, with the set the world carries.
+export function verifyWorld(dir: string): Verification {
+  return verifyStore(dir);
 }
 
 // No directory, no log: what the caller hands in is the whole world, and its events are the ones its
@@ -556,6 +570,9 @@ export function memoryWorld(
       history.set(current.version, current);
       return current;
     },
+    verify: () => {
+      throw new WorldError("history_unavailable", "A memory world keeps no log to replay");
+    },
     trace: (query) => {
       const allDeltas: Delta[] = [];
       for (const record of applied) {
@@ -656,6 +673,7 @@ export type { Answer, Query } from "./engine/query.js";
 export type { HeardFrom, Inspection, ObservedEntity, ObservedEvent, Projection } from "./engine/projection.js";
 export type { BlockedOption, Options, OptionsRequest, ReadyOption } from "./options.js";
 export type { TraceQuery } from "./engine/trace.js";
+export type { Divergence, Verification } from "./store/file-store.js";
 export type {
   Coverage,
   Delta,

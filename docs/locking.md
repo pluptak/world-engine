@@ -9,7 +9,7 @@ three of the four to `EPERM`, and the log held 57 accepted commands at 54 versio
 which is atomic across processes, and holding `{ pid, since_ms }`. That clock reading only judges
 the lock's age and never reaches the world. It is held by `submit` around the whole decision and
 its writes, by `edit` around its default id (the count of logged submissions) and its submission,
-by `upgradeTemplates` around its proof and its write, and by the repair in `load`. Within a
+by `upgradeTemplates` around its proof and its write, by `verify` around its whole replay, and by the repair in `load`. Within a
 process it is re-entrant, since `submit` calls `load`. A memory world has no files and no turn.
 
 **Reads** take none while the files agree. `load` trusts the snapshot when the head names the

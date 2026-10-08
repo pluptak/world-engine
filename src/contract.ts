@@ -215,6 +215,10 @@ export const RequestSchema = z.discriminatedUnion("op", [
     version: z.number().int(),
   }).strict(),
   z.object({
+    op: z.literal("verify"),
+    world: z.string().min(1),
+  }).strict(),
+  z.object({
     op: z.literal("trace"),
     world: z.string().min(1),
     query: z.union([
@@ -513,6 +517,22 @@ export const AttemptsResponseSchema = z.object({
   }).strict()),
 }).strict();
 
+export const VerifyResponseSchema = z.union([
+  z.object({
+    ok: z.literal(true),
+    entries: z.number().int().nonnegative(),
+    version: z.number().int().nonnegative(),
+  }).strict(),
+  z.object({
+    ok: z.literal(false),
+    divergence: z.object({
+      file: z.enum(["snapshot.json", "events.jsonl", "deltas.jsonl", "log.jsonl"]),
+      line: z.number().int().nonnegative(),
+      code: z.enum(["differs", "missing", "extra", "status_differs"]),
+    }).strict(),
+  }).strict(),
+]);
+
 export const TraceQuerySchema = z.union([
   z.object({ event_id: IdSchema }).strict(),
   z.object({ entity: IdSchema, field: z.string().min(1) }).strict(),
@@ -556,6 +576,7 @@ export const ResponseSchema = z.union([
   ActorCommandResponseSchema,
   SinceResponseSchema,
   AttemptsResponseSchema,
+  VerifyResponseSchema,
   TraceResponseSchema,
   BeatResponseSchema,
   VerbsResponseSchema,

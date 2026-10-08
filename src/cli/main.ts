@@ -7,6 +7,7 @@ import {
   createWorld,
   openWorld,
   verbs,
+  verifyWorld,
   WorldError,
   type Coverage,
   type Delta,
@@ -192,6 +193,10 @@ function dispatch(request: Request): unknown {
   }
   if (request.op === "attempts") {
     return { attempts: openWorld(request.world).attempts(request.version) };
+  }
+  if (request.op === "verify") {
+    // Not through openWorld, which would settle the files before they were compared.
+    return verifyWorld(request.world);
   }
   if (request.op === "trace") {
     const world = openWorld(request.world);

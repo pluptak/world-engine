@@ -114,7 +114,10 @@ suffixes (NodeNext).
 checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the log bytes, `initial.json` and template set;
 `docs/persistence.md`). A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
-  surface as CLI issue codes.
+  surface as CLI issue codes. `verify` (`World.verify()`, or `verifyWorld(dir)` for a world not open, which
+  the CLI's `verify` op uses since opening settles the files) replays the log from `initial.json` and
+  names the first byte of `log.jsonl`, `events.jsonl`, `deltas.jsonl` or `snapshot.json` that differs
+  (`docs/persistence.md`).
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
   `command`/`edit`/`check`/`options`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`;
   `options` (`src/options.ts`) dry-runs every non-author verb against everything the actor can name
@@ -155,7 +158,7 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
   `check` | `options` | `since` | `attempts` | `query` | `observe` | `inspect` | `snapshot` | `verbs` |
-  `capabilities`, and the five `actor_*` ops of `docs/actor-view.md`, through `actorWorld`), calls one
+  `capabilities` | `verify`, and the five `actor_*` ops of `docs/actor-view.md`, through `actorWorld`), calls one
   `World` method, `verbCatalog` or returns `ENGINE_CAPABILITIES` (`src/engine/capabilities.ts`: the
   relations and senses the engine computes, which `validateSnapshot` holds coverage to), and
   validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`

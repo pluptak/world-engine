@@ -2,7 +2,7 @@
 
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)`, `openWorld(dir)`, and
 `memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `options`, `since`,
-`attempts`, `trace`, `beat`, `upgradeTemplates`, `query`, `observe` and `inspect`
+`attempts`, `trace`, `beat`, `upgradeTemplates`, `verify`, `query`, `observe` and `inspect`
 ([projection.md](projection.md)), `snapshot`, `entity`, `id` and `fork`. `verbs()` is the verb catalog and
 `ENGINE_CAPABILITIES` what the engine computes; the CLI answers both (`op` `verbs`, `capabilities`).
 Store worlds share a directory, so handles see each other; memory worlds hold their own. A missing
@@ -26,6 +26,13 @@ directory, a changed hash, or a bad version is a `WorldError` with a code.
   submission decided at a version or later, refused, invalid, unresolved and preempted ones
   included, with the command, its base, the version it was decided at, its status, reason code and
   data, and candidates; a dry run is not one. The CLI's `attempts` op answers it.
+- `verify()` replays a store world's log from `initial.json`, deciding every line again as `submit` did, and
+  compares what that makes with `log.jsonl`, `events.jsonl`, `deltas.jsonl` and `snapshot.json`, byte for
+  byte ([persistence.md](persistence.md)): `{ ok: true, entries, version }`, or `{ ok: false, divergence: {
+  file, line, code } }` for the first difference. It writes nothing. `verifyWorld(dir)` does the same for a
+  world that is not open, which is how a damaged one is checked, since `openWorld` settles the files first
+  and the CLI's `verify` op (`world`) goes that way. A memory world keeps no log and throws
+  `history_unavailable`.
 - `beat` runs commands in array order against one shared base, one log line each, each with its
   status, so a command an earlier one made fail is `preempted`.
 - `trace` follows `cause_id` root-first from an event, or from the last delta of an entity field,
