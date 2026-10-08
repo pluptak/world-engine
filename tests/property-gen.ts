@@ -261,22 +261,16 @@ export type VerbEntry = (context: GenContext, options?: { ticks?: number }) => C
 // missing. `wait` takes the tick count through `options` so an edit that has nothing to write can
 // still emit one without spending a draw.
 export const VERB_TABLE: Record<string, VerbEntry> = {
-  move: (context) =>
-    context.rand() < 0.5
-      ? {
-          command_id: context.commandId,
-          actor: context.actor,
-          verb: "move",
-          args: { to: { x: int(context.rand, -200, 200), y: int(context.rand, -200, 200) } },
-        }
-      : {
-          command_id: context.commandId,
-          actor: context.actor,
-          verb: "move",
-          args: {
-            location: context.rooms.length > 0 ? pick(context.rand, context.rooms) : "e999",
-          },
-        },
+  move: (context) => {
+    const draw = context.rand();
+    const args =
+      draw < 0.45
+        ? { to: { x: int(context.rand, -200, 200), y: int(context.rand, -200, 200) } }
+        : draw < 0.8
+          ? { location: context.rooms.length > 0 ? pick(context.rand, context.rooms) : "e999" }
+          : { through: doorways(context).length > 0 ? pick(context.rand, doorways(context)) : "e999" };
+    return { command_id: context.commandId, actor: context.actor, verb: "move", args };
+  },
   take: (context) => ({
     command_id: context.commandId,
     actor: context.actor,
@@ -701,6 +695,14 @@ function holderPartEdit(context: GenContext): Command | WorldEdit {
     };
   }
   return { kind: "place", target: context.target, contained_in: holder, pos: null, in_part: "elbow" };
+}
+
+// The doors in the world, the things a `move` can go `through`.
+function doorways(context: GenContext): string[] {
+  return context.ids.filter((id) => {
+    const props = context.snapshot.entities[id]?.props;
+    return typeof props?.from === "string" && typeof props.to === "string";
+  });
 }
 
 // A caller that already knows the tick count (an edit with nothing to write) spends no draw. Of the

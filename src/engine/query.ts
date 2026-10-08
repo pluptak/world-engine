@@ -3,7 +3,7 @@ import { canonicalJson } from "./canonical.js";
 import { effectivePos } from "./geometry.js";
 import type { Entity, Id, Perceivers, Pos, Snapshot, Tri, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
-import { closedEnclosure, inReach, isAgent } from "./verbs/address.js";
+import { closedEnclosure, inReach, isAgent, reachedAsDoor } from "./verbs/address.js";
 import { isAbstract } from "./resolve.js";
 import { effectivePart } from "./parts.js";
 import { computesSense } from "./capabilities.js";
@@ -705,11 +705,7 @@ export function gropable(snapshot: Snapshot, actorId: Id, entityId: Id): boolean
   if (entity.concealed_by !== null || closedEnclosure(snapshot, entityId) !== null) {
     return false;
   }
-  const here = actor.location;
-  const doorway = typeof entity.props.from === "string" && typeof entity.props.to === "string";
-  return doorway && entity.pos === null
-    ? here !== null && (entity.props.from === here || entity.props.to === here)
-    : inReach(snapshot, actorId, entityId);
+  return reachedAsDoor(snapshot, actorId, entity) || inReach(snapshot, actorId, entityId);
 }
 
 // Who could have sensed each event: every agent, every covered sense, true before or after the

@@ -41,25 +41,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### From the far side of a door
-
-`docs/limits-actor.md`: a door with a position stands in one room, so from the room it leads to nobody sees,
-gropes for or reaches it, and nothing names the room behind it: bob in the dark yard cannot come in through
-the door the guard opened. An unpositioned door is already reached from either room.
-
-- **Reach:** in `gropable` (`src/engine/query.ts`) and openable's `inReach` (`src/engine/verbs/openable.ts`), a
-  doorway whose `from` or `to` is the actor's room but which stands in the other one is reached as an
-  unpositioned door is, from anywhere in the actor's room. In its own room it keeps its position.
-- **Walking:** `move` takes `args.through`, an address resolved like a target (a name works), naming a door of
-  the actor's room; the agent lands in the room on its other side, checked where it lands as a move by
-  `location` is. A shut door is `no_open_door`; anything but a door of its room is `unresolved` or
-  `invalid_location` as `location` answers. `args.location` stays.
-- **Tests:** bob in the dark yard names, opens and closes the gatehouse door and walks in `through` it;
-  `tests/scenario-night.test.ts` step E becomes bob coming in, and the limits line goes. A door of a third room
-  is neither reached nor walked through.
-- **Docs:** `docs/verbs-openables.md`, `docs/verbs-moving.md`, `docs/perception.md` (the door in `addressable`).
-- **Depends on:** nothing.
-
 ### An inspection gives the footprint
 
 `docs/limits-actor.md`: the view gives positions, not footprints, so the guard finds a free spot by the door by

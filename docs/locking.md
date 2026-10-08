@@ -25,7 +25,8 @@ nothing.
 
 **A crash** leaves the lock behind. One whose process is gone, or that is over a minute old, is
 renamed away (of two waiters judging it only one rename finds it) and the temporaries the dead
-writer left are swept; what it left half done is settled by `load`'s repair, since the log is the
+writer left are swept, those named for a pid that is gone or for the holder put out, never a live
+process's, since the sweeper does not yet hold the turn; what it left half done is settled by `load`'s repair, since the log is the
 truth ([persistence.md](persistence.md)). A lock with no owner written, its maker having died
 between creating and filling it, is judged by the file's age.
 

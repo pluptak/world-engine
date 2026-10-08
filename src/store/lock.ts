@@ -77,9 +77,19 @@ function judge(path: string): "gone" | "stale" | "live" {
   }
 }
 
-// What a crashed writer leaves besides the lock: temporaries named for its pid. Nobody else is
-// writing, having just taken the turn.
-function sweepTemporaries(dir: string): void {
+// The pid a leftover file is named for: a writer's temporary (`<name>.<pid>.tmp`) or a taker's grave
+// (`lock.stale-<pid>`). 0 is an old shared `.tmp` no live writer names, null is anything else.
+function leftBy(name: string): number | null {
+  const temporary = /.(d+).tmp$/.exec(name);
+  const grave = new RegExp(`^${LOCK_FILE}\.stale-(\d+)$`).exec(name);
+  const pid = temporary?.[1] ?? grave?.[1];
+  return pid !== undefined ? Number(pid) : name.endsWith(".tmp") ? 0 : null;
+}
+
+// What a crashed writer leaves besides the lock: temporaries named for its pid, and graves of takers
+// that died. The sweep runs before the sweeper has the turn, so it takes only what no live process
+// could be using: a file of a dead pid, or of the `evicted` holder, whose turn has just been ended.
+function sweepLeftovers(dir: string, evicted: number | null): void {
   for (const folder of [dir, join(dir, "checkpoints")]) {
     let names: string[] = [];
     try {
@@ -87,7 +97,11 @@ function sweepTemporaries(dir: string): void {
     } catch {
       continue;
     }
-    for (const name of names.filter((entry) => entry.endsWith(".tmp"))) {
+    for (const name of names) {
+      const pid = leftBy(name);
+      if (pid === null || (pid > 0 && pid !== evicted && alive(pid))) {
+        continue;
+      }
       try {
         unlinkSync(join(folder, name));
       } catch {
@@ -119,12 +133,15 @@ function takeOver(path: string): boolean {
     }
     return false;
   }
+  let evicted: number | null = null;
   try {
-    unlinkSync(grave);
+    evicted = readOwner(grave)?.pid ?? null;
   } catch {
-    // Gone is gone.
+    // Already gone.
   }
-  sweepTemporaries(dirname(path));
+  // Another waiter's judging may still have the grave open, which Windows reports as a failed removal.
+  release(grave);
+  sweepLeftovers(dirname(path), evicted);
   return true;
 }
 

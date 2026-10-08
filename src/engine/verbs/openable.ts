@@ -2,7 +2,7 @@ import { capacities } from "../capacity.js";
 import type { Entity, Id } from "../../model.js";
 import type { CapacityRequirement, CommandContext, PreconditionResult, TargetAddress, TransitionContext, Verb } from "../command.js";
 import { insufficientCode, meetsRequirements, unmetRequirement } from "../carry.js";
-import { withinReach, reachData } from "./address.js";
+import { reachedAsDoor, withinReach, reachData } from "./address.js";
 import { pushOccupantsAside } from "./gate.js";
 import { cancel, schedule } from "../schedule.js";
 
@@ -46,17 +46,15 @@ type Target =
   | { status: "resolved"; entity: Entity }
   | { status: "failed"; result: PreconditionResult };
 
-// A door stands in the boundary between two rooms and carries no position of its own, so it is in
-// reach from either room it joins; anything else is reached the ordinary way.
+// A door is in reach from anywhere in either room it joins when it has no position of its own, or
+// when it stands in the other room (`reachedAsDoor`); anything else is reached the ordinary way.
 function inReach(context: CommandContext, entity: Entity): boolean {
-  if (entity.pos !== null) {
-    return withinReach(context, entity.id);
+  if (reachedAsDoor(context.snapshot, context.actor.id, entity)) {
+    return true;
   }
-  return (
-    entity.location === context.actor.location ||
-    entity.props.from === context.actor.location ||
-    entity.props.to === context.actor.location
-  );
+  return entity.pos !== null
+    ? withinReach(context, entity.id)
+    : entity.location === context.actor.location;
 }
 
 function carriedKeyFor(context: CommandContext, targetId: Id): boolean {

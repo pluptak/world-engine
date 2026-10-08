@@ -3,7 +3,11 @@
 An agent moving itself, and moving what stands in a room. Walking rules are in
 [walking.md](walking.md), footprints and what stops a push in [occupancy.md](occupancy.md).
 
-- `move`: needs `moving`; `args.to` a position, `args.location` a room through an open door; refuses
+- `move`: needs `moving`; `args.to` a position, `args.location` a room through an open door, or `args.through`
+  a door of the agent's room, named like a target (`unresolved` or `ambiguous` as any name is), which takes it
+  to the room on the other side: a shut one is `no_open_door`, anything but a door of its room
+  `invalid_location`, and the landing is judged as for `location`. Exactly one of the three, else
+  `invalid_args`. It refuses
   `blocked` and `out_of_bounds` ([walking.md](walking.md)), and `carried` (naming the holder) for an
   agent held by another; emits `moved`, carrying what it holds, and uncovers what it or anything it
   carries was hiding. An agent standing on furniture steps down, checked only where it lands.

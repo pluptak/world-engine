@@ -5,7 +5,9 @@ A target that declares `openable` (a door, a gate, a chest) is opened, shut, loc
 - `open`: sets `open` on an `openable` target under an `opened` event, and with `closes_after` a
   close is scheduled ([schedule.md](schedule.md)); an open target is refused `already_open` (after reach,
   before `locked`), since it would change nothing, and `locked` is refused. A door joins two rooms
-  through its `from` and `to` props and is in reach and in view from either.
+  through its `from` and `to` props. Without a position it is in reach from anywhere in either room; with
+  one it keeps that position in the room it stands in, and from the room it leads to it is reached as an
+  unpositioned door is, so from the dark yard one names, opens and shuts the gatehouse door.
 - `close`: a target that is shut (or never opened) is refused `already_closed`; otherwise sets that prop false under `closed`, first moving what stands on the target's footprint
   aside, each under a `moved` caused by the `closed` ([schedule.md](schedule.md)); a shut container
   hides its chain, so `take` and `put` refuse `container_closed` and sight inside is `false`.

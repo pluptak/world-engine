@@ -111,22 +111,30 @@ const companion: Policy<{ asked: boolean }> = (turn) => {
   return { command: wait, memory: turn.memory };
 };
 
-// Bob, in the dark yard: a shout makes him answer in a whisper, once, and then he would come in, if
-// anything he senses named the room behind the door.
+// Bob, in the dark yard: a shout makes him answer in a whisper, once, and then he comes in. He sees
+// nothing, but the door the guard opened is among what he can name, and the one thing his options let
+// him shut is an open door; he walks through it, and steps aside once if the landing is taken.
 interface Visitor {
   answered: boolean;
+  aside: boolean;
+  crossed: boolean;
 }
 const visitor: Policy<Visitor> = (turn) => {
+  const { memory, last, options } = turn;
   const shouted = heardEvents(turn).some((event) => event.type === "say" && event.volume === "shout");
-  if (!turn.memory.answered && shouted) {
-    return { command: { verb: "say", args: { utterance: "friend", volume: "whisper" } }, memory: { answered: true } };
+  if (!memory.answered && shouted) {
+    return { command: { verb: "say", args: { utterance: "friend", volume: "whisper" } }, memory: { ...memory, answered: true } };
   }
-  const here = turn.view.entities.find((entity) => entity.id === turn.view.observer)?.facts?.location;
-  const elsewhere = turn.view.entities.find((entity) => entity.template === "room" && entity.id !== here);
-  if (turn.memory.answered && elsewhere !== undefined) {
-    return { command: { verb: "move", args: { location: elsewhere.id } }, memory: turn.memory };
+  const crossed = memory.crossed || (last?.command.args?.through !== undefined && last.result.status === "ok");
+  const door = options.ready.find((option) => option.verb === "close")?.target;
+  if (!memory.answered || crossed || door === undefined) {
+    return { command: wait, memory: { ...memory, crossed } };
   }
-  return { command: wait, memory: turn.memory };
+  const taken = last?.command.args?.through !== undefined && last.result.reason_code === "blocked";
+  if (taken && !memory.aside) {
+    return { command: { verb: "move", args: { to: { x: 150, y: 150 } } }, memory: { ...memory, aside: true } };
+  }
+  return { command: { verb: "move", args: { through: door } }, memory };
 };
 
 // A character as the loop drives it: its view, and a chooser that keeps the policy's memory to itself.
@@ -197,7 +205,7 @@ function play(t: { after(callback: () => void): void }, rounds: number): Night {
   const cast: Character[] = [
     character(actorWorld(world, ids.ann!), guard, { alert: false, spot: 0, shouted: false }),
     character(actorWorld(world, ids.cal!), companion, { asked: false }),
-    character(actorWorld(world, ids.bob!), visitor, { answered: false }),
+    character(actorWorld(world, ids.bob!), visitor, { answered: false, aside: false, crossed: false }),
   ];
   const sent: Record<Id, Sent[]> = {};
   const seen: Record<Id, number> = {};
@@ -226,7 +234,7 @@ function messages(night: Night, actor: Id): unknown[] {
 }
 
 test("the night plays out from inside: knock, lantern, door, challenge, answer", (t) => {
-  const night = play(t, 8);
+  const night = play(t, 10);
   const { ids, world } = night;
   const ann = night.sent[ids.ann!]!;
   const bob = night.sent[ids.bob!]!;
@@ -273,17 +281,20 @@ test("the night plays out from inside: knock, lantern, door, challenge, answer",
   deepStrictEqual([challenge?.utterance, challenge?.from, "entity" in (challenge ?? {})], ["who.goes.there", "next_door", false]);
   deepStrictEqual(bob[5]?.command.args, { utterance: "friend", volume: "whisper" });
 
-  // E. Bob would come in, and cannot say where: the door stands in the gatehouse, so from the dark yard
-  // he neither sees nor gropes for it, and nothing he was sent names the room behind it.
-  for (const name of ["door", "gatehouse"]) {
-    strictEqual(JSON.stringify(messages(night, ids.bob!)).includes(`"${ids[name]}"`), false, name);
-  }
-  deepStrictEqual(verbs(bob).slice(6), ["wait", "wait"]);
-  strictEqual(world.entity(ids.bob!)?.location, ids.yard);
+  // E. Bob comes in. The door stands in the gatehouse, yet from the dark yard he can name it: his options
+  // offer it, the one thing he can shut is the open door, and he walks in through it. The table stands
+  // at the coordinates he lands on, so the first try is refused `blocked` (and, as it names something he
+  // cannot tell is there, without saying what) and he tries again from a spot beside it.
+  const crossings = bob.filter((turn) => turn.command.args?.through !== undefined);
+  deepStrictEqual(crossings.map((turn) => turn.command.args), [{ through: ids.door }, { through: ids.door }]);
+  deepStrictEqual(crossings.map((turn) => [turn.result.status, turn.result.reason_code]), [["refused", "blocked"], ["ok", undefined]]);
+  strictEqual(crossings[0]?.result.reason_data?.with, undefined);
+  strictEqual(world.entity(ids.bob!)?.location, ids.gatehouse);
+  strictEqual(verbs(bob).at(-1), "wait");
 });
 
 test("every word reaches exactly who could hear it, and each view says so", (t) => {
-  const night = play(t, 8);
+  const night = play(t, 10);
   const says = night.world.since(0).events.filter((event) => event.type === "say");
   deepStrictEqual(says.map((event) => event.data.utterance), ["who.knocks", "who.goes.there", "friend"]);
   for (const actor of Object.keys(night.sent)) {
@@ -301,27 +312,29 @@ test("every word reaches exactly who could hear it, and each view says so", (t) 
 });
 
 test("no character is sent an id it was not given: each is its own, its room's, or one its views listed", (t) => {
-  const night = play(t, 8);
+  const night = play(t, 10);
   const isId = (value: unknown): value is string => typeof value === "string" && /^e\d+$/.test(value);
   const idsIn = (value: unknown): string[] =>
     isId(value) ? [value] : value !== null && typeof value === "object" ? Object.values(value).flatMap(idsIn) : [];
+  const entities = night.world.snapshot().entities;
   let checked = 0;
   for (const [actor, turns] of Object.entries(night.sent)) {
     const room = night.world.entity(actor)?.location;
     const known = new Set<Id>([actor, ...(typeof room === "string" ? [room] : [])]);
     for (const turn of turns) {
       // What this turn lists, and what the character itself named, may be referred to from now on. An
-      // event introduces nothing: the entity it names must be one a view listed.
-      // A door it was listed names both its rooms (`inspect` gives `from` and `to`), so options may offer
-      // the one on the far side as a place to move.
-      for (const entity of [...turn.view.entities, ...turn.result.observation.entities]) {
-        known.add(entity.id);
-        for (const end of [night.world.entity(entity.id)?.props.from, night.world.entity(entity.id)?.props.to]) {
+      // event introduces nothing: the entity it names must be one a view listed. A door it was listed
+      // or offered names both its rooms (`inspect` gives `from` and `to`), so options may offer the one
+      // on the far side as a place to move.
+      const learn = (id: Id) => {
+        known.add(id);
+        for (const end of [entities[id]?.props.from, entities[id]?.props.to]) {
           if (typeof end === "string") known.add(end);
         }
-      }
+      };
+      for (const entity of [...turn.view.entities, ...turn.result.observation.entities]) learn(entity.id);
       for (const option of [...turn.options.ready, ...(turn.options.blocked ?? [])]) {
-        if (option.target !== undefined) known.add(option.target);
+        if (option.target !== undefined) learn(option.target);
       }
       if (turn.command.target !== undefined) known.add(turn.command.target);
       for (const id of idsIn([turn.view, turn.options, turn.result])) {
@@ -334,8 +347,8 @@ test("no character is sent an id it was not given: each is its own, its room's, 
 });
 
 test("the same night twice is the same record", (t) => {
-  const first = play(t, 8);
-  const second = play(t, 8);
+  const first = play(t, 10);
+  const second = play(t, 10);
   strictEqual(canonicalJson(first.sent), canonicalJson(second.sent));
   strictEqual(canonicalJson(first.world.attempts(0)), canonicalJson(second.world.attempts(0)));
   strictEqual(canonicalJson(first.world.snapshot()), canonicalJson(second.world.snapshot()));

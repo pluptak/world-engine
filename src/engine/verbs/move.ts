@@ -1,16 +1,27 @@
 import { capacity } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Pos } from "../../model.js";
+import { resolveTarget } from "../resolve.js";
 import { refreshSubtreeLocations, subtreeOf } from "./address.js";
 import { revealConcealed } from "./search.js";
 import { effectivePos, walkStop, type WalkStop } from "../geometry.js";
 
 type MoveDestination = { kind: "position"; pos: Pos } | { kind: "location"; id: string };
 
-function destination(context: CommandContext): MoveDestination | null {
+// Where the command says to go: a position, a room by id, or the door to go through, named like a
+// target. Exactly one of the three.
+type Asked = MoveDestination | { kind: "through"; text: string };
+
+function destination(context: CommandContext): Asked | null {
   const args = context.command.args;
   if (args === undefined) {
     return null;
+  }
+
+  if (args.through !== undefined) {
+    return args.to === undefined && args.location === undefined && typeof args.through === "string" && args.through !== ""
+      ? { kind: "through", text: args.through }
+      : null;
   }
 
   if (args.to !== undefined && args.location === undefined) {
@@ -54,6 +65,41 @@ function nameableRoom(context: CommandContext, to: string): boolean {
     });
 }
 
+// The room on the far side of the door `through` names. The door is named as any target is, so one the
+// actor cannot tell is there is `unresolved`; a thing that is no door of the actor's room, or whose
+// other end is no room, is `invalid_location`, as a room that does not exist; a shut door is
+// `no_open_door`.
+function throughDoor(context: CommandContext, text: string): { id: string } | Exclude<PreconditionResult, { status: "ok" }> {
+  const { snapshot, registry, actor } = context;
+  const resolution = resolveTarget(snapshot, registry, actor.id, text);
+  if (resolution.status === "unresolved") {
+    return { status: "unresolved" };
+  }
+  if (resolution.status === "ambiguous") {
+    return { status: "ambiguous", candidates: resolution.candidates };
+  }
+  const door = resolution.target.part === null ? snapshot.entities[resolution.target.entity_id] : undefined;
+  const { from, to } = door?.props ?? {};
+  const here = actor.location;
+  if (door === undefined || here === null || typeof from !== "string" || typeof to !== "string" || (from !== here && to !== here)) {
+    return { status: "invalid", reason_code: "invalid_location" };
+  }
+  const far = from === here ? to : from;
+  if (snapshot.entities[far]?.template !== "room") {
+    return { status: "invalid", reason_code: "invalid_location" };
+  }
+  return door.props.open === true ? { id: far } : { status: "refused", reason_code: "no_open_door" };
+}
+
+// A destination with the door resolved away: through a door is a move to the room beyond it.
+function walkTo(context: CommandContext, asked: Asked): { to: MoveDestination; via: boolean } | Exclude<PreconditionResult, { status: "ok" }> {
+  if (asked.kind !== "through") {
+    return { to: asked, via: false };
+  }
+  const far = throughDoor(context, asked.text);
+  return "status" in far ? far : { to: { kind: "location", id: far.id }, via: true };
+}
+
 function hasOpenDoor(context: CommandContext, to: string): boolean {
   const from = context.actor.location;
   return Object.keys(context.snapshot.entities)
@@ -71,8 +117,8 @@ function hasOpenDoor(context: CommandContext, to: string): boolean {
 }
 
 function preconditions(context: CommandContext): PreconditionResult {
-  const to = destination(context);
-  if (to === null) {
+  const asked = destination(context);
+  if (asked === null) {
     return { status: "invalid", reason_code: "invalid_args" };
   }
   // Held in someone's grip or mouth, an agent goes where it is carried.
@@ -90,12 +136,18 @@ function preconditions(context: CommandContext): PreconditionResult {
     };
   }
 
+  const walk = walkTo(context, asked);
+  if ("status" in walk) {
+    return walk;
+  }
+  const { to, via } = walk;
   if (to.kind === "location") {
     const location = context.snapshot.entities[to.id];
     if (location === undefined || location.template !== "room" || !nameableRoom(context, to.id)) {
       return { status: "invalid", reason_code: "invalid_location" };
     }
-    if (to.id !== context.actor.location && !hasOpenDoor(context, to.id)) {
+    // Through a door, the door named is the one that was judged open; by room, any open door will do.
+    if (!via && to.id !== context.actor.location && !hasOpenDoor(context, to.id)) {
       return { status: "refused", reason_code: "no_open_door" };
     }
   }
@@ -142,10 +194,12 @@ function refusedBy(stop: WalkStop): PreconditionResult {
 }
 
 function transition(context: TransitionContext): void {
-  const to = destination(context);
-  if (to === null) {
+  const asked = destination(context);
+  const walk = asked === null ? null : walkTo(context, asked);
+  if (walk === null || "status" in walk) {
     throw new TypeError("Move destination changed after validation");
   }
+  const { to } = walk;
 
   const from = effectivePos(context.snapshot, context.actor.id);
   const movedEvent = context.emit("moved", context.actor.id, {}, context.root_event_id);
@@ -192,7 +246,7 @@ function suggest(context: CommandContext, nameable: readonly string[]): Record<s
 export const moveVerb: Verb = {
   duration: { ticks: 1 },
   requires_target: false,
-  args: { to: { kind: "pos" }, location: { kind: "room" } },
+  args: { to: { kind: "pos" }, location: { kind: "room" }, through: { kind: "address" } },
   refuses: ["carried", "insufficient_moving", "no_open_door", "blocked", "out_of_bounds"],
   suggest,
   free_args: true,

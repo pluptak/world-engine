@@ -215,8 +215,10 @@ for (const [name, owner] of [
   test(`a turn left behind by ${name} is taken over, and its temporary files swept`, (t) => {
     const dir = newWorld(t);
     const ann = openWorld(dir).id("ann")!;
-    holdAs(dir, owner());
-    writeFileSync(join(dir, "snapshot.json.4242.tmp"), "half a snapshot");
+    const holder = owner();
+    holdAs(dir, holder);
+    // Named for the holder that is being put out, whose half-written file nobody else will finish.
+    writeFileSync(join(dir, `snapshot.json.${holder.pid}.tmp`), "half a snapshot");
     strictEqual(takeStone(dir, "c1", ann).status, "ok");
     deepStrictEqual(leftovers(dir), []);
     strictEqual(openWorld(dir).snapshot().version, 1);

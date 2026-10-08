@@ -124,6 +124,21 @@ export function withinReach(context: CommandContext, destinationId: Id): boolean
   return inReach(context.snapshot, context.actor.id, destinationId);
 }
 
+// A doorway (a thing with `from` and `to` rooms) that joins the actor's room is reached from anywhere
+// in it when it has no position, or when it stands in the other room: the far side of a door is as
+// near as the door. In its own room a doorway keeps its position and the ordinary rule applies.
+export function reachedAsDoor(snapshot: Snapshot, actorId: Id, entity: Entity): boolean {
+  const here = snapshot.entities[actorId]?.location ?? null;
+  const { from, to } = entity.props;
+  return (
+    here !== null &&
+    typeof from === "string" &&
+    typeof to === "string" &&
+    (from === here || to === here) &&
+    (entity.pos === null || entity.location !== here)
+  );
+}
+
 // The one reach rule, for the verbs and for the `reachable` fact alike: both positions known, the
 // same room, and centre to centre within the actor's `reach_cm`.
 export function inReach(snapshot: Snapshot, actorId: Id, targetId: Id): boolean {
