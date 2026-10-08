@@ -2,6 +2,10 @@
   "id": "human_hungry",
   "extends": "human",
   "props": { "hunger": 0, "starvation": 0, "hunger_every": 10 },
+  "fields": {
+    "hunger_every": { "tier": "definition", "type": "integer" },
+    "starvation": { "tier": "state", "type": "integer" }
+  },
   "processes": [
     {
       "id": "hunger",

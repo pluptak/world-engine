@@ -167,7 +167,7 @@ test("two children of one parent resolve to the same fields", () => {
 
 test("a chain merges every parent, the nearest winning", () => {
   const chain = parseRegistry({
-    root: decl("root", { mass_g: 1, props: { a: 1, shared: "root" }, break_residue: { glass: 5 } }),
+    root: decl("root", { mass_g: 1, props: { a: 1, shared: "root" }, fields: { a: { tier: "state", type: "integer" }, b: { tier: "state", type: "integer" }, c: { tier: "state", type: "integer" }, shared: { tier: "state", type: "string" } }, break_residue: { glass: 5 } }),
     middle: { id: "middle", extends: "root", props: { b: 2, shared: "middle" } },
     leaf: { id: "leaf", extends: "middle", props: { c: 3, shared: "leaf" } },
   });
@@ -183,6 +183,7 @@ test("a child's own fields win, declared parts replace the parent's and undeclar
   const parent = decl("parent", {
     mass_g: 1,
     props: { waxed: true, size: "big" },
+    fields: { waxed: { tier: "state", type: "boolean" }, size: { tier: "state", type: "string" } },
     parts: [
       {
         name: "lid",

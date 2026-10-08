@@ -19,7 +19,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
-   blocks 1–8 in its order. Its open questions must be settled before block 4.
+   blocks 2–8 in its order. Its open questions must be settled before block 4.
 2. [A taken-over lock leaves no grave](#a-taken-over-lock-leaves-no-grave).
 3. [Verify holds the checkpoints to the replay](#verify-holds-the-checkpoints-to-the-replay).
 4. Candidates without a plan yet (below): write the item, then build it.

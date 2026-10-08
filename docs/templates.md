@@ -2,19 +2,18 @@
 
 A template declares `id`, `size_cm`, `mass_g`, `parts`, `props`, `break_products` and
 `break_residue`, and optionally `processes` ([processes.md](processes.md); merged by id through
-`extends`, absent from a template that declares none). Every one of them is data, read from `templates/*.json` by `src/templates.ts`.
+`extends`, absent from a template that declares none) and `fields` ([fields.md](fields.md)). All
+are data, read from `templates/*.json` by `src/templates.ts`.
 
-A template may declare `"extends": "<parent id>"`. Resolution runs once, when the set is loaded or
-parsed:
+A template may declare `"extends": "<parent id>"`, resolved once, when the set is loaded or parsed:
 
 - the child's own field wins;
-- `props` are shallow-merged over the parent's;
+- `props` are shallow-merged over the parent's, and `fields` merged by name;
 - `parts` are replaced only when the child declares them, so a declared list is the whole tree;
 - `size_cm`, `mass_g`, `break_products` and `break_residue` are inherited unless declared.
 
-Chains are allowed. A cycle, or a parent no template declares, is refused with the chain that
-produced it (`Template extends cycle: a -> b -> a`). A template that declares too little and extends
-nothing is refused by name, listing the fields it is missing.
+Chains are allowed; a cycle or unknown parent is refused with its chain (`Template extends cycle:
+a -> b -> a`), and a root that declares too little by name, listing what it is missing.
 
 Resolution finishes before anything else looks at the set, so no `extends` key survives it. The
 templates hash, a world's frozen `templates.json`, and `upgradeTemplates` read only resolved
@@ -37,5 +36,5 @@ keep the mouth rules), while `{ "kind": "space", "inner_*_cm": … }` holds what
 has in use and a break product that can no longer be spawned are what a new set may not take away.
 Dropping `props.default_hit_part` only makes an attack naming no part `invalid_attack_target`.
 
-A human's `head` contributes `speech` ([speech.md](speech.md)). That changed the `human` template and so
-`templates_hash`: a world stored before it reports `templates_changed` until `upgradeTemplates` (or a re-init).
+Giving the human's `head` `speech` ([speech.md](speech.md)) and `human_hungry` its `fields` changed
+`templates_hash`: a world stored before reports `templates_changed` until `upgradeTemplates`.

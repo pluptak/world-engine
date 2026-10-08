@@ -21,6 +21,7 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
       id: "candle",
       extends: "stone",
       props: { light_source: true, burning: false, fuel: 5, burn_every: 2 },
+      fields: { burn_every: { tier: "definition", type: "integer" } },
       processes: [
         {
           id: "burn",
@@ -36,6 +37,7 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
       id: "moss",
       extends: "stone",
       props: { size: 1 },
+      fields: { size: { tier: "state", type: "integer" } },
       processes: [
         {
           id: "grow",
@@ -50,6 +52,7 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
       id: "lichen",
       extends: "stone",
       props: { size: 1 },
+      fields: { size: { tier: "state", type: "integer" } },
       processes: [{ id: "sprout", every_ticks: 1, chance_pct: 50, effect: { adjust_prop: { prop: "size", by: 1, max: 6 } } }],
     },
     // Grows to its cap quickly and is then gone.
@@ -57,6 +60,7 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
       id: "mold",
       extends: "stone",
       props: { size: 3 },
+      fields: { size: { tier: "state", type: "integer" } },
       processes: [
         {
           id: "spread",

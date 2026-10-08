@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { canonicalJson } from "./engine/canonical.js";
+import { PROP_FIELDS, propTypeMatches, type PropType, type Tier } from "./engine/fields.js";
 
 export type HoldsDecl = { kind: "grip" } | { kind: "space"; inner_w_cm: number; inner_d_cm: number; inner_h_cm: number };
 
@@ -36,6 +37,12 @@ export type ProcessThen =
   | { damage: { amount: number } }
   | { remove: true };
 
+// A prop no engine code reads, declared by the template that uses it: its type and who may write it.
+export interface FieldDecl {
+  tier: Exclude<Tier, "derived">;
+  type: Exclude<PropType, "id">;
+}
+
 export interface Template {
   id: string;
   size_cm: { w: number; d: number; h: number };
@@ -46,6 +53,8 @@ export interface Template {
   break_residue: Record<string, number>;
   // Absent when a template declares none, so a template without processes hashes as it always did.
   processes?: ProcessDecl[];
+  // Absent when none is declared, as processes are.
+  fields?: Record<string, FieldDecl>;
 }
 
 export type TemplateRegistry = Record<string, Template>;
@@ -62,6 +71,7 @@ interface TemplateDecl {
   break_products?: { template: string; count: number }[];
   break_residue?: Record<string, number>;
   processes?: ProcessDecl[];
+  fields?: Record<string, FieldDecl>;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -192,7 +202,36 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
     decl.processes = parseProcesses(value.processes, `${source}.processes`);
   }
 
+  if (Object.hasOwn(value, "fields")) {
+    decl.fields = parseFields(value.fields, `${source}.fields`);
+  }
+
   return decl;
+}
+
+function parseFields(value: unknown, label: string): Record<string, FieldDecl> {
+  if (!isRecord(value)) {
+    throw new TypeError(`${label} must be an object`);
+  }
+  const fields: Record<string, FieldDecl> = {};
+  for (const [name, field] of Object.entries(value)) {
+    const at = `${label}.${name}`;
+    if (Object.hasOwn(PROP_FIELDS, name)) {
+      throw new TypeError(`${at} is a prop the engine declares`);
+    }
+    if (!isRecord(field)) {
+      throw new TypeError(`${at} must be an object`);
+    }
+    assertOnlyKeys(field, ["tier", "type"], at);
+    if (field.tier !== "definition" && field.tier !== "state") {
+      throw new TypeError(`${at}.tier must be definition or state`);
+    }
+    if (field.type !== "boolean" && field.type !== "integer" && field.type !== "string") {
+      throw new TypeError(`${at}.type must be boolean, integer or string`);
+    }
+    fields[name] = { tier: field.tier, type: field.type };
+  }
+  return fields;
 }
 
 const PROCESS_OPS: readonly ProcessOp[] = ["eq", "ne", "lt", "lte", "gt", "gte"];
@@ -419,13 +458,19 @@ function requireResolved(decl: TemplateDecl, source: string): Template {
     break_products: decl.break_products!.map((product) => ({ ...product })),
     break_residue: { ...decl.break_residue! },
     ...(decl.processes !== undefined && decl.processes.length > 0 && { processes: copyProcesses(decl.processes) }),
+    ...(decl.fields !== undefined && Object.keys(decl.fields).length > 0 && { fields: copyFields(decl.fields) }),
   };
+}
+
+function copyFields(fields: Readonly<Record<string, FieldDecl>>): Record<string, FieldDecl> {
+  return Object.fromEntries(Object.entries(fields).map(([name, field]) => [name, { ...field }]));
 }
 
 // The child's own field wins, props are shallow-merged over the parent's, and parts are replaced
 // rather than merged: a child that declares parts declares the whole part tree it has.
 function overParent(parent: Template, decl: TemplateDecl): Template {
   const processes = mergeProcesses(parent.processes ?? [], decl.processes ?? []);
+  const fields = copyFields({ ...parent.fields, ...decl.fields });
   return {
     id: decl.id,
     size_cm: decl.size_cm === undefined ? parent.size_cm : { ...decl.size_cm },
@@ -441,6 +486,7 @@ function overParent(parent: Template, decl: TemplateDecl): Template {
         ? parent.break_residue
         : { ...decl.break_residue },
     ...(processes.length > 0 && { processes }),
+    ...(Object.keys(fields).length > 0 && { fields }),
   };
 }
 
@@ -489,11 +535,55 @@ function resolveTemplates(
       template = overParent(template, decls.get(chainId)!);
     }
     validateParts(template, sources.get(id) ?? id);
+    validateProps(template, sources.get(id) ?? id);
     registry[id] = template;
   }
 
   assertMissingCompanions(registry);
   return registry;
+}
+
+// Every prop a template sets or its processes name is declared, by the engine's table or the
+// template's own `fields`, holds a value of its type, and comes with the props it requires.
+function validateProps(template: Template, source: string): void {
+  const typeOf = (name: string): PropType | undefined => PROP_FIELDS[name]?.type ?? template.fields?.[name]?.type;
+  for (const [name, value] of Object.entries(template.props)) {
+    const type = typeOf(name);
+    if (type === undefined) {
+      throw new TypeError(`${source} props.${name} is not a declared prop`);
+    }
+    if (!propTypeMatches(type, value)) {
+      throw new TypeError(`${source} props.${name} must be ${type === "integer" ? "an" : "a"} ${type}`);
+    }
+    for (const required of PROP_FIELDS[name]?.requires ?? []) {
+      if (!Object.hasOwn(template.props, required)) {
+        throw new TypeError(`${source} props.${name} requires ${required}`);
+      }
+    }
+  }
+  for (const process of template.processes ?? []) {
+    const at = `${source} processes.${process.id}`;
+    const named = [
+      process.while?.prop,
+      process.effect.adjust_prop.prop,
+      process.every_ticks_prop,
+      process.then !== undefined && "set_prop" in process.then ? process.then.set_prop.prop : undefined,
+    ];
+    for (const name of named) {
+      if (name !== undefined && typeOf(name) === undefined) {
+        throw new TypeError(`${at} names ${name}, which is not a declared prop`);
+      }
+    }
+    if (typeOf(process.effect.adjust_prop.prop) !== "integer") {
+      throw new TypeError(`${at} adjusts ${process.effect.adjust_prop.prop}, which is not an integer prop`);
+    }
+    if (process.then !== undefined && "set_prop" in process.then) {
+      const { prop, value } = process.then.set_prop;
+      if (!propTypeMatches(typeOf(prop)!, value)) {
+        throw new TypeError(`${at} sets ${prop} to a value that is not ${typeOf(prop)}`);
+      }
+    }
+  }
 }
 
 function validateParts(template: Template, source: string): void {

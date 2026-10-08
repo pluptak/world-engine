@@ -23,6 +23,7 @@ const registry: TemplateRegistry = parseRegistry({
     id: "lichen",
     extends: "stone",
     props: { size: 1 },
+    fields: { size: { tier: "state", type: "integer" } },
     processes: [{ id: "grow", every_ticks: 1, chance_pct: 50, effect: { adjust_prop: { prop: "size", by: 1, max: 1000 } } }],
   },
 });

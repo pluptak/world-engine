@@ -37,29 +37,16 @@ simulation state. Every block below keeps that line and every invariant in AGENT
   shards themselves)?
 - `full` for a vessel without inner dimensions (the bottle): its template default amount?
 - `closes_after`: definition (a self-closing door is its own preset), or a state with a form?
+  `fields.ts` has it as definition for now; tests set it through overrides, so settle by block 3.
 - Whether and when the architect role opens after tick 0.
 
 ## Blocks
 
-One block per session, in this order. Each touches the shared registration points CLAUDE.md lists
+Block 1 (field schema) is built: `docs/fields.md`. One block per session, in this order. Each
+touches the shared registration points CLAUDE.md lists
 (`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
-
-### 1. Field schema
-
-- New `src/engine/fields.ts`: one table for every entity field and every prop the engine reads:
-  type, tier, `requires` (e.g. `locked`, `open`, `closes_after` → `openable`; `gap_cm` →
-  `barrier`; `container` → `inner_w/d/h_cm`; `burning`, `fuel` → `light_source`), and the
-  architect form if any (none used yet).
-- Props no code reads (`hunger_every`, `starvation`) are declared by their template in a new
-  `fields` key (tier + type), merged by key through `extends` in `src/templates.ts`.
-- `resolveTemplates` refuses, naming the template and prop: an undeclared prop (`openabel`), a
-  wrong type (`gap_cm: "12"`), a missing requirement.
-- Declaring `fields` on `human_hungry` changes `templates_hash`: say so in `docs/templates.md`.
-- Tests: `tests/fields.test.ts` (each refusal; every shipped template passes; the table covers
-  every `props.<name>` the source reads, found by a scan like `tests/catalog.test.ts` does).
-- Doc: `docs/fields.md`.
 
 ### 2. Merging prop edits; derived fields guarded
 

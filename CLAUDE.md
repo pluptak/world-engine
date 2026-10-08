@@ -199,7 +199,10 @@ file it links (`docs/verbs-*.md`; `tests/catalog.test.ts` holds the two in step)
   resolved once when a set is loaded or parsed (own field wins, `props` shallow-merged, `parts`
   replaced only if declared, everything else inherited; a cycle or unknown parent is refused with
   the chain), so no `extends` key survives into the hash, a frozen `templates.json`, the companion
-  rule or `lostField`. `templates/wine_bottle.json` is the worked example.
+  rule or `lostField`. `templates/wine_bottle.json` is the worked example. `src/engine/fields.ts` (`docs/fields.md`) is
+  the schema of every prop the engine reads (type, tier, `requires`) and of the entity fields'
+  tiers; a template declares a prop no code reads under `fields`, and `validateProps` refuses an
+  undeclared prop, a wrong type or a missing requirement when a set is resolved.
 - **Materials:** `src/engine/residue.ts` and `src/resolvers/physical.ts`, whose behaviour the rest
   of the engine relies on; a material's own verb lives in `src/engine/verbs/` — `pour` moves
   `liquid_material`/`liquid_amount` between props and residue, and `docs/liquids.md` has that model.

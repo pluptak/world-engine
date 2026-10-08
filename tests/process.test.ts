@@ -21,7 +21,7 @@ const registry: TemplateRegistry = parseRegistry({
   candle: {
     id: "candle",
     extends: "stone",
-    props: { burning: false, fuel: 6 },
+    props: { light_source: true, burning: false, fuel: 6 },
     processes: [
       {
         id: "burn",
@@ -36,6 +36,7 @@ const registry: TemplateRegistry = parseRegistry({
     id: "moss",
     extends: "stone",
     props: { size: 1 },
+    fields: { size: { tier: "state", type: "integer" } },
     processes: [{ id: "grow", every_ticks: 3, effect: { adjust_prop: { prop: "size", by: 1, max: 3 } } }],
   },
 });
@@ -97,7 +98,8 @@ test("a template without processes hashes as it did, and processes merge by id t
     lamp: {
       id: "lamp",
       extends: "stone",
-      props: { fuel: 9 },
+      props: { light_source: true, fuel: 9 },
+      fields: { glow: { tier: "state", type: "integer" } },
       processes: [
         { id: "burn", every_ticks: 2, effect: { adjust_prop: { prop: "fuel", by: -1, min: 0 } } },
         { id: "flicker", every_ticks: 5, effect: { adjust_prop: { prop: "glow", by: 1, max: 4 } } },
@@ -106,6 +108,7 @@ test("a template without processes hashes as it did, and processes merge by id t
     brass_lamp: {
       id: "brass_lamp",
       extends: "lamp",
+      fields: { dull: { tier: "state", type: "integer" } },
       processes: [
         { id: "burn", every_ticks: 4, effect: { adjust_prop: { prop: "fuel", by: -1, min: 0 } } },
         { id: "tarnish", every_ticks: 7, effect: { adjust_prop: { prop: "dull", by: 1, max: 9 } } },
@@ -117,6 +120,7 @@ test("a template without processes hashes as it did, and processes merge by id t
     [["burn", 4], ["flicker", 5], ["tarnish", 7]],
   );
   deepStrictEqual(parent.lamp!.processes!.map((p) => p.every_ticks), [2, 5]);
+  deepStrictEqual(Object.keys(parent.brass_lamp!.fields!), ["glow", "dull"]);
   strictEqual(Object.hasOwn(parent.stone!, "processes"), false);
 });
 
@@ -280,7 +284,7 @@ const withThen = parseRegistry({
   candle: {
     id: "candle",
     extends: "stone",
-    props: { burning: false, fuel: 2 },
+    props: { light_source: true, burning: false, fuel: 2 },
     processes: [
       {
         id: "burn",
@@ -310,6 +314,7 @@ const withThen = parseRegistry({
     id: "fruit",
     extends: "stone",
     props: { fresh: 2 },
+    fields: { fresh: { tier: "state", type: "integer" } },
     processes: [
       {
         id: "spoil",
@@ -453,6 +458,7 @@ const withRate = parseRegistry({
     id: "ember",
     extends: "stone",
     props: { glow: 0, rate: 4 },
+    fields: { glow: { tier: "state", type: "integer" }, rate: { tier: "definition", type: "integer" } },
     processes: [{ id: "glow", every_ticks: 5, every_ticks_prop: "rate", effect: { adjust_prop: { prop: "glow", by: 1, max: 100 } } }],
   },
 });
