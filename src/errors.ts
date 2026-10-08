@@ -21,7 +21,8 @@ export type WorldErrorCode =
   | "anchor_not_room_supported"
   | "conflicting_placement"
   | "invalid_ids"
-  | "store_busy";
+  | "store_busy"
+  | "derived_field";
 
 export class WorldError extends Error {
   constructor(

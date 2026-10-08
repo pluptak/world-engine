@@ -57,8 +57,9 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   topples: { type: "boolean", tier: "definition" },
 };
 
-// Every field of an entity besides `props`, by who may write it. Placement is state; the relations
-// the engine keeps in step with it are derived.
+// Every field of an entity besides `props`, by who may write it. Placement is state; the location
+// the engine keeps in step with it is derived. `status` and `detached_from` are state: a corpse or a
+// severed limb is a state the world can reach, so the world author may place one.
 export const ENTITY_FIELDS: Readonly<Record<Exclude<keyof Entity, "props">, Tier>> = {
   id: "derived",
   template: "definition",
@@ -70,9 +71,9 @@ export const ENTITY_FIELDS: Readonly<Record<Exclude<keyof Entity, "props">, Tier
   in_part: "state",
   concealed_by: "state",
   pos: "state",
-  detached_from: "derived",
+  detached_from: "state",
   integrity: "state",
-  status: "derived",
+  status: "state",
   parts: "state",
   residue: "state",
   modifiers: "derived",

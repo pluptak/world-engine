@@ -11,10 +11,12 @@ reading must enter the table, and an entry no code reads is refused as dead.
 - *definition*: the template author only, such as `openable`, `barrier`, `gap_cm`, `reach_cm`, and
   the entity's `template`;
 - *state*: the world author, such as `open`, `locked`, `burning`, `fuel`, `liquid_amount`, a
-  door's `from`/`to`, a key's `opens`, `name`, placement, `integrity` and part state;
-- *derived*: the engine only: `id`, `location`, `status`, `detached_from` and `modifiers`.
+  door's `from`/`to`, a key's `opens`, `name`, placement, `integrity`, `status`, `detached_from`
+  and part state (a corpse or a severed limb is a state the world can reach);
+- *derived*: the engine only: `id`, `location` and `modifiers`.
 
-Nothing enforces tiers yet.
+A spawn (an edit's or a scenario's) writing a derived field as other than the engine derives it,
+`location` off its chain or any `modifiers`, is refused `derived_field`. No other tier is enforced.
 
 **A prop the engine never reads** is declared by the template that uses it, under `fields`, with a
 tier (`definition` or `state`) and a type (`boolean`, `integer` or `string`):
@@ -23,8 +25,7 @@ tier (`definition` or `state`) and a type (`boolean`, `integer` or `string`):
 "fields": { "hunger_every": { "tier": "definition", "type": "integer" } }
 ```
 
-`fields` merge by name through `extends`, the child's own winning, and are absent from a template
-that declares none. Declaring one of the engine's props is refused.
+`fields` merge by name through `extends`, the child's own winning; an engine prop is refused.
 
 **Checked when a set is resolved** (`validateProps` in `src/templates.ts`), loaded from
 `templates/` or parsed from a world's `templates.json`, each refusal naming the template and prop:
@@ -35,6 +36,4 @@ that declares none. Declaring one of the engine's props is refused.
   `openable`; `container` → `inner_w/d/h_cm`; `burning`, `fuel` → `light_source`), which an
   ancestor may supply;
 - a process naming an undeclared prop, adjusting one that is not an integer, or setting a value
-  that is not of its prop's type.
-
-Entity props written by a scenario or an edit are not checked here.
+  that is not of its prop's type. Entity props a scenario or an edit writes are not checked.

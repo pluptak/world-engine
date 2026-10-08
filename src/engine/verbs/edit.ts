@@ -255,11 +255,11 @@ export function parseEdit(value: unknown): WorldEdit | null {
     }
     return edit;
   }
-  if (value.kind === "set_props") {
+  if (value.kind === "set_props" || value.kind === "update_props") {
     if (!onlyKeys(value, ["kind", "target", "props"]) || !isId(value.target) || !isProps(value.props)) {
       return null;
     }
-    return { kind: "set_props", target: value.target, props: value.props };
+    return { kind: value.kind, target: value.target, props: value.props };
   }
   if (value.kind === "set_part") {
     if (
@@ -316,6 +316,9 @@ function spawnRefusal(context: CommandContext, edit: SpawnEdit): PreconditionRes
   if (location !== null && context.snapshot.entities[location]?.template !== "room") {
     return invalid("invalid_location");
   }
+  if (derivedFieldWritten(context.snapshot, overrides) !== null) {
+    return refused("derived_field");
+  }
   const support = overrides.support ?? null;
   if (support !== null && context.snapshot.entities[support]?.template === "room") {
     if (overrides.pos === undefined || overrides.pos === null) {
@@ -336,6 +339,19 @@ function spawnRefusal(context: CommandContext, edit: SpawnEdit): PreconditionRes
     }
   }
   return { status: "ok" };
+}
+
+// The derived entity field a spawn's overrides write as something other than what the engine
+// derives, or null. A scenario may spell out `location` as long as it is the chain's own; the
+// modifiers a thing starts with are none, since every modifier is caused by an event.
+export function derivedFieldWritten(snapshot: Snapshot, overrides: EntityOverrides): "location" | "modifiers" | null {
+  if (overrides.location !== undefined) {
+    const derived = derivedLocationOf(snapshot, overrides.support ?? null, overrides.contained_in ?? null);
+    if (derived !== undefined && derived !== overrides.location) {
+      return "location";
+    }
+  }
+  return overrides.modifiers !== undefined && overrides.modifiers.length > 0 ? "modifiers" : null;
 }
 
 // An omitted location is derived from the chain, never left to drift; an explicit one must match it.
@@ -527,6 +543,7 @@ function preconditions(context: CommandContext): PreconditionResult {
       return isPlacement(placed) ? placeRefusal(context, placed, subject) : placed;
     }
     case "set_props":
+    case "update_props":
       return { status: "ok" };
     case "set_part":
       return partRefusal(context, context.registry, subject, edit.part);
@@ -756,9 +773,11 @@ function transition(context: TransitionContext): void {
     case "place":
       transitionPlace(context, edit, subject);
       break;
-    case "set_props": {
+    case "set_props":
+    case "update_props": {
       const editedEvent = context.emit("edited", edit.target, { field: "props" }, context.root_event_id);
-      context.set(edit.target, "props", { ...edit.props }, editedEvent);
+      const base = edit.kind === "update_props" ? subject.props : {};
+      context.set(edit.target, "props", { ...base, ...edit.props }, editedEvent);
       break;
     }
     case "set_part": {
@@ -807,6 +826,7 @@ export const editVerb: Verb = {
   requires_target: false,
   args: { edit: { kind: "world_edit" } },
   refuses: [
+    "derived_field",
     "room_placed",
     "conflicting_placement",
     "room_support_without_pos",

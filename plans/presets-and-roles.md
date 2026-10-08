@@ -16,8 +16,9 @@ simulation state. Every block below keeps that line and every invariant in AGENT
   - *state*: the world author exactly; the architect only through a declared architect form
     (`open`, `locked`, `burning`, `fuel`, `liquid_material`, `liquid_amount`, `integrity`,
     `hunger`, part state, placement, `name`, `aliases`, a door's `from`/`to`, a key's `opens`);
-  - *derived*: the engine only (`location`, `status`, `version`, `tick`, `next_seq`, `schedule`,
-    `rng`, `modifiers`).
+  - *derived*: the engine only (`location`, `version`, `tick`, `next_seq`, `schedule`, `rng`,
+    `modifiers`). `status` and `detached_from` are state: a corpse or a severed limb is a state
+    the world can reach (decided in block 2).
 - **One stored value per fact.** An architect form is a second way to write a state field, never a
   second stored field: `fuel: "half"` is written as the number; read back it is bucketed.
 - **Architect forms are coarse:** plain values (open, locked, lit, name, links), or named levels the
@@ -42,19 +43,11 @@ simulation state. Every block below keeps that line and every invariant in AGENT
 
 ## Blocks
 
-Block 1 (field schema) is built: `docs/fields.md`. One block per session, in this order. Each
-touches the shared registration points CLAUDE.md lists
+Blocks 1 (field schema) and 2 (`update_props`, `derived_field`) are built: `docs/fields.md`. One
+block per session, in this order. Each touches the shared registration points CLAUDE.md lists
 (`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
-
-### 2. Merging prop edits; derived fields guarded
-
-- New edit kind `update_props` (`src/engine/verbs/edit.ts`, `contract.ts`): merges the keys sent;
-  `set_props` keeps replacing for the world author.
-- A spawn override or edit that writes a derived field is refused `derived_field` unless it equals
-  what the engine derives (scenarios that spell `location` keep working).
-- Tests in `tests/edit.test.ts`.
 
 ### 3. Roles enforced
 

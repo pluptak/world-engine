@@ -1,5 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -9,6 +9,7 @@ import {
   memoryWorld,
   openWorld,
   WORLD_AUTHOR,
+  WorldError,
   type Id,
   type Scenario,
   type World,
@@ -505,4 +506,78 @@ test("malformed edits and foreign authors are invalid", (t) => {
   });
   strictEqual(mismatched.status, "invalid");
   strictEqual(mismatched.reason_code, "mismatched_target");
+});
+
+test("update_props writes the keys it is sent over the rest; set_props replaces them all", (t) => {
+  const { dir, world } = editWorld(t);
+  const before = world.entity("e5")!.props;
+
+  const shut = world.edit({ kind: "update_props", target: "e5", props: { open: false, locked: false } });
+  strictEqual(shut.status, "ok");
+  deepStrictEqual(
+    shut.events.map((event) => [event.type, event.data]),
+    [
+      ["edit", {}],
+      ["edited", { field: "props" }],
+    ],
+  );
+  deepStrictEqual(world.entity("e5")?.props, { ...before, open: false, locked: false });
+  deepStrictEqual(
+    shut.deltas.map((delta) => [delta.entity, delta.field, delta.from, delta.to]),
+    [["e5", "props", before, { ...before, open: false, locked: false }]],
+  );
+
+  strictEqual(world.edit({ kind: "set_props", target: "e5", props: { open: true } }).status, "ok");
+  deepStrictEqual(world.entity("e5")?.props, { open: true });
+  strictEqual(canonicalJson(replay(dir)), canonicalJson(world.snapshot()));
+});
+
+test("a spawn that writes a derived field other than the engine derives it is refused derived_field", (t) => {
+  const { world } = editWorld(t);
+  const hall = world.edit({ kind: "spawn", template: "room", overrides: { name: "hall" } });
+  strictEqual(hall.status, "ok");
+  const hallId = hall.events[1]!.entity;
+  const before = canonicalJson(world.snapshot());
+
+  const elsewhere = world.edit({ kind: "spawn", template: "bottle", overrides: { name: "lost", location: hallId, support: "e2" } });
+  deepStrictEqual([elsewhere.status, elsewhere.reason_code], ["refused", "derived_field"]);
+  const stunned = world.edit({
+    kind: "spawn",
+    template: "human",
+    overrides: {
+      name: "dazed",
+      support: "e1",
+      pos: { x: 0, y: 90 },
+      modifiers: [{ capacity: "manipulation", delta: -50, expires_at_tick: null, cause_id: "ev1" }],
+    },
+  });
+  deepStrictEqual([stunned.status, stunned.reason_code], ["refused", "derived_field"]);
+  strictEqual(canonicalJson(world.snapshot()), before);
+
+  // What the engine would derive anyway may be spelled out, and a corpse is state the author may place.
+  const spelled = world.edit({
+    kind: "spawn",
+    template: "human",
+    overrides: { name: "corpse", location: "e1", support: "e1", pos: { x: 0, y: 90 }, modifiers: [], status: "destroyed" },
+  });
+  strictEqual(spelled.status, "ok");
+  strictEqual(world.entity(spelled.events[1]!.entity)?.status, "destroyed");
+});
+
+test("a scenario that writes a derived field is refused before anything is written", (t) => {
+  const dir = join(tempDir(t), "never-created");
+  const astray: Scenario = [
+    { template: "room", overrides: { name: "room" } },
+    { template: "room", overrides: { name: "hall" } },
+    { template: "table", overrides: { name: "table", location: "e2", support: "e1", pos: { x: 0, y: 0 } } },
+  ];
+  try {
+    createWorld(dir, astray);
+    throw new Error("Expected the scenario to be refused");
+  } catch (error) {
+    ok(error instanceof WorldError, String(error));
+    strictEqual(error.code, "derived_field");
+    ok(error.message.includes("entry 2"), error.message);
+  }
+  strictEqual(existsSync(dir), false);
 });

@@ -451,7 +451,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
       ] as const);
       const room = context.rooms.length > 0 ? pick(context.rand, context.rooms) : "e999";
       const [first, second] = context.rooms;
-      // A location the chain does not lead to: derived state, refused with location_mismatch.
+      // A location the chain does not lead to: derived state, refused with derived_field.
       if (first !== undefined && second !== undefined && context.rand() < 0.25) {
         return {
           kind: "spawn",

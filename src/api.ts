@@ -22,6 +22,7 @@ import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace
 import { lostField } from "./engine/upgrade.js";
 import { verbCatalog } from "./engine/verbs/index.js";
 import { spawn } from "./engine/spawn.js";
+import { derivedFieldWritten } from "./engine/verbs/edit.js";
 import { startProcesses } from "./engine/process.js";
 import { isRngState } from "./engine/rng.js";
 import { resolveScenario, type Scenario } from "./scenario.js";
@@ -435,7 +436,11 @@ export function createWorld(
   // Names resolve before the first spawn, so a bad name is refused before anything is written.
   const resolved = resolveScenario(scenario, initial.next_seq);
   let snapshot = initial;
-  for (const entry of resolved.scenario) {
+  for (const [index, entry] of resolved.scenario.entries()) {
+    const written = derivedFieldWritten(snapshot, entry.overrides ?? {});
+    if (written !== null) {
+      throw new WorldError("derived_field", `Scenario entry ${index} writes the derived field ${written}`);
+    }
     snapshot = spawn(snapshot, templates, entry.template, entry.overrides).snapshot;
   }
   // What the templates set going has no event behind it yet; its first `changed` is a root.

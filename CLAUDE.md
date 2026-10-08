@@ -138,7 +138,7 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   codes surface as CLI issue codes. The world's dice are `Snapshot.rng` (`src/engine/rng.ts`,
   `docs/rng.md`): `TransitionContext.random()` advances it, a world with no seed refuses a command
   that rolls `no_seed` (caught in `pipeline.ts`, a code no verb declares), `createWorld` and
-  `memoryWorld` take `seed`, and a template process's `chance_pct` is the first roll. `edit` sends one `spawn`/`remove`/`place`/`set_props`/`set_part`/`set_seed`/`schedule_beat`/`cancel_beat`
+  `memoryWorld` take `seed`, and a template process's `chance_pct` is the first roll. `edit` sends one `spawn`/`remove`/`place`/`set_props`/`update_props` (merges)/`set_part`/`set_seed`/`schedule_beat`/`cancel_beat`
   through the pipeline as the reserved non-agent author `world` (`WORLD_AUTHOR`, which also alone may issue `advance`: time with no agent waiting; a verb opts in with `author_only`), which skips the
   agency check; `src/engine/verbs/edit.ts` holds it. `check` runs `resolveSubmission` against the
   current version with the same validation gate, but never writes or logs; `since` folds the store's

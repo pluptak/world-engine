@@ -118,6 +118,11 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
     target: IdSchema,
     props: z.record(z.string(), PrimitiveSchema),
   }).strict(),
+  z.object({
+    kind: z.literal("update_props"),
+    target: IdSchema,
+    props: z.record(z.string(), PrimitiveSchema),
+  }).strict(),
   z.object({ kind: z.literal("set_seed"), seed: z.number().int().min(0).max(4294967295) }).strict(),
   // The action and the followers are checked by the engine, which answers `invalid_args`.
   z.object({

@@ -144,7 +144,7 @@ test("the table covers every prop the source reads, and lists none it does not",
 test("every entity field has a tier, and the tiers are the plan's", () => {
   deepStrictEqual(
     Object.entries(ENTITY_FIELDS).filter(([, tier]) => tier === "derived").map(([name]) => name).sort(),
-    ["detached_from", "id", "location", "modifiers", "status"],
+    ["id", "location", "modifiers"],
   );
   strictEqual(ENTITY_FIELDS.template, "definition");
   for (const [name, field] of Object.entries(PROP_FIELDS)) {

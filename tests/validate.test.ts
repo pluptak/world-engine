@@ -512,8 +512,8 @@ test("a world built from an invalid scenario is never written", (t) => {
   const dir = join(tempDir(t), "never-created");
   const invalid: Scenario = [
     { template: "room", overrides: { name: "room" } },
-    // A bottle on the floor with a position of its own but nothing supporting it.
-    { template: "bottle", overrides: { name: "bottle", location: "e1", pos: { x: 5, y: 0 } } },
+    // A bottle standing on the floor with no position on it.
+    { template: "bottle", overrides: { name: "bottle", location: "e1", support: "e1" } },
   ];
 
   try {

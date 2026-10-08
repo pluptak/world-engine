@@ -55,8 +55,10 @@ directory, a changed hash, or a bad version is a `WorldError` with a code.
   ([rng.md](rng.md)).
 
 Refusals carry a machine `reason_code` and optional `reason_data` (reach, fit, enclosure, capacity
-numbers), never prose. Edits (`spawn`, `remove`, `place`, `set_props`, `set_part`, `set_seed`) are logged under
-the reserved non-agent author `world` and refused when they break an invariant.
+numbers), never prose. Edits (`spawn`, `remove`, `place`, `set_props`, `update_props`, `set_part`,
+`set_seed`) are logged under the reserved non-agent author `world` and refused when they break an
+invariant. A spawn, or a scenario entry, that writes a derived field (`location` other than its chain's,
+or `modifiers`) is refused `derived_field` ([fields.md](fields.md)).
 
 A scenario entry may declare `"id"`, and `location`, `support`, `contained_in`, `concealed_by`,
 `detached_from.entity`, and the props `from`, `to`, and `opens` may name their entity. Names resolve

@@ -38,8 +38,9 @@ export interface PlaceEdit {
   pos?: Pos | AnchorPos | null;
 }
 
+// `set_props` replaces the entity's props with these; `update_props` writes these keys over them.
 export interface PropsEdit {
-  kind: "set_props";
+  kind: "set_props" | "update_props";
   target: Id;
   props: Record<string, number | string | boolean>;
 }
