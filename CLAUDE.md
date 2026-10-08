@@ -4,9 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `AGENTS.md` holds the process rules and the invariants (determinism, pure core, `canonicalJson`, no
 prose, coverage/`"unknown"`, parts and capacities, templates as data). Read it first; this file only
-adds what you need to find your way around the code. Its opening line ("Plan only — no code here")
-was written for the plan directory; blocks 0–9 are implemented in this repo, and `plan.md` lives
-outside it.
+adds what you need to find your way around the code. What to build next, in order, is the
+Priorities section of `backlog.md`.
 
 ## Commands
 
@@ -176,7 +175,7 @@ A human's `head` contributes `speech`, which `say` requires (`docs/speech.md`; t
 `jaw` that provides `mouth_carry`; default coverage stays `sight`+`hearing`, so smell answers only
 where a snapshot's coverage declares it.
 
-## Lane areas
+## Areas
 
 One bullet per area, and an area is extended by appending to its own bullet only. A new verb or
 refusal code also touches the shared registration points, one line or one entry each:

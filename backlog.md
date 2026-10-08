@@ -14,17 +14,22 @@ world state, is the job of a middleware that does not exist and is not part of t
 below may make the API easier for such a caller to drive (describing its own commands, dry-running
 one, structured refusals), but never interpret text or plan on a caller's behalf.
 
-## How the work runs in parallel
+## Priorities
 
-P lands first, on `main`. Then lanes A–D run at the same time, one agent per lane, each in its own
-git worktree and branch; a lane's items run in order. Each finished item is rebased on `main`,
-passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts once A–D have merged.
+Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-- **Owned files:** a lane edits only the files its items name, plus the shared registration points.
-- **Shared registration points** — `src/engine/verbs/index.ts`, `src/errors.ts`, `src/contract.ts`,
-  the verb table in `tests/property-gen.ts`, the verb list in `docs/verbs.md`, `CLAUDE.md` — take
-  additions only, one line or one entry per change, so concurrent lanes conflict at most trivially.
-- **No lane changes another lane's semantics.** If an item needs that, it stops and says so.
+1. [Readers take whole lines](#readers-take-whole-lines): small, and a correctness bug today.
+2. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
+   blocks 1–8 in its order. Its open questions must be settled before block 4.
+3. [The CLI describes its requests and responses](#the-cli-describes-its-requests-and-responses).
+4. Candidates without a plan yet (below): write the item, then build it.
+
+## How the work runs
+
+One item at a time on `main`. Sessions that run in parallel each work in their own git worktree and
+commit only their own files. Additions to the shared registration points (`src/engine/verbs/index.ts`,
+`src/errors.ts`, `src/contract.ts`, the verb table in `tests/property-gen.ts`, the `docs/verbs.md`
+index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts at most trivially.
 
 ## Out of scope
 
@@ -45,13 +50,27 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 - Raised and set aside until a scenario needs them: several parents per event (`causes: [...]`) and a stored
   `root_id`; stepping onto shards having a consequence; an agent slipping through a gap, and a head sized apart
   from the body for bites; a wound from a detachment written by `edit`.
-- The limits in `docs/limits.md`, reassessed after the inn: none is worth a verb yet. Facing and a
-  sight cone (an unseen act in a lit room) is the costliest and the first to revisit, when a
-  concrete world needs what darkness, concealment and staging cannot give.
+- The limits in `docs/limits*.md`: none is worth a verb yet, except as listed under candidates.
 
 ## Items
 
-Every item is ready now, and names anything it leans on; they can be taken in any order.
+Every item is ready now and names anything it leans on; the order is under Priorities.
+
+### Readers take whole lines
+
+`since`, `attempts`, `trace` and the event-form `query` read `events.jsonl`, `deltas.jsonl` and `log.jsonl` without
+the world's turn ([docs/locking.md](docs/locking.md)), so a read that overlaps a writer's append can find a last line
+without its newline. `cachedLines` already declines to cache such a file but still parses the fragment, which
+throws a bare `SyntaxError`; `readLogEntries` and the replay start split the same way.
+
+- **Store:** in `src/store/file-store.ts`, `parseLines`, `readLogEntries` and the tail of `replayStart` take only the
+  text up to the last newline; what follows is not yet a line and is left for the next read. A file that is all
+  fragment reads as empty. The cache records the bytes it consumed, so it keeps its entries instead of dropping them.
+- **Tests** (`tests/store-lines.test.ts`, calling the readers directly): each file with a half-written record at its
+  end reads as without it, twice in a row; once the record is completed the next read has it, the cache extended and
+  not rebuilt; a malformed line before the end still fails with its line number.
+- **Docs:** `docs/locking.md` (what a read without the turn sees), `docs/persistence.md`.
+- **Depends on:** nothing.
 
 ### The CLI describes its requests and responses
 
@@ -70,18 +89,12 @@ Every item is ready now, and names anything it leans on; they can be taken in an
 - **Docs:** `docs/api.md` (the CLI's ops).
 - **Depends on:** nothing.
 
-### Readers take whole lines
+## Candidates
 
-`since`, `attempts`, `trace` and the event-form `query` read `events.jsonl`, `deltas.jsonl` and `log.jsonl` without
-the world's turn ([docs/locking.md](docs/locking.md)), so a read that overlaps a writer's append can find a last line
-without its newline. `cachedLines` already declines to cache such a file but still parses the fragment, which
-throws a bare `SyntaxError`; `readLogEntries` and the replay start split the same way.
+Known gaps with no plan yet. Promote one by writing it up as an item above.
 
-- **Store:** in `src/store/file-store.ts`, `parseLines`, `readLogEntries` and the tail of `replayStart` take only the
-  text up to the last newline; what follows is not yet a line and is left for the next read. A file that is all
-  fragment reads as empty. The cache records the bytes it consumed, so it keeps its entries instead of dropping them.
-- **Tests** (`tests/store-lines.test.ts`, calling the readers directly): each file with a half-written record at its
-  end reads as without it, twice in a row; once the record is completed the next read has it, the cache extended and
-  not rebuilt; a malformed line before the end still fails with its line number.
-- **Docs:** `docs/locking.md` (what a read without the turn sees), `docs/persistence.md`.
-- **Depends on:** nothing.
+- **Actors learn that unseen others acted.** `observation.version` and a `preempted` status reveal
+  commands the actor could not perceive, through `actorWorld` and the `actor_*` ops; the open decision
+  is whether an actor view should hide them.
+- **Facing and a sight cone.** In a lit room every act is seen (`docs/limits.md`); the costliest of
+  the limits, revisit when a concrete world needs what darkness, concealment and staging cannot give.

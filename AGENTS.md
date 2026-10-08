@@ -5,39 +5,42 @@ Guidance for coding agents in this directory.
 ## What this repo is
 
 - A deterministic, persistent, causal world-transition engine (physics is one resolver underneath
-  persistent state). Blocks 0–9 of the original plan are implemented here; `CLAUDE.md` maps the code
-  and `docs/DESIGN.md` indexes what is built.
+  persistent state). `CLAUDE.md` maps the code, `docs/DESIGN.md` indexes what is built, and
+  `backlog.md` holds what comes next and in what order (its Priorities section), with longer plans in
+  `plans/`.
 - Nothing here imports Story-writer and Story-writer imports nothing from it. Keep the two
   independent. `..\Story-writer\CLAUDE.md` is the precedent for process and comment style.
-- The original plan's **Shared brief** (hard rules and core types) is reflected in the invariants
-  below and in `src/model.ts`; don't re-derive or paraphrase the types.
+- The hard rules and core types are the invariants below and `src/model.ts`; don't re-derive or
+  paraphrase the types.
 
 ## Working process — one block per session
 
-- Deliver **one small, independently pausable block**, the smaller self-contained slice even when it is
-  not the most efficient path. Finish and verify it before the next block is started.
-- The block prompt names its files, exact types, tests and a done-condition. **Follow it literally.** If
-  the spec is ambiguous or contradicts existing code, stop and report rather than guess.
-- Hard prohibitions (from the shared brief): **no git commit**, **no dependencies beyond those the block
-  names**, **do not start the next block**, no edits to files outside the block's scope.
+- Deliver **one small, independently pausable block**: the top unblocked entry of `backlog.md`'s
+  Priorities, or one block of the plan it points to. Finish and verify it before the next is started.
+- The item or block names its files, exact types, tests and a done-condition. **Follow it literally.**
+  If the spec is ambiguous or contradicts existing code, stop and report rather than guess.
+- Hard prohibitions: **no dependencies beyond those the block names**, **do not start the next
+  block**, no edits to files outside the block's scope.
+- Done = the verification below passes. Then commit the block, with the backlog item (or plan block)
+  deleted in the same commit, staging only your own files: other sessions may share the checkout.
 - Report at the end: files changed, tests added, any deviation and why. The report is a claim, not
   evidence.
 
-### Verification (the human runs these after each block — expect to be asked to have done them)
+### Verification (before the commit)
 
 1. `npm run check` in `world-engine` passes.
 2. Deliberately break one new test to confirm it can fail, then restore it.
-3. Read the diff; `git log` confirms there is no agent commit.
+3. Read the staged diff: only this block's changes.
 
 ## Stack and commands (`world-engine`)
 
 - TypeScript `strict` + `noUncheckedIndexedAccess`, `module`/`moduleResolution` NodeNext, target ES2022,
-  Node ≥ 20. Test runner is `node:test` via `tsx`. **Zod only at the JSON boundary, only from block 8.**
+  Node ≥ 20. Test runner is `node:test` via `tsx`. **Zod only at the JSON boundary.**
 - `npm run check` = `typecheck` (`tsc --noEmit`) + `npm test`. That is the gate; there is no lint step.
 - `npm test` = `node --import tsx --test "tests/**/*.test.ts"` — the script already globs everything, so
   a focused run needs a direct `node --import tsx --test tests/<file>.test.ts` instead of appending a
   path to `npm test`.
-- devDependencies only: typescript, tsx, @types/node (+ zod in block 8). `data/` and `node_modules` are
+- devDependencies only: typescript, tsx, @types/node, zod. `data/` and `node_modules` are
   gitignored; store tests use `os.tmpdir()`.
 
 ## Invariants every block must preserve
@@ -64,13 +67,13 @@ Guidance for coding agents in this directory.
 - **Comments only where a line is non-obvious** (a bound, an ordering, an asymmetry). No doc comments
   restating the code. History and lessons belong in git history.
 
-## Doc size caps (explicit in `plan.md`)
+## Doc size caps
 
 - `world-engine/README.md` ≤ 15 lines. `docs/` describes **what is built, nothing aspirational**, one
   concept per file, each ≤ 40 lines and ≤ 100 columns; `docs/DESIGN.md` is the index of those files.
   A topic that outgrows its cap splits into a new file rather than losing content.
 
-## Out of scope — do not build these, even if the code would be easier
+## Out of scope
 
-- the social resolver, continuous physics (Rapier/Box2D), free-text targets beyond
-  name / alias / `entity.part`, any Story-writer integration.
+The list is in `backlog.md` (Out of scope); do not build anything on it, even if the code would be
+easier.
