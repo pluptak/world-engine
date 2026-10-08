@@ -407,3 +407,51 @@ test("a container that was never openable does not hide what it holds", () => {
   strictEqual(result.status, "ok");
   strictEqual(result.snapshot.entities[stone.id]?.contained_in, actor.id);
 });
+test("opening what is open and closing what is shut are refused, change nothing and take no time", () => {
+  for (const [props, verb, code] of [
+    [{ open: true }, "open", "already_open"],
+    [{ open: false }, "close", "already_closed"],
+    // A door never opened has no `open` at all, and is shut.
+    [{}, "close", "already_closed"],
+  ] as const) {
+    const world = doorWorld({ ...props });
+    const result = act(world, verb, "door");
+    strictEqual(result.status, "refused", `${verb} ${JSON.stringify(props)}`);
+    strictEqual(result.reason_code, code);
+    deepStrictEqual([result.events, result.deltas], [[], []]);
+    deepStrictEqual(result.snapshot, world.snapshot);
+  }
+  // The other way round each still works, and a shut door that is locked is locked first.
+  strictEqual(act(doorWorld({ open: true }), "close", "door").status, "ok");
+  strictEqual(act(doorWorld({ open: false }), "open", "door").status, "ok");
+  strictEqual(act(doorWorld({ open: false, locked: true }), "open", "door").reason_code, "locked");
+});
+
+test("reach is judged before the state: an open chest out of reach is out of reach, not already open", () => {
+  const initial: Snapshot = {
+    version: 0,
+    tick: 0,
+    next_seq: 1,
+    templates_hash: templatesHash(baseRegistry),
+    coverage: { relations: [], senses: [], properties: [] },
+    entities: {},
+  };
+  const room = spawn(initial, baseRegistry, "room", { name: "room", props: { lit: true } });
+  const actor = spawn(room.snapshot, baseRegistry, "human", {
+    name: "actor",
+    location: room.id,
+    support: room.id,
+    pos: { x: 0, y: 0 },
+  });
+  const chest = spawn(actor.snapshot, baseRegistry, "chest", {
+    name: "chest",
+    location: room.id,
+    support: room.id,
+    pos: { x: 300, y: 0 },
+    props: { container: true, openable: true, open: true, inner_w_cm: 55, inner_d_cm: 35, inner_h_cm: 35 },
+  });
+  const asked = (verb: string) =>
+    apply(chest.snapshot, baseRegistry, { command_id: verb, actor: actor.id, verb, target: "chest" });
+  strictEqual(asked("open").reason_code, "out_of_reach");
+  strictEqual(asked("close").reason_code, "out_of_reach");
+});

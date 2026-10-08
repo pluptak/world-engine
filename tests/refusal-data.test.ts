@@ -322,7 +322,7 @@ test("every mapped refusal carries data; unmapped ones do not", (t) => {
           inner_d_cm: 35,
           inner_h_cm: 35,
           openable: true,
-          open: true,
+          open: false,
           locked: true,
         },
       },

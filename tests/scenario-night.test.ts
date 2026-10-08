@@ -55,17 +55,11 @@ const heardEvents = (turn: Turn<unknown>) => [...turn.view.events, ...(turn.last
 interface Guard {
   alert: boolean;
   spot: number;
-  opened: boolean;
   shouted: boolean;
 }
 const guard: Policy<Guard> = ({ view, options, last, memory }) => {
   const alert = memory.alert || heardEvents({ view, options, last, memory }).some((event) => event.type === "sounded");
-  // Nothing in the view says the door is open, and options offer `open` either way: she knows it
-  // because she opened it.
-  const opened =
-    memory.opened ||
-    (last?.command.verb === "open" && last.result.observation.events.some((event) => event.type === "opened"));
-  const next = { ...memory, alert, opened };
+  const next = { ...memory, alert };
   if (!alert) {
     return { command: watching, memory: next };
   }
@@ -77,6 +71,9 @@ const guard: Policy<Guard> = ({ view, options, last, memory }) => {
   if (door === undefined) {
     return { command: wait, memory: next };
   }
+  // Nothing in the view says the door is open, but the options do: `close` is ready only while it
+  // stands open in her reach, and `open` is then refused `already_open`.
+  const opened = ready(options, "close", door.id);
   if (opened && !memory.shouted) {
     return {
       command: { verb: "say", args: { utterance: "who.goes.there", volume: "shout" } },
@@ -198,7 +195,7 @@ function play(t: { after(callback: () => void): void }, rounds: number): Night {
   // Each character takes its turn in a fixed order; every command takes its own ticks, so the clock
   // moves as they act, and nobody acts at once.
   const cast: Character[] = [
-    character(actorWorld(world, ids.ann!), guard, { alert: false, spot: 0, opened: false, shouted: false }),
+    character(actorWorld(world, ids.ann!), guard, { alert: false, spot: 0, shouted: false }),
     character(actorWorld(world, ids.cal!), companion, { asked: false }),
     character(actorWorld(world, ids.bob!), visitor, { answered: false }),
   ];
@@ -263,6 +260,12 @@ test("the night plays out from inside: knock, lantern, door, challenge, answer",
   deepStrictEqual([ann[2]?.command.verb, ann[2]?.result.reason_code, ann[2]?.result.reason_data], ["move", "blocked", { with: ids.dee }]);
   deepStrictEqual([ann[3]?.result.status, ann[4]?.command.verb, ann[4]?.result.status], ["ok", "open", "ok"]);
   strictEqual(world.entity(ids.door!)?.props.open, true);
+  // Her next turn is offered the open door's state: it can be shut, and opening it again is refused.
+  ok(ready(ann[5]!.options, "close", ids.door));
+  deepStrictEqual(
+    ann[5]!.options.blocked?.filter((entry) => entry.verb === "open" && entry.target === ids.door),
+    [{ verb: "open", target: ids.door, reason_code: "already_open" }],
+  );
 
   // D. Through the open door her shout reaches bob, who answers in a whisper that crosses no door.
   deepStrictEqual(ann[5]?.command.args, { utterance: "who.goes.there", volume: "shout" });

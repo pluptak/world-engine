@@ -13,9 +13,6 @@ architect's beats used the `World`. One line per limit, with the step that shows
   she can name (N step A).
 - The view gives positions, not footprints: the guard picks a spot by the door from the door's
   `pos` and finds a free one by trial, her first `move` refused `blocked` by dee (N step C).
-- Whether the door is open is not in the view: `open` is a prop the default coverage leaves out, and
-  options offer `open` on an open door, which is `ok` and changes nothing; she knows it is open
-  only because she opened it (N step C).
 - A door with a position belongs to the room it stands in: from the dark yard bob neither sees nor
   gropes for the gatehouse door, and nothing he senses names the room behind it, so he cannot come
   in through the door the guard opened (N step E).

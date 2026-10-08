@@ -31,8 +31,8 @@ const requirements: Record<Kind, readonly CapacityRequirement[] | undefined> = {
 };
 
 const openableArgs: Readonly<Record<string, never>> = {};
-const openRefuses = ["not_openable", "out_of_reach", "locked"] as const;
-const closeRefuses = ["not_openable", "out_of_reach"] as const;
+const openRefuses = ["not_openable", "out_of_reach", "already_open", "locked"] as const;
+const closeRefuses = ["not_openable", "out_of_reach", "already_closed"] as const;
 const keyRefuses = ["not_openable", "out_of_reach", "no_key", "insufficient_manipulation"] as const;
 
 const refuses: Record<Kind, readonly string[]> = {
@@ -101,6 +101,13 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
   }
   const entity = target.entity;
 
+  // Opening what is open, or shutting what is shut, would change nothing but the clock.
+  if (kind === "open" && entity.props.open === true) {
+    return { status: "refused", reason_code: "already_open" };
+  }
+  if (kind === "close" && entity.props.open !== true) {
+    return { status: "refused", reason_code: "already_closed" };
+  }
   if (kind === "open" && entity.props.locked === true) {
     return { status: "refused", reason_code: "locked" };
   }

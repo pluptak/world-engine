@@ -91,7 +91,7 @@ test("an opened door shuts itself two ticks later, and the close names the openi
   deepStrictEqual(chain.map((event) => event.type), ["open", "opened", "closed"]);
 });
 
-test("shut by hand, nothing is left to come; opened again, the count starts over", (t) => {
+test("shut by hand, nothing is left to come; opened again while open it is refused, and the count stands", (t) => {
   const { world, ann, door } = hall(t);
   run(world, ann, "open", "door");
   deepStrictEqual(kinds(run(world, ann, "close", "door")), [
@@ -102,17 +102,15 @@ test("shut by hand, nothing is left to come; opened again, the count starts over
 
   strictEqual(run(world, ann, "open", "door").snapshot.tick, 3);
   deepStrictEqual(world.snapshot().schedule?.map((cause) => cause.due_tick), [4]);
-  // Opened again while open, at tick 3: the close moves from 4 to 5, so the open's own tick passes
-  // 4 with the door still standing open.
-  deepStrictEqual(kinds(run(world, ann, "open", "door")), [
-    ["open", 3],
-    ["opened", 3],
-  ]);
-  deepStrictEqual(world.snapshot().schedule?.map((cause) => cause.due_tick), [5]);
+  // Opened again while open, at tick 3: refused, so the close stays due at 4 and no tick passes.
+  const again = run(world, ann, "open", "door");
+  strictEqual(again.reason_code, "already_open");
+  strictEqual(again.snapshot.tick, 3);
+  deepStrictEqual(world.snapshot().schedule?.map((cause) => cause.due_tick), [4]);
   strictEqual(world.entity(door)?.props.open, true);
   deepStrictEqual(kinds(run(world, ann, "wait", undefined, { ticks: 1 })), [
-    ["wait", 4],
-    ["closed", 5],
+    ["wait", 3],
+    ["closed", 4],
   ]);
 });
 

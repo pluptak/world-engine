@@ -41,21 +41,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Open and close refuse what would change nothing
-
-`docs/limits-actor.md`: `open` on an open door is `ok`, changes nothing and takes a tick, so options offer `open`
-and `close` alike and a controller cannot read the door's state from them; `light` already refuses
-`already_burning`.
-
-- **Verbs:** `open` on an open target is refused `already_open`, `close` on a shut one `already_closed`, both
-  declared in `refuses` (`src/engine/verbs/openable.ts`) and checked after reach. The schedule's own close
-  (`runClose` in `src/engine/schedule.ts`) is not the verb and is unchanged.
-- **Tests:** both refusals in `tests/openable.test.ts`; any test that opens what is open, or closes what is shut,
-  changes to expect the refusal. `tests/scenario-night.test.ts` step C: the guard reads the open door from
-  options (`close` ready, `open` blocked `already_open`) instead of remembering it, and the limits line goes.
-- **Docs:** `docs/verbs-openables.md`.
-- **Depends on:** nothing.
-
 ### From the far side of a door
 
 `docs/limits-actor.md`: a door with a position stands in one room, so from the room it leads to nobody sees,
