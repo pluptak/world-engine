@@ -53,25 +53,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### The cell, seen from inside
-
-The watch showed what a controller could not decide from inside. The cell (`scenarios/cell.json`: ann behind bars,
-bob outside with the key to the gate) leans on rules it never touched: reach through bars, the gap a thing must fit,
-a key, a lock, and a gate that stops being a barrier when open. None has been played through `actorWorld`.
-
-- **Harness:** the policy loop in `tests/scenario-night.test.ts` (`Turn`, `Policy`, `character`, `Sent`, the turn
-  loop of `play`, and the "no id it was not given" check) moves to `tests/actor-harness.ts`; that test's assertions
-  do not change.
-- **Test** (`tests/scenario-cell-actor.test.ts`): two policies and no beats. Bob walks to the bars across from ann and
-  gives her the key once `options` offer `give`; ann, holding it, walks to the gate, unlocks and opens it and walks
-  out. Each chooses only from its own `observe`, `options`, `inspect` and last verdict. Asserted: the key crosses the
-  bars by `give` (it fits the 12 cm gap); `unlock` is blocked `no_key` before the key and ready after, and `open` is
-  blocked `locked` until the unlock; her walk across is `blocked` while the gate is shut and `ok` once it is open;
-  nothing sent names an id its recipient was not given; the same run twice is the same record.
-- **Findings:** whatever the run could not decide goes to `docs/limits-actor.md`, one line each with its step, as the
-  watch's did; a finding that is a gap in the engine and not a modelling choice is reported, to be planned.
-- **Depends on:** nothing.
-
 ### A stored world verifies against its own log
 
 A deterministic store should be able to prove it: replay the log from `initial.json` and see that the files agree.
