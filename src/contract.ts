@@ -534,7 +534,10 @@ export const VerifyResponseSchema = z.union([
   z.object({
     ok: z.literal(false),
     divergence: z.object({
-      file: z.enum(["snapshot.json", "events.jsonl", "deltas.jsonl", "log.jsonl"]),
+      file: z.union([
+        z.enum(["snapshot.json", "events.jsonl", "deltas.jsonl", "log.jsonl"]),
+        z.string().regex(/^checkpoints\/\d+-\d+\.json$/),
+      ]),
       line: z.number().int().nonnegative(),
       code: z.enum(["differs", "missing", "extra", "status_differs"]),
     }).strict(),

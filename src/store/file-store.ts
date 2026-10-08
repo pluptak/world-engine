@@ -280,25 +280,31 @@ function digest(bytes: Buffer): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-function writeCheckpoint(dir: string, snapshot: Snapshot, logBytes: number): void {
-  const log = readFileSync(join(dir, snapshots.log)).subarray(0, logBytes);
+// The bytes of a checkpoint: the snapshot, bound to the log prefix that made it and to `initial.json`.
+// `verify` builds the same text from its replay and compares.
+function checkpointText(snapshot: Snapshot, log: Buffer, initial: Buffer): string {
   let lines = 0;
   for (const byte of log) {
     lines += byte === 10 ? 1 : 0;
   }
+  return canonicalJson({
+    version: snapshot.version,
+    templates_hash: snapshot.templates_hash,
+    log_bytes: log.length,
+    log_lines: lines,
+    log_sha256: digest(log),
+    initial_sha256: digest(initial),
+    snapshot,
+  });
+}
+
+function writeCheckpoint(dir: string, snapshot: Snapshot, logBytes: number): void {
+  const log = readFileSync(join(dir, snapshots.log)).subarray(0, logBytes);
   const folder = join(dir, checkpointsDirectory);
   mkdirSync(folder, { recursive: true });
   atomicWrite(
     join(folder, `${snapshot.version}-${snapshot.next_seq}.json`),
-    canonicalJson({
-      version: snapshot.version,
-      templates_hash: snapshot.templates_hash,
-      log_bytes: log.length,
-      log_lines: lines,
-      log_sha256: digest(log),
-      initial_sha256: digest(readFileSync(join(dir, snapshots.initial))),
-      snapshot,
-    }),
+    checkpointText(snapshot, log, readFileSync(join(dir, snapshots.initial))),
   );
 }
 
@@ -972,9 +978,10 @@ export function replayFold(dir: string, registry: TemplateRegistry): Fold {
 // The first place a stored world disagrees with its own log. `file` is the file that disagrees and
 // `line` its 1-based line (0 for snapshot.json, which has none); `code` says how: `differs` (the bytes
 // are not the ones the log makes), `missing` (the file ends before the log's line), `extra` (it goes on
-// past it), or `status_differs` (a log line whose command, decided again, comes out otherwise).
+// past it, or a checkpoint for a version the log has not reached), or `status_differs` (a log line whose
+// command, decided again, comes out otherwise). A checkpoint is named `checkpoints/<its file>`, line 0.
 export interface Divergence {
-  file: "snapshot.json" | "events.jsonl" | "deltas.jsonl" | "log.jsonl";
+  file: "snapshot.json" | "events.jsonl" | "deltas.jsonl" | "log.jsonl" | `checkpoints/${string}`;
   line: number;
   code: "differs" | "missing" | "extra" | "status_differs";
 }
@@ -1039,6 +1046,23 @@ function verifyLocked(dir: string, templates: TemplateRegistry): Verification {
     }
   }
 
+  // A checkpoint is a snapshot the replay should reach: those versions are kept, with how much of the
+  // log had been written by then.
+  const wanted = new Map<number, string>();
+  let names: string[] = [];
+  try {
+    names = readdirSync(join(dir, checkpointsDirectory));
+  } catch {
+    // No checkpoints.
+  }
+  for (const name of names) {
+    const found = CHECKPOINT_NAME.exec(name);
+    if (found !== null) {
+      wanted.set(Number(found[1]), name);
+    }
+  }
+  const reached = new Map<number, { snapshot: Snapshot; lines: number }>();
+
   // A command that raced is judged against the version it was based on, so those snapshots are kept
   // as the replay passes them; the rest are let go.
   const based = new Set(entries.map((entry) => entry.based_on_version));
@@ -1060,6 +1084,9 @@ function verifyLocked(dir: string, templates: TemplateRegistry): Verification {
     if (result.status === "ok") {
       deltas.push(...result.deltas.map((delta) => canonicalJson(delta)));
       snapshot = result.snapshot;
+      if (wanted.has(snapshot.version)) {
+        reached.set(snapshot.version, { snapshot, lines: index + 1 });
+      }
     }
   }
   if (log.tail !== "") {
@@ -1078,6 +1105,27 @@ function verifyLocked(dir: string, templates: TemplateRegistry): Verification {
   const stored = textOrNull(join(dir, snapshots.current));
   if (stored !== canonicalJson(snapshot)) {
     return diverges("snapshot.json", 0, stored === null ? "missing" : "differs");
+  }
+
+  // Last, in version order: a checkpoint is a cache, but readers start from its snapshot and a stale
+  // command is judged against the ones it keeps. Each must be exactly what this replay would have
+  // written when it reached that version.
+  const initialBytes = readFileSync(join(dir, snapshots.initial));
+  for (const [version, name] of [...wanted].sort((left, right) => left[0] - right[0])) {
+    const file = `${checkpointsDirectory}/${name}` as const;
+    if (version > snapshot.version) {
+      return diverges(file, 0, "extra");
+    }
+    const at = reached.get(version);
+    const prefix = at === undefined ? null : Buffer.from(log.lines.slice(0, at.lines).map((line) => `${line}\n`).join(""), "utf8");
+    if (
+      at === undefined ||
+      prefix === null ||
+      name !== `${version}-${at.snapshot.next_seq}.json` ||
+      textOrNull(join(dir, checkpointsDirectory, name)) !== checkpointText(at.snapshot, prefix, initialBytes)
+    ) {
+      return diverges(file, 0, "differs");
+    }
   }
   return { ok: true, entries: entries.length, version: snapshot.version };
 }

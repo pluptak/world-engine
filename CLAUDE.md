@@ -116,7 +116,7 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
   surface as CLI issue codes. `verify` (`World.verify()`, or `verifyWorld(dir)` for a world not open, which
   the CLI's `verify` op uses since opening settles the files) replays the log from `initial.json` and
-  names the first byte of `log.jsonl`, `events.jsonl`, `deltas.jsonl` or `snapshot.json` that differs
+  names the first byte of `log.jsonl`, `events.jsonl`, `deltas.jsonl`, `snapshot.json` or a checkpoint that differs
   (`docs/persistence.md`).
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
   `command`/`edit`/`check`/`options`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`;

@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
+import { deepStrictEqual, notStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -350,4 +350,52 @@ test("the CLI names a divergence the way the library does, and an unknown world 
   const missing = ask(join(dir, "nowhere"));
   strictEqual(missing.status, 2, missing.stdout + missing.stderr);
   strictEqual(JSON.parse(missing.stdout).issues[0].code, "no_such_world");
+});
+
+test("a checkpoint is held to the replay: its snapshot, its binding, and a version the log has not reached", (t) => {
+  const { dir, world: good } = copyOfBuilt(t);
+  const name = readdirSync(join(dir, "checkpoints")).find((entry) => /^256-\d+\.json$/.test(entry))!;
+  ok(name !== undefined);
+  const file = `checkpoints/${name}` as const;
+  const original = JSON.parse(read(dir, file)) as { snapshot: { tick: number }; log_sha256: string };
+  const rewrite = (to: string, change: (value: typeof original) => void) => {
+    const copy = copyOfBuilt(t).dir;
+    const value = JSON.parse(read(copy, file)) as typeof original;
+    change(value);
+    write(copy, to, canonicalJson(value));
+    return copy;
+  };
+
+  // A snapshot changed in one number: nothing else notices, but readers start from it.
+  const shifted = rewrite(file, (value) => {
+    value.snapshot.tick += 1;
+  });
+  deepStrictEqual(failed(verifyWorld(shifted)), { file, line: 0, code: "differs" });
+  notStrictEqual(canonicalJson(openWorld(shifted).since(256)), canonicalJson(good.since(256)));
+
+  // Its binding to the log or to the starting snapshot changed.
+  const unbound = rewrite(file, (value) => {
+    value.log_sha256 = "0".repeat(64);
+  });
+  deepStrictEqual(failed(verifyWorld(unbound)), { file, line: 0, code: "differs" });
+
+  // A checkpoint for a version the log has not reached, and one for a version it has but never wrote.
+  const ahead = copyOfBuilt(t).dir;
+  writeFileSync(join(ahead, "checkpoints", "999-999.json"), read(ahead, file));
+  deepStrictEqual(failed(verifyWorld(ahead)), { file: "checkpoints/999-999.json", line: 0, code: "extra" });
+  const unwritten = copyOfBuilt(t).dir;
+  writeFileSync(join(unwritten, "checkpoints", "257-300.json"), read(unwritten, file));
+  deepStrictEqual(failed(verifyWorld(unwritten)), { file: "checkpoints/257-300.json", line: 0, code: "differs" });
+
+  // What is no checkpoint's name is left alone, and a world may have lost its checkpoints: readers replay.
+  const plain = copyOfBuilt(t).dir;
+  writeFileSync(join(plain, "checkpoints", "notes.txt"), "kept by hand");
+  strictEqual(verifyWorld(plain).ok, true);
+  rmSync(join(plain, "checkpoints", name));
+  strictEqual(verifyWorld(plain).ok, true);
+
+  // The CLI's answer carries the file by name, and only a checkpoint's.
+  const answer = { ok: false, divergence: { file, line: 0, code: "differs" } };
+  deepStrictEqual(VerifyResponseSchema.parse(answer), answer);
+  strictEqual(VerifyResponseSchema.safeParse({ ok: false, divergence: { ...answer.divergence, file: "checkpoints/../log.jsonl" } }).success, false);
 });

@@ -35,8 +35,8 @@ directory, a changed hash, or a bad version is a `WorldError` with a code.
   included, with the command, its base, the version it was decided at, its status, reason code and
   data, and candidates; a dry run is not one. The CLI's `attempts` op answers it.
 - `verify()` replays a store world's log from `initial.json`, deciding every line again as `submit` did, and
-  compares what that makes with `log.jsonl`, `events.jsonl`, `deltas.jsonl` and `snapshot.json`, byte for
-  byte ([persistence.md](persistence.md)): `{ ok: true, entries, version }`, or `{ ok: false, divergence: {
+  compares what that makes with `log.jsonl`, `events.jsonl`, `deltas.jsonl`, `snapshot.json` and each
+  checkpoint, byte for byte ([persistence.md](persistence.md)): `{ ok: true, entries, version }`, or `{ ok: false, divergence: {
   file, line, code } }` for the first difference. It writes nothing. `verifyWorld(dir)` does the same for a
   world that is not open, which is how a damaged one is checked, since `openWorld` settles the files first
   and the CLI's `verify` op (`world`) goes that way. A memory world keeps no log and throws

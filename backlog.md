@@ -20,8 +20,7 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
    blocks 3–8 in its order. Its open questions must be settled before block 4.
-2. [Verify holds the checkpoints to the replay](#verify-holds-the-checkpoints-to-the-replay).
-3. Candidates without a plan yet (below): write the item, then build it.
+2. Candidates without a plan yet (below): write the item, then build it.
 
 ## How the work runs
 
@@ -55,27 +54,7 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
 
-### Verify holds the checkpoints to the replay
-
-`verify` compares the four data files and says the head and checkpoints are caches it does not compare. A checkpoint
-is not harmless: readers start from its snapshot, so one that was changed alters what `since` and event-time
-`perceive` answer, and `snapshotAtVersion` feeds `resolveSubmission`, so it can change whether a stale command is
-logged `preempted` or `refused`. `readCheckpoint` checks it is bound to the log prefix, `initial.json` and the
-template set, and that its snapshot has the version, `next_seq` and set its name says, never the rest of it.
-
-- **Store:** while `verifyLocked` folds the log it keeps the canonical snapshot at each version a
-  `checkpoints/<version>-<next_seq>.json` names. After the snapshot it checks each file, in name order: one
-  `readCheckpoint` refuses (unparsable, another set, log bytes that are not the log's own prefix) is `differs`; one
-  whose `version` is past the log's is `extra`; one whose snapshot is not the replay's at that version is `differs`.
-  `line` is 0 and `file` is `checkpoints/<name>`. A world with no checkpoints, and a name that is no checkpoint's,
-  are untouched. The head stays out: after a crash it is behind its files and `load` mends it.
-- **Contract:** `VerifyResponseSchema` takes the four names or `checkpoints/<version>-<next_seq>.json`
-  (a regular expression), and `Divergence["file"]` is widened to match.
-- **Tests** (`tests/verify.test.ts`): a checkpoint's snapshot changed to the same length, one with a log byte changed
-  under it, and a copy named for a version past the log each report their divergence; the unchanged world still
-  verifies ok; no file's bytes change; the CLI answer parses.
-- **Docs:** `docs/persistence.md` (the verify paragraph), `docs/api.md`.
-- **Depends on:** nothing.
+None is planned now.
 
 ## Candidates
 
