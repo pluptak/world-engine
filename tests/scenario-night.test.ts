@@ -40,13 +40,16 @@ type Choice<M> = { command: Omit<ActorCommand, "command_id">; memory: M };
 type Policy<M> = (turn: Turn<M>) => Choice<M>;
 
 const wait = { verb: "wait", args: { ticks: 1 } };
+// Idle until something reaches her senses: the count is only a bound, and the wait ends the moment
+// she could sense anything.
+const watching = { verb: "wait", args: { ticks: 20, until: "sensed" } };
 const byTemplate = (view: Projection, template: string): ObservedEntity | undefined =>
   view.entities.find((entity) => entity.template === template);
 const ready = (options: Options, verb: string, target?: Id): boolean =>
   options.ready.some((option) => option.verb === verb && option.target === target);
 const heardEvents = (turn: Turn<unknown>) => [...turn.view.events, ...(turn.last?.result.observation.events ?? [])];
 
-// The guard: she keeps watch a tick at a time; once she hears a knock she lights the lantern before
+// The guard: she keeps watch in one wait that ends when she senses something; once she hears a knock she lights the lantern before
 // the lights can fail, makes for the door, opens it and shouts a challenge into the yard. Where she
 // stands by the door is a guess from the door's position, tried in turn until one is not blocked.
 interface Guard {
@@ -64,7 +67,7 @@ const guard: Policy<Guard> = ({ view, options, last, memory }) => {
     (last?.command.verb === "open" && last.result.observation.events.some((event) => event.type === "opened"));
   const next = { ...memory, alert, opened };
   if (!alert) {
-    return { command: wait, memory: next };
+    return { command: watching, memory: next };
   }
   const lantern = byTemplate(view, "lantern");
   if (lantern !== undefined && ready(options, "light", lantern.id)) {
@@ -201,12 +204,13 @@ function play(t: { after(callback: () => void): void }, rounds: number): Night {
   ];
   const sent: Record<Id, Sent[]> = {};
   const seen: Record<Id, number> = {};
+  const start = world.snapshot().version;
   const lasts: Record<Id, { command: ActorCommand; result: ActorResult } | null> = {};
   for (let round = 0; round < rounds; round += 1) {
     for (const member of cast) {
       const actor = member.view.actor;
       const tick = world.snapshot().tick;
-      const view = member.view.observe({ since: seen[actor] ?? world.snapshot().version });
+      const view = member.view.observe({ since: seen[actor] ?? start });
       const options = member.view.options({ refused: true });
       const choice = member.choose({ view, options, last: lasts[actor] ?? null });
       const command: ActorCommand = { command_id: `night-${actor}-${round}`, ...choice };
@@ -231,20 +235,24 @@ test("the night plays out from inside: knock, lantern, door, challenge, answer",
   const bob = night.sent[ids.bob!]!;
   const verbs = (turns: Sent[]) => turns.map((turn) => turn.command.verb);
 
-  // A. The guard keeps watch a tick at a time; the knock reaches her at her next turn, heard from her
-  // own room and naming nothing, since a knock is never seen, and reaches bob from next door.
-  deepStrictEqual(verbs(ann).slice(0, 2), ["wait", "wait"]);
+  // A. The guard keeps watch in a single wait that ends as the knock falls, at tick 5 with that many
+  // ticks run, and the knock is in its result: heard from her own room and naming nothing, since a
+  // knock is never seen. It reaches bob from next door.
+  deepStrictEqual(ann[0]?.command, { command_id: `night-${ids.ann}-0`, ...watching });
+  const watched = world.since(0).events.find((event) => event.command_id === ann[0]?.command.command_id);
+  deepStrictEqual([watched?.tick, watched?.data], [0, { advanced: 5 }]);
   const knockedFor = (turns: Sent[]) =>
-    turns.flatMap((turn) => turn.view.events).filter((event) => event.type === "sounded");
+    turns.flatMap((turn) => [...turn.view.events, ...turn.result.observation.events]).filter((event) => event.type === "sounded");
   deepStrictEqual(knockedFor(ann).map((event) => [event.senses, "entity" in event, event.from]), [[["hearing"], false, "here"]]);
   deepStrictEqual(knockedFor(bob).map((event) => [event.senses, "entity" in event, event.from]), [[["hearing"], false, "next_door"]]);
 
-  // B. She lights the lantern on that turn, the one turn she has before the lights would fail: the
-  // knock falls at tick 5, her turn comes at 6, the lights are due at 8 and her next turn is at 9.
+  // B. She lights the lantern on her next turn, the one turn she has before the lights would fail: the
+  // knock falls at tick 5, cal and bob act at 5 and 6, her turn comes at 7, the lights are due at 8 and
+  // her next turn is at 10.
   const knock = world.since(0).events.find((event) => event.type === "sounded");
-  deepStrictEqual([knock?.tick, ann[2]?.tick, ann[3]?.tick], [5, 6, 9]);
-  strictEqual(ann[2]?.command.verb, "light");
-  strictEqual(ann[2]?.result.status, "ok");
+  deepStrictEqual([knock?.tick, ann[1]?.tick, ann[2]?.tick], [5, 7, 10]);
+  strictEqual(ann[1]?.command.verb, "light");
+  strictEqual(ann[1]?.result.status, "ok");
   const record = world.since(0).events;
   const skipped = record.find((event) => event.type === "beat_skipped");
   deepStrictEqual(skipped?.data, { id: "lights", reason: "condition" });
@@ -252,22 +260,22 @@ test("the night plays out from inside: knock, lantern, door, challenge, answer",
 
   // C. Her first spot by the door is taken: the refusal names dee, whom she can see. The next spot is
   // free and in reach of the door, which she opens.
-  deepStrictEqual([ann[3]?.command.verb, ann[3]?.result.reason_code, ann[3]?.result.reason_data], ["move", "blocked", { with: ids.dee }]);
-  deepStrictEqual([ann[4]?.result.status, ann[5]?.command.verb, ann[5]?.result.status], ["ok", "open", "ok"]);
+  deepStrictEqual([ann[2]?.command.verb, ann[2]?.result.reason_code, ann[2]?.result.reason_data], ["move", "blocked", { with: ids.dee }]);
+  deepStrictEqual([ann[3]?.result.status, ann[4]?.command.verb, ann[4]?.result.status], ["ok", "open", "ok"]);
   strictEqual(world.entity(ids.door!)?.props.open, true);
 
   // D. Through the open door her shout reaches bob, who answers in a whisper that crosses no door.
-  deepStrictEqual(ann[6]?.command.args, { utterance: "who.goes.there", volume: "shout" });
+  deepStrictEqual(ann[5]?.command.args, { utterance: "who.goes.there", volume: "shout" });
   const challenge = bob.flatMap((turn) => turn.view.events).find((event) => event.type === "say");
   deepStrictEqual([challenge?.utterance, challenge?.from, "entity" in (challenge ?? {})], ["who.goes.there", "next_door", false]);
-  deepStrictEqual(bob[6]?.command.args, { utterance: "friend", volume: "whisper" });
+  deepStrictEqual(bob[5]?.command.args, { utterance: "friend", volume: "whisper" });
 
   // E. Bob would come in, and cannot say where: the door stands in the gatehouse, so from the dark yard
   // he neither sees nor gropes for it, and nothing he was sent names the room behind it.
   for (const name of ["door", "gatehouse"]) {
     strictEqual(JSON.stringify(messages(night, ids.bob!)).includes(`"${ids[name]}"`), false, name);
   }
-  deepStrictEqual(verbs(bob).slice(7), ["wait"]);
+  deepStrictEqual(verbs(bob).slice(6), ["wait", "wait"]);
   strictEqual(world.entity(ids.bob!)?.location, ids.yard);
 });
 

@@ -24,7 +24,10 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
   `invalid_args`, too little speech `insufficient_speech`; a destroyed body is no agent. It changes
   nothing: the `say` event on the speaker is the whole act, with `{ utterance, volume, to? }`, `to` a fact
   of the act and no claim that anyone understood ([speech.md](speech.md)).
-- `wait`: takes `args.ticks` ticks and changes nothing else ([time.md](time.md)).
+- `wait`: takes `args.ticks` ticks and changes nothing else ([time.md](time.md)). With `args.until: "sensed"` (the
+  only value; any other is `invalid_args`) `ticks` is an upper bound and the clock ends at the first tick whose
+  events the waiter itself could sense, the rule `advance`'s `stop_on_perceived` applies below; the `wait`
+  event's data says `{ advanced: n }`, the ticks that passed.
 - `advance`: the same for the world author (`actor: "world"`), which has no body and so cannot
   `wait`: `args.ticks` ticks pass, and whatever falls due in them runs under its own cause, a wait's
   way. An agent issuing it is `invalid` with `invalid_author`, a missing or non-positive count

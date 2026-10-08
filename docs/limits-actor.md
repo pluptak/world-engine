@@ -5,9 +5,6 @@ alone: each character chose from its own `observe`, `options` and last verdict, 
 architect's beats used the `World`. One line per limit, with the step that shows it: `N` is
 `tests/scenario-night.test.ts`. Nothing here is a proposal; the gaps are backlog items.
 
-- A character learns of the knock at its next turn, not as it falls: `wait` does not end when the
-  actor senses something (only the author's `advance` stops on that), so an idle character waits a
-  tick at a time and a turn is a controller's only clock (N step A).
 - Turns are ticks: each command takes its own, so with three characters in the order the guard had
   one turn between the knock at tick 5 and the lights due at 8; a turn spent walking would have let
   the gatehouse go dark (N step B).

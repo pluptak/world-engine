@@ -9,14 +9,24 @@ function preconditions(context: CommandContext): PreconditionResult {
     : { status: "ok" };
 }
 
-// An ordinary action whose only effect is the time it takes: the pipeline advances the clock.
+function waitPreconditions(context: CommandContext): PreconditionResult {
+  const until = context.command.args?.until;
+  return until !== undefined && until !== "sensed"
+    ? { status: "invalid", reason_code: "invalid_args" }
+    : preconditions(context);
+}
+
+// An ordinary action whose only effect is the time it takes: the pipeline advances the clock. With
+// `until: "sensed"` the count is only an upper bound, and the wait ends at the first tick the waiter
+// itself could sense something, the rule `advance`'s `stop_on_perceived` applies.
 export const waitVerb: Verb = {
   requires_target: false,
-  args: { ticks: { kind: "int" } },
+  args: { ticks: { kind: "int" }, until: { kind: "enum", values: ["sensed"], optional: true } },
   refuses: [],
   free_args: true,
   duration: { arg: "ticks" },
-  preconditions,
+  wake_on: (command) => (command.args?.until === "sensed" ? [command.actor] : []),
+  preconditions: waitPreconditions,
   transition: () => {},
 };
 

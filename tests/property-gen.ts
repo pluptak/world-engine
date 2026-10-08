@@ -703,13 +703,15 @@ function holderPartEdit(context: GenContext): Command | WorldEdit {
   return { kind: "place", target: context.target, contained_in: holder, pos: null, in_part: "elbow" };
 }
 
-// A caller that already knows the tick count (an edit with nothing to write) spends no draw.
+// A caller that already knows the tick count (an edit with nothing to write) spends no draw. Of the
+// ten draws, the upper five also ask to be woken by what the waiter senses.
 function waiting(context: GenContext, ticks?: number): Command {
+  const draw = ticks === undefined ? int(context.rand, 1, 10) : 0;
   return {
     command_id: context.commandId,
     actor: context.actor,
     verb: "wait",
-    args: { ticks: ticks ?? int(context.rand, 1, 5) },
+    args: { ticks: ticks ?? ((draw - 1) % 5) + 1, ...(draw > 5 && { until: "sensed" }) },
   };
 }
 

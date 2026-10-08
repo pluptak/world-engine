@@ -41,22 +41,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### A wait that ends when its actor senses something
-
-`docs/limits-actor.md`: an idle character waits a tick at a time, because `wait` runs its whole count and only
-the author's `advance` stops on what an agent senses; a controller has no other clock than its turns.
-
-- **Verb:** `wait` takes an optional `args.until`, declared `{ kind: "enum", values: ["sensed"], optional: true }`.
-  With it, `ticks` is an upper bound and `wake_on` names the actor itself, the rule `advance`'s
-  `stop_on_perceived` applies (`advanceClock` in `src/engine/clock.ts`), and the `wait` event's data says
-  `{ advanced: n }` as `advance`'s does. Without it, nothing changes.
-- **Tests:** in `scenarios/watch.json` with the knock at tick 5, ann's `wait` of 20 `until: "sensed"` ends at tick 5
-  with `advanced: 5`, the knock in its view; without `until` it runs to 20. `tests/scenario-night.test.ts`
-  step A: the guard's idle turns become one such wait, and the limits line goes. The property test's duration
-  check holds a wait that woke early.
-- **Docs:** `docs/verbs-other.md` (the `wait` line), `docs/time.md`.
-- **Depends on:** nothing.
-
 ### Open and close refuse what would change nothing
 
 `docs/limits-actor.md`: `open` on an open door is `ok`, changes nothing and takes a tick, so options offer `open`
