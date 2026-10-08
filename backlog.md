@@ -53,4 +53,100 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-None is planned now.
+### Bodies show their parts
+
+A character cannot tell that bob has lost a hand or that its own arm is hurt, nor name a limb to strike: a view
+lists entities and their facts, never parts, and `options` dry-runs `attack` only at a body, so the blow falls on
+the template's `default_hit_part` and the other parts are guessable only from templates a controller does not have.
+
+- **Inspection:** `Inspection` (`src/engine/projection.ts`) gains `parts` for an entity whose template declares
+  parts, in declaration order, with sight or touch as `props` and `size_cm` are: `{ name, status }`, `status` the
+  part's `effectivePart` status (`intact`, `damaged`, `destroyed`, `detached`; a part under a severed ancestor reads
+  as the ancestor), and `integrity` only when coverage declares that property. A severed hand keeps its entry on the
+  body and is an entity of its own. `InspectResponseSchema` takes it.
+- **Options:** `Verb.aims_at_parts` (`src/engine/command.ts`), set on `attack`, the one verb that acts on a part.
+  `options` also dry-runs such a verb at `<id>.<part>` for each part the actor's inspection of that entity lists
+  that is not `detached` (the resolver refuses a detached one), and the entry's `target` is that address. The
+  whole-body entry stays. A part address names only an entity the actor can already name.
+- **Tests** (`tests/options.test.ts`, `tests/controller.test.ts`): ann beside bob in a lit hall lists his nine parts
+  `intact` and is offered `attack` at each; after three blows at his right arm (as the script in
+  `tests/senses.test.ts` strikes) `arm_r` reads `detached`, its hand and thumb read `detached` with it and none of
+  the three is offered; in the dark she lists her own parts by touch and none of bob's; every ready part attack is
+  `ok` for real; a store and a memory world answer alike; `tests/options-property.test.ts` also issues ready part
+  attacks.
+- **Docs:** `docs/projection.md`, `docs/api.md`, `docs/verbs-other.md` (the `attack` line), `docs/verbs.md` (what
+  `aims_at_parts` is).
+- **Depends on:** nothing.
+
+### The cell, seen from inside
+
+The watch showed what a controller could not decide from inside. The cell (`scenarios/cell.json`: ann behind bars,
+bob outside with the key to the gate) leans on rules it never touched: reach through bars, the gap a thing must fit,
+a key, a lock, and a gate that stops being a barrier when open. None has been played through `actorWorld`.
+
+- **Harness:** the policy loop in `tests/scenario-night.test.ts` (`Turn`, `Policy`, `character`, `Sent`, the turn
+  loop of `play`, and the "no id it was not given" check) moves to `tests/actor-harness.ts`; that test's assertions
+  do not change.
+- **Test** (`tests/scenario-cell-actor.test.ts`): two policies and no beats. Bob walks to the bars across from ann and
+  gives her the key once `options` offer `give`; ann, holding it, walks to the gate, unlocks and opens it and walks
+  out. Each chooses only from its own `observe`, `options`, `inspect` and last verdict. Asserted: the key crosses the
+  bars by `give` (it fits the 12 cm gap); `unlock` is blocked `no_key` before the key and ready after, and `open` is
+  blocked `locked` until the unlock; her walk across is `blocked` while the gate is shut and `ok` once it is open;
+  nothing sent names an id its recipient was not given; the same run twice is the same record.
+- **Findings:** whatever the run could not decide goes to `docs/limits-actor.md`, one line each with its step, as the
+  watch's did; a finding that is a gap in the engine and not a modelling choice is reported, to be planned.
+- **Depends on:** nothing.
+
+### A stored world verifies against its own log
+
+A deterministic store should be able to prove it: replay the log from `initial.json` and see that the files agree.
+`load` replays only when the head and the files disagree, and `upgradeTemplates` proves a template change that way,
+but a caller cannot check a world after an engine change, a restore or a hand edit.
+
+- **API:** `World.verify()` on a store world answers `{ ok: true, entries, version }` or
+  `{ ok: false, divergence: { file, line, code } }`, the first difference between what the log replays to and what
+  is stored. `file` is `snapshot.json`, `events.jsonl`, `deltas.jsonl` or `log.jsonl`; `line` is 1-based (0 for the
+  snapshot); `code` is `differs`, `missing`, `extra`, or `status_differs` (a log entry whose re-decided status or
+  reason code is not the recorded one). It reuses `replayFold` in `src/store/file-store.ts`, extended to compare each
+  entry's recorded outcome, and compares canonical bytes. It writes nothing and holds the world's turn while it
+  reads, since a writer half done would read as a divergence. A memory world answers `history_unavailable`. The CLI's
+  `verify` op takes `world`; `VerifyResponseSchema` is in `src/contract.ts`.
+- **Tests** (`tests/verify.test.ts`): a world after a mixed run (accepted, refused, invalid and preempted commands,
+  edits, past a checkpoint at 256) verifies ok; one changed byte in `snapshot.json`, a deleted event line, an extra
+  delta line and a log line with its status changed each report their divergence; a changed template set is
+  `templates_changed` as elsewhere; no file's bytes change.
+- **Docs:** `docs/persistence.md`, `docs/api.md`, `CLAUDE.md` (the store sentence).
+- **Depends on:** nothing.
+
+### The CLI describes its requests and responses
+
+`verbs` and `capabilities` tell a caller what the engine can do; the shape of the CLI's own JSON is known only from
+`src/contract.ts`. A caller in another language, or one generating tool definitions, has to read TypeScript.
+
+- **Contract:** `RESPONSES: Record<Op, ZodType>` in `src/contract.ts`, the schema each op answers with, and
+  `ResponseSchema` built from its values (the union stays the CLI's check on every answer).
+- **Op:** `{ "op": "schema" }` answers `{ json_schema: "2020-12", request, responses }`: `z.toJSONSchema` (zod 4,
+  which converts all 36 schemas in the contract today) of `RequestSchema` and of each entry of `RESPONSES`, keyed by
+  op. `SchemaResponseSchema` joins the union.
+- **Tests** (`tests/contract.test.ts`): every op of `RequestSchema` has exactly one entry in `RESPONSES` and none is
+  dead; the answer is the same twice (`canonicalJson`); `request` has one branch per op and `responses.command`
+  names the statuses `StatusSchema` does; a real answer for each op the CLI tests already issue parses with its own
+  entry.
+- **Docs:** `docs/api.md` (the CLI's ops).
+- **Depends on:** nothing.
+
+### Readers take whole lines
+
+`since`, `attempts`, `trace` and the event-form `query` read `events.jsonl`, `deltas.jsonl` and `log.jsonl` without
+the world's turn ([docs/locking.md](docs/locking.md)), so a read that overlaps a writer's append can find a last line
+without its newline. `cachedLines` already declines to cache such a file but still parses the fragment, which
+throws a bare `SyntaxError`; `readLogEntries` and the replay start split the same way.
+
+- **Store:** in `src/store/file-store.ts`, `parseLines`, `readLogEntries` and the tail of `replayStart` take only the
+  text up to the last newline; what follows is not yet a line and is left for the next read. A file that is all
+  fragment reads as empty. The cache records the bytes it consumed, so it keeps its entries instead of dropping them.
+- **Tests** (`tests/store-lines.test.ts`, calling the readers directly): each file with a half-written record at its
+  end reads as without it, twice in a row; once the record is completed the next read has it, the cache extended and
+  not rebuilt; a malformed line before the end still fails with its line number.
+- **Docs:** `docs/locking.md` (what a read without the turn sees), `docs/persistence.md`.
+- **Depends on:** nothing.
