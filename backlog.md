@@ -33,6 +33,18 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 - Any Story-writer integration: a decision for that repo, if a middleware ever exists.
 - The social resolver (mechanical state only: `alert`, `locked_by_order`), a generic relation graph,
   and continuous physics (Rapier/Box2D): revisit only when a concrete world needs them.
+- A `distance` query: facts are true, false or unknown, and positions are in every observation.
+- The verbs `turn` (it needs a facing direction), `use` (too general), `throw` (it would deal impact damage
+  to agents) and `bandage` (a bleed stops by its count).
+- Pathfinding: a caller routes around a barrier in several moves. Agents acting in parallel: a `beat` is an
+  ordered batch, and two commands never share a tick.
+- A gate or door that crushes what is in its way (a prop turning it on, the damage deciding whether the thing
+  is destroyed or stops the closure): postponed in favour of pushing aside.
+- Migrating stored worlds between `schema_version`s: an older world is refused, never read as if it matched
+  (AGENTS.md: no silent migration); a tool comes when a world must be kept.
+- Raised and set aside until a scenario needs them: several parents per event (`causes: [...]`) and a stored
+  `root_id`; stepping onto shards having a consequence; an agent slipping through a gap, and a head sized apart
+  from the body for bites; a wound from a detachment written by `edit`.
 - The limits in `docs/limits.md`, reassessed after the inn: none is worth a verb yet. Facing and a
   sight cone (an unseen act in a lit room) is the costliest and the first to revisit, when a
   concrete world needs what darkness, concealment and staging cannot give.
@@ -41,20 +53,4 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### The docs say what is built
-
-`docs/` is meant to describe what is built, nothing aspirational, and several statements have been overtaken.
-
-- **`docs/thesis.md`, `docs/overview.md`:** both say there is no randomness and that a caller who wants luck chooses
-  a different command; the world has seeded dice in the snapshot (`docs/rng.md`) and a template process rolls
-  them. Say that chance comes only from the snapshot's seed and replays exactly. The overview's "about 3.6 ms per
-  command" becomes the measured figures and a link to `docs/measurements.md` (about 4 ms on a few entities, about
-  10 ms at 500).
-- **`README.md`:** the verb list lacks `say`, `light`, `douse`, `consume` and `advance`, and the bullets say nothing of
-  speech, beats, processes, dice, the actor view or `options`. It stays at 15 lines.
-- **`plans/roadmap.md`:** it is not linked from anywhere, lists "affordance enumeration" as not planned when `options`
-  now is it, and is dated `875a1df`. Its "Not planned" list moves into the "Out of scope" section of this file, with
-  the reason each was set aside; its "Done" list is dropped (git history has it); `plans/` is deleted.
-- **Check:** `rg "no randomness|3.6 ms|affordance" README.md docs backlog.md` finds nothing stale afterwards, and
-  `tests/catalog.test.ts` still passes (it ties the verb list to `docs/verbs.md`).
-- **Depends on:** nothing. Run it last, so what it describes includes what the items above add.
+None is planned now.

@@ -11,8 +11,9 @@ no trajectory, velocity, force or contact over time, and all arithmetic is on in
 physics is out of scope.
 
 **Determinism.** The same initial snapshot and the same ordered commands give the same snapshot,
-events and log, byte for byte, under any number of reopens and replays. There is no randomness and
-no wall clock: a caller who wants luck chooses a different command. Time is the integer `tick`, and
+events and log, byte for byte, under any number of reopens and replays. Chance comes only from the
+snapshot's seed ([rng.md](rng.md)), so it replays exactly, and a world with no seed refuses what would roll;
+there is no wall clock. Time is the integer `tick`, and
 every ok command advances it by its verb's declared duration ([time.md](time.md)).
 
 **Attempts, not assertions.** A command says what an agent tries; the engine decides what happens.

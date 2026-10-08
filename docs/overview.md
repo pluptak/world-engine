@@ -3,7 +3,7 @@
 **Problem.** A story, game or agent needs a scene whose facts do not drift: where the bottle is,
 what broke, who could have seen it. The engine keeps that state and answers with codes, never prose.
 **For** a caller that turns intent into commands, such as a game loop, interactive fiction or an
-LLM agent that must be grounded in what is true. The caller owns knowledge, language and luck.
+LLM agent that must be grounded in what is true. The caller owns knowledge, language and the seed of any chance.
 The promises and the decisions that bound them are in [thesis.md](thesis.md).
 
 **One example**, `scenarios/bottle.json` (`e2` table, `e3` bottle, `e4` pusher, `e5` stone):
@@ -29,7 +29,8 @@ template may `extends` another (`wine_bottle` extends `bottle`). Actions check c
 `manipulation`, never parts, so a severed hand changes what an agent can do with no special case.
 
 **Scale and non-goals.** Built for room-sized scenes (tens of entities; geometry is pairwise, there
-is no spatial index) at about 3.6 ms per command. There is no randomness: damage and impact are
-fixed arithmetic, and a caller who wants luck injects it as a different command. A `beat` is an
+is no spatial index) at about 5 ms per command on a few entities and about 10 ms at 500
+([measurements.md](measurements.md)). Damage and impact are fixed arithmetic; chance exists only as the world's
+seeded dice, which a template process rolls and which replay exactly ([rng.md](rng.md)). A `beat` is an
 ordered batch, not simultaneous action ([limits.md](limits.md)). What is out of scope is in
 `backlog.md`.
