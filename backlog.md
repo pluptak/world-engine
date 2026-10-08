@@ -41,19 +41,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### An inspection gives the footprint
-
-`docs/limits-actor.md`: the view gives positions, not footprints, so the guard finds a free spot by the door by
-trial, her first `move` refused `blocked`.
-
-- **API:** `Inspection` (`src/engine/projection.ts`) gains `size_cm` (`w`, `d`, `h`, the template's), only with
-  sight or touch, as `props` are; `InspectResponseSchema` in `src/contract.ts` takes it.
-- **Tests:** `inspect` of the watch's door gives 90 × 10 × 200 to the guard in the lit gatehouse and nothing in
-  the dark; `tests/scenario-night.test.ts` step C: the guard computes a free spot from dee's and the door's
-  footprints and her first `move` is `ok`, and the limits line goes.
-- **Docs:** `docs/projection.md` (the `inspect` paragraph).
-- **Depends on:** nothing.
-
 ### The docs say what is built
 
 `docs/` is meant to describe what is built, nothing aspirational, and several statements have been overtaken.

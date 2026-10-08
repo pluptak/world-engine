@@ -439,6 +439,7 @@ export const ProjectionSchema = z.object({
 export const InspectResponseSchema = z.object({
   inspection: ObservedEntitySchema.extend({
     props: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).optional(),
+    size_cm: z.object({ w: z.number(), d: z.number(), h: z.number() }).strict().optional(),
     reachable: z.boolean().optional(),
     holds: z.array(IdSchema).optional(),
   }).strict().nullable(),

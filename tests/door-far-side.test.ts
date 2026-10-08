@@ -154,3 +154,14 @@ test("the door bob can now name is among his options, with the room beyond it", 
   const named = JSON.stringify(asked);
   strictEqual(named.includes(`"${id("hatch")}"`) || named.includes(`"${id("cellar")}"`), false);
 });
+
+test("an inspection gives the door's footprint to who can sense it, and nothing to who can only name it", (t) => {
+  const { world, id, bob } = gate(t);
+  const door = id("door");
+  // Lit gatehouse: the guard sees it, and the template's width, depth and height come with the facts.
+  const seen = world.inspect(id("ann"), door);
+  deepStrictEqual(seen?.size_cm, { w: 90, d: 10, h: 200 });
+  // Dark yard: bob can name the door and shut it, but senses nothing of it, so there is nothing to give.
+  strictEqual(world.inspect(bob, door), null);
+  strictEqual(act(world, bob, "open", "door").status, "ok");
+});

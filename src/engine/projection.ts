@@ -141,10 +141,12 @@ export function observeEntities(
 // One entity in more detail than `observe` lists it, for a controller asking about a single thing:
 // the same senses and facts, plus the props the world covers as properties (`open`, `locked`,
 // `liquid_amount`, ... whatever coverage names), whether the observer could reach it, and what it
-// visibly holds or carries. Null when the observer senses nothing of it. Props and holdings come
-// only with sight or touch, as facts do.
+// visibly holds or carries. Null when the observer senses nothing of it. Props, holdings and the
+// footprint (the template's `size_cm`, which positions are measured against) come only with sight or
+// touch, as facts do.
 export interface Inspection extends ObservedEntity {
   props?: Record<string, number | string | boolean>;
+  size_cm?: { w: number; d: number; h: number };
   reachable?: boolean;
   holds?: Id[];
 }
@@ -176,6 +178,10 @@ export function inspectEntity(
     }
   }
   inspection.props = props;
+  const size = registry[entity.template]?.size_cm;
+  if (size !== undefined) {
+    inspection.size_cm = { w: size.w, d: size.d, h: size.h };
+  }
   inspection.holds = observed
     .filter((other) => other.facts?.contained_in === entityId || other.facts?.support === entityId)
     .map((other) => other.id);

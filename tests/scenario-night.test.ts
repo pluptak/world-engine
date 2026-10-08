@@ -12,6 +12,7 @@ import {
   type ActorResult,
   type ActorWorld,
   type Id,
+  type Inspection,
   type ObservedEntity,
   type Options,
   type Projection,
@@ -29,10 +30,12 @@ const watch = JSON.parse(
 ) as Scenario;
 
 // What a controller has when it chooses: the actor's view since its last turn, what it can try now,
-// what it last did and how that came out, and whatever it chose to remember.
+// what it last did and how that came out, whatever it chose to remember, and `inspect`, which looks
+// closer at one thing in the view and is recorded with the turn.
 interface Turn<M> {
   view: Projection;
   options: Options;
+  inspect: (entity: Id) => Inspection | null;
   last: { command: ActorCommand; result: ActorResult } | null;
   memory: M;
 }
@@ -51,14 +54,15 @@ const heardEvents = (turn: Turn<unknown>) => [...turn.view.events, ...(turn.last
 
 // The guard: she keeps watch in one wait that ends when she senses something; once she hears a knock she lights the lantern before
 // the lights can fail, makes for the door, opens it and shouts a challenge into the yard. Where she
-// stands by the door is a guess from the door's position, tried in turn until one is not blocked.
+// stands by the door is worked out: the first of a few spots beside it that her footprint can take
+// without overlapping the door's or anyone else's, which she reads from her inspections.
 interface Guard {
   alert: boolean;
-  spot: number;
   shouted: boolean;
 }
-const guard: Policy<Guard> = ({ view, options, last, memory }) => {
-  const alert = memory.alert || heardEvents({ view, options, last, memory }).some((event) => event.type === "sounded");
+const guard: Policy<Guard> = (turn) => {
+  const { view, options, last, memory, inspect } = turn;
+  const alert = memory.alert || heardEvents(turn).some((event) => event.type === "sounded");
   const next = { ...memory, alert };
   if (!alert) {
     return { command: watching, memory: next };
@@ -87,20 +91,29 @@ const guard: Policy<Guard> = ({ view, options, last, memory }) => {
     return { command: { verb: "open", target: door.id }, memory: next };
   }
   const at = door.facts?.pos;
-  if (at === undefined || at === null) {
+  const self = inspect(view.observer)?.size_cm;
+  if (at === undefined || at === null || self === undefined) {
     return { command: wait, memory: next };
   }
-  const spots = [
+  // Everything standing on the floor she can see, with its footprint; the door is among them.
+  const taken = view.entities
+    .filter((entity) => entity.id !== view.observer && entity.facts?.pos != null)
+    .flatMap((entity) => {
+      const size = inspect(entity.id)?.size_cm;
+      return size === undefined ? [] : [{ at: entity.facts!.pos!, size }];
+    });
+  const overlaps = (spot: { x: number; y: number }) =>
+    taken.some(
+      (other) =>
+        2 * Math.abs(spot.x - other.at.x) < self.w + other.size.w &&
+        2 * Math.abs(spot.y - other.at.y) < self.d + other.size.d,
+    );
+  const spot = [
     { x: at.x - 80, y: at.y },
     { x: at.x - 60, y: at.y + 60 },
     { x: at.x - 60, y: at.y - 60 },
-  ];
-  const refused = last?.command.verb === "move" && last.result.status !== "ok";
-  const spot = refused ? memory.spot + 1 : memory.spot;
-  if (spot >= spots.length) {
-    return { command: wait, memory: { ...next, spot } };
-  }
-  return { command: { verb: "move", args: { to: spots[spot] } }, memory: { ...next, spot } };
+  ].find((candidate) => !overlaps(candidate));
+  return { command: spot === undefined ? wait : { verb: "move", args: { to: spot } }, memory: next };
 };
 
 // Cal, by the guard: a knock makes him ask aloud who it is, once.
@@ -160,6 +173,8 @@ interface Sent {
   tick: number;
   view: Projection;
   options: Options;
+  // What its inspections gave, in the order it asked.
+  inspected: Array<Inspection | null>;
   command: ActorCommand;
   result: ActorResult;
 }
@@ -203,7 +218,7 @@ function play(t: { after(callback: () => void): void }, rounds: number): Night {
   // Each character takes its turn in a fixed order; every command takes its own ticks, so the clock
   // moves as they act, and nobody acts at once.
   const cast: Character[] = [
-    character(actorWorld(world, ids.ann!), guard, { alert: false, spot: 0, shouted: false }),
+    character(actorWorld(world, ids.ann!), guard, { alert: false, shouted: false }),
     character(actorWorld(world, ids.cal!), companion, { asked: false }),
     character(actorWorld(world, ids.bob!), visitor, { answered: false, aside: false, crossed: false }),
   ];
@@ -217,12 +232,17 @@ function play(t: { after(callback: () => void): void }, rounds: number): Night {
       const tick = world.snapshot().tick;
       const view = member.view.observe({ since: seen[actor] ?? start });
       const options = member.view.options({ refused: true });
-      const choice = member.choose({ view, options, last: lasts[actor] ?? null });
+      const inspected: Array<Inspection | null> = [];
+      const inspect = (entity: Id) => {
+        inspected.push(member.view.inspect(entity));
+        return inspected.at(-1)!;
+      };
+      const choice = member.choose({ view, options, last: lasts[actor] ?? null, inspect });
       const command: ActorCommand = { command_id: `night-${actor}-${round}`, ...choice };
       const result = member.view.command(command);
       lasts[actor] = { command, result };
       seen[actor] = result.observation.version;
-      (sent[actor] ??= []).push({ turn: round, tick, view, options, command, result });
+      (sent[actor] ??= []).push({ turn: round, tick, view, options, inspected, command, result });
     }
   }
   return { dir, world, ids, sent };
@@ -230,7 +250,7 @@ function play(t: { after(callback: () => void): void }, rounds: number): Night {
 
 // Every message a character was sent, in order, as one list of plain JSON.
 function messages(night: Night, actor: Id): unknown[] {
-  return (night.sent[actor] ?? []).flatMap((turn) => [turn.view, turn.options, turn.result]);
+  return (night.sent[actor] ?? []).flatMap((turn) => [turn.view, turn.options, turn.inspected, turn.result]);
 }
 
 test("the night plays out from inside: knock, lantern, door, challenge, answer", (t) => {
@@ -263,23 +283,25 @@ test("the night plays out from inside: knock, lantern, door, challenge, answer",
   deepStrictEqual(skipped?.data, { id: "lights", reason: "condition" });
   strictEqual(world.entity(ids.gatehouse!)?.props.lit, true);
 
-  // C. Her first spot by the door is taken: the refusal names dee, whom she can see. The next spot is
-  // free and in reach of the door, which she opens.
-  deepStrictEqual([ann[2]?.command.verb, ann[2]?.result.reason_code, ann[2]?.result.reason_data], ["move", "blocked", { with: ids.dee }]);
-  deepStrictEqual([ann[3]?.result.status, ann[4]?.command.verb, ann[4]?.result.status], ["ok", "open", "ok"]);
+  // C. She works out where to stand from the footprints she inspected, hers, dee's and the door's: the
+  // spot 80 from the door's centre would overlap dee, who stands at 300, so she takes the next, and her
+  // first move is ok. In reach of the door from there, she opens it.
+  deepStrictEqual(ann[2]?.inspected.find((found) => found?.id === ids.door)?.size_cm, { w: 90, d: 10, h: 200 });
+  deepStrictEqual([ann[2]?.command.verb, ann[2]?.command.args, ann[2]?.result.status], ["move", { to: { x: 340, y: 60 } }, "ok"]);
+  deepStrictEqual([ann[3]?.command.verb, ann[3]?.result.status], ["open", "ok"]);
   strictEqual(world.entity(ids.door!)?.props.open, true);
   // Her next turn is offered the open door's state: it can be shut, and opening it again is refused.
-  ok(ready(ann[5]!.options, "close", ids.door));
+  ok(ready(ann[4]!.options, "close", ids.door));
   deepStrictEqual(
-    ann[5]!.options.blocked?.filter((entry) => entry.verb === "open" && entry.target === ids.door),
+    ann[4]!.options.blocked?.filter((entry) => entry.verb === "open" && entry.target === ids.door),
     [{ verb: "open", target: ids.door, reason_code: "already_open" }],
   );
 
   // D. Through the open door her shout reaches bob, who answers in a whisper that crosses no door.
-  deepStrictEqual(ann[5]?.command.args, { utterance: "who.goes.there", volume: "shout" });
+  deepStrictEqual(ann[4]?.command.args, { utterance: "who.goes.there", volume: "shout" });
   const challenge = bob.flatMap((turn) => turn.view.events).find((event) => event.type === "say");
   deepStrictEqual([challenge?.utterance, challenge?.from, "entity" in (challenge ?? {})], ["who.goes.there", "next_door", false]);
-  deepStrictEqual(bob[5]?.command.args, { utterance: "friend", volume: "whisper" });
+  deepStrictEqual(bob[4]?.command.args, { utterance: "friend", volume: "whisper" });
 
   // E. Bob comes in. The door stands in the gatehouse, yet from the dark yard he can name it: his options
   // offer it, the one thing he can shut is the open door, and he walks in through it. The table stands
@@ -337,7 +359,7 @@ test("no character is sent an id it was not given: each is its own, its room's, 
         if (option.target !== undefined) learn(option.target);
       }
       if (turn.command.target !== undefined) known.add(turn.command.target);
-      for (const id of idsIn([turn.view, turn.options, turn.result])) {
+      for (const id of idsIn([turn.view, turn.options, turn.inspected, turn.result])) {
         ok(known.has(id), `${actor} turn ${turn.turn} was sent ${id}`);
         checked += 1;
       }

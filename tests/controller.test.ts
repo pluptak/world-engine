@@ -90,6 +90,8 @@ test("inspect gives one thing in detail: covered props, reach, and what it visib
   deepStrictEqual(gate.props, { locked: true, open: false });
   strictEqual(gate.reachable, false);
   deepStrictEqual(gate.facts?.pos, { x: 50, y: 0 });
+  // A gate extends the bars template, whose footprint is 100 x 5 x 250.
+  deepStrictEqual(gate.size_cm, { w: 100, d: 5, h: 250 });
 
   const shop = open(t, "workshop");
   const bench = shop.world.inspect(shop.id("ann"), shop.id("bench"));
@@ -107,7 +109,9 @@ test("inspect is null for what the observer cannot sense", (t) => {
   strictEqual(world.edit({ kind: "set_props", target: id("shop"), props: { lit: false } }).status, "ok");
   strictEqual(world.inspect(id("ann"), id("bench")), null);
   // Her own body she still feels, where the world covers touch.
-  deepStrictEqual(world.inspect(id("ann"), id("ann"))?.senses, ["touch"]);
+  const own = world.inspect(id("ann"), id("ann"));
+  deepStrictEqual(own?.senses, ["touch"]);
+  deepStrictEqual(own?.size_cm, { w: 45, d: 30, h: 180 });
 });
 
 test("a command can bring back what its actor sensed of it, refused or not", (t) => {
