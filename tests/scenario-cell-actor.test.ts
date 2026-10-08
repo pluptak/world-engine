@@ -53,8 +53,8 @@ function gateSpots(turn: Omit<Turn<unknown>, "memory">): { gate: Id; here: Spot;
 }
 
 // The prisoner: she goes to the gate and, once there, tries the way out at once; shut, it is refused
-// `blocked`. Then she does what the options let her: open the gate, else unlock it (`open` first, since
-// `unlock` stays offered once the gate is unlocked), and waits for what they do not yet offer. Open, the gate is a way out, and she takes it. Whether she is at the gate she reads
+// `blocked`. Then she does what the options let her: unlock the gate, else open it, and waits for what they do not yet
+// offer. Open, the gate is a way out, and she takes it. Whether she is at the gate she reads
 // from her inspection of it (`reachable`).
 interface Prisoner {
   tried: boolean;
@@ -73,7 +73,7 @@ const prisoner: Policy<Prisoner> = (turn) => {
   if (ready(options, "close", spots.gate)) {
     return { command: { verb: "move", args: { to: spots.across(100) } }, memory: { ...next, leaving: true } };
   }
-  for (const verb of ["open", "unlock"]) {
+  for (const verb of ["unlock", "open"]) {
     if (ready(options, verb, spots.gate)) {
       return { command: { verb, target: spots.gate }, memory: next };
     }

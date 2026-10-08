@@ -454,4 +454,39 @@ test("reach is judged before the state: an open chest out of reach is out of rea
     apply(chest.snapshot, baseRegistry, { command_id: verb, actor: actor.id, verb, target: "chest" });
   strictEqual(asked("open").reason_code, "out_of_reach");
   strictEqual(asked("close").reason_code, "out_of_reach");
+  // The same for the lock: the chest is not locked, and the actor holds no key, but reach comes first.
+  strictEqual(asked("unlock").reason_code, "out_of_reach");
+  strictEqual(asked("lock").reason_code, "out_of_reach");
+});
+
+test("locking what is locked and unlocking what is not are refused, change nothing and take no time, key or none", () => {
+  const keyed = (world: DoorWorld): DoorWorld => ({
+    ...world,
+    snapshot: spawn(world.snapshot, world.registry, "stone", {
+      name: "key",
+      location: world.roomAId,
+      support: null,
+      contained_in: world.actorId,
+      props: { opens: world.doorId },
+    }).snapshot,
+  });
+  for (const [props, verb, code] of [
+    [{ locked: true }, "lock", "already_locked"],
+    [{ locked: false }, "unlock", "already_unlocked"],
+    // A door never locked has no `locked` at all, and is not locked.
+    [{}, "unlock", "already_unlocked"],
+  ] as const) {
+    for (const world of [doorWorld({ open: false, ...props }), keyed(doorWorld({ open: false, ...props }))]) {
+      const result = act(world, verb, "door");
+      strictEqual(result.status, "refused", `${verb} ${JSON.stringify(props)}`);
+      strictEqual(result.reason_code, code);
+      deepStrictEqual([result.events, result.deltas], [[], []]);
+      deepStrictEqual(result.snapshot, world.snapshot);
+    }
+  }
+  // The other way round each still works with the key, and without it the state is judged before the key.
+  strictEqual(act(keyed(doorWorld({ open: false, locked: true })), "unlock", "door").status, "ok");
+  strictEqual(act(keyed(doorWorld({ open: false })), "lock", "door").status, "ok");
+  strictEqual(act(doorWorld({ open: false, locked: true }), "unlock", "door").reason_code, "no_key");
+  strictEqual(act(doorWorld({ open: false }), "lock", "door").reason_code, "no_key");
 });

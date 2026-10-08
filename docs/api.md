@@ -18,7 +18,7 @@ directory, a changed hash, or a bad version is a `WorldError` with a code.
 
 - `check` agrees with `command` on the verdict without writing or logging.
 - `options(actor, { refused? })` is what an actor can try now (`src/options.ts`): `ready`, the commands
-  (`{ verb, target?, args? }`) a dry run accepts as they stand; `needs_args`, the verbs it cannot judge
+  (`{ verb, target?, args? }`) a dry run accepts as they stand, each of which changes something (bar a `wait` and a `search`, whose answer may be nothing; the verbs refuse `already_open`, `already_locked`, `already_held`, `already_destroyed` and the like instead); `needs_args`, the verbs it cannot judge
   without args no list holds (`move` to a position, `pour` a part, `say`, `wait`); and with `refused`,
   `blocked`, the rest with their `reason_code`. It tries every verb but the author's against each thing
   the actor could name (`addressable`, [perception.md](perception.md): nothing hidden or out of sight and

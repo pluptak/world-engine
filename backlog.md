@@ -20,10 +20,9 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
    blocks 1–8 in its order. Its open questions must be settled before block 4.
-2. [Acts that change nothing are refused](#acts-that-change-nothing-are-refused).
-3. [A taken-over lock leaves no grave](#a-taken-over-lock-leaves-no-grave).
-4. [Verify holds the checkpoints to the replay](#verify-holds-the-checkpoints-to-the-replay).
-5. Candidates without a plan yet (below): write the item, then build it.
+2. [A taken-over lock leaves no grave](#a-taken-over-lock-leaves-no-grave).
+3. [Verify holds the checkpoints to the replay](#verify-holds-the-checkpoints-to-the-replay).
+4. Candidates without a plan yet (below): write the item, then build it.
 
 ## How the work runs
 
@@ -56,34 +55,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### Acts that change nothing are refused
-
-`options` lists what a dry run accepts, so an act that changes nothing but the clock reads as something to try.
-`open`, `close`, `light` and `douse` already refuse that (`already_open`, `already_closed`, `already_burning`,
-`not_burning`). Playing the cell from inside showed `lock` and `unlock` do not (the prisoner can `unlock` an
-unlocked gate every turn), and random play over the shipped scenarios found two more: `take` of what the actor
-already holds, and `attack` on what is already destroyed, which emits `destroyed` again at every blow.
-
-- **Lock and unlock:** `lock` on a locked target is refused `already_locked` and `unlock` on one that is not locked
-  `already_unlocked`, after reach and before the key, as `already_open` follows reach in
-  `src/engine/verbs/openable.ts`.
-- **Take:** refused `already_held` when the actor holds the item and the grip the take would put it in is the one it is
-  in already (the default grip or `args.part`; an item in a pocket is still taken into a hand, and one can still be
-  moved to another named grip), after the loop check.
-- **Attack:** refused `already_destroyed` when the target is a destroyed entity, or a part that is destroyed (its own
-  state, or under a destroyed ancestor: `effectivePart`), after reach. `options` then lists those parts as blocked;
-  the filter for detached parts stays.
-- **Declared:** each code in its verb's `refuses` (the suite fails on one that is not).
-- **Property net:** `tests/options-property.test.ts` also asserts that each chosen ready option changes some entity
-  (`canonicalJson` of `entities` before and after), except `wait` (time) and `search` (finding nothing is an
-  answer). A verb it finds besides these is refused in this item or exempted there with its reason.
-- **Tests:** `tests/openable.test.ts` (each refusal, with and without the key, reach first); `tests/holders.test.ts`
-  (take twice, from a pocket, to another grip); a destroyed table and a destroyed part hit again are refused and emit
-  no second `destroyed`; `tests/scenario-cell-actor.test.ts`, where the prisoner tries `unlock` before `open` again
-  and the comment about the order goes.
-- **Docs:** `docs/verbs-openables.md`, `docs/verbs-holding.md`, `docs/verbs-other.md`.
-- **Depends on:** nothing.
 
 ### A taken-over lock leaves no grave
 

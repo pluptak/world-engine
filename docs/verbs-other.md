@@ -7,7 +7,8 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
   bleeds ([bleeding.md](bleeding.md)); a lost part drops what it held, and a stunned victim keeps
   the rest. A target may be a part (`<id>.<part>`), and `options` offers each part of a body in view that
   has not come off, since the verb `aims_at_parts` ([verbs.md](verbs.md)); without one, the blow falls on the
-  template's `default_hit_part`.
+  template's `default_hit_part`. A blow at an entity or part that is destroyed already (or under a
+  destroyed one) is `already_destroyed`, after reach, and emits nothing.
 - `search`: looks under or behind a target, with `manipulation` and in reach; one `found` per
   hidden thing names its concealer, nothing changes, and nothing records who looked.
 - `light`: sets `burning` on a target with `light_source: true` under a `lit` event, with

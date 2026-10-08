@@ -211,6 +211,7 @@ function script(ids: Ids): Step[] {
     note: "ann walks to the chest, which is out of reach where she stood",
     run: cmd("A2-to-chest", "ann", "move", undefined, { to: { x: 200, y: -25 } }),
     expect: [{ status: "ok", events: ["move", "moved"] }],
+    mark: "chest-locked",
   });
   step({
     note: "ann unlocks the chest with the key in her hands",
@@ -229,8 +230,8 @@ function script(ids: Ids): Step[] {
     mark: "chest-shut",
   });
   step({
-    note: "bob cannot unlock it: he is in reach and has hands, but no key",
-    run: cmd("A6-bob-no-key", "bob", "unlock", "chest"),
+    note: "bob cannot lock it: he is in reach and has hands, but no key",
+    run: cmd("A6-bob-no-key", "bob", "lock", "chest"),
     expect: [{ status: "refused", code: "no_key", events: [] }],
   });
   step({
@@ -244,9 +245,10 @@ function script(ids: Ids): Step[] {
     expect: [{ status: "ok", events: ["lock", "locked"] }],
   });
   step({
-    // Stale: ann's unlock would have been ok at that version, and is no_key now that bob holds the
-    // key and has locked the chest, so it comes back preempted rather than refused.
-    note: "ann's unlock, sent against the version before the key changed hands",
+    // Stale: ann's unlock would have been ok at that version (the chest locked, the key in her hands),
+    // and is no_key now that bob holds the key and has locked the chest, so it comes back preempted
+    // rather than refused.
+    note: "ann's unlock, sent against the version before she used the key",
     run: (world, marks) => [
       world.command(
         {
@@ -256,7 +258,7 @@ function script(ids: Ids): Step[] {
           target: "chest",
           perceivers: true,
         },
-        { basedOn: marks["chest-shut"] as number },
+        { basedOn: marks["chest-locked"] as number },
       ),
     ],
     expect: [{ status: "preempted", code: "no_key", events: [] }],
@@ -662,9 +664,9 @@ function script(ids: Ids): Step[] {
     expect: [{ status: "ok", events: ["close", "closed"] }],
   });
   step({
-    note: "now nobody can unlock the chest, because nobody is carrying its key",
+    note: "the chest is shut, not locked, so there is nothing to unlock",
     run: cmd("F6-locked-in", "ann", "unlock", "chest"),
-    expect: [{ status: "refused", code: "no_key", events: [] }],
+    expect: [{ status: "refused", code: "already_unlocked", events: [] }],
     then: (world) => {
       // The key is still in the world, and it is not seen through a shut lid.
       strictEqual(world.entity(ids.key)?.contained_in, ids.chest);
@@ -675,7 +677,7 @@ function script(ids: Ids): Step[] {
     },
   });
   step({
-    note: "and it cannot be locked again either",
+    note: "and it cannot be locked, because nobody is carrying its key",
     run: cmd("F8-lock-again", "ann", "lock", "chest"),
     expect: [{ status: "refused", code: "no_key", events: [] }],
   });

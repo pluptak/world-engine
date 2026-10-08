@@ -7,7 +7,7 @@ import type { AttackMode, CommandContext, PreconditionResult, TransitionContext,
 import { dropCarriedItem } from "./drop.js";
 import { gapRefusal, inReach, reachData } from "./address.js";
 import { spawn } from "../spawn.js";
-import { partState, withParts } from "../parts.js";
+import { effectivePart, partState, withParts } from "../parts.js";
 import { startBleeding } from "../schedule.js";
 
 // A fist needs hands, a bite a jaw; the damage of the mode used comes from the attacker's template.
@@ -94,6 +94,12 @@ function preconditions(context: CommandContext): PreconditionResult {
       reason_code: "out_of_reach",
       ...(data !== null && { reason_data: data }),
     };
+  }
+  // A blow at what is destroyed already would change nothing but say it was destroyed again.
+  const template = context.registry[entity.template];
+  const struck = structure.partName === null ? undefined : effectivePart(template, entity, structure.partName);
+  if (entity.status === "destroyed" || struck?.status === "destroyed") {
+    return { status: "refused", reason_code: "already_destroyed" };
   }
   const choice = chooseAttack(context);
   if (choice.kind === "no_capacity") {
@@ -398,7 +404,7 @@ export const attackVerb: Verb = {
   duration: { ticks: 1 },
   requires_target: true,
   args: {},
-  refuses: ["out_of_reach", "insufficient_manipulation", "too_big_for_gap"],
+  refuses: ["out_of_reach", "already_destroyed", "insufficient_manipulation", "too_big_for_gap"],
   carry_alternatives: carryAlternatives,
   attack_modes: attackModes,
   aims_at_parts: true,

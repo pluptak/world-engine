@@ -529,3 +529,36 @@ test("in the dark ann feels her own parts and none of bob's; a world that does n
   strictEqual(body.parts, undefined);
   deepStrictEqual(named(lit.options(lit.id("ann")!, { refused: true })), []);
 });
+
+test("a blow at what is destroyed already is refused, whole or part, and options lists it as blocked", (t) => {
+  const { world, id } = open(t, true);
+  const ann = id("ann");
+  const bob = id("bob");
+  const stone = id("stone");
+  let blows = 0;
+  const blow = (target: string) => world.command({ command_id: `blow-${(blows += 1)}`, actor: ann, verb: "attack", target });
+  const asks = (target: string) =>
+    world.options(ann, { refused: true }).blocked?.filter((entry) => entry.verb === "attack" && entry.target === target);
+
+  // A stone takes three fists; the third destroys it, and a fourth is refused with nothing emitted.
+  for (const target of [stone, `${bob}.torso`]) {
+    for (let index = 0; index < 3; index += 1) {
+      strictEqual(blow(target).status, "ok", `${target} ${index}`);
+    }
+    const before = canonicalJson(world.snapshot());
+    const again = blow(target);
+    deepStrictEqual([again.status, again.reason_code, again.events, again.deltas], ["refused", "already_destroyed", [], []]);
+    strictEqual(canonicalJson(world.snapshot()), before);
+    deepStrictEqual(asks(target), [{ verb: "attack", target, reason_code: "already_destroyed" }]);
+    strictEqual(has(world.options(ann), "attack", target), false);
+  }
+  strictEqual(world.entity(stone)?.status, "destroyed");
+  // A part under a destroyed one (the pocket is sewn to the torso) is destroyed with it, and refused
+  // alike; the whole body is a blow at its torso.
+  for (const target of [`${bob}.pocket`, bob]) {
+    const under = blow(target);
+    deepStrictEqual([under.status, under.reason_code], ["refused", "already_destroyed"], target);
+  }
+  // What is whole is still struck: the other arm.
+  strictEqual(blow(`${bob}.arm_r`).status, "ok");
+});

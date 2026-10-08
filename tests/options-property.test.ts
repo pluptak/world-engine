@@ -13,7 +13,7 @@ const registry: TemplateRegistry = withProcessFixtures(
 // What `options` lists as ready is what the pipeline accepts: a random agent is asked each step, one
 // of its ready options is issued for real, and it is ok. Every second world is seen through the
 // default coverage, so what an actor can name is sometimes what it sees and sometimes only what it
-// can reach.
+// can reach. What it does changes some entity, or the verb is a wait or a search.
 test("property: a ready option, issued for real, is accepted; a read changes nothing", () => {
   const verbs = new Map<string, number>();
   let issued = 0;
@@ -54,6 +54,7 @@ test("property: a ready option, issued for real, is accepted; a read changes not
         continue;
       }
       const chosen = options.ready[Math.floor(rand() * options.ready.length)]!;
+      const entitiesBefore = canonicalJson(world.snapshot().entities);
       const result = world.command({
         command_id: `options-do-${seed}-${i}`,
         actor,
@@ -62,6 +63,15 @@ test("property: a ready option, issued for real, is accepted; a read changes not
         ...(chosen.args === undefined ? {} : { args: chosen.args }),
       });
       strictEqual(result.status, "ok", `seed ${seed} step ${i}: ${actor} ${key(chosen)} was ${result.status} ${result.reason_code}`);
+      // An act the world offers changes the world: only a wait (time) and a search (finding nothing is
+      // an answer) may leave every entity as it was.
+      if (chosen.verb !== "wait" && chosen.verb !== "search") {
+        strictEqual(
+          canonicalJson(world.snapshot().entities) !== entitiesBefore,
+          true,
+          `seed ${seed} step ${i}: ${actor} ${key(chosen)} was ready and changed nothing`,
+        );
+      }
       issued += 1;
       withArgs += chosen.args === undefined ? 0 : 1;
       atParts += chosen.target?.includes(".") === true ? 1 : 0;

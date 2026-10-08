@@ -12,5 +12,7 @@ A target that declares `openable` (a door, a gate, a chest) is opened, shut, loc
   aside, each under a `moved` caused by the `closed` ([schedule.md](schedule.md)); a shut container
   hides its chain, so `take` and `put` refuse `container_closed` and sight inside is `false`.
 - `lock`: sets `locked` under a `locked` event; needs `manipulation` and a carried entity whose
-  `opens` is the target's id, else `no_key`.
-- `unlock`: the same requirement, clearing `locked` under `unlocked`.
+  `opens` is the target's id, else `no_key`. A target already locked is refused `already_locked`, after
+  reach and before the key.
+- `unlock`: the same requirement, clearing `locked` under `unlocked`; a target that is not locked (or
+  never was) is refused `already_unlocked`, in the same place.

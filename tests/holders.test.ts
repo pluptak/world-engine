@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { createWorld, memoryWorld, type Entity, type Id, type Scenario, type World } from "../src/index.js";
+import { canonicalJson, createWorld, memoryWorld, type Entity, type Id, type Scenario, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
 import { fileURLToPath } from "node:url";
@@ -489,4 +489,45 @@ test("each in_part rule fires on a snapshot wrong in exactly that way", (t) => {
     hold(entities, "slip", annId, "pocket");
     hold(entities, "kept", null, null);
   }, "");
+});
+
+test("taking what is already in the grip it would go to is refused and changes nothing; a pocket or another grip still moves it", (t) => {
+  for (const world of holderWorlds(t)) {
+    const ids = namedIds(world);
+    const grip = held(world, "kept")?.in_part;
+    ok(grip === "hand_l" || grip === "hand_r", String(grip));
+    const before = canonicalJson(world.snapshot());
+    for (const part of [undefined, grip]) {
+      const again = take(world, "ann", "kept", `again-${part ?? "default"}`, part);
+      deepStrictEqual([again.status, again.reason_code, again.events, again.deltas], ["refused", "already_held", [], []]);
+    }
+    strictEqual(canonicalJson(world.snapshot()), before);
+
+    // Another named grip is a move.
+    const other = grip === "hand_l" ? "hand_r" : "hand_l";
+    strictEqual(take(world, "ann", "kept", "regrip", other).status, "ok");
+    strictEqual(held(world, "kept")?.in_part, other);
+
+    // From the pocket it goes to a hand (a stone is too big for the pocket, a slip of paper is not).
+    strictEqual(take(world, "ann", "slip", "lift-slip").status, "ok");
+    const pocketed = world.command({
+      command_id: "pocket",
+      actor: ids.ann,
+      verb: "put",
+      target: "slip",
+      args: { relation: "in", destination: `${ids.ann}.pocket` },
+    });
+    strictEqual(pocketed.status, "ok", String(pocketed.reason_code));
+    strictEqual(held(world, "slip")?.in_part, "pocket");
+    strictEqual(take(world, "ann", "slip", "out-of-pocket").status, "ok");
+    ok(held(world, "slip")?.in_part?.startsWith("hand_"));
+    deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
+
+    // A mouth holds as a hand does.
+    strictEqual(take(world, "rex", "bone", "rex-takes").status, "ok");
+    deepStrictEqual(
+      [take(world, "rex", "bone", "rex-again").status, take(world, "rex", "bone", "rex-again-2").reason_code],
+      ["refused", "already_held"],
+    );
+  }
 });

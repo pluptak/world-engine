@@ -35,6 +35,16 @@ function preconditions(context: CommandContext): PreconditionResult {
     return gap;
   }
 
+  // Already in the grip it would be put in: the take would change nothing but the clock, so it is
+  // said before the carry check counts the item against itself (a full mouth is not the answer). From a
+  // pocket, or to another named grip, it still moves.
+  if (entity.contained_in === context.actor.id) {
+    const placed = gripPlacement(context, context.actor.id, entity);
+    if (placed.status === "ok" && placed.part === entity.in_part) {
+      return { status: "refused", reason_code: "already_held" };
+    }
+  }
+
   const carry = carryCheck(
     capacities(context.snapshot, context.registry, context.actor.id),
     context.actor.props,
@@ -118,6 +128,7 @@ export const takeVerb: Verb = {
     "insufficient_manipulation",
     "container_closed",
     "held_by_another",
+    "already_held",
     "two_hands_required",
     "too_heavy",
     "mouth_full",
