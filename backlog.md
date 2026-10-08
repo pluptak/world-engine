@@ -20,8 +20,7 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
    blocks 1–8 in its order. Its open questions must be settled before block 4.
-2. [The CLI describes its requests and responses](#the-cli-describes-its-requests-and-responses).
-3. Candidates without a plan yet (below): write the item, then build it.
+2. Candidates without a plan yet (below): write the item, then build it.
 
 ## How the work runs
 
@@ -55,22 +54,7 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
 
-### The CLI describes its requests and responses
-
-`verbs` and `capabilities` tell a caller what the engine can do; the shape of the CLI's own JSON is known only from
-`src/contract.ts`. A caller in another language, or one generating tool definitions, has to read TypeScript.
-
-- **Contract:** `RESPONSES: Record<Op, ZodType>` in `src/contract.ts`, the schema each op answers with, and
-  `ResponseSchema` built from its values (the union stays the CLI's check on every answer).
-- **Op:** `{ "op": "schema" }` answers `{ json_schema: "2020-12", request, responses }`: `z.toJSONSchema` (zod 4,
-  which converts all 36 schemas in the contract today) of `RequestSchema` and of each entry of `RESPONSES`, keyed by
-  op. `SchemaResponseSchema` joins the union.
-- **Tests** (`tests/contract.test.ts`): every op of `RequestSchema` has exactly one entry in `RESPONSES` and none is
-  dead; the answer is the same twice (`canonicalJson`); `request` has one branch per op and `responses.command`
-  names the statuses `StatusSchema` does; a real answer for each op the CLI tests already issue parses with its own
-  entry.
-- **Docs:** `docs/api.md` (the CLI's ops).
-- **Depends on:** nothing.
+None is planned now.
 
 ## Candidates
 

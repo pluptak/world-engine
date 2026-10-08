@@ -5,6 +5,14 @@
 `attempts`, `trace`, `beat`, `upgradeTemplates`, `verify`, `query`, `observe` and `inspect`
 ([projection.md](projection.md)), `snapshot`, `entity`, `id` and `fork`. `verbs()` is the verb catalog and
 `ENGINE_CAPABILITIES` what the engine computes; the CLI answers both (`op` `verbs`, `capabilities`).
+
+**The CLI describes itself.** `{ "op": "schema" }` needs no world and answers `{ json_schema: "2020-12", request,
+responses, failure }`: `z.toJSONSchema` of `RequestSchema` (one `oneOf` branch per op, each with its `op` as a
+`const`), of the schema each op answers with, keyed by op, and of `{ status: "invalid", issues }`, which any op
+gives to a request it refuses. A caller in another language, or one generating tool definitions, reads that
+instead of `src/contract.ts`. `RESPONSES` in `src/contract.ts` is the table behind it (the compiler holds it to
+one entry per op), and `ResponseSchema`, which the CLI checks every answer against, is the union of its values
+and the failure. `tests/contract.test.ts` parses a real answer to every op with its own entry.
 Store worlds share a directory, so handles see each other; memory worlds hold their own. A missing
 directory, a changed hash, or a bad version is a `WorldError` with a code.
 

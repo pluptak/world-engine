@@ -255,6 +255,9 @@ export const RequestSchema = z.discriminatedUnion("op", [
     op: z.literal("capabilities"),
   }).strict(),
   z.object({
+    op: z.literal("schema"),
+  }).strict(),
+  z.object({
     op: z.literal("inspect"),
     world: z.string().min(1),
     observer: IdSchema,
@@ -568,25 +571,64 @@ export const ValidationFailureSchema = z.object({
   issues: z.array(ValidationIssueSchema),
 }).strict();
 
-export const ResponseSchema = z.union([
-  CommandResponseSchema,
-  AnswerSchema,
-  SnapshotSchema,
-  CheckResponseSchema,
-  ActorCommandResponseSchema,
-  SinceResponseSchema,
-  AttemptsResponseSchema,
-  VerifyResponseSchema,
-  TraceResponseSchema,
-  BeatResponseSchema,
-  VerbsResponseSchema,
-  CapabilitiesResponseSchema,
-  InspectResponseSchema,
-  OptionsResponseSchema,
-  ProjectionSchema,
-  ValidationFailureSchema,
-]);
+// What `{ "op": "schema" }` answers: the JSON Schema (draft 2020-12, from `z.toJSONSchema`) of every
+// request and of the response each op gives, so a caller in another language, or one generating tool
+// definitions, need not read this file. `failure` is the answer any op gives to a request it refuses.
+export const SchemaResponseSchema = z.object({
+  json_schema: z.literal("2020-12"),
+  request: z.record(z.string(), z.unknown()),
+  responses: z.record(z.string(), z.record(z.string(), z.unknown())),
+  failure: z.record(z.string(), z.unknown()),
+}).strict();
 
 export type Request = z.infer<typeof RequestSchema>;
+export type Op = Request["op"];
+
+// The schema each op answers with. Every op of `RequestSchema` has exactly one entry (the compiler holds
+// it to that), and `ResponseSchema`, which the CLI checks every answer against, is built from these.
+// The order is the order the union tries them in, which decides what it parses an answer to.
+export const RESPONSES = {
+  command: CommandResponseSchema,
+  edit: CommandResponseSchema,
+  query: AnswerSchema,
+  snapshot: SnapshotSchema,
+  check: CheckResponseSchema,
+  actor_check: CheckResponseSchema,
+  actor_command: ActorCommandResponseSchema,
+  since: SinceResponseSchema,
+  attempts: AttemptsResponseSchema,
+  verify: VerifyResponseSchema,
+  trace: TraceResponseSchema,
+  beat: BeatResponseSchema,
+  verbs: VerbsResponseSchema,
+  capabilities: CapabilitiesResponseSchema,
+  schema: SchemaResponseSchema,
+  inspect: InspectResponseSchema,
+  actor_inspect: InspectResponseSchema,
+  options: OptionsResponseSchema,
+  actor_options: OptionsResponseSchema,
+  observe: ProjectionSchema,
+  actor_observe: ProjectionSchema,
+} satisfies Record<Op, z.ZodType>;
+
+type AnyResponse = (typeof RESPONSES)[Op] | typeof ValidationFailureSchema;
+
+export const ResponseSchema = z.union([
+  ...new Set<AnyResponse>([...Object.values(RESPONSES), ValidationFailureSchema]),
+] as [AnyResponse, ...AnyResponse[]]);
+
+let described: z.infer<typeof SchemaResponseSchema> | undefined;
+
+// The answer to the `schema` op. It depends on nothing but this file, so it is built once.
+export function describeContract(): z.infer<typeof SchemaResponseSchema> {
+  described ??= {
+    json_schema: "2020-12",
+    request: z.toJSONSchema(RequestSchema, { io: "input" }),
+    responses: Object.fromEntries(Object.entries(RESPONSES).map(([op, schema]) => [op, z.toJSONSchema(schema)])),
+    failure: z.toJSONSchema(ValidationFailureSchema),
+  };
+  return described;
+}
+
 export type Query = z.infer<typeof QuerySchema>;
 export type Response = z.infer<typeof ResponseSchema>;

@@ -22,6 +22,7 @@ import {
   ScenarioSchema,
   SeededScenarioSchema,
   ValidationFailureSchema,
+  describeContract,
   type Request,
 } from "../contract.js";
 
@@ -165,6 +166,9 @@ function dispatch(request: Request): unknown {
   }
   if (request.op === "capabilities") {
     return structuredClone(ENGINE_CAPABILITIES);
+  }
+  if (request.op === "schema") {
+    return describeContract();
   }
   if (request.op === "command") {
     const world = openWorld(request.world);

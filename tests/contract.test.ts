@@ -8,10 +8,15 @@ import { test } from "node:test";
 import {
   AnswerSchema,
   CommandResponseSchema,
+  describeContract,
   RequestSchema,
+  RESPONSES,
   ResponseSchema,
   SnapshotSchema,
+  StatusSchema,
+  type Op,
 } from "../src/contract.js";
+import { canonicalJson } from "../src/index.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -324,4 +329,74 @@ test("CLI init accepts a scenario with declared names and refuses a duplicate", 
 test("request schemas reject unknown operations", () => {
   const parsed = RequestSchema.safeParse({ op: "other", world: "world" });
   strictEqual(parsed.success, false);
+});
+
+// The ops of RequestSchema, as it declares them.
+const OPS = RequestSchema.options.map((branch) => branch.shape.op.value).sort();
+
+test("every op has exactly one response schema, and no schema answers an op that does not exist", () => {
+  deepStrictEqual(Object.keys(RESPONSES).sort(), OPS);
+  strictEqual(new Set(OPS).size, OPS.length);
+  // The CLI checks every answer against the union of them, and of the failure any op can give.
+  strictEqual(ResponseSchema.options.length, new Set(Object.values(RESPONSES)).size + 1);
+});
+
+function ask(request: Record<string, unknown>) {
+  const run = runCli(JSON.stringify(request));
+  strictEqual(run.status, 0, `${String(request.op)}: ${run.stdout}${run.stderr}`);
+  return run.stdout;
+}
+
+test("the schema op describes every request and the response of each op, the same way each time", () => {
+  const first = ask({ op: "schema" });
+  strictEqual(ask({ op: "schema" }), first);
+  const described = JSON.parse(first) as ReturnType<typeof describeContract>;
+  strictEqual(canonicalJson(described), canonicalJson(describeContract()));
+  strictEqual(described.json_schema, "2020-12");
+
+  // One branch per op in the request, and one response schema per op.
+  const request = described.request as { oneOf: Array<{ properties: { op: { const: string } } }> };
+  deepStrictEqual(request.oneOf.map((branch) => branch.properties.op.const).sort(), OPS);
+  deepStrictEqual(Object.keys(described.responses).sort(), OPS);
+
+  // A command answers with the statuses the contract names, and any op can fail the one way.
+  const command = described.responses.command as { properties: { status: { enum: string[] } } };
+  deepStrictEqual(command.properties.status.enum, [...StatusSchema.options]);
+  const failure = described.failure as { properties: { status: { const: string } }; required: string[] };
+  deepStrictEqual([failure.properties.status.const, failure.required], ["invalid", ["status", "issues"]]);
+});
+
+test("a real answer to every op parses with the schema the contract gives that op", (t) => {
+  const world = initWorld(t);
+  const waited = { command_id: "c1", actor: "e4", verb: "wait", args: { ticks: 1 } };
+  const first = JSON.parse(ask({ op: "command", world, command: waited })) as { events: Array<{ event_id: string }> };
+  const requests: Record<Op, Record<string, unknown>> = {
+    command: { op: "command", world, command: { ...waited, command_id: "c2" }, observe: true },
+    edit: { op: "edit", world, edit: { kind: "set_seed", seed: 7 } },
+    check: { op: "check", world, command: { command_id: "c3", actor: "e4", verb: "take", target: "bottle" } },
+    since: { op: "since", world, version: 0 },
+    attempts: { op: "attempts", world, version: 0 },
+    verify: { op: "verify", world },
+    trace: { op: "trace", world, query: { event_id: first.events[0]!.event_id } },
+    beat: { op: "beat", world, commands: [{ ...waited, command_id: "b1" }] },
+    query: { op: "query", world, query: { kind: "fact", subject: "e3", relation: "status" } },
+    observe: { op: "observe", world, observer: "e4" },
+    snapshot: { op: "snapshot", world },
+    verbs: { op: "verbs" },
+    capabilities: { op: "capabilities" },
+    schema: { op: "schema" },
+    inspect: { op: "inspect", world, observer: "e4", entity: "e3" },
+    options: { op: "options", world, actor: "e4", refused: true },
+    actor_observe: { op: "actor_observe", world, actor: "e4" },
+    actor_inspect: { op: "actor_inspect", world, actor: "e4", entity: "e3" },
+    actor_options: { op: "actor_options", world, actor: "e4", refused: true },
+    actor_check: { op: "actor_check", world, actor: "e4", command: { command_id: "a1", verb: "take", target: "bottle" } },
+    actor_command: { op: "actor_command", world, actor: "e4", command: { command_id: "a2", verb: "wait", args: { ticks: 1 } } },
+  };
+  deepStrictEqual(Object.keys(requests).sort(), OPS);
+  for (const [op, request] of Object.entries(requests) as Array<[Op, Record<string, unknown>]>) {
+    const answer = JSON.parse(ask(request)) as unknown;
+    const parsed = RESPONSES[op].safeParse(answer);
+    ok(parsed.success, `${op}: ${parsed.success ? "" : parsed.error.message}`);
+  }
 });

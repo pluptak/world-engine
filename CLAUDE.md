@@ -29,7 +29,8 @@ suffixes (NodeNext).
 
 - `src/model.ts`: core types (`Snapshot`, `Entity`, `WorldEvent`, `Delta`, `Status`) and
   `defaultCoverage()`. `src/contract.ts`: Zod schemas for the CLI's JSON boundary (requests,
-  responses, the snapshot). Zod is used only there and in `src/cli/`.
+  responses, the snapshot; `RESPONSES` names the schema each op answers with, and the `schema` op
+  turns them into JSON Schema, `docs/api.md`). Zod is used only there and in `src/cli/`.
 - `src/engine/pipeline.ts` `apply(snapshot, registry, command)`: the single transition entry point.
   It looks up the verb, then checks the actor, resolves the target (`resolve.ts`: name, alias or
   `entity.part`, among what the actor can address: `addressable` in `query.ts`, `docs/perception.md`) and runs `verb.preconditions`. Only after all of those pass does it emit the root
@@ -157,7 +158,7 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
   `check` | `options` | `since` | `attempts` | `query` | `observe` | `inspect` | `snapshot` | `verbs` |
-  `capabilities` | `verify`, and the five `actor_*` ops of `docs/actor-view.md`, through `actorWorld`), calls one
+  `capabilities` | `schema` | `verify`, and the five `actor_*` ops of `docs/actor-view.md`, through `actorWorld`), calls one
   `World` method, `verbCatalog` or returns `ENGINE_CAPABILITIES` (`src/engine/capabilities.ts`: the
   relations and senses the engine computes, which `validateSnapshot` holds coverage to), and
   validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`
