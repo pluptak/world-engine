@@ -20,7 +20,10 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
    blocks 1–8 in its order. Its open questions must be settled before block 4.
-2. Candidates without a plan yet (below): write the item, then build it.
+2. [Acts that change nothing are refused](#acts-that-change-nothing-are-refused).
+3. [A taken-over lock leaves no grave](#a-taken-over-lock-leaves-no-grave).
+4. [Verify holds the checkpoints to the replay](#verify-holds-the-checkpoints-to-the-replay).
+5. Candidates without a plan yet (below): write the item, then build it.
 
 ## How the work runs
 
@@ -54,7 +57,74 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
 
-None is planned now.
+### Acts that change nothing are refused
+
+`options` lists what a dry run accepts, so an act that changes nothing but the clock reads as something to try.
+`open`, `close`, `light` and `douse` already refuse that (`already_open`, `already_closed`, `already_burning`,
+`not_burning`). Playing the cell from inside showed `lock` and `unlock` do not (the prisoner can `unlock` an
+unlocked gate every turn), and random play over the shipped scenarios found two more: `take` of what the actor
+already holds, and `attack` on what is already destroyed, which emits `destroyed` again at every blow.
+
+- **Lock and unlock:** `lock` on a locked target is refused `already_locked` and `unlock` on one that is not locked
+  `already_unlocked`, after reach and before the key, as `already_open` follows reach in
+  `src/engine/verbs/openable.ts`.
+- **Take:** refused `already_held` when the actor holds the item and the grip the take would put it in is the one it is
+  in already (the default grip or `args.part`; an item in a pocket is still taken into a hand, and one can still be
+  moved to another named grip), after the loop check.
+- **Attack:** refused `already_destroyed` when the target is a destroyed entity, or a part that is destroyed (its own
+  state, or under a destroyed ancestor: `effectivePart`), after reach. `options` then lists those parts as blocked;
+  the filter for detached parts stays.
+- **Declared:** each code in its verb's `refuses` (the suite fails on one that is not).
+- **Property net:** `tests/options-property.test.ts` also asserts that each chosen ready option changes some entity
+  (`canonicalJson` of `entities` before and after), except `wait` (time) and `search` (finding nothing is an
+  answer). A verb it finds besides these is refused in this item or exempted there with its reason.
+- **Tests:** `tests/openable.test.ts` (each refusal, with and without the key, reach first); `tests/holders.test.ts`
+  (take twice, from a pocket, to another grip); a destroyed table and a destroyed part hit again are refused and emit
+  no second `destroyed`; `tests/scenario-cell-actor.test.ts`, where the prisoner tries `unlock` before `open` again
+  and the comment about the order goes.
+- **Docs:** `docs/verbs-openables.md`, `docs/verbs-holding.md`, `docs/verbs-other.md`.
+- **Depends on:** nothing.
+
+### A taken-over lock leaves no grave
+
+One full-suite run failed `deepStrictEqual(leftovers(dir), [])` in the lock tests with `['lock.stale-2580']`, and six
+reruns of `tests/store-lock.test.ts` alone did not repeat it. The grave (`lock.stale-<pid>`) is where `takeOver` in
+`src/store/lock.ts` renames a stale lock; `release(grave)` gives up silently after ten pauses (about 55 ms), which
+Windows can force while another waiter still has the grave open, and `sweepLeftovers` skips every live pid, its own
+included, so nothing removes it afterwards. That is the one path that writes the name and leaves it; the failure itself
+is not reproduced on demand.
+
+- **Store:** the grave is the taker's own, since nobody else renames to it, so `release` of a grave keeps asking until
+  it is gone or a second has passed, and `sweepLeftovers` also removes `lock.stale-<this pid>`: the next takeover
+  clears what the first could not. A grave of a live other process is still left alone.
+- **Tests** (`tests/store-lock.test.ts`): a `lock.stale-<this pid>` left in a world with a stale lock is gone after the
+  next writer's turn, and one named for another live process stays; `upgradeTemplates` while a foreign live lock is held
+  fails `store_busy` and changes no file, which pins the turn it takes around its proof and its write. The put-back in
+  `takeOver` (a rename that caught a lock made in between) stays untested: it needs a seam between two judgements.
+- **Docs:** `docs/locking.md` (the crash paragraph).
+- **Depends on:** nothing.
+
+### Verify holds the checkpoints to the replay
+
+`verify` compares the four data files and says the head and checkpoints are caches it does not compare. A checkpoint
+is not harmless: readers start from its snapshot, so one that was changed alters what `since` and event-time
+`perceive` answer, and `snapshotAtVersion` feeds `resolveSubmission`, so it can change whether a stale command is
+logged `preempted` or `refused`. `readCheckpoint` checks it is bound to the log prefix, `initial.json` and the
+template set, and that its snapshot has the version, `next_seq` and set its name says, never the rest of it.
+
+- **Store:** while `verifyLocked` folds the log it keeps the canonical snapshot at each version a
+  `checkpoints/<version>-<next_seq>.json` names. After the snapshot it checks each file, in name order: one
+  `readCheckpoint` refuses (unparsable, another set, log bytes that are not the log's own prefix) is `differs`; one
+  whose `version` is past the log's is `extra`; one whose snapshot is not the replay's at that version is `differs`.
+  `line` is 0 and `file` is `checkpoints/<name>`. A world with no checkpoints, and a name that is no checkpoint's,
+  are untouched. The head stays out: after a crash it is behind its files and `load` mends it.
+- **Contract:** `VerifyResponseSchema` takes the four names or `checkpoints/<version>-<next_seq>.json`
+  (a regular expression), and `Divergence["file"]` is widened to match.
+- **Tests** (`tests/verify.test.ts`): a checkpoint's snapshot changed to the same length, one with a log byte changed
+  under it, and a copy named for a version past the log each report their divergence; the unchanged world still
+  verifies ok; no file's bytes change; the CLI answer parses.
+- **Docs:** `docs/persistence.md` (the verify paragraph), `docs/api.md`.
+- **Depends on:** nothing.
 
 ## Candidates
 
@@ -63,5 +133,15 @@ Known gaps with no plan yet. Promote one by writing it up as an item above.
 - **Actors learn that unseen others acted.** `observation.version` and a `preempted` status reveal
   commands the actor could not perceive, through `actorWorld` and the `actor_*` ops; the open decision
   is whether an actor view should hide them.
+- **Where to stand.** `move` is never ready or blocked in `options`, since its destination is free, so both runs
+  from inside worked a spot out of inspected footprints (the guard's three candidates, the cell's 18 cm,
+  `docs/limits-actor.md`). A `suggest` for `move` could list, for each thing the actor can name, a free spot within
+  reach of it. Open: how many per thing (the nearest, or one per side), and whether coordinates are still
+  describing a command or already planning one (`give`, `put` and `move` suggest ids, never positions).
+- **`reachable` is arm's reach, doors are worked from further.** `inspect`'s `reachable` and the fact use `inReach`;
+  `open`, `close`, `lock` and `unlock` also take a doorway of the actor's room from anywhere in it, and a door of
+  the next room from its far side (`reachedAsDoor`), so a door can read `reachable: false` with `open` ready. Open:
+  say so in `docs/perception.md`, or answer a doorway by the rule its verbs apply, which would make `attack` and
+  `push` on it disagree instead.
 - **Facing and a sight cone.** In a lit room every act is seen (`docs/limits.md`); the costliest of
   the limits, revisit when a concrete world needs what darkness, concealment and staging cannot give.
