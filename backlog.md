@@ -20,9 +20,8 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
    blocks 3–8 in its order. Its open questions must be settled before block 4.
-2. [A taken-over lock leaves no grave](#a-taken-over-lock-leaves-no-grave).
-3. [Verify holds the checkpoints to the replay](#verify-holds-the-checkpoints-to-the-replay).
-4. Candidates without a plan yet (below): write the item, then build it.
+2. [Verify holds the checkpoints to the replay](#verify-holds-the-checkpoints-to-the-replay).
+3. Candidates without a plan yet (below): write the item, then build it.
 
 ## How the work runs
 
@@ -55,25 +54,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A taken-over lock leaves no grave
-
-One full-suite run failed `deepStrictEqual(leftovers(dir), [])` in the lock tests with `['lock.stale-2580']`, and six
-reruns of `tests/store-lock.test.ts` alone did not repeat it. The grave (`lock.stale-<pid>`) is where `takeOver` in
-`src/store/lock.ts` renames a stale lock; `release(grave)` gives up silently after ten pauses (about 55 ms), which
-Windows can force while another waiter still has the grave open, and `sweepLeftovers` skips every live pid, its own
-included, so nothing removes it afterwards. That is the one path that writes the name and leaves it; the failure itself
-is not reproduced on demand.
-
-- **Store:** the grave is the taker's own, since nobody else renames to it, so `release` of a grave keeps asking until
-  it is gone or a second has passed, and `sweepLeftovers` also removes `lock.stale-<this pid>`: the next takeover
-  clears what the first could not. A grave of a live other process is still left alone.
-- **Tests** (`tests/store-lock.test.ts`): a `lock.stale-<this pid>` left in a world with a stale lock is gone after the
-  next writer's turn, and one named for another live process stays; `upgradeTemplates` while a foreign live lock is held
-  fails `store_busy` and changes no file, which pins the turn it takes around its proof and its write. The put-back in
-  `takeOver` (a rename that caught a lock made in between) stays untested: it needs a seam between two judgements.
-- **Docs:** `docs/locking.md` (the crash paragraph).
-- **Depends on:** nothing.
 
 ### Verify holds the checkpoints to the replay
 

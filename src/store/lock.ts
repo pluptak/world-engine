@@ -15,6 +15,9 @@ export const LOCK_FILE = "lock";
 const DEFAULT_TIMEOUT_MS = 5_000;
 const STALE_AFTER_MS = 60_000;
 const LONGEST_PAUSE_MS = 20;
+// How long a taker keeps asking for its grave back: the grave is its own, so the only thing in the way
+// is a reader that has it open for a moment.
+const GRAVE_PATIENCE_MS = 1_000;
 
 interface Owner {
   pid: number;
@@ -77,18 +80,21 @@ function judge(path: string): "gone" | "stale" | "live" {
   }
 }
 
+const TEMPORARY = /\.(\d+)\.tmp$/;
+const GRAVE = new RegExp(`^${LOCK_FILE}\\.stale-(\\d+)$`);
+
 // The pid a leftover file is named for: a writer's temporary (`<name>.<pid>.tmp`) or a taker's grave
 // (`lock.stale-<pid>`). 0 is an old shared `.tmp` no live writer names, null is anything else.
 function leftBy(name: string): number | null {
-  const temporary = /.(d+).tmp$/.exec(name);
-  const grave = new RegExp(`^${LOCK_FILE}\.stale-(\d+)$`).exec(name);
-  const pid = temporary?.[1] ?? grave?.[1];
-  return pid !== undefined ? Number(pid) : name.endsWith(".tmp") ? 0 : null;
+  const found = TEMPORARY.exec(name) ?? GRAVE.exec(name);
+  return found !== null ? Number(found[1]) : name.endsWith(".tmp") ? 0 : null;
 }
 
 // What a crashed writer leaves besides the lock: temporaries named for its pid, and graves of takers
 // that died. The sweep runs before the sweeper has the turn, so it takes only what no live process
-// could be using: a file of a dead pid, or of the `evicted` holder, whose turn has just been ended.
+// could be using: a file of a dead pid, of the `evicted` holder, whose turn has just been ended, or of
+// this process, which is not writing anything while it sweeps (a grave it could not remove, or a
+// temporary an interrupted write left, is its own to clear).
 function sweepLeftovers(dir: string, evicted: number | null): void {
   for (const folder of [dir, join(dir, "checkpoints")]) {
     let names: string[] = [];
@@ -99,7 +105,7 @@ function sweepLeftovers(dir: string, evicted: number | null): void {
     }
     for (const name of names) {
       const pid = leftBy(name);
-      if (pid === null || (pid > 0 && pid !== evicted && alive(pid))) {
+      if (pid === null || (pid > 0 && pid !== evicted && pid !== process.pid && alive(pid))) {
         continue;
       }
       try {
@@ -140,7 +146,8 @@ function takeOver(path: string): boolean {
     // Already gone.
   }
   // Another waiter's judging may still have the grave open, which Windows reports as a failed removal.
-  release(grave);
+  // Nobody else renames to this name, so it is asked for patiently; what still stands is swept below.
+  release(grave, GRAVE_PATIENCE_MS);
   sweepLeftovers(dirname(path), evicted);
   return true;
 }
@@ -167,18 +174,19 @@ function create(path: string): boolean {
   return true;
 }
 
-function release(path: string): void {
+function release(path: string, patienceMs = 55): void {
   // Windows holds a file a reader has open until it lets go; a lock that cannot be removed stays
-  // until its age says it was left behind, so ask a few times first.
-  for (let attempt = 0; attempt < 10; attempt += 1) {
+  // until its age says it was left behind, so ask for a while first.
+  const deadline = Date.now() + patienceMs;
+  for (let attempt = 1; ; attempt += 1) {
     try {
       unlinkSync(path);
       return;
     } catch (error) {
-      if (codeOf(error) === "ENOENT") {
+      if (codeOf(error) === "ENOENT" || Date.now() >= deadline) {
         return;
       }
-      pause(attempt + 1);
+      pause(Math.min(attempt, 10));
     }
   }
 }

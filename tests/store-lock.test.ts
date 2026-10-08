@@ -1,6 +1,6 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -273,3 +273,35 @@ function deadPid(): number {
   const run = spawnSync(process.execPath, ["-e", "process.stdout.write(String(process.pid))"], { encoding: "utf8" });
   return Number(run.stdout);
 }
+
+test("a takeover sweeps the leftovers of a dead process and of this one, and never of another that is alive", (t) => {
+  const dir = newWorld(t);
+  const ann = openWorld(dir).id("ann")!;
+  const dead = deadPid();
+  // The parent of this process is the test runner, which is alive for as long as the test runs.
+  const live = process.ppid;
+  holdAs(dir, { pid: dead, since_ms: Date.now() });
+  mkdirSync(join(dir, "checkpoints"));
+  const gone = [
+    `snapshot.json.${dead}.tmp`,
+    `lock.stale-${dead}`,
+    // What this process could not remove itself, or left when a write was interrupted.
+    `lock.stale-${process.pid}`,
+    `log.jsonl.${process.pid}.tmp`,
+    // A temporary no pid is named in.
+    "head.json.tmp",
+    join("checkpoints", `256-1.json.${dead}.tmp`),
+  ];
+  const kept = [`events.jsonl.${live}.tmp`, `lock.stale-${live}`, join("checkpoints", `256-1.json.${live}.tmp`)];
+  for (const name of [...gone, ...kept]) {
+    writeFileSync(join(dir, name), "left behind");
+  }
+  strictEqual(takeStone(dir, "c1", ann).status, "ok");
+  for (const name of gone) {
+    ok(!existsSync(join(dir, name)), `${name} was swept`);
+  }
+  for (const name of kept) {
+    ok(existsSync(join(dir, name)), `${name} belongs to a process that is alive`);
+  }
+  strictEqual(existsSync(lockPath(dir)), false, "and the turn was given back");
+});

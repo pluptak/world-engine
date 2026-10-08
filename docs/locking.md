@@ -25,9 +25,12 @@ write under way, absent until it ends. Under the turn it is a cut-off write, whi
 nothing.
 
 **A crash** leaves the lock behind. One whose process is gone, or that is over a minute old, is
-renamed away (of two waiters judging it only one rename finds it) and the temporaries the dead
-writer left are swept, those named for a pid that is gone or for the holder put out, never a live
-process's, since the sweeper does not yet hold the turn; what it left half done is settled by `load`'s repair, since the log is the
+renamed away (of two waiters judging it only one rename finds it; the grave is asked for patiently, up to
+a second, since a reader may have it open for a moment) and the leftovers of the dead writer are swept:
+temporaries (`<name>.<pid>.tmp`) and graves (`lock.stale-<pid>`) named for a pid that is gone, for the
+holder put out, or for the sweeper itself, which is writing nothing while it sweeps, never for another
+process that is alive, since the sweeper does not yet hold the turn. A temporary no pid is named in is an
+old one and goes too. What the writer left half done is settled by `load`'s repair, since the log is the
 truth ([persistence.md](persistence.md)). A lock with no owner written, its maker having died
 between creating and filling it, is judged by the file's age.
 
