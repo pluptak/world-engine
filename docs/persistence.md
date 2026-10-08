@@ -40,7 +40,8 @@ or a settled move) removes them, so the next ones are made under it. An event-fo
 event's checkpoint by number alone, since event ids count the same sequence as the snapshot's
 `next_seq`, and the events it needs for cause chains come from `events.jsonl`, which a handle parses once
 and then extends by the lines appended since (checked against the bytes just before them, so a file
-that was rewritten is read again). A store world keeps its last sixteen event replays, so one observation
+that was rewritten is read again). Every reader of the log, events and deltas takes only the bytes
+through the last newline, so a line a writer is still appending waits for the next read. A store world keeps its last sixteen event replays, so one observation
 asks the log once per event rather than once per sense. What a read costs as the log grows is in
 [measurements.md](measurements.md).
 

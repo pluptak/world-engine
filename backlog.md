@@ -18,11 +18,10 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Readers take whole lines](#readers-take-whole-lines): small, and a correctness bug today.
-2. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
+1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
    blocks 1–8 in its order. Its open questions must be settled before block 4.
-3. [The CLI describes its requests and responses](#the-cli-describes-its-requests-and-responses).
-4. Candidates without a plan yet (below): write the item, then build it.
+2. [The CLI describes its requests and responses](#the-cli-describes-its-requests-and-responses).
+3. Candidates without a plan yet (below): write the item, then build it.
 
 ## How the work runs
 
@@ -55,22 +54,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### Readers take whole lines
-
-`since`, `attempts`, `trace` and the event-form `query` read `events.jsonl`, `deltas.jsonl` and `log.jsonl` without
-the world's turn ([docs/locking.md](docs/locking.md)), so a read that overlaps a writer's append can find a last line
-without its newline. `cachedLines` already declines to cache such a file but still parses the fragment, which
-throws a bare `SyntaxError`; `readLogEntries` and the replay start split the same way.
-
-- **Store:** in `src/store/file-store.ts`, `parseLines`, `readLogEntries` and the tail of `replayStart` take only the
-  text up to the last newline; what follows is not yet a line and is left for the next read. A file that is all
-  fragment reads as empty. The cache records the bytes it consumed, so it keeps its entries instead of dropping them.
-- **Tests** (`tests/store-lines.test.ts`, calling the readers directly): each file with a half-written record at its
-  end reads as without it, twice in a row; once the record is completed the next read has it, the cache extended and
-  not rebuilt; a malformed line before the end still fails with its line number.
-- **Docs:** `docs/locking.md` (what a read without the turn sees), `docs/persistence.md`.
-- **Depends on:** nothing.
 
 ### The CLI describes its requests and responses
 

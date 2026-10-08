@@ -253,16 +253,15 @@ function parseLogLine(line: string, lineNumber: number): LogEntry {
   return entry;
 }
 
-function readLogEntries(dir: string): LogEntry[] {
-  const lines = readFileSync(join(dir, snapshots.log), "utf8").split(/\r?\n/);
-  const entries: LogEntry[] = [];
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index]!;
-    if (line.length > 0) {
-      entries.push(parseLogLine(line, index + 1));
-    }
-  }
-  return entries;
+// The log, events and deltas are read without the turn, so a read can overlap a writer's append and
+// find a last line without its newline. That is not yet a line: a reader takes the bytes through the
+// last newline and leaves the rest for the next read.
+function wholeLines(bytes: Buffer): Buffer {
+  return bytes.subarray(0, bytes.lastIndexOf(10) + 1);
+}
+
+export function readLogEntries(dir: string): LogEntry[] {
+  return parseLines(wholeLines(readFileSync(join(dir, snapshots.log))).toString("utf8"), 1, parseLogLine);
 }
 
 // Checkpoints are a cache of the log, never a source of truth: every CHECKPOINT_EVERY accepted
@@ -369,7 +368,7 @@ function initialStart(dir: string, templates: TemplateRegistry): ReplayStart {
 
 // The newest checkpoint the caller can use (`accept` sees its version and `next_seq`, both in its
 // name, so nothing is parsed to choose), or `initial.json` when none is usable.
-function replayStart(
+export function replayStart(
   dir: string,
   templates: TemplateRegistry,
   accept: (version: number, nextSeq: number) => boolean,
@@ -406,7 +405,7 @@ function replayStart(
       continue;
     }
     const entries: ReplayStart["entries"] = [];
-    const lines = log.subarray(checkpoint.log_bytes).toString("utf8").split(/\r?\n/);
+    const lines = wholeLines(log.subarray(checkpoint.log_bytes)).toString("utf8").split(/\r?\n/);
     for (const text of lines) {
       if (text.length > 0) {
         const line = checkpoint.log_lines + entries.length + 1;
@@ -435,7 +434,12 @@ function parseLines<T>(text: string, firstLine: number, parse: (line: string, li
   const records: T[] = [];
   for (const [index, line] of text.split(/\r?\n/).entries()) {
     if (line.length > 0) {
-      records.push(parse(line, firstLine + index));
+      try {
+        records.push(parse(line, firstLine + index));
+      } catch (error) {
+        // JSON.parse names a column, never the line.
+        throw error instanceof SyntaxError ? new TypeError(`Unparsable line ${firstLine + index}`) : error;
+      }
     }
   }
   return records;
@@ -472,17 +476,14 @@ function cachedLines<T>(path: string, parse: (line: string, lineNumber: number) 
       tail = bytes.subarray(kept.size - from);
     }
   }
-  tail ??= readFileSync(path);
-  const fresh = parseLines(tail.toString("utf8"), (base?.lines ?? 0) + 1, parse);
+  // The cache ends where the whole lines do, so a line still being written is read again, complete,
+  // as part of the next extension.
+  const whole = wholeLines(tail ?? readFileSync(path));
+  const fresh = parseLines(whole.toString("utf8"), (base?.lines ?? 0) + 1, parse);
   const records = base === undefined ? fresh : [...(base.records as T[]), ...fresh];
-  // A file that does not end on a line is being written, or damaged: answer from it, keep nothing.
-  if (tail.length > 0 && tail[tail.length - 1] !== 10) {
-    lineCaches.delete(path);
-    return records;
-  }
-  const seen = base === undefined ? tail : Buffer.concat([base.anchor, tail]);
+  const seen = base === undefined ? whole : Buffer.concat([base.anchor, whole]);
   lineCaches.set(path, {
-    size: (base?.size ?? 0) + tail.length,
+    size: (base?.size ?? 0) + whole.length,
     mtimeMs: stat.mtimeMs,
     anchor: Buffer.from(seen.subarray(Math.max(0, seen.length - ANCHOR_BYTES))),
     lines: records.length,
@@ -690,7 +691,12 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
 
   // A crash between the log, event, delta, and snapshot appends leaves them disagreeing; the log is
   // the source of truth, so replay rebuilds the files, events and deltas first, and any later open
-  // finds them consistent again.
+  // finds them consistent again. With the turn held no append is under way, so a log that ends inside
+  // a line was cut off, and settling past it would let the next append join onto the fragment.
+  const log = readFileSync(logPath);
+  if (log.length > 0 && log[log.length - 1] !== 10) {
+    throw new TypeError(`Log ends inside line ${wholeLines(log).toString("utf8").split("\n").length}`);
+  }
   const entries = readLogEntries(dir);
   const okEntries = entries.filter((entry) => entry.status === "ok");
   const expectedVersion = initial.version + okEntries.length;

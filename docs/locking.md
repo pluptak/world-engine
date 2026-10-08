@@ -17,7 +17,8 @@ template set, the three JSONL files are the sizes it says, and the snapshot is a
 accepted entries make; only a world that does not agree is settled under the turn, after looking
 again. A read that overlaps a writer always disagrees (the log grows before the head is written),
 so it waits for the writer instead of rebuilding files under it. `since`, `attempts`, `trace` and
-`query` read the append-only files and take no turn either.
+`query` read the append-only files and take no turn either; a last line without its newline is a
+write under way, absent until it ends. Under the turn it is a cut-off write, which `load` refuses.
 
 **Waiting.** A waiter polls every few milliseconds, longer as it goes, and past
 `WORLD_LOCK_TIMEOUT_MS` (5 s by default) fails `store_busy`, a CLI issue code, having changed
