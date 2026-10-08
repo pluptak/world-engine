@@ -1,5 +1,6 @@
 import { capacities } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
+import type { Id } from "../../model.js";
 import { carryAlternatives, carryCheck, gripPlacement, heldCount, inSpacePart } from "../carry.js";
 import { addressEntity, addressText, gapRefusal, isAgent, reachData, wouldLoop, withinReach } from "./address.js";
 
@@ -116,6 +117,18 @@ function transition(context: TransitionContext): void {
   context.set(target.entity_id, "in_part", grip.part, movedEvent);
 }
 
+// Each agent the actor can name, when the item is in its hand: all a give takes.
+function suggest(context: CommandContext, nameable: readonly Id[]): Record<string, unknown>[] {
+  const { snapshot, registry, actor, target } = context;
+  const item = target === null ? undefined : snapshot.entities[target.entity_id];
+  if (item === undefined || item.contained_in !== actor.id || inSpacePart(snapshot, registry, actor, item)) {
+    return [];
+  }
+  return nameable
+    .filter((id) => id !== item.id && isAgent(snapshot, id))
+    .map((destination) => ({ destination }));
+}
+
 export const giveVerb: Verb = {
   duration: { ticks: 1 },
   requires_target: true,
@@ -136,6 +149,7 @@ export const giveVerb: Verb = {
     "unknown_part",
   ],
   carry_alternatives: carryAlternatives,
+  suggest,
   preconditions,
   transition,
 };

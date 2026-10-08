@@ -6,6 +6,14 @@ an agent's verb. A surface declares `surface`, sized by its footprint; a contain
 `container` and `inner_*_cm`. Every ok command takes one tick unless its verb says otherwise
 ([time.md](time.md)).
 
+A verb that answers `invalid_args` until given some may declare `suggest`, a function from the command's
+context and the ids the actor can name to the arg sets worth trying, in a fixed order and from the snapshot
+alone, which `options` ([api.md](api.md)) dry-runs one by one. `free_args: true` says the verb also takes
+args no list can hold (a position, a partial amount, a token, a tick count), so it stays named in
+`needs_args`. `give` and `put` list every argument they take; `move` and `pour` list some and are free
+for the rest; `say` and `wait` list none and are free. `tests/catalog.test.ts` holds the two declarations
+to the verbs that answer `invalid_args` to a bare command.
+
 This is the index: one line per verb, its rules in the family file it links to.
 
 - `move`: walks to a position, or through an open door ([verbs-moving.md](verbs-moving.md)).

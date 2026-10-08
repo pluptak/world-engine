@@ -17,6 +17,7 @@ const registry: TemplateRegistry = withProcessFixtures(
 test("property: a ready option, issued for real, is accepted; a read changes nothing", () => {
   const verbs = new Map<string, number>();
   let issued = 0;
+  let withArgs = 0;
   let refusals = 0;
   for (let seed = 0; seed < 30; seed += 1) {
     const rand = mulberry32(seed + 9900);
@@ -43,7 +44,8 @@ test("property: a ready option, issued for real, is accepted; a read changes not
       const options = world.options(actor, { refused: true });
       strictEqual(canonicalJson(world.snapshot()), before, "a read changes nothing");
       deepStrictEqual(world.options(actor, { refused: true }), options, "and answers the same twice");
-      const key = (entry: { verb: string; target?: string }) => `${entry.verb} ${entry.target ?? ""}`;
+      const key = (entry: { verb: string; target?: string; args?: object }) =>
+        `${entry.verb} ${entry.target ?? ""} ${canonicalJson(entry.args ?? null)}`;
       const ready = new Set(options.ready.map(key));
       strictEqual(options.blocked!.some((entry) => ready.has(key(entry))), false, "ready and blocked are apart");
       refusals += options.blocked!.length;
@@ -56,14 +58,17 @@ test("property: a ready option, issued for real, is accepted; a read changes not
         actor,
         verb: chosen.verb,
         ...(chosen.target === undefined ? {} : { target: chosen.target }),
+        ...(chosen.args === undefined ? {} : { args: chosen.args }),
       });
       strictEqual(result.status, "ok", `seed ${seed} step ${i}: ${actor} ${key(chosen)} was ${result.status} ${result.reason_code}`);
       issued += 1;
+      withArgs += chosen.args === undefined ? 0 : 1;
       verbs.set(chosen.verb, (verbs.get(chosen.verb) ?? 0) + 1);
     }
   }
   // The runs reach many kinds of option, and refusals alongside them.
   ok(issued >= 600, `issued ${issued}`);
   ok(verbs.size >= 6, `verbs ${[...verbs.keys()].join(",")}`);
+  ok(withArgs >= 15, `issued with args ${withArgs}`);
   ok(refusals >= 20000, `refusals ${refusals}`);
 });

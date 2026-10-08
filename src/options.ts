@@ -1,4 +1,4 @@
-import type { Command, Result } from "./engine/command.js";
+import type { Command, CommandContext, Result } from "./engine/command.js";
 import { addressable } from "./engine/query.js";
 import { isAbstract } from "./engine/resolve.js";
 import { isAgent } from "./engine/verbs/address.js";
@@ -7,10 +7,12 @@ import { WorldError } from "./errors.js";
 import type { Id, Snapshot } from "./model.js";
 import type { TemplateRegistry } from "./templates.js";
 
-// A command an actor could issue now, to be sent as it is: the verb and its target, with no args.
+// A command an actor could issue now, to be sent as it is: the verb, its target, and the args a
+// verb that needs some suggested (ids the actor could already name); none for a verb that takes none.
 export interface ReadyOption {
   verb: string;
   target?: Id;
+  args?: Record<string, unknown>;
 }
 
 export interface BlockedOption extends ReadyOption {
@@ -21,7 +23,8 @@ export interface Options {
   actor: Id;
   version: number;
   ready: ReadyOption[];
-  // Verbs that need args to be judged at all: they are neither ready nor blocked until given some.
+  // Verbs that need args no list holds (a position, an amount, a token, a tick count): they are
+  // judged only once given some. A verb whose args `suggest` lists in full appears above instead.
   needs_args: string[];
   blocked?: BlockedOption[];
 }
@@ -32,7 +35,9 @@ export interface OptionsRequest {
 
 // What an actor can try now, by dry-running each verb against each thing it could name (`addressable`:
 // the rule target resolution applies, so nothing it cannot tell is there is offered) and once with no
-// target for a verb that takes none. A destroyed body, or anything that is no agent, has no options.
+// target for a verb that takes none. A verb that answers `invalid_args` is tried again with each arg
+// set its `suggest` lists, and stays in `needs_args` only if it has `free_args` or no `suggest`.
+// A destroyed body, or anything that is no agent, has no options.
 // `dry` judges a command against `snapshot` and writes nothing; the caller binds it to its own world.
 export function listOptions(
   snapshot: Snapshot,
@@ -56,6 +61,7 @@ export function listOptions(
           !isAbstract(registry, snapshot.entities[id]) &&
           addressable(snapshot, registry, actor, id),
       );
+    const actorEntity = snapshot.entities[actor]!;
     const needsArgs = new Set<string>();
     for (const verb of [...verbRegistry.keys()].sort()) {
       const declared = verbRegistry.get(verb)!;
@@ -68,7 +74,27 @@ export function listOptions(
         if (outcome.status === "ok") {
           options.ready.push({ verb, ...named });
         } else if (outcome.status === "invalid" && outcome.reason_code === "invalid_args") {
-          needsArgs.add(verb);
+          if (declared.suggest === undefined || declared.free_args === true) {
+            needsArgs.add(verb);
+          }
+          if (declared.suggest !== undefined) {
+            const context: CommandContext = {
+              snapshot,
+              registry,
+              command: { command_id: "options", actor, verb, ...named },
+              actor: actorEntity,
+              target: target === undefined ? null : { entity_id: target, part: null, address: target },
+              verb: declared,
+            };
+            for (const args of declared.suggest(context, targets)) {
+              const tried = dry({ command_id: "options", actor, verb, ...named, args });
+              if (tried.status === "ok") {
+                options.ready.push({ verb, ...named, args });
+              } else {
+                blocked.push({ verb, ...named, args, reason_code: tried.reason_code ?? tried.status });
+              }
+            }
+          }
         } else {
           blocked.push({ verb, ...named, reason_code: outcome.reason_code ?? outcome.status });
         }

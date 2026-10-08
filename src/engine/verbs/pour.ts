@@ -1,7 +1,7 @@
 import { capacities } from "../capacity.js";
 import { insufficientCode, meetsRequirements, unmetRequirement, inSpacePart } from "../carry.js";
 import { addResidue } from "../residue.js";
-import type { Entity } from "../../model.js";
+import type { Entity, Id } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { addressEntity, addressText, closedEnclosure, reachData, withinReach } from "./address.js";
 
@@ -218,6 +218,35 @@ function transition(context: TransitionContext): void {
   addResidue(context, destination.id, { [material]: amount }, pouredEvent);
 }
 
+// Each vessel, surface or room the actor can name, for the whole of what it holds in its hand. A
+// partial amount is free.
+function suggest(context: CommandContext, nameable: readonly Id[]): Record<string, unknown>[] {
+  const { snapshot, registry, actor, target } = context;
+  const source = target === null ? undefined : snapshot.entities[target.entity_id];
+  if (
+    source === undefined ||
+    source.contained_in !== actor.id ||
+    inSpacePart(snapshot, registry, actor, source) ||
+    typeof source.props.liquid_material !== "string" ||
+    source.props.liquid_material.length === 0
+  ) {
+    return [];
+  }
+  const amount = liquidAmount(source);
+  return amount === 0
+    ? []
+    : nameable
+        .filter((id) => {
+          const entity = snapshot.entities[id];
+          return (
+            id !== source.id &&
+            entity !== undefined &&
+            (entity.props.container === true || entity.props.surface === true || entity.template === "room")
+          );
+        })
+        .map((destination) => ({ destination, amount }));
+}
+
 export const pourVerb: Verb = {
   duration: { ticks: 1 },
   requires_target: true,
@@ -237,6 +266,8 @@ export const pourVerb: Verb = {
     "container_full",
   ],
   requires: [{ capacity: "manipulation", at_least: 50 }],
+  suggest,
+  free_args: true,
   preconditions,
   transition,
 };

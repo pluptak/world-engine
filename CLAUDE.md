@@ -118,7 +118,8 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
   `command`/`edit`/`check`/`options`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`;
   `options` (`src/options.ts`) dry-runs every non-author verb against everything the actor can name
-  (`addressable`) and sorts the verdicts into `ready`, `needs_args` and, on request, `blocked`;
+  (`addressable`) and sorts the verdicts into `ready`, `needs_args` and, on request, `blocked`; a verb's `suggest` lists the arg sets
+  to try (`give`, `put`, `move`, `pour`), `free_args` the args no list holds (`docs/verbs.md`);
   `attempts(version)` is every submission decided at that version or later, ok or not, as an
   `Attempt` (`engine/command.ts`): a store world's log lines, a memory world's own record; `observe` is
   `src/engine/projection.ts` over the world's own `snapshot`, `since` and event-form `query`,

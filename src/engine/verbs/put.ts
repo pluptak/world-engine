@@ -1,8 +1,8 @@
 import { capacities } from "../capacity.js";
 import { misfit } from "../fit.js";
-import type { Entity } from "../../model.js";
+import type { Entity, Id } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
-import { insufficientCode, meetsRequirements, spaceRefusal, unmetRequirement } from "../carry.js";
+import { holderLayout, insufficientCode, meetsRequirements, spaceRefusal, unmetRequirement } from "../carry.js";
 import { resolveTarget } from "../resolve.js";
 import { addressEntity, addressText, closedEnclosure, gapRefusal, reachData, wouldLoop, withinReach } from "./address.js";
 
@@ -219,6 +219,26 @@ function transition(context: TransitionContext): void {
   context.set(target.entity_id, "pos", null, movedEvent);
 }
 
+// Where a held thing could go: on each surface and in each container the actor can name, then into
+// each of its own pockets (a space part) other than the one the item is in. A thing that is neither
+// would only be refused `not_a_surface` or `not_a_container`.
+function suggest(context: CommandContext, nameable: readonly Id[]): Record<string, unknown>[] {
+  const { snapshot, registry, actor, target } = context;
+  const item = target === null ? undefined : snapshot.entities[target.entity_id];
+  if (item === undefined || item.contained_in !== actor.id) {
+    return [];
+  }
+  const others = nameable.filter((id) => id !== item.id);
+  const holding = (prop: string) => others.filter((id) => snapshot.entities[id]?.props[prop] === true);
+  return [
+    ...holding("surface").map((destination) => ({ relation: "on", destination })),
+    ...holding("container").map((destination) => ({ relation: "in", destination })),
+    ...holderLayout(registry, actor.template)
+      .spaces.filter((space) => space.name !== item.in_part)
+      .map((space) => ({ relation: "in", destination: `${actor.id}.${space.name}` })),
+  ];
+}
+
 export const putVerb: Verb = {
   duration: { ticks: 1 },
   requires_target: true,
@@ -235,6 +255,7 @@ export const putVerb: Verb = {
     "insufficient_manipulation",
   ],
   requires: [{ capacity: "manipulation", at_least: 50 }],
+  suggest,
   preconditions,
   transition,
 };

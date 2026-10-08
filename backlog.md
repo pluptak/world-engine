@@ -41,34 +41,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Options name the arguments they can
-
-`options` lists what a dry run accepts as it stands. The six verbs that need arguments (`give`, `put`, `move`,
-`pour`, `say`, `wait`) come back only as names in `needs_args`, so the middleware must guess a recipient, a
-container or a room the actor could in fact name, which is the kind of trial and error `options` was meant to end.
-
-- **`Verb.suggest`:** an optional function on the verb (`src/engine/command.ts`, `Verb`) from the same context as
-  `preconditions` to a finite list of arg sets, in a fixed order, cheap and without side effects: `give`, each
-  agent the actor can name but itself, only when the target is held; `put`, `on` and `in` with each thing the actor
-  can name but itself and the item, only when the target is held; `move`, `{ location }` for each room the actor can
-  name (`nameableRoom` in `verbs/move.ts`, exported); `pour`, each vessel it can name with the whole `liquid_amount` of the
-  target. `say`, `wait` and `advance` declare none: a token and a tick count are not a list.
-- **In `options`:** a verb that answers `invalid_args` and has `suggest` is tried once per suggestion with the args
-  set. `ready` and `blocked` entries gain `args` where a suggestion made them. `needs_args` keeps a verb that also
-  takes arguments no list can hold, which the verb says with `free_args: true` (`move` to a position, `pour` a
-  partial amount, `say`, `wait`), and drops one whose arguments are all listed (`give`, `put`): the declared
-  `args` cannot say this, since `give` declares a `part` it never reads. `args` hold only ids the actor could
-  already name, and nothing is added for a target it cannot.
-- **Contract and docs:** `args?: Record<string, unknown>` on the ready and blocked entries in `OptionsResponseSchema`
-  (`actorWorld` and the CLI's `actor_options` return the same type); `docs/api.md`, `docs/verbs.md` (what `suggest` and `free_args` are),
-  `tests/catalog.test.ts` (a verb that needs arguments declares `suggest`, `free_args`, or both).
-- **Tests** (`tests/options.test.ts`): ann holding a stone beside bob and a chest is offered `give` to bob, `put` on
-  the table and in the open chest, `move` to the next room through a door and not to a room behind it; a thing she
-  cannot name is never a destination; every suggestion that `check` accepts is `ready` and every other is `blocked`
-  with its code; a store and a memory world answer alike. The property test in `tests/options-property.test.ts`
-  also issues ready options that carry `args`, and every one is `ok`.
-- **Depends on:** nothing. (It changes `OptionsResponseSchema`, which the CLI's `actor_options` answers with too.)
-
 ### A wait that ends when its actor senses something
 
 `docs/limits-actor.md`: an idle character waits a tick at a time, because `wait` runs its whole count and only

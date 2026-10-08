@@ -284,6 +284,14 @@ export interface Verb {
   // Where the root event lands and what it carries, when it is not the target (or the actor) with no
   // data: a speaker's `say` is on the speaker even when it is addressed to another.
   rootEvent?: (command: Command, actor: Entity, target: TargetAddress | null) => { entity: Id; data: Record<string, unknown> };
+  // For a verb that answers `invalid_args` until given some: the arg sets worth trying, in a fixed
+  // order, read from the snapshot alone. `nameable` is every id the actor could name but itself, in
+  // id order, as `options` computed it; a set holds ids from there, or the room behind a doorway
+  // from there, and nothing the actor could not already address. `options` dry-runs each one.
+  suggest?: (context: CommandContext, nameable: readonly Id[]) => readonly Record<string, unknown>[];
+  // The verb also takes args no list can hold (a position, a partial amount, a token, a tick
+  // count), so `options` keeps it among the verbs that need args even when `suggest` lists some.
+  free_args?: boolean;
   requires?: readonly CapacityRequirement[];
   carry_alternatives?: readonly CarryAlternative[];
   attack_modes?: readonly AttackMode[];

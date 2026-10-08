@@ -40,6 +40,7 @@ export const sayVerb: Verb = {
   requires_target: false,
   args: { utterance: { kind: "token" }, volume: { kind: "enum", values: VOLUMES, optional: true } },
   refuses: ["insufficient_speech"],
+  free_args: true,
   duration: { ticks: 1 },
   requires: [{ capacity: "speech", at_least: 50 }],
   rootEvent: (command, actor, target) => ({

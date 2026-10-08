@@ -301,7 +301,14 @@ test("no character is sent an id it was not given: each is its own, its room's, 
     for (const turn of turns) {
       // What this turn lists, and what the character itself named, may be referred to from now on. An
       // event introduces nothing: the entity it names must be one a view listed.
-      for (const entity of [...turn.view.entities, ...turn.result.observation.entities]) known.add(entity.id);
+      // A door it was listed names both its rooms (`inspect` gives `from` and `to`), so options may offer
+      // the one on the far side as a place to move.
+      for (const entity of [...turn.view.entities, ...turn.result.observation.entities]) {
+        known.add(entity.id);
+        for (const end of [night.world.entity(entity.id)?.props.from, night.world.entity(entity.id)?.props.to]) {
+          if (typeof end === "string") known.add(end);
+        }
+      }
       for (const option of [...turn.options.ready, ...(turn.options.blocked ?? [])]) {
         if (option.target !== undefined) known.add(option.target);
       }

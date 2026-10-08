@@ -110,9 +110,14 @@ test("in a lit room: what is in reach is ready, what is far is blocked and absen
   strictEqual([...asked.ready, ...(asked.blocked ?? [])].some((entry) => entry.target === id("mark")), false);
   // The actor is not its own target.
   strictEqual([...asked.ready, ...(asked.blocked ?? [])].some((entry) => entry.target === ann), false);
-  // A verb that cannot be judged without args says so, once and sorted, and is neither ready nor blocked.
-  for (const verb of ["give", "put", "move", "say", "wait"]) {
+  // A verb that takes args no list holds says so, once and sorted, and is neither ready nor blocked
+  // without them; one whose args are all listed (give, put) does not, and nothing here is held to give.
+  for (const verb of ["move", "pour", "say", "wait"]) {
     ok(options.needs_args.includes(verb), verb);
+    strictEqual([...asked.ready, ...(asked.blocked ?? [])].some((entry) => entry.verb === verb && entry.args === undefined), false, verb);
+  }
+  for (const verb of ["give", "put"]) {
+    strictEqual(options.needs_args.includes(verb), false, verb);
     strictEqual([...asked.ready, ...(asked.blocked ?? [])].some((entry) => entry.verb === verb), false, verb);
   }
   deepStrictEqual(options.needs_args, [...new Set(options.needs_args)].sort());
@@ -178,12 +183,19 @@ test("every ready option is accepted, every refused one is refused as listed, an
   const asked = world.options(ann, { refused: true });
   strictEqual(canonicalJson(world.snapshot()), before);
   strictEqual(world.attempts(0).length, submissions);
+  const probe = (entry: { verb: string; target?: Id; args?: Record<string, unknown> }) =>
+    world.check({
+      command_id: "probe",
+      actor: ann,
+      verb: entry.verb,
+      ...(entry.target === undefined ? {} : { target: entry.target }),
+      ...(entry.args === undefined ? {} : { args: entry.args }),
+    });
   for (const entry of asked.ready) {
-    const verdict = world.check({ command_id: "probe", actor: ann, verb: entry.verb, ...(entry.target === undefined ? {} : { target: entry.target }) });
-    strictEqual(verdict.status, "ok", `${entry.verb} ${entry.target}`);
+    strictEqual(probe(entry).status, "ok", `${entry.verb} ${entry.target}`);
   }
   for (const entry of asked.blocked ?? []) {
-    const verdict = world.check({ command_id: "probe", actor: ann, verb: entry.verb, ...(entry.target === undefined ? {} : { target: entry.target }) });
+    const verdict = probe(entry);
     strictEqual(verdict.reason_code ?? verdict.status, entry.reason_code, `${entry.verb} ${entry.target}`);
   }
   // A verb that needs a target is asked of one, as the listing asked it.
@@ -258,7 +270,7 @@ test("the dry run's verdicts are sorted: ok is ready, invalid_args needs args, a
   const verdicts: Record<string, Partial<Result>> = {
     take: { status: "ok" },
     drop: { status: "refused", reason_code: "not_carried" },
-    give: { status: "invalid", reason_code: "invalid_args" },
+    say: { status: "invalid", reason_code: "invalid_args" },
     attack: { status: "invalid", reason_code: "invalid_attack_target" },
     push: { status: "unresolved" },
     pull: { status: "ambiguous" },
@@ -267,11 +279,198 @@ test("the dry run's verdicts are sorted: ok is ready, invalid_args needs args, a
   const dry = (command: Command): Result => (verdicts[command.verb] ?? { status: "refused", reason_code: "other" }) as Result;
   const listed = listOptions(world.snapshot(), registry, ann, { refused: true }, dry);
   deepStrictEqual(listed.ready.filter((entry) => entry.target === stone).map((entry) => entry.verb), ["take"]);
-  deepStrictEqual(listed.needs_args, ["give"]);
+  deepStrictEqual(listed.needs_args, ["say"]);
   const at = (verb: string) => listed.blocked?.find((entry) => entry.verb === verb && entry.target === stone);
   deepStrictEqual(at("drop")?.reason_code, "not_carried");
   deepStrictEqual(at("attack")?.reason_code, "invalid_attack_target");
   deepStrictEqual(at("push")?.reason_code, "unresolved");
   deepStrictEqual(at("pull")?.reason_code, "ambiguous");
   deepStrictEqual(at("open")?.reason_code, "preempted");
+});
+
+// ann in the hall holding a stone and a bottle of wine, bob beside her, a table, an open chest and a
+// shut one, an open door to the yard and one beyond it to the cellar, a note hiding under a book.
+// She can name the yard, not the cellar, and not the note.
+function house(): Scenario {
+  const at = (x: number, y = 0, room = "hall") => ({ location: room, support: room, pos: { x, y } });
+  const room = (name: string) => ({ id: name, template: "room", overrides: { name, props: { lit: true } } });
+  const door = (name: string, from: string, to: string) => ({
+    id: name,
+    template: "door",
+    overrides: { name, props: { openable: true, open: true, from, to } },
+  });
+  const chest = (name: string, x: number, open: boolean) => ({
+    id: name,
+    template: "chest",
+    overrides: {
+      name,
+      ...at(x, 40),
+      props: { container: true, openable: true, open, inner_w_cm: 55, inner_d_cm: 35, inner_h_cm: 35 },
+    },
+  });
+  return [
+    room("hall"),
+    room("yard"),
+    room("cellar"),
+    door("gate", "hall", "yard"),
+    door("hatch", "yard", "cellar"),
+    { id: "ann", template: "human", overrides: { name: "ann", ...at(0) } },
+    { id: "bob", template: "human", overrides: { name: "bob", ...at(0, 60) } },
+    { id: "stone", template: "stone", overrides: { name: "stone", ...at(30) } },
+    { id: "flask", template: "bottle", overrides: { name: "flask", ...at(30, 30) } },
+    { id: "table", template: "table", overrides: { name: "table", ...at(0, -60) } },
+    chest("open_chest", 40, true),
+    chest("shut_chest", -40, false),
+    { id: "book", template: "book", overrides: { name: "book", ...at(-30, 30) } },
+    { id: "note", template: "note", overrides: { name: "note", ...at(-30, 30), concealed_by: "book" } },
+    { id: "rat", template: "stone", overrides: { name: "rat", ...at(0, 0, "cellar") } },
+  ];
+}
+
+// The house with ann holding the stone and the flask.
+function holding(t: { after(callback: () => void): void }): Hall & { dir: string } {
+  const dir = join(tempDir(t), "house");
+  const world = createWorld(dir, house(), undefined, { seed: 11 });
+  const id = (name: string): Id => {
+    const found = world.id(name);
+    ok(found !== null, name);
+    return found;
+  };
+  for (const name of ["stone", "flask"]) {
+    const taken = world.command({ command_id: `take-${name}`, actor: id("ann"), verb: "take", target: id(name) });
+    strictEqual(taken.status, "ok", name);
+  }
+  return { world, id, dir };
+}
+
+type Entry = { verb: string; target?: Id; args?: Record<string, unknown> };
+
+test("give, put, move and pour name the arguments they can, and only ones the actor could already name", (t) => {
+  const { world, id } = holding(t);
+  const ann = id("ann");
+  const stone = id("stone");
+  const flask = id("flask");
+  const asked = world.options(ann, { refused: true });
+  const argsOf = (verb: string, target: Id) =>
+    asked.ready.filter((entry) => entry.verb === verb && entry.target === target).map((entry) => entry.args);
+
+  // give: each agent she can name but herself, for what is in her hand.
+  deepStrictEqual(argsOf("give", stone), [{ destination: id("bob") }]);
+  strictEqual([...asked.ready, ...(asked.blocked ?? [])].some((entry) => entry.verb === "give" && entry.target === id("table")), false);
+  // put: on each surface, in each container, then in her own pocket; the shut chest is refused, and
+  // the pocket is too small for a stone, each with its code.
+  deepStrictEqual(argsOf("put", stone), [
+    { relation: "on", destination: id("table") },
+    { relation: "in", destination: id("open_chest") },
+  ]);
+  deepStrictEqual(
+    asked.blocked?.filter((entry) => entry.verb === "put" && entry.target === stone),
+    [
+      { verb: "put", target: stone, args: { relation: "in", destination: id("shut_chest") }, reason_code: "container_closed" },
+      { verb: "put", target: stone, args: { relation: "in", destination: `${ann}.pocket` }, reason_code: "too_large" },
+    ],
+  );
+  // move: the yard through its open door, not the cellar behind it, and not the room she stands in.
+  deepStrictEqual(asked.ready.filter((entry) => entry.verb === "move"), [{ verb: "move", args: { location: id("yard") } }]);
+  // pour: the whole of the wine onto what could take it; a stone has none to pour.
+  deepStrictEqual(
+    argsOf("pour", flask),
+    [id("hall"), id("open_chest"), id("table")].sort().map((destination) => ({ destination, amount: 75 })),
+  );
+  strictEqual([...asked.ready, ...(asked.blocked ?? [])].some((entry) => entry.verb === "pour" && entry.target === stone), false);
+  // What no list can hold stays named; give and put are not, since their args are all listed.
+  deepStrictEqual(asked.needs_args, ["move", "pour", "say", "wait"]);
+  // Nothing she could not name is ever an argument: not the cellar, the rat in it, or the hidden note.
+  const offered = [...asked.ready, ...(asked.blocked ?? [])].flatMap((entry) =>
+    Object.values(entry.args ?? {}).filter((value): value is string => typeof value === "string"),
+  );
+  for (const hidden of ["cellar", "rat", "note"]) {
+    strictEqual(offered.some((value) => value.split(".")[0] === id(hidden)), false, hidden);
+  }
+  // Ready and blocked are apart, args included, and every door answers alike.
+  const key = (entry: Entry) => canonicalJson({ verb: entry.verb, target: entry.target, args: entry.args });
+  const ready = new Set(asked.ready.map(key));
+  strictEqual((asked.blocked ?? []).some((entry) => ready.has(key(entry))), false);
+  const expected = canonicalJson(asked);
+  strictEqual(canonicalJson(world.fork().options(ann, { refused: true })), expected);
+  strictEqual(canonicalJson(actorWorld(world, ann).options({ refused: true })), expected);
+  deepStrictEqual(OptionsResponseSchema.parse(JSON.parse(expected)), asked);
+});
+
+test("every suggestion check accepts is ready, every other is blocked with its code, and each ready one is done for real", (t) => {
+  const { world, id } = holding(t);
+  const ann = id("ann");
+  const asked = world.options(ann, { refused: true });
+  const command = (entry: Entry) => ({
+    command_id: "probe",
+    actor: ann,
+    verb: entry.verb,
+    ...(entry.target === undefined ? {} : { target: entry.target }),
+    args: entry.args,
+  });
+  const ready = asked.ready.filter((entry) => entry.args !== undefined);
+  const blocked = (asked.blocked ?? []).filter((entry) => entry.args !== undefined);
+  ok(ready.length >= 8 && blocked.length >= 3, `${ready.length} ready and ${blocked.length} blocked carry args`);
+  for (const entry of ready) {
+    strictEqual(world.check(command(entry)).status, "ok", canonicalJson(entry));
+    // On a copy, so each starts from the same world.
+    strictEqual(world.fork().command(command(entry)).status, "ok", canonicalJson(entry));
+  }
+  for (const entry of blocked) {
+    const verdict = world.check(command(entry));
+    strictEqual(verdict.reason_code ?? verdict.status, entry.reason_code, canonicalJson(entry));
+  }
+});
+
+test("an actor holding nothing is offered no arguments but a room; on a table she can step down", (t) => {
+  const { world, id } = open(t, true);
+  const asked = world.options(id("ann"), { refused: true });
+  strictEqual([...asked.ready, ...(asked.blocked ?? [])].some((entry) => entry.args !== undefined), false);
+
+  const house = holding(t);
+  const ann = house.id("ann");
+  // Ready or refused, a move to a room is suggested; the room she stands on the floor of is not.
+  const moves = () => {
+    const asked = house.world.options(ann, { refused: true });
+    return [...asked.ready, ...(asked.blocked ?? [])].filter((entry) => entry.verb === "move").map((entry) => entry.args?.location).sort();
+  };
+  deepStrictEqual(moves(), [house.id("yard")]);
+  const placed = house.world.edit({ kind: "place", target: ann, support: house.id("table"), pos: null });
+  strictEqual(placed.status, "ok");
+  deepStrictEqual(moves(), [house.id("hall"), house.id("yard")].sort());
+});
+
+test("the CLI's options op carries the arguments the library suggests", (t) => {
+  const { world, id, dir } = holding(t);
+  const ann = id("ann");
+  const run = spawnSync(process.execPath, ["--import", "tsx", cliPath], {
+    cwd: fileURLToPath(new URL("../", import.meta.url)),
+    encoding: "utf8",
+    input: JSON.stringify({ op: "options", world: dir, actor: ann, refused: true }),
+  });
+  strictEqual(run.status, 0, run.stderr);
+  deepStrictEqual(OptionsResponseSchema.parse(JSON.parse(run.stdout)), world.options(ann, { refused: true }));
+});
+
+test("a verb with suggestions is tried with each one, and one that also takes free args stays named", (t) => {
+  const { world, id } = holding(t);
+  const bob = id("bob");
+  const dry = (command: Command): Result => {
+    const bare = command.args === undefined;
+    if (command.verb === "give" || command.verb === "move") {
+      return bare ? ({ status: "invalid", reason_code: "invalid_args" } as Result) : ({ status: command.args!.destination === bob ? "ok" : "refused", reason_code: "other" } as Result);
+    }
+    return { status: "refused", reason_code: "other" } as Result;
+  };
+  const listed = listOptions(world.snapshot(), registry, id("ann"), { refused: true }, dry);
+  deepStrictEqual(
+    listed.ready,
+    [id("flask"), id("stone")].sort().map((target) => ({ verb: "give", target, args: { destination: bob } })),
+  );
+  // give lists all it takes; move also takes a position, so it stays named.
+  deepStrictEqual(listed.needs_args, ["move"]);
+  deepStrictEqual(
+    listed.blocked?.filter((entry) => entry.verb === "move"),
+    [{ verb: "move", args: { location: id("yard") }, reason_code: "other" }],
+  );
 });

@@ -447,9 +447,14 @@ export const InspectResponseSchema = z.object({
 export const OptionsResponseSchema = z.object({
   actor: IdSchema,
   version: z.number().int(),
-  ready: z.array(z.object({ verb: z.string(), target: IdSchema.optional() }).strict()),
+  ready: z.array(z.object({ verb: z.string(), target: IdSchema.optional(), args: z.record(z.string(), z.unknown()).optional() }).strict()),
   needs_args: z.array(z.string()),
-  blocked: z.array(z.object({ verb: z.string(), target: IdSchema.optional(), reason_code: z.string() }).strict()).optional(),
+  blocked: z.array(z.object({
+    verb: z.string(),
+    target: IdSchema.optional(),
+    args: z.record(z.string(), z.unknown()).optional(),
+    reason_code: z.string(),
+  }).strict()).optional(),
 }).strict();
 
 export const CommandResponseSchema = z.object({

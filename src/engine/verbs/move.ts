@@ -161,11 +161,41 @@ function transition(context: TransitionContext): void {
   }
 }
 
+// The room on the far side of each doorway the actor can address, since reading the door gives both
+// its ends, and its own room when it stands on something, to step down: on the floor, moving there
+// changes nothing. A doorway it cannot address leads to a room it was never told of, so none is offered
+// for it, though `move` would answer for the room if named. The position to walk to is free.
+function suggest(context: CommandContext, nameable: readonly string[]): Record<string, unknown>[] {
+  const { snapshot, actor } = context;
+  const here = actor.location;
+  const rooms = new Set<string>();
+  if (here !== null) {
+    rooms.add(here);
+  }
+  for (const id of nameable) {
+    const props = snapshot.entities[id]?.props;
+    if (props === undefined || typeof props.from !== "string" || typeof props.to !== "string") {
+      continue;
+    }
+    if (props.from === here) {
+      rooms.add(props.to);
+    } else if (props.to === here) {
+      rooms.add(props.from);
+    }
+  }
+  return [...rooms]
+    .filter((room) => snapshot.entities[room]?.template === "room" && !(room === here && onFloor(context)))
+    .sort()
+    .map((location) => ({ location }));
+}
+
 export const moveVerb: Verb = {
   duration: { ticks: 1 },
   requires_target: false,
   args: { to: { kind: "pos" }, location: { kind: "room" } },
   refuses: ["carried", "insufficient_moving", "no_open_door", "blocked", "out_of_bounds"],
+  suggest,
+  free_args: true,
   preconditions,
   transition,
 };

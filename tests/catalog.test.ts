@@ -120,6 +120,24 @@ test("mutating the catalog cannot change what a carrier can hold", (t) => {
   strictEqual(second.reason_code, "mouth_full");
 });
 
+test("a verb that cannot be judged without args says how options offer it, and one that can does not say so", (t) => {
+  const dir = mkdtempSync(join(tmpdir(), "world-engine-catalog-args-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const world = createWorld(dir, [
+    { template: "room", overrides: { name: "room", props: { lit: true } } },
+    { template: "human", overrides: { name: "ann", location: "e1", support: "e1", pos: { x: 0, y: 0 } } },
+    { template: "stone", overrides: { name: "stone", location: "e1", support: "e1", pos: { x: 30, y: 0 } } },
+  ]);
+  for (const [name, verb] of verbRegistry) {
+    if (verb.author_only === true) {
+      continue;
+    }
+    const bare = world.check({ command_id: "bare", actor: "e2", verb: name, ...(verb.requires_target ? { target: "e3" } : {}) });
+    const needsArgs = bare.reason_code === "invalid_args";
+    strictEqual(verb.suggest !== undefined || verb.free_args === true, needsArgs, `${name} answers ${bare.reason_code ?? bare.status}`);
+  }
+});
+
 test("docs/verbs.md has one bullet per registered verb and none for a missing one", () => {
   const text = readFileSync(join(root, "docs", "verbs.md"), "utf8");
   const documented = [...text.matchAll(/^- `([a-z_]+)`:/gm)].map((match) => match[1]);
