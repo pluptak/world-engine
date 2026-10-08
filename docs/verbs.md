@@ -10,7 +10,8 @@ A verb that answers `invalid_args` until given some may declare `suggest`, a fun
 context and the ids the actor can name to the arg sets worth trying, in a fixed order and from the snapshot
 alone, which `options` ([api.md](api.md)) dry-runs one by one. `free_args: true` says the verb also takes
 args no list can hold (a position, a partial amount, a token, a tick count), so it stays named in
-`needs_args`. `give` and `put` list every argument they take; `move` and `pour` list some and are free
+`needs_args`. A verb that `aims_at_parts` (`attack`) has `options` try it at each part of a body in view
+that has not come off. `give` and `put` list every argument they take; `move` and `pour` list some and are free
 for the rest; `say` and `wait` list none and are free. `tests/catalog.test.ts` holds the two declarations
 to the verbs that answer `invalid_args` to a bare command.
 

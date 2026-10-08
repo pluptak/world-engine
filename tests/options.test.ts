@@ -8,6 +8,7 @@ import { test } from "node:test";
 import { OptionsResponseSchema } from "../src/contract.js";
 import type { Command, Result } from "../src/engine/command.js";
 import { listOptions } from "../src/options.js";
+import { defaultCoverage } from "../src/model.js";
 import { loadTemplates } from "../src/templates.js";
 import {
   actorWorld,
@@ -473,4 +474,58 @@ test("a verb with suggestions is tried with each one, and one that also takes fr
     listed.blocked?.filter((entry) => entry.verb === "move"),
     [{ verb: "move", args: { location: id("yard") }, reason_code: "other" }],
   );
+});
+
+const BODY = ["head", "torso", "arm_l", "hand_l", "thumb_l", "arm_r", "hand_r", "thumb_r", "pocket"];
+
+test("a body shows its parts, and attack is offered at each part that is still on it", (t) => {
+  const { world, id } = open(t, true);
+  const ann = id("ann");
+  const bob = id("bob");
+  const shown = world.inspect(ann, bob)?.parts;
+  deepStrictEqual(shown?.map((part) => part.name), BODY);
+  ok(shown?.every((part) => part.status === "intact" && typeof part.integrity === "number"));
+
+  const aimed = (list: Array<{ verb: string; target?: Id }> | undefined) =>
+    (list ?? []).filter((entry) => entry.verb === "attack" && entry.target?.startsWith(`${bob}.`)).map((entry) => entry.target);
+  const asked = world.options(ann, { refused: true });
+  deepStrictEqual([...aimed(asked.ready), ...aimed(asked.blocked)].sort(), BODY.map((name) => `${bob}.${name}`).sort());
+  ok(has(asked, "attack", bob), "the whole body is still offered");
+  // Each part is an address a command accepts, and a ready one is done for real.
+  for (const target of aimed(asked.ready)) {
+    strictEqual(world.check({ command_id: "probe", actor: ann, verb: "attack", target }).status, "ok", target);
+  }
+
+  // Three blows at his right arm take it off, and the hand and thumb on it.
+  for (const blow of [0, 1, 2]) {
+    strictEqual(world.command({ command_id: `cut-${blow}`, actor: ann, verb: "attack", target: `${bob}.arm_r` }).status, "ok");
+  }
+  const after = world.inspect(ann, bob)?.parts;
+  deepStrictEqual(
+    after?.filter((part) => part.status === "detached").map((part) => part.name),
+    ["arm_r", "hand_r", "thumb_r"],
+  );
+  const left = world.options(ann, { refused: true });
+  deepStrictEqual(
+    [...aimed(left.ready), ...aimed(left.blocked)].sort(),
+    BODY.filter((name) => !["arm_r", "hand_r", "thumb_r"].includes(name)).map((name) => `${bob}.${name}`).sort(),
+  );
+});
+
+test("in the dark ann feels her own parts and none of bob's; a world that does not cover status shows none", (t) => {
+  const touching = { ...defaultCoverage(), senses: ["sight", "hearing", "touch"] };
+  const dark = createWorld(join(tempDir(t), "dark"), hall(false), undefined, { seed: 11, coverage: touching });
+  const ann = dark.id("ann")!;
+  const bob = dark.id("bob")!;
+  strictEqual(dark.inspect(ann, ann)?.parts?.length, BODY.length);
+  strictEqual(dark.inspect(ann, bob), null);
+  const named = (options: Options) => [...options.ready, ...(options.blocked ?? [])].filter((entry) => entry.target?.includes("."));
+  deepStrictEqual(named(dark.options(ann, { refused: true })).filter((entry) => entry.target?.startsWith(`${bob}.`)), []);
+
+  const unsaid = { ...defaultCoverage(), relations: defaultCoverage().relations.filter((relation) => relation !== "status") };
+  const lit = createWorld(join(tempDir(t), "lit"), hall(true), undefined, { seed: 11, coverage: unsaid });
+  const body = lit.inspect(lit.id("ann")!, lit.id("bob")!);
+  ok(body !== null);
+  strictEqual(body.parts, undefined);
+  deepStrictEqual(named(lit.options(lit.id("ann")!, { refused: true })), []);
 });

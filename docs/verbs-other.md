@@ -5,7 +5,9 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
 - `attack`: picks the first mode its attacker can use (fist, bite), with damage from the template; a
   bite across bars must fit their gap ([walking.md](walking.md)); a severed part opens a wound that
   bleeds ([bleeding.md](bleeding.md)); a lost part drops what it held, and a stunned victim keeps
-  the rest.
+  the rest. A target may be a part (`<id>.<part>`), and `options` offers each part of a body in view that
+  has not come off, since the verb `aims_at_parts` ([verbs.md](verbs.md)); without one, the blow falls on the
+  template's `default_hit_part`.
 - `search`: looks under or behind a target, with `manipulation` and in reach; one `found` per
   hidden thing names its concealer, nothing changes, and nothing records who looked.
 - `light`: sets `burning` on a target with `light_source: true` under a `lit` event, with

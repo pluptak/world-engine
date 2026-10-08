@@ -17,9 +17,10 @@ directory, a changed hash, or a bad version is a `WorldError` with a code.
   reach, an anchor never) and, for a verb that takes no target, once without one. A verb that needs args
   and `suggest`s some ([verbs.md](verbs.md)) is tried once with each, and its entries carry the `args`
   that made them: `give` to each agent, `put` on each surface and in each container and pocket, `move`
-  through each door it can address (and down from what it stands on), `pour` the whole of a liquid onto each vessel, surface or room; ids
-  the actor could already address, never one it could not. Sorted by verb, then target. A
-  destroyed body or a thing that is no agent has none; an unknown actor is `no_such_entity`. A read:
+  through each door it can address (and down from what it stands on), `pour` the whole of a liquid onto
+  each vessel, surface or room; ids the actor could already address, never one it could not. A verb that
+  `aims_at_parts` (`attack`) is also tried at `<id>.<part>` for each part still on a body it sees or feels
+  ([projection.md](projection.md)). Sorted by verb, then target. A destroyed body or a thing that is no agent has none; an unknown actor is `no_such_entity`. A read:
   nothing is logged. The CLI's `options` op takes `actor` and `refused`.
 - `since` gives the deltas and events of every ok command after a version; `attempts` lists every
   submission decided at a version or later, refused, invalid, unresolved and preempted ones

@@ -1,7 +1,8 @@
 import { effectivePos } from "./geometry.js";
+import { effectivePart } from "./parts.js";
 import { inReach } from "./verbs/address.js";
 import { query } from "./query.js";
-import type { Id, Pos, Snapshot, WorldEvent } from "../model.js";
+import type { Id, PartState, Pos, Snapshot, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 
 import { ENGINE_CAPABILITIES } from "./capabilities.js";
@@ -138,15 +139,63 @@ export function observeEntities(
   });
 }
 
+// One part of a body as it stands: its status, which is the part's own unless an ancestor is detached or
+// destroyed and it went with it, and its integrity where coverage declares that property.
+export interface PartView {
+  name: string;
+  status: PartState["status"];
+  integrity?: number;
+}
+
+// The parts of a body whose template declares some, in declaration order, as an observer who sees or
+// feels it could tell. Part status is a fact like an entity's `status`, so a world that does not cover
+// that relation shows no parts. The caller has already established the sight or touch.
+export function bodyParts(snapshot: Snapshot, registry: TemplateRegistry, entityId: Id): PartView[] | undefined {
+  const entity = snapshot.entities[entityId];
+  const template = entity === undefined ? undefined : registry[entity.template];
+  if (entity === undefined || template === undefined || template.parts.length === 0) {
+    return undefined;
+  }
+  if (!snapshot.coverage.relations.includes("status")) {
+    return undefined;
+  }
+  const withIntegrity = snapshot.coverage.properties.includes("integrity");
+  return template.parts.map((decl) => {
+    const state = effectivePart(template, entity, decl.name)!;
+    return { name: decl.name, status: state.status, ...(withIntegrity && { integrity: state.integrity }) };
+  });
+}
+
+// The parts of a body the observer sees or feels now, or undefined: its sight and touch are the
+// senses that tell how a thing stands, as in `observe`.
+export function visibleParts(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  observer: Id,
+  entityId: Id,
+): PartView[] | undefined {
+  const entity = snapshot.entities[entityId];
+  if (entity === undefined || (registry[entity.template]?.parts.length ?? 0) === 0) {
+    return undefined;
+  }
+  const feels = ["sight", "touch"].some(
+    (sense) =>
+      snapshot.coverage.senses.includes(sense) &&
+      query(snapshot, registry, [], { kind: "perceive", observer, entity: entityId, sense }).value === "true",
+  );
+  return feels ? bodyParts(snapshot, registry, entityId) : undefined;
+}
+
 // One entity in more detail than `observe` lists it, for a controller asking about a single thing:
 // the same senses and facts, plus the props the world covers as properties (`open`, `locked`,
 // `liquid_amount`, ... whatever coverage names), whether the observer could reach it, and what it
-// visibly holds or carries. Null when the observer senses nothing of it. Props, holdings and the
-// footprint (the template's `size_cm`, which positions are measured against) come only with sight or
-// touch, as facts do.
+// visibly holds or carries. Null when the observer senses nothing of it. Props, holdings, the
+// footprint (the template's `size_cm`, which positions are measured against) and a body's parts come
+// only with sight or touch, as facts do.
 export interface Inspection extends ObservedEntity {
   props?: Record<string, number | string | boolean>;
   size_cm?: { w: number; d: number; h: number };
+  parts?: PartView[];
   reachable?: boolean;
   holds?: Id[];
 }
@@ -181,6 +230,10 @@ export function inspectEntity(
   const size = registry[entity.template]?.size_cm;
   if (size !== undefined) {
     inspection.size_cm = { w: size.w, d: size.d, h: size.h };
+  }
+  const parts = bodyParts(snapshot, registry, entityId);
+  if (parts !== undefined) {
+    inspection.parts = parts;
   }
   inspection.holds = observed
     .filter((other) => other.facts?.contained_in === entityId || other.facts?.support === entityId)

@@ -165,4 +165,7 @@ test("the CLI carries the observation and answers inspect", (t) => {
   strictEqual(command.observation?.observer, id("bob"));
   const inspected = InspectResponseSchema.parse(cli({ op: "inspect", world: dir, observer: id("ann"), entity: id("bench") }));
   deepStrictEqual(inspected.inspection?.holds, [id("cup")]);
+  // A body's parts cross the boundary too, in the template's order.
+  const body = InspectResponseSchema.parse(cli({ op: "inspect", world: dir, observer: id("ann"), entity: id("bob") }));
+  deepStrictEqual(body.inspection?.parts?.slice(0, 3).map((part) => part.name), ["head", "torso", "arm_l"]);
 });

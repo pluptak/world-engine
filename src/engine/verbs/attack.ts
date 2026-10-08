@@ -401,6 +401,7 @@ export const attackVerb: Verb = {
   refuses: ["out_of_reach", "insufficient_manipulation", "too_big_for_gap"],
   carry_alternatives: carryAlternatives,
   attack_modes: attackModes,
+  aims_at_parts: true,
   preconditions,
   transition,
 };

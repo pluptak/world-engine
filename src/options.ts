@@ -1,6 +1,7 @@
 import type { Command, CommandContext, Result } from "./engine/command.js";
 import { addressable } from "./engine/query.js";
 import { isAbstract } from "./engine/resolve.js";
+import { visibleParts } from "./engine/projection.js";
 import { isAgent } from "./engine/verbs/address.js";
 import { verbRegistry } from "./engine/verbs/index.js";
 import { WorldError } from "./errors.js";
@@ -97,6 +98,23 @@ export function listOptions(
           }
         } else {
           blocked.push({ verb, ...named, reason_code: outcome.reason_code ?? outcome.status });
+        }
+        // A verb that acts on parts is also tried at each part of the body that is still on it, by name
+        // order so the entries sort as their addresses do.
+        if (declared.aims_at_parts === true && target !== undefined) {
+          const parts = (visibleParts(snapshot, registry, actor, target) ?? [])
+            .filter((part) => part.status !== "detached")
+            .map((part) => part.name)
+            .sort();
+          for (const part of parts) {
+            const address = `${target}.${part}`;
+            const tried = dry({ command_id: "options", actor, verb, target: address });
+            if (tried.status === "ok") {
+              options.ready.push({ verb, target: address });
+            } else {
+              blocked.push({ verb, target: address, reason_code: tried.reason_code ?? tried.status });
+            }
+          }
         }
       }
     }

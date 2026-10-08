@@ -53,31 +53,6 @@ passes `npm run check`, is reviewed, and merges one at a time. Lane Z starts onc
 
 Every item is ready now, and names anything it leans on; they can be taken in any order.
 
-### Bodies show their parts
-
-A character cannot tell that bob has lost a hand or that its own arm is hurt, nor name a limb to strike: a view
-lists entities and their facts, never parts, and `options` dry-runs `attack` only at a body, so the blow falls on
-the template's `default_hit_part` and the other parts are guessable only from templates a controller does not have.
-
-- **Inspection:** `Inspection` (`src/engine/projection.ts`) gains `parts` for an entity whose template declares
-  parts, in declaration order, with sight or touch as `props` and `size_cm` are: `{ name, status }`, `status` the
-  part's `effectivePart` status (`intact`, `damaged`, `destroyed`, `detached`; a part under a severed ancestor reads
-  as the ancestor), and `integrity` only when coverage declares that property. A severed hand keeps its entry on the
-  body and is an entity of its own. `InspectResponseSchema` takes it.
-- **Options:** `Verb.aims_at_parts` (`src/engine/command.ts`), set on `attack`, the one verb that acts on a part.
-  `options` also dry-runs such a verb at `<id>.<part>` for each part the actor's inspection of that entity lists
-  that is not `detached` (the resolver refuses a detached one), and the entry's `target` is that address. The
-  whole-body entry stays. A part address names only an entity the actor can already name.
-- **Tests** (`tests/options.test.ts`, `tests/controller.test.ts`): ann beside bob in a lit hall lists his nine parts
-  `intact` and is offered `attack` at each; after three blows at his right arm (as the script in
-  `tests/senses.test.ts` strikes) `arm_r` reads `detached`, its hand and thumb read `detached` with it and none of
-  the three is offered; in the dark she lists her own parts by touch and none of bob's; every ready part attack is
-  `ok` for real; a store and a memory world answer alike; `tests/options-property.test.ts` also issues ready part
-  attacks.
-- **Docs:** `docs/projection.md`, `docs/api.md`, `docs/verbs-other.md` (the `attack` line), `docs/verbs.md` (what
-  `aims_at_parts` is).
-- **Depends on:** nothing.
-
 ### The cell, seen from inside
 
 The watch showed what a controller could not decide from inside. The cell (`scenarios/cell.json`: ann behind bars,

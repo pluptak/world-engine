@@ -289,6 +289,9 @@ export interface Verb {
   // id order, as `options` computed it; a set holds ids from there, or the room behind a doorway
   // from there, and nothing the actor could not already address. `options` dry-runs each one.
   suggest?: (context: CommandContext, nameable: readonly Id[]) => readonly Record<string, unknown>[];
+  // The verb acts on a part of a body when its target is one (`<id>.<part>`): `options` also tries it
+  // at each part of a body the actor sees or feels that has not come off.
+  aims_at_parts?: boolean;
   // The verb also takes args no list can hold (a position, a partial amount, a token, a tick
   // count), so `options` keeps it among the verbs that need args even when `suggest` lists some.
   free_args?: boolean;

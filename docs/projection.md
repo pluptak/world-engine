@@ -30,9 +30,12 @@ alike.
 
 `world.inspect(observer, entity)` is one listed entity in more detail, or `null` when the observer
 senses nothing of it: the same senses and facts, `reachable` where coverage declares it, and with
-sight or touch the props whose names coverage declares as properties (`open`, `locked`, ...) `size_cm`,
+sight or touch the props whose names coverage declares as properties (`open`, `locked`, ...), `size_cm`,
 the template's width, depth and height that a position is a centre of (so a caller can tell whether two things
-overlap, or a spot is free), and `holds`, the listed entities on it or in it. The CLI's `inspect` op takes `observer` and `entity`.
+overlap, or a spot is free), `parts`, a body's parts in the template's order as `{ name, status }` (`intact`,
+`damaged`, `destroyed` or `detached`, a part under a severed one reading as it does, and `integrity` where
+coverage declares that property; a world that does not cover the `status` relation shows none), and `holds`, the
+listed entities on it or in it. The CLI's `inspect` op takes `observer` and `entity`.
 `command(c, { observe: true })` attaches `observation`, the actor's projection after the command
 with `since` the version it was applied to: its own events as the actor sensed them, none if it
 was refused. The CLI's `command` op takes `observe` alike.

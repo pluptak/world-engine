@@ -440,6 +440,11 @@ export const InspectResponseSchema = z.object({
   inspection: ObservedEntitySchema.extend({
     props: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).optional(),
     size_cm: z.object({ w: z.number(), d: z.number(), h: z.number() }).strict().optional(),
+    parts: z.array(z.object({
+      name: z.string(),
+      status: z.enum(["intact", "damaged", "detached", "destroyed"]),
+      integrity: z.number().int().optional(),
+    }).strict()).optional(),
     reachable: z.boolean().optional(),
     holds: z.array(IdSchema).optional(),
   }).strict().nullable(),

@@ -18,6 +18,7 @@ test("property: a ready option, issued for real, is accepted; a read changes not
   const verbs = new Map<string, number>();
   let issued = 0;
   let withArgs = 0;
+  let atParts = 0;
   let refusals = 0;
   for (let seed = 0; seed < 30; seed += 1) {
     const rand = mulberry32(seed + 9900);
@@ -63,6 +64,7 @@ test("property: a ready option, issued for real, is accepted; a read changes not
       strictEqual(result.status, "ok", `seed ${seed} step ${i}: ${actor} ${key(chosen)} was ${result.status} ${result.reason_code}`);
       issued += 1;
       withArgs += chosen.args === undefined ? 0 : 1;
+      atParts += chosen.target?.includes(".") === true ? 1 : 0;
       verbs.set(chosen.verb, (verbs.get(chosen.verb) ?? 0) + 1);
     }
   }
@@ -70,5 +72,6 @@ test("property: a ready option, issued for real, is accepted; a read changes not
   ok(issued >= 600, `issued ${issued}`);
   ok(verbs.size >= 6, `verbs ${[...verbs.keys()].join(",")}`);
   ok(withArgs >= 15, `issued with args ${withArgs}`);
+  ok(atParts >= 5, `issued at parts ${atParts}`);
   ok(refusals >= 20000, `refusals ${refusals}`);
 });
