@@ -1,8 +1,9 @@
 import { elevation, effectivePos } from "../engine/geometry.js";
 import { addResidue } from "../engine/residue.js";
 import { spawn } from "../engine/spawn.js";
+import { removeEntity } from "../engine/verbs/edit.js";
 import { revealConcealed } from "../engine/verbs/search.js";
-import type { Id, Pos } from "../model.js";
+import type { Entity, Id, Pos } from "../model.js";
 import type { TransitionContext } from "../engine/command.js";
 
 interface Landing {
@@ -235,6 +236,65 @@ function breakEntity(
       });
     }
   }
+}
+
+// Where a used-up thing stood, which is where it leaves what it leaves: its own place, the plain
+// container it was in, or, in an agent's grip or pocket, the holder's feet (a grip holds one item, so
+// nothing is left in it). A holder carried in turn leaves it where its carrier stands.
+interface Placement {
+  support: Id | null;
+  contained_in: Id | null;
+  location: Id | null;
+  pos: Pos | null;
+}
+
+function placementOf(context: TransitionContext, entity: Entity): Placement {
+  const holder = entity.in_part === null || entity.contained_in === null ? undefined : context.snapshot.entities[entity.contained_in];
+  if (holder !== undefined) {
+    return placementOf(context, holder);
+  }
+  return {
+    support: entity.support,
+    contained_in: entity.contained_in,
+    location: entity.location,
+    pos: entity.pos === null ? null : { ...entity.pos },
+  };
+}
+
+// An entity used up: a `spent` event on it, then each of its template's `spent_products` spawned where it
+// stood and its `spent_residue` added to the surface they went to, every `spawned` caused by `spent`, and
+// last the entity itself removed under `spent`. What the author's `edit remove` and a process's `remove`
+// do is a removal with none of this. A room is never used up.
+export function spendEntity(context: TransitionContext, entityId: Id, causeId: Id): boolean {
+  const entity = requireEntity(context, entityId);
+  const template = context.registry[entity.template];
+  if (template === undefined) {
+    throw new TypeError(`Unknown template ${entity.template}`);
+  }
+  if (entity.template === "room") {
+    return false;
+  }
+  const spentEvent = context.emit("spent", entityId, {}, causeId);
+  const at = placementOf(context, entity);
+  for (const product of template.spent_products ?? []) {
+    for (let index = 0; index < product.count; index += 1) {
+      const created = spawn(context.snapshot, context.registry, product.template, {
+        support: at.support,
+        contained_in: at.contained_in,
+        location: at.location,
+        pos: at.pos === null ? null : { ...at.pos },
+      });
+      context.snapshot = created.snapshot;
+      const spawnedEvent = context.emit("spawned", created.id, { template: product.template }, spentEvent);
+      context.recordDelta(created.id, "entity", null, context.snapshot.entities[created.id], spawnedEvent);
+    }
+  }
+  const residue = template.spent_residue ?? {};
+  const surface = at.support ?? at.contained_in ?? at.location;
+  if (surface !== null && Object.keys(residue).length > 0) {
+    addResidue(context, surface, residue, spentEvent);
+  }
+  return removeEntity(context, entityId, spentEvent);
 }
 
 // A vessel that falls without breaking spills all it holds onto its landing: one `spilled`

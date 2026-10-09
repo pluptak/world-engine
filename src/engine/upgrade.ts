@@ -43,6 +43,12 @@ function lostFor(snapshot: Snapshot, entity: Entity, registry: TemplateRegistry)
       return `break_products.${product.template}`;
     }
   }
+  // Being used up spawns its products the same way.
+  for (const product of template.spent_products ?? []) {
+    if (registry[product.template] === undefined) {
+      return `spent_products.${product.template}`;
+    }
+  }
 
   return null;
 }

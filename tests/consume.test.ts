@@ -77,10 +77,12 @@ test("bread is eaten a portion at a time: the hunger each lowers, the loaf that 
   }
   const eaten = run(world, gus, "consume", "bread");
   strictEqual(eaten.status, "ok");
-  deepStrictEqual(eaten.events.map((event) => event.type), ["consume", "consumed", "removed"]);
-  const [root, consumed, removed] = eaten.events;
+  // A thing used up is spent, and what is spent goes: the loaf leaves nothing, so no `spawned` between.
+  deepStrictEqual(eaten.events.map((event) => event.type), ["consume", "consumed", "spent", "removed"]);
+  const [root, consumed, spent, removed] = eaten.events;
   strictEqual(consumed?.cause_id, root?.event_id);
-  strictEqual(removed?.cause_id, consumed?.event_id);
+  strictEqual(spent?.cause_id, consumed?.event_id);
+  strictEqual(removed?.cause_id, spent?.event_id);
   deepStrictEqual(consumed?.data, { nutrition: 10, portions_left: 0 });
   strictEqual(world.entity(bread), null);
   strictEqual(world.entity(gus)?.props.hunger, 10);
@@ -106,7 +108,7 @@ test("a thing with no portions is eaten whole, and a malformed portions is not f
   );
   const gus = world.id("gus")!;
   const eaten = run(world, gus, "consume", "apple");
-  deepStrictEqual(eaten.events.map((event) => event.type), ["consume", "consumed", "removed"]);
+  deepStrictEqual(eaten.events.map((event) => event.type), ["consume", "consumed", "spent", "removed"]);
   deepStrictEqual(eaten.events[1]?.data, { nutrition: 15 });
   strictEqual(world.entity(gus)?.props.hunger, 35);
   deepStrictEqual(code(run(world, gus, "consume", "odd")), ["refused", "not_consumable"]);

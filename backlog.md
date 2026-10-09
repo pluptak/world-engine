@@ -20,7 +20,6 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
    blocks 3c, 4, 4b, 5–8 in that order.
-2. [Consumables: what a used-up thing leaves](#consumables-what-a-used-up-thing-leaves).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -57,47 +56,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### Consumables: what a used-up thing leaves
-
-A thing used up today simply goes: the last portion of bread is removed by `consume`, and a process
-reaching its bound can `then` remove its entity (`{ remove: true }`, `docs/processes.md`). Nothing is
-left behind, and a candle is not even used up: it inherits `lantern`'s `burn`, whose `then` only sets
-`burning: false`, so a burnt-out candle stays (the plan's decision is that it goes:
-`plans/presets-and-roles.md`). Breaking already has the shape this needs, `break_products` and
-`break_residue`; being used up gets the same pair.
-
-- **Template keys:** `spent_products` (`{ template, count }[]`) and `spent_residue` (material →
-  amount), each defaulting to empty, declared, validated, inherited through `extends` and hashed as
-  `break_products` and `break_residue` are (`src/templates.ts`).
-- **One path:** `spendEntity(context, id, causeId)` in `src/resolvers/physical.ts`, beside
-  `breakEntity`: emits `spent` on the entity, spawns each product where the entity was (its
-  `support` or `contained_in`, `location` and `pos`; a thing held by an agent's grip or pocket
-  instead lands at the holder's feet, as `drop` places it, since a grip holds one item), each a
-  `spawned` caused by `spent`, adds `spent_residue` to where the products went (the support, the
-  container, or the room under a dropped thing), then removes the entity (`removeEntity`) under
-  `spent`.
-- **Callers:** `consume`'s removal of a thing eaten whole or of its last portion
-  (`src/engine/verbs/consume.ts`), and a new process `then` form `{ spent: true }`
-  (`src/engine/process.ts`, `runThen`). `{ remove: true }` keeps its meaning, a removal with no
-  products. The author's `edit remove` never spends.
-- **`spent`:** a new event type with `SILENT_SENSES`, as `consumed` and `changed` have
-  (`EVENT_SENSES` in `src/engine/query.ts`, its row in `docs/senses.md`); a product's `spawned` is
-  sensed as a break product's is.
-- **Templates:** `candle` declares its own `processes`, `lantern`'s `burn` with `then: { spent: true }`,
-  and no products; `bread` declares nothing and is spent as before, leaving nothing. `templates_hash`
-  changes. `tests/light.test.ts` "a candle is a lantern with less fuel" stops comparing the two
-  processes.
-- **Outcome:** a candle burning out on a table is gone, and the room is dark if it was the only light;
-  a fixture with `spent_products` (an `ash`) and `spent_residue` leaves them on the table, or at the
-  feet of the agent holding it; eaten bread leaves nothing; a pocketed fixture's products land at
-  the pocket owner's feet.
-- **Tests** (`tests/spent.test.ts`, its fixtures in an inline registry as `tests/process.test.ts`
-  builds one): each outcome above, the event chain (`changed` → `spent` → `spawned`, `removed`),
-  `trace` from a product back to the burn, and a store world that replays it byte for byte.
-  `tests/property-gen.ts` gives its `lichen` or a new fixture `then: { spent: true }` with a product.
-- **Docs:** `docs/processes.md` (the `then` form), `docs/verbs-holding.md` (`consume`),
-  `docs/templates.md` (the two keys), `docs/senses.md` (the row).
-- **Not in it:** a thing used up by a verb other than `consume` (no verb uses things up yet), and a
-  burnt mark that is scenery (`plans/candidates.md`): until then a mark is `spent_residue`.
-- **Depends on:** nothing; presets block 3 need not come first.

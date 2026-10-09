@@ -60,7 +60,7 @@ suffixes (NodeNext).
    pipeline prunes causes whose entity is gone, a template's `processes` (`src/engine/process.ts`,
    `docs/processes.md`) are the third kind (the author's `schedule_beat` is a fourth, `src/engine/beats.ts`, `docs/beats.md`), reconciled against the props of every entity a command
    or a cause touched (`reconcileSince`; `createWorld` calls `startProcesses`; a bound can `then` set a
-   prop, `hurt` the body or `removeEntity`), and `isAgent` is false for a destroyed body, and
+   prop, `hurt` the body, `removeEntity` or `spendEntity`), and `isAgent` is false for a destroyed body, and
    `perceive` answers `false` / `observer_destroyed` for one. Stored worlds are `schema_version` 5.
    `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
    a failure returns the input snapshot unchanged. `edit` uses it to refuse results that break a
@@ -85,7 +85,7 @@ suffixes (NodeNext).
   capacity a victim held with drops what it held — structural sums, not modifier dips: a stunned
   carrier holds on.
 - `src/resolvers/physical.ts`: consequences that run after the verb, such as support loss,
-  displacement, falls, breaking into `break_products`, residue transfer, `resolveImpact`
+  displacement, falls, breaking into `break_products`, `spendEntity` (a thing used up, by `consume`'s last portion or a process's `then: { spent: true }`, leaves its `spent_products` and `spent_residue` where it stood, or at its holder's feet), residue transfer, `resolveImpact`
   (mass × distance against each party's mass × `break_fall_cm`), and `restingPlace` (the surface
   under a fall that catches it). Verbs call into it.
 - `src/engine/query.ts`: `fact` and `perceive` queries (a `fact` subject may be `<entity>.<part>`; `reachable` answers

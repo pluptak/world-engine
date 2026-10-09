@@ -11,9 +11,10 @@ import { SHARED_FIXTURES } from "./presets.js";
 import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../src/model.js";
 import type { Scenario } from "../src/api.js";
 
-// Three templates that exist for the property test: a candle that burns down while `burning` is true
+// Templates that exist for the property test: a candle that burns down while `burning` is true
 // (the generator's prop edits flip it) and snuffs itself when the fuel is gone, moss that grows from
-// the start up to a cap and is then hurt, and mold that spreads once and is then removed. Random runs
+// the start up to a cap and is then hurt, mold that spreads once and is then removed, and lichen
+// that grows by chance and is then used up. Random runs
 // start, withdraw, restart and overtake processes under every property. The shared scenario's own
 // presets are here too: a door and a chest that shut themselves, and a human that strikes hard
 // enough to take a part off in one blow, since no override or edit may write those definitions.
@@ -50,13 +51,25 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
         },
       ],
     },
-    // Grows on some runs only, so the world's dice are rolled (and sometimes missed) under every property.
+    // Grows on some runs only, so the world's dice are rolled (and sometimes missed) under every property,
+    // and is used up at its cap, leaving a shard and spores where it stood (or in the hand or pocket that
+    // had it, at the holder's feet).
     lichen: {
       id: "lichen",
       extends: "stone",
       props: { size: 1 },
       fields: { size: { tier: "state", type: "integer" } },
-      processes: [{ id: "sprout", every_ticks: 1, chance_pct: 50, effect: { adjust_prop: { prop: "size", by: 1, max: 6 } } }],
+      spent_products: [{ template: "glass_shard", count: 1 }],
+      spent_residue: { spores: 3 },
+      processes: [
+        {
+          id: "sprout",
+          every_ticks: 1,
+          chance_pct: 50,
+          effect: { adjust_prop: { prop: "size", by: 1, max: 6 } },
+          then: { spent: true },
+        },
+      ],
     },
     // Grows to its cap quickly and is then gone.
     mold: {

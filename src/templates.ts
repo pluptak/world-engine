@@ -35,7 +35,9 @@ export interface ProcessDecl {
 export type ProcessThen =
   | { set_prop: { prop: string; value: number | string | boolean } }
   | { damage: { amount: number } }
-  | { remove: true };
+  | { remove: true }
+  // The entity is used up: it leaves its `spent_products` and `spent_residue` where it stood, then goes.
+  | { spent: true };
 
 // A prop no engine code reads, declared by the template that uses it: its type and who may write it.
 export interface FieldDecl {
@@ -51,6 +53,10 @@ export interface Template {
   props: Record<string, number | string | boolean>;
   break_products: { template: string; count: number }[];
   break_residue: Record<string, number>;
+  // What being used up leaves behind, as breaking leaves its products and residue. Absent when empty, so a
+  // template that leaves nothing hashes as it always did.
+  spent_products?: { template: string; count: number }[];
+  spent_residue?: Record<string, number>;
   // Absent when a template declares none, so a template without processes hashes as it always did.
   processes?: ProcessDecl[];
   // Absent when none is declared, as processes are.
@@ -70,6 +76,8 @@ interface TemplateDecl {
   props?: Record<string, number | string | boolean>;
   break_products?: { template: string; count: number }[];
   break_residue?: Record<string, number>;
+  spent_products?: { template: string; count: number }[];
+  spent_residue?: Record<string, number>;
   processes?: ProcessDecl[];
   fields?: Record<string, FieldDecl>;
 }
@@ -196,6 +204,29 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
   if (Object.hasOwn(value, "break_residue")) {
     assertNumericRecord(value.break_residue, `${source}.break_residue`);
     decl.break_residue = { ...value.break_residue };
+  }
+
+  if (Object.hasOwn(value, "spent_products")) {
+    if (!Array.isArray(value.spent_products)) {
+      throw new TypeError(`${source}.spent_products must be an array`);
+    }
+    decl.spent_products = value.spent_products.map((product, index) => {
+      const label = `${source}.spent_products[${index}]`;
+      if (!isRecord(product) || typeof product.template !== "string") {
+        throw new TypeError(`${label} must contain a template id`);
+      }
+      assertOnlyKeys(product, ["template", "count"], label);
+      assertInteger(product.count, `${label}.count`);
+      if (product.count < 0) {
+        throw new TypeError(`${label}.count must not be negative`);
+      }
+      return { template: product.template, count: product.count };
+    });
+  }
+
+  if (Object.hasOwn(value, "spent_residue")) {
+    assertNumericRecord(value.spent_residue, `${source}.spent_residue`);
+    decl.spent_residue = { ...value.spent_residue };
   }
 
   if (Object.hasOwn(value, "processes")) {
@@ -327,14 +358,20 @@ function parseThen(value: unknown, label: string): ProcessThen {
     throw new TypeError(`${label} must be an object`);
   }
   const keys = Object.keys(value);
-  if (keys.length !== 1 || !["set_prop", "damage", "remove"].includes(keys[0]!)) {
-    throw new TypeError(`${label} must declare exactly one of set_prop, damage or remove`);
+  if (keys.length !== 1 || !["set_prop", "damage", "remove", "spent"].includes(keys[0]!)) {
+    throw new TypeError(`${label} must declare exactly one of set_prop, damage, remove or spent`);
   }
   if (keys[0] === "remove") {
     if (value.remove !== true) {
       throw new TypeError(`${label}.remove must be true`);
     }
     return { remove: true };
+  }
+  if (keys[0] === "spent") {
+    if (value.spent !== true) {
+      throw new TypeError(`${label}.spent must be true`);
+    }
+    return { spent: true };
   }
   if (keys[0] === "damage") {
     const damage = value.damage;
@@ -457,6 +494,7 @@ function requireResolved(decl: TemplateDecl, source: string): Template {
     props: { ...decl.props! },
     break_products: decl.break_products!.map((product) => ({ ...product })),
     break_residue: { ...decl.break_residue! },
+    ...spentOf(decl.spent_products, decl.spent_residue),
     ...(decl.processes !== undefined && decl.processes.length > 0 && { processes: copyProcesses(decl.processes) }),
     ...(decl.fields !== undefined && Object.keys(decl.fields).length > 0 && { fields: copyFields(decl.fields) }),
   };
@@ -485,8 +523,21 @@ function overParent(parent: Template, decl: TemplateDecl): Template {
       decl.break_residue === undefined
         ? parent.break_residue
         : { ...decl.break_residue },
+    ...spentOf(decl.spent_products ?? parent.spent_products, decl.spent_residue ?? parent.spent_residue),
     ...(processes.length > 0 && { processes }),
     ...(Object.keys(fields).length > 0 && { fields }),
+  };
+}
+
+// What being used up leaves, copied, and left out when there is none: the child's own list or record
+// replaces the parent's, and one declared empty clears it.
+function spentOf(
+  products: readonly { template: string; count: number }[] | undefined,
+  residue: Readonly<Record<string, number>> | undefined,
+): Pick<Template, "spent_products" | "spent_residue"> {
+  return {
+    ...(products !== undefined && products.length > 0 && { spent_products: products.map((product) => ({ ...product })) }),
+    ...(residue !== undefined && Object.keys(residue).length > 0 && { spent_residue: { ...residue } }),
   };
 }
 

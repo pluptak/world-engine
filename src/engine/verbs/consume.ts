@@ -2,7 +2,7 @@ import { heldInParts } from "../carry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Entity } from "../../model.js";
 import { closedEnclosure, reachData, withinReach } from "./address.js";
-import { removeEntity } from "./edit.js";
+import { spendEntity } from "../../resolvers/physical.js";
 
 // What one `consume` takes: a solid thing (`nutrition`, gone whole, or one of its `portions` at a
 // time) or an amount of a liquid (`liquid_nutrition` per 100 cm³ of what the vessel holds, which
@@ -123,7 +123,7 @@ function transition(context: TransitionContext): void {
     if (taken.portions !== null && taken.portions > 1) {
       context.set(item.id, "props", { ...item.props, portions: taken.portions - 1 }, eaten);
     } else {
-      removeEntity(context, item.id, eaten);
+      spendEntity(context, item.id, eaten);
     }
     return;
   }

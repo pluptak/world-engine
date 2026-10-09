@@ -202,9 +202,13 @@ test("light and douse refuse with declared codes", (t) => {
   strictEqual(world.entity(world.id("ever")!)?.props.burning, true);
 });
 
-test("a candle is a lantern with less fuel", () => {
+test("a candle is a lantern with less fuel that is used up where a lantern only goes out", () => {
   strictEqual(registry.candle?.props.fuel, 8);
   strictEqual(registry.lantern?.props.fuel, 20);
-  deepStrictEqual(registry.candle?.processes, registry.lantern?.processes);
+  const burn = (id: string) => registry[id]?.processes?.[0];
+  // The same burn, but for what it does on reaching the bound.
+  deepStrictEqual({ ...burn("candle"), then: undefined }, { ...burn("lantern"), then: undefined });
+  deepStrictEqual(burn("lantern")?.then, { set_prop: { prop: "burning", value: false } });
+  deepStrictEqual(burn("candle")?.then, { spent: true });
   strictEqual(registry.candle?.props.light_source, true);
 });

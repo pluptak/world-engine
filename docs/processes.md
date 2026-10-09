@@ -20,7 +20,7 @@ moving toward (`min` for a negative `by`, `max` for a positive one, so a `then` 
 refused when the templates load). Exactly one of:
 
 - `{ set_prop: { prop, value } }`: a second `changed` under the first, writing a prop of the entity
-  (`from` is `null` when the prop was absent). Writing the prop a condition reads is how a candle
+  (`from` is `null` when the prop was absent). Writing the prop a condition reads is how a lantern
   snuffs itself: `edited` → `changed` (fuel 0) → `changed` (burning false).
 - `{ damage: { amount } }`: takes integrity under a `damaged`, or a `destroyed` that sets the status
   when none is left and drops what the body held, each fall caused by the `destroyed`. It is the same
@@ -30,6 +30,14 @@ refused when the templates load). Exactly one of:
   `src/engine/verbs/edit.ts`): what it hid is uncovered and what it held or carried is let go. A room
   someone is in is not removed, as for the author, and the `then` does nothing. Whatever else was
   scheduled on a removed entity goes with it.
+- `{ spent: true }`: the entity is used up, which is a removal that leaves what its template says it leaves
+  (`spendEntity` in `src/resolvers/physical.ts`, [templates.md](templates.md)): a `spent` event under the run,
+  then each of its `spent_products` spawned where it stood, every `spawned` caused by `spent`, its
+  `spent_residue` added to the surface they went to, and the entity removed under `spent`. It stood on a
+  support: they are set there; in a container: inside it; in an agent's grip or pocket: on the floor at the
+  holder's feet, since a grip holds one item. A template that leaves nothing only loses the entity, so
+  `{ remove: true }` is for what is taken out of the world with no event of being used up. The shipped
+  `candle` declares its own `burn` with this `then`, where `lantern`'s only sets `burning` false.
 
 An entity that is destroyed runs no process: it is no longer reconciled, so a starved body's hunger
 stays where it ended.
@@ -85,7 +93,8 @@ though it had happened. Without a seed, a run that would roll refuses the comman
 What it does not do yet: nothing but a prop moves (no spreading to a neighbour, no spawning).
 
 **What ships.** `templates/lantern.json` burns a point of fuel a tick while `burning` and snuffs itself
-at 0, and `candle` extends it with less ([verbs-other.md](verbs-other.md), `light`). `human_hungry`
+at 0, and `candle` extends it with less and, at 0, is used up (`then: { spent: true }`) instead of only
+going out ([verbs-other.md](verbs-other.md), `light`). `human_hungry`
 extends `human` (and needs its own companions, `human_hungry.arm_l` and the rest) with `hunger` and
 `starvation`: hunger rises a point every 10 ticks to 100, and at 100 `starvation` rises every 5 ticks
 to 20, whose `then` takes all of the body's integrity. The rise reads `hunger_every` (10 by default) for

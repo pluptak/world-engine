@@ -3,5 +3,14 @@
   "extends": "lantern",
   "size_cm": { "w": 3, "d": 3, "h": 12 },
   "mass_g": 50,
-  "props": { "fuel": 8 }
+  "props": { "fuel": 8 },
+  "processes": [
+    {
+      "id": "burn",
+      "every_ticks": 1,
+      "while": { "prop": "burning", "op": "eq", "value": true },
+      "effect": { "adjust_prop": { "prop": "fuel", "by": -1, "min": 0 } },
+      "then": { "spent": true }
+    }
+  ]
 }

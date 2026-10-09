@@ -1,16 +1,25 @@
 # Templates
 
 A template declares `id`, `size_cm`, `mass_g`, `parts`, `props`, `break_products` and
-`break_residue`, and optionally `processes` ([processes.md](processes.md); merged by id through
-`extends`, absent from a template that declares none) and `fields` ([fields.md](fields.md)). All
-are data, read from `templates/*.json` by `src/templates.ts`.
+`break_residue`, and optionally `spent_products` and `spent_residue`, `processes` ([processes.md](processes.md);
+merged by id through `extends`, absent from a template that declares none) and `fields` ([fields.md](fields.md)).
+All are data, read from `templates/*.json` by `src/templates.ts`.
+
+**What being used up leaves.** `spent_products` (`{ template, count }`, a count a whole number from 0) and
+`spent_residue` (material → amount) are to being used up what `break_products` and `break_residue` are to
+breaking: the last portion of a thing eaten (`consume`), or a process whose `then` is `{ spent: true }`, leaves them
+where the thing stood and removes it ([processes.md](processes.md)). Both default to empty, and a template that
+leaves nothing carries neither key, so it hashes as it did before they existed. A child's own list or record
+replaces its parent's, and one declared empty clears it. A world whose templates would lose a product's template
+is refused `templates_lost_field` (`spent_products.<template>`), as a break product's is.
 
 A template may declare `"extends": "<parent id>"`, resolved once, when the set is loaded or parsed:
 
 - the child's own field wins;
 - `props` are shallow-merged over the parent's, and `fields` merged by name;
 - `parts` are replaced only when the child declares them, so a declared list is the whole tree;
-- `size_cm`, `mass_g`, `break_products` and `break_residue` are inherited unless declared.
+- `size_cm`, `mass_g`, `break_products`, `break_residue`, `spent_products` and `spent_residue` are inherited unless
+  declared.
 
 Chains are allowed; a cycle or unknown parent is refused with its chain (`Template extends cycle:
 a -> b -> a`), and a root that declares too little by name, listing what it is missing.

@@ -17,7 +17,7 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
   `container_closed` and `out_of_reach`. Whether a room is lit is read from what burns in it
   ([perception.md](perception.md)), and a light's burn is a template process
   ([processes.md](processes.md)): `templates/lantern.json` burns a point of fuel a tick and snuffs
-  itself at 0, a `candle` is the same with less.
+  itself at 0, a `candle` burns the same with less and is used up at 0 (it leaves the world, [processes.md](processes.md)).
 - `douse`: the same the other way, under a `doused` event; it refuses `not_burning` and the same
   four others.
 - `say`: an opaque `args.utterance` token (1-64 of letters, digits and `_.:-`, the caller's own, never read by the

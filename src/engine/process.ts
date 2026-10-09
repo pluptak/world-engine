@@ -1,6 +1,7 @@
 import type { TransitionContext } from "./command.js";
 import { hurt } from "./harm.js";
 import { pending, withCause, withSchedule } from "./pending.js";
+import { spendEntity } from "../resolvers/physical.js";
 import { removeEntity } from "./verbs/edit.js";
 import type { Entity, Id, ScheduledCause, Snapshot } from "../model.js";
 import type { ProcessDecl, TemplateRegistry } from "../templates.js";
@@ -166,8 +167,8 @@ export function runProcess(context: TransitionContext, cause: ProcessCause): voi
 }
 
 // What a process does once, on reaching its bound, under the `changed` that reached it: write a prop
-// (a second `changed`), take integrity (the same chain a bleed makes), or take the entity out of the
-// world. Each can start or stop other processes through the reconcile that follows.
+// (a second `changed`), take integrity (the same chain a bleed makes), take the entity out of the
+// world, or use it up (`spent`, which leaves what its template says it leaves). Each can start or stop other processes through the reconcile that follows.
 function runThen(context: TransitionContext, entityId: Id, decl: ProcessDecl, causeId: Id): void {
   const then = decl.then!;
   const entity = context.snapshot.entities[entityId];
@@ -182,6 +183,8 @@ function runThen(context: TransitionContext, entityId: Id, decl: ProcessDecl, ca
     }
   } else if ("damage" in then) {
     hurt(context, entityId, then.damage.amount, causeId);
+  } else if ("spent" in then) {
+    spendEntity(context, entityId, causeId);
   } else {
     removeEntity(context, entityId, causeId);
   }
