@@ -13,13 +13,6 @@ Priorities there, then deleting it here in the same commit.
   so a process that opens many worlds, as a middleware in-process would, holds all their events until it ends. The
   CLI, one process per request, never does. Open: a bound by files or by records, and whether any caller has this
   shape yet.
-- **An observer reads an amount exactly.** `inspect` returns `liquid_amount` (and `fuel`) as stored
-  whenever coverage names it, but a human cannot tell 288 cm³ from 270 at a glance; a vessel with a
-  gauge marked on its side lets it tell more, still not exactly. The engine owns the exact amount
-  and `pour` needs it; what an observer gets is a reading. Open: the reading's form (a percentage
-  band of capacity, or named levels), how fine sight alone is, a gauge as a template prop that
-  narrows it, the same for `fuel`, and whether the author's `inspect` stays exact. A reading must be
-  a fixed band, never noise, so it replays (AGENTS.md).
 - **Scenery: templates nothing can act on.** A scene needs things that are there to be perceived
   and change nothing: a flowery meadow, a painted stain, the sky or a ceiling that bounds it. The
   nearest today is `abstract` (`docs/state.md`), which no agent can address and which is never
