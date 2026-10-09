@@ -29,12 +29,11 @@ tier (`definition` or `state`) and a type (`boolean`, `integer` or `string`):
 `fields` merge by name through `extends`, the child's own winning; an engine prop is refused.
 
 **Checked when a set is resolved** (`validateProps` in `src/templates.ts`), loaded from
-`templates/` or parsed from a world's `templates.json`, each refusal naming the template and prop:
+`templates/` or parsed from a world's `templates.json`: a prop neither table declares, a value of
+the wrong type, a prop whose declared props do not supply its `requires` (a door's `from`/`to` →
+`openable`), a process naming an undeclared prop, or an adjustment of a non-integer.
 
-- a prop neither table declares (`props.openabel is not a declared prop`);
-- a value of the wrong type (`props.gap_cm must be an integer`);
-- a prop without one it requires (`gap_cm` → `barrier`; `open`, `locked`, `closes_after` →
-  `openable`; `container` → `inner_w/d/h_cm`; `burning`, `fuel` → `light_source`), which an
-  ancestor may supply;
-- a process naming an undeclared prop, adjusting one that is not an integer, or setting a value
-  that is not of its prop's type. Entity definitions are checked on write instead (above).
+**Every entity's props hold to that schema in `validateSnapshot`**: `undeclared_prop`,
+`wrong_prop_type` and `unmet_requires` when the template grants no required prop — the entity's own
+props never satisfy a requirement. `edit` refuses them; a scenario and `verify` record them as
+`invalid_snapshot`.

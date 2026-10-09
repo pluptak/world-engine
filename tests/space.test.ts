@@ -16,9 +16,16 @@ import { WorldError } from "../src/errors.js";
 import { NEAR_THRESHOLD_CM, query } from "../src/engine/query.js";
 import { EntityOverridesSchema, ScenarioSchema, WorldEditSchema } from "../src/contract.js";
 import { resolveScenario, type ScenarioOverrides } from "../src/scenario.js";
-import { loadTemplates, type TemplateRegistry } from "../src/templates.js";
+import { loadTemplates, parseRegistry, type TemplateRegistry } from "../src/templates.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+
+// The anchor carries only its `abstract` definition; a test that writes an anchor's own state prop
+// declares it here, since no shipped template does.
+const anchorRegistry: TemplateRegistry = parseRegistry({
+  ...registry,
+  anchor: { ...registry.anchor!, fields: { some_prop: { tier: "state", type: "string" } } },
+});
 
 function tempDir(t: { after(callback: () => void): void }): string {
   const dir = mkdtempSync(join(tmpdir(), "world-engine-space-"));
@@ -372,9 +379,9 @@ const inertScenario: Scenario = [
 ];
 
 function inertWorlds(t: { after(callback: () => void): void }): [World, World] {
-  const store = createWorld(join(tempDir(t), "inert"), inertScenario);
+  const store = createWorld(join(tempDir(t), "inert"), inertScenario, anchorRegistry);
   const names = { room: "e1", corner: "e2", ann: "e3", bottle: "e4" };
-  return [store, memoryWorld(store.snapshot(), undefined, names)];
+  return [store, memoryWorld(store.snapshot(), anchorRegistry, names)];
 }
 
 test("take, push and attack on an anchor are all unresolved", (t) => {

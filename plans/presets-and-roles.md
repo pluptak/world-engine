@@ -68,30 +68,12 @@ None.
 
 ## Blocks
 
-Blocks 1 (field schema), 2 (`update_props`, `derived_field`) and 3a (definitions are not
-written) are built: `docs/fields.md`. One
+Blocks 1 (field schema), 2 (`update_props`, `derived_field`), 3a (definitions are not written) and
+3b (entity props hold to the schema) are built: `docs/fields.md`. One
 block per session, in this order. Each touches the shared registration points CLAUDE.md lists
 (`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
-
-### 3b. Entity props hold to the schema
-
-- A rule in `validateSnapshot` (`src/engine/validate.ts`) holds every entity's props to
-  `validateProps`' rules, against its template's resolved set: a prop neither `PROP_FIELDS` nor
-  the template's `fields` declares is `undeclared_prop`, a value of the wrong type
-  `wrong_prop_type`, a prop whose `requires` the template's resolved props do not meet
-  `unmet_requires` (the entity's own props never meet it). So every edit, scenario, `verify` and
-  hand-edited world meets it. Each would be accepted today: `update_props` with `gap_cm: "wide"` on
-  a table, or `open` on a stone.
-- `from` and `to` declare `requires: ["openable"]` in `fields.ts`, so a door side is a definition
-  the template grants: a stone given `from`/`to` (a door by 3a's `isDoor`) is `unmet_requires`.
-- Migration: a test that writes a prop no template declares (`rate`, `glow`, `temperature`, …)
-  declares it under `fields` in its inline registry, or moves it to a trait (3c) where it only
-  describes. Inventory first and report the count.
-- Tests: `tests/entity-props.test.ts`: each code from an edit, a scenario and a hand-edited world
-  under `verify`.
-- Docs: `docs/fields.md`, `docs/state.md` (the new rule).
 
 ### 3c. Traits
 

@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from "node:assert";
+import { deepStrictEqual, strictEqual, throws } from "node:assert";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -55,9 +55,9 @@ test("an edit spawn that changes or adds a definition is refused, and repeats pa
   });
   deepStrictEqual([narrowed.status, narrowed.reason_code], ["refused", "field_not_editable"]);
 
-  // Repeating the template's own definitions is not a change, and leaving them out keeps them:
-  // the override merges onto the template's props.
-  const repeated = world.edit({
+  // Setting state that requires a definition the chest grants is refused unmet_requires, not
+  // accepted as field_not_editable: open needs openable, which the template does not declare.
+  const openableOnly = world.edit({
     kind: "spawn",
     template: "chest",
     overrides: {
@@ -68,6 +68,13 @@ test("an edit spawn that changes or adds a definition is refused, and repeats pa
       props: { ...CHEST, open: true },
     },
   });
+  deepStrictEqual([openableOnly.status, openableOnly.reason_code], ["refused", "unmet_requires"]);
+  // Repeating the template's own definitions is not a change; the override merges and passes.
+  const repeated = world.edit({
+    kind: "spawn",
+    template: "chest",
+    overrides: { name: "twin", location: "e1", support: "e1", pos: { x: 30, y: 0 }, props: { ...CHEST } },
+  });
   strictEqual(repeated.status, "ok");
   const bare = world.edit({
     kind: "spawn",
@@ -75,6 +82,7 @@ test("an edit spawn that changes or adds a definition is refused, and repeats pa
     overrides: { name: "plain", location: "e1", support: "e1", pos: { x: 40, y: 0 } },
   });
   strictEqual(bare.status, "ok");
+  // Both spawns succeed, and each created entity keeps the template's definitions.
   for (const event of [repeated, bare]) {
     const id = event.events[1]?.entity;
     deepStrictEqual(
@@ -92,12 +100,13 @@ test("set_props replaces, so dropping a definition is refused with the change", 
   const changed = world.edit({ kind: "set_props", target: chest, props: { ...CHEST, openable: true } });
   deepStrictEqual([changed.status, changed.reason_code], ["refused", "field_not_editable"]);
 
-  const dropped = world.edit({ kind: "set_props", target: chest, props: { open: true } });
-  deepStrictEqual([dropped.status, dropped.reason_code], ["refused", "field_not_editable"]);
+  // A wholesale replace drops the definitions, which is `field_not_editable` before validation
+  // sees it; keeping them and adding `open` reaches the entity-props rule and is `unmet_requires`.
+  const replaced = world.edit({ kind: "set_props", target: chest, props: { open: true } });
+  deepStrictEqual([replaced.status, replaced.reason_code], ["refused", "field_not_editable"]);
 
-  const repeated = world.edit({ kind: "set_props", target: chest, props: { ...CHEST, open: true } });
-  strictEqual(repeated.status, "ok");
-  deepStrictEqual(world.entity(chest)?.props, { ...CHEST, open: true });
+  const merged = world.edit({ kind: "set_props", target: chest, props: { ...CHEST, open: true } });
+  deepStrictEqual([merged.status, merged.reason_code], ["refused", "unmet_requires"]);
 });
 
 test("update_props merges, so only the keys it writes can differ", (t) => {
@@ -107,10 +116,9 @@ test("update_props merges, so only the keys it writes can differ", (t) => {
   const changed = world.edit({ kind: "update_props", target: chest, props: { openable: true } });
   deepStrictEqual([changed.status, changed.reason_code], ["refused", "field_not_editable"]);
 
-  // State merges over the definitions, which stay what the template declares.
+  // A chest grants no `openable`, so `open` on it is refused unmet_requires even when merged.
   const merged = world.edit({ kind: "update_props", target: chest, props: { open: true } });
-  strictEqual(merged.status, "ok");
-  deepStrictEqual(world.entity(chest)?.props, { ...CHEST, open: true });
+  deepStrictEqual([merged.status, merged.reason_code], ["refused", "unmet_requires"]);
 });
 
 test("a scenario entry is held to the same rule before anything is written", (t) => {
@@ -142,13 +150,15 @@ test("a scenario entry is held to the same rule before anything is written", (t)
     strictEqual((error as WorldError).code, "field_not_editable");
   }
 
-  // A merged override names only state; the entity keeps its template's definitions.
-  const world = createWorld(join(dir, "merged"), entry({ open: true }));
-  deepStrictEqual(
-    Object.fromEntries(Object.entries(world.entity(world.id("chest")!)!.props).filter(([key]) => key in CHEST)),
-    { ...CHEST },
+  // A chest grants no `openable`, so setting `open` on it is now refused as `unmet_requires`:
+  // the preset grants no prop the field needs, and a state value can never supply one.
+  throws(
+    () => createWorld(join(dir, "merged"), entry({ open: true })),
+    (error: unknown) =>
+      error instanceof WorldError &&
+      error.code === "invalid_snapshot" &&
+      error.issues?.some((i) => i.code === "unmet_requires" && i.path.join(".") === "entities.e2.props.open"),
   );
-  strictEqual(world.entity(world.id("chest")!)?.props.open, true);
 });
 
 test("a definition a template declares under fields is held the same way", (t) => {

@@ -495,7 +495,9 @@ test("a prop that is not a positive integer falls back to every_ticks", (t) => {
   strictEqual(world.edit({ kind: "set_props", target: id, props: { glow: 0, rate: 0 } }).status, "ok");
   // The run pending from the start (due 4) is not retimed; the next ones wait every_ticks.
   deepStrictEqual(changes(advance(world, 10)).map((row) => row[1]), [4, 9]);
-  strictEqual(world.edit({ kind: "set_props", target: id, props: { glow: 0, rate: "fast" } }).status, "ok");
+  // A declared integer may still be negative: the process falls back, and the entity-props rule is
+  // content because the value's type is right.
+  strictEqual(world.edit({ kind: "set_props", target: id, props: { glow: 0, rate: -1 } }).status, "ok");
   deepStrictEqual(changes(advance(world, 5)).map((row) => row[1]), [14]);
   strictEqual(world.edit({ kind: "set_props", target: id, props: { glow: 0 } }).status, "ok");
   deepStrictEqual(changes(advance(world, 5)).map((row) => row[1]), [19]);

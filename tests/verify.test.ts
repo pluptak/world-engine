@@ -18,6 +18,7 @@ import {
   type Verification,
   type World,
 } from "../src/index.js";
+import { loadTemplates, parseRegistry, type TemplateRegistry } from "../src/templates.js";
 
 // A stored world can prove itself: replay the log from initial.json, deciding every line again as
 // submit did, and compare what that makes with the four files. It names the first difference, and it
@@ -25,6 +26,14 @@ import {
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
+
+// `hush` is a prop no shipped template declares; the mixed run sets it, so the world is built with
+// an inline registry that declares it, as the edit tests do.
+const shipped = loadTemplates(join(root, "templates"));
+const verifyRegistry: TemplateRegistry = parseRegistry({
+  ...shipped,
+  room: { ...shipped.room!, fields: { hush: { tier: "state", type: "boolean" } } },
+});
 
 const scenario: Scenario = [
   { id: "room", template: "room", overrides: { name: "room", props: { lit: true } } },
@@ -71,7 +80,7 @@ function built(t: { after(callback: () => void): void }): Built {
   const base = mkdtempSync(join(tmpdir(), "world-engine-verify-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
   const dir = join(base, "w");
-  const world = createWorld(dir, scenario);
+  const world = createWorld(dir, scenario, verifyRegistry);
   mixed(world);
   return { dir, world, base };
 }
@@ -82,7 +91,7 @@ function copyOfBuilt(t: { after(callback: () => void): void }): { dir: string; w
   if (template === null) {
     const base = mkdtempSync(join(tmpdir(), "world-engine-verify-template-"));
     const dir = join(base, "w");
-    mixed(createWorld(dir, scenario));
+    mixed(createWorld(dir, scenario, verifyRegistry));
     template = { base, dir };
     process.on("exit", () => rmSync(base, { recursive: true, force: true }));
   }
@@ -320,7 +329,7 @@ test("a changed template set is templates_changed, as everywhere; a memory world
   throws(() => verifyWorld(dir), (error) => error instanceof WorldError && error.code === "templates_changed");
 
   throws(
-    () => memoryWorld(world.snapshot()).verify(),
+    () => memoryWorld(world.snapshot(), verifyRegistry).verify(),
     (error) => error instanceof WorldError && error.code === "history_unavailable",
   );
   throws(() => world.fork().verify(), (error) => error instanceof WorldError && error.code === "history_unavailable");

@@ -30,7 +30,7 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   closes_after: { type: "integer", tier: "definition", requires: ["openable"] },
   container: { type: "boolean", tier: "definition", requires: ["inner_w_cm", "inner_d_cm", "inner_h_cm"] },
   default_hit_part: { type: "string", tier: "definition" },
-  from: { type: "id", tier: "state" },
+  from: { type: "id", tier: "state", requires: ["openable"] },
   fuel: { type: "integer", tier: "state", requires: ["light_source"] },
   gap_cm: { type: "integer", tier: "definition", requires: ["barrier"] },
   hand_height_cm: { type: "integer", tier: "definition" },
@@ -53,7 +53,7 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   reach_cm: { type: "integer", tier: "definition" },
   rubble: { type: "boolean", tier: "definition" },
   surface: { type: "boolean", tier: "definition" },
-  to: { type: "id", tier: "state" },
+  to: { type: "id", tier: "state", requires: ["openable"] },
   topples: { type: "boolean", tier: "definition" },
 };
 

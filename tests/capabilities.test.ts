@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { loadTemplates, parseRegistry, type TemplateRegistry } from "../src/templates.js";
 import { cli as cliRequest } from "./cli-run.js";
 import { CapabilitiesResponseSchema } from "../src/contract.js";
 import {
@@ -19,18 +20,26 @@ import {
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
+const base: TemplateRegistry = loadTemplates(join(root, "templates"));
+
+// A warm cup is a cup of the engine's own making: `temperature` is not a rule the engine reads,
+// so it is declared as a test-only field on a custom base and never shipped.
+const worldBase = parseRegistry({
+  ...base,
+  warm: { id: "warm", extends: "cup", fields: { temperature: { tier: "state", type: "integer" } } },
+});
 
 // A lit room with ann holding a warm cup: `temperature` is a prop the scenario gives it.
 const scenario: Scenario = [
   { id: "room", template: "room", overrides: { name: "room", props: { lit: true } } },
   { id: "ann", template: "human", overrides: { name: "ann", location: "room", support: "room", pos: { x: 0, y: 0 } } },
-  { id: "cup", template: "cup", overrides: { name: "cup", location: "room", contained_in: "ann", props: { temperature: 60 } } },
+  { id: "cup", template: "warm", overrides: { name: "cup", location: "room", contained_in: "ann", props: { temperature: 60 } } },
 ];
 
 function world(t: { after(callback: () => void): void }, coverage?: Coverage): World {
   const dir = mkdtempSync(join(tmpdir(), "world-engine-capabilities-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return createWorld(join(dir, "w"), scenario, undefined, coverage === undefined ? {} : { coverage });
+  return createWorld(join(dir, "w"), scenario, worldBase, coverage === undefined ? {} : { coverage });
 }
 
 const refusesCoverage = (code: string, path: string[]) => (error: unknown) =>
@@ -48,10 +57,11 @@ test("a world may not cover a sense or a relation the engine has no rule for", (
     () => world(t, { ...base, relations: ["support", "owns"] }),
     refusesCoverage("coverage_not_computable", ["coverage", "relations", "owns"]),
   );
-  // A memory world built from a snapshot that claims one is refused the same way.
+  // A memory world built from a snapshot that claims one is refused the same way, against the
+  // same registry the snapshot's hash was built with.
   const snapshot = world(t).snapshot();
   throws(
-    () => memoryWorld({ ...snapshot, coverage: { ...snapshot.coverage, senses: ["sight", "taste"] } }),
+    () => memoryWorld({ ...snapshot, coverage: { ...snapshot.coverage, senses: ["sight", "taste"] } }, worldBase),
     refusesCoverage("coverage_not_computable", ["coverage", "senses", "taste"]),
   );
 });

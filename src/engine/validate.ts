@@ -1,8 +1,9 @@
 import type { Entity, Id, Snapshot } from "../model.js";
-import type { TemplateRegistry } from "../templates.js";
+import type { Template, TemplateRegistry } from "../templates.js";
 import { heldInParts, holderLayout, packGrips, partAvailable } from "./carry.js";
 import { misfit } from "./fit.js";
 import { effectivePart, isDefaultPart } from "./parts.js";
+import { PROP_FIELDS, propTypeMatches } from "./fields.js";
 import { uncomputable } from "./capabilities.js";
 import { isAbstract } from "./resolve.js";
 import { isRngState } from "./rng.js";
@@ -278,6 +279,42 @@ function integrityIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
   return issues;
 }
 
+// Every entity's props are held to the same schema a template's are: each prop the engine's table
+// or the template's own `fields` declares, with a value of the right type and every `requires` met
+// by the template's own declared props. The entity's props never meet a requirement: the preset,
+// not the story, grants what a field needs.
+function propIssues(
+  registry: TemplateRegistry,
+  entity: Entity,
+  id: Id,
+  path: string[],
+): SnapshotIssue[] {
+  const issues: SnapshotIssue[] = [];
+  const template: Partial<Template> = registry[entity.template] ?? {};
+  for (const [name, value] of Object.entries(entity.props)) {
+    const engine = PROP_FIELDS[name];
+    const field = engine ?? template.fields?.[name];
+    if (engine) {
+      if (!propTypeMatches(engine.type, value)) {
+        issues.push(issue("wrong_prop_type", [...path, "props", name], `props.${name} must be ${engine.type}`));
+      }
+    } else if (field !== undefined) {
+      if (!propTypeMatches(field.type, value)) {
+        issues.push(issue("wrong_prop_type", [...path, "props", name], `props.${name} must be ${field.type}`));
+      }
+    } else {
+      issues.push(issue("undeclared_prop", [...path, "props", name], `props.${name} is not a declared prop`));
+    }
+    const requires = engine?.requires;
+    if (requires && requires.some((r) => !template.props?.[r])) {
+      issues.push(
+        issue("unmet_requires", [...path, "props", name], `props.${name} requires ${requires.join(", ")}`),
+      );
+    }
+  }
+  return issues;
+}
+
 // What sits in a holder's part: in_part is set exactly when the holder declares holder parts,
 // names one that is present, grips pack lowest-first, and space contents fit.
 function holderIssues(snapshot: Snapshot, registry: TemplateRegistry, id: Id, path: string[]): SnapshotIssue[] {
@@ -388,6 +425,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     issues.push(...referenceIssues(snapshot, id, path));
     issues.push(...concealmentIssues(snapshot, registry, reportedConcealLoops, id, path));
     issues.push(...holderIssues(snapshot, registry, id, path));
+    issues.push(...propIssues(registry, entity, id, path));
 
     // A room is where things are, never a thing somewhere: nothing holds, supports or hides it.
     if (
