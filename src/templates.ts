@@ -196,7 +196,10 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
       if (!isRecord(product) || typeof product.template !== "string") {
         throw new TypeError(`${label} must contain a template id`);
       }
-      assertNumber(product.count, `${label}.count`);
+      assertInteger(product.count, `${label}.count`);
+      if (product.count < 0) {
+        throw new TypeError(`${label}.count must not be negative`);
+      }
       return { template: product.template, count: product.count };
     });
   }
@@ -591,7 +594,28 @@ function resolveTemplates(
   }
 
   assertMissingCompanions(registry);
+  assertProducts(registry, sources);
   return registry;
+}
+
+// A product is spawned by its template id when a thing breaks or is used up, in a transition that has
+// no way to refuse: one that names nothing, or a room (which nothing can be set on), would throw there
+// and leave the clock unable to pass that tick, so it is refused here, when the set is read.
+function assertProducts(registry: TemplateRegistry, sources: ReadonlyMap<string, string>): void {
+  for (const id of Object.keys(registry).sort()) {
+    const template = registry[id]!;
+    for (const key of ["break_products", "spent_products"] as const) {
+      for (const product of template[key] ?? []) {
+        const at = `${sources.get(id) ?? id} ${key}`;
+        if (!Object.hasOwn(registry, product.template)) {
+          throw new TypeError(`${at} names unknown template ${product.template}`);
+        }
+        if (product.template === "room") {
+          throw new TypeError(`${at} names room, which cannot be set on anything`);
+        }
+      }
+    }
+  }
 }
 
 // Every prop a template sets or its processes name is declared, by the engine's table or the

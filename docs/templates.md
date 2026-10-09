@@ -10,8 +10,11 @@ All are data, read from `templates/*.json` by `src/templates.ts`.
 breaking: the last portion of a thing eaten (`consume`), or a process whose `then` is `{ spent: true }`, leaves them
 where the thing stood and removes it ([processes.md](processes.md)). Both default to empty, and a template that
 leaves nothing carries neither key, so it hashes as it did before they existed. A child's own list or record
-replaces its parent's, and one declared empty clears it. A world whose templates would lose a product's template
-is refused `templates_lost_field` (`spent_products.<template>`), as a break product's is.
+replaces its parent's, and one declared empty clears it. A product must name a template of the set, and not `room`, which nothing can be set on, and its count is a
+whole number from 0: a set that breaks any of these is refused when it is read (a directory, a world's
+`templates.json`), because the spawn that would fail has no way to refuse and would stop the clock. A world whose
+templates would lose a product's template is refused `templates_lost_field` (`spent_products.<template>`), as a
+break product's is.
 
 A template may declare `"extends": "<parent id>"`, resolved once, when the set is loaded or parsed:
 

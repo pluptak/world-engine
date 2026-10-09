@@ -386,3 +386,45 @@ test("upgradeTemplates reads a child's inherited fields, not its extends key", (
   );
   strictEqual(canonicalJson(memory.snapshot()), canonicalJson(world.snapshot()));
 });
+
+test("a product that names no template, a room or a fraction is refused when the set is read, for either key", (t) => {
+  const message = (run: () => unknown): string => {
+    try {
+      run();
+      return "loaded";
+    } catch (error) {
+      return error instanceof TypeError ? error.message : `not a TypeError: ${String(error)}`;
+    }
+  };
+  const room = decl("room");
+  for (const key of ["break_products", "spent_products"]) {
+    const set = (product: unknown) => () => parseRegistry({ room, stone: decl("stone"), odd: decl("odd", { [key]: [product] }) });
+    strictEqual(message(set({ template: "stone", count: 2 })), "loaded", key);
+    strictEqual(message(set({ template: "nonesuch", count: 1 })), `templates.json#odd ${key} names unknown template nonesuch`, key);
+    strictEqual(message(set({ template: "room", count: 1 })), `templates.json#odd ${key} names room, which cannot be set on anything`, key);
+    strictEqual(message(set({ template: "stone", count: 1.5 })), `templates.json#odd.${key}[0].count must be an integer`, key);
+    strictEqual(message(set({ template: "stone", count: -1 })), `templates.json#odd.${key}[0].count must not be negative`, key);
+  }
+  // A product defined later in the same set, and one a parent declared and a child inherits, both load.
+  parseRegistry({ a: decl("a", { break_products: [{ template: "z", count: 1 }] }), b: decl("b", { extends: "a" }), z: decl("z") });
+  // The same through the files of a directory, named by the file.
+  const dir = copiedTemplates(t);
+  writeFileSync(
+    join(dir, "book.json"),
+    `${JSON.stringify({ ...JSON.parse(readFileSync(join(dir, "book.json"), "utf8")), spent_products: [{ template: "nonesuch", count: 1 }] })}\n`,
+    "utf8",
+  );
+  strictEqual(message(() => loadTemplates(dir)), "book.json spent_products names unknown template nonesuch");
+  // What ships loads, and a world's frozen set is held to the same check.
+  ok(Object.keys(loadTemplates(templatesDir)).length > 0);
+});
+
+test("a world cannot be opened on a frozen set whose product names no template", (t) => {
+  const dir = join(tempDir(t), "w");
+  createWorld(dir, [{ template: "room", overrides: { name: "room" } }]);
+  const path = join(dir, "templates.json");
+  const raw = JSON.parse(readFileSync(path, "utf8")) as Record<string, Record<string, unknown>>;
+  raw.stone = { ...raw.stone!, break_products: [{ template: "nonesuch", count: 1 }] };
+  writeFileSync(path, JSON.stringify(raw), "utf8");
+  assertThrows(() => openWorld(dir), (error: unknown) => error instanceof Error && error.message.includes("names unknown template nonesuch"));
+});

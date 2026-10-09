@@ -20,8 +20,7 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
    blocks 3c, 4, 4b, 5–8 in that order.
-2. [Product templates exist when a set loads](#product-templates-exist-when-a-set-loads).
-3. [A container holds only what fits](#a-container-holds-only-what-fits).
+2. [A container holds only what fits](#a-container-holds-only-what-fits).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -58,29 +57,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### Product templates exist when a set loads
-
-`break_products` and `spent_products` name templates by id, and a set that names one no template declares loads
-(`parseRegistry`, `loadTemplates`). The `TypeError` comes later, from the fall, the break or the last bite that
-spawns it: a template that spends into `nonesuch` makes `advance` throw at the tick its burn runs, leaves the
-world at tick 0 for good, and the CLI answers `internal_error`. `upgradeTemplates` already reports a live entity
-whose template loses a product (`lostField`), but a set that never had one is not looked at.
-
-- **Rule** (`resolveTemplates` in `src/templates.ts`, once every template is resolved): each product of
-  `break_products` and `spent_products` names a template of the set, and not `room`, which nothing can be set
-  on (`room_placed`), or the engine throws again at the spawn. A count of `break_products` is a whole number
-  from 0, as `spent_products`' already is. Each refusal is a `TypeError` naming the template, the key and the
-  product, as the others there do.
-- **Kept:** `lostField`'s product checks stay: a registry handed to `memoryWorld` or `upgradeTemplates`
-  is not always parsed.
-- **Outcome:** the shipped set loads as it did; a hand-written set with an unknown, room or fractional product is
-  refused when read, in a world's `templates.json` too, so no world is built that cannot advance.
-- **Tests** (`tests/templates.test.ts`): each refusal for each key, through `parseRegistry` and
-  `loadTemplates`, with the message; a product that exists, one declared by a child that extends, and a product
-  that is a template defined later in the same set all load.
-- **Docs:** `docs/templates.md`.
-- **Depends on:** nothing.
 
 ### A container holds only what fits
 
