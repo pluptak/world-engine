@@ -69,24 +69,12 @@ None.
 ## Blocks
 
 Blocks 1 (field schema), 2 (`update_props`, `derived_field`), 3a (definitions are not written),
-3b (entity props hold to the schema), 3c (traits), 4 (architect forms) and 4b (scenarios are the
-architect) are built: `docs/fields.md`. One
+3b (entity props hold to the schema), 3c (traits), 4 (architect forms), 4b (scenarios are the
+architect) and 5 (catalogue view) are built: `docs/fields.md`. One
 block per session, in this order. Each touches the shared registration points CLAUDE.md lists
 (`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
-
-### 5. Catalogue view
-
-- `catalog()` on `World`/`src/api.ts` and a CLI `catalog` op: every pickable preset with its
-  shown definition fields (size, mass, `container`, `surface`, `openable`, `barrier`,
-  `light_source`, `agent`, `capacity_cm3`, part names, capacities, the templates it breaks into)
-  and its architect forms with their defaults (`fuel_pct` 100, `liquid` at the template's
-  material and percentage, `condition` `intact`). Tuning fields are absent.
-- Pickable: every template but companions (`<template>.<part>`) and bases marked
-  `"catalog": false` (a new template key, distinct from the entity prop `abstract`). Break
-  products such as `glass_shard` are pickable: the architect places shards one by one.
-- Response validated in `contract.ts`; tests in `tests/catalog-view.test.ts`.
 
 ### 6. Inherited companions
 

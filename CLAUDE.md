@@ -131,7 +131,7 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   names the first byte of `log.jsonl`, `events.jsonl`, `deltas.jsonl`, `snapshot.json` or a checkpoint that differs
   (`docs/persistence.md`).
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
-  `command`/`edit`/`check`/`options`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`;
+  `command`/`edit`/`check`/`options`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`/`catalog`;
   `options` (`src/options.ts`) dry-runs every non-author verb against everything the actor can name
   (`addressable`) and sorts the verdicts into `ready`, `needs_args` and, on request, `blocked`; a verb's `suggest` lists the arg sets
   to try (`give`, `put`, `move`, `pour`), `free_args` the args no list holds, `aims_at_parts` (`attack`) has it
@@ -170,7 +170,7 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
   `check` | `options` | `since` | `attempts` | `query` | `observe` | `inspect` | `snapshot` | `verbs` |
-  `capabilities` | `schema` | `verify`, and the five `actor_*` ops of `docs/actor-view.md`, through `actorWorld`), calls one
+  `capabilities` | `catalog` | `schema` | `verify`, and the five `actor_*` ops of `docs/actor-view.md`, through `actorWorld`), calls one
   `World` method, `verbCatalog` or returns `ENGINE_CAPABILITIES` (`src/engine/capabilities.ts`: the
   relations and senses the engine computes, which `validateSnapshot` holds coverage to), and
   validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`

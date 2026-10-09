@@ -267,6 +267,11 @@ export const RequestSchema = z.discriminatedUnion("op", [
   z.object({
     op: z.literal("capabilities"),
   }).strict(),
+  // The presets of a world's template set, or of the shipped one when no world is named.
+  z.object({
+    op: z.literal("catalog"),
+    world: z.string().min(1).optional(),
+  }).strict(),
   z.object({
     op: z.literal("schema"),
   }).strict(),
@@ -571,6 +576,35 @@ export const VerbsResponseSchema = z.object({
   verbs: z.array(VerbCatalogEntrySchema),
 }).strict();
 
+const CatalogFormsSchema = z.object({
+  fuel_pct: z.number().int().optional(),
+  liquid: z.object({ material: z.string().nullable(), pct: z.number().int() }).strict().optional(),
+  condition: z.literal("intact"),
+  hunger_pct: z.number().int().optional(),
+  portions_pct: z.number().int().optional(),
+}).strict();
+
+const CatalogEntrySchema = z.object({
+  template: z.string(),
+  size_cm: z.object({ w: z.number(), d: z.number(), h: z.number() }).strict(),
+  mass_g: z.number(),
+  container: z.boolean(),
+  surface: z.boolean(),
+  openable: z.boolean(),
+  barrier: z.boolean(),
+  light_source: z.boolean(),
+  agent: z.boolean(),
+  capacity_cm3: z.number().int().optional(),
+  parts: z.array(z.string()),
+  capacities: z.record(z.string(), z.number()),
+  breaks_into: z.array(z.string()),
+  forms: CatalogFormsSchema,
+}).strict();
+
+export const CatalogResponseSchema = z.object({
+  catalog: z.array(CatalogEntrySchema),
+}).strict();
+
 export const CapabilitiesResponseSchema = z.object({
   relations: z.array(z.string()),
   senses: z.array(z.string()),
@@ -620,6 +654,7 @@ export const RESPONSES = {
   beat: BeatResponseSchema,
   verbs: VerbsResponseSchema,
   capabilities: CapabilitiesResponseSchema,
+  catalog: CatalogResponseSchema,
   schema: SchemaResponseSchema,
   inspect: InspectResponseSchema,
   actor_inspect: InspectResponseSchema,

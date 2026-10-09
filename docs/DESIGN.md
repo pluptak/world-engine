@@ -35,6 +35,7 @@ What is built, nothing aspirational, one concept per file:
 - [projection.md](projection.md), [actor-view.md](actor-view.md): observation; one actor's side.
 - [liquids.md](liquids.md): liquid in props, and the `pour` verb.
 - [forms.md](forms.md): the architect's percentages and conditions in a scenario, and `capacity_cm3`.
+- [catalog.md](catalog.md): the presets an architect may place, with their forms and defaults.
 - [limits.md](limits.md): what the inn scenario could not express.
 - [limits-workshop.md](limits-workshop.md): what occupancy, impact and landing cannot express.
 - [limits-camp.md](limits-camp.md): what light, processes and eating cannot express.

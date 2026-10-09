@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   canonicalJson,
+  catalog,
   ENGINE_CAPABILITIES,
   createWorld,
   openWorld,
@@ -172,6 +173,9 @@ function dispatch(request: Request): unknown {
   }
   if (request.op === "capabilities") {
     return structuredClone(ENGINE_CAPABILITIES);
+  }
+  if (request.op === "catalog") {
+    return { catalog: request.world === undefined ? catalog() : openWorld(request.world).catalog() };
   }
   if (request.op === "schema") {
     return describeContract();

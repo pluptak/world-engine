@@ -1,5 +1,6 @@
 ﻿import { fileURLToPath } from "node:url";
 import { canonicalJson } from "./engine/canonical.js";
+import { catalogOf, type CatalogEntry } from "./engine/catalog.js";
 import {
   attemptOf,
   WORLD_AUTHOR,
@@ -125,6 +126,8 @@ export interface World {
   inspect(observer: Id, entity: Id): Inspection | null;
   snapshot(): Snapshot;
   entity(id: Id): Entity | null;
+  // The presets an architect may place in this world's template set, with their forms.
+  catalog(): CatalogEntry[];
   // The id a scenario gave this world, or null. Names are authoring sugar rather than world state,
   // so a store world keeps them in ids.json and a memory world is handed them.
   id(name: string): Id | null;
@@ -234,6 +237,11 @@ function dryRun(current: Snapshot, registry: TemplateRegistry, command: Command)
 
 function activeRegistry(registry?: TemplateRegistry): TemplateRegistry {
   return registry ?? loadTemplates(templatesDirectory);
+}
+
+// The presets an architect may place, before any world exists: the shipped template set, or the one given.
+export function catalog(registry?: TemplateRegistry): CatalogEntry[] {
+  return catalogOf(activeRegistry(registry));
 }
 
 // Every edit is a command by the reserved author, so it is logged and replayed like one; the
@@ -407,6 +415,7 @@ function storeWorld(
     observe: (observer, options = {}) => observeThrough(world, active, observer, options),
     inspect: (observer, entity) => inspectThrough(world, active, observer, entity),
     snapshot: () => load(dir, active),
+    catalog: () => catalogOf(active),
     entity: (id) => own(load(dir, active).entities, id) ?? null,
     id: (name) => own(names, name) ?? null,
     fork: () => memoryWorld(structuredClone(load(dir, active)), active, names),
@@ -675,6 +684,7 @@ export function memoryWorld(
     observe: (observer, options = {}) => observeThrough(world, templates, observer, options),
     inspect: (observer, entity) => inspectThrough(world, templates, observer, entity),
     snapshot: () => current,
+    catalog: () => catalogOf(templates),
     entity: (id) => own(current.entities, id) ?? null,
     id: (name) => own(names, name) ?? null,
     fork: () => memoryWorld(structuredClone(current), templates, names),
@@ -684,6 +694,7 @@ export function memoryWorld(
 
 export { canonicalJson, verbCatalog as verbs, WorldError, WORLD_AUTHOR };
 export { ENGINE_CAPABILITIES } from "./engine/capabilities.js";
+export type { CatalogEntry, CatalogForms } from "./engine/catalog.js";
 export type { WorldErrorCode } from "./errors.js";
 export type { Scenario, ScenarioEntry } from "./scenario.js";
 export { startProcesses } from "./engine/process.js";

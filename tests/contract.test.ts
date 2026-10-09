@@ -381,6 +381,7 @@ test("a real answer to every op parses with the schema the contract gives that o
     snapshot: { op: "snapshot", world },
     verbs: { op: "verbs" },
     capabilities: { op: "capabilities" },
+    catalog: { op: "catalog", world },
     schema: { op: "schema" },
     inspect: { op: "inspect", world, observer: "e4", entity: "e3" },
     options: { op: "options", world, actor: "e4", refused: true },

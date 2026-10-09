@@ -3,7 +3,8 @@
 A template declares `id`, `size_cm`, `mass_g`, `parts`, `props`, `break_products` and
 `break_residue`, and optionally `spent_products` and `spent_residue`, `processes` ([processes.md](processes.md);
 merged by id through `extends`, absent from a template that declares none) and `fields` ([fields.md](fields.md)).
-All are data, read from `templates/*.json` by `src/templates.ts`.
+All are data, read from `templates/*.json` by `src/templates.ts`. `"catalog": false` keeps a base out of the
+architect's catalogue ([catalog.md](catalog.md)); it is the template's own and is not inherited.
 
 **What being used up leaves.** `spent_products` (`{ template, count }`, a count a whole number from 0) and
 `spent_residue` (material → amount) are to being used up what `break_products` and `break_residue` are to

@@ -61,6 +61,9 @@ export interface Template {
   processes?: ProcessDecl[];
   // Absent when none is declared, as processes are.
   fields?: Record<string, FieldDecl>;
+  // `false` for a base the architect is not offered (the catalogue view); absent otherwise. A template's
+  // own, never inherited: a child of such a base is offered.
+  catalog?: false;
 }
 
 export type TemplateRegistry = Record<string, Template>;
@@ -80,6 +83,7 @@ interface TemplateDecl {
   spent_residue?: Record<string, number>;
   processes?: ProcessDecl[];
   fields?: Record<string, FieldDecl>;
+  catalog?: boolean;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -238,6 +242,13 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
 
   if (Object.hasOwn(value, "fields")) {
     decl.fields = parseFields(value.fields, `${source}.fields`);
+  }
+
+  if (Object.hasOwn(value, "catalog")) {
+    if (typeof value.catalog !== "boolean") {
+      throw new TypeError(`${source}.catalog must be a boolean`);
+    }
+    decl.catalog = value.catalog;
   }
 
   return decl;
@@ -498,6 +509,7 @@ function requireResolved(decl: TemplateDecl, source: string): Template {
     break_products: decl.break_products!.map((product) => ({ ...product })),
     break_residue: { ...decl.break_residue! },
     ...spentOf(decl.spent_products, decl.spent_residue),
+    ...(decl.catalog === false && { catalog: false as const }),
     ...(decl.processes !== undefined && decl.processes.length > 0 && { processes: copyProcesses(decl.processes) }),
     ...(decl.fields !== undefined && Object.keys(decl.fields).length > 0 && { fields: copyFields(decl.fields) }),
   };
@@ -527,6 +539,7 @@ function overParent(parent: Template, decl: TemplateDecl): Template {
         ? parent.break_residue
         : { ...decl.break_residue },
     ...spentOf(decl.spent_products ?? parent.spent_products, decl.spent_residue ?? parent.spent_residue),
+    ...(decl.catalog === false && { catalog: false as const }),
     ...(processes.length > 0 && { processes }),
     ...(Object.keys(fields).length > 0 && { fields }),
   };
