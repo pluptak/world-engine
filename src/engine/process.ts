@@ -39,6 +39,10 @@ function whileHolds(decl: ProcessDecl, props: Record<string, unknown>): boolean 
         return false;
       }
       return ORDER_OPS[decl.while.op](actual, wanted);
+    default: {
+      const exhaustive: never = decl.while.op;
+      throw new TypeError(`Unknown while op ${String(exhaustive)}`);
+    }
   }
 }
 

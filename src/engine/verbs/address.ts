@@ -204,7 +204,10 @@ export function reachData(
 // A verb's reach check, answered as `gapRefusal` is: null when the target is in reach. The verbs
 // whose reach rule is their own (the floor of a room, a door's far side) keep their own check and
 // read `reachData` themselves.
-export function refuseOutOfReach(context: CommandContext, targetId: Id): PreconditionResult | null {
+export function refuseOutOfReach(
+  context: CommandContext,
+  targetId: Id,
+): Extract<PreconditionResult, { status: "refused" }> | null {
   if (inReach(context.snapshot, context.actor.id, targetId)) {
     return null;
   }

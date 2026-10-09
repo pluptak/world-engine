@@ -1,7 +1,7 @@
 import { heldInParts } from "../carry.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Entity } from "../../model.js";
-import { closedEnclosure, reachData, withinReach } from "./address.js";
+import { closedEnclosure, refuseOutOfReach } from "./address.js";
 import { spendEntity } from "../../resolvers/physical.js";
 
 // What one `consume` takes: a solid thing (`nutrition`, gone whole, or one of its `portions` at a
@@ -85,9 +85,11 @@ function planned(context: CommandContext): { item: Entity; plan: Plan } | Refusa
   }
   // What the actor carries is in reach by being carried, in a hand or a pocket; anything else is
   // measured from where the actor stands.
-  if (item.contained_in !== context.actor.id && !withinReach(context, item.id)) {
-    const data = reachData(context.snapshot, context.actor.id, item.id);
-    return { status: "refused", reason_code: "out_of_reach", ...(data !== null && { reason_data: data }) };
+  if (item.contained_in !== context.actor.id) {
+    const reach = refuseOutOfReach(context, item.id);
+    if (reach !== null) {
+      return reach;
+    }
   }
   if (mouthBusy(context, item.id)) {
     return { status: "refused", reason_code: "mouth_full" };

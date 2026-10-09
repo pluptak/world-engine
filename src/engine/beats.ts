@@ -293,6 +293,10 @@ function holds(condition: BeatCondition, snapshot: Snapshot): boolean {
         return false;
       }
       return ORDER_OPS[condition.op](have, want);
+    default: {
+      const exhaustive: never = condition.op;
+      throw new TypeError(`Unknown condition op ${String(exhaustive)}`);
+    }
   }
 }
 

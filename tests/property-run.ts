@@ -36,12 +36,11 @@ import {
   SEED,
   withProcessFixtures,
 } from "./property-gen.js";
+import { deepFreeze, tempDir } from "./harness.js";
 
 export const registry: TemplateRegistry = withProcessFixtures(
   loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))),
 );
-
-import { deepFreeze, tempDir } from "./harness.js";
 
 export function asEditCommand(edit: WorldEdit, commandId: string): Command {
   const command: Command = {

@@ -252,6 +252,10 @@ function dispatch(request: Request): unknown {
     }
     case "snapshot":
       return openWorld(request.world).snapshot();
+    default: {
+      const exhaustive: never = request;
+      throw new TypeError(`Unknown op ${(exhaustive as Request).op}`);
+    }
   }
 }
 
