@@ -1,4 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -214,6 +215,93 @@ test("a refinement is logged and replays: verify agrees, and a reopened world is
   // a sibling of the bottle's current preset is no refinement of it, and the table is refused on fit.
   refused(refine(reopened, id("bottle"), "wine_bottle"), "not_a_refinement");
   strictEqual(reopened.edit({ kind: "refine", target: id("table"), template: "small_table" }).reason_code, "too_large");
+});
+
+// A lantern with a second process on the fuel it already has, so the refinement writes no prop and only
+// its template says the leak is new; and one whose new process waits on a prop the lantern does not set.
+const leaking = parseRegistry({
+  ...JSON.parse(canonicalJson(shipped)) as Record<string, unknown>,
+  leaky_lantern: {
+    id: "leaky_lantern",
+    extends: "lantern",
+    processes: [{ id: "leak", every_ticks: 2, effect: { adjust_prop: { prop: "fuel", by: -1, min: 0 } } }],
+  },
+  guarded_lantern: {
+    id: "guarded_lantern",
+    extends: "lantern",
+    processes: [{
+      id: "leak",
+      every_ticks: 2,
+      while: { prop: "burning", op: "eq", value: true },
+      effect: { adjust_prop: { prop: "fuel", by: -1, min: 0 } },
+    }],
+  },
+});
+
+function lanternHall(t: { after(callback: () => void): void }): { world: World; dir: string; lamp: Id; ann: Id } {
+  const dir = join(tempDir(t), "w");
+  const world = createWorld(
+    dir,
+    [
+      { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
+      { id: "lamp", template: "lantern", overrides: { name: "lamp", ...floor(-200) } },
+      { id: "ann", template: "human", overrides: { name: "ann", ...floor(200) } },
+    ],
+    leaking,
+  );
+  return { world, dir, lamp: world.id("lamp")!, ann: world.id("ann")! };
+}
+
+test("a refinement starts the processes its new preset adds, caused by the edit", (t) => {
+  const { world, dir, lamp, ann } = lanternHall(t);
+  deepStrictEqual(world.snapshot().schedule, undefined);
+  const result = refine(world, lamp, "leaky_lantern");
+  strictEqual(result.status, "ok");
+  const edited = result.events.find((event) => event.type === "edited")!;
+  deepStrictEqual(world.snapshot().schedule, [
+    { due_tick: 2, kind: "process", entity: lamp, cause_id: edited.event_id, process: "leak" },
+  ]);
+
+  const wait = (i: number) => world.command({ command_id: `leak-wait-${i}`, actor: ann, verb: "wait", args: { ticks: 1 } });
+  strictEqual(wait(1).status, "ok");
+  strictEqual(world.entity(lamp)?.props.fuel, 20);
+  const second = wait(2);
+  const changed = second.events.find((event) => event.type === "changed")!;
+  deepStrictEqual([changed.tick, changed.cause_id, changed.data], [2, edited.event_id, { prop: "fuel", from: 20, to: 19, process: "leak" }]);
+  strictEqual(world.entity(lamp)?.props.fuel, 19);
+
+  strictEqual(verifyWorld(dir).ok, true);
+  const reopened = openWorld(dir);
+  strictEqual(canonicalJson(reopened.snapshot()), canonicalJson(world.snapshot()));
+});
+
+test("a refinement whose new process cannot run schedules nothing", (t) => {
+  const { world, lamp } = lanternHall(t);
+  strictEqual(refine(world, lamp, "guarded_lantern").status, "ok");
+  deepStrictEqual(world.snapshot().schedule, undefined);
+});
+
+test("a world made before templates kept their lineage refines once its templates are upgraded", (t) => {
+  const dir = join(tempDir(t), "w");
+  createWorld(dir, [
+    { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
+    { id: "lamp", template: "lantern", overrides: { name: "lamp", ...floor(-200) } },
+  ]);
+  const path = join(dir, "templates.json");
+  const stored = JSON.parse(readFileSync(path, "utf8")) as Record<string, Record<string, unknown>>;
+  for (const template of Object.values(stored)) {
+    delete template.lineage;
+  }
+  writeFileSync(path, canonicalJson(stored));
+
+  const older = openWorld(dir);
+  const lamp = older.id("lamp")!;
+  refused(refine(older, lamp, "candle"), "not_a_refinement");
+  const hash = older.snapshot().templates_hash;
+  older.upgradeTemplates();
+  strictEqual(older.snapshot().templates_hash, hash);
+  strictEqual(refine(older, lamp, "candle").status, "ok");
+  strictEqual(openWorld(dir).entity(lamp)?.template, "candle");
 });
 
 test("the CLI refines through the edit op", (t) => {

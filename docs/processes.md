@@ -50,7 +50,8 @@ key at all, so its place in `templates_hash` is what it was before processes exi
 
 **Starting and stopping.** Nothing polls. The schedule is brought in line with the props where they
 can change: after any command's own changes, and after each cause has run, every entity whose props
-changed or that was spawned is reconciled (`reconcile` in `src/engine/process.ts`). A process that can
+changed, that was spawned or that was refined into another preset ([refine.md](refine.md)) is
+reconciled (`reconcile` in `src/engine/process.ts`). A process that can
 run and has nothing pending is scheduled `every_ticks` from now, its cause the last event that touched
 the entity (the `edited`, `spawned`, or the `changed` before it); a pending one that can no longer
 run is withdrawn, recording nothing. A process can run when its `while` holds and its prop is an

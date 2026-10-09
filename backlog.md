@@ -18,11 +18,10 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A refined entity starts the processes its new preset adds](#a-refined-entity-starts-the-processes-its-new-preset-adds).
-2. [The catalogue says when a default is approximate](#the-catalogue-says-when-a-default-is-approximate).
-3. [The scale benchmark builds its world again](#the-scale-benchmark-builds-its-world-again).
-4. [A self-closing door that comes to be open closes by itself](#a-self-closing-door-that-comes-to-be-open-closes-by-itself).
-5. [Default coverage shows whether a thing is open](#default-coverage-shows-whether-a-thing-is-open).
+1. [The catalogue says when a default is approximate](#the-catalogue-says-when-a-default-is-approximate).
+2. [The scale benchmark builds its world again](#the-scale-benchmark-builds-its-world-again).
+3. [A self-closing door that comes to be open closes by itself](#a-self-closing-door-that-comes-to-be-open-closes-by-itself).
+4. [Default coverage shows whether a thing is open](#default-coverage-shows-whether-a-thing-is-open).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,30 +62,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A refined entity starts the processes its new preset adds
-
-Probing `refine` (`docs/refine.md`) found that it does not start a process the new preset declares. A
-`lantern` refined to a preset that extends it with a `leak` process on `fuel` (every 2 ticks, no `while`) leaves the
-schedule empty and the fuel at 20 after six ticks; the same preset placed in a scenario leaks. `reconcileSince`
-(`src/engine/process.ts`) reconciles only entities whose `props` or `entity` delta it sees, and `refine` writes its
-props through `set`, which skips a no-op, so a preset that adds a process on props the entity already has
-changes none: the `template` delta is the only trace and nothing reads it. `docs/refine.md` already says that
-processes the new preset adds run from then on; today they do not.
-
-- **Fix:** `reconcileSince` also counts a `template` delta as touching its entity, so a refined entity is reconciled
-  against its new preset like a spawned one: what can run is scheduled `every_ticks` from now, naming the `edited`
-  event; a pending cause that can no longer run is withdrawn.
-- **Older worlds:** one made before templates kept a `lineage` has none in its `templates.json`, so every `refine` on
-  it is `not_a_refinement`. `upgradeTemplates()` with the shipped set rewrites its templates (the hash is the same)
-  and refinement works; say so in `docs/refine.md`, and hold it with a test.
-- **Tests:** `tests/refine.test.ts`: the `leak` lantern's fuel falls on the second tick and the cause names the
-  `edited` event; a refinement whose new process cannot run (its `while` does not hold) schedules nothing; the
-  world replays (`verifyWorld`) and a reopened one agrees; an older world (`lineage` deleted from its
-  `templates.json`) is refused, upgraded, then refines and reopens as a candle.
-- **Docs:** `docs/refine.md` (the older-worlds line; the processes line becomes true as written),
-  `docs/processes.md` (what reconciles a process: a spawn, a prop write and now a refinement).
-- **Depends on:** nothing.
 
 ### The scale benchmark builds its world again
 
@@ -143,7 +118,7 @@ tick 24 in a probe, and behaved once closed and reopened by hand. A door to be h
   `src/engine/process.ts` (or a sibling it calls), for every entity a `props`, `entity` or `template` delta touched,
   the cause naming that delta's event; and at `createWorld` beside `startProcesses`, with no cause. That covers a
   scenario placing it open, an `edit spawn`, an `update_props`/`set_props` writing `open: true`, and `refine` into a
-  self-closing preset (item 1 makes a `template` delta count). The `open` verb already schedules its own and is
+  self-closing preset (`reconcileSince` already counts a `template` delta). The `open` verb already schedules its own and is
   not scheduled twice; `close` by hand still withdraws it.
 - **Type:** the `close` cause's `cause_id` becomes `Id | null` (`ScheduledCause` in `src/model.ts`, the snapshot's
   schedule in `src/contract.ts`); a `closed` with no cause is a root, as a process's first `changed` is.
@@ -153,8 +128,7 @@ tick 24 in a probe, and behaved once closed and reopened by hand. A door to be h
   world replays (`verifyWorld`).
 - **Docs:** `docs/schedule.md`: the self-closing door closes `closes_after` ticks after it comes to be open, by
   `open` or otherwise.
-- **Depends on:** [A refined entity starts the processes its new preset adds](#a-refined-entity-starts-the-processes-its-new-preset-adds)
-  (the `template` delta).
+- **Depends on:** nothing.
 
 ### Default coverage shows whether a thing is open
 

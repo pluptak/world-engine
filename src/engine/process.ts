@@ -120,11 +120,12 @@ export function startProcesses(snapshot: Snapshot, registry: TemplateRegistry): 
 }
 
 // After a stretch of a command's own changes (or after one cause has run), reconcile every entity
-// whose props changed or that was spawned in it, each naming the last event that touched it.
+// whose props changed, that was spawned or that became another preset in it, each naming the last
+// event that touched it. A refinement may change no prop, so its template is the only trace.
 export function reconcileSince(context: TransitionContext, mark: number): void {
   const touched = new Map<Id, Id>();
   for (const delta of context.deltas.slice(mark)) {
-    if ((delta.field === "props" || delta.field === "entity") && delta.to !== null) {
+    if ((delta.field === "props" || delta.field === "entity" || delta.field === "template") && delta.to !== null) {
       touched.set(delta.entity, delta.event_id);
     }
   }

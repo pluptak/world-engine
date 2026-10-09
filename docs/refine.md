@@ -8,7 +8,8 @@ carry it, and the architect never acts after tick 0 (`src/engine/refine.ts`).
 `not_a_refinement`. A resolved template keeps `lineage`, its ancestors nearest first, for this;
 it is saved in a world's `templates.json` and left out of `templates_hash`, so a set written out
 in full hashes the same ([templates.md](templates.md)). An unknown template is `invalid`
-(`unknown_template`).
+(`unknown_template`). A world stored before templates kept `lineage` has none, so every refinement
+of it is `not_a_refinement` until `upgradeTemplates()` rewrites its set; the hash does not change.
 
 **What changes.** `template` becomes the new preset, and so do its definitions. State the entity
 has stays where the new preset still declares the field: a lantern's 5 fuel is a candle's 5, not
