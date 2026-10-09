@@ -300,7 +300,7 @@ export const RequestSchema = z.discriminatedUnion("op", [
     op: z.literal("actor_observe"),
     world: z.string().min(1),
     actor: IdSchema,
-    since: z.number().int().optional(),
+    since_tick: z.number().int().optional(),
   }).strict(),
   z.object({
     op: z.literal("actor_inspect"),
@@ -324,7 +324,6 @@ export const RequestSchema = z.discriminatedUnion("op", [
     op: z.literal("actor_command"),
     world: z.string().min(1),
     actor: IdSchema,
-    based_on_version: z.number().int().optional(),
     command: ActorCommandSchema,
   }).strict(),
 ]);
@@ -466,6 +465,11 @@ export const ProjectionSchema = z.object({
   })),
 }).strict();
 
+// What an actor sees: the tick in place of the version, which would count others' commands.
+export const ActorProjectionSchema = ProjectionSchema.omit({ version: true }).extend({
+  tick: z.number().int(),
+}).strict();
+
 export const InspectResponseSchema = z.object({
   inspection: ObservedEntitySchema.extend({
     props: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).optional(),
@@ -493,6 +497,8 @@ export const OptionsResponseSchema = z.object({
     reason_code: z.string(),
   }).strict()).optional(),
 }).strict();
+
+export const ActorOptionsResponseSchema = OptionsResponseSchema.omit({ version: true }).strict();
 
 // The verdict a command or a check answers with, written once: the two responses agree about which
 // fields a verdict carries, and `attempts` rows carry the same codes.
@@ -525,7 +531,7 @@ export const CheckResponseSchema = z.object({
 
 // An actor command's verdict and what the actor sensed of it: never the snapshot, deltas or events.
 export const ActorCommandResponseSchema = CheckResponseSchema.extend({
-  observation: ProjectionSchema,
+  observation: ActorProjectionSchema,
 }).strict();
 
 export const SinceResponseSchema = z.object({
@@ -660,9 +666,9 @@ export const RESPONSES = {
   inspect: InspectResponseSchema,
   actor_inspect: InspectResponseSchema,
   options: OptionsResponseSchema,
-  actor_options: OptionsResponseSchema,
+  actor_options: ActorOptionsResponseSchema,
   observe: ProjectionSchema,
-  actor_observe: ProjectionSchema,
+  actor_observe: ActorProjectionSchema,
 } satisfies Record<Op, z.ZodType>;
 
 type AnyResponse = (typeof RESPONSES)[Op] | typeof ValidationFailureSchema;

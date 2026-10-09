@@ -10,6 +10,7 @@ export type WorldErrorCode =
   | "invalid_snapshot"
   | "invalid_version"
   | "future_version"
+  | "invalid_tick"
   | "history_unavailable"
   | "no_such_event"
   | "no_such_entity"

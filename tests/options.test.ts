@@ -223,11 +223,13 @@ test("a store world, a reopened one and a memory world answer alike", (t) => {
   strictEqual(canonicalJson(memoryWorld({ ...snapshot, entities: numeric }, registry, names).options(ann, { refused: true })), expected);
 });
 
-test("an actor's own view offers the same options", (t) => {
+test("an actor's own view offers the same options, without the world's version", (t) => {
   const { world, id } = open(t, false);
   const ann = id("ann");
-  deepStrictEqual(actorWorld(world, ann).options({ refused: true }), world.options(ann, { refused: true }));
-  deepStrictEqual(actorWorld(world, ann).options(), world.options(ann));
+  const { version: _asked, ...asked } = world.options(ann, { refused: true });
+  deepStrictEqual(actorWorld(world, ann).options({ refused: true }), asked);
+  const { version: _plain, ...plain } = world.options(ann);
+  deepStrictEqual(actorWorld(world, ann).options(), plain);
 });
 
 test("the CLI's options op answers what the library does, and the contract holds it", (t) => {
@@ -376,7 +378,8 @@ test("give, put, move and pour name the arguments they can, and only ones the ac
   strictEqual((asked.blocked ?? []).some((entry) => ready.has(key(entry))), false);
   const expected = canonicalJson(asked);
   strictEqual(canonicalJson(world.fork().options(ann, { refused: true })), expected);
-  strictEqual(canonicalJson(actorWorld(world, ann).options({ refused: true })), expected);
+  const { version: _version, ...forActor } = asked;
+  strictEqual(canonicalJson(actorWorld(world, ann).options({ refused: true })), canonicalJson(forActor));
   deepStrictEqual(OptionsResponseSchema.parse(JSON.parse(expected)), asked);
 });
 

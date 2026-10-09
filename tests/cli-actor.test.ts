@@ -64,7 +64,7 @@ test("actor_command answers the verdict and the actor's view, never the world's 
   deepStrictEqual(parsed.observation.events.map((event) => event.type), ["take", "moved"]);
   // It was written like any command, by ann, and the world moved one version.
   strictEqual(openWorld(world).entity(STONE)?.contained_in, ANN);
-  strictEqual(parsed.observation.version, 1);
+  strictEqual(parsed.observation.tick, 1);
 });
 
 test("actor_check and actor_command name nothing the actor cannot sense", (t) => {
@@ -91,7 +91,10 @@ test("actor_observe, actor_inspect and actor_options answer as the library's act
     const request = { op: "actor_options", world, actor: ANN, ...(refused === undefined ? {} : { refused }) };
     strictEqual(canonicalJson(respond(request)), canonicalJson(view.options(refused === undefined ? {} : { refused })));
   }
-  strictEqual(canonicalJson(respond({ op: "actor_observe", world, actor: ANN, since: 0 })), canonicalJson(view.observe({ since: 0 })));
+  strictEqual(
+    canonicalJson(respond({ op: "actor_observe", world, actor: ANN, since_tick: 0 })),
+    canonicalJson(view.observe({ since_tick: 0 })),
+  );
   strictEqual(canonicalJson(respond({ op: "actor_observe", world, actor: ANN })), canonicalJson(view.observe()));
   // In the dark ann neither sees nor feels the stone: there is nothing of it to inspect.
   deepStrictEqual(respond({ op: "actor_inspect", world, actor: ANN, entity: STONE }), { inspection: null });
@@ -109,6 +112,9 @@ test("an actor op takes no actor or perceivers inside its command, and no unknow
       ok(issueCodes({ op, world, actor: ANN, command: smuggled }).includes("unrecognized_keys"), op);
     }
   }
+  // An actor has no version to send: a command based on one, or a look since one, is not an actor's.
+  ok(issueCodes({ op: "actor_command", world, actor: ANN, based_on_version: 0, command: take }).includes("unrecognized_keys"));
+  ok(issueCodes({ op: "actor_observe", world, actor: ANN, since: 0 }).includes("unrecognized_keys"));
   strictEqual(openWorld(world).snapshot().version, 0);
   deepStrictEqual(issueCodes({ op: "actor_observe", world, actor: "e99" }), ["no_such_entity"]);
 });

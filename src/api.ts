@@ -95,8 +95,10 @@ export interface SinceResult {
   events: WorldEvent[];
 }
 
+// `since` a version, or `since_tick` a tick: the events at that tick or later. One or the other.
 export interface ObserveOptions {
   since?: number;
+  since_tick?: number;
 }
 
 export interface TraceResult {
@@ -121,7 +123,8 @@ export interface World {
   // world keeps no log to replay and throws `history_unavailable`.
   verify(): Verification;
   query(query: Query): Answer;
-  // What one observer could sense now, and, with `since`, which events after that version it sensed.
+  // What one observer could sense now, and, with `since`, which events after that version it sensed
+  // (with `since_tick`, which events at that tick or later).
   observe(observer: Id, options?: ObserveOptions): Projection;
   // One entity in detail, as the observer could sense it now; null when nothing of it is sensed.
   inspect(observer: Id, entity: Id): Inspection | null;
@@ -155,7 +158,7 @@ function withObservation(
     return result;
   }
   const since = result.status === "ok" ? result.snapshot.version - 1 : world.snapshot().version;
-  return { ...result, observation: observeThrough(world, registry, actor, { since }) };
+  return { ...result, observation: observeThrough(world, registry, actor, { since }, () => []) };
 }
 
 function inspectThrough(
@@ -173,47 +176,60 @@ function inspectThrough(
 
 // A projection read through a world's own methods, so a store world and a memory world project
 // alike: the entities from the current snapshot, each event through event-form perceive.
+// `fromTick` is the world's events at a tick or later, which each kind of world keeps its own way.
 function observeThrough(
   world: Pick<World, "snapshot" | "since" | "query">,
   registry: TemplateRegistry,
   observer: Id,
   options: ObserveOptions,
+  fromTick: (tick: number) => WorldEvent[],
 ): Projection {
   const snapshot = world.snapshot();
   if (own(snapshot.entities, observer) === undefined) {
     throw new WorldError("no_such_entity", `Unknown observer ${observer}`);
   }
+  if (options.since_tick !== undefined) {
+    if (options.since !== undefined) {
+      throw new WorldError("invalid_tick", "Observe since a version or since a tick, not both");
+    }
+    if (!Number.isSafeInteger(options.since_tick) || options.since_tick < 0) {
+      throw new WorldError("invalid_tick", `Invalid tick ${options.since_tick}`);
+    }
+  }
   const covered = SENSES.filter((sense) => snapshot.coverage.senses.includes(sense));
-  const events: ObservedEvent[] =
-    options.since === undefined
+  const candidates =
+    options.since_tick !== undefined
+      ? fromTick(options.since_tick)
+      : options.since === undefined
+        ? []
+        : world.since(options.since).events;
+  const events: ObservedEvent[] = candidates.flatMap((event) => {
+    const senses: string[] = [];
+    let hearing = "";
+    for (const sense of covered) {
+      const answer = world.query({ kind: "perceive", observer, event_id: event.event_id, sense });
+      if (answer.value === "true") {
+        senses.push(sense);
+        hearing = sense === "hearing" ? answer.basis_code : hearing;
+      }
+    }
+    return senses.length === 0
       ? []
-      : world.since(options.since).events.flatMap((event) => {
-          const senses: string[] = [];
-          let hearing = "";
-          for (const sense of covered) {
-            const answer = world.query({ kind: "perceive", observer, event_id: event.event_id, sense });
-            if (answer.value === "true") {
-              senses.push(sense);
-              hearing = sense === "hearing" ? answer.basis_code : hearing;
-            }
-          }
-          return senses.length === 0
-            ? []
-            : [
-                {
-                  event_id: event.event_id,
-                  tick: event.tick,
-                  type: event.type,
-                  ...(senses.length === 1 && senses[0] === "hearing"
-                    ? { from: heardFrom(hearing) }
-                    : { entity: event.entity }),
-                  senses,
-                  ...(event.type === "say" && senses.includes("hearing") && typeof event.data.utterance === "string"
-                    ? { utterance: event.data.utterance, volume: String(event.data.volume) }
-                    : {}),
-                },
-              ];
-        });
+      : [
+          {
+            event_id: event.event_id,
+            tick: event.tick,
+            type: event.type,
+            ...(senses.length === 1 && senses[0] === "hearing"
+              ? { from: heardFrom(hearing) }
+              : { entity: event.entity }),
+            senses,
+            ...(event.type === "say" && senses.includes("hearing") && typeof event.data.utterance === "string"
+              ? { utterance: event.data.utterance, volume: String(event.data.volume) }
+              : {}),
+          },
+        ];
+  });
   return {
     observer,
     version: snapshot.version,
@@ -395,7 +411,8 @@ function storeWorld(
       const snapshot = load(dir, active);
       return queryEngine(snapshot, active, readEvents(dir), request);
     },
-    observe: (observer, options = {}) => observeThrough(world, active, observer, options),
+    observe: (observer, options = {}) =>
+      observeThrough(world, active, observer, options, (tick) => readEvents(dir).filter((event) => event.tick >= tick)),
     inspect: (observer, entity) => inspectThrough(world, active, observer, entity),
     snapshot: () => load(dir, active),
     catalog: () => catalogOf(active),
@@ -666,7 +683,14 @@ export function memoryWorld(
       }
       return queryEngine(current, templates, events, request);
     },
-    observe: (observer, options = {}) => observeThrough(world, templates, observer, options),
+    observe: (observer, options = {}) =>
+      observeThrough(world, templates, observer, options, (tick) => {
+        // Events of the world this one was made from, at its starting tick, are not in its records.
+        if (firstVersion > 0 && tick <= initial.tick) {
+          throw new WorldError("history_unavailable", `No records at tick ${tick} or before ${initial.tick}`);
+        }
+        return events.filter((event) => event.tick >= tick);
+      }),
     inspect: (observer, entity) => inspectThrough(world, templates, observer, entity),
     snapshot: () => current,
     catalog: () => catalogOf(templates),

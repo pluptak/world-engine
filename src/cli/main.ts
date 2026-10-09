@@ -232,7 +232,9 @@ function dispatch(request: Request): unknown {
     }
     case "actor_observe": {
       const world = openWorld(request.world);
-      return actorWorld(world, request.actor).observe(request.since === undefined ? {} : { since: request.since });
+      return actorWorld(world, request.actor).observe(
+        request.since_tick === undefined ? {} : { since_tick: request.since_tick },
+      );
     }
     case "actor_inspect": {
       const world = openWorld(request.world);
@@ -248,7 +250,7 @@ function dispatch(request: Request): unknown {
     }
     case "actor_command": {
       const world = openWorld(request.world);
-      return actorWorld(world, request.actor).command(request.command, { basedOn: request.based_on_version });
+      return actorWorld(world, request.actor).command(request.command);
     }
     case "snapshot":
       return openWorld(request.world).snapshot();

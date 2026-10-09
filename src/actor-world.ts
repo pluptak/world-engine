@@ -1,4 +1,4 @@
-import type { CommandOptions, ObserveOptions, World } from "./api.js";
+import type { World } from "./api.js";
 import type { Options, OptionsRequest } from "./options.js";
 import type { Command, Result } from "./engine/command.js";
 import { gropable } from "./engine/query.js";
@@ -9,6 +9,15 @@ import { own, type Id, type ReasonData, type Status } from "./model.js";
 // What a character's controller may send: the actor is the view's own, and `perceivers`, which names
 // who else sensed each event, is the world's record rather than anything the actor could know.
 export type ActorCommand = Pick<Command, "command_id" | "verb" | "target" | "args">;
+
+// What an actor sees carries the tick, never the version: the version counts every accepted
+// command, so a jump in it would tell the actor that others acted out of its sight. The tick is time
+// it feels pass, and `since_tick` is how it asks what it sensed since it last looked.
+export type ActorProjection = Omit<Projection, "version"> & { tick: number };
+export type ActorOptions = Omit<Options, "version">;
+export interface ActorObserveOptions {
+  since_tick?: number;
+}
 
 // A verdict as the actor could know it: no snapshot, deltas or events, only what it sensed of its
 // own command in `observation`. A `reason_data` value naming an entity the actor could not name
@@ -21,7 +30,7 @@ export interface ActorResult {
   candidates?: Id[];
   reason_code?: string;
   reason_data?: ReasonData;
-  observation: Projection;
+  observation: ActorProjection;
 }
 
 export type ActorCheck = Omit<ActorResult, "observation">;
@@ -30,12 +39,14 @@ export type ActorCheck = Omit<ActorResult, "observation">;
 // it can try, and what came of what it did. The `World` it wraps stays the trusted caller's.
 export interface ActorWorld {
   actor: Id;
-  observe(options?: ObserveOptions): Projection;
+  observe(options?: ActorObserveOptions): ActorProjection;
   inspect(entity: Id): Inspection | null;
   check(command: ActorCommand): ActorCheck;
   // What it can try now, by verb and target, from what it can name: no reason carries data.
-  options(request?: OptionsRequest): Options;
-  command(command: ActorCommand, options?: Pick<CommandOptions, "basedOn">): ActorResult;
+  options(request?: OptionsRequest): ActorOptions;
+  // Decided against the world as it is: an actor has no version to base a command on, so none is
+  // ever `preempted` by what it could not see.
+  command(command: ActorCommand): ActorResult;
 }
 
 export function actorWorld(world: World, actor: Id): ActorWorld {
@@ -89,16 +100,34 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
     };
   };
 
+  // Built field by field, so nothing the world adds to a projection or options reaches the actor.
+  const toActor = (projection: Projection): ActorProjection => ({
+    observer: projection.observer,
+    tick: world.snapshot().tick,
+    unknown_senses: projection.unknown_senses,
+    entities: projection.entities,
+    events: projection.events,
+  });
+
   return {
     actor,
-    observe: (options) => world.observe(actor, options),
+    observe: (options = {}) =>
+      toActor(world.observe(actor, options.since_tick === undefined ? {} : { since_tick: options.since_tick })),
     inspect: (entity) => world.inspect(actor, entity),
     check: (command) => verdict(world.check(toCommand(command)), world.observe(actor)),
-    options: (request) => world.options(actor, request),
-    command: (command, options) => {
-      const result = world.command(toCommand(command), { ...options, observe: true });
+    options: (request) => {
+      const options = world.options(actor, request);
+      return {
+        actor: options.actor,
+        ready: options.ready,
+        needs_args: options.needs_args,
+        ...(options.blocked !== undefined && { blocked: options.blocked }),
+      };
+    },
+    command: (command) => {
+      const result = world.command(toCommand(command), { observe: true });
       const observation = result.observation ?? world.observe(actor);
-      return { ...verdict(result, observation), observation };
+      return { ...verdict(result, observation), observation: toActor(observation) };
     },
   };
 }

@@ -12,10 +12,18 @@ in [perception.md](perception.md): its view, or what it could grope for) is left
 `blocked` by an unseen chest names no chest, and `carried` still names the holder. What the view
 names is held to that rule by the property test.
 
-The CLI has the same five as ops, each with `world` and `actor`: `actor_observe` (`since?`),
+Nothing it sends carries the world's `version`, which counts every accepted command and so would
+tell the actor that others acted out of its sight. A projection carries the `tick` instead, time the
+actor feels pass, and `observe({ since_tick })` is what it sensed at that tick or later: the events
+at the tick of its last look come again, and a controller keeps them apart by `event_id`. `options`
+has no `version`, and `command` takes no `basedOn`: it is decided against the world as it is, so an
+actor is never `preempted`. A gap in event or entity ids still shows that something was allocated
+unseen (`plans/candidates.md`).
+
+The CLI has the same five as ops, each with `world` and `actor`: `actor_observe` (`since_tick?`),
 `actor_inspect` (`entity`), `actor_options` (`refused?`), `actor_check` (`command`) and
-`actor_command` (`command`, `based_on_version?`). Their `command` is `command_id`, `verb`,
-`target?` and `args?` only: one that names an `actor` or `perceivers` is `invalid` with
-`unrecognized_keys`. `actor_command` answers `status`, `command_id`, `resolved_target`,
-`candidates?`, `reason_code?`, `reason_data?` and `observation`. A runtime allowed only these five
-ops learns no more than the actor could.
+`actor_command` (`command`); a `since` or `based_on_version` is `invalid`, `unrecognized_keys`.
+Their `command` is `command_id`, `verb`, `target?` and `args?` only: one that names an `actor` or
+`perceivers` is `invalid` with `unrecognized_keys`. `actor_command` answers `status`, `command_id`,
+`resolved_target`, `candidates?`, `reason_code?`, `reason_data?` and `observation`. A runtime
+allowed only these five ops learns no more than the actor could.

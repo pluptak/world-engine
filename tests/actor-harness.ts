@@ -1,13 +1,13 @@
 import { ok } from "node:assert";
 import {
   type ActorCommand,
+  type ActorOptions as Options,
+  type ActorProjection as Projection,
   type ActorResult,
   type ActorWorld,
   type Id,
   type Inspection,
   type ObservedEntity,
-  type Options,
-  type Projection,
   type World,
 } from "../src/index.js";
 
@@ -70,14 +70,20 @@ export interface Sent {
 // so the clock moves as they act, and nobody acts at once. A command's id is `<prefix>-<actor>-<round>`.
 export function playRounds(world: World, cast: readonly Character[], rounds: number, prefix: string): Record<Id, Sent[]> {
   const sent: Record<Id, Sent[]> = {};
+  // Where each character last looked, by tick, and the events it has been told of: the events at
+  // that tick come again, and a controller keeps them apart by id.
   const seen: Record<Id, number> = {};
-  const start = world.snapshot().version;
+  const told: Record<Id, Set<Id>> = {};
+  const start = world.snapshot().tick;
   const lasts: Record<Id, { command: ActorCommand; result: ActorResult } | null> = {};
   for (let round = 0; round < rounds; round += 1) {
     for (const member of cast) {
       const actor = member.view.actor;
       const tick = world.snapshot().tick;
-      const view = member.view.observe({ since: seen[actor] ?? start });
+      const known = (told[actor] ??= new Set());
+      const looked = member.view.observe({ since_tick: seen[actor] ?? start });
+      const view = { ...looked, events: looked.events.filter((event) => !known.has(event.event_id)) };
+      view.events.forEach((event) => known.add(event.event_id));
       const options = member.view.options({ refused: true });
       const inspected: Array<Inspection | null> = [];
       const inspect = (entity: Id) => {
@@ -88,7 +94,8 @@ export function playRounds(world: World, cast: readonly Character[], rounds: num
       const command: ActorCommand = { command_id: `${prefix}-${actor}-${round}`, ...choice };
       const result = member.view.command(command);
       lasts[actor] = { command, result };
-      seen[actor] = result.observation.version;
+      result.observation.events.forEach((event) => known.add(event.event_id));
+      seen[actor] = result.observation.tick;
       (sent[actor] ??= []).push({ turn: round, tick, view, options, inspected, command, result });
     }
   }
