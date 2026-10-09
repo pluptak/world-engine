@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -9,6 +7,7 @@ import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { cli } from "./cli-run.js";
 import { buildInitial, genStep, mulberry32, withProcessFixtures } from "./property-gen.js";
+import { tempDir } from "./harness.js";
 
 // Refinement: an entity becomes a preset that extends the one it is, keeping its state and taking the
 // new preset's definitions, or is refused and nothing changes.
@@ -32,12 +31,6 @@ const registry = parseRegistry({
     ],
   },
 });
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-refine-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 const floor = (x: number, y = 0) => ({ location: "hall", support: "hall", pos: { x, y } });
 

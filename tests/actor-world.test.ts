@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -11,12 +9,7 @@ import {
   type Scenario,
   type World,
 } from "../src/index.js";
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-actor-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
+import { tempDir } from "./harness.js";
 
 // Ann and bob in a hall with a stone at ann's feet and a chest 300 cm off; lit or not.
 function hall(lit: boolean): Scenario {

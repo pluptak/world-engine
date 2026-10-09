@@ -2,7 +2,7 @@ import { capacities } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Id } from "../../model.js";
 import { carryAlternatives, carryCheck, gripPlacement, heldCount, inSpacePart } from "../carry.js";
-import { addressEntity, addressText, gapRefusal, isAgent, reachData, wouldLoop, withinReach } from "./address.js";
+import { addressEntity, addressText, gapRefusal, isAgent, refuseOutOfReach, wouldLoop } from "./address.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
   const destinationText = addressText(context, "destination");
@@ -26,7 +26,7 @@ function preconditions(context: CommandContext): PreconditionResult {
     return { status: "refused", reason_code: "not_carried" };
   }
   // An item in a space part (pocket) must be taken out first before giving it.
-  if (inSpacePart(context.snapshot, context.registry, context.actor, item)) {
+  if (inSpacePart(context.registry, context.actor, item)) {
     return { status: "refused", reason_code: "not_in_hand" };
   }
 
@@ -45,13 +45,9 @@ function preconditions(context: CommandContext): PreconditionResult {
   if (wouldLoop(context, item.id, recipient.id)) {
     return { status: "refused", reason_code: "circular_placement" };
   }
-  if (!withinReach(context, recipient.id)) {
-    const data = reachData(context.snapshot, context.actor.id, recipient.id);
-    return {
-      status: "refused",
-      reason_code: "out_of_reach",
-      ...(data !== null && { reason_data: data }),
-    };
+  const reach = refuseOutOfReach(context, recipient.id);
+  if (reach !== null) {
+    return reach;
   }
   const gap = gapRefusal(context, item.id, context.actor.id, recipient.id);
   if (gap !== null) {
@@ -121,7 +117,7 @@ function transition(context: TransitionContext): void {
 function suggest(context: CommandContext, nameable: readonly Id[]): Record<string, unknown>[] {
   const { snapshot, registry, actor, target } = context;
   const item = target === null ? undefined : snapshot.entities[target.entity_id];
-  if (item === undefined || item.contained_in !== actor.id || inSpacePart(snapshot, registry, actor, item)) {
+  if (item === undefined || item.contained_in !== actor.id || inSpacePart(registry, actor, item)) {
     return [];
   }
   return nameable

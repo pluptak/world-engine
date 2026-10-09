@@ -1,18 +1,12 @@
 import { deepStrictEqual, strictEqual, throws } from "node:assert";
-import { appendFileSync, mkdtempSync, readFileSync, rmSync, unlinkSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { appendFileSync, readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { createWorld, openWorld, WorldError, type Scenario } from "../src/index.js";
 import { replayWithEvents } from "../src/store/file-store.js";
 import { readEvents } from "../src/store/file-store.js";
 import { canonicalJson } from "../src/index.js";
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-event-store-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
+import { tempDir } from "./harness.js";
 
 const bottleScenario: Scenario = [
   { template: "room", overrides: { name: "room", props: { lit: true } } },

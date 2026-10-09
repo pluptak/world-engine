@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -8,6 +6,7 @@ import { canonicalJson, catalog, createWorld, memoryWorld, type CatalogEntry } f
 import { loadTemplates, parseRegistry, templatesHash } from "../src/templates.js";
 import { CatalogResponseSchema } from "../src/contract.js";
 import { cli } from "./cli-run.js";
+import { tempDir } from "./harness.js";
 
 // The architect's catalogue: what it may place, with the forms it may use and their defaults.
 
@@ -18,12 +17,6 @@ const byTemplate = (id: string): CatalogEntry => {
   ok(found !== undefined, id);
   return found;
 };
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-catalog-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 test("every template is offered but the companions of detachable parts, by id", () => {
   const ids = entries.map((entry) => entry.template);

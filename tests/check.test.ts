@@ -1,6 +1,6 @@
 import { ok, strictEqual } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,15 +10,10 @@ import { createWorld, memoryWorld, type Command, type Scenario } from "../src/in
 import { loadTemplates, type TemplateRegistry } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
 import { CheckResponseSchema } from "../src/contract.js";
+import { tempDir } from "./harness.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-check-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 const shipped: TemplateRegistry = loadTemplates(join(root, "templates"));
 const registry = presetRegistry(shipped);

@@ -441,42 +441,46 @@ function parseThen(value: unknown, label: string): ProcessThen {
   if (keys.length !== 1 || !["set_prop", "damage", "remove", "spent"].includes(keys[0]!)) {
     throw new TypeError(`${label} must declare exactly one of set_prop, damage, remove or spent`);
   }
-  if (keys[0] === "remove") {
-    if (value.remove !== true) {
-      throw new TypeError(`${label}.remove must be true`);
+  switch (keys[0]) {
+    case "remove":
+      if (value.remove !== true) {
+        throw new TypeError(`${label}.remove must be true`);
+      }
+      return { remove: true };
+    case "spent":
+      if (value.spent !== true) {
+        throw new TypeError(`${label}.spent must be true`);
+      }
+      return { spent: true };
+    case "damage": {
+      const damage = value.damage;
+      if (!isRecord(damage)) {
+        throw new TypeError(`${label}.damage must be an object`);
+      }
+      assertOnlyKeys(damage, ["amount"], `${label}.damage`);
+      assertInteger(damage.amount, `${label}.damage.amount`);
+      if (damage.amount < 1) {
+        throw new TypeError(`${label}.damage.amount must be at least 1`);
+      }
+      return { damage: { amount: damage.amount } };
     }
-    return { remove: true };
-  }
-  if (keys[0] === "spent") {
-    if (value.spent !== true) {
-      throw new TypeError(`${label}.spent must be true`);
+    case "set_prop": {
+      const set = value.set_prop;
+      if (!isRecord(set)) {
+        throw new TypeError(`${label}.set_prop must be an object`);
+      }
+      assertOnlyKeys(set, ["prop", "value"], `${label}.set_prop`);
+      if (typeof set.prop !== "string" || set.prop.length === 0) {
+        throw new TypeError(`${label}.set_prop.prop must be a non-empty string`);
+      }
+      if (typeof set.value !== "string" && typeof set.value !== "number" && typeof set.value !== "boolean") {
+        throw new TypeError(`${label}.set_prop.value must be a primitive`);
+      }
+      return { set_prop: { prop: set.prop, value: set.value } };
     }
-    return { spent: true };
+    default:
+      throw new TypeError(`${label} must declare exactly one of set_prop, damage, remove or spent`);
   }
-  if (keys[0] === "damage") {
-    const damage = value.damage;
-    if (!isRecord(damage)) {
-      throw new TypeError(`${label}.damage must be an object`);
-    }
-    assertOnlyKeys(damage, ["amount"], `${label}.damage`);
-    assertInteger(damage.amount, `${label}.damage.amount`);
-    if (damage.amount < 1) {
-      throw new TypeError(`${label}.damage.amount must be at least 1`);
-    }
-    return { damage: { amount: damage.amount } };
-  }
-  const set = value.set_prop;
-  if (!isRecord(set)) {
-    throw new TypeError(`${label}.set_prop must be an object`);
-  }
-  assertOnlyKeys(set, ["prop", "value"], `${label}.set_prop`);
-  if (typeof set.prop !== "string" || set.prop.length === 0) {
-    throw new TypeError(`${label}.set_prop.prop must be a non-empty string`);
-  }
-  if (typeof set.value !== "string" && typeof set.value !== "number" && typeof set.value !== "boolean") {
-    throw new TypeError(`${label}.set_prop.value must be a primitive`);
-  }
-  return { set_prop: { prop: set.prop, value: set.value } };
 }
 
 function parseEffect(value: unknown, label: string): ProcessDecl["effect"] {

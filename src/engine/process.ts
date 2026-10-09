@@ -1,4 +1,5 @@
 import type { TransitionContext } from "./command.js";
+import { ORDER_OPS } from "./compare.js";
 import { hurt } from "./harm.js";
 import { pending, withCause, withSchedule } from "./pending.js";
 import { spendEntity } from "../resolvers/physical.js";
@@ -30,19 +31,14 @@ function whileHolds(decl: ProcessDecl, props: Record<string, unknown>): boolean 
       return actual === wanted;
     case "ne":
       return actual !== wanted;
-  }
-  if (typeof actual !== "number" || typeof wanted !== "number") {
-    return false;
-  }
-  switch (decl.while.op) {
     case "lt":
-      return actual < wanted;
     case "lte":
-      return actual <= wanted;
     case "gt":
-      return actual > wanted;
     case "gte":
-      return actual >= wanted;
+      if (typeof actual !== "number" || typeof wanted !== "number") {
+        return false;
+      }
+      return ORDER_OPS[decl.while.op](actual, wanted);
   }
 }
 

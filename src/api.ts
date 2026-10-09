@@ -3,6 +3,7 @@ import { canonicalJson } from "./engine/canonical.js";
 import { catalogOf, type CatalogEntry } from "./engine/catalog.js";
 import {
   attemptOf,
+  verdictFields,
   WORLD_AUTHOR,
   type Attempt,
   type Command,
@@ -20,7 +21,7 @@ import {
 } from "./engine/projection.js";
 import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./engine/query.js";
 import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
-import { lostField } from "./engine/upgrade.js";
+import { assertNoLostField } from "./engine/upgrade.js";
 import { verbCatalog } from "./engine/verbs/index.js";
 import { applyForms, architectWrites, hasForms } from "./engine/forms.js";
 import { spawn } from "./engine/spawn.js";
@@ -138,14 +139,7 @@ export interface World {
 }
 
 function checkResult(result: Result): CheckResult {
-  return {
-    status: result.status,
-    command_id: result.command_id,
-    resolved_target: result.resolved_target,
-    ...(result.candidates !== undefined && { candidates: result.candidates }),
-    ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
-    ...(result.reason_data !== undefined && { reason_data: result.reason_data }),
-  };
+  return verdictFields(result);
 }
 
 // The command's result with the actor's view attached when the caller asked for it. An ok command
@@ -363,23 +357,12 @@ function storeWorld(
     attempts: (version) => readAttempts(dir, version, active),
     trace: (query) => foldTrace(dir, query, active),
     upgradeTemplates: (next) => {
-      const target = next ?? loadTemplates(templatesDirectory);
-      const missing = missingCompanions(target);
-      if (missing.length > 0) {
-        const [first] = missing;
-        throw new WorldError("invalid_templates", `Missing detached part template ${first}`);
-      }
+      const target = checkedUpgradeTarget(next, templatesDirectory);
       // The proof and the write are one turn: a command logged between them would not have been
       // replayed under the new set.
       return withWorldLock(dir, () => {
         const current = load(dir, active);
-        const lost = lostField(current, target);
-        if (lost !== null) {
-          throw new WorldError(
-            "templates_lost_field",
-            `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`,
-          );
-        }
+        assertNoLostField(current, target);
         // The log was produced under the old set, so a set that folds it to anything else would
         // leave a world whose history no longer reproduces its own snapshot.
         const replayed = replayFold(dir, target);
@@ -433,6 +416,19 @@ function assertValid(snapshot: Snapshot, registry: TemplateRegistry): void {
       issues,
     );
   }
+}
+
+// What an upgrade targets: the caller's set, or the directory's, with a companion present for every
+// detachable part. The lost-field proof is against the snapshot the caller names, so it stays with
+// the caller, inside the lock where there is one.
+function checkedUpgradeTarget(next: TemplateRegistry | undefined, templatesDirectory: string): TemplateRegistry {
+  const target = next ?? loadTemplates(templatesDirectory);
+  const missing = missingCompanions(target);
+  if (missing.length > 0) {
+    const [first] = missing;
+    throw new WorldError("invalid_templates", `Missing detached part template ${first}`);
+  }
+  return target;
 }
 
 export function createWorld(
@@ -578,19 +574,8 @@ export function memoryWorld(
     // new set: only commands from here on resolve against it. The lost-field rule still applies,
     // because the entities it would orphan are the ones these snapshots hold.
     upgradeTemplates: (next) => {
-      const target = next ?? loadTemplates(templatesDirectory);
-      const missing = missingCompanions(target);
-      if (missing.length > 0) {
-        const [first] = missing;
-        throw new WorldError("invalid_templates", `Missing detached part template ${first}`);
-      }
-      const lost = lostField(current, target);
-      if (lost !== null) {
-        throw new WorldError(
-          "templates_lost_field",
-          `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`,
-        );
-      }
+      const target = checkedUpgradeTarget(next, templatesDirectory);
+      assertNoLostField(current, target);
       templates = target;
       // Re-stamped so the world stays consistent with the set it now answers for: handing this
       // snapshot to memoryWorld again must not read as a changed set.

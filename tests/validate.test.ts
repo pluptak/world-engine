@@ -1,7 +1,6 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -20,16 +19,11 @@ import { spawn } from "../src/engine/spawn.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
+import { tempDir } from "./harness.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-validate-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 // A room with a table, a bottle on the table and a human on the floor: valid to begin with.
 function baseSnapshot(): Snapshot {

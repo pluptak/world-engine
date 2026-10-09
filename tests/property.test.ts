@@ -24,7 +24,8 @@ import {
   SEED,
   withProcessFixtures,
 } from "./property-gen.js";
-import { asEditCommand, deepFreeze, registry, runSequence } from "./property-run.js";
+import { deepFreeze } from "./harness.js";
+import { asEditCommand, registry, runSequence } from "./property-run.js";
 
 // The edits a step aims at each relation rule: what it tries to break, read off the snapshot the
 // generator read. Nothing here needs the step to land: a refused step is the point.

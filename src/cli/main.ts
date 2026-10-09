@@ -16,6 +16,7 @@ import {
   type WorldEdit,
 } from "../api.js";
 import { actorWorld } from "../actor-world.js";
+import { verdictFields } from "../engine/command.js";
 import {
   CoverageSchema,
   RequestSchema,
@@ -153,12 +154,7 @@ function commandResponse(result: Result, includeSnapshot: boolean) {
   }
 
   return {
-    status: result.status,
-    command_id: result.command_id,
-    resolved_target: result.resolved_target,
-    ...(result.candidates !== undefined && { candidates: result.candidates }),
-    ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
-    ...(result.reason_data !== undefined && { reason_data: result.reason_data }),
+    ...verdictFields(result),
     snapshot_version: result.snapshot.version,
     deltas: responseDeltas,
     events: result.events,
@@ -168,92 +164,95 @@ function commandResponse(result: Result, includeSnapshot: boolean) {
 }
 
 function dispatch(request: Request): unknown {
-  if (request.op === "verbs") {
-    return { verbs: verbs() };
+  switch (request.op) {
+    case "verbs":
+      return { verbs: verbs() };
+    case "capabilities":
+      return structuredClone(ENGINE_CAPABILITIES);
+    case "schema":
+      return describeContract();
+    // The files are read before anything may settle them, so this one never opens the world.
+    case "verify":
+      return verifyWorld(request.world);
+    case "catalog":
+      return { catalog: request.world === undefined ? catalog() : openWorld(request.world).catalog() };
+    case "command": {
+      const world = openWorld(request.world);
+      const result = world.command(request.command, {
+        basedOn: request.based_on_version,
+        observe: request.observe,
+      });
+      return commandResponse(result, request.include_snapshot === true);
+    }
+    case "edit": {
+      const world = openWorld(request.world);
+      // A beat's action is read by the engine, which refuses a malformed one `invalid_args`.
+      const result = world.edit(
+        request.edit as WorldEdit,
+        { command_id: request.command_id, basedOn: request.based_on_version, perceivers: request.perceivers },
+      );
+      return commandResponse(result, request.include_snapshot === true);
+    }
+    case "check": {
+      const world = openWorld(request.world);
+      return world.check(request.command);
+    }
+    case "since": {
+      const world = openWorld(request.world);
+      return world.since(request.version);
+    }
+    case "attempts":
+      return { attempts: openWorld(request.world).attempts(request.version) };
+    case "trace": {
+      const world = openWorld(request.world);
+      return world.trace(request.query);
+    }
+    case "beat": {
+      const world = openWorld(request.world);
+      const includeSnapshot = request.include_snapshot === true;
+      return {
+        results: world
+          .beat(request.commands, { basedOn: request.based_on_version })
+          .map((result) => commandResponse(result, includeSnapshot)),
+      };
+    }
+    case "query": {
+      const world = openWorld(request.world);
+      return world.query(request.query);
+    }
+    case "inspect":
+      return { inspection: openWorld(request.world).inspect(request.observer, request.entity) };
+    case "options": {
+      const world = openWorld(request.world);
+      return world.options(request.actor, request.refused === undefined ? {} : { refused: request.refused });
+    }
+    case "observe": {
+      const world = openWorld(request.world);
+      return world.observe(request.observer, request.since === undefined ? {} : { since: request.since });
+    }
+    case "actor_observe": {
+      const world = openWorld(request.world);
+      return actorWorld(world, request.actor).observe(request.since === undefined ? {} : { since: request.since });
+    }
+    case "actor_inspect": {
+      const world = openWorld(request.world);
+      return { inspection: actorWorld(world, request.actor).inspect(request.entity) };
+    }
+    case "actor_options": {
+      const world = openWorld(request.world);
+      return actorWorld(world, request.actor).options(request.refused === undefined ? {} : { refused: request.refused });
+    }
+    case "actor_check": {
+      const world = openWorld(request.world);
+      return actorWorld(world, request.actor).check(request.command);
+    }
+    case "actor_command": {
+      const world = openWorld(request.world);
+      return actorWorld(world, request.actor).command(request.command, { basedOn: request.based_on_version });
+    }
+    case "snapshot":
+      return openWorld(request.world).snapshot();
   }
-  if (request.op === "capabilities") {
-    return structuredClone(ENGINE_CAPABILITIES);
-  }
-  if (request.op === "catalog") {
-    return { catalog: request.world === undefined ? catalog() : openWorld(request.world).catalog() };
-  }
-  if (request.op === "schema") {
-    return describeContract();
-  }
-  if (request.op === "command") {
-    const world = openWorld(request.world);
-    const result = world.command(request.command, {
-      basedOn: request.based_on_version,
-      observe: request.observe,
-    });
-    return commandResponse(result, request.include_snapshot === true);
-  }
-  if (request.op === "edit") {
-    const world = openWorld(request.world);
-    // A beat's action is read by the engine, which refuses a malformed one `invalid_args`.
-    const result = world.edit(
-      request.edit as WorldEdit,
-      { command_id: request.command_id, basedOn: request.based_on_version, perceivers: request.perceivers },
-    );
-    return commandResponse(result, request.include_snapshot === true);
-  }
-  if (request.op === "check") {
-    const world = openWorld(request.world);
-    return world.check(request.command);
-  }
-  if (request.op === "since") {
-    const world = openWorld(request.world);
-    return world.since(request.version);
-  }
-  if (request.op === "attempts") {
-    return { attempts: openWorld(request.world).attempts(request.version) };
-  }
-  if (request.op === "verify") {
-    // Not through openWorld, which would settle the files before they were compared.
-    return verifyWorld(request.world);
-  }
-  if (request.op === "trace") {
-    const world = openWorld(request.world);
-    return world.trace(request.query);
-  }
-  if (request.op === "beat") {
-    const world = openWorld(request.world);
-    const includeSnapshot = request.include_snapshot === true;
-    return {
-      results: world
-        .beat(request.commands, { basedOn: request.based_on_version })
-        .map((result) => commandResponse(result, includeSnapshot)),
-    };
-  }
-  const world = openWorld(request.world);
-  if (request.op === "query") {
-    return world.query(request.query);
-  }
-  if (request.op === "inspect") {
-    return { inspection: openWorld(request.world).inspect(request.observer, request.entity) };
-  }
-  if (request.op === "options") {
-    return world.options(request.actor, request.refused === undefined ? {} : { refused: request.refused });
-  }
-  if (request.op === "observe") {
-    return world.observe(request.observer, request.since === undefined ? {} : { since: request.since });
-  }
-  if (request.op === "actor_observe") {
-    return actorWorld(world, request.actor).observe(request.since === undefined ? {} : { since: request.since });
-  }
-  if (request.op === "actor_inspect") {
-    return { inspection: actorWorld(world, request.actor).inspect(request.entity) };
-  }
-  if (request.op === "actor_options") {
-    return actorWorld(world, request.actor).options(request.refused === undefined ? {} : { refused: request.refused });
-  }
-  if (request.op === "actor_check") {
-    return actorWorld(world, request.actor).check(request.command);
-  }
-  if (request.op === "actor_command") {
-    return actorWorld(world, request.actor).command(request.command, { basedOn: request.based_on_version });
-  }
-  return world.snapshot();
 }
 
 async function stdinText(): Promise<string> {

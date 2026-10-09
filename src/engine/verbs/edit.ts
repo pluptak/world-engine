@@ -3,7 +3,7 @@ import type { Template, TemplateRegistry } from "../../templates.js";
 import { propagateSupportLoss } from "../../resolvers/physical.js";
 import { PROP_FIELDS } from "../fields.js";
 import { effectivePos } from "../geometry.js";
-import { spawn, type EntityOverrides } from "../spawn.js";
+import { spawnUnder, type EntityOverrides } from "../spawn.js";
 import { derivedLocationOf, validateSnapshot } from "../validate.js";
 import {
   WORLD_AUTHOR,
@@ -199,93 +199,90 @@ export function parseEdit(value: unknown): WorldEdit | null {
   if (!isRecord(value) || typeof value.kind !== "string") {
     return null;
   }
-  if (value.kind === "spawn") {
-    if (!onlyKeys(value, ["kind", "template", "overrides"]) || !isId(value.template)) {
+  switch (value.kind) {
+    case "spawn":
+      if (!onlyKeys(value, ["kind", "template", "overrides"]) || !isId(value.template)) {
+        return null;
+      }
+      if (!isOverrides(value.overrides)) {
+        return null;
+      }
+      return value.overrides === undefined
+        ? { kind: "spawn", template: value.template }
+        : { kind: "spawn", template: value.template, overrides: value.overrides };
+    case "set_seed":
+      if (!onlyKeys(value, ["kind", "seed"]) || !isRngState(value.seed)) {
+        return null;
+      }
+      return { kind: "set_seed", seed: value.seed };
+    case "schedule_beat":
+      return parseScheduleBeat(value);
+    case "cancel_beat":
+      return onlyKeys(value, ["kind", "id"]) && isBeatId(value.id) ? { kind: "cancel_beat", id: value.id } : null;
+    case "remove":
+      if (!onlyKeys(value, ["kind", "target"]) || !isId(value.target)) {
+        return null;
+      }
+      return { kind: "remove", target: value.target };
+    case "place":
+      if (
+        !onlyKeys(value, ["kind", "target", "support", "contained_in", "in_part", "concealed_by", "pos"]) ||
+        !isId(value.target)
+      ) {
+        return null;
+      }
+      if (
+        (value.support !== undefined && value.support !== null && !isId(value.support)) ||
+        (value.contained_in !== undefined && value.contained_in !== null && !isId(value.contained_in)) ||
+        (value.in_part !== undefined && value.in_part !== null && !isId(value.in_part)) ||
+        (value.concealed_by !== undefined && value.concealed_by !== null && !isId(value.concealed_by)) ||
+        (value.pos !== undefined && value.pos !== null && !isPos(value.pos) && !isAnchorPos(value.pos))
+      ) {
+        return null;
+      }
+      {
+        const edit: PlaceEdit = { kind: "place", target: value.target };
+        if (typeof value.support === "string" || value.support === null) {
+          edit.support = value.support;
+        }
+        if (typeof value.contained_in === "string" || value.contained_in === null) {
+          edit.contained_in = value.contained_in;
+        }
+        if (typeof value.in_part === "string" || value.in_part === null) {
+          edit.in_part = value.in_part;
+        }
+        if (typeof value.concealed_by === "string" || value.concealed_by === null) {
+          edit.concealed_by = value.concealed_by;
+        }
+        if (value.pos === null || isPos(value.pos) || isAnchorPos(value.pos)) {
+          edit.pos = value.pos;
+        }
+        return edit;
+      }
+    case "set_props":
+    case "update_props":
+      if (!onlyKeys(value, ["kind", "target", "props"]) || !isId(value.target) || !isProps(value.props)) {
+        return null;
+      }
+      return { kind: value.kind, target: value.target, props: value.props };
+    case "refine":
+      return onlyKeys(value, ["kind", "target", "template"]) && isId(value.target) && isId(value.template)
+        ? { kind: "refine", target: value.target, template: value.template }
+        : null;
+    case "set_part":
+      if (
+        !onlyKeys(value, ["kind", "target", "part", "state"]) ||
+        !isId(value.target) ||
+        typeof value.part !== "string" ||
+        value.part.length === 0 ||
+        !isPartState(value.state)
+      ) {
+        return null;
+      }
+      return { kind: "set_part", target: value.target, part: value.part, state: value.state };
+    default:
       return null;
-    }
-    if (!isOverrides(value.overrides)) {
-      return null;
-    }
-    return value.overrides === undefined
-      ? { kind: "spawn", template: value.template }
-      : { kind: "spawn", template: value.template, overrides: value.overrides };
   }
-  if (value.kind === "set_seed") {
-    if (!onlyKeys(value, ["kind", "seed"]) || !isRngState(value.seed)) {
-      return null;
-    }
-    return { kind: "set_seed", seed: value.seed };
-  }
-  if (value.kind === "schedule_beat") {
-    return parseScheduleBeat(value);
-  }
-  if (value.kind === "cancel_beat") {
-    return onlyKeys(value, ["kind", "id"]) && isBeatId(value.id) ? { kind: "cancel_beat", id: value.id } : null;
-  }
-  if (value.kind === "remove") {
-    if (!onlyKeys(value, ["kind", "target"]) || !isId(value.target)) {
-      return null;
-    }
-    return { kind: "remove", target: value.target };
-  }
-  if (value.kind === "place") {
-    if (
-      !onlyKeys(value, ["kind", "target", "support", "contained_in", "in_part", "concealed_by", "pos"]) ||
-      !isId(value.target)
-    ) {
-      return null;
-    }
-    if (
-      (value.support !== undefined && value.support !== null && !isId(value.support)) ||
-      (value.contained_in !== undefined && value.contained_in !== null && !isId(value.contained_in)) ||
-      (value.in_part !== undefined && value.in_part !== null && !isId(value.in_part)) ||
-      (value.concealed_by !== undefined && value.concealed_by !== null && !isId(value.concealed_by)) ||
-      (value.pos !== undefined && value.pos !== null && !isPos(value.pos) && !isAnchorPos(value.pos))
-    ) {
-      return null;
-    }
-    const edit: PlaceEdit = { kind: "place", target: value.target };
-    if (typeof value.support === "string" || value.support === null) {
-      edit.support = value.support;
-    }
-    if (typeof value.contained_in === "string" || value.contained_in === null) {
-      edit.contained_in = value.contained_in;
-    }
-    if (typeof value.in_part === "string" || value.in_part === null) {
-      edit.in_part = value.in_part;
-    }
-    if (typeof value.concealed_by === "string" || value.concealed_by === null) {
-      edit.concealed_by = value.concealed_by;
-    }
-    if (value.pos === null || isPos(value.pos) || isAnchorPos(value.pos)) {
-      edit.pos = value.pos;
-    }
-    return edit;
-  }
-  if (value.kind === "set_props" || value.kind === "update_props") {
-    if (!onlyKeys(value, ["kind", "target", "props"]) || !isId(value.target) || !isProps(value.props)) {
-      return null;
-    }
-    return { kind: value.kind, target: value.target, props: value.props };
-  }
-  if (value.kind === "refine") {
-    return onlyKeys(value, ["kind", "target", "template"]) && isId(value.target) && isId(value.template)
-      ? { kind: "refine", target: value.target, template: value.template }
-      : null;
-  }
-  if (value.kind === "set_part") {
-    if (
-      !onlyKeys(value, ["kind", "target", "part", "state"]) ||
-      !isId(value.target) ||
-      typeof value.part !== "string" ||
-      value.part.length === 0 ||
-      !isPartState(value.state)
-    ) {
-      return null;
-    }
-    return { kind: "set_part", target: value.target, part: value.part, state: value.state };
-  }
-  return null;
 }
 
 function invalid(reason_code: string): PreconditionResult {
@@ -513,7 +510,6 @@ function placeRefusal(
 }
 
 function partRefusal(
-  context: CommandContext,
   registry: TemplateRegistry,
   subject: Entity,
   part: string,
@@ -608,7 +604,7 @@ function preconditions(context: CommandContext): PreconditionResult {
     case "update_props":
       return propsRefusal(context, subject, edit);
     case "set_part":
-      return partRefusal(context, context.registry, subject, edit.part);
+      return partRefusal(context.registry, subject, edit.part);
     case "refine": {
       const next = own(context.registry, edit.template);
       return next === undefined
@@ -696,18 +692,10 @@ function releaseDependents(
 
 function transitionSpawn(context: TransitionContext, edit: SpawnEdit): void {
   const overrides = edit.overrides ?? {};
-  const created = spawn(context.snapshot, context.registry, edit.template, {
+  spawnUnder(context, edit.template, {
     ...overrides,
     location: spawnLocation(context.snapshot, overrides) ?? null,
-  });
-  context.snapshot = created.snapshot;
-  const spawnedEvent = context.emit(
-    "spawned",
-    created.id,
-    { template: edit.template },
-    context.root_event_id,
-  );
-  context.recordDelta(created.id, "entity", null, context.snapshot.entities[created.id], spawnedEvent);
+  }, context.root_event_id);
 }
 
 function transitionRemove(context: TransitionContext, targetId: Id): void {

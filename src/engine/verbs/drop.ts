@@ -21,20 +21,11 @@ function preconditions(context: CommandContext): PreconditionResult {
     return { status: "refused", reason_code: "not_carried" };
   }
   // A drop leaves from a grip; what sits in a space part (pocket) is taken out first.
-  if (inSpacePart(context.snapshot, context.registry, context.actor, entity)) {
+  if (inSpacePart(context.registry, context.actor, entity)) {
     return { status: "refused", reason_code: "not_in_hand" };
   }
 
   return { status: "ok" };
-}
-
-export function dropFallHook(
-  context: TransitionContext,
-  entityId: Id,
-  droppedEventId: Id,
-  fall_cm: number,
-): void {
-  resolveDropFall(context, entityId, droppedEventId, fall_cm);
 }
 
 export function dropCarriedItem(
@@ -69,7 +60,7 @@ export function dropCarriedItem(
   context.set(entityId, "in_part", null, droppedEvent);
   context.set(entityId, "support", rest?.support ?? holder.location, droppedEvent);
   context.set(entityId, "pos", rest === null ? at : null, droppedEvent);
-  dropFallHook(context, entityId, droppedEvent, fall_cm);
+  resolveDropFall(context, entityId, droppedEvent, fall_cm);
   return droppedEvent;
 }
 

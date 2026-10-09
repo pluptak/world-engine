@@ -4,7 +4,7 @@ import type { CommandContext, PreconditionResult, TransitionContext, Verb } from
 import type { Pos } from "../../model.js";
 import { propagateSupportLoss, resolveImpact } from "../../resolvers/physical.js";
 import { isAbstract } from "../resolve.js";
-import { inReach, reachData } from "./address.js";
+import { refuseOutOfReach } from "./address.js";
 import { revealConcealed } from "./search.js";
 
 interface Movement {
@@ -57,13 +57,9 @@ function preconditions(context: CommandContext, reverse: boolean): PreconditionR
   if (target === undefined) {
     return { status: "invalid", reason_code: "no_such_entity" };
   }
-  if (!inReach(context.snapshot, context.actor.id, target.id)) {
-    const data = reachData(context.snapshot, context.actor.id, target.id);
-    return {
-      status: "refused",
-      reason_code: "out_of_reach",
-      ...(data !== null && { reason_data: data }),
-    };
+  const reach = refuseOutOfReach(context, target.id);
+  if (reach !== null) {
+    return reach;
   }
   const moving = capacity(context.snapshot, context.registry, context.actor.id, "moving") ?? 0;
   if (moving < 1) {

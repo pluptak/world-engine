@@ -1,7 +1,7 @@
 import { capacities } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { carryAlternatives, carryCheck, gripPlacement, heldCount, holderLayout } from "../carry.js";
-import { closedEnclosure, gapRefusal, isAgent, inReach, reachData, wouldLoop } from "./address.js";
+import { closedEnclosure, gapRefusal, isAgent, refuseOutOfReach, wouldLoop } from "./address.js";
 import { revealConcealed } from "./search.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
@@ -22,13 +22,9 @@ function preconditions(context: CommandContext): PreconditionResult {
   if (wouldLoop(context, entity.id, context.actor.id)) {
     return { status: "refused", reason_code: "circular_placement" };
   }
-  if (!inReach(context.snapshot, context.actor.id, entity.id)) {
-    const data = reachData(context.snapshot, context.actor.id, entity.id);
-    return {
-      status: "refused",
-      reason_code: "out_of_reach",
-      ...(data !== null && { reason_data: data }),
-    };
+  const reach = refuseOutOfReach(context, entity.id);
+  if (reach !== null) {
+    return reach;
   }
   const gap = gapRefusal(context, entity.id, entity.id, context.actor.id);
   if (gap !== null) {

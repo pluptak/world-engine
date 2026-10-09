@@ -1,5 +1,6 @@
 import type { Entity, Id, Snapshot } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
+import { WorldError } from "../errors.js";
 
 // The one thing a new template set may not take away from an entity that is already in the world.
 export interface LostField {
@@ -69,4 +70,16 @@ export function lostField(snapshot: Snapshot, registry: TemplateRegistry): LostF
   }
 
   return null;
+}
+
+// The lost-field rule as the refusal it always gives: a world whose entities a new set would orphan
+// is refused, whether it is upgraded by a caller or taken over by the one in its own files.
+export function assertNoLostField(snapshot: Snapshot, registry: TemplateRegistry): void {
+  const lost = lostField(snapshot, registry);
+  if (lost !== null) {
+    throw new WorldError(
+      "templates_lost_field",
+      `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`,
+    );
+  }
 }

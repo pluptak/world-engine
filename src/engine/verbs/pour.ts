@@ -1,5 +1,4 @@
-import { capacities } from "../capacity.js";
-import { insufficientCode, meetsRequirements, unmetRequirement, inSpacePart } from "../carry.js";
+import { capacityRefusal, inSpacePart } from "../carry.js";
 import { addResidue } from "../residue.js";
 import type { Entity, Id } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
@@ -77,7 +76,7 @@ function plan(context: CommandContext): Planning {
     return { status: "refused", reason_code: "not_carried" };
   }
   // A vessel in a space part (pocket) must be taken out first before pouring from it.
-  if (inSpacePart(context.snapshot, context.registry, context.actor, source)) {
+  if (inSpacePart(context.registry, context.actor, source)) {
     return { status: "refused", reason_code: "not_in_hand" };
   }
 
@@ -108,15 +107,9 @@ function plan(context: CommandContext): Planning {
     };
   }
 
-  const required = context.verb.requires ?? [];
-  const caps = capacities(context.snapshot, context.registry, context.actor.id);
-  if (!meetsRequirements(caps, required)) {
-    const data = unmetRequirement(caps, required);
-    return {
-      status: "refused",
-      reason_code: insufficientCode(required),
-      ...(data !== null && { reason_data: data }),
-    };
+  const capacity = capacityRefusal(context);
+  if (capacity !== null) {
+    return notPlanned(capacity);
   }
 
   const address = addressEntity(context, destinationText, "not_a_destination");
@@ -231,7 +224,7 @@ function suggest(context: CommandContext, nameable: readonly Id[]): Record<strin
   if (
     source === undefined ||
     source.contained_in !== actor.id ||
-    inSpacePart(snapshot, registry, actor, source) ||
+    inSpacePart(registry, actor, source) ||
     typeof source.props.liquid_material !== "string" ||
     source.props.liquid_material.length === 0
   ) {

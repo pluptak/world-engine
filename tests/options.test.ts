@@ -1,7 +1,5 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -25,6 +23,7 @@ import {
   type World,
   verbs,
 } from "../src/index.js";
+import { tempDir } from "./harness.js";
 
 // What an actor can try now, from a dry run of every verb against everything it could name: the
 // commands that would be accepted, the verbs that need args to be judged at all, and with `refused`
@@ -35,12 +34,6 @@ const shipped = loadTemplates(fileURLToPath(new URL("../templates/", import.meta
 // not write.
 const registry = presetRegistry(shipped);
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-options-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 // ann with a stone, a lantern and a shut chest within her reach, a second stone far across the hall,
 // a book hiding a note beside her, an anchor (a mark, not a thing) at her side, and bob; the hall lit or not.

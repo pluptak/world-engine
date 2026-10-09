@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -13,14 +11,9 @@ import {
 import { loadTemplates } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
 import { fileURLToPath } from "node:url";
+import { tempDir } from "./harness.js";
 
 const presets = presetRegistry(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-conceal-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 // A book on the floor, a note under it, two people in the room with the book, a dog, and someone in a
 // room with no door to it. The templates only supply shapes: concealment is a relation, not a kind of

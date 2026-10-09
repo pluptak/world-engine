@@ -1,5 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { test } from "node:test";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -7,12 +7,7 @@ import { fileURLToPath } from "node:url";
 import { createWorld, memoryWorld, openWorld, type Scenario } from "../src/index.js";
 import { resolveScenario } from "../src/scenario.js";
 import { WorldError } from "../src/errors.js";
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-names-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
+import { tempDir } from "./harness.js";
 
 function code(run: () => unknown): string {
   try {

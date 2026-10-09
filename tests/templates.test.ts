@@ -1,7 +1,6 @@
 import { deepStrictEqual, ok, strictEqual, throws as assertThrows } from "node:assert";
 import { createHash } from "node:crypto";
-import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -14,15 +13,10 @@ import {
   type Scenario,
 } from "../src/index.js";
 import { loadTemplates, missingCompanions, parseRegistry, templatesHash, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const templatesDir = fileURLToPath(new URL("../templates/", import.meta.url));
 const registry = loadTemplates(templatesDir);
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-templates-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 function copiedTemplates(t: { after(callback: () => void): void }): string {
   const dir = join(tempDir(t), "templates");

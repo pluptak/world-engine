@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -19,6 +18,7 @@ import {
 } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
@@ -60,12 +60,6 @@ const DECLARED = {
 
 type InnName = keyof typeof DECLARED;
 type Ids = Record<InnName, Id>;
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-inn-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 // A store world on disk and a memory world over the same initial snapshot, both declaring smell.
 function innWorlds(

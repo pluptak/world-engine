@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { cli as cliRequest } from "./cli-run.js";
@@ -8,6 +6,7 @@ import { fieldEventId, traceChain, traceQuery } from "../src/engine/trace.js";
 import { WorldError } from "../src/errors.js";
 import { createWorld, memoryWorld } from "../src/index.js";
 import type { Delta, WorldEvent } from "../src/model.js";
+import { tempDir } from "./harness.js";
 
 function event(
   event_id: string,
@@ -66,12 +65,6 @@ test("traceQuery field mode follows the last delta's event", () => {
     (error: unknown) => error instanceof WorldError && error.code === "no_such_field",
   );
 });
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-trace-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 const bottleScenario = [
   { template: "room", overrides: { name: "room", props: { lit: true } } },

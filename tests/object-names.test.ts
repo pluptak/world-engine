@@ -1,6 +1,4 @@
 import { deepStrictEqual, notStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -21,6 +19,7 @@ import {
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
 import { cli } from "./cli-run.js";
+import { tempDir } from "./harness.js";
 
 // A string that came from outside and is spelt like a member of Object.prototype is not an id, a
 // template or a name: it gets exactly what an id nothing has gets, in every place that takes one.
@@ -38,12 +37,6 @@ const scenario: Scenario = [
   { id: "rock", template: "stone", overrides: { name: "rock", ...at(30) } },
   { id: "chest", template: "chest", overrides: { name: "chest", ...at(70) } },
 ];
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-object-names-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 function worlds(t: { after(callback: () => void): void }): World[] {
   const store = createWorld(join(tempDir(t), "w"), scenario, registry);

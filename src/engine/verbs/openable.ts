@@ -1,7 +1,6 @@
-import { capacities } from "../capacity.js";
 import type { Entity, Id } from "../../model.js";
 import type { CapacityRequirement, CommandContext, PreconditionResult, TargetAddress, TransitionContext, Verb } from "../command.js";
-import { insufficientCode, meetsRequirements, unmetRequirement } from "../carry.js";
+import { capacityRefusal } from "../carry.js";
 import { reachedAsDoor, withinReach, reachData } from "./address.js";
 import { pushOccupantsAside } from "./gate.js";
 import { cancel, schedule } from "../schedule.js";
@@ -120,19 +119,9 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
   if (changes[kind].needsKey && !carriedKeyFor(context, entity.id)) {
     return { status: "refused", reason_code: "no_key" };
   }
-  const required = context.verb.requires ?? [];
-  if (
-    !meetsRequirements(capacities(context.snapshot, context.registry, context.actor.id), required)
-  ) {
-    const data = unmetRequirement(
-      capacities(context.snapshot, context.registry, context.actor.id),
-      required,
-    );
-    return {
-      status: "refused",
-      reason_code: insufficientCode(required),
-      ...(data !== null && { reason_data: data }),
-    };
+  const capacity = capacityRefusal(context);
+  if (capacity !== null) {
+    return capacity;
   }
 
   return { status: "ok" };

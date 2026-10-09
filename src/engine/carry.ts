@@ -1,9 +1,11 @@
 import type { Entity, Id, ReasonData, Snapshot } from "../model.js";
 import type { HoldsDecl, TemplateRegistry } from "../templates.js";
+import { capacities } from "./capacity.js";
 import type {
   CapacityRequirement,
   CarryAlternative,
   CommandContext,
+  PreconditionResult,
 } from "./command.js";
 import { misfit } from "./fit.js";
 import { partState } from "./parts.js";
@@ -425,7 +427,6 @@ export function lostCarry(
 
 // Whether the item is in a space part (not a grip) of the holder.
 export function inSpacePart(
-  snapshot: Snapshot,
   registry: TemplateRegistry,
   holder: Entity,
   item: Entity,
@@ -463,4 +464,21 @@ export function unmetRequirement(
         have: caps?.[found.capacity] ?? 0,
         need: found.at_least,
       };
+}
+
+// A verb's declared capacity requirements, answered as a refusal: null when the actor meets them.
+// Every verb reads its own declaration through `context.verb`, so the share is the answer, not the
+// requirement.
+export function capacityRefusal(context: CommandContext): PreconditionResult | null {
+  const required = context.verb.requires ?? [];
+  const caps = capacities(context.snapshot, context.registry, context.actor.id);
+  if (meetsRequirements(caps, required)) {
+    return null;
+  }
+  const data = unmetRequirement(caps, required);
+  return {
+    status: "refused",
+    reason_code: insufficientCode(required),
+    ...(data !== null && { reason_data: data }),
+  };
 }

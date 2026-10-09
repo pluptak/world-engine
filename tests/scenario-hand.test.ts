@@ -7,6 +7,7 @@ import { apply } from "../src/engine/pipeline.js";
 import { spawn } from "../src/engine/spawn.js";
 import type { Snapshot } from "../src/model.js";
 import { loadTemplates, templatesHash, type TemplateRegistry } from "../src/templates.js";
+import { deepFreeze } from "./harness.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
@@ -45,16 +46,6 @@ function attack(snapshot: Snapshot, actor: string, target: string, commandId: st
     verb: "attack",
     target,
   });
-}
-
-function deepFreeze<T>(value: T): T {
-  if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
-    Object.freeze(value);
-    for (const child of Object.values(value)) {
-      deepFreeze(child);
-    }
-  }
-  return value;
 }
 
 test("detaching guard.hand_r spawns a hand and reduces manipulation to 50", () => {

@@ -1,4 +1,5 @@
 import type { Id, ScheduledCause, Snapshot, WorldEvent } from "../model.js";
+import { ORDER_OPS } from "./compare.js";
 import {
   WORLD_AUTHOR,
   type BeatAction,
@@ -284,11 +285,14 @@ function holds(condition: BeatCondition, snapshot: Snapshot): boolean {
       return have === want;
     case "ne":
       return have !== want;
-    default:
+    case "lt":
+    case "lte":
+    case "gt":
+    case "gte":
       if (typeof have !== "number" || typeof want !== "number") {
         return false;
       }
-      return condition.op === "lt" ? have < want : condition.op === "lte" ? have <= want : condition.op === "gt" ? have > want : have >= want;
+      return ORDER_OPS[condition.op](have, want);
   }
 }
 

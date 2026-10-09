@@ -1,6 +1,4 @@
 import { deepStrictEqual, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -13,12 +11,7 @@ import { presetRegistry } from "./presets.js";
 
 const presets = presetRegistry(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
 import type { Snapshot } from "../src/model.js";
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-refusal-data-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
+import { tempDir } from "./harness.js";
 
 const farScenario: Scenario = [
   { template: "room", overrides: { name: "room", props: { lit: true } } },

@@ -1,5 +1,4 @@
-import { capacities } from "../capacity.js";
-import { insufficientCode, meetsRequirements, unmetRequirement } from "../carry.js";
+import { capacityRefusal } from "../carry.js";
 import type { Id, Snapshot } from "../../model.js";
 import type {
   CommandContext,
@@ -7,7 +6,7 @@ import type {
   TransitionContext,
   Verb,
 } from "../command.js";
-import { closedEnclosure, reachData, withinReach } from "./address.js";
+import { closedEnclosure, refuseOutOfReach } from "./address.js";
 
 // What one entity hides, in id order, so that the events a search drives come out in one order.
 function hiddenBy(snapshot: Snapshot, concealerId: Id): Id[] {
@@ -55,25 +54,13 @@ function preconditions(context: CommandContext): PreconditionResult {
   if (enclosure !== null) {
     return { status: "refused", reason_code: "container_closed", reason_data: { enclosure } };
   }
-  if (!withinReach(context, concealer.id)) {
-    const data = reachData(context.snapshot, context.actor.id, concealer.id);
-    return {
-      status: "refused",
-      reason_code: "out_of_reach",
-      ...(data !== null && { reason_data: data }),
-    };
+  const reach = refuseOutOfReach(context, concealer.id);
+  if (reach !== null) {
+    return reach;
   }
-  const required = context.verb.requires ?? [];
-  if (!meetsRequirements(capacities(context.snapshot, context.registry, context.actor.id), required)) {
-    const data = unmetRequirement(
-      capacities(context.snapshot, context.registry, context.actor.id),
-      required,
-    );
-    return {
-      status: "refused",
-      reason_code: insufficientCode(required),
-      ...(data !== null && { reason_data: data }),
-    };
+  const capacity = capacityRefusal(context);
+  if (capacity !== null) {
+    return capacity;
   }
   return { status: "ok" };
 }

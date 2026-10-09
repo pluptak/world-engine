@@ -1,6 +1,6 @@
 import { elevation, effectivePos } from "../engine/geometry.js";
 import { addResidue } from "../engine/residue.js";
-import { spawn } from "../engine/spawn.js";
+import { spawnUnder } from "../engine/spawn.js";
 import { innerDimensions, misfit } from "../engine/fit.js";
 import { removeEntity } from "../engine/verbs/edit.js";
 import { revealConcealed } from "../engine/verbs/search.js";
@@ -192,14 +192,11 @@ function breakEntity(
       throw new TypeError(`Invalid break product count for ${entity.template}`);
     }
     for (let index = 0; index < product.count; index += 1) {
-      const created = spawn(context.snapshot, context.registry, product.template, {
+      spawnUnder(context, product.template, {
         support: landing.support,
         location,
         pos: landing.pos,
-      });
-      context.snapshot = created.snapshot;
-      const spawnedEvent = context.emit("spawned", created.id, { template: product.template }, brokenEvent);
-      context.recordDelta(created.id, "entity", null, context.snapshot.entities[created.id], spawnedEvent);
+      }, brokenEvent);
     }
   }
 
@@ -293,15 +290,12 @@ export function spendEntity(context: TransitionContext, entityId: Id, causeId: I
     for (let index = 0; index < product.count; index += 1) {
       const size = context.registry[product.template]?.size_cm;
       const lands = size === undefined ? at : fitting(context, at, size);
-      const created = spawn(context.snapshot, context.registry, product.template, {
+      spawnUnder(context, product.template, {
         support: lands.support,
         contained_in: lands.contained_in,
         location: lands.location,
         pos: lands.pos === null ? null : { ...lands.pos },
-      });
-      context.snapshot = created.snapshot;
-      const spawnedEvent = context.emit("spawned", created.id, { template: product.template }, spentEvent);
-      context.recordDelta(created.id, "entity", null, context.snapshot.entities[created.id], spawnedEvent);
+      }, spentEvent);
     }
   }
   const residue = template.spent_residue ?? {};

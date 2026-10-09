@@ -1,5 +1,5 @@
 import { deepStrictEqual, ok, strictEqual, throws as assertThrows } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,15 +17,10 @@ import {
 import { loadTemplates, type TemplateRegistry } from "../src/templates.js";
 // Self-reference: the package's own exports map, not a path into src/.
 import { createWorld as createWorldByName } from "world-engine";
+import { tempDir } from "./harness.js";
 
 const templatesDir = fileURLToPath(new URL("../templates/", import.meta.url));
 const registry = loadTemplates(templatesDir);
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-api-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 const bottleScenario: Scenario = [
   { template: "room", overrides: { name: "room", props: { lit: true } } },

@@ -1,6 +1,5 @@
 import { deepStrictEqual, notStrictEqual, strictEqual, throws as assertThrows } from "node:assert";
-import { cpSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -14,14 +13,9 @@ import {
 } from "../src/index.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
 import { replay } from "../src/store/file-store.js";
+import { tempDir } from "./harness.js";
 
 const templatesDir = fileURLToPath(new URL("../templates/", import.meta.url));
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-frozen-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 // The world is frozen against a copy, so a test may edit the copy without touching the repo's.
 function copiedTemplates(t: { after(callback: () => void): void }): string {

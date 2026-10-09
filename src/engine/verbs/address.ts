@@ -124,6 +124,18 @@ export function withinReach(context: CommandContext, destinationId: Id): boolean
   return inReach(context.snapshot, context.actor.id, destinationId);
 }
 
+// A doorway joins these two rooms whichever way round its `from` and `to` name them.
+export function doorJoins(
+  props: Record<string, number | string | boolean>,
+  a: string | null,
+  b: string | null,
+): boolean {
+  return (
+    (props.from === a && props.to === b) ||
+    (props.from === b && props.to === a)
+  );
+}
+
 // A doorway (a thing with `from` and `to` rooms) that joins the actor's room is reached from anywhere
 // in it when it has no position, or when it stands in the other room: the far side of a door is as
 // near as the door. In its own room a doorway keeps its position and the ordinary rule applies.
@@ -187,6 +199,21 @@ export function reachData(
     Math.sqrt((actorPos.x - targetPos.x) ** 2 + (actorPos.y - targetPos.y) ** 2),
   );
   return { distance_cm, reach_cm: reach };
+}
+
+// A verb's reach check, answered as `gapRefusal` is: null when the target is in reach. The verbs
+// whose reach rule is their own (the floor of a room, a door's far side) keep their own check and
+// read `reachData` themselves.
+export function refuseOutOfReach(context: CommandContext, targetId: Id): PreconditionResult | null {
+  if (inReach(context.snapshot, context.actor.id, targetId)) {
+    return null;
+  }
+  const data = reachData(context.snapshot, context.actor.id, targetId);
+  return {
+    status: "refused",
+    reason_code: "out_of_reach",
+    ...(data !== null && { reason_data: data }),
+  };
 }
 
 // A placement may not close a containment or support loop: the item would hold what holds it.

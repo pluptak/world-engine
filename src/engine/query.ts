@@ -3,7 +3,7 @@ import { canonicalJson } from "./canonical.js";
 import { effectivePos } from "./geometry.js";
 import { own, type Entity, type Id, type Perceivers, type Pos, type Snapshot, type Tri, type WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
-import { closedEnclosure, inReach, isAgent, reachedAsDoor } from "./verbs/address.js";
+import { closedEnclosure, doorJoins, inReach, isAgent, reachedAsDoor } from "./verbs/address.js";
 import { isAbstract, isDoor } from "./resolve.js";
 import { effectivePart } from "./parts.js";
 import { computesSense } from "./capabilities.js";
@@ -175,13 +175,18 @@ function partFact(
     return answer("unknown", "uncovered_category");
   }
   const attached = state.status !== "detached" && state.status !== "destroyed";
-  switch (relation ? query.relation : `property ${query.relation}`) {
+  // A part is not an entity: of the relations only its status and what it is attached to mean
+  // anything, and of the properties only its integrity is read.
+  if (!relation) {
+    return query.relation === "integrity"
+      ? answer(propertyMatches(state.integrity, query.object, "integrity") ? "true" : "false", "part_state")
+      : answer("false", "not_a_part_field");
+  }
+  switch (query.relation) {
     case "status":
       return answer(query.object === undefined || state.status === query.object ? "true" : "false", "part_state");
     case "attached_to":
       return answer(attached && (query.object === undefined || query.object === entity.id) ? "true" : "false", "part_state");
-    case "property integrity":
-      return answer(propertyMatches(state.integrity, query.object, "integrity") ? "true" : "false", "part_state");
     default:
       return answer("false", "not_a_part_field");
   }
@@ -203,10 +208,7 @@ function connectedByDoor(
       if (openOnly && entity.props.open !== true) {
         return false;
       }
-      return (
-        (entity.props.from === from && entity.props.to === to) ||
-        (entity.props.from === to && entity.props.to === from)
-      );
+      return doorJoins(entity.props, from, to);
     });
 }
 

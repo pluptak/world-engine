@@ -1,6 +1,4 @@
 import { deepStrictEqual, notStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -17,6 +15,7 @@ import { NEAR_THRESHOLD_CM, query } from "../src/engine/query.js";
 import { EntityOverridesSchema, ScenarioSchema, WorldEditSchema } from "../src/contract.js";
 import { resolveScenario, type ScenarioOverrides } from "../src/scenario.js";
 import { loadTemplates, parseRegistry, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
@@ -26,12 +25,6 @@ const anchorRegistry: TemplateRegistry = parseRegistry({
   ...registry,
   anchor: { ...registry.anchor!, fields: { some_prop: { tier: "state", type: "string" } } },
 });
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-space-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 function code(run: () => unknown): string {
   try {

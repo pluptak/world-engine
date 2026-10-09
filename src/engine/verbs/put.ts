@@ -1,10 +1,9 @@
-import { capacities } from "../capacity.js";
 import { innerDimensions, misfit } from "../fit.js";
 import type { Entity, Id } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
-import { holderLayout, insufficientCode, meetsRequirements, spaceRefusal, unmetRequirement } from "../carry.js";
+import { capacityRefusal, holderLayout, spaceRefusal } from "../carry.js";
 import { resolveTarget } from "../resolve.js";
-import { addressEntity, addressText, closedEnclosure, gapRefusal, reachData, wouldLoop, withinReach } from "./address.js";
+import { addressEntity, addressText, closedEnclosure, gapRefusal, refuseOutOfReach, wouldLoop } from "./address.js";
 
 type Relation = "on" | "in";
 
@@ -52,13 +51,9 @@ function placementRefusal(
   if (wouldLoop(context, item.id, destination.id)) {
     return { status: "refused", reason_code: "circular_placement" };
   }
-  if (!withinReach(context, destination.id)) {
-    const data = reachData(context.snapshot, context.actor.id, destination.id);
-    return {
-      status: "refused",
-      reason_code: "out_of_reach",
-      ...(data !== null && { reason_data: data }),
-    };
+  const reach = refuseOutOfReach(context, destination.id);
+  if (reach !== null) {
+    return reach;
   }
   const gap = gapRefusal(context, item.id, context.actor.id, destination.id);
   if (gap !== null) {
@@ -112,19 +107,9 @@ function preconditions(context: CommandContext): PreconditionResult {
   // Placing into a container needs hands; setting onto a surface does not, and the verb's
   // declaration names the capacity the `in` relation spends.
   if (relation === "in") {
-    const required = context.verb.requires ?? [];
-    if (
-      !meetsRequirements(capacities(context.snapshot, context.registry, context.actor.id), required)
-    ) {
-      const data = unmetRequirement(
-        capacities(context.snapshot, context.registry, context.actor.id),
-        required,
-      );
-      return {
-        status: "refused",
-        reason_code: insufficientCode(required),
-        ...(data !== null && { reason_data: data }),
-      };
+    const capacity = capacityRefusal(context);
+    if (capacity !== null) {
+      return capacity;
     }
   }
 

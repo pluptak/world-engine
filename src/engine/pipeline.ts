@@ -5,6 +5,7 @@ import { NoSeedError, nextRandom } from "./rng.js";
 import { pruneSchedule } from "./schedule.js";
 import type { Command, CommandContext, Result, TransitionContext } from "./command.js";
 import { WORLD_AUTHOR } from "./command.js";
+import { blankFields } from "./spawn.js";
 import { eventPerceivers } from "./query.js";
 import { verbRegistry } from "./verbs/index.js";
 import { own, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type WorldEvent } from "../model.js";
@@ -39,19 +40,7 @@ const worldAuthor: Entity = {
   id: WORLD_AUTHOR,
   template: "world",
   name: "world",
-  aliases: [],
-  location: null,
-  support: null,
-  contained_in: null,
-  in_part: null,
-  concealed_by: null,
-  pos: null,
-  detached_from: null,
-  integrity: 100,
-  status: "intact",
-  parts: {},
-  residue: {},
-  modifiers: [],
+  ...blankFields(),
   props: {},
 };
 

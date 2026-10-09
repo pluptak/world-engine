@@ -1,7 +1,6 @@
-import { capacities } from "../capacity.js";
-import { insufficientCode, meetsRequirements, unmetRequirement } from "../carry.js";
+import { capacityRefusal } from "../carry.js";
 import type { CapacityRequirement, CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
-import { closedEnclosure, reachData, withinReach } from "./address.js";
+import { closedEnclosure, refuseOutOfReach } from "./address.js";
 
 type Kind = "light" | "douse";
 
@@ -38,13 +37,9 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
   if (enclosure !== null) {
     return { status: "refused", reason_code: "container_closed", reason_data: { enclosure } };
   }
-  if (!withinReach(context, light.id)) {
-    const data = reachData(context.snapshot, context.actor.id, light.id);
-    return {
-      status: "refused",
-      reason_code: "out_of_reach",
-      ...(data !== null && { reason_data: data }),
-    };
+  const reach = refuseOutOfReach(context, light.id);
+  if (reach !== null) {
+    return reach;
   }
   if (kind === "light") {
     if (light.props.burning === true) {
@@ -57,14 +52,9 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
   } else if (light.props.burning !== true) {
     return { status: "refused", reason_code: "not_burning" };
   }
-  const have = capacities(context.snapshot, context.registry, context.actor.id);
-  if (!meetsRequirements(have, requires)) {
-    const data = unmetRequirement(have, requires);
-    return {
-      status: "refused",
-      reason_code: insufficientCode(requires),
-      ...(data !== null && { reason_data: data }),
-    };
+  const capacity = capacityRefusal(context);
+  if (capacity !== null) {
+    return capacity;
   }
   return { status: "ok" };
 }

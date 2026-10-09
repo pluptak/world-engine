@@ -30,7 +30,7 @@ export function hurt(
     .sort()
     .filter((id) => {
       const item = context.snapshot.entities[id]!;
-      return item.contained_in === body.id && !inSpacePart(context.snapshot, context.registry, body, item);
+      return item.contained_in === body.id && !inSpacePart(context.registry, body, item);
     });
   for (const itemId of held) {
     dropCarriedItem(context, body.id, itemId, eventId);

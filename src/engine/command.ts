@@ -165,6 +165,22 @@ export interface Result {
   observation?: Projection;
 }
 
+// The verdict fields every view of a result carries, for the views that pass one through as it
+// came: the API's check and the CLI's command response. A view that filters what the actor may see
+// writes its own.
+export function verdictFields(
+  result: Result,
+): Pick<Result, "status" | "command_id" | "resolved_target" | "candidates" | "reason_code" | "reason_data"> {
+  return {
+    status: result.status,
+    command_id: result.command_id,
+    resolved_target: result.resolved_target,
+    ...(result.candidates !== undefined && { candidates: result.candidates }),
+    ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
+    ...(result.reason_data !== undefined && { reason_data: result.reason_data }),
+  };
+}
+
 // One submission as the world recorded it: what was tried, against which version, and how it came
 // out. A store world keeps it as a log line; a failed one has no events and took no time.
 export interface Attempt {

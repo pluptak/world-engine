@@ -2,8 +2,6 @@
 // and edits against a world, every invariant checked after each step. The seeds are split across
 // files so the test runner works on them in parallel.
 import { deepStrictEqual, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -43,21 +41,7 @@ export const registry: TemplateRegistry = withProcessFixtures(
   loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))),
 );
 
-export function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-property-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
-
-export function deepFreeze<T>(value: T): T {
-  if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
-    Object.freeze(value);
-    for (const child of Object.values(value)) {
-      deepFreeze(child);
-    }
-  }
-  return value;
-}
+import { deepFreeze, tempDir } from "./harness.js";
 
 export function asEditCommand(edit: WorldEdit, commandId: string): Command {
   const command: Command = {

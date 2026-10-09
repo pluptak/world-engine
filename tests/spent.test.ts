@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -9,6 +7,7 @@ import { validateSnapshot } from "../src/engine/validate.js";
 import { lostField } from "../src/engine/upgrade.js";
 import { replay } from "../src/store/file-store.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 // A thing used up leaves what its template says it leaves, where it stood: `spent_products` spawned and
 // `spent_residue` added to the surface they went to, every spawn caused by one `spent` event, which a
@@ -47,12 +46,6 @@ const registry: TemplateRegistry = parseRegistry({
     spent_residue: { flour: 2 },
   },
 });
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-spent-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 const floor = (x: number) => ({ location: "hall", support: "hall", pos: { x, y: 0 } });
 

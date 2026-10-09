@@ -1,16 +1,10 @@
 import { deepStrictEqual, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { cli as cliRequest } from "./cli-run.js";
 import { createWorld, memoryWorld, type Scenario } from "../src/index.js";
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-beat-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
+import { tempDir } from "./harness.js";
 
 function logLines(dir: string): number {
   return readFileSync(join(dir, "log.jsonl"), "utf8")

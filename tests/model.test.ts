@@ -9,6 +9,7 @@ import { elevation, effectivePos } from "../src/engine/geometry.js";
 import { spawn } from "../src/engine/spawn.js";
 import type { Snapshot } from "../src/model.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
+import { deepFreeze } from "./harness.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
@@ -21,16 +22,6 @@ function initialSnapshot(): Snapshot {
     coverage: { relations: [], senses: [], properties: [] },
     entities: {},
   };
-}
-
-function deepFreeze<T>(value: T): T {
-  if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
-    Object.freeze(value);
-    for (const child of Object.values(value)) {
-      deepFreeze(child);
-    }
-  }
-  return value;
 }
 
 function writeTemplate(dir: string, template: unknown): void {

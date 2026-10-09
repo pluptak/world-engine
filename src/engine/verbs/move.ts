@@ -2,7 +2,7 @@ import { capacity } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { own, type Pos } from "../../model.js";
 import { isDoor, resolveTarget } from "../resolve.js";
-import { refreshSubtreeLocations, subtreeOf } from "./address.js";
+import { doorJoins, refreshSubtreeLocations, subtreeOf } from "./address.js";
 import { revealConcealed } from "./search.js";
 import { effectivePos, walkStop, type WalkStop } from "../geometry.js";
 
@@ -58,10 +58,7 @@ function nameableRoom(context: CommandContext, to: string): boolean {
     .sort()
     .some((id) => {
       const props = context.snapshot.entities[id]?.props;
-      return (
-        props !== undefined &&
-        ((props.from === here && props.to === to) || (props.from === to && props.to === here))
-      );
+      return props !== undefined && doorJoins(props, here, to);
     });
 }
 
@@ -110,8 +107,7 @@ function hasOpenDoor(context: CommandContext, to: string): boolean {
         entity !== undefined &&
         isDoor(entity) &&
         entity.props.open === true &&
-        ((entity.props.from === from && entity.props.to === to) ||
-          (entity.props.from === to && entity.props.to === from))
+        doorJoins(entity.props, from, to)
       );
     });
 }

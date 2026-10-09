@@ -2,8 +2,54 @@ import { defaultCoverage, own } from "../model.js";
 import type { Entity, Id, Snapshot } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import { claimGrip, holderLayout } from "./carry.js";
+import type { TransitionContext } from "./command.js";
 
 export type EntityOverrides = Partial<Omit<Entity, "id" | "template" | "parts">>;
+
+// Every entity's fields at their defaults, which a template and an override then write over.
+// `parts` is empty because every declared part starts at its template default, never stored
+// (parts.ts).
+export function blankFields(): Omit<Entity, "id" | "template" | "name" | "props" | "traits"> {
+  return {
+    aliases: [],
+    location: null,
+    support: null,
+    contained_in: null,
+    in_part: null,
+    concealed_by: null,
+    pos: null,
+    detached_from: null,
+    integrity: 100,
+    status: "intact",
+    parts: {},
+    residue: {},
+    modifiers: [],
+  };
+}
+
+// Spawning under a running transition: the new snapshot is spliced in, a `spawned` event is emitted
+// under the caller's cause, and the new entity arrives as one delta on the field "entity". The delta
+// is stamped by the spawned event unless the caller names another: a severed part's spawn belongs
+// to its detach, not to its own arrival.
+export function spawnUnder(
+  context: TransitionContext,
+  templateId: string,
+  overrides: EntityOverrides,
+  causeEventId: Id,
+  deltaEventId?: Id,
+): { id: Id; eventId: Id } {
+  const created = spawn(context.snapshot, context.registry, templateId, overrides);
+  context.snapshot = created.snapshot;
+  const spawnedEvent = context.emit("spawned", created.id, { template: templateId }, causeEventId);
+  context.recordDelta(
+    created.id,
+    "entity",
+    null,
+    context.snapshot.entities[created.id],
+    deltaEventId ?? spawnedEvent,
+  );
+  return { id: created.id, eventId: spawnedEvent };
+}
 
 function copyOverrides(overrides: EntityOverrides): EntityOverrides {
   return {
@@ -50,20 +96,7 @@ export function spawn(
     id,
     template: templateId,
     name: templateId,
-    aliases: [],
-    location: null,
-    support: null,
-    contained_in: null,
-    in_part: null,
-    concealed_by: null,
-    pos: null,
-    detached_from: null,
-    integrity: 100,
-    status: "intact",
-    // Every declared part starts at its template default, which is never stored (parts.ts).
-    parts: {},
-    residue: {},
-    modifiers: [],
+    ...blankFields(),
     props: { ...template.props },
     ...copyOverrides(overrides),
   };

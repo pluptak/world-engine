@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -8,18 +7,13 @@ import { canonicalJson, createWorld, memoryWorld, WorldError, type Entity, type 
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
 import { cli } from "./cli-run.js";
+import { tempDir } from "./harness.js";
 
 // Traits describe a thing and nothing reads them: a map of at most 16 keys to opaque tokens, written
 // by a scenario or an `edit spawn`, shown by `inspect` to an observer who sees the thing, never by
 // `observe`, and absent when empty.
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-traits-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 const floor = (x: number) => ({ location: "hall", support: "hall", pos: { x, y: 0 } });
 

@@ -105,6 +105,15 @@ export const SeededScenarioSchema = z.object({
   entities: ScenarioSchema,
 }).strict();
 
+// The beat action and its followers, written once: a scheduled beat carries them in the snapshot's
+// schedule, and `schedule_beat` carries them in an edit.
+const BeatActionFieldsSchema = {
+  action: z.record(z.string(), z.unknown()),
+  only_if: z.record(z.string(), z.unknown()).optional(),
+  then: z.array(z.record(z.string(), z.unknown())).optional(),
+  repeat: z.record(z.string(), z.unknown()).optional(),
+};
+
 export const WorldEditSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("spawn"),
@@ -137,10 +146,7 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
     kind: z.literal("schedule_beat"),
     id: z.string(),
     at_tick: z.number().int(),
-    action: z.record(z.string(), z.unknown()),
-    only_if: z.record(z.string(), z.unknown()).optional(),
-    then: z.array(z.record(z.string(), z.unknown())).optional(),
-    repeat: z.record(z.string(), z.unknown()).optional(),
+    ...BeatActionFieldsSchema,
   }).strict(),
   z.object({ kind: z.literal("cancel_beat"), id: z.string() }).strict(),
   z.object({
@@ -379,10 +385,7 @@ export const SnapshotSchema = z.object({
       entity: IdSchema,
       cause_id: IdSchema,
       id: z.string(),
-      action: z.record(z.string(), z.unknown()),
-      only_if: z.record(z.string(), z.unknown()).optional(),
-      then: z.array(z.record(z.string(), z.unknown())).optional(),
-      repeat: z.record(z.string(), z.unknown()).optional(),
+      ...BeatActionFieldsSchema,
     }).strict(),
   ])).optional(),
   rng: z.number().int().optional(),
@@ -491,13 +494,19 @@ export const OptionsResponseSchema = z.object({
   }).strict()).optional(),
 }).strict();
 
-export const CommandResponseSchema = z.object({
+// The verdict a command or a check answers with, written once: the two responses agree about which
+// fields a verdict carries, and `attempts` rows carry the same codes.
+const VerdictFieldsSchema = {
   status: StatusSchema,
   command_id: IdSchema,
   resolved_target: IdSchema.nullable(),
   candidates: z.array(IdSchema).optional(),
   reason_code: z.string().optional(),
   reason_data: ReasonDataSchema.optional(),
+};
+
+export const CommandResponseSchema = z.object({
+  ...VerdictFieldsSchema,
   snapshot_version: z.number().int(),
   deltas: z.array(DeltaSchema),
   events: z.array(WorldEventSchema),
@@ -511,12 +520,7 @@ export const AnswerSchema = z.object({
 }).strict();
 
 export const CheckResponseSchema = z.object({
-  status: StatusSchema,
-  command_id: IdSchema,
-  resolved_target: IdSchema.nullable(),
-  candidates: z.array(IdSchema).optional(),
-  reason_code: z.string().optional(),
-  reason_data: ReasonDataSchema.optional(),
+  ...VerdictFieldsSchema,
 }).strict();
 
 // An actor command's verdict and what the actor sensed of it: never the snapshot, deltas or events.
@@ -558,11 +562,6 @@ export const VerifyResponseSchema = z.union([
       code: z.enum(["differs", "missing", "extra", "status_differs"]),
     }).strict(),
   }).strict(),
-]);
-
-export const TraceQuerySchema = z.union([
-  z.object({ event_id: IdSchema }).strict(),
-  z.object({ entity: IdSchema, field: z.string().min(1) }).strict(),
 ]);
 
 export const TraceResponseSchema = z.object({
@@ -683,6 +682,3 @@ export function describeContract(): z.infer<typeof SchemaResponseSchema> {
   };
   return described;
 }
-
-export type Query = z.infer<typeof QuerySchema>;
-export type Response = z.infer<typeof ResponseSchema>;

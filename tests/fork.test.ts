@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { canonicalJson, createWorld, memoryWorld, WORLD_AUTHOR, type Id, type World } from "../src/index.js";
 import { loadTemplates, parseRegistry, type TemplateRegistry } from "../src/templates.js";
+import { deepFreeze } from "./harness.js";
 
 // A fork is a memory world that starts from a world's snapshot as it is now: same templates, names,
 // coverage and dice, its own history from that version on, and nothing shared with its parent.
@@ -35,14 +36,6 @@ function open(t: { after(callback: () => void): void }): { world: World; ann: Id
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const world = createWorld(join(root, "w"), entries, registry, { seed: 77 });
   return { world, ann: world.id("ann")!, bob: world.id("bob")! };
-}
-
-function deepFreeze<T>(value: T): T {
-  if (value !== null && typeof value === "object") {
-    Object.values(value).forEach(deepFreeze);
-    Object.freeze(value);
-  }
-  return value;
 }
 
 const advance = (world: World, id: string, ticks: number) =>

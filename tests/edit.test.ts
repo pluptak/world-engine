@@ -1,5 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -19,12 +19,7 @@ import { replay } from "../src/store/file-store.js";
 import { loadTemplates, type TemplateRegistry } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
 import { fileURLToPath } from "node:url";
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-edit-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
+import { tempDir } from "./harness.js";
 
 const shipped: TemplateRegistry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 const registry = presetRegistry(shipped);

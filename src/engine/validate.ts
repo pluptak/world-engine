@@ -21,9 +21,9 @@ function issue(code: string, path: string[], message: string): SnapshotIssue {
   return { code, path, message };
 }
 
-// The ids that close a loop, or null: a dangling reference cannot close one, so the walk ends where
-// the world stops making sense.
-function chainLoop(snapshot: Snapshot, id: Id): Id[] | null {
+// The ids that close a loop along the relation the caller names, or null: a dangling reference
+// cannot close one, so the walk ends where the world stops making sense.
+function linkLoop(snapshot: Snapshot, id: Id, next: (entity: Entity) => Id | null): Id[] | null {
   const path: Id[] = [];
   const visited = new Map<Id, number>();
   let current: Id | null = id;
@@ -40,10 +40,31 @@ function chainLoop(snapshot: Snapshot, id: Id): Id[] | null {
     if (entity === undefined) {
       return null;
     }
-    current = entity.contained_in ?? entity.support;
+    current = next(entity);
   }
 
   return null;
+}
+
+// One issue per loop, however many links reach it: named by its smallest id, so every member of a
+// loop reports the same name and only the first is issued.
+function loopIssues(
+  loop: Id[] | null,
+  id: Id,
+  reported: Set<Id>,
+  path: string[],
+  code: string,
+): SnapshotIssue[] {
+  if (loop === null) {
+    return [];
+  }
+  const sorted = [...loop].sort();
+  const name = sorted[0] ?? id;
+  if (reported.has(name)) {
+    return [];
+  }
+  reported.add(name);
+  return [issue(code, path, `loop: ${sorted.join(", ")}`)];
 }
 
 // The room at the end of a support or containment chain, or null when the chain ends nowhere;
@@ -240,31 +261,6 @@ function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
   return issues;
 }
 
-// The ids that close a concealment loop, or null: it is walked on its own, not with the chain, and a
-// name that reaches nothing cannot close one.
-function concealLoop(snapshot: Snapshot, id: Id): Id[] | null {
-  const path: Id[] = [];
-  const visited = new Map<Id, number>();
-  let current: Id | null = id;
-
-  while (current !== null) {
-    const seenAt = visited.get(current);
-    if (seenAt !== undefined) {
-      return path.slice(seenAt);
-    }
-    visited.set(current, path.length);
-    path.push(current);
-
-    const entity: Entity | undefined = own(snapshot.entities, current);
-    if (entity === undefined) {
-      return null;
-    }
-    current = entity.concealed_by;
-  }
-
-  return null;
-}
-
 // What may hide what: a thing that is there, in the same room, and neither end abstract — an abstract
 // entity is a mark, so nothing lies under it and it lies under nothing. Nothing may hide itself, or
 // hide what hides it.
@@ -294,14 +290,15 @@ function concealmentIssues(
       issue("concealed_by_not_same_room", path, `${String(entity.location)} ${concealer.location}`),
     );
   }
-  const loop = concealLoop(snapshot, id);
-  if (loop !== null) {
-    const name = [...loop].sort()[0] ?? id;
-    if (!reportedLoops.has(name)) {
-      reportedLoops.add(name);
-      issues.push(issue("concealed_by_cycle", path, `loop: ${[...loop].sort().join(", ")}`));
-    }
-  }
+  issues.push(
+    ...loopIssues(
+      linkLoop(snapshot, id, (entity) => entity.concealed_by),
+      id,
+      reportedLoops,
+      path,
+      "concealed_by_cycle",
+    ),
+  );
   return issues;
 }
 
@@ -333,7 +330,6 @@ function integrityIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
 function propIssues(
   registry: TemplateRegistry,
   entity: Entity,
-  id: Id,
   path: string[],
 ): SnapshotIssue[] {
   const issues: SnapshotIssue[] = [];
@@ -482,7 +478,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     issues.push(...traitIssues(entity, path));
     issues.push(...concealmentIssues(snapshot, registry, reportedConcealLoops, id, path));
     issues.push(...holderIssues(snapshot, registry, id, path));
-    issues.push(...propIssues(registry, entity, id, path));
+    issues.push(...propIssues(registry, entity, path));
 
     // A room is where things are, never a thing somewhere: nothing holds, supports or hides it.
     if (
@@ -511,14 +507,15 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
       (entity.support !== null && own(snapshot.entities, entity.support) === undefined) ||
       (entity.contained_in !== null && own(snapshot.entities, entity.contained_in) === undefined);
     if (!chainDangles) {
-      const loop = chainLoop(snapshot, id);
-      if (loop !== null) {
-        const name = [...loop].sort()[0] ?? id;
-        if (!reportedLoops.has(name)) {
-          reportedLoops.add(name);
-          issues.push(issue("support_or_containment_cycle", path, `loop: ${[...loop].sort().join(", ")}`));
-        }
-      }
+      issues.push(
+        ...loopIssues(
+          linkLoop(snapshot, id, (entity) => entity.contained_in ?? entity.support),
+          id,
+          reportedLoops,
+          path,
+          "support_or_containment_cycle",
+        ),
+      );
 
       const support = entity.support === null ? undefined : own(snapshot.entities, entity.support);
       if (support?.template === "room") {

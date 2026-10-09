@@ -1,12 +1,11 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { canonicalJson, createWorld, memoryWorld, WORLD_AUTHOR, WorldError, type Entity, type Id, type Scenario, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates, parseRegistry, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 // What sits in a plain container fits its `inner_*_cm`, as `put` already holds it to; a table in a chest is
 // not a state `put` can reach, so no scenario, edit or cause of the clock may write one.
@@ -42,12 +41,6 @@ const registry: TemplateRegistry = parseRegistry({
     ],
   },
 });
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-container-fit-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 const floor = (x: number) => ({ location: "hall", support: "hall", pos: { x, y: 0 } });
 

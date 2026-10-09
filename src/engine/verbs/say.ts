@@ -1,5 +1,4 @@
-import { capacities } from "../capacity.js";
-import { insufficientCode, meetsRequirements, unmetRequirement } from "../carry.js";
+import { capacityRefusal } from "../carry.js";
 import type { CommandContext, PreconditionResult, Verb } from "../command.js";
 
 // What a speaker says is a token the caller made up and keeps the text of: the engine stores it on
@@ -21,15 +20,9 @@ function preconditions(context: CommandContext): PreconditionResult {
   if (!isUtterance(args.utterance) || volumeOf(args) === null) {
     return { status: "invalid", reason_code: "invalid_args" };
   }
-  const required = context.verb.requires ?? [];
-  const have = capacities(context.snapshot, context.registry, context.actor.id);
-  if (!meetsRequirements(have, required)) {
-    const data = unmetRequirement(have, required);
-    return {
-      status: "refused",
-      reason_code: insufficientCode(required),
-      ...(data !== null && { reason_data: data }),
-    };
+  const capacity = capacityRefusal(context);
+  if (capacity !== null) {
+    return capacity;
   }
   return { status: "ok" };
 }

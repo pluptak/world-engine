@@ -1,7 +1,6 @@
 // test-select: reads src/**/*.ts
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -17,6 +16,7 @@ import { verbCatalog } from "../src/engine/verbs/index.js";
 import { loadTemplates } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
 import { fileURLToPath } from "node:url";
+import { tempDir } from "./harness.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 const presets = presetRegistry(registry);
@@ -33,12 +33,6 @@ function sourceFiles(dir: URL): string[] {
     }
   }
   return found.sort();
-}
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-senses-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
 }
 
 // Three lit rooms: the hall, one through an open door, one through a shut door. A cat sits in the

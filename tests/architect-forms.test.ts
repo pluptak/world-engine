@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -8,17 +7,12 @@ import { createWorld, memoryWorld, WorldError, type Id, type Scenario, type Scen
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { cli } from "./cli-run.js";
+import { tempDir } from "./harness.js";
 
 // The architect says "a tenth of the fuel" or "half full" in a scenario, and the engine stores the one
 // exact value: fuel, liquid_amount and liquid_material, integrity, hunger or portions.
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
-
-function tempDir(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-forms-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
 
 const at = (x: number) => ({ location: "hall", support: "hall", pos: { x, y: 0 } });
 

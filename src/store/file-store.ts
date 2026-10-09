@@ -19,10 +19,10 @@ import { apply } from "../engine/pipeline.js";
 import { canonicalJson } from "../engine/canonical.js";
 import { traceQuery, type TraceQuery } from "../engine/trace.js";
 import { validateSnapshot } from "../engine/validate.js";
-import { lostField } from "../engine/upgrade.js";
+import { assertNoLostField } from "../engine/upgrade.js";
 import { attemptOf, type Attempt, type Command, type Result } from "../engine/command.js";
 import { WorldError } from "../errors.js";
-import { own, type Delta, type Id, type Snapshot, type Status, type WorldEvent } from "../model.js";
+import { own, type Delta, type Id, type Snapshot, type WorldEvent } from "../model.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../templates.js";
 import { pause, withLock } from "./lock.js";
 
@@ -667,13 +667,7 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
     if (!setIsTheWorlds) {
       throw new WorldError("templates_changed", "Template hash mismatch");
     }
-    const lost = lostField(snapshot, templates);
-    if (lost !== null) {
-      throw new WorldError(
-        "templates_lost_field",
-        `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`,
-      );
-    }
+    assertNoLostField(snapshot, templates);
     const folded = replayFold(dir, templates);
     if (
       canonicalJson({ ...folded.snapshot, templates_hash: frozenHash }) !==
@@ -706,11 +700,8 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
   const entries = readLogEntries(dir);
   const okEntries = entries.filter((entry) => entry.status === "ok");
   const expectedVersion = initial.version + okEntries.length;
-  if (snapshot.version !== expectedVersion) {
-    const { snapshot: recovered, events, deltas } = replayWithEvents(dir, templates);
-    atomicWrite(eventsPath, events.map((event) => `${canonicalJson(event)}\n`).join(""));
-    atomicWrite(deltasPath, deltaLines(deltas));
-    atomicWrite(join(dir, snapshots.current), canonicalJson(recovered));
+  // The head as the files now stand, written by whichever branch rebuilt them.
+  const writeSettledHead = (): void => {
     writeHead(dir, {
       log_bytes: statSync(logPath).size,
       events_bytes: statSync(eventsPath).size,
@@ -719,6 +710,13 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
       ok_entries: okEntries.length,
       templates_hash: frozenHash,
     });
+  };
+  if (snapshot.version !== expectedVersion) {
+    const { snapshot: recovered, events, deltas } = replayWithEvents(dir, templates);
+    atomicWrite(eventsPath, events.map((event) => `${canonicalJson(event)}\n`).join(""));
+    atomicWrite(deltasPath, deltaLines(deltas));
+    atomicWrite(join(dir, snapshots.current), canonicalJson(recovered));
+    writeSettledHead();
     return recovered;
   }
   // The deltas are appended after the events and before the snapshot, so with the snapshot at the
@@ -733,14 +731,7 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
   ) {
     atomicWrite(deltasPath, deltaLines(replayWithEvents(dir, templates).deltas));
   }
-  writeHead(dir, {
-    log_bytes: statSync(logPath).size,
-    events_bytes: statSync(eventsPath).size,
-    deltas_bytes: statSync(deltasPath).size,
-    log_entries: entries.length,
-    ok_entries: okEntries.length,
-    templates_hash: frozenHash,
-  });
+  writeSettledHead();
   return snapshot;
 }
 

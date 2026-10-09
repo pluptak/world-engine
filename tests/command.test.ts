@@ -9,6 +9,7 @@ import { spawn } from "../src/engine/spawn.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import type { Snapshot } from "../src/model.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
+import { deepFreeze } from "./harness.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
@@ -49,16 +50,6 @@ function world(bottlePositions: Array<{ x: number; y: number }> = [{ x: 1, y: 0 
     bottles.push(bottle.id);
   }
   return { snapshot, roomId: room.id, actorId: actor.id, bottleIds: bottles };
-}
-
-function deepFreeze<T>(value: T): T {
-  if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
-    Object.freeze(value);
-    for (const child of Object.values(value)) {
-      deepFreeze(child);
-    }
-  }
-  return value;
 }
 
 function command(actor: string, verb: string, target?: string, args?: Record<string, unknown>): Command {

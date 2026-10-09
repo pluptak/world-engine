@@ -5,8 +5,8 @@ import { carryAlternatives, gripEvictions, insufficientCode, lostCarry } from ".
 import type { PartState } from "../../model.js";
 import type { AttackMode, CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { dropCarriedItem } from "./drop.js";
-import { gapRefusal, inReach, reachData } from "./address.js";
-import { spawn } from "../spawn.js";
+import { gapRefusal, refuseOutOfReach } from "./address.js";
+import { spawnUnder } from "../spawn.js";
 import { effectivePart, partState, withParts } from "../parts.js";
 import { startBleeding } from "../schedule.js";
 
@@ -87,13 +87,9 @@ function preconditions(context: CommandContext): PreconditionResult {
   }
 
   const entity = context.snapshot.entities[structure.entityId]!;
-  if (!inReach(context.snapshot, context.actor.id, entity.id)) {
-    const data = reachData(context.snapshot, context.actor.id, entity.id);
-    return {
-      status: "refused",
-      reason_code: "out_of_reach",
-      ...(data !== null && { reason_data: data }),
-    };
+  const reach = refuseOutOfReach(context, entity.id);
+  if (reach !== null) {
+    return reach;
   }
   // A blow at what is destroyed already would change nothing but say it was destroyed again.
   const template = context.registry[entity.template];
@@ -261,17 +257,14 @@ function detachPart(
   }
   const detachedPos = effectivePos(context.snapshot, entityId);
   const support = floorSupport(context, entityId);
-  const created = spawn(context.snapshot, context.registry, detachedTemplateId, {
+  const spawned = spawnUnder(context, detachedTemplateId, {
     name: partName,
     location: support,
     support,
     pos: detachedPos,
     detached_from: { entity: entityId, part: partName },
     integrity: nextIntegrity,
-  });
-  context.snapshot = created.snapshot;
-  context.recordDelta(created.id, "entity", null, context.snapshot.entities[created.id], eventId);
-  const spawnedEvent = context.emit("spawned", created.id, { template: detachedTemplateId }, eventId);
+  }, eventId, eventId);
 
   const copiedParts: Record<string, PartState> = {};
   for (const part of detachedTemplate.parts) {
@@ -280,7 +273,7 @@ function detachPart(
     }
     copiedParts[part.name] = { ...partState(template, entity, part.name)! };
   }
-  context.set(created.id, "parts", withParts(detachedTemplate, {}, copiedParts), spawnedEvent);
+  context.set(spawned.id, "parts", withParts(detachedTemplate, {}, copiedParts), spawned.eventId);
 }
 
 function transition(context: TransitionContext): void {
