@@ -10,7 +10,12 @@ coverage answers unknown (`uncovered_category`, `uncovered_sense`), and a sense 
 compute answers unknown / `engine_incapable`. Coverage is never what any actor knows or notices.
 `reachable` (subject an agent, object a target) answers by `inReach`, the one rule every verb that
 reaches applies: same room, centre to centre within `reach_cm`, bars or not; it is `false` /
-`no_object` without an object. A `fact` subject may name one part, `<entity>.<part>`: `status`,
+`no_object` without an object. It stays arm's reach for a door: `open`, `close`, `lock` and
+`unlock` also work a doorway with no position from anywhere in either room it joins, and a door of
+the next room from its far side (`reachedAsDoor` in `src/engine/verbs/address.ts`), so a door can
+read `reachable: false` while `options` has `open` ready. `push`, `pull`, `attack`, `take` and
+`search` refuse that same door `out_of_reach`, which is what `reachable` answers for; what can be
+worked is `options`' answer. A `fact` subject may name one part, `<entity>.<part>`: `status`,
 `integrity` and `attached_to` (its entity) read the stored entry or the template default and write
 nothing; any other field is `false` / `not_a_part_field`, and a part the template does not declare
 is `false` / `no_such_part`.

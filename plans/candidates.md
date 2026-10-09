@@ -8,26 +8,11 @@ Priorities there, then deleting it here in the same commit.
 - **Actors learn that unseen others acted.** `observation.version` and a `preempted` status reveal
   commands the actor could not perceive, through `actorWorld` and the `actor_*` ops; the open decision
   is whether an actor view should hide them.
-- **Where to stand.** `move` is never ready or blocked in `options`, since its destination is free, so both runs
-  from inside worked a spot out of inspected footprints (the guard's three candidates, the cell's 18 cm,
-  `docs/limits-actor.md`). A `suggest` for `move` could list, for each thing the actor can name, a free spot within
-  reach of it. Open: how many per thing (the nearest, or one per side), and whether coordinates are still
-  describing a command or already planning one (`give`, `put` and `move` suggest ids, never positions).
-- **`reachable` is arm's reach, doors are worked from further.** `inspect`'s `reachable` and the fact use `inReach`;
-  `open`, `close`, `lock` and `unlock` also take a doorway of the actor's room from anywhere in it, and a door of
-  the next room from its far side (`reachedAsDoor`), so a door can read `reachable: false` with `open` ready. Open:
-  say so in `docs/perception.md`, or answer a doorway by the rule its verbs apply, which would make `attack` and
-  `push` on it disagree instead.
 - **Long-lived processes keep every file they read.** The parsed lines of `events.jsonl` and `deltas.jsonl`
   (`lineCaches`) and the head of `initial.json` (`initialMeta`) are module-level maps keyed by path with no eviction,
   so a process that opens many worlds, as a middleware in-process would, holds all their events until it ends. The
   CLI, one process per request, never does. Open: a bound by files or by records, and whether any caller has this
   shape yet.
-- **Whether a gate is shut is in no view.** Default coverage declares the properties `integrity`, `residue` and
-  `pos` only, so `open`, `locked` and `opens` never reach an `inspect`, and a controller reads them off what its
-  options leave ready or blocked (`docs/limits-actor.md`, C steps B, D, E). Open: add them to `defaultCoverage()`
-  (every world without its own coverage then shows them), or leave it to each scenario's coverage; and whether
-  `locked` should show to an actor that cannot reach the lock.
 - **An observer reads an amount exactly.** `inspect` returns `liquid_amount` (and `fuel`) as stored
   whenever coverage names it, but a human cannot tell 288 cm³ from 270 at a glance; a vessel with a
   gauge marked on its side lets it tell more, still not exactly. The engine owns the exact amount
@@ -54,9 +39,3 @@ Priorities there, then deleting it here in the same commit.
   needs, and whether that is ever done while a world runs or only between worlds (`upgradeTemplates`).
 - **Facing and a sight cone.** In a lit room every act is seen (`docs/limits.md`); the costliest of
   the limits, revisit when a concrete world needs what darkness, concealment and staging cannot give.
-- **A door that starts open never closes by itself.** `closes_after` schedules its `close` when `open` runs
-  (`docs/schedule.md`), so a self-closing door placed open by a scenario, or made one by `refine`, has no `close`
-  pending and stands open until someone opens and shuts it. Found probing `refine`. Open: whether an open
-  self-closing openable gets its `close` scheduled whenever it comes to exist or to be one (scenario, spawn,
-  refinement, and `open: true` written by an edit), counted from then; or whether open is a state the author may
-  hold on purpose, and the rule stays "closes after being opened".
