@@ -1,6 +1,6 @@
 import type { Command, CommandContext, Result } from "./engine/command.js";
 import { addressable } from "./engine/query.js";
-import { isAbstract } from "./engine/resolve.js";
+import { isAbstract, isScenery } from "./engine/resolve.js";
 import { visibleParts } from "./engine/projection.js";
 import { isAgent } from "./engine/verbs/address.js";
 import { verbRegistry } from "./engine/verbs/index.js";
@@ -60,6 +60,7 @@ export function listOptions(
         (id) =>
           id !== actor &&
           !isAbstract(registry, snapshot.entities[id]) &&
+          !isScenery(registry, snapshot.entities[id]) &&
           addressable(snapshot, registry, actor, id),
       );
     const actorEntity = snapshot.entities[actor]!;

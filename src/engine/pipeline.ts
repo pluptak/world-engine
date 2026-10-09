@@ -11,7 +11,7 @@ import { verbRegistry } from "./verbs/index.js";
 import { own, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import { isAgent } from "./verbs/address.js";
-import { resolveTarget } from "./resolve.js";
+import { isScenery, resolveTarget } from "./resolve.js";
 
 function unchangedResult(
   snapshot: Snapshot,
@@ -84,6 +84,11 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
       return unchangedResult(snapshot, command, "ambiguous", null, undefined, resolution.candidates);
     }
     target = resolution.target;
+    // Nothing an agent does reaches scenery. The code belongs to the world, not to a verb, so no
+    // verb declares it; the world author's verbs may still change it.
+    if (!authored && isScenery(registry, snapshot.entities[target.entity_id])) {
+      return unchangedResult(snapshot, command, "refused", target.address, "scenery");
+    }
   } else if (verb.requires_target) {
     return unchangedResult(snapshot, command, "unresolved");
   }

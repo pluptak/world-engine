@@ -42,6 +42,17 @@ export function isAbstract(registry: TemplateRegistry, entity: Entity | undefine
   return template !== undefined && template.props.abstract === true;
 }
 
+// Scenery is the other half of abstract: perceived and named like anything, and acted on by nothing.
+// An agent's command at it is refused `scenery`, `options` never offers it, and movement passes over
+// it as over an abstract mark; the world author's edits and processes may still change it.
+export function isScenery(registry: TemplateRegistry, entity: Entity | undefined): boolean {
+  if (entity === undefined) {
+    return false;
+  }
+  const template = registry[entity.template];
+  return template !== undefined && template.props.scenery === true;
+}
+
 // A door or a panel has no location: it stands in the boundary between the rooms it joins, so it is
 // in view from either of them.
 function inViewOf(entity: Entity, location: Id | null): boolean {

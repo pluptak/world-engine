@@ -774,10 +774,20 @@ function assertProducts(registry: TemplateRegistry, sources: ReadonlyMap<string,
   }
 }
 
+const SCENERY_FORBIDS = ["agent", "surface", "container", "openable", "light_source", "barrier"] as const;
+
 // Every prop a template sets or its processes name is declared, by the engine's table or the
 // template's own `fields`, holds a value of its type, and comes with the props it requires.
 function validateProps(template: Template, source: string): void {
   const typeOf = (name: string): PropType | undefined => PROP_FIELDS[name]?.type ?? template.fields?.[name]?.type;
+  // Scenery is acted on by nothing, so a prop that only matters to what acts on it is refused.
+  if (template.props.scenery === true) {
+    for (const use of SCENERY_FORBIDS) {
+      if (Object.hasOwn(template.props, use)) {
+        throw new TypeError(`${source} props.scenery cannot go with ${use}`);
+      }
+    }
+  }
   for (const [name, value] of Object.entries(template.props)) {
     const type = typeOf(name);
     if (type === undefined) {

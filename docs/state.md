@@ -29,8 +29,8 @@ destroyed, stored only where it differs from the template; detachable subtrees b
 the `<template>.<part>` template ([structure.md](structure.md)). A human hand's thumb holds 20 of
 its 50 `manipulation`. A registry with a detachable part but no such template is rejected. A
 template prop `abstract` makes its entities marks rather than things: no agent may address one, it
-is not perceived, and it neither hides nor lies under anything — abstractness is read from the
-template, so a registry that gains the prop makes the world's own entities abstract.
+is not perceived, and it neither hides nor lies under anything (read from the template, so a
+registry that gains it changes the world's own); `scenery` is the reverse: [scenery.md](scenery.md).
 
 An entity may carry `traits`: at most 16 keys (`^[a-z][a-z0-9_]{0,31}$`) to opaque tokens (the `say` rule), absent when
 empty and refused `invalid_trait` otherwise. Only a scenario or an `edit spawn` writes them, and no rule reads them.

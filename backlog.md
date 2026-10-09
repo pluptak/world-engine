@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Scenery: things perceived that nothing can act on](#scenery-things-perceived-that-nothing-can-act-on).
+None: every item is built.
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -59,35 +59,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### Scenery: things perceived that nothing can act on
-
-A scene needs things that are there to be perceived and change nothing: a flowery meadow, a painted
-stain, the sky. The nearest today is `abstract` (`docs/state.md`), which is never perceived and no
-agent can name. Scenery is its other half: perceived and named like anything, acted on by nothing.
-
-- **Change:** a template prop `scenery: true` (`src/engine/fields.ts`, definition tier), read from
-  the template as `abstract` is (`isScenery` beside `isAbstract` in `src/engine/resolve.ts`).
-  - Perceived by the rules every entity follows: seen in a lit room, never in the dark; smelt only
-    through residue or a liquid it carries, as anything is (`docs/limits.md`).
-  - An agent's command whose resolved target is scenery is refused `scenery` in `pipeline.ts`,
-    after resolution and before preconditions: a code the world owns, so no verb lists it, as with
-    `no_seed`. The world author's verbs (`edit`, `advance`) are not refused: an edit and a process
-    may still change it. `options` leaves scenery out of its targets, so it is never offered,
-    blocked or suggested as an argument.
-  - No footprint for movement: `walkStop`, `sweep`, `gapStop` and `occupantsIn` skip it as they skip
-    an abstract entity, so a meadow is walked over and a shutting gate moves nothing of it; a bound
-    is `barrier`, which exists.
-  - A template that is `scenery` and also `agent`, `surface`, `container`, `openable` or
-    `light_source` is refused when the set is resolved (`validateProps`): nothing could use those.
-  - No template in `templates/` gains it: a new file there changes every world's hash.
-- **Tests:** a new `tests/scenery.test.ts` with a `meadow` preset of its own registry: seen in a
-  lit room and listed by `observe` and `inspect`, unseen in the dark; `take`, `push` and `attack` on
-  it refused `scenery` with the snapshot unchanged; `options` lists none of it; an agent walks
-  across it and a gate shuts over it without moving it; `edit` moves it and a process changes it;
-  each forbidden pairing refused at load. The verb drift check in `tests/catalog.test.ts` passes
-  with the world's code.
-- **Docs:** `docs/state.md` (beside `abstract`), `docs/templates.md` (the prop and its refused
-  pairings), `docs/verbs.md` (the world's refusal, beside `no_seed`).
-- **Depends on:** nothing. **Not in it:** a smell or sound of its own (smell reads residue, sound
-  is events); a sky seen from every room (it is placed in one); scenery as a holder.

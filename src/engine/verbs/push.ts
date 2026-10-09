@@ -3,7 +3,7 @@ import { effectivePos, sweep, type Direction, type Sweep } from "../geometry.js"
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Pos } from "../../model.js";
 import { propagateSupportLoss, resolveImpact } from "../../resolvers/physical.js";
-import { isAbstract } from "../resolve.js";
+import { isAbstract, isScenery } from "../resolve.js";
 import { refuseOutOfReach } from "./address.js";
 import { revealConcealed } from "./search.js";
 
@@ -37,7 +37,7 @@ function travel(move: Movement, reverse: boolean): Direction {
 
 function swept(context: CommandContext, targetId: string, move: Movement, reverse: boolean): Sweep {
   return sweep(context.snapshot, context.registry, targetId, travel(move, reverse), move.distance, (id) =>
-    isAbstract(context.registry, context.snapshot.entities[id]),
+    isAbstract(context.registry, context.snapshot.entities[id]) || isScenery(context.registry, context.snapshot.entities[id]),
   );
 }
 

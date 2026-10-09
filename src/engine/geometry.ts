@@ -194,6 +194,7 @@ function walkObstacles(
       other.status === "broken" ||
       other.props.rubble === true ||
       template.props.abstract === true ||
+      template.props.scenery === true ||
       (other.props.barrier === true && other.props.open === true) ||
       (other.props.barrier !== true && template.size_cm.h < STEP_OVER_CM)
     ) {
@@ -378,6 +379,7 @@ export function occupantsIn(snapshot: Snapshot, registry: TemplateRegistry, id: 
       other.props.rubble === true ||
       template === undefined ||
       template.props.abstract === true ||
+      template.props.scenery === true ||
       template.size_cm.h < STEP_OVER_CM
     ) {
       continue;

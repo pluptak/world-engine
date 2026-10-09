@@ -60,6 +60,7 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   portions: { type: "integer", tier: "state" },
   reach_cm: { type: "integer", tier: "definition" },
   rubble: { type: "boolean", tier: "definition" },
+  scenery: { type: "boolean", tier: "definition" },
   surface: { type: "boolean", tier: "definition" },
   to: { type: "id", tier: "state", requires: ["openable"] },
   topples: { type: "boolean", tier: "definition" },
