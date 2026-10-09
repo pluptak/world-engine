@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The scale benchmark builds its world again](#the-scale-benchmark-builds-its-world-again).
-2. [A self-closing door that comes to be open closes by itself](#a-self-closing-door-that-comes-to-be-open-closes-by-itself).
-3. [Default coverage shows whether a thing is open](#default-coverage-shows-whether-a-thing-is-open).
+1. [A self-closing door that comes to be open closes by itself](#a-self-closing-door-that-comes-to-be-open-closes-by-itself).
+2. [Default coverage shows whether a thing is open](#default-coverage-shows-whether-a-thing-is-open).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -61,26 +60,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### The scale benchmark builds its world again
-
-`npm run bench:scale` has not run since props were held to the schema: its `sprout` template sets `size` without
-declaring it (`templates.json#sprout props.size is not a declared prop`), and once that is declared its chests are
-written with `container`, `inner_*_cm` and `openable` in each scenario entry, which an entry may not do. No test
-builds it, so nothing noticed. With a `size` field declared and the chest placed as an openable preset
-(`extends: "chest"`, `openable: true`, `open: false`) it runs: 10000 commands, all ok, 12.2 ms per command (first and
-last thousand alike), against the 10.6 in `docs/measurements.md`.
-
-- **Share the world:** `scripts/bench-world.ts` exports `scaleRegistry()`, `scaleScenario()` and `scaleCommand()`
-  (moved out of `scripts/bench.ts`, which imports them; the registry is built inline in `runScale` today); the
-  fixes above are made there.
-- **Clean up:** each of the three runs in `scripts/bench.ts` removes the directory it made when it ends; today
-  every run leaves one in the system temp directory.
-- **Test:** `tests/bench-world.test.ts` builds the world (500 entities, 20 rooms), plays two laps of the cycle
-  (`CYCLE` * `ROOMS` * 2 commands), asserts every one is ok and `validateSnapshot` is clean. It times nothing.
-- **Docs:** `docs/measurements.md`: the scale row gets the new run, saying the earlier one predates the schema;
-  `CLAUDE.md` needs no change.
-- **Depends on:** nothing.
 
 ### A self-closing door that comes to be open closes by itself
 

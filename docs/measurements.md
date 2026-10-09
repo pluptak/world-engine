@@ -45,13 +45,17 @@ store's time splits into pipeline, validate and the rest (loading the snapshot, 
 appends, the snapshot write, the head). Measured on a Ryzen 5 5600 (12 threads), 32 GB, Windows 11,
 Node 24, a baseline and not a threshold:
 
-| | before | after the first fixes |
-|---|---|---|
-| four-entity workload, ms per command (first / last 1k) | 4.2 / 4.1 | 3.9 / 4.0 |
-| 500 entities, ms per command (first / last 1k) | 13.7 / 13.6 | 10.6 / 10.6 |
-| of which pipeline | 1.3 | 1.2 |
-| of which validate | 1.0 | 1.0 |
-| of which the rest (load, serialise, write) | 11.3 | 8.2 |
+| | before | after the first fixes | props held to the schema |
+|---|---|---|---|
+| four-entity workload, ms per command (first / last 1k) | 4.2 / 4.1 | 3.9 / 4.0 | |
+| 500 entities, ms per command (first / last 1k) | 13.7 / 13.6 | 10.6 / 10.6 | 11.4 / 11.3 |
+| of which pipeline | 1.3 | 1.2 | 1.2 |
+| of which validate | 1.0 | 1.0 | 1.3 |
+| of which the rest (load, serialise, write) | 11.3 | 8.2 | 8.9 |
+
+The first two columns predate the prop schema, under which the scale world no longer built; the last
+is one run of the world `scripts/bench-world.ts` builds now (sprout's `size` declared, the chest an
+openable preset), all 10k commands ok.
 
 The snapshot is 152 kB at 500 entities. Cost does not grow along the run (first and last thousand
 agree); it grows with the size of the world, and nearly all of it is reading, serialising and writing

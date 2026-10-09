@@ -1,17 +1,26 @@
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { createWorld, type Command, type Scenario } from "../src/index.js";
 import { canonicalJson } from "../src/engine/canonical.js";
 import { apply } from "../src/engine/pipeline.js";
 import { validateSnapshot } from "../src/engine/validate.js";
-import { loadTemplates, parseRegistry } from "../src/templates.js";
+import { scaleCommand, scaleRegistry, scaleScenario } from "./bench-world.js";
 
 // Two workloads. The default is a fixed alternating take/drop on a four-entity world: deterministic,
 // all-ok, it exercises submission, transitions, and persistence per command. `--scale` runs a
 // generated world of 20 rooms and 500 entities, with processes running, under mixed commands, and
 // splits the time per phase. Each prints one JSON line; the default exits non-zero on refusal.
+
+// A world directory for one run, removed when the run ends however it ends.
+function inTempWorld(prefix: string, run: (dir: string) => void): void {
+  const root = mkdtempSync(join(tmpdir(), prefix));
+  try {
+    run(join(root, "w"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
 
 function runSmall(): void {
   const scenario: Scenario = [
@@ -26,9 +35,12 @@ function runSmall(): void {
       overrides: { name: "actor", location: "e1", support: "e1", pos: { x: -50, y: 0 } },
     },
   ];
+  inTempWorld("world-engine-bench-", (dir) => runSmallIn(dir, scenario));
+}
 
+function runSmallIn(dir: string, scenario: Scenario): void {
   const commands = 10000;
-  const world = createWorld(join(mkdtempSync(join(tmpdir(), "world-engine-bench-")), "w"), scenario);
+  const world = createWorld(dir, scenario);
 
   const invalid = world.command({ command_id: "invalid-0", actor: "e4", verb: "unknown_verb" });
   if (invalid.status === "invalid") {
@@ -56,7 +68,8 @@ function runSmall(): void {
           reason_code: result.reason_code ?? null,
         }),
       );
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
   }
   const ms = Date.now() - start;
@@ -75,97 +88,15 @@ function runSmall(): void {
   );
 }
 
-// A world of 20 rooms and 500 entities: per room an agent, a table, an openable chest, and 21
-// stones (one of them a sprout, which grows by itself for the whole run, so processes are in the
-// measure). The cycle each agent plays returns the room to where it began, so the workload can run
-// as long as it likes: open the chest, take a stone, put it in, take it out, drop it, close the
-// chest, step aside, wait.
-const ROOMS = 20;
-const CYCLE = 8;
-
-function scaleScenario(): Scenario {
-  const entries: Scenario[number][] = [];
-  for (let r = 0; r < ROOMS; r += 1) {
-    entries.push({ id: `room${r}`, template: "room", overrides: { name: `room${r}`, props: { lit: true } } });
-    entries.push({
-      id: `table${r}`,
-      template: "table",
-      overrides: { name: `table${r}`, location: `room${r}`, support: `room${r}`, pos: { x: 0, y: 200 } },
-    });
-    entries.push({
-      id: `chest${r}`,
-      template: "chest",
-      overrides: {
-        name: `chest${r}`,
-        location: `room${r}`,
-        support: `room${r}`,
-        pos: { x: 40, y: 0 },
-        props: { container: true, topples: true, inner_w_cm: 55, inner_d_cm: 35, inner_h_cm: 35, openable: true, open: false },
-      },
-    });
-    entries.push({
-      id: `agent${r}`,
-      template: "human",
-      overrides: { name: `agent${r}`, location: `room${r}`, support: `room${r}`, pos: { x: 0, y: 0 } },
-    });
-    for (let k = 0; k < 21; k += 1) {
-      entries.push({
-        id: `stone${r}_${k}`,
-        template: k === 20 ? "sprout" : "stone",
-        overrides: {
-          name: `stone${r}_${k}`,
-          location: `room${r}`,
-          support: `room${r}`,
-          pos: k === 0 ? { x: -30, y: 0 } : { x: -400 + 40 * (k % 10), y: 100 + 40 * Math.floor(k / 10) },
-        },
-      });
-    }
-  }
-  return entries;
-}
-
-function scaleCommand(i: number, world: ReturnType<typeof createWorld>): Command {
-  const r = i % ROOMS;
-  const step = Math.floor(i / ROOMS) % CYCLE;
-  const lap = Math.floor(i / (ROOMS * CYCLE));
-  const actor = world.id(`agent${r}`)!;
-  const base = { command_id: `scale-${i}`, actor };
-  const stone = `stone${r}_0`;
-  switch (step) {
-    case 0:
-      return { ...base, verb: "open", target: `chest${r}` };
-    case 1:
-      return { ...base, verb: "take", target: stone };
-    case 2:
-      return { ...base, verb: "put", target: stone, args: { relation: "in", destination: `chest${r}` } };
-    case 3:
-      return { ...base, verb: "take", target: stone };
-    case 4:
-      return { ...base, verb: "drop", target: stone };
-    case 5:
-      return { ...base, verb: "close", target: `chest${r}` };
-    case 6:
-      return { ...base, verb: "move", args: { to: { x: 0, y: lap % 2 === 0 ? -60 : -40 } } };
-    default:
-      return { ...base, verb: "wait", args: { ticks: 1 } };
-  }
-}
-
 const hr = (): number => Number(process.hrtime.bigint()) / 1e6;
 
 function runScale(): void {
+  inTempWorld("world-engine-bench-scale-", runScaleIn);
+}
+
+function runScaleIn(dir: string): void {
   const commands = 10000;
-  const templatesDir = fileURLToPath(new URL("../templates/", import.meta.url));
-  const registry = parseRegistry({
-    ...loadTemplates(templatesDir),
-    sprout: {
-      id: "sprout",
-      extends: "stone",
-      props: { size: 0 },
-      processes: [{ id: "grow", every_ticks: 3, effect: { adjust_prop: { prop: "size", by: 1, max: 1000000 } } }],
-    },
-  });
-  const dir = join(mkdtempSync(join(tmpdir(), "world-engine-bench-scale-")), "w");
+  const registry = scaleRegistry();
   const world = createWorld(dir, scaleScenario(), registry);
 
   const times: number[] = [];
@@ -251,7 +182,11 @@ function runReads(): void {
   const sizes = (process.argv.find((arg) => arg.startsWith("--sizes="))?.slice(8) ?? "1000,5000,10000")
     .split(",")
     .map(Number);
-  const world = createWorld(join(mkdtempSync(join(tmpdir(), "world-engine-bench-reads-")), "w"), scenario);
+  inTempWorld("world-engine-bench-reads-", (dir) => runReadsIn(dir, scenario, sizes));
+}
+
+function runReadsIn(dir: string, scenario: Scenario, sizes: number[]): void {
+  const world = createWorld(dir, scenario);
   const watcher = "e5";
   const actor = "e4";
   const bottle = "e3";
