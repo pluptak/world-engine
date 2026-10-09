@@ -13,15 +13,6 @@ Priorities there, then deleting it here in the same commit.
   so a process that opens many worlds, as a middleware in-process would, holds all their events until it ends. The
   CLI, one process per request, never does. Open: a bound by files or by records, and whether any caller has this
   shape yet.
-- **Scenery: templates nothing can act on.** A scene needs things that are there to be perceived
-  and change nothing: a flowery meadow, a painted stain, the sky or a ceiling that bounds it. The
-  nearest today is `abstract` (`docs/state.md`), which no agent can address and which is never
-  perceived; scenery would be perceived but inert. Open: a template prop (`scenery: true`) or a
-  separate catalogue group; which senses reach it (a meadow smelt, a sky seen in the dark?); every
-  verb refused with one code, or scenery left out of what an agent can name, so `options` never
-  lists it; whether it has a footprint (walked over like a meadow, or a bound like a wall, which
-  `barrier` already gives); whether `edit` and processes may still change it; and whether a
-  stain that is scenery should smell, since smell reads residue today (`docs/limits.md`).
 - **Every command writes the whole snapshot.** At 500 entities about 8 of the 10.6 ms per command is loading,
   serialising and writing the snapshot, against 1.2 ms in the pipeline, and "only a delta log would change" it
   (`docs/measurements.md`). `deltas.jsonl` already holds every accepted command's deltas. Open: write the snapshot
