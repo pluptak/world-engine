@@ -182,7 +182,8 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
 `templates/*.json` are loaded and validated by `src/templates.ts`, and all of them are hashed into
 `templates_hash`. Editing any template therefore makes existing worlds fail with `templates_changed`.
 A detachable part needs a companion template named `<template>.<part>.json` (for example
-`human.hand_l.json`). The registry is rejected when loading, in a world's templates.json, or by
+`human.hand_l.json`); a child that declares no `parts` inherits its parent's, resolved with the set. The
+registry is rejected when loading, in a world's templates.json, or by
 `upgradeTemplates` if a detached part has no companion. Detaching spawns that template.
 A human's `head` contributes `speech`, which `say` requires (`docs/speech.md`; the verb's `rootEvent` puts its event on the speaker even when addressed). `dog`, `cat`, and `horse` are agents with `moving`, `sight`, `hearing`, `smell` and a detachable
 `jaw` that provides `mouth_carry`; default coverage stays `sight`+`hearing`, so smell answers only

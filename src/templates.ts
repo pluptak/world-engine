@@ -590,6 +590,53 @@ function ancestry(id: string, decls: ReadonlyMap<string, TemplateDecl>): string[
 // Resolution happens once, here: everything downstream sees a set with no `extends` in it, so the
 // hash, a world's frozen templates.json and upgradeTemplates never have to know a parent existed.
 function resolveTemplates(
+  declared: ReadonlyMap<string, TemplateDecl>,
+  declaredSources: ReadonlyMap<string, string>,
+): TemplateRegistry {
+  const decls = new Map(declared);
+  const sources = new Map(declaredSources);
+  // A child that inherits its parent's parts and declares no companion of its own for one gets its
+  // parent's, as a template extending it. A companion's own parts are inherited the same way, so
+  // this runs until nothing is left to add; the resolved set is what a file for each would have made.
+  for (;;) {
+    const registry = resolveAll(decls, sources);
+    const inherited = inheritedCompanions(registry, decls);
+    if (inherited.length === 0) {
+      assertMissingCompanions(registry);
+      assertProducts(registry, sources);
+      return registry;
+    }
+    for (const [id, parent] of inherited) {
+      decls.set(id, { id, extends: parent });
+      sources.set(id, `${parent} (inherited)`);
+    }
+  }
+}
+
+// The companions a child lacks that its parent has: `<child>.<part>` extending `<parent>.<part>`, for a
+// detachable part the child has because it declares no parts of its own. [id, parent companion].
+function inheritedCompanions(
+  registry: TemplateRegistry,
+  decls: ReadonlyMap<string, TemplateDecl>,
+): Array<[string, string]> {
+  const found: Array<[string, string]> = [];
+  for (const id of Object.keys(registry).sort()) {
+    const decl = decls.get(id);
+    if (decl === undefined || decl.extends === null || decl.parts !== undefined) {
+      continue;
+    }
+    for (const part of registry[id]!.parts) {
+      const own = `${id}.${part.name}`;
+      const inherited = `${decl.extends}.${part.name}`;
+      if (part.detachable && !decls.has(own) && decls.has(inherited)) {
+        found.push([own, inherited]);
+      }
+    }
+  }
+  return found;
+}
+
+function resolveAll(
   decls: ReadonlyMap<string, TemplateDecl>,
   sources: ReadonlyMap<string, string>,
 ): TemplateRegistry {
@@ -605,9 +652,6 @@ function resolveTemplates(
     validateProps(template, sources.get(id) ?? id);
     registry[id] = template;
   }
-
-  assertMissingCompanions(registry);
-  assertProducts(registry, sources);
   return registry;
 }
 

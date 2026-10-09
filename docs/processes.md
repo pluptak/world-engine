@@ -97,7 +97,7 @@ What it does not do yet: nothing but a prop moves (no spreading to a neighbour, 
 **What ships.** `templates/lantern.json` burns a point of fuel a tick while `burning` and snuffs itself
 at 0, and `candle` extends it with less and, at 0, is used up (`then: { spent: true }`) instead of only
 going out ([verbs-other.md](verbs-other.md), `light`). `human_hungry`
-extends `human` (and needs its own companions, `human_hungry.arm_l` and the rest) with `hunger` and
+extends `human` (its detachable parts' companions are inherited) with `hunger` and
 `starvation`: hunger rises a point every 10 ticks to 100, and at 100 `starvation` rises every 5 ticks
 to 20, whose `then` takes all of the body's integrity. The rise reads `hunger_every` (10 by default) for
 its delay. Eating lowers `hunger` below 100, which withdraws the starving and starts the rise again

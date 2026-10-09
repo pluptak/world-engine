@@ -39,8 +39,10 @@ templates, and a world never needs a template file again: `templates/wine_bottle
 and a set written out with `wine_bottle` spelled out in full hashes the same.
 
 The companion rule is read off the resolved set too: a detachable part, inherited or declared, needs
-a template named `<template>.<part>`, so a child of `human` needs its own `pupil.arm_l`, not
-`human.arm_l`. A child that declares `"parts": []` inherits nothing and needs no companion.
+a template named `<template>.<part>`. A child that declares no `parts` of its own gets each from its
+parent's, as a template extending it (`pupil.arm_l` extends `human.arm_l`, and so on down the
+parts), unless it declares one; a child that declares `parts` needs its companions written, and one
+that declares `"parts": []` inherits nothing and needs none.
 A part may also declare `holds`: `{ "kind": "grip" }` holds one item (hands, and the jaws that
 keep the mouth rules), while `{ "kind": "space", "inner_*_cm": … }` holds what fits, like a chest
 (`human` pockets one). Holds travel with the part list a child replaces as a whole.

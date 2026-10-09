@@ -272,17 +272,8 @@ test("validation refuses a second run of one process and a nameless one", (t) =>
 
 // What a process does on reaching its bound (`then`), under the run that reached it.
 
-// A detachable part of a child of `human` needs a template of its own (the companion rule).
-const starverParts = Object.fromEntries(
-  ["arm_l", "arm_l.hand_l", "arm_r", "arm_r.hand_r", "hand_l", "hand_r"].map((part) => [
-    `starver.${part}`,
-    { id: `starver.${part}`, extends: `human.${part}` },
-  ]),
-);
-
 const withThen = parseRegistry({
   ...base,
-  ...starverParts,
   candle: {
     id: "candle",
     extends: "stone",
@@ -518,15 +509,8 @@ test("a hungry body's rate follows hunger_every: a resting body hungers at half 
   const root = mkdtempSync(join(tmpdir(), "world-engine-rate-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   // A body that hungers at half the pace: its rate is a definition, so it is a preset of its own.
-  const slowParts = Object.fromEntries(
-    ["arm_l", "arm_l.hand_l", "arm_r", "arm_r.hand_r", "hand_l", "hand_r"].map((part) => [
-      `slow_hungry.${part}`,
-      { id: `slow_hungry.${part}`, extends: `human.${part}` },
-    ]),
-  );
   const slow = parseRegistry({
     ...base,
-    ...slowParts,
     slow_hungry: { id: "slow_hungry", extends: "human_hungry", props: { hunger_every: 20 } },
   });
   const world = createWorld(

@@ -70,17 +70,11 @@ None.
 
 Blocks 1 (field schema), 2 (`update_props`, `derived_field`), 3a (definitions are not written),
 3b (entity props hold to the schema), 3c (traits), 4 (architect forms), 4b (scenarios are the
-architect) and 5 (catalogue view) are built: `docs/fields.md`. One
+architect), 5 (catalogue view) and 6 (inherited companions) are built: `docs/fields.md`. One
 block per session, in this order. Each touches the shared registration points CLAUDE.md lists
 (`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
-
-### 6. Inherited companions
-
-- A child that inherits its parent's parts and declares no `<child>.<part>` gets one resolved from
-  `<parent>.<part>` (`missingCompanions` and resolution in `src/templates.ts`).
-- Delete the six `templates/human_hungry.*.json`; a test holds `templates_hash` unchanged.
 
 ### 7. Parts merged by name
 

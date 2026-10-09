@@ -92,23 +92,9 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
     // override or edit may write; a descendant preset is the way to place one.
     ...SHARED_FIXTURES,
     bruiser: { id: "bruiser", extends: "human", props: { attack_damage: 100 } },
-    // A descendant's detachable parts need companions of their own until inherited ones
-    // resolve (block 6): each extends the matching human companion.
-    "bruiser.arm_l": { id: "bruiser.arm_l", extends: "human.arm_l" },
-    "bruiser.arm_l.hand_l": { id: "bruiser.arm_l.hand_l", extends: "human.arm_l.hand_l" },
-    "bruiser.hand_l": { id: "bruiser.hand_l", extends: "human.hand_l" },
-    "bruiser.arm_r": { id: "bruiser.arm_r", extends: "human.arm_r" },
-    "bruiser.arm_r.hand_r": { id: "bruiser.arm_r.hand_r", extends: "human.arm_r.hand_r" },
-    "bruiser.hand_r": { id: "bruiser.hand_r", extends: "human.hand_r" },
     // A body already starving: hunger and starvation are state, which a scenario may not set past a
     // percentage, so the preset carries the figures the properties start from.
     famished: { id: "famished", extends: "human_hungry", props: { hunger: 96, starvation: 17 } },
-    "famished.arm_l": { id: "famished.arm_l", extends: "human_hungry.arm_l" },
-    "famished.arm_l.hand_l": { id: "famished.arm_l.hand_l", extends: "human_hungry.arm_l.hand_l" },
-    "famished.hand_l": { id: "famished.hand_l", extends: "human_hungry.hand_l" },
-    "famished.arm_r": { id: "famished.arm_r", extends: "human_hungry.arm_r" },
-    "famished.arm_r.hand_r": { id: "famished.arm_r.hand_r", extends: "human_hungry.arm_r.hand_r" },
-    "famished.hand_r": { id: "famished.hand_r", extends: "human_hungry.hand_r" },
   });
 }
 

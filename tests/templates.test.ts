@@ -1,5 +1,5 @@
 import { deepStrictEqual, ok, strictEqual, throws as assertThrows } from "node:assert";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,7 +12,7 @@ import {
   WorldError,
   type Scenario,
 } from "../src/index.js";
-import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../src/templates.js";
+import { loadTemplates, missingCompanions, parseRegistry, templatesHash, type TemplateRegistry } from "../src/templates.js";
 
 const templatesDir = fileURLToPath(new URL("../templates/", import.meta.url));
 const registry = loadTemplates(templatesDir);
@@ -352,14 +352,59 @@ test("a world needs no template file once it holds the resolved set", (t) => {
   deepStrictEqual(reopened.entity("e1")?.residue, { glass: 5, grape_wine: 750 });
 });
 
-test("a child that inherits a detachable part needs its own companion template", () => {
+test("a child that inherits a detachable part inherits its parent's companion for it", () => {
+  const raw = JSON.parse(canonicalJson(registry)) as Record<string, unknown>;
+  raw.pupil = { id: "pupil", extends: "human", props: { attack_damage: 1 } };
+  // A grandchild gets the child's, which got the parent's: nested companions follow the same way.
+  raw.novice = { id: "novice", extends: "pupil" };
+
+  const resolved = parseRegistry(raw);
+  for (const owner of ["pupil", "novice"]) {
+    for (const part of ["arm_l", "arm_l.hand_l", "arm_r", "arm_r.hand_r", "hand_l", "hand_r"]) {
+      deepStrictEqual(resolved[`${owner}.${part}`], { ...resolved[`human.${part}`], id: `${owner}.${part}` });
+    }
+  }
+  deepStrictEqual(missingCompanions(resolved), []);
+});
+
+test("inherited companions are what a file for each would have made, and a declared one wins", () => {
   const raw = JSON.parse(canonicalJson(registry)) as Record<string, unknown>;
   raw.pupil = { id: "pupil", extends: "human" };
+  const inherited = parseRegistry(raw);
+  const written = parseRegistry({
+    ...raw,
+    "pupil.hand_l": { id: "pupil.hand_l", extends: "human.hand_l" },
+    "pupil.arm_l": { id: "pupil.arm_l", extends: "human.arm_l" },
+    "pupil.arm_l.hand_l": { id: "pupil.arm_l.hand_l", extends: "human.arm_l.hand_l" },
+    "pupil.arm_r": { id: "pupil.arm_r", extends: "human.arm_r" },
+    "pupil.arm_r.hand_r": { id: "pupil.arm_r.hand_r", extends: "human.arm_r.hand_r" },
+    "pupil.hand_r": { id: "pupil.hand_r", extends: "human.hand_r" },
+  });
+  strictEqual(templatesHash(inherited), templatesHash(written));
+  // A companion the child declares is its own; the others are still inherited.
+  raw["pupil.hand_l"] = { id: "pupil.hand_l", extends: "human.hand_l", mass_g: 123 };
+  const own = parseRegistry(raw);
+  deepStrictEqual([own["pupil.hand_l"]?.mass_g, own["pupil.hand_r"]?.mass_g], [123, registry["human.hand_r"]?.mass_g]);
+});
+
+test("a child that declares its own parts needs the companions of those parts", () => {
+  const raw = JSON.parse(canonicalJson(registry)) as Record<string, unknown>;
+  const human = registry.human!;
+  raw.pupil = { id: "pupil", extends: "human", parts: human.parts };
 
   assertThrows(
     () => parseRegistry(raw),
     (error: unknown) =>
       error instanceof TypeError && error.message === "Missing detached part template pupil.arm_l",
+  );
+});
+
+test("the shipped human_hungry has no companion files, and its set is the one it always was", () => {
+  const files = readdirSync(fileURLToPath(new URL("../templates/", import.meta.url)));
+  deepStrictEqual(files.filter((file) => file.startsWith("human_hungry.") && file !== "human_hungry.json"), []);
+  deepStrictEqual(
+    Object.keys(registry).filter((id) => id.startsWith("human_hungry.")).sort(),
+    ["arm_l", "arm_l.hand_l", "arm_r", "arm_r.hand_r", "hand_l", "hand_r"].map((part) => `human_hungry.${part}`).sort(),
   );
 });
 
