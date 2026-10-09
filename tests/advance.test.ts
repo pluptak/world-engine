@@ -35,7 +35,7 @@ function hall(t: { after(callback: () => void): void }): Hall {
     {
       id: "door",
       template: "slow_door",
-      overrides: { name: "door", props: { openable: true, open: false, from: "hall", to: "yard" } },
+      overrides: { name: "door", props: { open: false, from: "hall", to: "yard" } },
     },
     { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
     { id: "bob", template: "human", overrides: { name: "bob", location: "yard", support: "yard", pos: { x: 0, y: 0 } } },

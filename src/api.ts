@@ -21,9 +21,9 @@ import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./e
 import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
 import { lostField } from "./engine/upgrade.js";
 import { verbCatalog } from "./engine/verbs/index.js";
-import { applyForms, hasForms } from "./engine/forms.js";
+import { applyForms, architectWrites, hasForms } from "./engine/forms.js";
 import { spawn } from "./engine/spawn.js";
-import { definitionWritten, derivedFieldWritten } from "./engine/verbs/edit.js";
+import { derivedFieldWritten } from "./engine/verbs/edit.js";
 import { startProcesses } from "./engine/process.js";
 import { isRngState } from "./engine/rng.js";
 import { resolveScenario, type Scenario } from "./scenario.js";
@@ -438,28 +438,23 @@ export function createWorld(
   const resolved = resolveScenario(scenario, initial.next_seq);
   let snapshot = initial;
   for (const [index, entry] of resolved.scenario.entries()) {
+    // A scenario is the architect's: it writes placement, names, traits, the forms and a few plain
+    // states, read as written before a form becomes the raw prop it converts to.
+    const derived = derivedFieldWritten(snapshot, entry.overrides ?? {});
+    if (derived !== null) {
+      throw new WorldError("derived_field", `Scenario entry ${index} writes the derived field ${derived}`);
+    }
+    const unwritable = architectWrites(entry.overrides ?? {});
+    if (unwritable !== null) {
+      throw new WorldError("field_not_editable", `Scenario entry ${index} writes ${unwritable}, which the architect may not`);
+    }
     // A form is converted to the one stored value before any rule reads the entry.
     const known = own(templates, entry.template);
     const overrides =
       entry.overrides !== undefined && known !== undefined && hasForms(entry.overrides)
         ? applyForms(known, entry.overrides, index)
         : entry.overrides;
-    const written = derivedFieldWritten(snapshot, overrides ?? {});
-    if (written !== null) {
-      throw new WorldError("derived_field", `Scenario entry ${index} writes the derived field ${written}`);
-    }
-    // A template no set declares is left to spawn's own TypeError, as it was before this check.
-    const template = own(templates, entry.template);
-    const definition =
-      template === undefined
-        ? null
-        : definitionWritten(template, { ...template.props, ...overrides?.props });
-    if (definition !== null) {
-      throw new WorldError(
-        "field_not_editable",
-        `Scenario entry ${index} writes the definition ${definition}`,
-      );
-    }
+    // A template no set declares is left to spawn's own TypeError.
     snapshot = spawn(snapshot, templates, entry.template, overrides).snapshot;
   }
   // What the templates set going has no event behind it yet; its first `changed` is a root.

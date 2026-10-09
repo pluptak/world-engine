@@ -197,7 +197,7 @@ test("a door and a key are authored by name alone", (t) => {
         location: "hall",
         support: "hall",
         pos: { x: 0, "y": 0 },
-        props: { openable: true, open: false, from: "hall", to: "yard" },
+        props: { open: false, from: "hall", to: "yard" },
       },
     },
     {

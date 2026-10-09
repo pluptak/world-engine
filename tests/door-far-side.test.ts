@@ -36,7 +36,7 @@ function gate(t: { after(callback: () => void): void }): Gate {
         location: "gatehouse",
         support: "gatehouse",
         pos: { x: -300, y: 0 },
-        props: { openable: true, open: true, from: "gatehouse", to: "cellar" },
+        props: { open: true, from: "gatehouse", to: "cellar" },
       },
     },
   ];

@@ -51,12 +51,12 @@ const hall: Scenario = [
   {
     id: "open-door",
     template: "door",
-    overrides: { name: "open-door", props: { openable: true, open: true, from: "hall", to: "side" } },
+    overrides: { name: "open-door", props: { open: true, from: "hall", to: "side" } },
   },
   {
     id: "shut-door",
     template: "door",
-    overrides: { name: "shut-door", props: { openable: true, open: false, from: "hall", to: "back" } },
+    overrides: { name: "shut-door", props: { open: false, from: "hall", to: "back" } },
   },
   {
     id: "table",

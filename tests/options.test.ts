@@ -291,7 +291,7 @@ function house(): Scenario {
   const door = (name: string, from: string, to: string) => ({
     id: name,
     template: "door",
-    overrides: { name, props: { openable: true, open: true, from, to } },
+    overrides: { name, props: { open: true, from, to } },
   });
   const chest = (name: string, x: number, open: boolean) => ({
     id: name,

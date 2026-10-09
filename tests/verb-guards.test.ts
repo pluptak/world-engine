@@ -29,7 +29,7 @@ function room(): { world: World; ids: Record<string, string> } {
   };
   add("hall", "room", { props: { lit: true } });
   add("yard", "room", { props: { lit: true } });
-  add("door", "door", { props: { openable: true, open: true, from: ids.hall, to: ids.yard } });
+  add("door", "door", { props: { open: true, from: ids.hall, to: ids.yard } });
   const floor = { location: ids.hall, support: ids.hall };
   add("table", "table", { ...floor, pos: { x: 100, y: 0 } });
   add("cup", "cup", { location: ids.hall, support: ids.table });

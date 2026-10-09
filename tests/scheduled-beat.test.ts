@@ -45,7 +45,7 @@ function inn(t: { after(callback: () => void): void }): Inn {
     {
       id: "door",
       template: "door",
-      overrides: { name: "door", location: "hall", support: "hall", pos: { x: 0, y: 120 }, props: { openable: true, open: false, from: "hall", to: "yard" } },
+      overrides: { name: "door", location: "hall", support: "hall", pos: { x: 0, y: 120 }, props: { open: false, from: "hall", to: "yard" } },
     },
     { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
     { id: "bob", template: "human", overrides: { name: "bob", location: "yard", support: "yard", pos: { x: 0, y: 0 } } },

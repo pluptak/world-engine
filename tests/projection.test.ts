@@ -35,7 +35,7 @@ const house: Scenario = [
   {
     id: "door",
     template: "door",
-    overrides: { name: "door", props: { openable: true, open: true, from: "hall", to: "cellar" } },
+    overrides: { name: "door", props: { open: true, from: "hall", to: "cellar" } },
   },
   { id: "table", template: "table", overrides: { name: "table", location: "hall", support: "hall", pos: { x: 100, y: 0 } } },
   { id: "cup", template: "cup", overrides: { name: "cup", location: "hall", support: "table" } },

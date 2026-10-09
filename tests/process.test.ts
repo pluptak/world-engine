@@ -537,7 +537,7 @@ test("a hungry body's rate follows hunger_every: a resting body hungers at half 
       {
         id: "rest",
         template: "slow_hungry",
-        overrides: { name: "rest", location: "tent", support: "tent", pos: { x: 100, y: 0 }, props: { hunger: 0, starvation: 0 } },
+        overrides: { name: "rest", location: "tent", support: "tent", pos: { x: 100, y: 0 } },
       },
     ],
     slow,

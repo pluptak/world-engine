@@ -69,22 +69,12 @@ None.
 ## Blocks
 
 Blocks 1 (field schema), 2 (`update_props`, `derived_field`), 3a (definitions are not written),
-3b (entity props hold to the schema), 3c (traits) and 4 (architect forms) are built: `docs/fields.md`. One
+3b (entity props hold to the schema), 3c (traits), 4 (architect forms) and 4b (scenarios are the
+architect) are built: `docs/fields.md`. One
 block per session, in this order. Each touches the shared registration points CLAUDE.md lists
 (`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
-
-### 4b. Scenarios are the architect
-
-- A scenario entry (`src/scenario.ts`) writes only placement, `name`, `aliases`, traits, the five
-  forms and the plain state values `open`, `locked`, `burning`, `lit`, a door's `from`/`to` and
-  a key's `opens`; any other prop, the raw `fuel`, `liquid_amount`, `liquid_material`,
-  `integrity`, `hunger` and `portions` included, is refused `field_not_editable`. Edits stay the
-  world author's and write any state.
-- Migration: the shipped scenarios and the tests' scenario entries move to the forms
-  (`scenarios/camp.json`'s `hunger: 100` → `hunger_pct: 100`); inventory first, report the count.
-- Tests: `tests/roles.test.ts` gains the architect's refusals. Docs: `docs/api.md`.
 
 ### 5. Catalogue view
 

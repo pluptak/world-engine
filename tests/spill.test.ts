@@ -12,6 +12,12 @@ import { SHARED_FIXTURES } from "./presets.js";
 const registry = parseRegistry({
   ...loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))),
   ...SHARED_FIXTURES,
+  // A small wine cup: a definition, so a template and not a scenario's say.
+  tiny_cup: {
+    id: "tiny_cup",
+    extends: "cup",
+    props: { container: true, topples: true, inner_w_cm: 6, inner_d_cm: 6, inner_h_cm: 8, liquid_material: "wine", liquid_amount: 30 },
+  },
   // A shut bottle that survives the fall: tougher and lidded, which no override may write.
   sturdy_shut_bottle: {
     id: "sturdy_shut_bottle",
@@ -32,13 +38,8 @@ const scenario: Scenario = [
   { id: "table", template: "table", overrides: { name: "table", location: "hall", support: "hall", pos: { x: 60, y: 0 } } },
   {
     id: "cup",
-    template: "cup",
-    overrides: {
-      name: "cup",
-      location: "hall",
-      support: "table",
-      props: { container: true, topples: true, inner_w_cm: 6, inner_d_cm: 6, inner_h_cm: 8, liquid_material: "wine", liquid_amount: 30 },
-    },
+    template: "tiny_cup",
+    overrides: { name: "cup", location: "hall", support: "table" },
   },
   { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
   { id: "bob", template: "human", overrides: { name: "bob", location: "hall", support: "hall", pos: { x: 60, y: 0 } } },
@@ -126,10 +127,7 @@ test("a shut vessel that falls keeps its liquid", (t) => {
         name: "flask",
         location: "hall",
         support: "table",
-        props: {
-          liquid_material: "wine",
-          liquid_amount: 75,
-        },
+        liquid: { material: "wine", pct: 10 },
       },
     },
   ];

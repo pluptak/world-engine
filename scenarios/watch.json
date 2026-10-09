@@ -9,7 +9,7 @@
       "location": "gatehouse",
       "support": "gatehouse",
       "pos": { "x": 400, "y": 0 },
-      "props": { "openable": true, "open": false, "from": "gatehouse", "to": "yard" }
+      "props": { "open": false, "from": "gatehouse", "to": "yard" }
     }
   },
   {

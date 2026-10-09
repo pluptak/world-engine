@@ -84,6 +84,11 @@ function runCommands(world: string, commands: Array<Record<string, unknown>>) {
   return results;
 }
 
+// What an architect may say about an entity, and the plain states it may set: the rest of a stored
+// entity is the template's default or the engine's, and comes back by itself.
+const ARCHITECT_FIELDS = ["name", "aliases", "traits", "location", "support", "contained_in", "in_part", "concealed_by", "pos"];
+const ARCHITECT_PROPS = ["open", "locked", "burning", "lit", "from", "to", "opens"];
+
 function specsFromInitial(worldDir: string): Array<Record<string, unknown>> {
   const snapshot = JSON.parse(readFileSync(join(worldDir, "initial.json"), "utf8")) as {
     entities: Record<string, Record<string, unknown>>;
@@ -91,8 +96,10 @@ function specsFromInitial(worldDir: string): Array<Record<string, unknown>> {
   return Object.keys(snapshot.entities)
     .sort((left, right) => Number(left.slice(1)) - Number(right.slice(1)))
     .map((id) => {
-      const { id: _id, template, parts: _parts, ...overrides } = snapshot.entities[id]!;
-      return { template, overrides };
+      const { template, props, ...stored } = snapshot.entities[id]!;
+      const overrides = Object.fromEntries(Object.entries(stored).filter(([key]) => ARCHITECT_FIELDS.includes(key)));
+      const states = Object.entries(props as Record<string, unknown>).filter(([name]) => ARCHITECT_PROPS.includes(name));
+      return { template, overrides: { ...overrides, props: Object.fromEntries(states) } };
     });
 }
 

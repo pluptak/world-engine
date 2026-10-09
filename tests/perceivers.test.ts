@@ -24,7 +24,7 @@ const doorScenario: Scenario = [
   { template: "room", overrides: { name: "room-b", props: { lit: true } } },
   {
     template: "door",
-    overrides: { name: "door", props: { openable: true, open: false, from: "e1", to: "e2" } },
+    overrides: { name: "door", props: { open: false, from: "e1", to: "e2" } },
   },
   {
     template: "table",
@@ -79,7 +79,7 @@ const leaveScenario: Scenario = [
   { template: "room", overrides: { name: "room-b", props: { lit: false } } },
   {
     template: "door",
-    overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2" } },
+    overrides: { name: "door", props: { open: true, from: "e1", to: "e2" } },
   },
   {
     template: "human",

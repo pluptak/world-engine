@@ -21,18 +21,7 @@
       "location": "tent",
       "support": "tent",
       "pos": { "x": 40, "y": 0 },
-      "props": {
-        "agent": true,
-        "reach_cm": 100,
-        "hand_height_cm": 100,
-        "attack_damage": 40,
-        "default_hit_part": "torso",
-        "bleed_damage": 5,
-        "bleed_every_ticks": 2,
-        "bleed_times": 3,
-        "hunger": 100,
-        "starvation": 0
-      }
+      "hunger_pct": 100
     }
   },
   { "id": "ann", "template": "human", "overrides": { "name": "ann", "location": "tent", "support": "tent", "pos": { "x": -100, "y": 0 } } }

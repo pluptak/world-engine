@@ -13,7 +13,6 @@ import { presetRegistry } from "./presets.js";
 // the amount, and either lowers the eater's `hunger`, which a hungry body raises by itself.
 
 const registry = presetRegistry(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
-const hungry = registry.human_hungry!.props;
 
 interface Table {
   world: World;
@@ -23,7 +22,7 @@ interface Table {
   bread: Id;
 }
 
-function table(t: { after(callback: () => void): void }, gusProps: Record<string, number | string | boolean> = {}, extra: Parameters<typeof createWorld>[1] = []): Table {
+function table(t: { after(callback: () => void): void }, gus: { hunger_pct?: number } = {}, extra: Parameters<typeof createWorld>[1] = []): Table {
   const root = mkdtempSync(join(tmpdir(), "world-engine-consume-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const world = createWorld(join(root, "w"), [
@@ -32,7 +31,7 @@ function table(t: { after(callback: () => void): void }, gusProps: Record<string
     {
       id: "gus",
       template: "human_hungry",
-      overrides: { name: "gus", location: "hall", support: "hall", pos: { x: -100, y: 0 }, props: { ...hungry, ...gusProps } },
+      overrides: { name: "gus", location: "hall", support: "hall", pos: { x: -100, y: 0 }, ...gus },
     },
     { id: "rex", template: "dog", overrides: { name: "rex", location: "hall", support: "hall", pos: { x: 100, y: 0 } } },
     { id: "bread", template: "bread", overrides: { name: "bread", location: "hall", support: "hall", pos: { x: -80, y: 0 } } },
@@ -66,7 +65,7 @@ const advance = (world: World, ticks: number): Result => {
 const code = (result: Result) => [result.status, result.reason_code];
 
 test("bread is eaten a portion at a time: the hunger each lowers, the loaf that shrinks, and the last bite that removes it", (t) => {
-  const { world, gus, bread } = table(t, { hunger: 50 });
+  const { world, gus, bread } = table(t, { hunger_pct: 50 });
   for (const left of [3, 2, 1]) {
     const bite = run(world, gus, "consume", "bread");
     strictEqual(bite.status, "ok");
@@ -95,14 +94,19 @@ test("bread is eaten a portion at a time: the hunger each lowers, the loaf that 
 test("a thing with no portions is eaten whole, and a malformed portions is not food", (t) => {
   const root = mkdtempSync(join(tmpdir(), "world-engine-consume-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  const kinds = parseRegistry({ ...registry, apple: { id: "apple", extends: "stone", props: { nutrition: 15 } } });
+  const kinds = parseRegistry({
+    ...registry,
+    apple: { id: "apple", extends: "stone", props: { nutrition: 15 } },
+    // A definition no scenario may write: a malformed portions.
+    odd_apple: { id: "odd_apple", extends: "stone", props: { nutrition: 15, portions: 0 } },
+  });
   const world = createWorld(
     join(root, "w"),
     [
       { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
-      { id: "gus", template: "human_hungry", overrides: { name: "gus", location: "hall", support: "hall", pos: { x: 0, y: 0 }, props: { ...hungry, hunger: 50 } } },
+      { id: "gus", template: "human_hungry", overrides: { name: "gus", location: "hall", support: "hall", pos: { x: 0, y: 0 }, hunger_pct: 50 } },
       { id: "apple", template: "apple", overrides: { name: "apple", location: "hall", support: "hall", pos: { x: 40, y: 0 } } },
-      { id: "odd", template: "apple", overrides: { name: "odd", location: "hall", support: "hall", pos: { x: -40, y: 0 }, props: { nutrition: 15, portions: 0 } } },
+      { id: "odd", template: "odd_apple", overrides: { name: "odd", location: "hall", support: "hall", pos: { x: -40, y: 0 } } },
     ],
     kinds,
   );
@@ -115,7 +119,7 @@ test("a thing with no portions is eaten whole, and a malformed portions is not f
 });
 
 test("hunger is floored at 0, and a body with no hunger eats all the same", (t) => {
-  const { world, ann, gus } = table(t, { hunger: 5 }, [
+  const { world, ann, gus } = table(t, { hunger_pct: 5 }, [
     { id: "crust", template: "bread", overrides: { name: "crust", location: "hall", support: "hall", pos: { x: 20, y: 0 } } },
   ]);
   strictEqual(run(world, gus, "consume", "bread").status, "ok");
@@ -147,7 +151,7 @@ test("what is carried is eaten from the hand, and refusals are declared", (t) =>
 });
 
 test("a vessel is drunk by the amount and stays, emptied of its material at 0", (t) => {
-  const { world, gus } = table(t, { hunger: 50 }, [
+  const { world, gus } = table(t, { hunger_pct: 50 }, [
     // A tenth of a bottle, 75, so that the arithmetic below stays small.
     { id: "wine", template: "wine_bottle", overrides: { name: "wine", location: "hall", support: "hall", pos: { x: -60, y: 20 }, liquid: { pct: 10 } } },
   ]);
@@ -175,7 +179,7 @@ test("a vessel is drunk by the amount and stays, emptied of its material at 0", 
 test("a liquid that declares no nutrition is not drunk", (t) => {
   // A cup declares no `liquid_nutrition`: what it holds is not food, however much is in it.
   const { world, gus } = table(t, {}, [
-    { id: "oil", template: "cup", overrides: { name: "oil", location: "hall", support: "hall", pos: { x: -60, y: 20 }, props: { liquid_material: "lamp_oil", liquid_amount: 40 } } },
+    { id: "oil", template: "cup", overrides: { name: "oil", location: "hall", support: "hall", pos: { x: -60, y: 20 }, liquid: { material: "lamp_oil", pct: 16 } } },
   ]);
   deepStrictEqual(code(run(world, gus, "consume", "oil")), ["refused", "not_consumable"]);
 });
@@ -194,7 +198,7 @@ test("a creature whose jaw holds something else cannot eat, and one with a free 
 });
 
 test("a hungry body's hunger rises by itself, and eating lowers it and starts the rise again", (t) => {
-  const { world, gus } = table(t, { hunger: 99 });
+  const { world, gus } = table(t, { hunger_pct: 99 });
   const rose = advance(world, 12);
   deepStrictEqual(
     rose.events.filter((event) => event.type === "changed" && event.entity === gus).map((event) => [event.tick, event.data.prop, event.data.to]),
@@ -212,10 +216,12 @@ test("a hungry body's hunger rises by itself, and eating lowers it and starts th
 });
 
 test("a body left at full hunger starves to destruction, dropping what it held", (t) => {
-  const { world, gus } = table(t, { hunger: 100, starvation: 18 }, [
+  const { world, gus } = table(t, { hunger_pct: 100 }, [
     { id: "hoard", template: "stone", overrides: { name: "hoard", location: "hall", contained_in: "gus", in_part: "hand_l" } },
   ]);
   const hoard = world.id("hoard")!;
+  // Two bouts from the end: starvation is the world's to set, not the architect's.
+  strictEqual(world.edit({ kind: "update_props", target: gus, props: { starvation: 18 } }).status, "ok");
   const run10 = advance(world, 12);
   const types = run10.events.filter((event) => event.entity === gus || event.entity === hoard).map((event) => event.type);
   deepStrictEqual(types, ["changed", "changed", "destroyed", "dropped"]);

@@ -43,7 +43,7 @@ const doorScenario: Scenario = [
   { template: "room", overrides: { name: "room-b", props: { lit: true } } },
   {
     template: "door",
-    overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2" } },
+    overrides: { name: "door", props: { open: true, from: "e1", to: "e2" } },
   },
   {
     template: "table",
@@ -175,7 +175,7 @@ test("seeing a move from lit to dark hall: the event is perceptible at the start
     { template: "room", overrides: { name: "yard", props: { lit: false } } },
     {
       template: "door",
-      overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2" } },
+      overrides: { name: "door", props: { open: true, from: "e1", to: "e2" } },
     },
     {
       template: "human",
@@ -232,7 +232,7 @@ test("seeing an arrival in a lit room: the moved event is perceptible at the end
     { template: "room", overrides: { name: "yard", props: { lit: true } } },
     {
       template: "door",
-      overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2" } },
+      overrides: { name: "door", props: { open: true, from: "e1", to: "e2" } },
     },
     {
       template: "human",
@@ -278,7 +278,7 @@ test("seeing a door close from the other room: the closed event is perceptible b
     { template: "room", overrides: { name: "yard", props: { lit: true } } },
     {
       template: "door",
-      overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2" } },
+      overrides: { name: "door", props: { open: true, from: "e1", to: "e2" } },
     },
     {
       template: "human",
@@ -329,7 +329,7 @@ test("the door's visibility depends on the observer's room lighting", (t) => {
     { template: "room", overrides: { name: "yard", props: { lit: false } } },
     {
       template: "door",
-      overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2" } },
+      overrides: { name: "door", props: { open: true, from: "e1", to: "e2" } },
     },
     {
       template: "human",

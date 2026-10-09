@@ -278,7 +278,7 @@ test("moving rooms carries what the actor holds", () => {
   const otherRoom = spawn(setup.snapshot, registry, "room", { name: "cellar" });
   const door = spawn(otherRoom.snapshot, registry, "door", {
     name: "door",
-    props: { open: true, openable: true, from: setup.roomId, to: otherRoom.id },
+    props: { open: true, from: setup.roomId, to: otherRoom.id },
   });
   const bottleId = setup.bottleIds[0]!;
 

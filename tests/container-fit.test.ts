@@ -72,7 +72,7 @@ function advance(world: World): void {
   strictEqual(result.status, "ok", `${result.reason_code}`);
 }
 
-const burning = { burning: true, fuel: 1 };
+const burning = { burning: true };
 
 test("the rule fires on a thing too big for its container, and not on one that fits or a container with no dimensions", (t) => {
   const world = worldOf(t, [

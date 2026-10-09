@@ -39,7 +39,7 @@ function dark(t: { after(callback: () => void): void }, extra: Parameters<typeof
   const world = createWorld(join(root, "w"), [
     { id: "hall", template: "room", overrides: { name: "hall" } },
     { id: "yard", template: "room", overrides: { name: "yard" } },
-    { id: "door", template: "door", overrides: { name: "door", props: { openable: true, open: true, from: "hall", to: "yard" } } },
+    { id: "door", template: "door", overrides: { name: "door", props: { open: true, from: "hall", to: "yard" } } },
     { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
     { id: "bob", template: "human", overrides: { name: "bob", location: "hall", support: "hall", pos: { x: -100, y: 0 } } },
     { id: "lantern", template: "lantern", overrides: { name: "lantern", location: "hall", support: "hall", pos: { x: 40, y: 0 } } },

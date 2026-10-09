@@ -1,5 +1,5 @@
 import { deepStrictEqual, strictEqual, throws } from "node:assert";
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -91,7 +91,7 @@ test("a door side needs openable: a stone given from/to is unmet_requires, a doo
   strictEqual(spawned.status, "ok");
 });
 
-test("a scenario refuses an undeclared, wrong-typed or unsatisfied prop before anything is written", (t) => {
+test("a scenario refuses a wrong-typed or unsatisfied state prop before anything is written", (t) => {
   const dir = mkdtempSync(join(tmpdir(), "world-engine-entity-props-scenario-"));
   after(t, dir);
   const entry = (props: Record<string, number | string | boolean>) => [
@@ -103,7 +103,6 @@ test("a scenario refuses an undeclared, wrong-typed or unsatisfied prop before a
     },
   ];
   const cases: Array<[string, Record<string, number | string | boolean>]> = [
-    ["undeclared_prop", { foo: "bar" }],
     ["wrong_prop_type", { lit: "yes" }],
     ["unmet_requires", { open: true }],
   ];
@@ -114,6 +113,12 @@ test("a scenario refuses an undeclared, wrong-typed or unsatisfied prop before a
         error instanceof WorldError && error.code === "invalid_snapshot" && issuePath(code)(error.issues ?? []),
     );
   });
+  // An undeclared prop is no state the architect may write: it is refused before the snapshot is judged.
+  throws(
+    () => createWorld(join(dir, "undeclared"), entry({ foo: "bar" })),
+    (error: unknown) => error instanceof WorldError && error.code === "field_not_editable",
+  );
+  strictEqual(existsSync(join(dir, "undeclared")), false);
 });
 
 test("a hand-edited world meets each rule on open, and verify names the divergence", (t) => {

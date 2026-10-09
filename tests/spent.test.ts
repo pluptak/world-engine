@@ -82,7 +82,7 @@ const types = (result: Result): string[] => result.events.map((event) => event.t
 test("a candle that burns out is gone, and the room is as dark as it was before it was lit", (t) => {
   const { world, ann } = worldOf(
     t,
-    [{ id: "candle", template: "candle", overrides: { name: "candle", location: "hall", support: "table", props: { burning: true, fuel: 2 } } }],
+    [{ id: "candle", template: "candle", overrides: { name: "candle", location: "hall", support: "table", fuel_pct: 25, props: { burning: true } } }],
     false,
   );
   const table = world.id("table")!;
@@ -108,7 +108,7 @@ test("a candle that burns out is gone, and the room is as dark as it was before 
 
 test("what is used up on a table leaves its products and residue there, caused by one spent event", (t) => {
   const { dir, world } = worldOf(t, [
-    { id: "taper", template: "taper", overrides: { name: "taper", location: "hall", support: "table", props: { burning: true, fuel: 1 } } },
+    { id: "taper", template: "taper", overrides: { name: "taper", location: "hall", support: "table", fuel_pct: 34, props: { burning: true } } },
   ]);
   const table = world.id("table")!;
   const taper = world.id("taper")!;
@@ -144,8 +144,8 @@ test("what is used up on a table leaves its products and residue there, caused b
 
 test("what is held in a hand or a pocket is used up at its holder's feet", (t) => {
   const { world, ann } = worldOf(t, [
-    { id: "hand", template: "taper", overrides: { name: "hand", location: "hall", contained_in: "ann", props: { burning: true, fuel: 1 } } },
-    { id: "pocket", template: "taper", overrides: { name: "pocket", location: "hall", contained_in: "ann", in_part: "pocket", props: { burning: true, fuel: 1 } } },
+    { id: "hand", template: "taper", overrides: { name: "hand", location: "hall", contained_in: "ann", fuel_pct: 34, props: { burning: true } } },
+    { id: "pocket", template: "taper", overrides: { name: "pocket", location: "hall", contained_in: "ann", in_part: "pocket", fuel_pct: 34, props: { burning: true } } },
   ]);
   const hall = world.id("hall")!;
   strictEqual(world.entity(world.id("hand")!)?.contained_in, ann);
@@ -168,7 +168,7 @@ test("what is held in a hand or a pocket is used up at its holder's feet", (t) =
 test("what is used up inside a container leaves its products inside it", (t) => {
   const { world } = worldOf(t, [
     { id: "chest", template: "chest", overrides: { name: "chest", ...floor(-100) } },
-    { id: "taper", template: "taper", overrides: { name: "taper", location: "hall", contained_in: "chest", props: { burning: true, fuel: 1 } } },
+    { id: "taper", template: "taper", overrides: { name: "taper", location: "hall", contained_in: "chest", fuel_pct: 34, props: { burning: true } } },
   ]);
   const chest = world.id("chest")!;
   strictEqual(advance(world, 1).status, "ok");
@@ -183,7 +183,7 @@ test("what is used up inside a container leaves its products inside it", (t) => 
 
 test("eating a thing whole spends it: bread leaves nothing, a loaf with products leaves them on the table", (t) => {
   const { world, ann } = worldOf(t, [
-    { id: "bread", template: "bread", overrides: { name: "bread", location: "hall", support: "table", props: { portions: 1 } } },
+    { id: "bread", template: "bread", overrides: { name: "bread", location: "hall", support: "table", portions_pct: 25 } },
     { id: "loaf", template: "loaf", overrides: { name: "loaf", location: "hall", support: "table" } },
   ]);
   const table = world.id("table")!;
@@ -217,7 +217,7 @@ test("a portion that is not the last is not spent", (t) => {
 
 test("the author's removal never spends: no products, no residue, no spent event", (t) => {
   const { world } = worldOf(t, [
-    { id: "taper", template: "taper", overrides: { name: "taper", location: "hall", support: "table", props: { burning: true, fuel: 3 } } },
+    { id: "taper", template: "taper", overrides: { name: "taper", location: "hall", support: "table", props: { burning: true } } },
   ]);
   const taper = world.id("taper")!;
   const removal = world.edit({ kind: "remove", target: taper });
@@ -231,7 +231,7 @@ test("the author's removal never spends: no products, no residue, no spent event
 
 test("a spent event is seen and never heard, and the products it spawns are heard as a break's are", (t) => {
   const { world, ann } = worldOf(t, [
-    { id: "taper", template: "taper", overrides: { name: "taper", location: "hall", support: "table", props: { burning: true, fuel: 1 } } },
+    { id: "taper", template: "taper", overrides: { name: "taper", location: "hall", support: "table", fuel_pct: 34, props: { burning: true } } },
   ]);
   seq += 1;
   const result = world.command(

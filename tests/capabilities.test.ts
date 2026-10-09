@@ -26,14 +26,14 @@ const base: TemplateRegistry = loadTemplates(join(root, "templates"));
 // so it is declared as a test-only field on a custom base and never shipped.
 const worldBase = parseRegistry({
   ...base,
-  warm: { id: "warm", extends: "cup", fields: { temperature: { tier: "state", type: "integer" } } },
+  warm: { id: "warm", extends: "cup", props: { temperature: 60 }, fields: { temperature: { tier: "state", type: "integer" } } },
 });
 
-// A lit room with ann holding a warm cup: `temperature` is a prop the scenario gives it.
+// A lit room with ann holding a warm cup: `temperature` is a prop its template gives it.
 const scenario: Scenario = [
   { id: "room", template: "room", overrides: { name: "room", props: { lit: true } } },
   { id: "ann", template: "human", overrides: { name: "ann", location: "room", support: "room", pos: { x: 0, y: 0 } } },
-  { id: "cup", template: "warm", overrides: { name: "cup", location: "room", contained_in: "ann", props: { temperature: 60 } } },
+  { id: "cup", template: "warm", overrides: { name: "cup", location: "room", contained_in: "ann" } },
 ];
 
 function world(t: { after(callback: () => void): void }, coverage?: Coverage): World {

@@ -50,7 +50,7 @@ function doorWorld(
   });
   const door = spawn(bottle.snapshot, registry, "door", {
     name: "door",
-    props: { openable: true, from: roomA.id, to: roomB.id, ...doorProps },
+    props: { from: roomA.id, to: roomB.id, ...doorProps },
   });
 
   return {
@@ -197,7 +197,7 @@ test("openable verbs refuse what is not openable or not reachable", () => {
     location: world.roomAId,
     support: world.roomAId,
     pos: { x: 500, y: 0 },
-    props: { openable: true, open: true, from: world.roomAId, to: world.farRoomId },
+    props: { open: true, from: world.roomAId, to: world.farRoomId },
   });
   const outOfReach = apply(gate.snapshot, world.registry, {
     command_id: "close-gate",

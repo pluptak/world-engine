@@ -87,10 +87,10 @@ test("a bad form is refused with its code and builds no world", (t) => {
   strictEqual(codes("bottle", { liquid: { pct: 50, extra: 1 } }), "invalid_form");
   strictEqual(codes("bottle", { liquid: { pct: 50, material: "" } }), "invalid_form");
   strictEqual(codes("bottle", { liquid: "half" }), "invalid_form");
-  // One fact is written one way.
-  strictEqual(codes("candle", { fuel_pct: 50, props: { fuel: 3 } }), "invalid_form");
-  strictEqual(codes("bottle", { liquid: { pct: 50 }, props: { liquid_amount: 3 } }), "invalid_form");
-  strictEqual(codes("stone", { condition: "damaged", integrity: 20 }), "invalid_form");
+  // One fact is written one way: the raw value beside a form is not the architect's to write at all.
+  strictEqual(codes("candle", { fuel_pct: 50, props: { fuel: 3 } }), "field_not_editable");
+  strictEqual(codes("bottle", { liquid: { pct: 50 }, props: { liquid_amount: 3 } }), "field_not_editable");
+  strictEqual(codes("stone", { condition: "damaged", integrity: 20 }), "field_not_editable");
 
   // A template that declares nothing to convert to.
   strictEqual(codes("stone", { fuel_pct: 50 }), "form_not_applicable");

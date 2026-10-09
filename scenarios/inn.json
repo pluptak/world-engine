@@ -6,7 +6,7 @@
     "template": "door",
     "overrides": {
       "name": "cellar door",
-      "props": { "openable": true, "open": false, "from": "common", "to": "cellar" }
+      "props": { "open": false, "from": "common", "to": "cellar" }
     }
   },
   {

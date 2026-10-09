@@ -100,6 +100,15 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
     "bruiser.arm_r": { id: "bruiser.arm_r", extends: "human.arm_r" },
     "bruiser.arm_r.hand_r": { id: "bruiser.arm_r.hand_r", extends: "human.arm_r.hand_r" },
     "bruiser.hand_r": { id: "bruiser.hand_r", extends: "human.hand_r" },
+    // A body already starving: hunger and starvation are state, which a scenario may not set past a
+    // percentage, so the preset carries the figures the properties start from.
+    famished: { id: "famished", extends: "human_hungry", props: { hunger: 96, starvation: 17 } },
+    "famished.arm_l": { id: "famished.arm_l", extends: "human_hungry.arm_l" },
+    "famished.arm_l.hand_l": { id: "famished.arm_l.hand_l", extends: "human_hungry.arm_l.hand_l" },
+    "famished.hand_l": { id: "famished.hand_l", extends: "human_hungry.hand_l" },
+    "famished.arm_r": { id: "famished.arm_r", extends: "human_hungry.arm_r" },
+    "famished.arm_r.hand_r": { id: "famished.arm_r.hand_r", extends: "human_hungry.arm_r.hand_r" },
+    "famished.hand_r": { id: "famished.hand_r", extends: "human_hungry.hand_r" },
   });
 }
 
@@ -174,13 +183,12 @@ export const SCENARIO: Scenario = [
   // run under every property.
   { template: "bread", overrides: { name: "bread", location: "e1", support: "e1", pos: { x: 25, y: -30 } } },
   {
-    template: "human_hungry",
+    template: "famished",
     overrides: {
       name: "gus",
       location: "e2",
       support: "e2",
       pos: { x: 40, y: 40 },
-      props: { hunger: 96, starvation: 17 },
     },
   },
   { template: "mold", overrides: { name: "mold", location: "e1", support: "e1", pos: { x: 130, y: -20 } } },

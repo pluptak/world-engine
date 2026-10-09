@@ -214,7 +214,7 @@ test("a concealer shares the room, and neither end may be a mark", () => {
 test("a door to a removed room names the dangling prop", () => {
   const built = spawn(baseSnapshot(), registry, "door", {
     name: "door",
-    props: { open: true, openable: true, from: "e1", to: "e99" },
+    props: { open: true, from: "e1", to: "e99" },
   });
   deepStrictEqual(codes(built.snapshot), ["dangling_reference"]);
   deepStrictEqual(validate(built.snapshot)[0]?.path, ["entities", built.id, "props", "to"]);
@@ -224,7 +224,7 @@ test("a door side names a room and a key's opens names something openable", () =
   const other = spawn(baseSnapshot(), registry, "room", { name: "other" });
   const door = spawn(other.snapshot, registry, "door", {
     name: "door",
-    props: { open: true, openable: true, from: "e1", to: other.id },
+    props: { open: true, from: "e1", to: other.id },
   });
   const key = spawn(door.snapshot, registry, "stone", {
     name: "key",
@@ -259,7 +259,7 @@ test("a wrong kind on a door side or on a key's opens is refused; a door's rooms
     { template: "room", overrides: { name: "yard", props: { lit: true } } },
     {
       template: "door",
-      overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2" } },
+      overrides: { name: "door", props: { open: true, from: "e1", to: "e2" } },
     },
     {
       template: "stone",
@@ -479,7 +479,6 @@ test("a scenario that both supports and contains an entity never becomes a world
           location: "e1",
           support: "e1",
           pos: { x: 20, y: 0 },
-          props: { container: true, inner_w_cm: 55, inner_d_cm: 35, inner_h_cm: 35 },
         },
       },
       // A stone set down on the chest and inside it at once.

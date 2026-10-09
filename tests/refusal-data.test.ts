@@ -95,7 +95,7 @@ test("unmeasurable reach yields no data", () => {  const registry = loadTemplate
   });
   snapshot = bottle.snapshot;
   const door = spawn(snapshot, registry, "door", {
-    props: { openable: true, open: true, from: room.id, to: "elsewhere" },
+    props: { open: true, from: room.id, to: "elsewhere" },
   });
   snapshot = door.snapshot;
   deepStrictEqual(reachData(snapshot, actor.id, bottle.id), { distance_cm: 150, reach_cm: 100 });
