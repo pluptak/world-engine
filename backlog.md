@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-None: every item is built.
+1. [The laboratory, with today's mechanics](#the-laboratory-with-todays-mechanics).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -34,6 +34,9 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Out of scope
 
 - Prose or intent → calls, and planning calls toward a goal state: the middleware's job.
+- Named coarse levels (`empty`/`half`/`full`, `fresh`/`stub`): the middleware translates them into the
+  percentage and condition forms (`docs/forms.md`), unless several callers need them or they hold an
+  invariant.
 - A web/HTTP server: the API is in-process; the CLI is the only adapter.
 - Any Story-writer integration: a decision for that repo, if a middleware ever exists.
 - The social resolver (mechanical state only: `alert`, `locked_by_order`), a generic relation graph,
@@ -59,3 +62,37 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
+
+### The laboratory, with today's mechanics
+
+The next world is an underground laboratory: eight test subjects trying to escape, and an AI
+trying to finish its experiment while stopping them. Before anything is built for it, the lab is
+written with what the engine has, and what it cannot say is recorded, each limit shown by a test.
+That list decides the items after this one (the lab entries in `plans/candidates.md`).
+
+- **Scenario:** `scenarios/lab.json`, lit rooms joined by doors (`from`/`to`): `dormitory`,
+  `corridor`, `lab`, `server_room` and `outside`, the escape boundary (a subject has escaped when
+  its `location` is `outside`). The exit door, corridor to outside, starts shut and locked; its key
+  lies in the lab. Eight `human` subjects in the dormitory, each named. The AI's body is a
+  `terminal` in the server room; the experiment is an `experiment` entity in the lab with a
+  `stage` of 0. No camera, power or manipulator entity: there is no mechanic to give one.
+- **Templates, the only two added:** `terminal`, an agent with one part contributing `sight`,
+  `hearing` and `speech`, no `moving` and no `manipulation`; `experiment`, `abstract`, declaring
+  `stage` (an integer) under `fields`. The AI's identity apart from its body is the caller's: the
+  terminal is the body a scenario chose, and nothing in the engine is the AI.
+- **Tests:** `tests/scenario-lab.test.ts`, lettered steps over one world:
+  - A: the world builds, `validateSnapshot` passes, nine agents.
+  - B: a subject walks dormitory, corridor, lab through open doors, takes the key, walks back,
+    unlocks and opens the exit door and moves outside: escaped, by `fact` on its location.
+  - C: the terminal perceives only the server room: an act in the lab is not sensed by it.
+  - D: the terminal's `lock` of the exit door is refused, with the code the engine gives.
+  - E: `stage` changes only by the author's `edit`; a subject's escape advances nothing.
+  - F: closing the exit door with someone in its footprint pushes them aside (the existing rule).
+  - G: `verify` passes, and the same scenario and commands replayed give the same log, byte for byte.
+- **Docs:** `docs/limits-lab.md`, one line per limit with its step, in the form of the other
+  limits files and naming nothing as a proposal: no remote control (D), no camera, so the AI sees
+  only its own room (C), no power (an undeclared prop is refused), no manipulator, a stage nothing
+  advances on its own (E), no AI apart from a body, and any other the steps show. One line in the
+  `docs/DESIGN.md` limits list.
+- **Depends on:** nothing. **Not in it:** any new rule, verb, relation or prop the engine reads; a
+  limit is recorded, not fixed.
