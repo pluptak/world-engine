@@ -103,7 +103,8 @@ export const SCENARIO: Scenario = [
   { template: "room", overrides: { name: "room-b", props: { lit: true } } },
   {
     template: "self_closing_door",
-    // Both openables shut themselves, so random sequences schedule, withdraw and overtake closes.
+    // Both openables start open and shut themselves, so random sequences schedule, withdraw and
+    // overtake closes from the first tick.
     overrides: { name: "door", props: { open: true, from: "e1", to: "e2" } },
   },
   {

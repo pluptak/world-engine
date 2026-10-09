@@ -390,7 +390,9 @@ test("an actor is told only of what it can sense or address: an actor view names
   let named = 0;
   let groped = 0;
   let withheld = 0;
-  for (let seed = 0; seed < 200; seed += 1) {
+  // 800 sequences: the generated world's self-closing door and chest start open and shut themselves
+  // within three ticks, so a refusal naming something out of the actor's reach is rare.
+  for (let seed = 0; seed < 800; seed += 1) {
     const rand = mulberry32(seed + 8000);
     const world = memoryWorld(buildInitial(registry), registry);
     for (let i = 0; i < 50; i += 1) {

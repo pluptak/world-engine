@@ -73,7 +73,8 @@ export function defaultCoverage(): Coverage {
 // Something the world will do by itself at `due_tick`, named by the event that set it going. A
 // bleed carries how many bleeds are left, this one included; each schedules the next.
 export type ScheduledCause =
-  | { due_tick: number; kind: "close"; entity: Id; cause_id: Id }
+  // `cause_id` is null for a door a scenario placed open: nothing opened it.
+  | { due_tick: number; kind: "close"; entity: Id; cause_id: Id | null }
   | { due_tick: number; kind: "bleed"; entity: Id; cause_id: Id; remaining: number }
   // A template's process, running on the entity; `cause_id` is null when the initial state started it.
   | { due_tick: number; kind: "process"; entity: Id; cause_id: Id | null; process: string }

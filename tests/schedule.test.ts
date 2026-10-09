@@ -2,7 +2,7 @@ import { deepStrictEqual, ok, strictEqual } from "node:assert";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { createWorld, openWorld, type Id, type Result, type World } from "../src/index.js";
+import { createWorld, openWorld, verifyWorld, type Id, type Result, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import type { ScheduledCause, Snapshot } from "../src/model.js";
 import { CAUSE_KINDS } from "../src/engine/schedule.js";
@@ -126,6 +126,84 @@ test("a close the world has overtaken does nothing, and a removed door takes its
   ok(world.snapshot().schedule !== undefined);
   strictEqual(world.edit({ kind: "remove", target: door }).status, "ok");
   strictEqual(world.snapshot().schedule, undefined);
+});
+
+// A self-closing door that comes to be open by any way but `open` closes `closes_after` ticks later,
+// the close naming what made it open. `self_closing_door` inherits `open: true` from `door`.
+function doorway(t: { after(callback: () => void): void }, door: { template: string; open?: boolean }): { dir: string; world: World; ann: Id; door: Id } {
+  const dir = join(tempDir(t), "w");
+  const world = createWorld(dir, [
+    { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
+    { id: "yard", template: "room", overrides: { name: "yard", props: { lit: true } } },
+    {
+      id: "door",
+      template: door.template,
+      overrides: { name: "door", props: { ...(door.open !== undefined && { open: door.open }), from: "hall", to: "yard" } },
+    },
+    { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
+  ], registry);
+  return { dir, world, ann: world.id("ann")!, door: world.id("door")! };
+}
+
+// The tick and cause of the `closed` the waits bring, waiting a tick at a time until it comes.
+function closedBy(world: World, ann: Id): [number, Id | null] {
+  for (let i = 0; i < 10; i += 1) {
+    const closed = run(world, ann, "wait", undefined, { ticks: 1 }).events.find((event) => event.type === "closed");
+    if (closed !== undefined) {
+      return [closed.tick, closed.cause_id];
+    }
+  }
+  throw new Error("the door never closed");
+}
+
+test("a self-closing door placed open closes by itself, the close a root", (t) => {
+  const { dir, world, ann, door } = doorway(t, { template: "self_closing_door" });
+  strictEqual(world.entity(door)?.props.open, true);
+  deepStrictEqual(world.snapshot().schedule, [{ due_tick: 2, kind: "close", entity: door, cause_id: null }]);
+  deepStrictEqual(closedBy(world, ann), [2, null]);
+  strictEqual(world.entity(door)?.props.open, false);
+  strictEqual(verifyWorld(dir).ok, true);
+});
+
+test("a self-closing door edited open closes two ticks later, under the edit", (t) => {
+  const { dir, world, ann, door } = doorway(t, { template: "self_closing_door", open: false });
+  strictEqual(world.snapshot().schedule, undefined);
+  run(world, ann, "wait", undefined, { ticks: 3 });
+  const edit = world.edit({ kind: "update_props", target: door, props: { open: true } });
+  const edited = edit.events.find((event) => event.type === "edited")!;
+  deepStrictEqual(world.snapshot().schedule, [{ due_tick: 5, kind: "close", entity: door, cause_id: edited.event_id }]);
+  deepStrictEqual(closedBy(world, ann), [5, edited.event_id]);
+  strictEqual(verifyWorld(dir).ok, true);
+});
+
+test("a self-closing door spawned open closes two ticks later, under its spawn", (t) => {
+  const { dir, world, ann } = doorway(t, { template: "door", open: false });
+  run(world, ann, "wait", undefined, { ticks: 1 });
+  const spawn = world.edit({
+    kind: "spawn",
+    template: "self_closing_door",
+    overrides: { name: "hatch", props: { from: world.id("hall")!, to: world.id("yard")! } },
+  });
+  const spawned = spawn.events.find((event) => event.type === "spawned")!;
+  deepStrictEqual(world.snapshot().schedule, [{ due_tick: 3, kind: "close", entity: spawned.entity, cause_id: spawned.event_id }]);
+  deepStrictEqual(closedBy(world, ann), [3, spawned.event_id]);
+  strictEqual(verifyWorld(dir).ok, true);
+});
+
+test("an open door refined into a self-closing one closes two ticks later, under the refinement", (t) => {
+  const { dir, world, ann, door } = doorway(t, { template: "door", open: true });
+  strictEqual(world.snapshot().schedule, undefined);
+  const refined = world.edit({ kind: "refine", target: door, template: "self_closing_door" });
+  strictEqual(refined.status, "ok");
+  const edited = refined.events.find((event) => event.type === "edited")!;
+  deepStrictEqual(closedBy(world, ann), [2, edited.event_id]);
+  strictEqual(verifyWorld(dir).ok, true);
+});
+
+test("opening by the verb leaves exactly one close pending", (t) => {
+  const { world, ann, door } = doorway(t, { template: "self_closing_door", open: false });
+  const opened = run(world, ann, "open", "door").events.find((event) => event.type === "opened")!;
+  deepStrictEqual(world.snapshot().schedule, [{ due_tick: 2, kind: "close", entity: door, cause_id: opened.event_id }]);
 });
 
 test("what is pending is saved with the world and runs after reopening", (t) => {

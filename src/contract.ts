@@ -364,7 +364,7 @@ export const SnapshotSchema = z.object({
   coverage: CoverageSchema,
   entities: z.record(z.string(), EntitySchema),
   schedule: z.array(z.discriminatedUnion("kind", [
-    z.object({ due_tick: z.number().int(), kind: z.literal("close"), entity: IdSchema, cause_id: IdSchema }).strict(),
+    z.object({ due_tick: z.number().int(), kind: z.literal("close"), entity: IdSchema, cause_id: IdSchema.nullable() }).strict(),
     z.object({
       due_tick: z.number().int(),
       kind: z.literal("bleed"),

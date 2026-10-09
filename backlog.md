@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A self-closing door that comes to be open closes by itself](#a-self-closing-door-that-comes-to-be-open-closes-by-itself).
-2. [Default coverage shows whether a thing is open](#default-coverage-shows-whether-a-thing-is-open).
+1. [Default coverage shows whether a thing is open](#default-coverage-shows-whether-a-thing-is-open).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -60,32 +59,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A self-closing door that comes to be open closes by itself
-
-`closes_after` schedules a `close` only when the `open` verb runs (`src/engine/verbs/openable.ts`), so a
-self-closing openable that is open any other way stays open until someone shuts and reopens it. That is the
-default, not a corner: `self_closing_door` (`tests/presets.ts`) inherits `open: true` from `door`, so a scenario
-that places one without `open: false` gets a door that never shuts; one placed open at tick 0 was still open at
-tick 24 in a probe, and behaved once closed and reopened by hand. A door to be held open is a different preset
-(no `closes_after`), so the definition wins.
-
-- **Rule:** an entity whose template has a positive `closes_after`, with `open: true` and no pending `close`, gets
-  one at `tick + closes_after`. It is checked where processes are reconciled: `reconcileSince` in
-  `src/engine/process.ts` (or a sibling it calls), for every entity a `props`, `entity` or `template` delta touched,
-  the cause naming that delta's event; and at `createWorld` beside `startProcesses`, with no cause. That covers a
-  scenario placing it open, an `edit spawn`, an `update_props`/`set_props` writing `open: true`, and `refine` into a
-  self-closing preset (`reconcileSince` already counts a `template` delta). The `open` verb already schedules its own and is
-  not scheduled twice; `close` by hand still withdraws it.
-- **Type:** the `close` cause's `cause_id` becomes `Id | null` (`ScheduledCause` in `src/model.ts`, the snapshot's
-  schedule in `src/contract.ts`); a `closed` with no cause is a root, as a process's first `changed` is.
-- **Tests:** `tests/schedule.test.ts`: a `self_closing_door` placed with no `open` emits a root `closed` at tick 2;
-  one opened by `update_props` at tick t closes at t + 2 under the `edited` event, as does one spawned open and a
-  `door` refined into `self_closing_door` while open; `open` by the verb leaves exactly one pending `close`; each
-  world replays (`verifyWorld`).
-- **Docs:** `docs/schedule.md`: the self-closing door closes `closes_after` ticks after it comes to be open, by
-  `open` or otherwise.
-- **Depends on:** nothing.
 
 ### Default coverage shows whether a thing is open
 

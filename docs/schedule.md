@@ -20,8 +20,12 @@ emitting under its `cause_id`.
 **The self-closing door.** An openable with a positive `closes_after` prop is scheduled to close
 that many ticks after an `open`: a door opened at tick 4 with `closes_after: 2` emits `closed` at 6,
 during whichever command spans 6, caused by its `opened`. An open door is refused `already_open`, so
-the count stands until it runs out; `close` by hand withdraws the pending close, and an `open` after that, or
-after the author shut the door, starts a fresh count. Neither records anything about the withdrawal.
+the count stands until it runs out; `close` by hand withdraws the pending close, and an `open` after
+that, or after the author shut the door, starts a fresh count. Neither records anything about the
+withdrawal. A self-closing openable that comes to be open any other way (placed open by a scenario,
+spawned, edited open, or refined into one) is scheduled to close the same way, caused by the
+`spawned` or `edited` that made it so, or by nothing for one a scenario placed: that `closed` is a
+root. The `open` verb's own close is never doubled.
 
 **Processes.** A template's processes run as a third kind, scheduled and withdrawn as the props that
 govern them change ([processes.md](processes.md)).

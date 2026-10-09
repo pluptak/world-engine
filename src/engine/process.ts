@@ -90,7 +90,7 @@ export function reconcile(
   if (entity === undefined) {
     return snapshot;
   }
-  let result = snapshot;
+  let result = reconcileClose(snapshot, entity, causeId);
   for (const decl of declsOf(registry, entity)) {
     const waiting = pending(result).some((cause) => isPendingFor(cause, entityId, decl.id));
     const can = runnable(decl, entity);
@@ -107,6 +107,26 @@ export function reconcile(
     }
   }
   return result;
+}
+
+// A self-closing openable that is open, however it came to be, closes `closes_after` ticks from now:
+// placed open, spawned, edited or refined into one. The `open` verb schedules its own first, so one
+// already pending is left as it is.
+function reconcileClose(snapshot: Snapshot, entity: Entity, causeId: Id | null): Snapshot {
+  const after = entity.props.closes_after;
+  if (
+    entity.props.openable !== true ||
+    entity.props.open !== true ||
+    !isInt(after) ||
+    after <= 0 ||
+    pending(snapshot).some((cause) => cause.kind === "close" && cause.entity === entity.id)
+  ) {
+    return snapshot;
+  }
+  const due = snapshot.tick + after;
+  return Number.isSafeInteger(due)
+    ? withCause(snapshot, { due_tick: due, kind: "close", entity: entity.id, cause_id: causeId })
+    : snapshot;
 }
 
 // A world built from a scenario has no event behind it, so what its templates set going starts
