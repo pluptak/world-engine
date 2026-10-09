@@ -205,10 +205,17 @@ test("entity and id answer null for a name that is a member, and a spawn of such
 });
 
 test("a scenario with such a template is refused as one with an unknown template is", (t) => {
-  const refusal = (template: string): string =>
-    outcome(() => createWorld(join(tempDir(t), template), [{ template }], registry));
+  // By its message too: both are the spawn's own error, not some other throw that happens to share a type.
+  const refusal = (template: string): string => {
+    try {
+      createWorld(join(tempDir(t), template), [{ template }], registry);
+      return "built";
+    } catch (error) {
+      return `${error instanceof WorldError ? error.code : (error as Error).constructor.name}: ${(error as Error).message}`;
+    }
+  };
   for (const name of NAMES) {
-    notStrictEqual(refusal(name), "null", name);
+    notStrictEqual(refusal(name), "built", name);
     strictEqual(refusal(name).replaceAll(name, "nonesuch"), refusal("nonesuch"), name);
   }
 });

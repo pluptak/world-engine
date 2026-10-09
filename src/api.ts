@@ -442,7 +442,7 @@ export function createWorld(
       throw new WorldError("derived_field", `Scenario entry ${index} writes the derived field ${written}`);
     }
     // A template no set declares is left to spawn's own TypeError, as it was before this check.
-    const template = templates[entry.template];
+    const template = own(templates, entry.template);
     const definition =
       template === undefined
         ? null
