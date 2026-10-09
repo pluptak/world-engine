@@ -77,6 +77,7 @@ export const ENTITY_FIELDS: Readonly<Record<Exclude<keyof Entity, "props">, Tier
   parts: "state",
   residue: "state",
   modifiers: "derived",
+  traits: "state",
 };
 
 export function propTypeMatches(type: PropType, value: number | string | boolean): boolean {

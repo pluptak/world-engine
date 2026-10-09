@@ -21,7 +21,13 @@ function copyOverrides(overrides: EntityOverrides): EntityOverrides {
       modifiers: overrides.modifiers.map((modifier) => ({ ...modifier })),
     }),
     ...(overrides.props !== undefined && { props: { ...overrides.props } }),
+    // Copied whatever it is; what is not a map of tokens is validation's to refuse.
+    ...(overrides.traits !== undefined && { traits: structuredClone(overrides.traits) }),
   };
+}
+
+function isEmptyMap(value: unknown): boolean {
+  return value !== null && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0;
 }
 
 export function spawn(
@@ -65,6 +71,10 @@ export function spawn(
   // only what it changes and never has to repeat a definition to keep it.
   if (overrides.props !== undefined) {
     entity.props = { ...template.props, ...overrides.props };
+  }
+  // Stored one way: an empty map is no traits at all.
+  if (isEmptyMap(entity.traits)) {
+    delete entity.traits;
   }
   // A spawn into a holder with grips fills the first free one, the way location is filled from
   // the chain. A full holder, or a space part left unnamed, is left for validation to refuse.

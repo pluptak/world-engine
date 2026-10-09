@@ -68,39 +68,12 @@ None.
 
 ## Blocks
 
-Blocks 1 (field schema), 2 (`update_props`, `derived_field`), 3a (definitions are not written) and
-3b (entity props hold to the schema) are built: `docs/fields.md`. One
+Blocks 1 (field schema), 2 (`update_props`, `derived_field`), 3a (definitions are not written),
+3b (entity props hold to the schema) and 3c (traits) are built: `docs/fields.md`. One
 block per session, in this order. Each touches the shared registration points CLAUDE.md lists
 (`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
-
-### 3c. Traits
-
-- New optional entity field `traits`: a map of at most 16 keys (`^[a-z][a-z0-9_]{0,31}$`) to
-  tokens (`^[A-Za-z0-9_.:-]{1,64}$`: `say.ts`'s `UTTERANCE`, exported and shared, not copied), absent
-  when empty, so stored worlds stay `schema_version` 5. Tier: state (`ENTITY_FIELDS` in
-  `src/engine/fields.ts`; `trace.ts`'s field table follows, so `trace` of `traits` works). Written by a
-  scenario's overrides and an edit `spawn` only: no edit kind changes a trait afterwards, because
-  `set` refuses a field the entity does not hold. `validateSnapshot` refuses a bad key, token, count
-  or a non-object (`invalid_trait`, joining the edit verb's `refuses`). Reads of the map use `own`
-  (`src/model.ts`): `constructor` is a valid key.
-- Where it is written: `copyOverrides` in `src/engine/spawn.ts` copies the map (an empty one stores
-  nothing); `overrideKeys` and `isOverrides` in `src/engine/verbs/edit.ts` accept the key and its
-  shape, or an `edit spawn` with traits is `invalid_args`.
-- No rule reads it: a test runs `scenarios/inn.json` with traits on every entity and without, and
-  every command answers the same status, reason code and events (snapshots and deltas differ).
-- `inspect` lists `traits` where it lists `props` (the observer has `facts`, by sight or touch), but
-  not gated by `coverage.properties`: traits belong to no coverage category, so a world that
-  covers neither still shows them to an observer who can see the thing. `observe` does not list
-  them. The actor view (`actor_inspect`) shows what `inspect` does.
-- Contract (`src/contract.ts`): `EntityOverridesSchema` (scenario and `edit spawn`), `EntitySchema`
-  (strict, so the snapshot response needs `traits` optional) and `InspectResponseSchema` (strict,
-  likewise); `Inspection` in `src/engine/projection.ts`.
-- Tests: `tests/traits.test.ts`, including a key that is `constructor`, a shared map not aliased
-  by the stored entity, and the CLI answering a snapshot and an `inspect` with traits. Docs:
-  `docs/state.md`, `docs/projection.md`, `docs/api.md`; the two that are over the 40-line cap
-  already (`state.md`, `projection.md`) are not made longer than a few lines each.
 
 ### 4. Architect forms
 

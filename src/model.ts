@@ -52,6 +52,8 @@ export interface Entity {
   residue: Record<string, number>;
   modifiers: Modifier[];
   props: Record<string, number | string | boolean>;
+  // What only describes the thing, as opaque tokens no rule reads (`docs/state.md`). Absent when empty.
+  traits?: Record<string, string>;
 }
 
 export interface Coverage {

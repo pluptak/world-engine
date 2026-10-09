@@ -74,6 +74,7 @@ export const EntityOverridesSchema = z.object({
   residue: z.record(z.string(), z.number().int()).optional(),
   modifiers: z.array(ModifierSchema).optional(),
   props: z.record(z.string(), PrimitiveSchema).optional(),
+  traits: z.record(z.string(), z.string()).optional(),
 }).strict();
 
 // A scenario entry may place its entity against an anchor; a spawn edit may not, so only the
@@ -327,6 +328,7 @@ export const EntitySchema = z.object({
   residue: z.record(z.string(), z.number().int()),
   modifiers: z.array(ModifierSchema),
   props: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])),
+  traits: z.record(z.string(), z.string()).optional(),
 }).strict();
 
 export const CoverageSchema = z.object({
@@ -459,6 +461,7 @@ export const InspectResponseSchema = z.object({
     }).strict()).optional(),
     reachable: z.boolean().optional(),
     holds: z.array(IdSchema).optional(),
+    traits: z.record(z.string(), z.string()).optional(),
   }).strict().nullable(),
 }).strict();
 

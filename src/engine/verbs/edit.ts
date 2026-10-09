@@ -111,6 +111,7 @@ const overrideKeys = [
   "residue",
   "modifiers",
   "props",
+  "traits",
 ];
 
 function isOverrides(value: unknown): value is EntityOverrides {
@@ -182,6 +183,9 @@ function isOverrides(value: unknown): value is EntityOverrides {
     if (!valid) {
       return false;
     }
+  }
+  if (value.traits !== undefined && (!isRecord(value.traits) || !Object.values(value.traits).every((token) => typeof token === "string"))) {
+    return false;
   }
   return value.props === undefined || isProps(value.props);
 }
@@ -909,6 +913,7 @@ export const editVerb: Verb = {
     "grip_occupied",
     "part_contents_too_large",
     "container_contents_too_large",
+    "invalid_trait",
     "beat_in_past",
     "duplicate_beat",
     "too_many_beats",

@@ -198,6 +198,8 @@ export interface Inspection extends ObservedEntity {
   parts?: PartView[];
   reachable?: boolean;
   holds?: Id[];
+  // The entity's traits, whenever it is seen or felt: they belong to no coverage category.
+  traits?: Record<string, string>;
 }
 
 export function inspectEntity(
@@ -227,6 +229,9 @@ export function inspectEntity(
     }
   }
   inspection.props = props;
+  if (entity.traits !== undefined) {
+    inspection.traits = { ...entity.traits };
+  }
   const size = registry[entity.template]?.size_cm;
   if (size !== undefined) {
     inspection.size_cm = { w: size.w, d: size.d, h: size.h };

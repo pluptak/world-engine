@@ -22,6 +22,7 @@ const ENTITY_FIELDS: Record<keyof Entity, true> = {
   residue: true,
   modifiers: true,
   props: true,
+  traits: true,
 };
 
 // Valid Entity field names plus the pseudo-field "entity" used for spawn/remove deltas.

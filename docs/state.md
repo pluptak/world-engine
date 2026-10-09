@@ -32,6 +32,9 @@ template prop `abstract` makes its entities marks rather than things: no agent m
 is not perceived, and it neither hides nor lies under anything — abstractness is read from the
 template, so a registry that gains the prop makes the world's own entities abstract.
 
+An entity may carry `traits`: at most 16 keys (`^[a-z][a-z0-9_]{0,31}$`) to opaque tokens (the `say` rule), absent when
+empty and refused `invalid_trait` otherwise. Only a scenario or an `edit spawn` writes them, and no rule reads them.
+
 Capacities sum part contributions and unexpired modifiers, clamped to 0–100; templates with no parts
 have none. Structural capacity leaves the modifiers out, so a stunned carrier keeps hold of what it
 carries. A part that declares `holds` is a grip for one item or a space for what fits; carried

@@ -9,6 +9,7 @@ import { isAbstract } from "./resolve.js";
 import { isRngState } from "./rng.js";
 import { CAUSE_KINDS, causeInvalid } from "./schedule.js";
 import { MAX_BEATS, pendingBeatIds } from "./beats.js";
+import { isUtterance } from "./verbs/say.js";
 
 export interface SnapshotIssue {
   code: string;
@@ -148,6 +149,35 @@ function containerFitIssues(snapshot: Snapshot, registry: TemplateRegistry, id: 
     return [];
   }
   return [issue("container_contents_too_large", [...path, "contained_in"], `holder ${holder.id}`)];
+}
+
+const TRAIT_KEY = /^[a-z][a-z0-9_]{0,31}$/;
+const MAX_TRAITS = 16;
+
+// Traits describe and nothing reads them: a map of at most 16 keys to opaque tokens, stored one way
+// (absent when empty). Read by own keys, so `constructor` is a key like any other.
+function traitIssues(entity: Entity, path: string[]): SnapshotIssue[] {
+  const traits: unknown = entity.traits;
+  if (traits === undefined) {
+    return [];
+  }
+  const at = [...path, "traits"];
+  if (traits === null || typeof traits !== "object" || Array.isArray(traits)) {
+    return [issue("invalid_trait", at, "not a map")];
+  }
+  const keys = Object.keys(traits).sort();
+  if (keys.length === 0 || keys.length > MAX_TRAITS) {
+    return [issue("invalid_trait", at, keys.length === 0 ? "empty" : `${keys.length} traits`)];
+  }
+  const issues: SnapshotIssue[] = [];
+  for (const key of keys) {
+    if (!TRAIT_KEY.test(key)) {
+      issues.push(issue("invalid_trait", [...at, key], "key"));
+    } else if (!isUtterance(Object.getOwnPropertyDescriptor(traits, key)?.value)) {
+      issues.push(issue("invalid_trait", [...at, key], "token"));
+    }
+  }
+  return issues;
 }
 
 function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIssue[] {
@@ -446,6 +476,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     issues.push(...integrityIssues(snapshot, id, path));
     issues.push(...referenceIssues(snapshot, id, path));
     issues.push(...containerFitIssues(snapshot, registry, id, path));
+    issues.push(...traitIssues(entity, path));
     issues.push(...concealmentIssues(snapshot, registry, reportedConcealLoops, id, path));
     issues.push(...holderIssues(snapshot, registry, id, path));
     issues.push(...propIssues(registry, entity, id, path));
