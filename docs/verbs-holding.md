@@ -16,7 +16,7 @@ Taking, setting down, passing and eating things. Grips, pockets and what losing 
   `in` the actor's own pocket stows a held item.
 - `give`: hands a held thing to `args.destination`, another agent in reach, under `take`'s rules.
 - `pour`: moves `args.amount` (all of it by default) of a carried liquid into a container's
-  `liquid_*` props or onto residue; the model is in [liquids.md](liquids.md).
+  `liquid_*` props or onto residue; `options` offers no amount. The model: [liquids.md](liquids.md).
 - `consume`: eats or drinks what the actor carries or reaches. A thing with a positive `nutrition`
   is eaten whole: a `consumed` event on it, then it is spent (`spent`, caused by `consumed`, with its
   template's `spent_products` and `spent_residue`, [templates.md](templates.md)) and removed (`removed`, caused by

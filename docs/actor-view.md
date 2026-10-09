@@ -7,10 +7,11 @@ instead (`actorWorld(world, actor)`, `src/actor-world.ts`): `observe`, `inspect`
 
 A command's actor is the view's own and `perceivers`, the world's record of who sensed each event,
 is never sent. A result is the verdict and `observation` alone, with no `snapshot`, `deltas` or
-`events`. A `reason_data` value naming an entity the actor could not name itself (`addressable`
-in [perception.md](perception.md): its view, or what it could grope for) is left out: in the dark,
-`blocked` by an unseen chest names no chest, and `carried` still names the holder. What the view
-names is held to that rule by the property test.
+`events`. A `reason_data` value naming an entity the actor could not name itself (`addressable` in
+[perception.md](perception.md): its view, or what it could grope for) is left out: in the dark,
+`blocked` by an unseen chest names no chest, and `carried` still names the holder. Nor does a
+refusal give an amount: `available` and `held` are left out ([liquids.md](liquids.md)). What the
+view names is held to that rule by the property test.
 
 Nothing it sends carries the world's `version`, which counts every accepted command and so would
 tell the actor that others acted out of its sight. A projection carries the `tick` instead, time the

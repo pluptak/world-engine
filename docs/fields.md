@@ -3,7 +3,7 @@
 `src/engine/fields.ts` is the one schema of what an entity may carry. `PROP_FIELDS` lists every
 prop the engine reads, with its type (`boolean`, `integer`, `string`, or `id`, a string naming an
 entity), its tier and the props it `requires`; `ENTITY_FIELDS` gives every other entity field a
-tier; `min` is the least an integer prop may be. What a scenario may write, and its forms:
+tier; `min`, `max`, `divides` bound an integer prop. What a scenario may write, and its forms:
 [forms.md](forms.md). `tests/fields.test.ts` scans `src/` for every prop it names, so a prop the
 code starts reading must enter the table, and an entry no code reads is refused as dead.
 

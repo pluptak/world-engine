@@ -470,9 +470,19 @@ export const ActorProjectionSchema = ProjectionSchema.omit({ version: true }).ex
   tick: z.number().int(),
 }).strict();
 
+// An amount as a look reads it: a band of whole percentages of what full is.
+const LevelSchema = z.object({
+  min_pct: z.number().int().min(0).max(100),
+  max_pct: z.number().int().min(0).max(100),
+}).strict();
+
 export const InspectResponseSchema = z.object({
   inspection: ObservedEntitySchema.extend({
     props: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).optional(),
+    levels: z.object({
+      liquid_amount: LevelSchema.optional(),
+      fuel: LevelSchema.optional(),
+    }).strict().optional(),
     size_cm: z.object({ w: z.number(), d: z.number(), h: z.number() }).strict().optional(),
     parts: z.array(z.object({
       name: z.string(),

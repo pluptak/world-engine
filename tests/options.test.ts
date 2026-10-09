@@ -357,10 +357,11 @@ test("give, put, move and pour name the arguments they can, and only ones the ac
   );
   // move: the yard through its open door, not the cellar behind it, and not the room she stands in.
   deepStrictEqual(asked.ready.filter((entry) => entry.verb === "move"), [{ verb: "move", args: { location: id("yard") } }]);
-  // pour: the whole of the wine onto what could take it; a stone has none to pour.
+  // pour: the whole of the wine onto what could take it, with no amount, which pours it all; a stone
+  // has none to pour.
   deepStrictEqual(
     argsOf("pour", flask),
-    [id("hall"), id("open_chest"), id("table")].sort().map((destination) => ({ destination, amount: 750 })),
+    [id("hall"), id("open_chest"), id("table")].sort().map((destination) => ({ destination })),
   );
   strictEqual([...asked.ready, ...(asked.blocked ?? [])].some((entry) => entry.verb === "pour" && entry.target === stone), false);
   // What no list can hold stays named; give and put are not, since their args are all listed.

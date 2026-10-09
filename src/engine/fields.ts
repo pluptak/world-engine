@@ -12,8 +12,11 @@ export interface PropField {
   tier: Tier;
   // Props a template must declare beside this one.
   requires?: readonly string[];
-  // The least an integer may be.
+  // The least an integer may be, and the most.
   min?: number;
+  max?: number;
+  // A whole number this integer must divide.
+  divides?: number;
 }
 
 // Every prop the engine reads. A prop no code reads is declared by its template under `fields`.
@@ -36,6 +39,8 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   from: { type: "id", tier: "state", requires: ["openable"] },
   fuel: { type: "integer", tier: "state", requires: ["light_source"] },
   gap_cm: { type: "integer", tier: "definition", requires: ["barrier"] },
+  // A gauge marked on a vessel or a light: how fine a look reads its amount, in percent.
+  gauge_pct: { type: "integer", tier: "definition", min: 1, max: 25, divides: 100 },
   hand_height_cm: { type: "integer", tier: "definition" },
   hands_required: { type: "integer", tier: "definition" },
   hunger: { type: "integer", tier: "state" },

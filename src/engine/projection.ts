@@ -1,8 +1,9 @@
 import { effectivePos } from "./geometry.js";
 import { effectivePart } from "./parts.js";
 import { inReach } from "./verbs/address.js";
+import { liquidCapacity } from "./verbs/pour.js";
 import { query } from "./query.js";
-import { own, type Id, type PartState, type Pos, type Snapshot, type WorldEvent } from "../model.js";
+import { own, type Entity, type Id, type PartState, type Pos, type Snapshot, type WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 
 import { ENGINE_CAPABILITIES } from "./capabilities.js";
@@ -194,12 +195,48 @@ export function visibleParts(
 // only with sight or touch, as facts do.
 export interface Inspection extends ObservedEntity {
   props?: Record<string, number | string | boolean>;
+  // An amount as a look reads it, never the figure: `liquid_amount` and `fuel` are left out of
+  // `props` and given here when covered, as a band of whole percentages of what full is.
+  levels?: { liquid_amount?: Level; fuel?: Level };
   size_cm?: { w: number; d: number; h: number };
   parts?: PartView[];
   reachable?: boolean;
   holds?: Id[];
   // The entity's traits, whenever it is seen or felt: they belong to no coverage category.
   traits?: Record<string, string>;
+}
+
+export interface Level {
+  min_pct: number;
+  max_pct: number;
+}
+
+// The amounts a look reads as a level rather than a figure.
+const READ_AS_LEVEL = ["liquid_amount", "fuel"] as const;
+
+// Quarters by sight; a gauge (`gauge_pct`) marks finer steps. Empty and full read exactly, and
+// anything between reads the step it falls in, so the same amount always reads the same.
+const SIGHT_STEP_PCT = 25;
+
+export function level(amount: number, full: number, step: number): Level {
+  if (amount <= 0) {
+    return { min_pct: 0, max_pct: 0 };
+  }
+  if (amount >= full) {
+    return { min_pct: 100, max_pct: 100 };
+  }
+  const low = Math.floor((100 * amount) / (full * step)) * step;
+  return { min_pct: low, max_pct: Math.min(low + step, 100) };
+}
+
+// What full is for an amount: a vessel's liquid capacity, a light's fuel as its template declares
+// it. Null when nothing says, so the thing gives no level.
+function fullOf(entity: Entity, registry: TemplateRegistry, prop: (typeof READ_AS_LEVEL)[number]): number | null {
+  if (prop === "liquid_amount") {
+    return liquidCapacity(entity);
+  }
+  const declared = registry[entity.template]?.props.fuel;
+  return typeof declared === "number" && declared > 0 ? declared : null;
 }
 
 export function inspectEntity(
@@ -224,11 +261,24 @@ export function inspectEntity(
   }
   const props: Record<string, number | string | boolean> = {};
   for (const key of Object.keys(entity.props).sort()) {
-    if (snapshot.coverage.properties.includes(key)) {
+    if (snapshot.coverage.properties.includes(key) && !(READ_AS_LEVEL as readonly string[]).includes(key)) {
       props[key] = entity.props[key]!;
     }
   }
   inspection.props = props;
+  const gauge = entity.props.gauge_pct;
+  const step = typeof gauge === "number" ? gauge : SIGHT_STEP_PCT;
+  const levels: NonNullable<Inspection["levels"]> = {};
+  for (const prop of READ_AS_LEVEL) {
+    const amount = entity.props[prop];
+    const full = fullOf(entity, registry, prop);
+    if (snapshot.coverage.properties.includes(prop) && typeof amount === "number" && full !== null) {
+      levels[prop] = level(amount, full, step);
+    }
+  }
+  if (Object.keys(levels).length > 0) {
+    inspection.levels = levels;
+  }
   if (entity.traits !== undefined) {
     inspection.traits = { ...entity.traits };
   }

@@ -790,6 +790,14 @@ function validateProps(template: Template, source: string): void {
     if (least !== undefined && typeof value === "number" && value < least) {
       throw new TypeError(`${source} props.${name} must be at least ${least}`);
     }
+    const most = PROP_FIELDS[name]?.max;
+    if (most !== undefined && typeof value === "number" && value > most) {
+      throw new TypeError(`${source} props.${name} must be at most ${most}`);
+    }
+    const whole = PROP_FIELDS[name]?.divides;
+    if (whole !== undefined && typeof value === "number" && whole % value !== 0) {
+      throw new TypeError(`${source} props.${name} must divide ${whole}`);
+    }
     for (const required of PROP_FIELDS[name]?.requires ?? []) {
       if (!Object.hasOwn(template.props, required)) {
         throw new TypeError(`${source} props.${name} requires ${required}`);

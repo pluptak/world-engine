@@ -49,6 +49,8 @@ export interface ActorWorld {
   command(command: ActorCommand): ActorResult;
 }
 
+const UNTOLD_AMOUNTS: readonly string[] = ["available", "held"];
+
 export function actorWorld(world: World, actor: Id): ActorWorld {
   if (world.entity(actor) === null) {
     throw new WorldError("no_such_entity", `Unknown actor ${actor}`);
@@ -81,6 +83,11 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
     const data: ReasonData = {};
     for (const key of Object.keys(result.reason_data ?? {}).sort()) {
       const value = result.reason_data![key]!;
+      // How much a vessel holds is read, not told: a refusal does not give the figure (`requested` is
+      // the actor's own, and `capacity` is what the vessel is).
+      if (UNTOLD_AMOUNTS.includes(key)) {
+        continue;
+      }
       if (
         typeof value !== "string" ||
         own(snapshot.entities, value) === undefined ||

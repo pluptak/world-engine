@@ -27,7 +27,7 @@ function notPlanned(result: PreconditionResult): Refusal {
 // liquid_amount counts cubic centimetres. A vessel that declares `capacity_cm3` holds that much, apart
 // from its box; otherwise a container's liquid capacity is its inner volume, and a destination that
 // declares neither is unbounded here.
-function liquidCapacity(destination: Entity): number | null {
+export function liquidCapacity(destination: Entity): number | null {
   const declared = destination.props.capacity_cm3;
   if (typeof declared === "number" && Number.isSafeInteger(declared) && declared > 0) {
     return declared;
@@ -216,8 +216,8 @@ function transition(context: TransitionContext): void {
   addResidue(context, destination.id, { [material]: amount }, pouredEvent);
 }
 
-// Each vessel, surface or room the actor can name, for the whole of what it holds in its hand. A
-// partial amount is free.
+// Each vessel, surface or room the actor can name, for the whole of what it holds in its hand: no
+// `amount`, which pours everything, so the offer never tells the figure. A partial amount is free.
 function suggest(context: CommandContext, nameable: readonly Id[]): Record<string, unknown>[] {
   const { snapshot, registry, actor, target } = context;
   const source = target === null ? undefined : snapshot.entities[target.entity_id];
@@ -242,7 +242,7 @@ function suggest(context: CommandContext, nameable: readonly Id[]): Record<strin
             (entity.props.container === true || entity.props.surface === true || entity.template === "room")
           );
         })
-        .map((destination) => ({ destination, amount }));
+        .map((destination) => ({ destination }));
 }
 
 export const pourVerb: Verb = {

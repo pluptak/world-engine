@@ -30,7 +30,7 @@ not sensed at all. A store world and a memory world project byte for byte alike.
 
 `world.inspect(observer, entity)` is one listed entity in more detail, or `null` when the observer
 senses nothing of it: the same senses and facts, `reachable` where coverage declares it, and with
-sight or touch the props coverage declares as properties (`open` by default), `size_cm`,
+sight or touch the covered props (`open` by default; an amount as `levels`), `size_cm`,
 the template's width, depth and height that a position is a centre of (so a caller can tell whether two things
 overlap, or a spot is free), `parts`, a body's parts in the template's order as `{ name, status }` (`intact`,
 `damaged`, `destroyed` or `detached`, a part under a severed one reading as it does, and `integrity` where

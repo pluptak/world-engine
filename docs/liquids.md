@@ -5,6 +5,12 @@ Liquid is a prop, not an entity: a vessel declares `liquid_material` and `liquid
 pour or by breaking declares an empty `liquid_material` and `liquid_amount` 0, which is what "holds
 no liquid" means everywhere.
 
+An observer reads an amount, never the figure: `inspect` gives a covered `liquid_amount` (or a
+light's `fuel`, against its template's) as `levels`, `{ min_pct, max_pct }` of what full is. Empty
+reads `0`-`0`, full `100`-`100`, and anything between the quarter it falls in, or the finer step of
+a `gauge_pct` the vessel declares; a thing with no full gives none. The figure stays the world's
+(`entity`, `snapshot`, `fact`, `since`), and `pour` and `consume` use it.
+
 `pour <source>` with `args.destination` (an address, as `put` uses) and an optional integer
 `args.amount`:
 
