@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-None: every item is built.
+1. [An actor names things by its own aliases](#an-actor-names-things-by-its-own-aliases).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -59,3 +59,40 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
+
+### An actor names things by its own aliases
+
+Event and entity ids come from one `next_seq`, so an actor told `ev12` and then `ev20`, or shown a
+new `e45` after `e30`, knows ids were allocated out of its sight. The actor view stops sending real
+ids: each actor gets its own alias for every entity and event id, a hash, so it carries no count and
+needs nothing stored. This hides the count from a controller that reads its views, as an LLM does;
+it is not proof against one that hashes candidate ids to decode them, and a secret key can come
+later if a caller needs that.
+
+- **Change:** `aliasOf(actor, id)` in `src/actor-world.ts`, exported: `x` and the first 12 hex
+  digits of the SHA-256 of `<actor>:<id>` (`node:crypto`, as `templates.ts` uses); a part address
+  keeps its part (`<alias>.hand_l`). The actor's own id is aliased too.
+  - **Out:** `actorWorld` maps every id field its types carry, field by field (a string walk would
+    rewrite a spoken token that looks like an id): the projection's `observer`, each entity's `id`
+    and its facts' references, each event's `event_id` and `entity`; an inspection's `id`, `facts`
+    and `holds`; the options' `actor`, targets and id-valued args; a verdict's `resolved_target`,
+    `candidates` and id-valued `reason_data`. A projection lists entities in alias order, so not in
+    the order they were made; events stay in the order they happened.
+  - **In:** a target or an id-valued arg (`destination`, `location`, `to` where it names one) that
+    is one of this actor's aliases is mapped back by aliasing the snapshot's entity ids; anything
+    else (a name, an alias, a position) passes as now. An alias of another actor resolves to
+    nothing.
+  - The CLI's `actor_*` ops answer through the view, so they follow; `actor` stays the real id the
+    trusted caller was given. `src/contract.ts`: the id patterns of the actor responses accept an
+    alias.
+- **Tests:** `tests/actor-world.test.ts`: no real entity or event id appears anywhere in what an
+  actor is sent; two actors' aliases for one entity differ; a command naming an alias acts on that
+  entity, and one naming another actor's alias is `unresolved`; the unseen-act test of the version
+  item extended so the two worlds also differ in how many ids were allocated (bob takes the stone,
+  or waits), and ann is sent the same. `tests/actor-harness.ts` (`assertNoUnknownIds` recognises
+  aliases), the actor scenarios and `tests/cli-actor.test.ts` map world ids through `aliasOf` where
+  they compare.
+- **Docs:** `docs/actor-view.md` (aliases, their limit), `docs/limits-actor.md` if a step's line
+  names an id.
+- **Depends on:** nothing. **Not in it:** a secret key; aliasing in the trusted `World`, its CLI
+  ops or the store.

@@ -5,9 +5,6 @@ ends in open questions that are the maintainer's to settle. A candidate is promo
 up as an item in `backlog.md` (its files, types, tests and done-condition) and adding it to the
 Priorities there, then deleting it here in the same commit.
 
-- **An id gap shows something happened unseen.** Event and entity ids come from one `next_seq`, so an
-  actor that sees `ev12` then `ev20` knows ids were allocated out of its sight, by a command or a
-  process. Open: whether that is worth closing, and how (per-actor aliases, or a counter per room).
 - **Long-lived processes keep every file they read.** The parsed lines of `events.jsonl` and `deltas.jsonl`
   (`lineCaches`) and the head of `initial.json` (`initialMeta`) are module-level maps keyed by path with no eviction,
   so a process that opens many worlds, as a middleware in-process would, holds all their events until it ends. The
