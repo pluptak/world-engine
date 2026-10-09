@@ -7,7 +7,7 @@ Guidance for coding agents in this directory.
 - A deterministic, persistent, causal world-transition engine (physics is one resolver underneath
   persistent state). `CLAUDE.md` maps the code, `docs/DESIGN.md` indexes what is built, and
   `backlog.md` holds what comes next and in what order (its Priorities section), with longer plans in
-  `plans/`.
+  `plans/`. `plans/candidates.md` holds gaps with no plan yet: not work, never picked up by an agent.
 - Nothing here imports Story-writer and Story-writer imports nothing from it. Keep the two
   independent. `..\Story-writer\CLAUDE.md` is the precedent for process and comment style.
 - The hard rules and core types are the invariants below and `src/model.ts`; don't re-derive or
@@ -17,6 +17,7 @@ Guidance for coding agents in this directory.
 
 - Deliver **one small, independently pausable block**: the top unblocked entry of `backlog.md`'s
   Priorities, or one block of the plan it points to. Finish and verify it before the next is started.
+  With no unblocked entry, stop and report; never promote or build a candidate.
 - The item or block names its files, exact types, tests and a done-condition. **Follow it literally.**
   If the spec is ambiguous or contradicts existing code, stop and report rather than guess.
 - Hard prohibitions: **no dependencies beyond those the block names**, **do not start the next

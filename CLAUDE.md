@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `AGENTS.md` holds the process rules and the invariants (determinism, pure core, `canonicalJson`, no
 prose, coverage/`"unknown"`, parts and capacities, templates as data). Read it first; this file only
 adds what you need to find your way around the code. What to build next, in order, is the
-Priorities section of `backlog.md`.
+Priorities section of `backlog.md`; `plans/candidates.md` is unplanned gaps, not work.
 
 ## Commands
 

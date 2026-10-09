@@ -20,26 +20,45 @@ simulation state. Every block below keeps that line and every invariant in AGENT
     `modifiers`). `status` and `detached_from` are state: a corpse or a severed limb is a state
     the world can reach (decided in block 2).
 - **One stored value per fact.** An architect form is a second way to write a state field, never a
-  second stored field: `fuel: "half"` is written as the number; read back it is bucketed.
-- **Architect forms are coarse:** plain values (open, locked, lit, name, links), or named levels the
-  engine converts: `fuel` fresh/half/stub, `liquid` empty/half/full, condition
-  intact/damaged/broken. The architect never sees raw quantities, part integrities or tuning.
+  second stored field: `fuel: 50%` is written as the number; read back it is a percentage again.
+- **Architect forms are coarse:** plain values (open, locked, lit, name, links), whole percentages
+  (`fuel` of the preset's default, `liquid` of the vessel's capacity) and the named levels of
+  condition, intact/damaged, all converted by the engine. The architect never sees raw quantities,
+  part integrities or tuning.
 - **One schema is the source of truth.** Role checks, architect-form conversion, custom props,
   inheritance, refinement and the catalogue view all read it.
-- **Architect is setup-only for now.** Its rules are a role, so allowing it mid-story later is
-  additive. Whether to allow it (preparing the next chapter) is open.
+- **The architect only sets the scene up.** It acts before tick 0 and never after: from then until
+  the simulation ends it places, changes and removes nothing.
 - **World author: any state the world could reach, never a definition.** A shut door that is
   `openable: false` is out; a severed leg or half-burnt fuel is in.
 - **Refinement is a validated transition** to a more specific preset, not a field write.
+- **`closes_after` is a definition.** A self-closing door is its own preset (`extends` `door`); an
+  author cannot make an ordinary door self-close mid-story, short of refinement.
+- **An entity's props never change what its template is.** A state prop is allowed on an entity
+  only when its template's resolved props meet the prop's `requires` (`open` needs the template's
+  `openable`); the entity's own props never meet them. `open` on a stone is refused; an openable
+  stone is a new template, made before the scene.
+- **One scenario entry is one entity, of a template.** The architect never places a set: nothing
+  expands into break products, residue or anything else it did not name, so no consequence of a
+  placement is hidden from it. A broken bottle that is still there is a template of its own; its
+  shards are placed one by one. Condition is intact or damaged, never broken.
+- **A scene is built only from templates.** Residue is no entity, so no scenario places it: wine
+  on the floor at tick 0 is a template the architect places, or is not there.
+- **The architect sets state only as it places an entity, and never changes it afterwards.** A
+  barrel placed full stays the engine's from then on: moving its liquid into a glass is `pour`'s
+  work, never the architect's.
+- **The engine stores exact amounts.** A liquid percentage is converted on write to an amount
+  (percentage × the vessel's capacity, so every vessel declares a capacity) and `pour` moves
+  amounts. What an observer can tell of an amount is perception, not storage
+  (`plans/candidates.md`).
+- **Amounts are written as whole percentages,** liquid and fuel alike, floored, except that a
+  percentage above 0 never comes to 0: a candle's 8 fuel at 10% is 1, so it still lights.
+- **A consumable light source is removed when its fuel runs out.** A candle at fuel 0 leaves the
+  world (its `burn` process `then` is `{ remove: true }`); a lantern goes dark and stays.
 
 ## Open
 
-- Can the architect place something already `broken`, or only intact/damaged (and place the
-  shards themselves)?
-- `full` for a vessel without inner dimensions (the bottle): its template default amount?
-- `closes_after`: definition (a self-closing door is its own preset), or a state with a form?
-  `fields.ts` has it as definition for now; tests set it through overrides, so settle by block 3.
-- Whether and when the architect role opens after tick 0.
+None.
 
 ## Blocks
 
@@ -53,19 +72,25 @@ what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, i
 
 - `edit` carries `role` (default `world`, carried through the log like `perceivers`):
   a definition is refused `field_not_editable`, a derived field `derived_field`.
+- Entity props are checked as template props are (`validateProps`): a prop no table declares, a
+  value of the wrong type, or a `requires` the template's resolved props do not meet is refused
+  (`undeclared_prop`, `wrong_prop_type`, `unmet_requires`), by a rule in `validateSnapshot` (so `verify` and a hand-edited world meet it) and so at every
+  edit and scenario. Today `update_props` writes `gap_cm: "wide"` on a table and `open` on a stone.
 - Scenarios (`src/scenario.ts`, `createWorld` in `src/api.ts`) are checked under the `architect`
-  role: only fields with an architect form, and placement/name. No `architect` edit after setup
-  yet.
+  role: only fields with an architect form, and placement/name. No `architect` edit ever: it
+  never acts after tick 0.
 - Migration: tests and scenarios that set definition props through `edit` or overrides move to
-  presets or fixtures; inventory them first and report the count.
+  presets or fixtures; inventory them first and report the count. Known: `closes_after` on `door`
+  in five tests and by `set_props` in `tests/scenario-cell.test.ts`, and `scenarios/cell.json`'s
+  gate, whose entry repeats the `barrier`, `gap_cm` and `openable` its template already declares.
 - Tests: `tests/roles.test.ts`; existing `scenario-*` tests stay green.
 
 ### 4. Architect forms
 
-- Named levels in `fields.ts`: `fuel` fresh/half/stub as shares of the preset's default;
-  `liquid` empty/half/full against the vessel's capacity (inner volume); condition
-  intact/damaged as fixed integrities. Converted on write, bucketed on read (pure, integer).
-- Scenario overrides accept the forms; the open questions above are settled at block start.
+- Forms in `fields.ts`: `fuel` a whole percentage (0–100) of the preset's default; `liquid` one of
+  the vessel's capacity; condition intact/damaged as fixed
+  integrities. Converted on write, bucketed on read (pure, integer).
+- Scenario overrides accept the forms, as the Decided section sets them.
 - Tests: round-trip write → read; exact values never reach the architect form.
 
 ### 5. Catalogue view
@@ -93,8 +118,8 @@ what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, i
 
 ### 8. Refinement
 
-- New edit kind `refine { target, template }`, world author only for now (an architect form
-  follows the mid-story decision).
+- New edit kind `refine { target, template }`, world author only (the architect never acts after
+  tick 0).
 - Refused unless the new preset descends from the current one through `extends`
   (`not_a_refinement`); a stored part state must name a part the new preset has, a detachable
   one its companion; contents must still fit (inner size, grips) and the entity must still fit
