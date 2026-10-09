@@ -582,6 +582,7 @@ const CatalogFormsSchema = z.object({
   condition: z.literal("intact"),
   hunger_pct: z.number().int().optional(),
   portions_pct: z.number().int().optional(),
+  approximate: z.array(z.enum(["liquid", "hunger_pct"])).optional(),
 }).strict();
 
 const CatalogEntrySchema = z.object({

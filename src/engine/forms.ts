@@ -34,7 +34,7 @@ function wholePercent(value: unknown, index: number, form: string): number {
 
 // A percentage of what the preset holds, floored, except that one above 0 never comes to 0: a
 // candle's 8 fuel at 10% is 1, so it still lights.
-function share(whole: number, percent: number): number {
+export function share(whole: number, percent: number): number {
   const part = Math.floor((whole * percent) / 100);
   return percent > 0 ? Math.max(part, 1) : part;
 }

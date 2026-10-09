@@ -18,10 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The catalogue says when a default is approximate](#the-catalogue-says-when-a-default-is-approximate).
-2. [The scale benchmark builds its world again](#the-scale-benchmark-builds-its-world-again).
-3. [A self-closing door that comes to be open closes by itself](#a-self-closing-door-that-comes-to-be-open-closes-by-itself).
-4. [Default coverage shows whether a thing is open](#default-coverage-shows-whether-a-thing-is-open).
+1. [The scale benchmark builds its world again](#the-scale-benchmark-builds-its-world-again).
+2. [A self-closing door that comes to be open closes by itself](#a-self-closing-door-that-comes-to-be-open-closes-by-itself).
+3. [Default coverage shows whether a thing is open](#default-coverage-shows-whether-a-thing-is-open).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -81,27 +80,6 @@ last thousand alike), against the 10.6 in `docs/measurements.md`.
   (`CYCLE` * `ROOMS` * 2 commands), asserts every one is ok and `validateSnapshot` is clean. It times nothing.
 - **Docs:** `docs/measurements.md`: the scale row gets the new run, saying the earlier one predates the schema;
   `CLAUDE.md` needs no change.
-- **Depends on:** nothing.
-
-### The catalogue says when a default is approximate
-
-`docs/catalog.md` says that spelling a preset's form defaults out places the same thing. It holds for every shipped
-preset and fails for a preset whose figures are not whole percentages. A bottle extended with `liquid_amount: 100` of
-750 is listed at `liquid: { material: "wine", pct: 13 }`, and that places 97. A preset with `hunger: 150` is listed
-`hunger_pct: 150`, which `createWorld` refuses `invalid_form`. An architect that copies the defaults gets something
-else, or an error, with nothing in the catalogue to warn it.
-
-- **Fix:** `forms.approximate` (`src/engine/catalog.ts`, `CatalogResponseSchema`): the form names, `liquid` and
-  `hunger_pct`, whose listed default is not what leaving it out places, in that order, absent when none. A `liquid`
-  is approximate when placing its listed `pct` stores another amount than the preset's: `share` in
-  `src/engine/forms.ts` (exported for this) gives what a placement stores, so the floor and the never-0 rule count.
-  A `hunger_pct` is approximate when the preset's `hunger` is over 100, in which case it is listed as 100.
-  `fuel_pct` and `portions_pct` default to 100 and are always exact.
-- **Test:** `tests/catalog-view.test.ts`: the two presets above list their form in `approximate`; every shipped
-  entry lists none, and the existing round-trip test also asserts that an entry without `approximate` places as
-  its defaults say.
-- **Docs:** `docs/catalog.md`: the defaults describe leaving a form out; spelling one out is the same only when it
-  is not in `approximate`.
 - **Depends on:** nothing.
 
 ### A self-closing door that comes to be open closes by itself

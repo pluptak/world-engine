@@ -15,7 +15,9 @@ and is not inherited: a child of such a base is offered. It is not the entity pr
 
 **`forms`:** the forms ([forms.md](forms.md)) the preset takes, with what leaving each out means:
 `condition` `"intact"` always; `fuel_pct` 100 when it declares `fuel`; `liquid` `{ material, pct }`
-when it declares `capacity_cm3` (the material it holds, null for none, and how full it starts, 0
-for an empty vessel); `hunger_pct` as it starts, when it declares `hunger`; `portions_pct` 100 when
-it declares `portions`. Spelling the defaults out places the same thing, except that an empty
-vessel then stores a `liquid_amount` of 0 and no material where a plain one stores neither.
+when it declares `capacity_cm3` (the material it holds, null for none, and how full it starts, 0 for
+an empty vessel); `hunger_pct` as it starts (at most 100), when it declares `hunger`; `portions_pct`
+100 when it declares `portions`. Spelling the defaults out places the same thing, except that an
+empty vessel then stores a `liquid_amount` of 0 and no material where a plain one stores neither,
+and except for the forms listed in `approximate` (absent when none): `liquid` when the amount is no
+whole percentage of the capacity, `hunger_pct` when hunger starts above 100.

@@ -1,4 +1,5 @@
 import type { Template, TemplateRegistry } from "../templates.js";
+import { share } from "./forms.js";
 
 // What the architect may pick and say about it: each preset's shown definition and the forms a
 // scenario entry may use on it, with their defaults (what the entry means when it leaves one out).
@@ -15,6 +16,9 @@ export interface CatalogForms {
   hunger_pct?: number;
   // Present when the preset declares `portions`; the default is all of them.
   portions_pct?: number;
+  // The forms whose listed default places something other than leaving the form out: a liquid that
+  // is no whole percentage of the capacity, a hunger above what `hunger_pct` can say. Absent when none.
+  approximate?: ("liquid" | "hunger_pct")[];
 }
 
 export interface CatalogEntry {
@@ -59,6 +63,7 @@ function integerProp(template: Template, name: string): number | undefined {
 
 function formsOf(template: Template): CatalogForms {
   const forms: CatalogForms = { condition: "intact" };
+  const approximate: ("liquid" | "hunger_pct")[] = [];
   if (integerProp(template, "fuel") !== undefined) {
     forms.fuel_pct = 100;
   }
@@ -66,17 +71,25 @@ function formsOf(template: Template): CatalogForms {
   if (capacity !== undefined) {
     const amount = integerProp(template, "liquid_amount") ?? 0;
     const material = template.props.liquid_material;
-    forms.liquid = {
-      material: typeof material === "string" && material !== "" ? material : null,
-      pct: Math.min(100, Math.floor((amount * 100) / capacity)),
-    };
+    const pct = Math.min(100, Math.floor((amount * 100) / capacity));
+    forms.liquid = { material: typeof material === "string" && material !== "" ? material : null, pct };
+    // Judged by what placing the listed pct stores, so the floor and the never-0 rule count.
+    if (share(capacity, pct) !== amount) {
+      approximate.push("liquid");
+    }
   }
   const hunger = integerProp(template, "hunger");
   if (hunger !== undefined) {
-    forms.hunger_pct = hunger;
+    forms.hunger_pct = Math.min(hunger, 100);
+    if (hunger > 100) {
+      approximate.push("hunger_pct");
+    }
   }
   if (integerProp(template, "portions") !== undefined) {
     forms.portions_pct = 100;
+  }
+  if (approximate.length > 0) {
+    forms.approximate = approximate;
   }
   return forms;
 }

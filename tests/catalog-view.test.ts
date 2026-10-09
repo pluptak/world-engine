@@ -12,6 +12,13 @@ import { tempDir } from "./harness.js";
 
 const shipped = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 const entries = catalog(shipped);
+// Two presets whose figures are no whole percentage: a tenth-full bottle (100 of 750) and a body that
+// starts hungrier than `hunger_pct` can say.
+const uneven = parseRegistry({
+  ...shipped,
+  tenth_bottle: { id: "tenth_bottle", extends: "bottle", props: { liquid_amount: 100 } },
+  famished: { id: "famished", extends: "human_hungry", props: { hunger: 150 } },
+});
 const byTemplate = (id: string): CatalogEntry => {
   const found = entries.find((entry) => entry.template === id);
   ok(found !== undefined, id);
@@ -71,13 +78,23 @@ test("the forms a preset takes, and their defaults", () => {
   deepStrictEqual(byTemplate("cup").forms, { condition: "intact", liquid: { material: null, pct: 0 } });
 });
 
-test("placing a preset with its default forms is placing it with none", (t) => {
+test("a default that spelled out would place something else is marked approximate", () => {
+  const of = (id: string) => catalog(uneven).find((entry) => entry.template === id)!.forms;
+  // 13% of 750 is 97, not the 100 the preset holds.
+  deepStrictEqual(of("tenth_bottle"), { condition: "intact", liquid: { material: "wine", pct: 13 }, approximate: ["liquid"] });
+  // Listed as the most a scenario may say; 150 would be refused.
+  deepStrictEqual(of("famished"), { condition: "intact", hunger_pct: 100, approximate: ["hunger_pct"] });
+  deepStrictEqual(entries.filter((entry) => entry.forms.approximate !== undefined).map((entry) => entry.template), []);
+  CatalogResponseSchema.parse({ catalog: catalog(uneven) });
+});
+
+test("placing a preset with its default forms is placing it with none, unless they are approximate", (t) => {
   const dir = tempDir(t);
-  entries.forEach((entry, index) => {
+  catalog(uneven).forEach((entry, index) => {
     const { forms } = entry;
     const named = { name: "thing" };
-    const plain = createWorld(join(dir, `plain-${index}`), [{ id: "thing", template: entry.template, overrides: named }], shipped);
-    const spelled = createWorld(
+    const plain = createWorld(join(dir, `plain-${index}`), [{ id: "thing", template: entry.template, overrides: named }], uneven);
+    const spell = () => createWorld(
       join(dir, `forms-${index}`),
       [
         {
@@ -93,8 +110,13 @@ test("placing a preset with its default forms is placing it with none", (t) => {
           },
         },
       ],
-      shipped,
+      uneven,
     );
+    const spelled = spell();
+    if (forms.approximate !== undefined) {
+      ok(canonicalJson(spelled.entity(spelled.id("thing")!)) !== canonicalJson(plain.entity(plain.id("thing")!)), entry.template);
+      return;
+    }
     // An empty vessel spelled out stores the 0 and the "" a plain one leaves absent: the same nothing.
     const written = structuredClone(spelled.entity(spelled.id("thing")!)!);
     if (forms.liquid?.pct === 0) {
