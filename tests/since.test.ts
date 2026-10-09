@@ -15,6 +15,10 @@ import {
   type World,
 } from "../src/index.js";
 import { SinceResponseSchema } from "../src/contract.js";
+import { loadTemplates } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
+
+const presets = presetRegistry(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -31,13 +35,12 @@ const scenario: Scenario = [
   { template: "bottle", overrides: { name: "bottle", location: "e1", support: "e2" } },
   { template: "human", overrides: { name: "actor", location: "e1", support: "e1", pos: { x: -50, y: 0 } } },
   {
-    template: "chest",
+    template: "open_chest",
     overrides: {
       name: "chest",
       location: "e1",
       support: "e1",
       pos: { x: 40, y: 0 },
-      props: { container: true, topples: true, inner_w_cm: 55, inner_d_cm: 35, inner_h_cm: 35, openable: true, open: true },
     },
   },
 ];
@@ -75,7 +78,7 @@ function runChain(world: World): { deltas: unknown[]; events: unknown[] } {
 }
 
 test("since(0) equals the concatenated command results", (t) => {
-  const world = createWorld(join(tempDir(t), "fold"), scenario);
+  const world = createWorld(join(tempDir(t), "fold"), scenario, presets);
   const expected = runChain(world);
 
   const since = world.since(0);
@@ -86,7 +89,7 @@ test("since(0) equals the concatenated command results", (t) => {
 });
 
 test("a mid-world since cuts the fold at the right command", (t) => {
-  const world = createWorld(join(tempDir(t), "cut"), scenario);
+  const world = createWorld(join(tempDir(t), "cut"), scenario, presets);
   const first = world.command(chain[0]!);
   strictEqual(first.status, "ok");
   const second = world.command(chain[1]!);
@@ -98,8 +101,8 @@ test("a mid-world since cuts the fold at the right command", (t) => {
 });
 
 test("a future or negative version is refused in both worlds", (t) => {
-  const stored = createWorld(join(tempDir(t), "versions"), scenario);
-  const memory = memoryWorld(stored.snapshot());
+  const stored = createWorld(join(tempDir(t), "versions"), scenario, presets);
+  const memory = memoryWorld(stored.snapshot(), presets);
 
   for (const world of [stored, memory]) {
     throws(
@@ -115,12 +118,12 @@ test("a future or negative version is refused in both worlds", (t) => {
 
 test("a memory world only knows its own lifetime", (t) => {
   const dir = join(tempDir(t), "seed");
-  const stored = createWorld(dir, scenario);
+  const stored = createWorld(dir, scenario, presets);
   const taken = stored.command({ command_id: "take-bottle", actor: "e4", verb: "take", target: "bottle" });
   strictEqual(taken.status, "ok");
   strictEqual(stored.snapshot().version, 1);
 
-  const memory = memoryWorld(stored.snapshot());
+  const memory = memoryWorld(stored.snapshot(), presets);
   throws(
     () => memory.since(0),
     (error: unknown) => error instanceof WorldError && error.code === "history_unavailable",
@@ -131,8 +134,8 @@ test("a memory world only knows its own lifetime", (t) => {
 });
 
 test("a memory world answers since from its own records", (t) => {
-  const stored = createWorld(join(tempDir(t), "memory-source"), scenario);
-  const memory = memoryWorld(stored.snapshot());
+  const stored = createWorld(join(tempDir(t), "memory-source"), scenario, presets);
+  const memory = memoryWorld(stored.snapshot(), presets);
   const expected = runChain(memory);
 
   const since = memory.since(0);
@@ -142,7 +145,7 @@ test("a memory world answers since from its own records", (t) => {
 
 test("the CLI answers since", (t) => {
   const dir = join(tempDir(t), "cli");
-  const world = createWorld(dir, scenario);
+  const world = createWorld(dir, scenario, presets);
   const taken = world.command(chain[0]!);
   strictEqual(taken.status, "ok");
 

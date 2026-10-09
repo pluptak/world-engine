@@ -9,6 +9,9 @@ import { CommandResponseSchema } from "../src/contract.js";
 import { reachData } from "../src/engine/verbs/address.js";
 import { spawn } from "../src/engine/spawn.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
+
+const presets = presetRegistry(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
 import type { Snapshot } from "../src/model.js";
 
 function tempDir(t: { after(callback: () => void): void }): string {
@@ -111,24 +114,15 @@ test("a chair into a chest reports the failing pair", (t) => {
       overrides: { name: "chair", location: "e1", support: "e1", pos: { x: 10, y: 0 } },
     },
     {
-      template: "chest",
+      template: "open_chest",
       overrides: {
         name: "chest",
         location: "e1",
         support: "e1",
         pos: { x: 20, y: 0 },
-        props: {
-          container: true,
-          topples: true,
-          inner_w_cm: 55,
-          inner_d_cm: 35,
-          inner_h_cm: 35,
-          openable: true,
-          open: true,
-        },
       },
     },
-  ]);
+  ], presets);
   strictEqual(
     world.command({ command_id: "take-chair", actor: "e2", verb: "take", target: "chair" }).status,
     "ok",
@@ -147,13 +141,12 @@ test("a chair into a chest reports the failing pair", (t) => {
 
 test("a take from a shut chest names the enclosure to one who smells what is in it", (t) => {
   const chest = (): Scenario[number] => ({
-    template: "chest",
+    template: "shut_chest",
     overrides: {
       name: "chest",
       location: "e1",
       support: "e1",
       pos: { x: 20, y: 0 },
-      props: { container: true, openable: true, open: false },
     },
   });
   const at = (template: string, name: string) => ({
@@ -167,7 +160,7 @@ test("a take from a shut chest names the enclosure to one who smells what is in 
   const room = { template: "room", overrides: { name: "room", props: { lit: true } } };
 
   // A plain bottle in the shut chest is neither seen nor smelt: there is nothing to name.
-  const blind = createWorld(join(tempDir(t), "shut"), [room, at("human", "actor"), chest(), inChest("bottle")]);
+  const blind = createWorld(join(tempDir(t), "shut"), [room, at("human", "actor"), chest(), inChest("bottle")], presets);
   const unnamed = blind.command({ command_id: "take", actor: "e2", verb: "take", target: "bottle" });
   strictEqual(unnamed.status, "unresolved");
   strictEqual(unnamed.reason_data, undefined);
@@ -176,7 +169,7 @@ test("a take from a shut chest names the enclosure to one who smells what is in 
   const nosed = createWorld(
     join(tempDir(t), "shut-smelt"),
     [room, at("dog", "rex"), chest(), inChest("wine_bottle")],
-    undefined,
+    presets,
     { coverage: { relations: [], senses: ["sight", "hearing", "smell"], properties: [] } },
   );
   const taken = nosed.command({ command_id: "take", actor: "e2", verb: "take", target: "bottle" });
@@ -197,23 +190,15 @@ test("a put into a shut chest names the enclosure", (t) => {
       overrides: { name: "bottle", location: "e1", support: "e1", pos: { x: 10, y: 0 } },
     },
     {
-      template: "chest",
+      template: "shut_chest",
       overrides: {
         name: "chest",
         location: "e1",
         support: "e1",
         pos: { x: 20, y: 0 },
-        props: {
-          container: true,
-          inner_w_cm: 55,
-          inner_d_cm: 35,
-          inner_h_cm: 35,
-          openable: true,
-          open: false,
-        },
       },
     },
-  ]);
+  ], presets);
   strictEqual(
     world.command({ command_id: "take", actor: "e2", verb: "take", target: "bottle" }).status,
     "ok",
@@ -310,24 +295,16 @@ test("every mapped refusal carries data; unmapped ones do not", (t) => {
       overrides: { name: "stone", location: "e1", support: "e1", pos: { x: 55, y: 0 } },
     },
     {
-      template: "chest",
+      template: "shut_chest",
       overrides: {
         name: "chest",
         location: "e1",
         support: "e1",
         pos: { x: 20, y: 0 },
-        props: {
-          container: true,
-          inner_w_cm: 55,
-          inner_d_cm: 35,
-          inner_h_cm: 35,
-          openable: true,
-          open: false,
-          locked: true,
-        },
+        props: { locked: true },
       },
     },
-  ]);
+  ], presets);
   const far = world.command({ command_id: "m1", actor: "e2", verb: "take", target: "bottle" });
   strictEqual(far.reason_code, "out_of_reach");
   deepStrictEqual(Object.keys(far.reason_data ?? {}).sort(), ["distance_cm", "reach_cm"]);

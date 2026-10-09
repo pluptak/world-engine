@@ -61,6 +61,11 @@ export function spawn(
     props: { ...template.props },
     ...copyOverrides(overrides),
   };
+  // An override's props merge onto the template's, as `update_props` merges, so a scenario names
+  // only what it changes and never has to repeat a definition to keep it.
+  if (overrides.props !== undefined) {
+    entity.props = { ...template.props, ...overrides.props };
+  }
   // A spawn into a holder with grips fills the first free one, the way location is filled from
   // the chain. A full holder, or a space part left unnamed, is left for validation to refuse.
   if (entity.contained_in !== null && overrides.in_part === undefined) {

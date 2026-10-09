@@ -16,12 +16,18 @@ import {
   type WorldEdit,
 } from "../src/index.js";
 import { replay } from "../src/store/file-store.js";
+import { loadTemplates, type TemplateRegistry } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
+import { fileURLToPath } from "node:url";
 
 function tempDir(t: { after(callback: () => void): void }): string {
   const dir = mkdtempSync(join(tmpdir(), "world-engine-edit-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   return dir;
 }
+
+const shipped: TemplateRegistry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+const registry = presetRegistry(shipped);
 
 const scenario: Scenario = [
   { template: "room", overrides: { name: "room" } },
@@ -35,28 +41,19 @@ const scenario: Scenario = [
     overrides: { name: "pusher", location: "e1", support: "e1", pos: { x: -50, y: 0 } },
   },
   {
-    template: "chest",
+    template: "open_chest",
     overrides: {
       name: "chest",
       location: "e1",
       support: "e1",
       pos: { x: 40, y: 0 },
-      props: {
-        container: true,
-        topples: true,
-        inner_w_cm: 55,
-        inner_d_cm: 35,
-        inner_h_cm: 35,
-        openable: true,
-        open: true,
-      },
     },
   },
 ];
 
 function editWorld(t: { after(callback: () => void): void }): { dir: string; world: World } {
   const dir = join(tempDir(t), "edited-world");
-  return { dir, world: createWorld(dir, scenario) };
+  return { dir, world: createWorld(dir, scenario, registry) };
 }
 
 // An edit spawn into a container, with the name taken from the command id; the world assigns the id.
@@ -381,8 +378,8 @@ test("spawn derives a missing location and refuses two holders", (t) => {
 });
 
 test("a memory edit without options takes the next deterministic command id", () => {
-  const stored = createWorld(mkdtempSync(join(tmpdir(), "world-engine-edit-mem-")), scenario);
-  const world = memoryWorld(stored.snapshot());
+  const stored = createWorld(mkdtempSync(join(tmpdir(), "world-engine-edit-mem-")), scenario, registry);
+  const world = memoryWorld(stored.snapshot(), registry);
 
   const first = world.edit({ kind: "place", target: "e3", support: "e2" });
   strictEqual(first.status, "ok");
@@ -424,7 +421,7 @@ test("the same edits write the same log through one handle or many", (t) => {
 
   const runs = [false, true].map((perCall) => {
     const dir = join(tempDir(t), perCall ? "per-call" : "one-handle");
-    createWorld(dir, scenario);
+    createWorld(dir, scenario, registry);
     const single = openWorld(dir);
     const statuses = run(perCall ? () => openWorld(dir) : () => single);
     deepStrictEqual(statuses, ["ok", "refused circular_placement", "ok"]);
@@ -527,8 +524,10 @@ test("update_props writes the keys it is sent over the rest; set_props replaces 
     [["e5", "props", before, { ...before, open: false, locked: false }]],
   );
 
-  strictEqual(world.edit({ kind: "set_props", target: "e5", props: { open: true } }).status, "ok");
-  deepStrictEqual(world.entity("e5")?.props, { open: true });
+  // A replacing write that drops a definition the template declares is refused, and changes nothing.
+  const dropped = world.edit({ kind: "set_props", target: "e5", props: { open: true } });
+  deepStrictEqual([dropped.status, dropped.reason_code], ["refused", "field_not_editable"]);
+  deepStrictEqual(world.entity("e5")?.props, { ...before, open: false, locked: false });
   strictEqual(canonicalJson(replay(dir)), canonicalJson(world.snapshot()));
 });
 

@@ -15,8 +15,9 @@ reading must enter the table, and an entry no code reads is refused as dead.
   and part state (a corpse or a severed limb is a state the world can reach);
 - *derived*: the engine only: `id`, `location` and `modifiers`.
 
-A spawn (an edit's or a scenario's) writing a derived field as other than the engine derives it,
-`location` off its chain or any `modifiers`, is refused `derived_field`. No other tier is enforced.
+A spawn (an edit's or a scenario's) writing a derived field as other than the engine derives it is
+refused `derived_field`; definitions that differ are refused `field_not_editable`. A replacing write
+(`set_props`) may not drop one; repeats pass, and overrides merge as `update_props` merges.
 
 **A prop the engine never reads** is declared by the template that uses it, under `fields`, with a
 tier (`definition` or `state`) and a type (`boolean`, `integer` or `string`):
@@ -36,4 +37,4 @@ tier (`definition` or `state`) and a type (`boolean`, `integer` or `string`):
   `openable`; `container` → `inner_w/d/h_cm`; `burning`, `fuel` → `light_source`), which an
   ancestor may supply;
 - a process naming an undeclared prop, adjusting one that is not an integer, or setting a value
-  that is not of its prop's type. Entity props a scenario or an edit writes are not checked.
+  that is not of its prop's type. Entity definitions are checked on write instead (above).

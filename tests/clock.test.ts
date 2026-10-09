@@ -62,7 +62,8 @@ test("each verb declares its duration: one tick, wait and advance their argument
     actor: "world",
     verb: "edit",
     target: guard,
-    args: { edit: { kind: "set_props", target: guard, props: { attack_damage: 30 } } },
+    // An edit writes state; the prop is incidental, what matters is that no time passes.
+    args: { edit: { kind: "update_props", target: guard, props: { hunger: 10 } } },
   });
   strictEqual(edited.status, "ok");
   strictEqual(edited.snapshot.tick, 0);
@@ -193,7 +194,7 @@ test("a clock at its limit refuses what would take time, and still takes edits",
     actor: "world",
     verb: "edit",
     target: attacker,
-    args: { edit: { kind: "set_props", target: attacker, props: { attack_damage: 30 } } },
+    args: { edit: { kind: "update_props", target: attacker, props: { hunger: 10 } } },
   });
   strictEqual(edited.status, "ok");
 });

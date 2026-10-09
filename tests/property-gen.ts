@@ -7,13 +7,16 @@ import { spawn } from "../src/engine/spawn.js";
 import { resolveScenario } from "../src/scenario.js";
 import { startProcesses } from "../src/engine/process.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../src/templates.js";
+import { SHARED_FIXTURES } from "./presets.js";
 import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../src/model.js";
 import type { Scenario } from "../src/api.js";
 
 // Three templates that exist for the property test: a candle that burns down while `burning` is true
 // (the generator's prop edits flip it) and snuffs itself when the fuel is gone, moss that grows from
 // the start up to a cap and is then hurt, and mold that spreads once and is then removed. Random runs
-// start, withdraw, restart and overtake processes under every property.
+// start, withdraw, restart and overtake processes under every property. The shared scenario's own
+// presets are here too: a door and a chest that shut themselves, and a human that strikes hard
+// enough to take a part off in one blow, since no override or edit may write those definitions.
 export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
   return parseRegistry({
     ...base,
@@ -70,6 +73,20 @@ export function withProcessFixtures(base: TemplateRegistry): TemplateRegistry {
         },
       ],
     },
+    // The shared scenario's own presets, placed instead of writing definitions: a door and a
+    // chest that shut themselves, and a human that strikes hard enough to take a part off in one
+    // blow. Making an ordinary door self-close, or a human hit harder, is a definition, which no
+    // override or edit may write; a descendant preset is the way to place one.
+    ...SHARED_FIXTURES,
+    bruiser: { id: "bruiser", extends: "human", props: { attack_damage: 100 } },
+    // A descendant's detachable parts need companions of their own until inherited ones
+    // resolve (block 6): each extends the matching human companion.
+    "bruiser.arm_l": { id: "bruiser.arm_l", extends: "human.arm_l" },
+    "bruiser.arm_l.hand_l": { id: "bruiser.arm_l.hand_l", extends: "human.arm_l.hand_l" },
+    "bruiser.hand_l": { id: "bruiser.hand_l", extends: "human.hand_l" },
+    "bruiser.arm_r": { id: "bruiser.arm_r", extends: "human.arm_r" },
+    "bruiser.arm_r.hand_r": { id: "bruiser.arm_r.hand_r", extends: "human.arm_r.hand_r" },
+    "bruiser.hand_r": { id: "bruiser.hand_r", extends: "human.hand_r" },
   });
 }
 
@@ -77,31 +94,21 @@ export const SCENARIO: Scenario = [
   { template: "room", overrides: { name: "room-a", props: { lit: true } } },
   { template: "room", overrides: { name: "room-b", props: { lit: true } } },
   {
-    template: "door",
+    template: "self_closing_door",
     // Both openables shut themselves, so random sequences schedule, withdraw and overtake closes.
-    overrides: { name: "door", props: { openable: true, open: true, from: "e1", to: "e2", closes_after: 2 } },
+    overrides: { name: "door", props: { open: true, from: "e1", to: "e2" } },
   },
   {
     template: "table",
     overrides: { name: "table", location: "e1", support: "e1", pos: { x: 30, y: 0 } },
   },
   {
-    template: "chest",
+    template: "self_closing_chest",
     overrides: {
       name: "chest",
       location: "e1",
       support: "e1",
       pos: { x: 20, y: 0 },
-      props: {
-        container: true,
-        topples: true,
-        inner_w_cm: 55,
-        inner_d_cm: 35,
-        inner_h_cm: 35,
-        openable: true,
-        open: true,
-        closes_after: 3,
-      },
     },
   },
   { template: "bottle", overrides: { name: "bottle", location: "e1", support: "e4" } },
@@ -115,23 +122,13 @@ export const SCENARIO: Scenario = [
     overrides: { name: "ann", location: "e1", support: "e1", pos: { x: -50, y: 0 } },
   },
   {
-    template: "human",
+    template: "bruiser",
     // Bob strikes hard enough to take a part off in one blow.
     overrides: {
       name: "bob",
       location: "e1",
       support: "e1",
       pos: { x: -40, y: 0 },
-      props: {
-        agent: true,
-        reach_cm: 100,
-        hand_height_cm: 100,
-        attack_damage: 100,
-        default_hit_part: "torso",
-        bleed_damage: 5,
-        bleed_every_ticks: 2,
-        bleed_times: 3,
-      },
     },
   },
   {
@@ -170,7 +167,7 @@ export const SCENARIO: Scenario = [
       location: "e2",
       support: "e2",
       pos: { x: 40, y: 40 },
-      props: { agent: true, reach_cm: 100, hand_height_cm: 100, attack_damage: 40, default_hit_part: "torso", hunger: 96, starvation: 17 },
+      props: { hunger: 96, starvation: 17 },
     },
   },
   { template: "mold", overrides: { name: "mold", location: "e1", support: "e1", pos: { x: 130, y: -20 } } },
@@ -625,7 +622,11 @@ function brokenReference(context: GenContext): Command | WorldEdit {
   const rooms = new Set(context.rooms);
   const notRooms = context.ids.filter((id) => !rooms.has(id));
   if (context.rand() < 0.5) {
-    const doors = context.ids.filter((id) => context.snapshot.entities[id]?.template === "door");
+    // A door is what joins rooms: anything with sides, whatever preset it was placed as.
+    const doors = context.ids.filter((id) => {
+      const props = context.snapshot.entities[id]?.props;
+      return typeof props?.from === "string" && typeof props?.to === "string";
+    });
     if (doors.length === 0 || notRooms.length === 0) {
       return waiting(context, 1);
     }

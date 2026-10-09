@@ -22,13 +22,12 @@
   },
   {
     "id": "crate",
-    "template": "stone",
+    "template": "crate",
     "overrides": {
       "name": "crate",
       "location": "room",
       "support": "room",
-      "pos": { "x": 50, "y": 0 },
-      "props": { "hands_required": 2 }
+      "pos": { "x": 50, "y": 0 }
     }
   }
 ]

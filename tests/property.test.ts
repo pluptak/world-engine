@@ -92,10 +92,11 @@ function aimedAt(step: WorldEdit, snapshot: Snapshot): string[] {
   }
   if (step.kind === "set_props") {
     const subject = snapshot.entities[step.target];
+    const sides = subject !== undefined && typeof subject.props.from === "string" && typeof subject.props.to === "string";
     for (const side of ["from", "to"] as const) {
       const ref = step.props[side];
       if (
-        subject?.template === "door" &&
+        sides &&
         typeof ref === "string" &&
         snapshot.entities[ref]?.template !== "room"
       ) {

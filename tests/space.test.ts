@@ -471,7 +471,7 @@ test("an anchor is no put or give destination for agents, but the world can edit
     strictEqual(world.entity(corner2)?.pos?.x, 360);
 
     const propsSet = world.edit(
-      { kind: "set_props", target: corner2, props: { some_prop: "value" } },
+      { kind: "set_props", target: corner2, props: { abstract: true, some_prop: "value" } },
       { command_id: "set-props-anchor" },
     );
     strictEqual(propsSet.status, "ok");

@@ -6,9 +6,19 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createWorld, memoryWorld, type Coverage, type Id, type Scenario, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
-import { loadTemplates } from "../src/templates.js";
+import { loadTemplates, parseRegistry } from "../src/templates.js";
+import { SHARED_FIXTURES } from "./presets.js";
 
-const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+const registry = parseRegistry({
+  ...loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))),
+  ...SHARED_FIXTURES,
+  // A shut bottle that survives the fall: tougher and lidded, which no override may write.
+  sturdy_shut_bottle: {
+    id: "sturdy_shut_bottle",
+    extends: "bottle",
+    props: { break_fall_cm: 100, openable: true, open: false },
+  },
+});
 
 const SMELLING: Coverage = {
   relations: ["support", "contained_in", "attached_to", "status", "location", "near"],
@@ -48,7 +58,7 @@ function spillWorlds(
   const store = createWorld(
     join(dir, "spilled"),
     entries,
-    undefined,
+    registry,
     coverage === undefined ? undefined : { coverage },
   );
   const names: Record<string, Id> = {};
@@ -60,8 +70,8 @@ function spillWorlds(
     }
   }
   const memory = coverage === undefined
-    ? memoryWorld(store.snapshot(), undefined, names)
-    : memoryWorld(store.snapshot(), undefined, names, { coverage });
+    ? memoryWorld(store.snapshot(), registry, names)
+    : memoryWorld(store.snapshot(), registry, names, { coverage });
   return [store, memory];
 }
 
@@ -111,18 +121,14 @@ test("a shut vessel that falls keeps its liquid", (t) => {
     { id: "table", template: "table", overrides: { name: "table", location: "hall", support: "hall", pos: { x: 30, y: 0 } } },
     {
       id: "flask",
-      template: "bottle",
+      template: "sturdy_shut_bottle",
       overrides: {
         name: "flask",
         location: "hall",
         support: "table",
         props: {
-          topples: true,
-          break_fall_cm: 100,
           liquid_material: "wine",
           liquid_amount: 75,
-          openable: true,
-          open: false,
         },
       },
     },

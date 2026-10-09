@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { cli as cliRequest } from "./cli-run.js";
 import { createWorld, memoryWorld, type Command, type Scenario } from "../src/index.js";
+import { loadTemplates, type TemplateRegistry } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
 import { CheckResponseSchema } from "../src/contract.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -18,20 +20,17 @@ function tempDir(t: { after(callback: () => void): void }): string {
   return dir;
 }
 
+const shipped: TemplateRegistry = loadTemplates(join(root, "templates"));
+const registry = presetRegistry(shipped);
+
 const scenario: Scenario = [
   { template: "room", overrides: { name: "room" } },
   { template: "table", overrides: { name: "table", location: "e1", support: "e1", pos: { x: 30, y: 0 } } },
   { template: "bottle", overrides: { name: "bottle", location: "e1", support: "e2" } },
   { template: "human", overrides: { name: "actor", location: "e1", support: "e1", pos: { x: -50, y: 0 } } },
   {
-    template: "chest",
-    overrides: {
-      name: "chest",
-      location: "e1",
-      support: "e1",
-      pos: { x: 40, y: 0 },
-      props: { container: true, topples: true, inner_w_cm: 55, inner_d_cm: 35, inner_h_cm: 35, openable: true, open: true },
-    },
+    template: "open_chest",
+    overrides: { name: "chest", location: "e1", support: "e1", pos: { x: 40, y: 0 } },
   },
 ];
 
@@ -54,7 +53,7 @@ const cases: Command[] = [
 ];
 
 test("check agrees with command on every verdict in the chain", (t) => {
-  const world = createWorld(join(tempDir(t), "agreement"), scenario);
+  const world = createWorld(join(tempDir(t), "agreement"), scenario, registry);
   for (const command of cases) {
     const checked = world.check(command);
     const done = world.command(command);
@@ -66,7 +65,7 @@ test("check agrees with command on every verdict in the chain", (t) => {
 
 test("a check leaves the world directory byte-identical", (t) => {
   const dir = join(tempDir(t), "untouched");
-  const world = createWorld(dir, scenario);
+  const world = createWorld(dir, scenario, registry);
   const read = () =>
     ["initial.json", "snapshot.json", "log.jsonl"]
       .map((name) => readFileSync(join(dir, name), "utf8"))
@@ -80,7 +79,7 @@ test("a check leaves the world directory byte-identical", (t) => {
 });
 
 test("a memory world answers checks without moving", () => {
-  const world = memoryWorld(createWorld(mkdtempSync(join(tmpdir(), "check-mem-")), scenario).snapshot());
+  const world = memoryWorld(createWorld(mkdtempSync(join(tmpdir(), "check-mem-")), scenario, registry).snapshot(), registry);
   const before = world.snapshot();
   const checked = world.check({ command_id: "probe", actor: "e4", verb: "take", target: "bottle" });
   strictEqual(checked.status, "ok");
@@ -90,7 +89,7 @@ test("a memory world answers checks without moving", () => {
 
 test("the CLI answers a check", (t) => {
   const dir = join(tempDir(t), "cli");
-  createWorld(dir, scenario);
+  createWorld(dir, scenario, registry);
   const cli = cliRequest(JSON.stringify({ op: "check", world: dir, command: { command_id: "probe", actor: "e4", verb: "take", target: "bottle" } }));
   strictEqual(cli.status, 0, cli.stderr);
   const parsed = CheckResponseSchema.parse(JSON.parse(cli.stdout));

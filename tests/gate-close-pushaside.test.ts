@@ -5,15 +5,24 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createWorld, type Id, type Result, type Scenario, type World } from "../src/index.js";
+import { loadTemplates, parseRegistry } from "../src/templates.js";
+import { SHARED_FIXTURES } from "./presets.js";
 
 const cell = JSON.parse(
   readFileSync(fileURLToPath(new URL("../scenarios/cell.json", import.meta.url)), "utf8"),
 ) as Scenario;
 
+// A heap of rubble as tall as a stone: declaring debris is a definition, so it is a preset of its own.
+const registry = parseRegistry({
+  ...loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))),
+  ...SHARED_FIXTURES,
+  rubble_heap: { id: "rubble_heap", extends: "stone", props: { rubble: true } },
+});
+
 function open(t: { after(callback: () => void): void }): World {
   const dir = mkdtempSync(join(tmpdir(), "world-engine-gate-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return createWorld(join(dir, "cell"), cell);
+  return createWorld(join(dir, "cell"), cell, registry);
 }
 
 let seq = 0;
@@ -111,7 +120,7 @@ test("what the gate moves uncovers what it hid; rubble and the low stay put", (t
   // A cup hidden behind ann, and a heap of rubble as tall as a stone, both in the gateway.
   const cup = spawnAt("cup", "cup", 30);
   strictEqual(world.edit({ kind: "place", target: cup, concealed_by: ann }).status, "ok");
-  const heap = spawnAt("stone", "heap", 80, { rubble: true });
+  const heap = spawnAt("rubble_heap", "heap", 80);
   const closed = run(world, bob, "close", "gate");
   deepStrictEqual(closed.events.map((event) => [event.type, event.entity]), [
     ["close", world.id("gate")],

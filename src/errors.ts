@@ -22,7 +22,8 @@ export type WorldErrorCode =
   | "conflicting_placement"
   | "invalid_ids"
   | "store_busy"
-  | "derived_field";
+  | "derived_field"
+  | "field_not_editable";
 
 export class WorldError extends Error {
   constructor(

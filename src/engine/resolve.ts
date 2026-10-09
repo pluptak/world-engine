@@ -21,6 +21,16 @@ function resolved(entityId: Id, part: string | null = null): TargetResolution {
   };
 }
 
+// A door is known by its shape, not its template id: anything with string `from` and `to` props
+// joins the rooms they name, whatever preset placed it, so a descendant of `door` is a door.
+export function isDoor(entity: Entity | undefined): boolean {
+  if (entity === undefined) {
+    return false;
+  }
+  const { from, to } = entity.props;
+  return typeof from === "string" && typeof to === "string";
+}
+
 // An abstract entity is a mark rather than a thing: nothing holds it, it holds nothing, and it is
 // not addressable (except by the world author), so no verb can act on one and no destination can be one.
 // Declared by a template like any other property; the only template that declares it today is `anchor`.

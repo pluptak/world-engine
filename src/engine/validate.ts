@@ -162,8 +162,9 @@ function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
     );
   }
   // Doors name the rooms they join in props, outside the support and containment relations: a side
-  // that names anything else joins nothing, so it is not a door's side at all.
-  if (entity.template === "door") {
+  // that names anything else joins nothing, so it is not a door's side at all. A door is its shape,
+  // so any entity with a string `from` or `to` is held to it, whatever preset placed it.
+  if (typeof entity.props.from === "string" || typeof entity.props.to === "string") {
     for (const side of ["from", "to"] as const) {
       const ref = entity.props[side];
       if (typeof ref !== "string") {

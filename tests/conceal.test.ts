@@ -10,6 +10,11 @@ import {
   type Scenario,
   type World,
 } from "../src/index.js";
+import { loadTemplates } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
+import { fileURLToPath } from "node:url";
+
+const presets = presetRegistry(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
 
 function tempDir(t: { after(callback: () => void): void }): string {
   const dir = mkdtempSync(join(tmpdir(), "world-engine-conceal-"));
@@ -242,20 +247,11 @@ const toppling: Scenario = [
   },
   {
     id: "chest",
-    template: "chest",
+    template: "open_chest",
     overrides: {
       name: "chest",
       location: "hall",
       support: "table",
-      props: {
-        container: true,
-        topples: true,
-        inner_w_cm: 55,
-        inner_d_cm: 35,
-        inner_h_cm: 35,
-        openable: true,
-        open: true,
-      },
     },
   },
   {
@@ -271,8 +267,8 @@ const toppling: Scenario = [
 ];
 
 test("a concealer that topples off its support uncovers what it hid", (t) => {
-  const store = createWorld(join(tempDir(t), "toppling"), toppling);
-  for (const world of [store, memoryWorld(store.snapshot(), undefined, { chest: "e3" })]) {
+  const store = createWorld(join(tempDir(t), "toppling"), toppling, presets);
+  for (const world of [store, memoryWorld(store.snapshot(), presets, { chest: "e3" })]) {
     strictEqual(world.entity("e4")?.concealed_by, "e3");
     const removed = world.edit({ kind: "remove", target: "e2" }, { command_id: "remove-table" });
     strictEqual(removed.status, "ok");
@@ -398,20 +394,12 @@ test("a thing in a shut container cannot be searched", (t) => {
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
     {
       id: "chest",
-      template: "chest",
+      template: "shut_chest",
       overrides: {
         name: "chest",
         location: "hall",
         support: "hall",
         pos: { x: 30, y: 0 },
-        props: {
-          container: true,
-          inner_w_cm: 55,
-          inner_d_cm: 35,
-          inner_h_cm: 35,
-          openable: true,
-          open: false,
-        },
       },
     },
     {
@@ -424,8 +412,8 @@ test("a thing in a shut container cannot be searched", (t) => {
       template: "human",
       overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } },
     },
-  ]);
-  for (const world of [store, memoryWorld(store.snapshot(), undefined, { chest: "e3" })]) {
+  ], presets);
+  for (const world of [store, memoryWorld(store.snapshot(), presets, { chest: "e3" })]) {
     // Shut in, the book is neither seen nor groped for, so it cannot even be named.
     const searched = world.command({ command_id: "search-in-chest", actor: "e4", verb: "search", target: "book" });
     strictEqual(searched.status, "unresolved");

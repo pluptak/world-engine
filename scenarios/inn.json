@@ -44,20 +44,10 @@
   },
   {
     "id": "chest",
-    "template": "chest",
+    "template": "locked_chest",
     "overrides": {
       "name": "chest",
-      "pos": { "anchor": "hearth", "dx": 0, "dy": -60 },
-      "props": {
-        "container": true,
-        "topples": true,
-        "inner_w_cm": 55,
-        "inner_d_cm": 35,
-        "inner_h_cm": 35,
-        "openable": true,
-        "open": false,
-        "locked": true
-      }
+      "pos": { "anchor": "hearth", "dx": 0, "dy": -60 }
     }
   },
   {

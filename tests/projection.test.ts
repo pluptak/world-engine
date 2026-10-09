@@ -14,6 +14,11 @@ import {
   type World,
 } from "../src/index.js";
 import { ProjectionSchema } from "../src/contract.js";
+import { loadTemplates } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
+import { fileURLToPath } from "node:url";
+
+const presets = presetRegistry(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
 
 const FULL: Coverage = {
   relations: ["support", "contained_in", "attached_to", "status", "location", "near"],
@@ -42,13 +47,12 @@ const house: Scenario = [
   },
   {
     id: "chest",
-    template: "chest",
+    template: "shut_chest",
     overrides: {
       name: "chest",
       location: "hall",
       support: "hall",
       pos: { x: 0, y: -100 },
-      props: { container: true, openable: true, open: false, inner_w_cm: 55, inner_d_cm: 35, inner_h_cm: 35 },
     },
   },
   { id: "coin", template: "key", overrides: { name: "coin", location: "hall", contained_in: "chest" } },
@@ -63,14 +67,14 @@ const house: Scenario = [
 function worlds(t: { after(callback: () => void): void }, coverage: Coverage = FULL): World[] {
   const dir = mkdtempSync(join(tmpdir(), "world-engine-projection-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
-  const store = createWorld(join(dir, "house"), house, undefined, { coverage });
+  const store = createWorld(join(dir, "house"), house, presets, { coverage });
   const names: Record<string, string> = {};
   for (const entry of house) {
     const id = store.id(entry.id ?? "");
     ok(id !== null);
     names[entry.id ?? ""] = id;
   }
-  return [store, memoryWorld(store.snapshot(), undefined, names)];
+  return [store, memoryWorld(store.snapshot(), presets, names)];
 }
 
 function idOf(world: World, name: string): string {

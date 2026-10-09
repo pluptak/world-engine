@@ -1,0 +1,5 @@
+{
+  "id": "crate",
+  "extends": "stone",
+  "props": { "hands_required": 2 }
+}

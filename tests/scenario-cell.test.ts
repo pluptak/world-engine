@@ -5,6 +5,8 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createWorld, type Id, type Result, type Scenario, type World } from "../src/index.js";
+import { loadTemplates, parseRegistry } from "../src/templates.js";
+import { SHARED_FIXTURES } from "./presets.js";
 
 // The cell block is the spec for walking. A lit 1000 × 1000 cm room, its origin at the centre, is cut
 // along y = 0 by ten 100 cm sections of bars, wall to wall; the section at x 50 is a locked gate.
@@ -37,6 +39,50 @@ function open(t: { after(callback: () => void): void }): { world: World; ids: Re
     ids[name] = id;
   }
   return { world, ids };
+}
+
+const shippedPresets = (() => {
+  const shipped = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+  return parseRegistry({
+    ...shipped,
+    ...SHARED_FIXTURES,
+    self_closing_gate: { id: "self_closing_gate", extends: "gate", props: { closes_after: 2 } },
+    wide_bars: { id: "wide_bars", extends: "bars", props: { gap_cm: 80 } },
+  });
+})();
+
+// The cell with one entry swapped for a preset of its own: widening a gap or making a gate
+// self-close is a definition, which no edit may write.
+function openSwapped(
+  t: { after(callback: () => void): void },
+  id: string,
+  template: string,
+  overrides: Record<string, unknown>,
+): { world: World; ids: Record<Name, Id> } {
+  const scenario = cell.map((entry) =>
+    entry.id === id ? { ...entry, template, overrides: overrides as Scenario[number]["overrides"] } : entry,
+  );
+  const dir = mkdtempSync(join(tmpdir(), "world-engine-cell-swapped-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const world = createWorld(join(dir, "cell"), scenario, shippedPresets);
+  const ids = {} as Record<Name, Id>;
+  for (const name of NAMES) {
+    const wid = world.id(name);
+    ok(wid !== null, name);
+    ids[name] = wid;
+  }
+  return { world, ids };
+}
+
+// The cell with a self-closing gate: making an ordinary gate self-close is a definition, so the
+// gate is a preset of its own, unlocked from the start.
+function openClosing(t: { after(callback: () => void): void }): { world: World; ids: Record<Name, Id> } {
+  return openSwapped(t, "gate", "self_closing_gate", {
+    name: "gate",
+    location: "block",
+    support: "block",
+    pos: { x: 50, y: 0 },
+  });
 }
 
 let seq = 0;
@@ -94,7 +140,12 @@ test("across the bars they see each other and hand things over within reach", (t
 });
 
 test("between the bars only what fits the 12 cm gap passes, turned edgewise; never an agent", (t) => {
-  const { world, ids } = open(t);
+  const { world, ids } = openSwapped(t, "bars_m250", "wide_bars", {
+    name: "bars",
+    location: "block",
+    support: "block",
+    pos: { x: -250, y: 0 },
+  });
   const make = (template: string, name: string, x: number, y: number): Id => {
     const made = world.edit({
       kind: "spawn",
@@ -106,8 +157,6 @@ test("between the bars only what fits the 12 cm gap passes, turned edgewise; nev
     return id;
   };
   // However wide the gap, an agent does not slip through it.
-  const bars = world.entity(ids.bars_m250)!;
-  strictEqual(world.edit({ kind: "set_props", target: ids.bars_m250, props: { ...bars.props, gap_cm: 80 } }).status, "ok");
   strictEqual(walk(world, ids.ann, -250, -100).status, "ok");
   deepStrictEqual(walk(world, ids.ann, -250, 100).reason_data, { with: ids.bars_m250 });
 
@@ -156,10 +205,7 @@ test("a fist reaches through the bars, a bite does not: a dog's head is its body
 });
 
 test("a self-closing gate moves whoever stands in it aside, then shuts", (t) => {
-  const { world, ids } = open(t);
-  const gate = world.entity(ids.gate)!;
-  const props = { ...gate.props, locked: false, closes_after: 2 };
-  strictEqual(world.edit({ kind: "set_props", target: ids.gate, props }).status, "ok");
+  const { world, ids } = openClosing(t);
   strictEqual(walk(world, ids.ann, 50, -60).status, "ok");
   strictEqual(walk(world, ids.bob, 50, 40).status, "ok");
   const opened = run(world, ids.bob, "open", "gate");

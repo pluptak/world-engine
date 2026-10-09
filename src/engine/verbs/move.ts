@@ -1,7 +1,7 @@
 import { capacity } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Pos } from "../../model.js";
-import { resolveTarget } from "../resolve.js";
+import { isDoor, resolveTarget } from "../resolve.js";
 import { refreshSubtreeLocations, subtreeOf } from "./address.js";
 import { revealConcealed } from "./search.js";
 import { effectivePos, walkStop, type WalkStop } from "../geometry.js";
@@ -108,7 +108,7 @@ function hasOpenDoor(context: CommandContext, to: string): boolean {
       const entity = context.snapshot.entities[id];
       return (
         entity !== undefined &&
-        entity.template === "door" &&
+        isDoor(entity) &&
         entity.props.open === true &&
         ((entity.props.from === from && entity.props.to === to) ||
           (entity.props.from === to && entity.props.to === from))

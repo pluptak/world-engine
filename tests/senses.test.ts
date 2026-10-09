@@ -15,9 +15,11 @@ import {
 import { EVENT_SENSES, query } from "../src/engine/query.js";
 import { verbCatalog } from "../src/engine/verbs/index.js";
 import { loadTemplates } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
 import { fileURLToPath } from "node:url";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+const presets = presetRegistry(registry);
 
 // Every TypeScript file under a directory, so the scan for `emit("…")` reads the whole source tree.
 function sourceFiles(dir: URL): string[] {
@@ -64,21 +66,12 @@ const hall: Scenario = [
   },
   {
     id: "chest",
-    template: "chest",
+    template: "shut_chest",
     overrides: {
       name: "chest",
       location: "hall",
       support: "hall",
       pos: { x: -30, y: 0 },
-      props: {
-        container: true,
-        topples: true,
-        inner_w_cm: 55,
-        inner_d_cm: 35,
-        inner_h_cm: 35,
-        openable: true,
-        open: false,
-      },
     },
   },
   {
@@ -416,10 +409,10 @@ test("every event type the engine can emit has a row of the sense table", (t) =>
 
   // And the types a world really produces are all of them: a store world and a memory world over the
   // same script, so a type emitted through something the scan cannot see is caught too.
-const store = createWorld(join(tempDir(t), "every-type"), hall);
+const store = createWorld(join(tempDir(t), "every-type"), hall, presets);
   const initial = store.snapshot();
   runScript(store);
-  const smelly = memoryWorld(initial, undefined, { ann: ANN }, { coverage: SMELLING });
+  const smelly = memoryWorld(initial, presets, { ann: ANN }, { coverage: SMELLING });
   runScript(smelly);
   for (const world of [store, smelly]) {
     const seen = [...new Set(world.since(0).events.map((event) => event.type))].sort();
@@ -432,13 +425,13 @@ const store = createWorld(join(tempDir(t), "every-type"), hall);
 });
 
 test("the sense table holds row by row in a store world and in a memory world", (t) => {
-  const store = createWorld(join(tempDir(t), "senses"), hall);
+  const store = createWorld(join(tempDir(t), "senses"), hall, presets);
   const initial = store.snapshot();
   runScript(store);
   // A store world declares sight and hearing only, so that is what its rows can answer.
   walkTable(store, ["sight", "hearing"]);
 
-  const smelly = memoryWorld(initial, undefined, {
+  const smelly = memoryWorld(initial, presets, {
     ann: ANN,
     kit: IN_HALL,
     watcher: THROUGH_OPEN_DOOR,
@@ -561,20 +554,12 @@ test("a search and an open are never smelled", (t) => {
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
     {
       id: "chest",
-      template: "chest",
+      template: "shut_chest",
       overrides: {
         name: "chest",
         location: "hall",
         support: "hall",
         pos: { x: 30, y: 0 },
-        props: {
-          container: true,
-          inner_w_cm: 55,
-          inner_d_cm: 35,
-          inner_h_cm: 35,
-          openable: true,
-          open: false,
-        },
       },
     },
     // Ann acts, and the cat with a nose is what senses it: a human cannot smell at all.
@@ -588,8 +573,8 @@ test("a search and an open are never smelled", (t) => {
       template: "cat",
       overrides: { name: "kit", location: "hall", support: "hall", pos: { x: 10, y: 0 } },
     },
-  ]);
-  const world = memoryWorld(store.snapshot(), undefined, { chest: "e2" }, { coverage: SMELLING });
+  ], presets);
+  const world = memoryWorld(store.snapshot(), presets, { chest: "e2" }, { coverage: SMELLING });
   const searched = world.command({ command_id: "search-chest", actor: "e3", verb: "search", target: "chest" });
   strictEqual(searched.status, "ok");
   const opened = world.command({ command_id: "open-chest", actor: "e3", verb: "open", target: "chest" });

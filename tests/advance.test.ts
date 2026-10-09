@@ -4,6 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { canonicalJson, createWorld, memoryWorld, openWorld, WORLD_AUTHOR, type Id, type Result, type World } from "../src/index.js";
+import { loadTemplates, parseRegistry } from "../src/templates.js";
+import { SHARED_FIXTURES } from "./presets.js";
+import { fileURLToPath } from "node:url";
 
 // `advance` is time with no one acting: only the world author may issue it, it runs whatever falls
 // due in the span exactly as a wait would, and nobody senses the command itself.
@@ -21,17 +24,22 @@ function hall(t: { after(callback: () => void): void }): Hall {
   const base = mkdtempSync(join(tmpdir(), "world-engine-advance-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
   const dir = join(base, "hall");
+  const registry = parseRegistry({
+    ...loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))),
+    ...SHARED_FIXTURES,
+    slow_door: { id: "slow_door", extends: "door", props: { closes_after: 5 } },
+  });
   const world = createWorld(dir, [
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
     { id: "yard", template: "room", overrides: { name: "yard", props: { lit: true } } },
     {
       id: "door",
-      template: "door",
-      overrides: { name: "door", props: { openable: true, open: false, from: "hall", to: "yard", closes_after: 5 } },
+      template: "slow_door",
+      overrides: { name: "door", props: { openable: true, open: false, from: "hall", to: "yard" } },
     },
     { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
     { id: "bob", template: "human", overrides: { name: "bob", location: "yard", support: "yard", pos: { x: 0, y: 0 } } },
-  ]);
+  ], registry);
   const id = (name: string): Id => {
     const found = world.id(name);
     ok(found !== null, name);

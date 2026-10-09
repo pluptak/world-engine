@@ -11,6 +11,7 @@ import type { Command, Result } from "../src/engine/command.js";
 import { listOptions } from "../src/options.js";
 import { defaultCoverage } from "../src/model.js";
 import { loadTemplates } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
 import {
   actorWorld,
   canonicalJson,
@@ -29,7 +30,10 @@ import {
 // commands that would be accepted, the verbs that need args to be judged at all, and with `refused`
 // the ones that would be refused and why. A read: nothing is logged and nothing changes.
 
-const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+const shipped = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+// Open and shut chests are presets: making a chest openable is a definition, which an override may
+// not write.
+const registry = presetRegistry(shipped);
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
 
 function tempDir(t: { after(callback: () => void): void }): string {
@@ -48,15 +52,7 @@ function hall(lit: boolean): Scenario {
     { id: "bob", template: "human", overrides: { name: "bob", ...at(0, 60) } },
     { id: "stone", template: "stone", overrides: { name: "stone", ...at(30) } },
     { id: "lantern", template: "lantern", overrides: { name: "lantern", ...at(-30) } },
-    {
-      id: "chest",
-      template: "chest",
-      overrides: {
-        name: "chest",
-        ...at(0, -40),
-        props: { container: true, openable: true, open: false, inner_w_cm: 55, inner_d_cm: 35, inner_h_cm: 35 },
-      },
-    },
+    { id: "chest", template: "shut_chest", overrides: { name: "chest", ...at(0, -40) } },
     { id: "far", template: "stone", overrides: { name: "far", ...at(600) } },
     { id: "book", template: "book", overrides: { name: "book", ...at(-30, 30) } },
     { id: "note", template: "note", overrides: { name: "note", ...at(-30, 30), concealed_by: "book" } },
@@ -71,7 +67,7 @@ interface Hall {
 }
 
 function open(t: { after(callback: () => void): void }, lit: boolean): Hall {
-  const world = createWorld(join(tempDir(t), "hall"), hall(lit), undefined, { seed: 11 });
+  const world = createWorld(join(tempDir(t), "hall"), hall(lit), registry, { seed: 11 });
   return {
     world,
     id: (name) => {
@@ -161,7 +157,7 @@ test("a destroyed body, a thing that is no agent and an unknown actor", (t) => {
   const ann = id("ann");
   const fallen = memoryWorld(
     { ...snapshot, entities: { ...snapshot.entities, [ann]: { ...snapshot.entities[ann]!, integrity: 0, status: "destroyed" } } },
-    undefined,
+    registry,
     { ann },
   );
   deepStrictEqual(fallen.options(ann, { refused: true }), {
@@ -220,7 +216,7 @@ test("a store world, a reopened one and a memory world answer alike", (t) => {
   const { world, id } = open(t, true);
   const ann = id("ann");
   const names = Object.fromEntries(hall(true).map((entry) => [entry.id ?? "", id(entry.id ?? "")]));
-  const memory = memoryWorld(world.snapshot(), undefined, names);
+  const memory = memoryWorld(world.snapshot(), registry, names);
   const expected = canonicalJson(world.options(ann, { refused: true }));
   strictEqual(canonicalJson(memory.options(ann, { refused: true })), expected);
   strictEqual(canonicalJson(world.fork().options(ann, { refused: true })), expected);
@@ -231,7 +227,7 @@ test("a store world, a reopened one and a memory world answer alike", (t) => {
     Object.entries(snapshot.entities).sort(([left], [right]) => Number(left.slice(1)) - Number(right.slice(1))),
   );
   deepStrictEqual(Object.keys(numeric).slice(0, 3), ["e1", "e2", "e3"]);
-  strictEqual(canonicalJson(memoryWorld({ ...snapshot, entities: numeric }, undefined, names).options(ann, { refused: true })), expected);
+  strictEqual(canonicalJson(memoryWorld({ ...snapshot, entities: numeric }, registry, names).options(ann, { refused: true })), expected);
 });
 
 test("an actor's own view offers the same options", (t) => {
@@ -243,7 +239,7 @@ test("an actor's own view offers the same options", (t) => {
 
 test("the CLI's options op answers what the library does, and the contract holds it", (t) => {
   const dir = join(tempDir(t), "hall");
-  const world = createWorld(dir, hall(true), undefined, { seed: 11 });
+  const world = createWorld(dir, hall(true), registry, { seed: 11 });
   const ann = world.id("ann")!;
   const cli = (request: object): unknown => {
     const run = cliRequest(JSON.stringify(request));
@@ -299,12 +295,8 @@ function house(): Scenario {
   });
   const chest = (name: string, x: number, open: boolean) => ({
     id: name,
-    template: "chest",
-    overrides: {
-      name,
-      ...at(x, 40),
-      props: { container: true, openable: true, open, inner_w_cm: 55, inner_d_cm: 35, inner_h_cm: 35 },
-    },
+    template: open ? "open_chest" : "shut_chest",
+    overrides: { name, ...at(x, 40) },
   });
   return [
     room("hall"),
@@ -328,7 +320,7 @@ function house(): Scenario {
 // The house with ann holding the stone and the flask.
 function holding(t: { after(callback: () => void): void }): Hall & { dir: string } {
   const dir = join(tempDir(t), "house");
-  const world = createWorld(dir, house(), undefined, { seed: 11 });
+  const world = createWorld(dir, house(), registry, { seed: 11 });
   const id = (name: string): Id => {
     const found = world.id(name);
     ok(found !== null, name);
@@ -507,7 +499,7 @@ test("a body shows its parts, and attack is offered at each part that is still o
 
 test("in the dark ann feels her own parts and none of bob's; a world that does not cover status shows none", (t) => {
   const touching = { ...defaultCoverage(), senses: ["sight", "hearing", "touch"] };
-  const dark = createWorld(join(tempDir(t), "dark"), hall(false), undefined, { seed: 11, coverage: touching });
+  const dark = createWorld(join(tempDir(t), "dark"), hall(false), registry, { seed: 11, coverage: touching });
   const ann = dark.id("ann")!;
   const bob = dark.id("bob")!;
   strictEqual(dark.inspect(ann, ann)?.parts?.length, BODY.length);
@@ -516,7 +508,7 @@ test("in the dark ann feels her own parts and none of bob's; a world that does n
   deepStrictEqual(named(dark.options(ann, { refused: true })).filter((entry) => entry.target?.startsWith(`${bob}.`)), []);
 
   const unsaid = { ...defaultCoverage(), relations: defaultCoverage().relations.filter((relation) => relation !== "status") };
-  const lit = createWorld(join(tempDir(t), "lit"), hall(true), undefined, { seed: 11, coverage: unsaid });
+  const lit = createWorld(join(tempDir(t), "lit"), hall(true), registry, { seed: 11, coverage: unsaid });
   const body = lit.inspect(lit.id("ann")!, lit.id("bob")!);
   ok(body !== null);
   strictEqual(body.parts, undefined);

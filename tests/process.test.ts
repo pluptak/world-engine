@@ -193,12 +193,14 @@ test("a condition made true by an edit starts a process, and made false stops it
 
 test("a process stops at its bound and starts again when an edit lifts the prop off it", (t) => {
   const { world, candle } = camp(t);
-  world.edit({ kind: "set_props", target: candle, props: { burning: true, fuel: 1 } });
+  const relight = (fuel: number) =>
+    world.edit({ kind: "set_props", target: candle, props: { ...world.entity(candle)!.props, burning: true, fuel } });
+  relight(1);
   const run = advance(world, 10);
   deepStrictEqual(changes(run).filter(([entity]) => entity === candle), [[candle, 2, 1, 0]]);
   strictEqual(pendingFor(world, candle), false);
 
-  world.edit({ kind: "set_props", target: candle, props: { burning: true, fuel: 2 } });
+  relight(2);
   ok(pendingFor(world, candle));
   deepStrictEqual(changes(advance(world, 10)).filter(([entity]) => entity === candle), [
     [candle, 12, 2, 1],
@@ -384,7 +386,9 @@ test("a process's then is declared with the bound it waits for, and exactly one 
 
 test("reaching the bound writes a prop, under the run that reached it", (t) => {
   const { world, ids } = thenWorld(t);
-  const edited = world.edit({ kind: "set_props", target: ids.candle!, props: { burning: true, fuel: 2 } });
+  const relight = (fuel: number) =>
+    world.edit({ kind: "set_props", target: ids.candle!, props: { ...world.entity(ids.candle!)!.props, burning: true, fuel } });
+  const edited = relight(2);
   strictEqual(edited.status, "ok");
   const run = advance(world, 10);
   const changed = run.events.filter((event) => event.type === "changed" && event.entity === ids.candle);
@@ -404,7 +408,7 @@ test("reaching the bound writes a prop, under the run that reached it", (t) => {
   // The write stopped the process through the condition, so nothing is pending for it.
   strictEqual(pendingFor(world, ids.candle!), false);
   // Lit again with fuel, it burns once more: the end of one burn is not the end of the candle.
-  world.edit({ kind: "set_props", target: ids.candle!, props: { burning: true, fuel: 1 } });
+  relight(1);
   strictEqual(pendingFor(world, ids.candle!), true);
 });
 
@@ -458,7 +462,7 @@ const withRate = parseRegistry({
     id: "ember",
     extends: "stone",
     props: { glow: 0, rate: 4 },
-    fields: { glow: { tier: "state", type: "integer" }, rate: { tier: "definition", type: "integer" } },
+    fields: { glow: { tier: "state", type: "integer" }, rate: { tier: "state", type: "integer" } },
     processes: [{ id: "glow", every_ticks: 5, every_ticks_prop: "rate", effect: { adjust_prop: { prop: "glow", by: 1, max: 100 } } }],
   },
 });
@@ -511,6 +515,18 @@ test("every_ticks_prop must name a prop", () => {
 test("a hungry body's rate follows hunger_every: a resting body hungers at half the pace", (t) => {
   const root = mkdtempSync(join(tmpdir(), "world-engine-rate-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
+  // A body that hungers at half the pace: its rate is a definition, so it is a preset of its own.
+  const slowParts = Object.fromEntries(
+    ["arm_l", "arm_l.hand_l", "arm_r", "arm_r.hand_r", "hand_l", "hand_r"].map((part) => [
+      `slow_hungry.${part}`,
+      { id: `slow_hungry.${part}`, extends: `human.${part}` },
+    ]),
+  );
+  const slow = parseRegistry({
+    ...base,
+    ...slowParts,
+    slow_hungry: { id: "slow_hungry", extends: "human_hungry", props: { hunger_every: 20 } },
+  });
   const world = createWorld(
     join(root, "w"),
     [
@@ -518,11 +534,11 @@ test("a hungry body's rate follows hunger_every: a resting body hungers at half 
       { id: "busy", template: "human_hungry", overrides: { name: "busy", location: "tent", support: "tent", pos: { x: 0, y: 0 } } },
       {
         id: "rest",
-        template: "human_hungry",
-        overrides: { name: "rest", location: "tent", support: "tent", pos: { x: 100, y: 0 }, props: { agent: true, hunger: 0, starvation: 0, hunger_every: 20 } },
+        template: "slow_hungry",
+        overrides: { name: "rest", location: "tent", support: "tent", pos: { x: 100, y: 0 }, props: { hunger: 0, starvation: 0 } },
       },
     ],
-    base,
+    slow,
   );
   advance(world, 100);
   strictEqual(world.entity(world.id("busy")!)?.props.hunger, 10);

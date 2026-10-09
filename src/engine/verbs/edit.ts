@@ -1,6 +1,7 @@
 import type { Entity, Id, Pos, Snapshot } from "../../model.js";
-import type { TemplateRegistry } from "../../templates.js";
+import type { Template, TemplateRegistry } from "../../templates.js";
 import { propagateSupportLoss } from "../../resolvers/physical.js";
+import { PROP_FIELDS } from "../fields.js";
 import { effectivePos } from "../geometry.js";
 import { spawn, type EntityOverrides } from "../spawn.js";
 import { derivedLocationOf, validateSnapshot } from "../validate.js";
@@ -10,6 +11,7 @@ import {
   type CommandContext,
   type PlaceEdit,
   type PreconditionResult,
+  type PropsEdit,
   type SpawnEdit,
   type CancelBeatEdit,
   type ScheduleBeatEdit,
@@ -319,6 +321,10 @@ function spawnRefusal(context: CommandContext, edit: SpawnEdit): PreconditionRes
   if (derivedFieldWritten(context.snapshot, overrides) !== null) {
     return refused("derived_field");
   }
+  const preset = context.registry[edit.template]!;
+  if (definitionWritten(preset, spawnedProps(preset, overrides)) !== null) {
+    return refused("field_not_editable");
+  }
   const support = overrides.support ?? null;
   if (support !== null && context.snapshot.entities[support]?.template === "room") {
     if (overrides.pos === undefined || overrides.pos === null) {
@@ -339,6 +345,34 @@ function spawnRefusal(context: CommandContext, edit: SpawnEdit): PreconditionRes
     }
   }
   return { status: "ok" };
+}
+
+// The definition prop a write changes, by value or by leaving it out, or null. An entity stores a
+// copy of its template's props, so repeating a definition is not a change to it; what an author may
+// not do is write a different one, or drop one its template declares. State is the author's to
+// write, and a derived field is `derived_field` instead.
+export function definitionWritten(
+  template: Template,
+  resulting: Record<string, number | string | boolean>,
+): string | null {
+  const isDefinition = (name: string): boolean =>
+    PROP_FIELDS[name]?.tier === "definition" || template.fields?.[name]?.tier === "definition";
+  const names = [...new Set([...Object.keys(template.props), ...Object.keys(resulting)])].sort();
+  for (const name of names) {
+    if (isDefinition(name) && template.props[name] !== resulting[name]) {
+      return name;
+    }
+  }
+  return null;
+}
+
+// The props a spawn's overrides leave the entity with: the template's, with the override's merged
+// over them, as `update_props` merges and as `spawn` itself now builds them.
+function spawnedProps(
+  template: Template,
+  overrides: EntityOverrides,
+): Record<string, number | string | boolean> {
+  return { ...template.props, ...overrides.props };
 }
 
 // The derived entity field a spawn's overrides write as something other than what the engine
@@ -504,6 +538,24 @@ function cancelBeatRefusal(context: CommandContext, edit: CancelBeatEdit): Preco
   return waiting ? { status: "ok" } : refused("no_such_beat");
 }
 
+function propsRefusal(
+  context: CommandContext,
+  subject: Entity,
+  edit: PropsEdit,
+): PreconditionResult {
+  const template = context.registry[subject.template];
+  if (template === undefined) {
+    return invalid("unknown_template");
+  }
+  // `set_props` replaces every prop, so it has to carry the template's definitions to keep them;
+  // `update_props` merges, so only the keys it writes can differ.
+  const resulting =
+    edit.kind === "set_props" ? { ...edit.props } : { ...subject.props, ...edit.props };
+  return definitionWritten(template, resulting) === null
+    ? { status: "ok" }
+    : refused("field_not_editable");
+}
+
 function preconditions(context: CommandContext): PreconditionResult {
   if (context.command.actor !== WORLD_AUTHOR) {
     return invalid("invalid_author");
@@ -544,7 +596,7 @@ function preconditions(context: CommandContext): PreconditionResult {
     }
     case "set_props":
     case "update_props":
-      return { status: "ok" };
+      return propsRefusal(context, subject, edit);
     case "set_part":
       return partRefusal(context, context.registry, subject, edit.part);
     default: {
@@ -827,6 +879,7 @@ export const editVerb: Verb = {
   args: { edit: { kind: "world_edit" } },
   refuses: [
     "derived_field",
+    "field_not_editable",
     "room_placed",
     "conflicting_placement",
     "room_support_without_pos",

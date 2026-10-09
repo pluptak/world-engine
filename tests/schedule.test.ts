@@ -10,13 +10,14 @@ import type { ScheduledCause, Snapshot } from "../src/model.js";
 import { CAUSE_KINDS } from "../src/engine/schedule.js";
 import { SnapshotSchema } from "../src/contract.js";
 import { loadTemplates } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
 
 // The self-closing door is the spec for scheduled causes. A door with `closes_after: 2` swings shut
 // two ticks after it is opened, by itself, during whatever command spans that tick; the `closed`
 // names the `opened` that set it going. Shutting it by hand withdraws the close, opening it again
 // starts the count over, and a close the world has overtaken does nothing.
 
-const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+const registry = presetRegistry(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
 
 interface Hall {
   dir: string;
@@ -36,12 +37,12 @@ function hall(t: { after(callback: () => void): void }): Hall {
     { id: "yard", template: "room", overrides: { name: "yard", props: { lit: true } } },
     {
       id: "door",
-      template: "door",
-      overrides: { name: "door", props: { openable: true, open: false, from: "hall", to: "yard", closes_after: 2 } },
+      template: "self_closing_door",
+      overrides: { name: "door", props: { openable: true, open: false, from: "hall", to: "yard" } },
     },
     { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
     { id: "bob", template: "human", overrides: { name: "bob", location: "hall", support: "hall", pos: { x: 100, y: 0 } } },
-  ]);
+  ], registry);
   const id = (name: string): Id => {
     const found = world.id(name);
     ok(found !== null, name);

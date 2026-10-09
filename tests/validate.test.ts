@@ -19,6 +19,7 @@ import { effectivePart } from "../src/engine/parts.js";
 import { spawn } from "../src/engine/spawn.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -312,21 +313,13 @@ test("removing a chest leaves the key that opened it valid", (t) => {
   const world = createWorld(join(tempDir(t), "key-outlives-its-lock"), [
     { template: "room", overrides: { name: "room" } },
     {
-      template: "chest",
+      template: "shut_chest",
       overrides: {
         name: "chest",
         location: "e1",
         support: "e1",
         pos: { x: 20, y: 0 },
-        props: {
-          container: true,
-          inner_w_cm: 55,
-          inner_d_cm: 35,
-          inner_h_cm: 35,
-          openable: true,
-          open: false,
-          locked: true,
-        },
+        props: { locked: true },
       },
     },
     {
@@ -343,7 +336,7 @@ test("removing a chest leaves the key that opened it valid", (t) => {
       template: "human",
       overrides: { name: "guard", location: "e1", support: "e1", pos: { x: -10, y: 0 } },
     },
-  ]);
+  ], presetRegistry(registry));
 
   const removed = world.edit({ kind: "remove", target: "e2" }, { command_id: "remove-chest" });
   strictEqual(removed.status, "ok");
@@ -409,7 +402,7 @@ test("a severed limb is accounted for by the entity it became", (t) => {
       template: "human",
       overrides: { name: "guard", location: "e1", support: "e1", pos: { x: 50, y: 0 } },
     },
-  ]);
+  ], presetRegistry(registry));
 
   let snapshot: Snapshot | undefined;
   for (let index = 0; index < 3; index += 1) {

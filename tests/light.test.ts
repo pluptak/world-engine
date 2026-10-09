@@ -6,13 +6,21 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { createWorld, WORLD_AUTHOR, type Id, type Result, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
-import { loadTemplates } from "../src/templates.js";
+import { loadTemplates, parseRegistry } from "../src/templates.js";
+import { SHARED_FIXTURES } from "./presets.js";
 
 // A room is lit when it says so or when something burning in it gives light, so darkness can fall
 // by itself: a lantern lit in a dark room lets those in it see, a carried one lights wherever its
 // carrier stands, and a light that burns out takes the room with it.
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+// A light source with no fuel to burn: it burns without end. Making a stone a light source is a
+// definition, so it is a preset of its own.
+const presets = parseRegistry({
+  ...registry,
+  ...SHARED_FIXTURES,
+  unfueled_light: { id: "unfueled_light", extends: "stone", props: { light_source: true } },
+});
 
 interface Dark {
   world: World;
@@ -38,7 +46,7 @@ function dark(t: { after(callback: () => void): void }, extra: Parameters<typeof
     { id: "note", template: "stone", overrides: { name: "note", location: "hall", support: "hall", pos: { x: 0, y: 60 } } },
     { id: "pebble", template: "stone", overrides: { name: "pebble", location: "yard", support: "yard", pos: { x: 150, y: 0 } } },
     ...extra,
-  ]);
+  ], presets);
   const id = (name: string): Id => {
     const found = world.id(name);
     ok(found !== null, name);
@@ -153,9 +161,8 @@ test("a room that is lit by its own prop stays lit when a light in it is doused"
 });
 
 test("a light shut in a closed container gives none, and opening it lets the light out", (t) => {
-  const chest = registry.chest!.props;
   const { world, ann, bob, lantern, note } = dark(t, [
-    { id: "chest", template: "chest", overrides: { name: "chest", location: "hall", support: "hall", pos: { x: 50, y: 50 }, props: { ...chest, openable: true, open: false } } },
+    { id: "chest", template: "shut_chest", overrides: { name: "chest", location: "hall", support: "hall", pos: { x: 50, y: 50 } } },
   ]);
   const chestId = world.id("chest")!;
   const placed = world.edit({ kind: "place", target: lantern, contained_in: chestId, pos: null });
@@ -174,6 +181,7 @@ test("light and douse refuse with declared codes", (t) => {
   const { world, ann, lantern, note } = dark(t, [
     { id: "dog", template: "dog", overrides: { name: "rex", location: "hall", support: "hall", pos: { x: 30, y: 0 } } },
     { id: "far", template: "candle", overrides: { name: "far", location: "hall", support: "hall", pos: { x: 400, y: 0 } } },
+    { id: "ever", template: "unfueled_light", overrides: { name: "ever", location: "hall", support: "hall", pos: { x: 60, y: 0 } } },
   ]);
   const dog = world.id("dog")!;
   const code = (result: Result) => [result.status, result.reason_code];
@@ -190,9 +198,8 @@ test("light and douse refuse with declared codes", (t) => {
   deepStrictEqual(code(run(world, ann, "light", "lantern")), ["refused", "no_fuel"]);
   deepStrictEqual(code(run(world, ann, "light", `${ann}.hand_l`)), ["refused", "target_attached"]);
   // A light with no fuel prop at all burns without end.
-  world.edit({ kind: "set_props", target: note, props: { light_source: true, burning: false } });
-  strictEqual(run(world, ann, "light", "note").status, "ok");
-  strictEqual(world.entity(note)?.props.burning, true);
+  strictEqual(run(world, ann, "light", "ever").status, "ok");
+  strictEqual(world.entity(world.id("ever")!)?.props.burning, true);
 });
 
 test("a candle is a lantern with less fuel", () => {

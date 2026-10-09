@@ -4,7 +4,7 @@ import { effectivePos } from "./geometry.js";
 import type { Entity, Id, Perceivers, Pos, Snapshot, Tri, WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import { closedEnclosure, inReach, isAgent, reachedAsDoor } from "./verbs/address.js";
-import { isAbstract } from "./resolve.js";
+import { isAbstract, isDoor } from "./resolve.js";
 import { effectivePart } from "./parts.js";
 import { computesSense } from "./capabilities.js";
 
@@ -197,7 +197,7 @@ function connectedByDoor(
     .sort()
     .some((id) => {
       const entity = snapshot.entities[id];
-      if (entity === undefined || entity.template !== "door") {
+      if (entity === undefined || !isDoor(entity)) {
         return false;
       }
       if (openOnly && entity.props.open !== true) {

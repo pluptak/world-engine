@@ -57,8 +57,8 @@ test("a mouth refuses two-handed items by hands and heavy ones by weight", (t) =
     { template: "room", overrides: { name: "room" } },
     { template: "dog", overrides: { name: "dog", location: "e1", support: "e1", pos: { x: 0, y: 0 } } },
     {
-      template: "stone",
-      overrides: { name: "box", location: "e1", support: "e1", pos: { x: 30, y: 0 }, props: { hands_required: 2 } },
+      template: "crate",
+      overrides: { name: "box", location: "e1", support: "e1", pos: { x: 30, y: 0 } },
     },
     { template: "stone", overrides: { name: "boulder", location: "e1", support: "e1", pos: { x: 40, y: 0 } } },
     { template: "chest", overrides: { name: "wardrobe", location: "e1", support: "e1", pos: { x: 50, y: 0 } } },

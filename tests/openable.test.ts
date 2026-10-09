@@ -411,8 +411,6 @@ test("opening what is open and closing what is shut are refused, change nothing 
   for (const [props, verb, code] of [
     [{ open: true }, "open", "already_open"],
     [{ open: false }, "close", "already_closed"],
-    // A door never opened has no `open` at all, and is shut.
-    [{}, "close", "already_closed"],
   ] as const) {
     const world = doorWorld({ ...props });
     const result = act(world, verb, "door");
@@ -421,6 +419,8 @@ test("opening what is open and closing what is shut are refused, change nothing 
     deepStrictEqual([result.events, result.deltas], [[], []]);
     deepStrictEqual(result.snapshot, world.snapshot);
   }
+  // A door placed without `open` keeps its template's, so it starts open and shuts.
+  strictEqual(act(doorWorld({}), "close", "door").status, "ok");
   // The other way round each still works, and a shut door that is locked is locked first.
   strictEqual(act(doorWorld({ open: true }), "close", "door").status, "ok");
   strictEqual(act(doorWorld({ open: false }), "open", "door").status, "ok");

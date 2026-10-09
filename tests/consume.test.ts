@@ -7,11 +7,12 @@ import { test } from "node:test";
 import { createWorld, WORLD_AUTHOR, type Id, type Result, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
 
 // Eating and drinking: a solid thing with `nutrition` is eaten whole or a portion at a time, a vessel's liquid is drunk by
 // the amount, and either lowers the eater's `hunger`, which a hungry body raises by itself.
 
-const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+const registry = presetRegistry(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
 const hungry = registry.human_hungry!.props;
 
 interface Table {
@@ -36,7 +37,7 @@ function table(t: { after(callback: () => void): void }, gusProps: Record<string
     { id: "rex", template: "dog", overrides: { name: "rex", location: "hall", support: "hall", pos: { x: 100, y: 0 } } },
     { id: "bread", template: "bread", overrides: { name: "bread", location: "hall", support: "hall", pos: { x: -80, y: 0 } } },
     ...extra,
-  ]);
+  ], registry);
   const id = (name: string): Id => {
     const found = world.id(name);
     ok(found !== null, name);
@@ -124,9 +125,8 @@ test("hunger is floored at 0, and a body with no hunger eats all the same", (t) 
 });
 
 test("what is carried is eaten from the hand, and refusals are declared", (t) => {
-  const chestProps = registry.chest!.props;
   const { world, ann, gus } = table(t, {}, [
-    { id: "chest", template: "chest", overrides: { name: "chest", location: "hall", support: "hall", pos: { x: 60, y: 60 }, props: { ...chestProps, openable: true, open: false } } },
+    { id: "chest", template: "shut_chest", overrides: { name: "chest", location: "hall", support: "hall", pos: { x: 60, y: 60 } } },
     { id: "far", template: "bread", overrides: { name: "far", location: "hall", support: "hall", pos: { x: 400, y: 0 } } },
     { id: "stone", template: "stone", overrides: { name: "stone", location: "hall", support: "hall", pos: { x: 30, y: 0 } } },
   ]);
@@ -170,8 +170,9 @@ test("a vessel is drunk by the amount and stays, emptied of its material at 0", 
 });
 
 test("a liquid that declares no nutrition is not drunk", (t) => {
+  // A cup declares no `liquid_nutrition`: what it holds is not food, however much is in it.
   const { world, gus } = table(t, {}, [
-    { id: "oil", template: "bottle", overrides: { name: "oil", location: "hall", support: "hall", pos: { x: -60, y: 20 }, props: { liquid_material: "lamp_oil", liquid_amount: 40 } } },
+    { id: "oil", template: "cup", overrides: { name: "oil", location: "hall", support: "hall", pos: { x: -60, y: 20 }, props: { liquid_material: "lamp_oil", liquid_amount: 40 } } },
   ]);
   deepStrictEqual(code(run(world, gus, "consume", "oil")), ["refused", "not_consumable"]);
 });

@@ -68,27 +68,12 @@ None.
 
 ## Blocks
 
-Blocks 1 (field schema) and 2 (`update_props`, `derived_field`) are built: `docs/fields.md`. One
+Blocks 1 (field schema), 2 (`update_props`, `derived_field`) and 3a (definitions are not
+written) are built: `docs/fields.md`. One
 block per session, in this order. Each touches the shared registration points CLAUDE.md lists
 (`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
-
-### 3a. Definitions are not written
-
-- A scenario's `props` override merges onto the template's props instead of replacing them
-  (`copyOverrides` in `src/engine/spawn.ts`), as `update_props` merges.
-- An edit (`spawn`, `set_props`, `update_props`) or a scenario entry whose definition props differ
-  from the template's resolved props, by value or by being left out, is refused
-  `field_not_editable`. Repeating the template's own value passes: an entity stores a copy of its
-  template's props, so `set_props` always carries them. Derived fields stay `derived_field`. This
-  is a check on writes, not a `validateSnapshot` rule, so `upgradeTemplates` is unchanged.
-- Migration: only sites that change a definition, such as `closes_after` on `door` in five tests
-  and by `set_props` in `tests/scenario-cell.test.ts`. A test's own fixture becomes a template in
-  its inline registry; a shipped scenario uses a preset. Inventory first and report the count.
-- Tests: `tests/roles.test.ts`: a changed, a dropped and a repeated definition through each write,
-  and a merged scenario override; existing `scenario-*` tests stay green.
-- Docs: `docs/fields.md` (the tier now enforced), `docs/api.md` (overrides merge).
 
 ### 3b. Entity props hold to the schema
 
@@ -99,6 +84,8 @@ what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, i
   `unmet_requires` (the entity's own props never meet it). So every edit, scenario, `verify` and
   hand-edited world meets it. Each would be accepted today: `update_props` with `gap_cm: "wide"` on
   a table, or `open` on a stone.
+- `from` and `to` declare `requires: ["openable"]` in `fields.ts`, so a door side is a definition
+  the template grants: a stone given `from`/`to` (a door by 3a's `isDoor`) is `unmet_requires`.
 - Migration: a test that writes a prop no template declares (`rate`, `glow`, `temperature`, …)
   declares it under `fields` in its inline registry, or moves it to a trait (3c) where it only
   describes. Inventory first and report the count.

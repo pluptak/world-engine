@@ -6,9 +6,13 @@ import { test } from "node:test";
 import { canonicalJson, createWorld, memoryWorld, type Entity, type Id, type Scenario, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
+import { presetRegistry } from "./presets.js";
 import { fileURLToPath } from "node:url";
 
-const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+const shipped = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
+// The chest a test needs open: an openable chest is a preset of its own, not a chest made openable
+// by an override, which is a definition and so the world author's to refuse.
+const registry = presetRegistry(shipped);
 
 const scenario: Scenario = [
   { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
@@ -23,20 +27,12 @@ const scenario: Scenario = [
   { id: "pebble", template: "stone", overrides: { name: "pebble", location: "hall", support: "hall", pos: { x: -40, y: 0 } } },
   {
     id: "cask",
-    template: "chest",
+    template: "open_chest",
     overrides: {
       name: "cask",
       location: "hall",
       support: "hall",
       pos: { x: 70, y: 0 },
-      props: {
-        container: true,
-        openable: true,
-        open: true,
-        inner_w_cm: 55,
-        inner_d_cm: 35,
-        inner_h_cm: 35,
-      },
     },
   },
   { id: "sip", template: "cup", overrides: { name: "sip", location: "hall", contained_in: "cask" } },
@@ -48,14 +44,14 @@ const scenario: Scenario = [
 function holderWorlds(t: { after(callback: () => void): void }): [World, World] {
   const dir = mkdtempSync(join(tmpdir(), "world-engine-holders-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
-  const store = createWorld(join(dir, "held"), scenario);
+  const store = createWorld(join(dir, "held"), scenario, registry);
   const names: Record<string, Id> = {};
   for (const name of NAMES) {
     const id = store.id(name);
     ok(typeof id === "string", `no id for ${name}`);
     names[name] = id;
   }
-  return [store, memoryWorld(store.snapshot(), undefined, names)];
+  return [store, memoryWorld(store.snapshot(), registry, names)];
 }
 
 const NAMES = ["hall", "ann", "bob", "rex", "flask", "mug", "rock", "tome", "bone", "pebble", "cask", "sip", "kept", "slip"] as const;
