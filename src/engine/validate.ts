@@ -1,7 +1,7 @@
 import { own, type Entity, type Id, type Snapshot } from "../model.js";
 import type { Template, TemplateRegistry } from "../templates.js";
 import { heldInParts, holderLayout, packGrips, partAvailable } from "./carry.js";
-import { misfit } from "./fit.js";
+import { innerDimensions, misfit } from "./fit.js";
 import { effectivePart, isDefaultPart } from "./parts.js";
 import { PROP_FIELDS, propTypeMatches } from "./fields.js";
 import { uncomputable } from "./capabilities.js";
@@ -131,6 +131,23 @@ function accountedFor(
     current = origin.entity;
     stopAt = origin.part;
   }
+}
+
+// What sits in a plain container fits its `inner_*_cm`, as `put` holds it to: a table in a chest is not a
+// state `put` can reach, so no other writer may make it. A holder with parts is held to its own rules
+// (`part_contents_too_large`), and a container that declares no inner dimensions is left alone.
+function containerFitIssues(snapshot: Snapshot, registry: TemplateRegistry, id: Id, path: string[]): SnapshotIssue[] {
+  const entity = own(snapshot.entities, id);
+  const holder = entity?.contained_in == null ? undefined : own(snapshot.entities, entity.contained_in);
+  if (entity === undefined || holder === undefined || entity.in_part !== null) {
+    return [];
+  }
+  const inner = innerDimensions(holder.props);
+  const size = own(registry, entity.template)?.size_cm;
+  if (inner === null || size === undefined || misfit([size.w, size.d, size.h], inner) === null) {
+    return [];
+  }
+  return [issue("container_contents_too_large", [...path, "contained_in"], `holder ${holder.id}`)];
 }
 
 function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIssue[] {
@@ -428,6 +445,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     }
     issues.push(...integrityIssues(snapshot, id, path));
     issues.push(...referenceIssues(snapshot, id, path));
+    issues.push(...containerFitIssues(snapshot, registry, id, path));
     issues.push(...concealmentIssues(snapshot, registry, reportedConcealLoops, id, path));
     issues.push(...holderIssues(snapshot, registry, id, path));
     issues.push(...propIssues(registry, entity, id, path));

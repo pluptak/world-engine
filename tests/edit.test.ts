@@ -256,7 +256,8 @@ test("removing a held container passes its contents to the holder", (t) => {
   ok(typeof cup === "string");
 
   const inner = world.edit(
-    { kind: "spawn", template: "cup", overrides: { name: "inner", contained_in: cup } },
+    // A shard, which fits a cup: a cup in a cup is not a state a container allows.
+    { kind: "spawn", template: "glass_shard", overrides: { name: "inner", contained_in: cup } },
     { command_id: "spawn-inner-cup" },
   );
   strictEqual(inner.status, "ok");
@@ -294,7 +295,7 @@ test("removing a container inside a chest keeps its contents shut inside", (t) =
   strictEqual(shut.status, "ok");
 
   const cup = spawnInto(world, "spawn-cup", "e5", "cup");
-  const pebble = spawnInto(world, "spawn-pebble", cup, "stone");
+  const pebble = spawnInto(world, "spawn-pebble", cup, "glass_shard");
 
   const removed = world.edit({ kind: "remove", target: cup }, { command_id: "remove-cup" });
   strictEqual(removed.status, "ok");

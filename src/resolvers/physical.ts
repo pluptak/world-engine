@@ -1,6 +1,7 @@
 import { elevation, effectivePos } from "../engine/geometry.js";
 import { addResidue } from "../engine/residue.js";
 import { spawn } from "../engine/spawn.js";
+import { innerDimensions, misfit } from "../engine/fit.js";
 import { removeEntity } from "../engine/verbs/edit.js";
 import { revealConcealed } from "../engine/verbs/search.js";
 import type { Entity, Id, Pos } from "../model.js";
@@ -261,6 +262,18 @@ function placementOf(context: TransitionContext, entity: Entity): Placement {
   };
 }
 
+// Where a product of the given size goes when the thing stood at `at`: there, unless that is a container it
+// does not fit, in which case beside the container (where it stands, in turn), so that being used up can
+// never leave a snapshot the validation would refuse, in a cause that cannot be refused.
+function fitting(context: TransitionContext, at: Placement, size: { w: number; d: number; h: number }): Placement {
+  const holder = at.contained_in === null ? undefined : context.snapshot.entities[at.contained_in];
+  const inner = holder === undefined ? null : innerDimensions(holder.props);
+  if (holder === undefined || inner === null || misfit([size.w, size.d, size.h], inner) === null) {
+    return at;
+  }
+  return fitting(context, placementOf(context, holder), size);
+}
+
 // An entity used up: a `spent` event on it, then each of its template's `spent_products` spawned where it
 // stood and its `spent_residue` added to the surface they went to, every `spawned` caused by `spent`, and
 // last the entity itself removed under `spent`. What the author's `edit remove` and a process's `remove`
@@ -278,11 +291,13 @@ export function spendEntity(context: TransitionContext, entityId: Id, causeId: I
   const at = placementOf(context, entity);
   for (const product of template.spent_products ?? []) {
     for (let index = 0; index < product.count; index += 1) {
+      const size = context.registry[product.template]?.size_cm;
+      const lands = size === undefined ? at : fitting(context, at, size);
       const created = spawn(context.snapshot, context.registry, product.template, {
-        support: at.support,
-        contained_in: at.contained_in,
-        location: at.location,
-        pos: at.pos === null ? null : { ...at.pos },
+        support: lands.support,
+        contained_in: lands.contained_in,
+        location: lands.location,
+        pos: lands.pos === null ? null : { ...lands.pos },
       });
       context.snapshot = created.snapshot;
       const spawnedEvent = context.emit("spawned", created.id, { template: product.template }, spentEvent);

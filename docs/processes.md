@@ -35,7 +35,9 @@ refused when the templates load). Exactly one of:
   then each of its `spent_products` spawned where it stood, every `spawned` caused by `spent`, its
   `spent_residue` added to the surface they went to, and the entity removed under `spent`. It stood on a
   support: they are set there; in a container: inside it; in an agent's grip or pocket: on the floor at the
-  holder's feet, since a grip holds one item. A template that leaves nothing only loses the entity, so
+  holder's feet, since a grip holds one item. A product too big for the container it was in is set beside it instead (where the container stands, in turn: the floor at
+  its holder's feet, the support under it), so the clock never produces a snapshot it must refuse; the residue stays in the
+  container. A template that leaves nothing only loses the entity, so
   `{ remove: true }` is for what is taken out of the world with no event of being used up. The shipped
   `candle` declares its own `burn` with this `then`, where `lantern`'s only sets `burning` false.
 

@@ -1,5 +1,5 @@
 import { capacities } from "../capacity.js";
-import { misfit } from "../fit.js";
+import { innerDimensions, misfit } from "../fit.js";
 import type { Entity, Id } from "../../model.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import { holderLayout, insufficientCode, meetsRequirements, spaceRefusal, unmetRequirement } from "../carry.js";
@@ -21,16 +21,6 @@ function relationOf(context: CommandContext): Relation | null {
   return value === "on" || value === "in" ? value : null;
 }
 
-function innerDimensions(destination: Entity): number[] | null {
-  const width = destination.props.inner_w_cm;
-  const depth = destination.props.inner_d_cm;
-  const height = destination.props.inner_h_cm;
-  if (typeof width !== "number" || typeof depth !== "number" || typeof height !== "number") {
-    return null;
-  }
-  return [width, depth, height];
-}
-
 function footprintRefusal(context: CommandContext, item: Entity, destination: Entity): PreconditionResult | null {
   const size = template(context, item).size_cm;
   const footprint = template(context, destination).size_cm;
@@ -42,7 +32,7 @@ function footprintRefusal(context: CommandContext, item: Entity, destination: En
 
 function innerRefusal(context: CommandContext, item: Entity, destination: Entity): PreconditionResult | null {
   const size = template(context, item).size_cm;
-  const inner = innerDimensions(destination);
+  const inner = innerDimensions(destination.props);
   // No inner dimensions to report a space against, so the refusal carries no data.
   if (inner === null) {
     return { status: "refused", reason_code: "too_large" };

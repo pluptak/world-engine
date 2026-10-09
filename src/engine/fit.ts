@@ -16,3 +16,14 @@ export function misfit(
   return null;
 }
 
+// The space a plain container offers, from its three `inner_*_cm` props, or null when it declares
+// none (such a container takes nothing by `put`, and no state rule reads it).
+export function innerDimensions(props: Readonly<Record<string, number | string | boolean>>): number[] | null {
+  const width = props.inner_w_cm;
+  const depth = props.inner_d_cm;
+  const height = props.inner_h_cm;
+  if (typeof width !== "number" || typeof depth !== "number" || typeof height !== "number") {
+    return null;
+  }
+  return [width, depth, height];
+}

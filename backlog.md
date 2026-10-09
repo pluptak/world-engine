@@ -20,7 +20,6 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
    blocks 3c, 4, 4b, 5–8 in that order.
-2. [A container holds only what fits](#a-container-holds-only-what-fits).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -57,34 +56,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A container holds only what fits
-
-`put` refuses `too_large` against a container's `inner_*_cm`, but nothing else asks: a scenario entry, `edit
-place`, `edit spawn` and a spent product all put a table in a chest and the snapshot is valid (probed). A space part
-(a pocket) already has the state rule, `part_contents_too_large`; a plain container has none. The author may write
-"any state the world could reach" (`plans/presets-and-roles.md`), and a table in a chest is not one `put` can
-reach.
-
-- **Rule** (`validateSnapshot`, beside `part_contents_too_large`): an entity with `contained_in` a holder that
-  has no holder parts, whose props give all three `inner_*_cm`, and whose size `misfit`s them is
-  `container_contents_too_large` (path `entities.<id>.contained_in`). A container with no inner dimensions is left
-  alone, as an agent holding by `in_part` is: only `put` reads them, and a container without them takes nothing
-  by `put` already.
-- **Refusal:** `container_contents_too_large` joins the `refuses` of `edit`, as `part_contents_too_large` is, and
-  a scenario or `memoryWorld` is refused `invalid_snapshot` by it.
-- **Spent products:** a product of `spendEntity` (`src/resolvers/physical.ts`) that does not fit the container the
-  thing was in is set beside that container instead (its own place, as a held thing's is: the floor at its holder's
-  feet, the support under it), so burning out in a small box can never make the clock's own result invalid. The
-  residue stays in the container, since it has no size. (A break's products land on the support already.)
-- **Not in it:** a process `remove` or a `consume` that lets go of what an inner thing held (`releaseDependents`
-  moves its contents into the outer container) can still break the rule; `edit remove` is refused with the code, the
-  clock's causes are not changed. Total volume (several things that each fit) is not checked, by `put` either.
-- **Tests** (`tests/container-fit.test.ts`): the rule fires on a snapshot wrong in only that way and not on one that
-  fits or on a container without dimensions; the scenario, `edit place` and `edit spawn` refusals leave the world
-  unchanged; `put` is unchanged; a spent table-sized product in a small chest lands beside it and `advance` goes
-  on, and one that fits stays inside; a chest carried or held. Existing tests that build such a state are fixed to
-  fit. `tests/property-gen.ts` already places things into containers; the property run holds the rest.
-- **Docs:** `docs/relations.md` (the `contained_in` row's code), `docs/state.md`, `docs/processes.md` (where a
-  spent product lands).
-- **Depends on:** nothing.
