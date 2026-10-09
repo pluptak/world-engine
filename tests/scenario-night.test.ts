@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   actorWorld,
+  aliasOf,
   canonicalJson,
   createWorld,
   type Id,
@@ -213,15 +214,18 @@ test("the night plays out from inside: knock, lantern, door, challenge, answer",
   // C. She works out where to stand from the footprints she inspected, hers, dee's and the door's: the
   // spot 80 from the door's centre would overlap dee, who stands at 300, so she takes the next, and her
   // first move is ok. In reach of the door from there, she opens it.
-  deepStrictEqual(ann[2]?.inspected.find((found) => found?.id === ids.door)?.size_cm, { w: 90, d: 10, h: 200 });
+  // Each character was sent its own aliases of what the judge names by world id.
+  const toAnn = (id: string) => aliasOf(ids.ann!, id);
+  const toBob = (id: string) => aliasOf(ids.bob!, id);
+  deepStrictEqual(ann[2]?.inspected.find((found) => found?.id === toAnn(ids.door!))?.size_cm, { w: 90, d: 10, h: 200 });
   deepStrictEqual([ann[2]?.command.verb, ann[2]?.command.args, ann[2]?.result.status], ["move", { to: { x: 340, y: 60 } }, "ok"]);
   deepStrictEqual([ann[3]?.command.verb, ann[3]?.result.status], ["open", "ok"]);
   strictEqual(world.entity(ids.door!)?.props.open, true);
   // Her next turn is offered the open door's state: it can be shut, and opening it again is refused.
-  ok(ready(ann[4]!.options, "close", ids.door));
+  ok(ready(ann[4]!.options, "close", toAnn(ids.door!)));
   deepStrictEqual(
-    ann[4]!.options.blocked?.filter((entry) => entry.verb === "open" && entry.target === ids.door),
-    [{ verb: "open", target: ids.door, reason_code: "already_open" }],
+    ann[4]!.options.blocked?.filter((entry) => entry.verb === "open" && entry.target === toAnn(ids.door!)),
+    [{ verb: "open", target: toAnn(ids.door!), reason_code: "already_open" }],
   );
 
   // D. Through the open door her shout reaches bob, who answers in a whisper that crosses no door.
@@ -235,7 +239,7 @@ test("the night plays out from inside: knock, lantern, door, challenge, answer",
   // at the coordinates he lands on, so the first try is refused `blocked` (and, as it names something he
   // cannot tell is there, without saying what) and he tries again from a spot beside it.
   const crossings = bob.filter((turn) => turn.command.args?.through !== undefined);
-  deepStrictEqual(crossings.map((turn) => turn.command.args), [{ through: ids.door }, { through: ids.door }]);
+  deepStrictEqual(crossings.map((turn) => turn.command.args), [{ through: toBob(ids.door!) }, { through: toBob(ids.door!) }]);
   deepStrictEqual(crossings.map((turn) => [turn.result.status, turn.result.reason_code]), [["refused", "blocked"], ["ok", undefined]]);
   strictEqual(crossings[0]?.result.reason_data?.with, undefined);
   strictEqual(world.entity(ids.bob!)?.location, ids.gatehouse);
@@ -255,7 +259,7 @@ test("every word reaches exactly who could hear it, and each view says so", (t) 
     for (const say of says) {
       const heard =
         night.world.query({ kind: "perceive", observer: actor, event_id: say.event_id, sense: "hearing" }).value === "true";
-      strictEqual(told.has(say.event_id), heard, `${actor} and ${String(say.data.utterance)}`);
+      strictEqual(told.has(aliasOf(actor, say.event_id)), heard, `${actor} and ${String(say.data.utterance)}`);
     }
   }
 });

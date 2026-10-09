@@ -5,6 +5,7 @@ import { addressable } from "../src/engine/query.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import {
   actorWorld,
+  aliasOf,
   canonicalJson,
   memoryWorld,
   WORLD_AUTHOR,
@@ -406,12 +407,18 @@ test("an actor is told only of what it can sense or address: an actor view names
       const result = actorWorld(world, step.actor).command(step);
       strictEqual(["snapshot", "deltas", "events"].some((key) => key in result), false);
       // What it named resolved by the resolution rule, read independently of the view; what else it
-      // is told is in its own observation or is one it could name by that same rule.
-      const told = new Set([step.actor, ...result.observation.entities.map((entity) => entity.id)]);
+      // is told is in its own observation or is one it could name by that same rule. The view names
+      // each by the actor's alias, read back here through every id the world has held.
+      const alias = (id: string) => aliasOf(step.actor, id);
+      const real = new Map(
+        [...Object.keys(before.entities), ...Object.keys(world.snapshot().entities)].map((id) => [alias(id), id]),
+      );
+      const idOf = (address: string) => real.get(address.split(".")[0]!) ?? `unknown ${address}`;
+      const told = new Set([step.actor, ...result.observation.entities.map((entity) => idOf(entity.id))]);
       const room = before.entities[step.actor]?.location;
       for (const address of [result.resolved_target, ...(result.candidates ?? [])]) {
         if (address !== null) {
-          const id = address.split(".")[0]!;
+          const id = idOf(address);
           strictEqual(addressable(before, registry, step.actor, id), true, `${step.command_id} named ${id}`);
           told.add(id);
         }
@@ -421,7 +428,7 @@ test("an actor is told only of what it can sense or address: an actor view names
           continue;
         }
         if (told.has(value) || value === room || addressable(before, registry, step.actor, value)) {
-          strictEqual(result.reason_data?.[key], value, `${step.command_id} kept ${key}`);
+          strictEqual(result.reason_data?.[key], alias(value), `${step.command_id} kept ${key}`);
           named += 1;
           if (!told.has(value) && value !== room) {
             groped += 1;

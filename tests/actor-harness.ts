@@ -1,5 +1,6 @@
 import { ok } from "node:assert";
 import {
+  aliasOf,
   type ActorCommand,
   type ActorOptions as Options,
   type ActorProjection as Projection,
@@ -8,6 +9,7 @@ import {
   type Id,
   type Inspection,
   type ObservedEntity,
+  type Options as WorldOptions,
   type World,
 } from "../src/index.js";
 
@@ -55,6 +57,8 @@ export function character<M>(view: ActorWorld, policy: Policy<M>, memory: M): Ch
 }
 
 export interface Sent {
+  // Whose turn: the judge's record, so it can read the turn's aliases back.
+  actor: Id;
   turn: number;
   // The clock when the turn began: the judge's record, never sent to the character.
   tick: number;
@@ -96,21 +100,31 @@ export function playRounds(world: World, cast: readonly Character[], rounds: num
       lasts[actor] = { command, result };
       result.observation.events.forEach((event) => known.add(event.event_id));
       seen[actor] = result.observation.tick;
-      (sent[actor] ??= []).push({ turn: round, tick, view, options, inspected, command, result });
+      (sent[actor] ??= []).push({ actor, turn: round, tick, view, options, inspected, command, result });
     }
   }
   return sent;
 }
 
 // Every id in what a character was sent must be one it was given: its own, its room's, or one a view
-// or an offer listed (or it named itself). Returns how many ids were checked.
+// or an offer listed (or it named itself). It is sent its own aliases (`aliasOf`), read back here to
+// ids; a world id sent as it is fails outright. Returns how many ids were checked.
 export function assertNoUnknownIds(world: World, sent: Record<Id, Sent[]>): number {
-  const isId = (value: unknown): value is string => typeof value === "string" && /^e\d+$/.test(value);
-  const idsIn = (value: unknown): string[] =>
-    isId(value) ? [value] : value !== null && typeof value === "object" ? Object.values(value).flatMap(idsIn) : [];
   const entities = world.snapshot().entities;
   let checked = 0;
   for (const [actor, turns] of Object.entries(sent)) {
+    const real = new Map(Object.keys(entities).map((id) => [aliasOf(actor, id), id]));
+    const idOf = (alias: string): Id => real.get(alias.split(".")[0]!) ?? `unknown alias ${alias}`;
+    // An event's own id names no entity; every other alias does.
+    const idsIn = (value: unknown): string[] => {
+      if (typeof value === "string") {
+        ok(!/^ev?\d+$/.test(value), `${actor} was sent the world id ${value}`);
+        return /^x[0-9a-f]{12}$/.test(value) ? [idOf(value)] : [];
+      }
+      return value !== null && typeof value === "object"
+        ? Object.entries(value).flatMap(([key, inner]) => (key === "event_id" ? [] : idsIn(inner)))
+        : [];
+    };
     const room = world.entity(actor)?.location;
     const known = new Set<Id>([actor, ...(typeof room === "string" ? [room] : [])]);
     for (const turn of turns) {
@@ -124,11 +138,11 @@ export function assertNoUnknownIds(world: World, sent: Record<Id, Sent[]>): numb
           if (typeof end === "string") known.add(end);
         }
       };
-      for (const entity of [...turn.view.entities, ...turn.result.observation.entities]) learn(entity.id);
+      for (const entity of [...turn.view.entities, ...turn.result.observation.entities]) learn(idOf(entity.id));
       for (const option of [...turn.options.ready, ...(turn.options.blocked ?? [])]) {
-        if (option.target !== undefined) learn(option.target);
+        if (option.target !== undefined) learn(idOf(option.target));
       }
-      if (turn.command.target !== undefined) known.add(turn.command.target);
+      if (turn.command.target !== undefined) known.add(idOf(turn.command.target));
       for (const id of idsIn([turn.view, turn.options, turn.inspected, turn.result])) {
         ok(known.has(id), `${actor} turn ${turn.turn} was sent ${id}`);
         checked += 1;
@@ -136,4 +150,24 @@ export function assertNoUnknownIds(world: World, sent: Record<Id, Sent[]>): numb
     }
   }
   return checked;
+}
+
+// The world's options as the actor's view sends them: no version, and every id (a target, an
+// argument naming an entity or one of its parts) as that actor's alias of it.
+export function asActorOptions(world: World, actor: Id, options: WorldOptions): Options {
+  const named = (value: unknown): unknown =>
+    typeof value === "string" && world.entity(value.split(".")[0]!) !== null ? aliasOf(actor, value) : value;
+  const each = <T extends { target?: Id; args?: Record<string, unknown> }>(option: T): T => ({
+    ...option,
+    ...(option.target !== undefined && { target: aliasOf(actor, option.target) }),
+    ...(option.args !== undefined && {
+      args: Object.fromEntries(Object.entries(option.args).map(([key, value]) => [key, named(value)])),
+    }),
+  });
+  return {
+    actor: aliasOf(actor, options.actor),
+    ready: options.ready.map(each),
+    needs_args: options.needs_args,
+    ...(options.blocked !== undefined && { blocked: options.blocked.map(each) }),
+  };
 }

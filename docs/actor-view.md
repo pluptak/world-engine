@@ -18,8 +18,15 @@ tell the actor that others acted out of its sight. A projection carries the `tic
 actor feels pass, and `observe({ since_tick })` is what it sensed at that tick or later: the events
 at the tick of its last look come again, and a controller keeps them apart by `event_id`. `options`
 has no `version`, and `command` takes no `basedOn`: it is decided against the world as it is, so an
-actor is never `preempted`. A gap in event or entity ids still shows that something was allocated
-unseen (`plans/candidates.md`).
+actor is never `preempted`.
+
+Nor does it send a world id: entity and event ids come from one counter, and a gap in them would
+show that something was made out of sight. Each actor is sent its own alias of every id instead,
+`aliasOf(actor, id)`: `x` and 12 hex digits of a hash of the two, a part address keeping its part,
+so two actors' names for one thing differ and none carries a count. A projection lists entities in
+alias order. A target or an argument that is one of the actor's aliases is read back to its id on
+the way in; another actor's alias names nothing. The hash hides the count from a controller that
+reads its views, not from one that hashes candidate ids to decode them; a key would close that.
 
 The CLI has the same five as ops, each with `world` and `actor`: `actor_observe` (`since_tick?`),
 `actor_inspect` (`entity`), `actor_options` (`refused?`), `actor_check` (`command`) and

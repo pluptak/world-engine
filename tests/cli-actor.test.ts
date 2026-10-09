@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { cli } from "./cli-run.js";
-import { actorWorld, canonicalJson, createWorld, openWorld, type Scenario } from "../src/index.js";
+import { actorWorld, aliasOf, canonicalJson, createWorld, openWorld, type Scenario } from "../src/index.js";
 import { ActorCommandResponseSchema, ResponseSchema } from "../src/contract.js";
 import { tempDir } from "./harness.js";
 
@@ -59,7 +59,7 @@ test("actor_command answers the verdict and the actor's view, never the world's 
   });
   const parsed = ActorCommandResponseSchema.parse(response);
   strictEqual(parsed.status, "ok");
-  strictEqual(parsed.resolved_target, STONE);
+  strictEqual(parsed.resolved_target, aliasOf(ANN, STONE));
   deepStrictEqual(Object.keys(response as object).sort(), ["command_id", "observation", "resolved_target", "status"]);
   deepStrictEqual(parsed.observation.events.map((event) => event.type), ["take", "moved"]);
   // It was written like any command, by ann, and the world moved one version.
@@ -80,7 +80,7 @@ test("actor_check and actor_command name nothing the actor cannot sense", (t) =>
   // Seen across a lit hall, the chest is named.
   const lit = hall(t, true);
   deepStrictEqual((respond({ op: "actor_check", world: lit, actor: ANN, command: walk }) as { reason_data?: unknown }).reason_data, {
-    with: CHEST,
+    with: aliasOf(ANN, CHEST),
   });
 });
 

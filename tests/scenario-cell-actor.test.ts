@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { actorWorld, canonicalJson, createWorld, type Id, type Scenario, type World } from "../src/index.js";
+import { actorWorld, aliasOf, canonicalJson, createWorld, type Id, type Scenario, type World } from "../src/index.js";
 import {
   assertNoUnknownIds,
   byTemplate,
@@ -126,8 +126,11 @@ function play(t: { after(callback: () => void): void }, rounds: number): Cell {
 }
 
 const names = (sent: Sent[]) => sent.map((turn) => turn.command.verb);
+// The judge names things by world id; each turn was sent its actor's aliases of them.
 const blockedFor = (turn: Sent, verb: string, target: Id) =>
-  turn.options.blocked?.filter((entry) => entry.verb === verb && entry.target === target).map((entry) => entry.reason_code);
+  turn.options.blocked
+    ?.filter((entry) => entry.verb === verb && entry.target === aliasOf(turn.actor, target))
+    .map((entry) => entry.reason_code);
 
 test("the key crosses the bars, the gate opens, and she walks out: all chosen from inside", (t) => {
   const { ids, sent, world } = play(t, 7);
@@ -135,6 +138,8 @@ test("the key crosses the bars, the gate opens, and she walks out: all chosen fr
   const bob = sent[ids.bob!]!;
   const gate = ids.gate!;
   const key = ids.key!;
+  const toAnn = (id: Id) => aliasOf(ids.ann!, id);
+  const toBob = (id: Id) => aliasOf(ids.bob!, id);
   deepStrictEqual(names(ann), ["move", "move", "unlock", "open", "move", "wait", "wait"]);
   deepStrictEqual(names(bob), ["move", "give", "wait", "wait", "wait", "wait", "wait"]);
 
@@ -145,9 +150,9 @@ test("the key crosses the bars, the gate opens, and she walks out: all chosen fr
   for (const turn of [ann[0]!, bob[0]!]) {
     deepStrictEqual(blockedFor(turn, "unlock", gate), ["out_of_reach"]);
     deepStrictEqual(blockedFor(turn, "open", gate), ["out_of_reach"]);
-    deepStrictEqual(turn.inspected.find((found) => found?.id === gate)?.size_cm, { w: 100, d: 5, h: 250 });
+    deepStrictEqual(turn.inspected.find((found) => found?.id === aliasOf(turn.actor, gate))?.size_cm, { w: 100, d: 5, h: 250 });
   }
-  deepStrictEqual(bob[0]?.inspected.find((found) => found?.id === ids.bob)?.holds, [key]);
+  deepStrictEqual(bob[0]?.inspected.find((found) => found?.id === toBob(ids.bob!))?.holds, [toBob(key)]);
   deepStrictEqual(blockedFor(bob[0]!, "give", key), ["out_of_reach"]);
   deepStrictEqual([ann[0]?.command.args, ann[0]?.result.status], [{ to: { x: 50, y: -18 } }, "ok"]);
   deepStrictEqual([bob[0]?.command.args, bob[0]?.result.status], [{ to: { x: 50, y: 18 } }, "ok"]);
@@ -157,30 +162,33 @@ test("the key crosses the bars, the gate opens, and she walks out: all chosen fr
   // time: bob's turn begins at the tick hers did.
   deepStrictEqual(blockedFor(ann[1]!, "unlock", gate), ["no_key"]);
   deepStrictEqual(blockedFor(ann[1]!, "open", gate), ["locked"]);
-  strictEqual(ready(ann[1]!.options, "unlock", gate) || ready(ann[1]!.options, "open", gate), false);
+  strictEqual(ready(ann[1]!.options, "unlock", toAnn(gate)) || ready(ann[1]!.options, "open", toAnn(gate)), false);
   deepStrictEqual(
     [ann[1]?.result.status, ann[1]?.result.reason_code, ann[1]?.result.reason_data],
-    ["refused", "blocked", { with: gate }],
+    ["refused", "blocked", { with: toAnn(gate) }],
   );
   strictEqual(bob[1]?.tick, ann[1]?.tick);
 
   // C. He gives her the key through the gate the turn his options offer it: it is 8 × 3 × 1 cm, its smallest
   // side under the gate's 12 cm gap, and the key is hers afterwards.
   deepStrictEqual(bob[1]?.options.ready.filter((option) => option.verb === "give"), [
-    { verb: "give", target: key, args: { destination: ids.ann } },
+    { verb: "give", target: toBob(key), args: { destination: toBob(ids.ann!) } },
   ]);
-  deepStrictEqual([bob[1]?.command.target, bob[1]?.command.args, bob[1]?.result.status], [key, { destination: ids.ann }, "ok"]);
+  deepStrictEqual(
+    [bob[1]?.command.target, bob[1]?.command.args, bob[1]?.result.status],
+    [toBob(key), { destination: toBob(ids.ann!) }, "ok"],
+  );
   strictEqual(world.entity(gate)?.props.gap_cm, 12);
-  const size = actorWorld(world, ids.bob!).inspect(key)?.size_cm;
+  const size = actorWorld(world, ids.bob!).inspect(toBob(key))?.size_cm;
   ok(size !== undefined && Math.min(size.w, size.d, size.h) <= 12, JSON.stringify(size));
   strictEqual(world.entity(key)?.contained_in, ids.ann);
 
   // D. With it, `unlock` is ready and `open` is still blocked `locked`; once unlocked, `open` is ready and
   // she opens the gate.
-  ok(ready(ann[2]!.options, "unlock", gate));
+  ok(ready(ann[2]!.options, "unlock", toAnn(gate)));
   deepStrictEqual(blockedFor(ann[2]!, "open", gate), ["locked"]);
   deepStrictEqual([ann[2]?.command.verb, ann[2]?.result.status], ["unlock", "ok"]);
-  ok(ready(ann[3]!.options, "open", gate));
+  ok(ready(ann[3]!.options, "open", toAnn(gate)));
   deepStrictEqual(blockedFor(ann[3]!, "open", gate), []);
   deepStrictEqual([ann[3]?.command.verb, ann[3]?.result.status], ["open", "ok"]);
   strictEqual(world.entity(gate)?.props.open, true);
@@ -188,7 +196,7 @@ test("the key crosses the bars, the gate opens, and she walks out: all chosen fr
 
   // E. The gate stands open, and the one thing her options let her shut is that gate; the walk across,
   // refused `blocked` while it was shut, is now ok and she is out, on bob's side, he never having moved.
-  ok(ready(ann[4]!.options, "close", gate));
+  ok(ready(ann[4]!.options, "close", toAnn(gate)));
   deepStrictEqual([ann[4]?.command.args, ann[4]?.result.status], [{ to: { x: 50, y: 100 } }, "ok"]);
   deepStrictEqual(world.entity(ids.ann!)?.pos, { x: 50, y: 100 });
   deepStrictEqual(world.entity(ids.bob!)?.pos, { x: 50, y: 18 });

@@ -10,6 +10,7 @@ import { listOptions } from "../src/options.js";
 import { defaultCoverage } from "../src/model.js";
 import { loadTemplates } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
+import { asActorOptions } from "./actor-harness.js";
 import {
   actorWorld,
   canonicalJson,
@@ -223,13 +224,11 @@ test("a store world, a reopened one and a memory world answer alike", (t) => {
   strictEqual(canonicalJson(memoryWorld({ ...snapshot, entities: numeric }, registry, names).options(ann, { refused: true })), expected);
 });
 
-test("an actor's own view offers the same options, without the world's version", (t) => {
+test("an actor's own view offers the same options, without the world's version and by its aliases", (t) => {
   const { world, id } = open(t, false);
   const ann = id("ann");
-  const { version: _asked, ...asked } = world.options(ann, { refused: true });
-  deepStrictEqual(actorWorld(world, ann).options({ refused: true }), asked);
-  const { version: _plain, ...plain } = world.options(ann);
-  deepStrictEqual(actorWorld(world, ann).options(), plain);
+  deepStrictEqual(actorWorld(world, ann).options({ refused: true }), asActorOptions(world, ann, world.options(ann, { refused: true })));
+  deepStrictEqual(actorWorld(world, ann).options(), asActorOptions(world, ann, world.options(ann)));
 });
 
 test("the CLI's options op answers what the library does, and the contract holds it", (t) => {
@@ -379,8 +378,7 @@ test("give, put, move and pour name the arguments they can, and only ones the ac
   strictEqual((asked.blocked ?? []).some((entry) => ready.has(key(entry))), false);
   const expected = canonicalJson(asked);
   strictEqual(canonicalJson(world.fork().options(ann, { refused: true })), expected);
-  const { version: _version, ...forActor } = asked;
-  strictEqual(canonicalJson(actorWorld(world, ann).options({ refused: true })), canonicalJson(forActor));
+  strictEqual(canonicalJson(actorWorld(world, ann).options({ refused: true })), canonicalJson(asActorOptions(world, ann, asked)));
   deepStrictEqual(OptionsResponseSchema.parse(JSON.parse(expected)), asked);
 });
 
