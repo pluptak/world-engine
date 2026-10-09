@@ -16,10 +16,10 @@ kept so a controller's author knows it.
 
 ## The cell
 
-- Whether a gate is shut, locked or open, and what a key opens, is in no view or inspection (`open`, `locked`
-  and `opens` are not covered properties, so the gate's and the key's `props` are empty): only the options say,
-  by what is ready and what is blocked, and a gate that stands open is the one thing she can `close` (C steps
-  B, D, E).
+- Whether a gate is locked, and what a key opens, is in no view or inspection (`locked` and `opens` are
+  not in the default coverage): only the options say, by what is ready and what is blocked (C steps B, D).
+  Whether it stands open an inspection shows, as the default covers `open`; when these runs were played
+  it did not, and she read that off her options too (C step E).
 - `unlock` and `open` are refused `out_of_reach` before anything else is checked, so a controller learns it
   has no key, or that the gate is locked, only once it stands in reach of the gate; from where she starts
   every one of them reads `out_of_reach` (C steps A, B).

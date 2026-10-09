@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Default coverage shows whether a thing is open](#default-coverage-shows-whether-a-thing-is-open).
+None: every item is built.
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -59,21 +59,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### Default coverage shows whether a thing is open
-
-`defaultCoverage()` (`src/model.ts`) declares the properties `integrity`, `residue` and `pos`, so `open` never
-reaches an `inspect` and a controller reads it off what its options leave ready or blocked
-(`docs/limits-actor.md`, C steps B, D, E). Whether a thing is open is seen; whether it is locked, or what a key
-opens, is not, so those two stay with a scenario's own coverage.
-
-- **Change:** `"open"` joins `defaultCoverage().properties`, after `pos`. Properties are open
-  (`ENGINE_CAPABILITIES`), so no rule changes: an `inspect` that sees or feels an openable lists `props.open`, and a
-  `fact` on `open` answers instead of `uncovered_category`. A stored world keeps the coverage in its snapshot, so
-  only worlds created from now on show it.
-- **Tests:** the expectations that list default coverage or an openable's inspected props move (`tests/query.test.ts`,
-  `tests/projection.test.ts` and others the change selects); a new case in `tests/projection.test.ts`: a default
-  world's door inspects with `open` and without `locked`, and a world whose coverage omits `open` shows neither.
-- **Docs:** `docs/perception.md` and `docs/projection.md` (the default properties), `docs/limits-actor.md` (the
-  steps that read `open` off options).
-- **Depends on:** nothing.

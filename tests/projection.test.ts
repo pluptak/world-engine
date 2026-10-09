@@ -12,6 +12,7 @@ import {
   type World,
 } from "../src/index.js";
 import { ProjectionSchema } from "../src/contract.js";
+import { defaultCoverage } from "../src/model.js";
 import { loadTemplates } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
 import { fileURLToPath } from "node:url";
@@ -139,6 +140,22 @@ test("coverage decides the fields and the senses", (t) => {
     const cup = byName(world, projection.entities).get("cup");
     deepStrictEqual(cup?.facts, { support: idOf(world, "table") });
   }
+});
+
+test("default coverage shows whether the door is open, never whether it is locked", (t) => {
+  // The door shut and locked: both are props, but only `open` is seen by default.
+  const locked = house.map((entry) =>
+    entry.id === "door"
+      ? { ...entry, overrides: { ...entry.overrides, props: { open: false, locked: true, from: "hall", to: "cellar" } } }
+      : entry,
+  );
+  const inspected = (coverage?: Coverage) => {
+    const world = createWorld(join(tempDir(t), "house"), locked, presets, coverage === undefined ? {} : { coverage });
+    return world.inspect(idOf(world, "bob"), idOf(world, "door"))?.props;
+  };
+  deepStrictEqual(inspected(), { open: false });
+  const withoutOpen = defaultCoverage().properties.filter((name) => name !== "open");
+  deepStrictEqual(inspected({ ...defaultCoverage(), properties: withoutOpen }), {});
 });
 
 test("events since a version: a push in the hall is seen and heard, a pocket theft in the dark is not sensed", (t) => {

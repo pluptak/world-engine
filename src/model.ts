@@ -66,7 +66,7 @@ export function defaultCoverage(): Coverage {
   return {
     relations: ["support", "contained_in", "attached_to", "status", "location", "near", "reachable"],
     senses: ["sight", "hearing"],
-    properties: ["integrity", "residue", "pos"],
+    properties: ["integrity", "residue", "pos", "open"],
   };
 }
 

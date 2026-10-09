@@ -81,7 +81,7 @@ test("reach passes through bars: ann and bob 36 cm apart across them, then 120",
 });
 
 test("inspect gives one thing in detail: covered props, reach, and what it visibly holds", (t) => {
-  const coverage = { ...defaultCoverage(), properties: [...defaultCoverage().properties, "open", "locked"] };
+  const coverage = { ...defaultCoverage(), properties: [...defaultCoverage().properties, "locked"] };
   const cell = open(t, "cell", coverage);
   const gate = cell.world.inspect(cell.id("ann"), cell.id("gate"));
   ok(gate !== null);

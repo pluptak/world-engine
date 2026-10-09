@@ -3,7 +3,7 @@
 Queries answer facts and perception from the snapshot, templates, events, and coverage, as `"true"`,
 `"false"`, or `"unknown"` with a `basis_code`. Two lists decide what can be asked.
 `ENGINE_CAPABILITIES` is what the engine computes: seven relations and four senses, while properties
-are open (`integrity`, `residue` and `pos` are computed, any other name is read from props).
+are open (`integrity`, `residue`, `pos` computed, others read from props; the default adds `open`).
 Coverage is what this world models, chosen among them: `validateSnapshot` refuses a covered relation
 or sense the engine has no rule for (`coverage_not_computable`). A category the world leaves out of
 coverage answers unknown (`uncovered_category`, `uncovered_sense`), and a sense the engine cannot
