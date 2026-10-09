@@ -74,8 +74,8 @@ what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, i
   a definition is refused `field_not_editable`, a derived field `derived_field`.
 - Entity props are checked as template props are (`validateProps`): a prop no table declares, a
   value of the wrong type, or a `requires` the template's resolved props do not meet is refused
-  (`undeclared_prop`, `wrong_prop_type`, `unmet_requires`), by a rule in `validateSnapshot` (so `verify` and a hand-edited world meet it) and so at every
-  edit and scenario. Today `update_props` writes `gap_cm: "wide"` on a table and `open` on a stone.
+  (`undeclared_prop`, `wrong_prop_type`, `unmet_requires`), by a rule in `validateSnapshot` (so
+  `verify` and a hand-edited world meet it) and so at every edit and scenario. Today `update_props` writes `gap_cm: "wide"` on a table and `open` on a stone.
 - Scenarios (`src/scenario.ts`, `createWorld` in `src/api.ts`) are checked under the `architect`
   role: only fields with an architect form, and placement/name. No `architect` edit ever: it
   never acts after tick 0.
@@ -87,20 +87,40 @@ what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, i
 
 ### 4. Architect forms
 
-- Forms in `fields.ts`: `fuel` a whole percentage (0–100) of the preset's default; `liquid` one of
-  the vessel's capacity; condition intact/damaged as fixed
-  integrities. Converted on write, bucketed on read (pure, integer).
-- Scenario overrides accept the forms, as the Decided section sets them.
-- Tests: round-trip write → read; exact values never reach the architect form.
+- New definition prop `capacity_cm3` (integer > 0, `fields.ts`): how much liquid a vessel holds,
+  apart from its box. `bottle` declares 750 and its default `liquid_amount` becomes 750 (full);
+  `cup` declares 250. `liquidCapacity` in `src/engine/verbs/pour.ts` reads `capacity_cm3` where a
+  template declares it, else the inner volume as today, so a chest still takes a pour.
+- Three architect forms, accepted in scenario overrides only, converted on write to the one stored
+  value (pure, integer):
+  - `fuel_pct` (0–100), on an entity whose template declares `fuel`: that default × pct / 100;
+  - `liquid: { material?, pct }`, on one whose template declares `capacity_cm3`: `liquid_amount`
+    = capacity × pct / 100 and `liquid_material` = `material`, else the template's; pct 0 stores
+    amount 0 and material `""`;
+  - `condition`, `intact` or `damaged`: entity `integrity` 100 or 50.
+  Percentages floor, except that one above 0 never stores 0 (a candle's 8 fuel at 10% is 1).
+- Under the architect role the raw `fuel`, `liquid_amount`, `liquid_material` and `integrity` are
+  refused `field_not_editable`: the forms replace them. A form is refused `invalid_form` (not a
+  whole number 0–100, or an unknown condition), `form_not_applicable` (its template declares no
+  `fuel` or `capacity_cm3`) or `no_liquid_material` (pct above 0 with no material either side).
+- Migration: the bottle's 75 becomes 750 and the cup's 288 becomes 250 wherever a test, scenario
+  or doc quotes them (inventory first, report the count); `docs/limits.md` drops the 75 cm³ line.
+- Tests (`tests/architect-forms.test.ts`): the stored value of each form (full bottle 750, empty
+  cup 0 with no material, a candle at 10% → 1 and at 0% → 0, `damaged` → 50), each refusal, a pour
+  into a cup bounded by 250, and a chest still bounded by its inner volume.
+- Docs: `docs/fields.md` (`capacity_cm3`, the forms), `docs/liquids.md` (capacity), `docs/api.md`
+  (scenario overrides).
 
 ### 5. Catalogue view
 
 - `catalog()` on `World`/`src/api.ts` and a CLI `catalog` op: every pickable preset with its
   shown definition fields (size, mass, `container`, `surface`, `openable`, `barrier`,
-  `light_source`, `agent`, part names, capacities, break products) and its architect fields with
-  defaults. Tuning fields are absent.
-- Not listed: companion templates, break products, and bases marked `"catalog": false` (a new
-  template key, distinct from the entity prop `abstract`).
+  `light_source`, `agent`, `capacity_cm3`, part names, capacities, the templates it breaks into)
+  and its architect forms with their defaults (`fuel_pct` 100, `liquid` at the template's
+  material and percentage, `condition` `intact`). Tuning fields are absent.
+- Pickable: every template but companions (`<template>.<part>`) and bases marked
+  `"catalog": false` (a new template key, distinct from the entity prop `abstract`). Break
+  products such as `glass_shard` are pickable: the architect places shards one by one.
 - Response validated in `contract.ts`; tests in `tests/catalog-view.test.ts`.
 
 ### 6. Inherited companions
