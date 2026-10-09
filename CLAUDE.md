@@ -211,7 +211,7 @@ file it links (`docs/verbs-*.md`; `tests/catalog.test.ts` holds the two in step)
   companion rules above, and `docs/templates.md`: a template may declare `"extends": "<parent id>"`,
   resolved once when a set is loaded or parsed (own field wins, `props` shallow-merged, `parts`
   replaced only if declared, everything else inherited; a cycle or unknown parent is refused with
-  the chain), so no `extends` key survives into the hash, a frozen `templates.json`, the companion
+  the chain), so no `extends` key survives into the hash (a resolved template keeps its `lineage`, outside the hash, for `refine`), a frozen `templates.json`, the companion
   rule or `lostField`. `templates/wine_bottle.json` is the worked example. `src/engine/fields.ts` (`docs/fields.md`) is
   the schema of every prop the engine reads (type, tier, `requires`) and of the entity fields'
   tiers; a template declares a prop no code reads under `fields`, and `validateProps` refuses an

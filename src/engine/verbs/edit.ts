@@ -33,6 +33,7 @@ import { dropCarriedItem } from "./drop.js";
 import { revealConcealed } from "./search.js";
 import { claimGrip, gripEvictions, holderLayout } from "../carry.js";
 import { withParts } from "../parts.js";
+import { refineRefusal, refinedParts, refinedProps } from "../refine.js";
 import { isRngState } from "../rng.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -266,6 +267,11 @@ export function parseEdit(value: unknown): WorldEdit | null {
       return null;
     }
     return { kind: value.kind, target: value.target, props: value.props };
+  }
+  if (value.kind === "refine") {
+    return onlyKeys(value, ["kind", "target", "template"]) && isId(value.target) && isId(value.template)
+      ? { kind: "refine", target: value.target, template: value.template }
+      : null;
   }
   if (value.kind === "set_part") {
     if (
@@ -603,6 +609,12 @@ function preconditions(context: CommandContext): PreconditionResult {
       return propsRefusal(context, subject, edit);
     case "set_part":
       return partRefusal(context, context.registry, subject, edit.part);
+    case "refine": {
+      const next = own(context.registry, edit.template);
+      return next === undefined
+        ? invalid("unknown_template")
+        : refineRefusal(context.snapshot, context.registry, subject, next);
+    }
     default: {
       const exhaustive: never = edit;
       throw new TypeError(`Unknown edit kind ${(exhaustive as WorldEdit).kind}`);
@@ -836,6 +848,19 @@ function transition(context: TransitionContext): void {
       context.set(edit.target, "props", { ...base, ...edit.props }, editedEvent);
       break;
     }
+    case "refine": {
+      const next = context.registry[edit.template]!;
+      const editedEvent = context.emit(
+        "edited",
+        edit.target,
+        { field: "template", from: subject.template, to: edit.template },
+        context.root_event_id,
+      );
+      context.set(edit.target, "template", edit.template, editedEvent);
+      context.set(edit.target, "props", refinedProps(subject, next), editedEvent);
+      context.set(edit.target, "parts", refinedParts(subject, next)!, editedEvent);
+      break;
+    }
     case "set_part": {
       const editedEvent = context.emit(
         "edited",
@@ -892,6 +917,10 @@ export const editVerb: Verb = {
     "circular_placement",
     "occupied_room",
     "unknown_part",
+    "not_a_refinement",
+    "too_large",
+    "not_a_surface",
+    "liquid_exceeds_capacity",
     "integrity_out_of_range",
     "detached_part_without_entity",
     "part_at_default",

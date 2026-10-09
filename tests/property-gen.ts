@@ -8,7 +8,7 @@ import { resolveScenario } from "../src/scenario.js";
 import { startProcesses } from "../src/engine/process.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../src/templates.js";
 import { SHARED_FIXTURES } from "./presets.js";
-import type { Delta, Entity, Id, Snapshot, WorldEvent } from "../src/model.js";
+import { own, type Delta, type Entity, type Id, type Snapshot, type WorldEvent } from "../src/model.js";
 import type { Scenario } from "../src/api.js";
 
 // Templates that exist for the property test: a candle that burns down while `burning` is true
@@ -565,9 +565,33 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     if (last < 0.5) {
       return beatEdit(context);
     }
+    if (last < 0.7) {
+      return refineEdit(context);
+    }
     return { kind: "remove", target: context.target };
   },
 };
+
+// The presets that extend each template the shared scenario places, so that most refinements are real
+// ones; the rest of the time the target is a stranger or a template that does not exist.
+const DESCENDANTS: Record<string, string[]> = {
+  door: ["self_closing_door"],
+  chest: ["open_chest", "shut_chest", "self_closing_chest"],
+  human: ["bruiser", "human_hungry", "famished"],
+  bottle: ["wine_bottle"],
+  stone: ["moss", "mold", "lichen"],
+  table: [],
+};
+
+function refineEdit(context: GenContext): WorldEdit {
+  const target = context.ids.length > 0 ? pick(context.rand, context.ids) : absent(context);
+  const template = own(context.snapshot.entities, target)?.template ?? "";
+  const roll = context.rand();
+  const candidates = DESCENDANTS[template] ?? [];
+  const strangers = ["table", "chest", "candle", "bruiser", "no_such_preset"];
+  const chosen = roll < 0.7 && candidates.length > 0 ? pick(context.rand, candidates) : pick(context.rand, strangers);
+  return { kind: "refine", target, template: chosen };
+}
 
 // A beat scheduled a few ticks ahead (now and then in the past, or under an id already taken), a
 // withdrawal of one that may not exist, and chains: sounds, a prop set on an entity, and followers.

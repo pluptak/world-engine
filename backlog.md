@@ -18,8 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
-   block 8.
+Nothing is planned: the presets and roles plan ([plans/presets-and-roles.md](plans/presets-and-roles.md))
+is built.
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one

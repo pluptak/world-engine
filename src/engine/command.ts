@@ -45,6 +45,14 @@ export interface PropsEdit {
   props: Record<string, number | string | boolean>;
 }
 
+// The entity becomes a more specific preset: one that extends the one it is. Its definitions are the new
+// preset's; the state it has stays where the new preset still has a field for it.
+export interface RefineEdit {
+  kind: "refine";
+  target: Id;
+  template: string;
+}
+
 export interface PartEdit {
   kind: "set_part";
   target: Id;
@@ -128,6 +136,7 @@ export type WorldEdit =
   | PlaceEdit
   | PropsEdit
   | PartEdit
+  | RefineEdit
   | SeedEdit
   | ScheduleBeatEdit
   | CancelBeatEdit;

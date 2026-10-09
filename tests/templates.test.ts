@@ -162,8 +162,30 @@ test("two children of one parent resolve to the same fields", () => {
     two: { id: "two", extends: "parent" },
   });
 
-  deepStrictEqual(resolved.one, { ...resolved.parent, id: "one" });
-  deepStrictEqual(resolved.two, { ...resolved.parent, id: "two" });
+  deepStrictEqual(resolved.one, { ...resolved.parent, id: "one", lineage: ["parent"] });
+  deepStrictEqual(resolved.two, { ...resolved.parent, id: "two", lineage: ["parent"] });
+});
+
+test("a resolved template remembers its ancestors, nearest first, outside the hash", () => {
+  const raw = {
+    root: decl("root", { break_residue: { glass: 5 } }),
+    middle: { id: "middle", extends: "root" },
+    leaf: { id: "leaf", extends: "middle", mass_g: 2 },
+  };
+  const chain = parseRegistry(raw);
+  deepStrictEqual([chain.root?.lineage, chain.middle?.lineage, chain.leaf?.lineage], [undefined, ["root"], ["middle", "root"]]);
+  // A set written out in full says the same thing, so it hashes the same.
+  const { lineage: _middle, ...middle } = chain.middle!;
+  const { lineage: _leaf, ...leaf } = chain.leaf!;
+  const flat = parseRegistry({ root: decl("root", { break_residue: { glass: 5 } }), middle, leaf });
+  strictEqual(templatesHash(flat), templatesHash(chain));
+  // A frozen set read back keeps it, so a world's own templates remember where they came from.
+  const frozen = parseRegistry(JSON.parse(canonicalJson(chain)));
+  deepStrictEqual(frozen, chain);
+  strictEqual(templatesHash(frozen), templatesHash(chain));
+  // Extending and carrying a lineage are two ways to say one thing, and malformed ones are refused.
+  assertThrows(() => parseRegistry({ ...raw, bad: { ...chain.leaf!, id: "bad", extends: "root" } }), /declares both extends and lineage/);
+  assertThrows(() => parseRegistry({ root: { ...chain.root!, lineage: "x" } }), /lineage must be an array of template ids/);
 });
 
 test("a chain merges every parent, the nearest winning", () => {
@@ -362,7 +384,8 @@ test("a child that inherits a detachable part inherits its parent's companion fo
   const resolved = parseRegistry(raw);
   for (const owner of ["pupil", "novice"]) {
     for (const part of ["arm_l", "arm_l.hand_l", "arm_r", "arm_r.hand_r", "hand_l", "hand_r"]) {
-      deepStrictEqual(resolved[`${owner}.${part}`], { ...resolved[`human.${part}`], id: `${owner}.${part}` });
+      const lineage = owner === "pupil" ? [`human.${part}`] : [`pupil.${part}`, `human.${part}`];
+      deepStrictEqual(resolved[`${owner}.${part}`], { ...resolved[`human.${part}`], id: `${owner}.${part}`, lineage });
     }
   }
   deepStrictEqual(missingCompanions(resolved), []);
@@ -542,7 +565,11 @@ test("part_overrides is refused for an unknown part, beside parts, or with no pa
 });
 
 test("quadruped is the base dog and cat share, and they resolve as they always did", () => {
-  const hashOf = (id: string) => createHash("sha256").update(canonicalJson(registry[id])).digest("hex");
+  // The resolved fields, not where they came from.
+  const hashOf = (id: string) => {
+    const { lineage: _lineage, ...fields } = registry[id]!;
+    return createHash("sha256").update(canonicalJson(fields)).digest("hex");
+  };
   // Captured when the base was introduced, from the dog, cat and jaws written out in full.
   deepStrictEqual(Object.fromEntries(["dog", "cat", "dog.jaw", "cat.jaw", "horse"].map((id) => [id, hashOf(id)])), {
     dog: "2552cce9df70ffb468e5389573b516001646cf44ec705d977d275a0bfaa9a8bd",

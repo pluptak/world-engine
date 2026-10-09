@@ -60,7 +60,7 @@ simulation state. Every block below keeps that line and every invariant in AGENT
 - **Amounts are written as whole percentages,** liquid and fuel alike, floored, except that a
   percentage above 0 never comes to 0: a candle's 8 fuel at 10% is 1, so it still lights.
 - **A consumable light source is removed when its fuel runs out.** A candle at fuel 0 leaves the
-  world (its `burn` process `then` is `{ remove: true }`); a lantern goes dark and stays.
+  world (its `burn` process `then` is `{ spent: true }`); a lantern goes dark and stays.
 
 ## Open
 
@@ -68,24 +68,11 @@ None.
 
 ## Blocks
 
-Blocks 1 (field schema), 2 (`update_props`, `derived_field`), 3a (definitions are not written),
-3b (entity props hold to the schema), 3c (traits), 4 (architect forms), 4b (scenarios are the
-architect), 5 (catalogue view), 6 (inherited companions)
-and 7 (parts merged by name) are built: `docs/fields.md`. One
-block per session, in this order. Each touches the shared registration points CLAUDE.md lists
-(`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
-what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
-`docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
+Every block is built: 1 (field schema), 2 (`update_props`, `derived_field`), 3a (definitions are not
+written), 3b (entity props hold to the schema), 3c (traits), 4 (architect forms), 4b (scenarios are
+the architect), 5 (catalogue view), 6 (inherited companions), 7 (parts merged by name) and 8
+(refinement). What they built is described in `docs/fields.md`, `forms.md`, `catalog.md`,
+`templates.md` and `refine.md`; this plan is the record of why. One thing the plan did not foresee:
+a resolved template had lost its `extends`, so refinement could not tell a descendant from a
+stranger; templates now keep a `lineage`, outside the hash.
 
-### 8. Refinement
-
-- New edit kind `refine { target, template }`, world author only (the architect never acts after
-  tick 0).
-- Refused unless the new preset descends from the current one through `extends`
-  (`not_a_refinement`); a stored part state must name a part the new preset has, a detachable
-  one its companion; contents must still fit (inner size, grips) and the entity must still fit
-  where it stands (refused, never displaced); scheduled causes and processes on the entity are
-  re-checked against the new preset.
-- State fields the new preset's schema still lists carry over; definitions come from the preset.
-- Runs through the pipeline and `validateResult` like every edit. Tests: `tests/refine.test.ts`,
-  including a table refined to a smaller one under a book that no longer fits.

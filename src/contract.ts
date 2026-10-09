@@ -149,6 +149,7 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
     part: z.string().min(1),
     state: PartStateSchema,
   }).strict(),
+  z.object({ kind: z.literal("refine"), target: IdSchema, template: z.string().min(1) }).strict(),
 ]);
 
 const CapacityRequirementSchema = z.object({

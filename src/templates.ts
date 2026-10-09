@@ -61,6 +61,10 @@ export interface Template {
   processes?: ProcessDecl[];
   // Absent when none is declared, as processes are.
   fields?: Record<string, FieldDecl>;
+  // The templates this one extends, nearest first; absent for a root. A resolved template remembers it so
+  // that refinement can tell a descendant from a stranger. Kept in a world's frozen templates.json, and
+  // left out of `templatesHash`: it says where a template came from, not what it is.
+  lineage?: string[];
   // `false` for a base the architect is not offered (the catalogue view); absent otherwise. A template's
   // own, never inherited: a child of such a base is offered.
   catalog?: false;
@@ -84,6 +88,8 @@ interface TemplateDecl {
   processes?: ProcessDecl[];
   fields?: Record<string, FieldDecl>;
   catalog?: boolean;
+  // Only a resolved root read back from a frozen set carries it (a template that extends gets its own).
+  lineage?: string[];
   // Fields of inherited parts, by name; consumed when the template is resolved, so no key survives it.
   part_overrides?: Record<string, PartOverride>;
 }
@@ -254,6 +260,16 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
 
   if (Object.hasOwn(value, "fields")) {
     decl.fields = parseFields(value.fields, `${source}.fields`);
+  }
+
+  if (Object.hasOwn(value, "lineage")) {
+    if (value.extends !== undefined) {
+      throw new TypeError(`${source} declares both extends and lineage`);
+    }
+    if (!Array.isArray(value.lineage) || value.lineage.some((id) => typeof id !== "string" || id.length === 0)) {
+      throw new TypeError(`${source}.lineage must be an array of template ids`);
+    }
+    decl.lineage = [...(value.lineage as string[])];
   }
 
   if (Object.hasOwn(value, "catalog")) {
@@ -562,6 +578,7 @@ function requireResolved(decl: TemplateDecl, source: string): Template {
     break_products: decl.break_products!.map((product) => ({ ...product })),
     break_residue: { ...decl.break_residue! },
     ...spentOf(decl.spent_products, decl.spent_residue),
+    ...(decl.lineage !== undefined && decl.lineage.length > 0 && { lineage: [...decl.lineage] }),
     ...(decl.catalog === false && { catalog: false as const }),
     ...(decl.processes !== undefined && decl.processes.length > 0 && { processes: copyProcesses(decl.processes) }),
     ...(decl.fields !== undefined && Object.keys(decl.fields).length > 0 && { fields: copyFields(decl.fields) }),
@@ -592,6 +609,7 @@ function overParent(parent: Template, decl: TemplateDecl): Template {
         ? parent.break_residue
         : { ...decl.break_residue },
     ...spentOf(decl.spent_products ?? parent.spent_products, decl.spent_residue ?? parent.spent_residue),
+    lineage: [parent.id, ...(parent.lineage ?? [])],
     ...(decl.catalog === false && { catalog: false as const }),
     ...(processes.length > 0 && { processes }),
     ...(Object.keys(fields).length > 0 && { fields }),
@@ -910,7 +928,10 @@ export function templatesHash(registry: TemplateRegistry): string {
   if (cached !== undefined) {
     return cached;
   }
-  const hash = createHash("sha256").update(canonicalJson(registry)).digest("hex");
+  // The lineage is left out: it records where a template came from, so a set written out in full hashes
+  // as the same set written with `extends`.
+  const plain = Object.fromEntries(Object.entries(registry).map(([id, { lineage: _lineage, ...template }]) => [id, template]));
+  const hash = createHash("sha256").update(canonicalJson(plain)).digest("hex");
   hashCache.set(registry, hash);
   return hash;
 }

@@ -28,6 +28,9 @@ A template may declare `"extends": "<parent id>"`, resolved once, when the set i
 - `size_cm`, `mass_g`, `break_products`, `break_residue`, `spent_products` and `spent_residue` are inherited unless
   declared.
 
+A resolved template keeps `lineage`, the ids it extends nearest first (absent for a root), which
+`refine` reads ([refine.md](refine.md)); it is saved with a world's templates and is not in the hash.
+
 Chains are allowed; a cycle or unknown parent is refused with its chain (`Template extends cycle:
 a -> b -> a`), and a root that declares too little by name, listing what it is missing.
 
