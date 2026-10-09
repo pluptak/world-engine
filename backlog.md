@@ -19,7 +19,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
-   blocks 3–8 in its order.
+   blocks 3a, 3b, 3c, 4, 4b, 5–8 in that order.
 2. [Names that are Object members are not ids, templates or names](#names-that-are-object-members-are-not-ids-templates-or-names).
 3. [Consumables: what a used-up thing leaves](#consumables-what-a-used-up-thing-leaves).
 

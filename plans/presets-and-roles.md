@@ -37,7 +37,13 @@ simulation state. Every block below keeps that line and every invariant in AGENT
 - **An entity's props never change what its template is.** A state prop is allowed on an entity
   only when its template's resolved props meet the prop's `requires` (`open` needs the template's
   `openable`); the entity's own props never meet them. `open` on a stone is refused; an openable
-  stone is a new template, made before the scene.
+  stone is a new template, made before the scene. A prop the template does not declare is refused
+  too: inventing one is turning the thing into something else.
+- **Description is not a prop.** What only describes, a brown and worn table, is a `trait`: an
+  opaque token no rule reads, kept apart from props so it can never change behaviour (as `say`'s
+  utterance is a token the engine never reads).
+- **Scenarios are the architect; edits are the world author.** Nobody else writes state, so an
+  edit needs no `role` field: who wrote is told by the channel.
 - **One scenario entry is one entity, of a template.** The architect never places a set: nothing
   expands into break products, residue or anything else it did not name, so no consequence of a
   placement is hidden from it. A broken bottle that is still there is a template of its own; its
@@ -68,22 +74,49 @@ block per session, in this order. Each touches the shared registration points CL
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
 
-### 3. Roles enforced
+### 3a. Definitions are not written
 
-- `edit` carries `role` (default `world`, carried through the log like `perceivers`):
-  a definition is refused `field_not_editable`, a derived field `derived_field`.
-- Entity props are checked as template props are (`validateProps`): a prop no table declares, a
-  value of the wrong type, or a `requires` the template's resolved props do not meet is refused
-  (`undeclared_prop`, `wrong_prop_type`, `unmet_requires`), by a rule in `validateSnapshot` (so
-  `verify` and a hand-edited world meet it) and so at every edit and scenario. Today `update_props` writes `gap_cm: "wide"` on a table and `open` on a stone.
-- Scenarios (`src/scenario.ts`, `createWorld` in `src/api.ts`) are checked under the `architect`
-  role: only fields with an architect form, and placement/name. No `architect` edit ever: it
-  never acts after tick 0.
-- Migration: tests and scenarios that set definition props through `edit` or overrides move to
-  presets or fixtures; inventory them first and report the count. Known: `closes_after` on `door`
-  in five tests and by `set_props` in `tests/scenario-cell.test.ts`, and `scenarios/cell.json`'s
-  gate, whose entry repeats the `barrier`, `gap_cm` and `openable` its template already declares.
-- Tests: `tests/roles.test.ts`; existing `scenario-*` tests stay green.
+- A scenario's `props` override merges onto the template's props instead of replacing them
+  (`copyOverrides` in `src/engine/spawn.ts`), as `update_props` merges.
+- An edit (`spawn`, `set_props`, `update_props`) or a scenario entry whose definition props differ
+  from the template's resolved props, by value or by being left out, is refused
+  `field_not_editable`. Repeating the template's own value passes: an entity stores a copy of its
+  template's props, so `set_props` always carries them. Derived fields stay `derived_field`. This
+  is a check on writes, not a `validateSnapshot` rule, so `upgradeTemplates` is unchanged.
+- Migration: only sites that change a definition, such as `closes_after` on `door` in five tests
+  and by `set_props` in `tests/scenario-cell.test.ts`. A test's own fixture becomes a template in
+  its inline registry; a shipped scenario uses a preset. Inventory first and report the count.
+- Tests: `tests/roles.test.ts`: a changed, a dropped and a repeated definition through each write,
+  and a merged scenario override; existing `scenario-*` tests stay green.
+- Docs: `docs/fields.md` (the tier now enforced), `docs/api.md` (overrides merge).
+
+### 3b. Entity props hold to the schema
+
+- A rule in `validateSnapshot` (`src/engine/validate.ts`) holds every entity's props to
+  `validateProps`' rules, against its template's resolved set: a prop neither `PROP_FIELDS` nor
+  the template's `fields` declares is `undeclared_prop`, a value of the wrong type
+  `wrong_prop_type`, a prop whose `requires` the template's resolved props do not meet
+  `unmet_requires` (the entity's own props never meet it). So every edit, scenario, `verify` and
+  hand-edited world meets it. Each would be accepted today: `update_props` with `gap_cm: "wide"` on
+  a table, or `open` on a stone.
+- Migration: a test that writes a prop no template declares (`rate`, `glow`, `temperature`, …)
+  declares it under `fields` in its inline registry, or moves it to a trait (3c) where it only
+  describes. Inventory first and report the count.
+- Tests: `tests/entity-props.test.ts`: each code from an edit, a scenario and a hand-edited world
+  under `verify`.
+- Docs: `docs/fields.md`, `docs/state.md` (the new rule).
+
+### 3c. Traits
+
+- New optional entity field `traits`: a map of at most 16 keys (`^[a-z][a-z0-9_]{0,31}$`) to
+  tokens (`^[A-Za-z0-9_.:-]{1,64}$`, the utterance rule in `docs/speech.md`), absent when empty,
+  so stored worlds stay `schema_version` 5. Tier: state. Written by a scenario's overrides and
+  an edit `spawn`; `validateSnapshot` refuses a bad key or token (`invalid_trait`).
+- No rule reads it: a test runs `scenarios/inn.json` with traits on every entity and without, and
+  every command answers the same status, reason code and events.
+- `inspect` lists `traits` where it lists props (sight or touch); `observe` does not.
+- Contract: `EntitySchema` and the edit and scenario shapes in `src/contract.ts`.
+- Tests: `tests/traits.test.ts`. Docs: `docs/state.md`, `docs/projection.md`, `docs/api.md`.
 
 ### 4. Architect forms
 
@@ -91,25 +124,39 @@ what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, i
   apart from its box. `bottle` declares 750 and its default `liquid_amount` becomes 750 (full);
   `cup` declares 250. `liquidCapacity` in `src/engine/verbs/pour.ts` reads `capacity_cm3` where a
   template declares it, else the inner volume as today, so a chest still takes a pour.
-- Three architect forms, accepted in scenario overrides only, converted on write to the one stored
+- Five architect forms, accepted in scenario overrides only, converted on write to the one stored
   value (pure, integer):
   - `fuel_pct` (0–100), on an entity whose template declares `fuel`: that default × pct / 100;
   - `liquid: { material?, pct }`, on one whose template declares `capacity_cm3`: `liquid_amount`
     = capacity × pct / 100 and `liquid_material` = `material`, else the template's; pct 0 stores
     amount 0 and material `""`;
-  - `condition`, `intact` or `damaged`: entity `integrity` 100 or 50.
+  - `condition`, `intact` or `damaged`: entity `integrity` 100 or 50;
+  - `hunger_pct` (0–100), on one whose template declares `hunger`: `hunger` itself, which runs
+    0–100 already;
+  - `portions_pct` (0–100), on one whose template declares `portions`: that default × pct / 100.
   Percentages floor, except that one above 0 never stores 0 (a candle's 8 fuel at 10% is 1).
-- Under the architect role the raw `fuel`, `liquid_amount`, `liquid_material` and `integrity` are
-  refused `field_not_editable`: the forms replace them. A form is refused `invalid_form` (not a
+- A form is refused `invalid_form` (not a
   whole number 0–100, or an unknown condition), `form_not_applicable` (its template declares no
-  `fuel` or `capacity_cm3`) or `no_liquid_material` (pct above 0 with no material either side).
+  prop the form converts to) or `no_liquid_material` (pct above 0 with no material either side).
 - Migration: the bottle's 75 becomes 750 and the cup's 288 becomes 250 wherever a test, scenario
   or doc quotes them (inventory first, report the count); `docs/limits.md` drops the 75 cm³ line.
 - Tests (`tests/architect-forms.test.ts`): the stored value of each form (full bottle 750, empty
-  cup 0 with no material, a candle at 10% → 1 and at 0% → 0, `damaged` → 50), each refusal, a pour
+  cup 0 with no material, a candle at 10% → 1 and at 0% → 0, `damaged` → 50, bread at 50% → 2),
+  each refusal, a pour
   into a cup bounded by 250, and a chest still bounded by its inner volume.
 - Docs: `docs/fields.md` (`capacity_cm3`, the forms), `docs/liquids.md` (capacity), `docs/api.md`
   (scenario overrides).
+
+### 4b. Scenarios are the architect
+
+- A scenario entry (`src/scenario.ts`) writes only placement, `name`, `aliases`, traits, the five
+  forms and the plain state values `open`, `locked`, `burning`, `lit`, a door's `from`/`to` and
+  a key's `opens`; any other prop, the raw `fuel`, `liquid_amount`, `liquid_material`,
+  `integrity`, `hunger` and `portions` included, is refused `field_not_editable`. Edits stay the
+  world author's and write any state.
+- Migration: the shipped scenarios and the tests' scenario entries move to the forms
+  (`scenarios/camp.json`'s `hunger: 100` → `hunger_pct: 100`); inventory first, report the count.
+- Tests: `tests/roles.test.ts` gains the architect's refusals. Docs: `docs/api.md`.
 
 ### 5. Catalogue view
 
