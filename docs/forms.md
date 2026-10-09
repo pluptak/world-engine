@@ -9,6 +9,13 @@ world author's and writes any state. The forms are accepted in a scenario entry 
 refuses them as `invalid_args`) and are converted once, before any rule reads the entry
 (`src/engine/forms.ts`).
 
+**The architect only sets the scene up.** It writes state as it places an entity and never after
+tick 0; every later change is the world author's. One entry is one entity of one template, and
+nothing expands into what it did not name: a broken bottle still standing is a template of its own
+with its shards placed one by one, and wine on the floor at tick 0 is a template too, since residue
+is no entity. A form is a second way to write a state field, never a second stored field: the engine
+stores the exact amount, and reads it back to the architect as a percentage.
+
 | form | needs the template to declare | stores |
 | --- | --- | --- |
 | `fuel_pct` 0–100 | `fuel` | `fuel` = default × pct / 100 |

@@ -49,5 +49,14 @@ Priorities there, then deleting it here in the same commit.
   (`docs/measurements.md`). `deltas.jsonl` already holds every accepted command's deltas. Open: write the snapshot
   every N commands and replay the deltas since on `load`, how that meets the head's fast path and `verify`, and
   whether any caller runs worlds this size yet.
+- **Who authors templates.** The catalogue is `templates/`: an architect picks presets and never
+  writes one, and a world author changes state, never a definition. Open: who adds a preset a scene
+  needs, and whether that is ever done while a world runs or only between worlds (`upgradeTemplates`).
 - **Facing and a sight cone.** In a lit room every act is seen (`docs/limits.md`); the costliest of
   the limits, revisit when a concrete world needs what darkness, concealment and staging cannot give.
+- **A door that starts open never closes by itself.** `closes_after` schedules its `close` when `open` runs
+  (`docs/schedule.md`), so a self-closing door placed open by a scenario, or made one by `refine`, has no `close`
+  pending and stands open until someone opens and shuts it. Found probing `refine`. Open: whether an open
+  self-closing openable gets its `close` scheduled whenever it comes to exist or to be one (scenario, spawn,
+  refinement, and `open: true` written by an edit), counted from then; or whether open is a state the author may
+  hold on purpose, and the rule stays "closes after being opened".

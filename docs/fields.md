@@ -16,6 +16,11 @@ code starts reading must enter the table, and an entry no code reads is refused 
   and part state (a corpse or a severed limb is a state the world can reach);
 - *derived*: the engine only: `id`, `location` and `modifiers`.
 
+**An entity's props never change what its template is.** An open stone is refused, and an
+openable stone is a template of its own, made before the scene; so is a self-closing door, since
+`closes_after` is a definition. What only describes a thing is a `trait` ([state.md](state.md)),
+never a prop, so it can never change behaviour.
+
 A spawn (an edit's or a scenario's) writing a derived field as other than the engine derives it is
 refused `derived_field`; definitions that differ are refused `field_not_editable`. A replacing write
 (`set_props`) may not drop one; repeats pass, and overrides merge as `update_props` merges.
