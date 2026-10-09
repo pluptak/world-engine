@@ -109,7 +109,7 @@ suffixes (NodeNext).
   `spawn.ts` (ids from `next_seq`), `residue.ts`,
   `canonical.ts`, `carry.ts`, `validate.ts` (snapshot invariants: no loops, `pos`/`location` match
   the chain, no dangling references (`detached_from` is history, not a link), detached parts
-  accounted for, no part stored at its default, integrity range, ids below `next_seq`), `parts.ts`
+  accounted for, no part stored at its default, integrity range, ids below `next_seq`, a template the registry owns); `own` in `model.ts` is the read for any id, template or name from outside, so `constructor` is none, `parts.ts`
   (part state is sparse: an absent entry is the template default, intact at `max_integrity`; read
   through `partState`, write through `withParts`, which drops an entry set back to the default; a
   severed subtree is stored as its root alone, and `effectivePart` gives a part under a detached or

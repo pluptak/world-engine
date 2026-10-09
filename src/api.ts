@@ -28,7 +28,7 @@ import { isRngState } from "./engine/rng.js";
 import { resolveScenario, type Scenario } from "./scenario.js";
 import { validateSnapshot } from "./engine/validate.js";
 import { WorldError } from "./errors.js";
-import { defaultCoverage, type Coverage, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type Status, type WorldEvent } from "./model.js";
+import { defaultCoverage, own, type Coverage, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type Status, type WorldEvent } from "./model.js";
 import {
   attempts as readAttempts,
   create,
@@ -153,7 +153,7 @@ function withObservation(
   result: Result,
   options: CommandOptions | undefined,
 ): Result {
-  if (options?.observe !== true || world.snapshot().entities[actor] === undefined) {
+  if (options?.observe !== true || own(world.snapshot().entities, actor) === undefined) {
     return result;
   }
   const since = result.status === "ok" ? result.snapshot.version - 1 : world.snapshot().version;
@@ -167,7 +167,7 @@ function inspectThrough(
   entity: Id,
 ): Inspection | null {
   const snapshot = world.snapshot();
-  if (snapshot.entities[observer] === undefined) {
+  if (own(snapshot.entities, observer) === undefined) {
     throw new WorldError("no_such_entity", `Unknown observer ${observer}`);
   }
   return inspectEntity(snapshot, registry, [], observer, entity);
@@ -182,7 +182,7 @@ function observeThrough(
   options: ObserveOptions,
 ): Projection {
   const snapshot = world.snapshot();
-  if (snapshot.entities[observer] === undefined) {
+  if (own(snapshot.entities, observer) === undefined) {
     throw new WorldError("no_such_entity", `Unknown observer ${observer}`);
   }
   const covered = SENSES.filter((sense) => snapshot.coverage.senses.includes(sense));
@@ -406,8 +406,8 @@ function storeWorld(
     observe: (observer, options = {}) => observeThrough(world, active, observer, options),
     inspect: (observer, entity) => inspectThrough(world, active, observer, entity),
     snapshot: () => load(dir, active),
-    entity: (id) => load(dir, active).entities[id] ?? null,
-    id: (name) => names[name] ?? null,
+    entity: (id) => own(load(dir, active).entities, id) ?? null,
+    id: (name) => own(names, name) ?? null,
     fork: () => memoryWorld(structuredClone(load(dir, active)), active, names),
   };
   return world;
@@ -597,7 +597,7 @@ export function memoryWorld(
       }
       if ("entity" in query) {
         const known =
-          current.entities[query.entity] !== undefined ||
+          own(current.entities, query.entity) !== undefined ||
           allDeltas.some((delta) => delta.entity === query.entity) ||
           events.some((event) => event.entity === query.entity);
         if (!known) {
@@ -619,7 +619,7 @@ export function memoryWorld(
           const hasSpawn = allDeltas.some(
             (delta) => delta.entity === query.entity && delta.field === "entity",
           );
-          if (!hasDelta && !hasSpawn && initial.entities[query.entity] !== undefined) {
+          if (!hasDelta && !hasSpawn && own(initial.entities, query.entity) !== undefined) {
             throw new WorldError(
               "history_unavailable",
               `No history for ${query.entity}.${field} before this memory world was created`,
@@ -673,8 +673,8 @@ export function memoryWorld(
     observe: (observer, options = {}) => observeThrough(world, templates, observer, options),
     inspect: (observer, entity) => inspectThrough(world, templates, observer, entity),
     snapshot: () => current,
-    entity: (id) => current.entities[id] ?? null,
-    id: (name) => names[name] ?? null,
+    entity: (id) => own(current.entities, id) ?? null,
+    id: (name) => own(names, name) ?? null,
     fork: () => memoryWorld(structuredClone(current), templates, names),
   };
   return world;

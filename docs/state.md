@@ -10,7 +10,9 @@ for entities supported by a room and derived through the support or containment 
 `validateSnapshot` is the one pure check: no support or containment loop, `pos` exactly when the
 support is a room, `location` the room at the end of the chain, every reference present (a detached
 entity's origin is history, not a link), detached parts accounted for, no part stored at its default
-(`part_at_default`), integrity in 0–100, and ids below `next_seq`. Entity props hold to the same
+(`part_at_default`), integrity in 0–100, and ids below `next_seq`. An entity's template is one of the
+registry's own keys (`unknown_template`) and a reference names one of the entities' own keys, so
+`constructor` or `__proto__` is neither a template nor an entity. Entity props hold to the same
 schema as their template: each must be declared by the engine or the template (`undeclared_prop`),
 typed correctly (`wrong_prop_type`), and have a declared prop satisfying every `requires` it names
 (`unmet_requires`). It also holds the relations to their own rules: never both supported and

@@ -1,6 +1,6 @@
 import { commandDuration } from "../clock.js";
 import { WORLD_AUTHOR, type Command, type CommandContext, type PreconditionResult, type Verb } from "../command.js";
-import type { Id } from "../../model.js";
+import { own, type Id } from "../../model.js";
 import { isAgent } from "./address.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
@@ -54,7 +54,7 @@ function advancePreconditions(context: CommandContext): PreconditionResult {
     return { status: "invalid", reason_code: "invalid_args" };
   }
   for (const id of ids) {
-    const watcher = context.snapshot.entities[id];
+    const watcher = own(context.snapshot.entities, id);
     if (watcher === undefined || !isAgent(context.snapshot, id)) {
       // A body destroyed is still there, but no longer an agent: the code says which.
       return { status: "invalid", reason_code: watcher?.status === "destroyed" ? "observer_destroyed" : "no_such_actor" };

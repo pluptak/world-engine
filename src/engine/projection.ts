@@ -2,7 +2,7 @@ import { effectivePos } from "./geometry.js";
 import { effectivePart } from "./parts.js";
 import { inReach } from "./verbs/address.js";
 import { query } from "./query.js";
-import type { Id, PartState, Pos, Snapshot, WorldEvent } from "../model.js";
+import { own, type Id, type PartState, type Pos, type Snapshot, type WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 
 import { ENGINE_CAPABILITIES } from "./capabilities.js";
@@ -95,7 +95,7 @@ export function observeEntities(
 
   const relations = snapshot.coverage.relations;
   const properties = snapshot.coverage.properties;
-  const here = snapshot.entities[observer]?.location ?? null;
+  const here = own(snapshot.entities, observer)?.location ?? null;
   const reference = (id: Id | null): Id | null | undefined =>
     id === null ? null : sensed.has(id) || id === here ? id : undefined;
 
@@ -151,7 +151,7 @@ export interface PartView {
 // feels it could tell. Part status is a fact like an entity's `status`, so a world that does not cover
 // that relation shows no parts. The caller has already established the sight or touch.
 export function bodyParts(snapshot: Snapshot, registry: TemplateRegistry, entityId: Id): PartView[] | undefined {
-  const entity = snapshot.entities[entityId];
+  const entity = own(snapshot.entities, entityId);
   const template = entity === undefined ? undefined : registry[entity.template];
   if (entity === undefined || template === undefined || template.parts.length === 0) {
     return undefined;
@@ -174,7 +174,7 @@ export function visibleParts(
   observer: Id,
   entityId: Id,
 ): PartView[] | undefined {
-  const entity = snapshot.entities[entityId];
+  const entity = own(snapshot.entities, entityId);
   if (entity === undefined || (registry[entity.template]?.parts.length ?? 0) === 0) {
     return undefined;
   }
@@ -209,7 +209,7 @@ export function inspectEntity(
 ): Inspection | null {
   const observed = observeEntities(snapshot, registry, events, observer);
   const found = observed.find((candidate) => candidate.id === entityId);
-  const entity = snapshot.entities[entityId];
+  const entity = own(snapshot.entities, entityId);
   if (found === undefined || entity === undefined) {
     return null;
   }

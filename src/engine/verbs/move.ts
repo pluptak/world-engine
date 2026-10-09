@@ -1,6 +1,6 @@
 import { capacity } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
-import type { Pos } from "../../model.js";
+import { own, type Pos } from "../../model.js";
 import { isDoor, resolveTarget } from "../resolve.js";
 import { refreshSubtreeLocations, subtreeOf } from "./address.js";
 import { revealConcealed } from "./search.js";
@@ -142,7 +142,7 @@ function preconditions(context: CommandContext): PreconditionResult {
   }
   const { to, via } = walk;
   if (to.kind === "location") {
-    const location = context.snapshot.entities[to.id];
+    const location = own(context.snapshot.entities, to.id);
     if (location === undefined || location.template !== "room" || !nameableRoom(context, to.id)) {
       return { status: "invalid", reason_code: "invalid_location" };
     }

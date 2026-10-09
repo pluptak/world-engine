@@ -1,4 +1,4 @@
-import type { Entity, Id, Snapshot } from "../model.js";
+import { own, type Entity, type Id, type Snapshot } from "../model.js";
 import type { Template, TemplateRegistry } from "../templates.js";
 import { heldInParts, holderLayout, packGrips, partAvailable } from "./carry.js";
 import { misfit } from "./fit.js";
@@ -35,7 +35,7 @@ function chainLoop(snapshot: Snapshot, id: Id): Id[] | null {
     visited.set(current, path.length);
     path.push(current);
 
-    const entity: Entity | undefined = snapshot.entities[current];
+    const entity: Entity | undefined = own(snapshot.entities, current);
     if (entity === undefined) {
       return null;
     }
@@ -61,7 +61,7 @@ export function derivedLocationOf(
     }
     visited.add(current);
 
-    const entity: Entity | undefined = snapshot.entities[current];
+    const entity: Entity | undefined = own(snapshot.entities, current);
     if (entity === undefined) {
       return undefined;
     }
@@ -75,7 +75,7 @@ export function derivedLocationOf(
 }
 
 export function derivedLocation(snapshot: Snapshot, id: Id): Id | null | undefined {
-  const entity = snapshot.entities[id];
+  const entity = own(snapshot.entities, id);
   if (entity === undefined) {
     return undefined;
   }
@@ -87,7 +87,7 @@ export function derivedLocation(snapshot: Snapshot, id: Id): Id | null | undefin
 function detachedIndex(snapshot: Snapshot): Map<string, Id> {
   const index = new Map<string, Id>();
   for (const id of Object.keys(snapshot.entities).sort()) {
-    const origin = snapshot.entities[id]?.detached_from;
+    const origin = own(snapshot.entities, id)?.detached_from;
     if (origin !== null && origin !== undefined) {
       index.set(`${origin.entity} ${origin.part}`, id);
     }
@@ -110,8 +110,8 @@ function accountedFor(
   let stopAt: string | null = null;
   for (;;) {
     owners.add(current);
-    const owner = snapshot.entities[current];
-    const template = owner === undefined ? undefined : registry[owner.template];
+    const owner = own(snapshot.entities, current);
+    const template = owner === undefined ? undefined : own(registry, owner.template);
     const visited = new Set<string>();
     let name: string | null = partName;
     while (name !== null && name !== stopAt) {
@@ -134,7 +134,7 @@ function accountedFor(
 }
 
 function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIssue[] {
-  const entity = snapshot.entities[id];
+  const entity = own(snapshot.entities, id);
   if (entity === undefined) {
     return [];
   }
@@ -142,22 +142,22 @@ function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
   const issues: SnapshotIssue[] = [];
   // detached_from is history, not a live link: the origin may itself be gone while the entity it
   // produced remains, so it is not checked here.
-  if (entity.support !== null && snapshot.entities[entity.support] === undefined) {
+  if (entity.support !== null && own(snapshot.entities, entity.support) === undefined) {
     issues.push(issue("dangling_reference", [...path, "support"], `unknown entity ${entity.support}`));
   }
-  if (entity.contained_in !== null && snapshot.entities[entity.contained_in] === undefined) {
+  if (entity.contained_in !== null && own(snapshot.entities, entity.contained_in) === undefined) {
     issues.push(
       issue("dangling_reference", [...path, "contained_in"], `unknown entity ${entity.contained_in}`),
     );
   }
-  if (entity.location !== null && snapshot.entities[entity.location] === undefined) {
+  if (entity.location !== null && own(snapshot.entities, entity.location) === undefined) {
     issues.push(
       issue("dangling_reference", [...path, "location"], `unknown entity ${entity.location}`),
     );
   }
   // A concealer is present or nothing is hidden: unlike a key's `opens`, a name that reaches nothing
   // would leave the thing it was hiding invisible for ever.
-  if (entity.concealed_by !== null && snapshot.entities[entity.concealed_by] === undefined) {
+  if (entity.concealed_by !== null && own(snapshot.entities, entity.concealed_by) === undefined) {
     issues.push(
       issue("dangling_reference", [...path, "concealed_by"], `unknown entity ${entity.concealed_by}`),
     );
@@ -171,7 +171,7 @@ function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
       if (typeof ref !== "string") {
         continue;
       }
-      const target = snapshot.entities[ref];
+      const target = own(snapshot.entities, ref);
       if (target === undefined) {
         issues.push(issue("dangling_reference", [...path, "props", side], `unknown entity ${ref}`));
       } else if (target.template !== "room") {
@@ -185,7 +185,7 @@ function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
   // an absent target is left alone, one that cannot be opened is not.
   const opens = entity.props.opens;
   if (typeof opens === "string") {
-    const target = snapshot.entities[opens];
+    const target = own(snapshot.entities, opens);
     if (target !== undefined && target.props.openable !== true) {
       issues.push(issue("opens_target_not_openable", [...path, "props", "opens"], opens));
     }
@@ -208,7 +208,7 @@ function concealLoop(snapshot: Snapshot, id: Id): Id[] | null {
     visited.set(current, path.length);
     path.push(current);
 
-    const entity: Entity | undefined = snapshot.entities[current];
+    const entity: Entity | undefined = own(snapshot.entities, current);
     if (entity === undefined) {
       return null;
     }
@@ -228,12 +228,12 @@ function concealmentIssues(
   id: Id,
   path: string[],
 ): SnapshotIssue[] {
-  const entity = snapshot.entities[id];
+  const entity = own(snapshot.entities, id);
   if (entity === undefined || entity.concealed_by === null) {
     return [];
   }
   // A missing concealer already has its dangling_reference; the rules below read the other end.
-  const concealer = snapshot.entities[entity.concealed_by];
+  const concealer = own(snapshot.entities, entity.concealed_by);
   if (concealer === undefined) {
     return [];
   }
@@ -259,7 +259,7 @@ function concealmentIssues(
 }
 
 function integrityIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIssue[] {
-  const entity = snapshot.entities[id];
+  const entity = own(snapshot.entities, id);
   if (entity === undefined) {
     return [];
   }
@@ -290,7 +290,7 @@ function propIssues(
   path: string[],
 ): SnapshotIssue[] {
   const issues: SnapshotIssue[] = [];
-  const template: Partial<Template> = registry[entity.template] ?? {};
+  const template: Partial<Template> = own(registry, entity.template) ?? {};
   for (const [name, value] of Object.entries(entity.props)) {
     const engine = PROP_FIELDS[name];
     const field = engine ?? template.fields?.[name];
@@ -318,7 +318,7 @@ function propIssues(
 // What sits in a holder's part: in_part is set exactly when the holder declares holder parts,
 // names one that is present, grips pack lowest-first, and space contents fit.
 function holderIssues(snapshot: Snapshot, registry: TemplateRegistry, id: Id, path: string[]): SnapshotIssue[] {
-  const entity = snapshot.entities[id];
+  const entity = own(snapshot.entities, id);
   if (entity === undefined) {
     return [];
   }
@@ -328,7 +328,7 @@ function holderIssues(snapshot: Snapshot, registry: TemplateRegistry, id: Id, pa
       : [issue("in_part_holder_mismatch", [...path, "in_part"], `in_part ${String(entity.in_part)}`)];
   }
   // A missing holder already has its dangling_reference; the rules below read the other end.
-  const holder = snapshot.entities[entity.contained_in];
+  const holder = own(snapshot.entities, entity.contained_in);
   if (holder === undefined) {
     return [];
   }
@@ -357,14 +357,14 @@ function holderPackingIssues(snapshot: Snapshot, registry: TemplateRegistry): Sn
   const issues: SnapshotIssue[] = [];
   const holders = new Set<Id>();
   for (const id of Object.keys(snapshot.entities).sort()) {
-    const holder = snapshot.entities[id]?.contained_in;
+    const holder = own(snapshot.entities, id)?.contained_in;
     if (holder !== null && holder !== undefined) {
       holders.add(holder);
     }
   }
   for (const holderId of [...holders].sort()) {
-    const holder = snapshot.entities[holderId];
-    const template = holder === undefined ? undefined : registry[holder.template];
+    const holder = own(snapshot.entities, holderId);
+    const template = holder === undefined ? undefined : own(registry, holder.template);
     if (holder === undefined || template === undefined) {
       continue;
     }
@@ -385,7 +385,7 @@ function holderPackingIssues(snapshot: Snapshot, registry: TemplateRegistry): Sn
       const oversized = heldInParts(snapshot, holderId)
         .filter((item) => item.in_part === space.name)
         .find((item) => {
-          const size = registry[snapshot.entities[item.id]?.template ?? ""]?.size_cm;
+          const size = own(registry, own(snapshot.entities, item.id)?.template ?? "")?.size_cm;
           return size !== undefined && misfit([size.w, size.d, size.h], [...space.inner]) !== null;
         });
       if (oversized !== undefined) {
@@ -411,7 +411,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
   }
 
   for (const id of Object.keys(snapshot.entities).sort()) {
-    const entity = snapshot.entities[id];
+    const entity = own(snapshot.entities, id);
     if (entity === undefined) {
       continue;
     }
@@ -420,6 +420,11 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     const numericId = /^e(\d+)$/.exec(id);
     if (numericId !== null && Number(numericId[1]) >= snapshot.next_seq) {
       issues.push(issue("id_not_below_next_seq", path, `next_seq ${snapshot.next_seq}`));
+    }
+    // A template is one of the registry's own keys: `constructor` is no template, and an entity of it
+    // would break every read that trusts the registry to answer.
+    if (own(registry, entity.template) === undefined) {
+      issues.push(issue("unknown_template", [...path, "template"], entity.template));
     }
     issues.push(...integrityIssues(snapshot, id, path));
     issues.push(...referenceIssues(snapshot, id, path));
@@ -451,8 +456,8 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     // A missing link already has its issue; the rules below read chains, so they stay out of the
     // way rather than pile onto it.
     const chainDangles =
-      (entity.support !== null && snapshot.entities[entity.support] === undefined) ||
-      (entity.contained_in !== null && snapshot.entities[entity.contained_in] === undefined);
+      (entity.support !== null && own(snapshot.entities, entity.support) === undefined) ||
+      (entity.contained_in !== null && own(snapshot.entities, entity.contained_in) === undefined);
     if (!chainDangles) {
       const loop = chainLoop(snapshot, id);
       if (loop !== null) {
@@ -463,7 +468,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
         }
       }
 
-      const support = entity.support === null ? undefined : snapshot.entities[entity.support];
+      const support = entity.support === null ? undefined : own(snapshot.entities, entity.support);
       if (support?.template === "room") {
         if (entity.pos === null) {
           issues.push(issue("room_support_without_pos", path, `support ${entity.support}`));
@@ -473,7 +478,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
       }
 
       // Location is derived state: the room at the end of the support or containment chain.
-      if (entity.location === null || snapshot.entities[entity.location] !== undefined) {
+      if (entity.location === null || own(snapshot.entities, entity.location) !== undefined) {
         const expected = derivedLocation(snapshot, id);
         if (expected !== undefined && entity.location !== expected) {
           issues.push(issue("location_mismatch", path, `location ${String(entity.location)}`));
@@ -481,7 +486,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
       }
     }
 
-    const template = registry[entity.template];
+    const template = own(registry, entity.template);
     for (const part of Object.keys(entity.parts).sort()) {
       const state = entity.parts[part];
       if (state?.status === "detached" && !accountedFor(snapshot, registry, spawned, id, part)) {
@@ -535,7 +540,7 @@ function scheduleIssues(snapshot: Snapshot): SnapshotIssue[] {
       issues.push(issue("schedule_unordered", path, `due ${cause.due_tick} after ${previous}`));
     }
     previous = Math.max(previous, cause.due_tick);
-    if (snapshot.entities[cause.entity] === undefined) {
+    if (own(snapshot.entities, cause.entity) === undefined) {
       issues.push(issue("schedule_dangling", path, cause.entity));
     }
     // A process runs at most once at a time on an entity: reconcile never schedules a second.

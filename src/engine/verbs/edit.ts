@@ -1,4 +1,4 @@
-import type { Entity, Id, Pos, Snapshot } from "../../model.js";
+import { own, type Entity, type Id, type Pos, type Snapshot } from "../../model.js";
 import type { Template, TemplateRegistry } from "../../templates.js";
 import { propagateSupportLoss } from "../../resolvers/physical.js";
 import { PROP_FIELDS } from "../fields.js";
@@ -287,11 +287,11 @@ function refused(reason_code: string): PreconditionResult {
 }
 
 function missingRef(context: CommandContext, id: Id | null | undefined): boolean {
-  return id !== undefined && id !== null && context.snapshot.entities[id] === undefined;
+  return id !== undefined && id !== null && own(context.snapshot.entities, id) === undefined;
 }
 
 function spawnRefusal(context: CommandContext, edit: SpawnEdit): PreconditionResult {
-  const template = context.registry[edit.template];
+  const template = own(context.registry, edit.template);
   if (template === undefined) {
     return invalid("unknown_template");
   }
@@ -315,18 +315,18 @@ function spawnRefusal(context: CommandContext, edit: SpawnEdit): PreconditionRes
   if (location === undefined) {
     return invalid("invalid_location");
   }
-  if (location !== null && context.snapshot.entities[location]?.template !== "room") {
+  if (location !== null && own(context.snapshot.entities, location)?.template !== "room") {
     return invalid("invalid_location");
   }
   if (derivedFieldWritten(context.snapshot, overrides) !== null) {
     return refused("derived_field");
   }
-  const preset = context.registry[edit.template]!;
+  const preset = template;
   if (definitionWritten(preset, spawnedProps(preset, overrides)) !== null) {
     return refused("field_not_editable");
   }
   const support = overrides.support ?? null;
-  if (support !== null && context.snapshot.entities[support]?.template === "room") {
+  if (support !== null && own(context.snapshot.entities, support)?.template === "room") {
     if (overrides.pos === undefined || overrides.pos === null) {
       return refused("room_support_without_pos");
     }
@@ -335,7 +335,7 @@ function spawnRefusal(context: CommandContext, edit: SpawnEdit): PreconditionRes
   }
   const origin = overrides.detached_from;
   if (origin !== undefined && origin !== null) {
-    const owner = context.snapshot.entities[origin.entity];
+    const owner = own(context.snapshot.entities, origin.entity);
     const ownerTemplate = owner === undefined ? undefined : context.registry[owner.template];
     if (owner === undefined || ownerTemplate === undefined) {
       return invalid("no_such_entity");
@@ -453,7 +453,7 @@ function anchoredPlace(snapshot: Snapshot, edit: PlaceEdit): ResolvedPlaceEdit |
   ) {
     return refused("conflicting_placement");
   }
-  const anchor = snapshot.entities[offset.anchor];
+  const anchor = own(snapshot.entities, offset.anchor);
   if (anchor === undefined) {
     return invalid("no_such_entity");
   }
@@ -492,7 +492,7 @@ function placeRefusal(
   if (placement.contained !== null && wouldLoop(context, edit.target, placement.contained)) {
     return refused("circular_placement");
   }
-  if (placement.support !== null && context.snapshot.entities[placement.support]?.template === "room") {
+  if (placement.support !== null && own(context.snapshot.entities, placement.support)?.template === "room") {
     if (placement.pos === null) {
       return refused("room_support_without_pos");
     }
@@ -519,7 +519,7 @@ function partRefusal(
 
 function scheduleBeatRefusal(context: CommandContext, edit: ScheduleBeatEdit): PreconditionResult {
   const subject = actionSubject(edit.action);
-  if (subject === null || context.snapshot.entities[subject] === undefined) {
+  if (subject === null || own(context.snapshot.entities, subject) === undefined) {
     return invalid("no_such_entity");
   }
   if (edit.at_tick <= context.snapshot.tick) {

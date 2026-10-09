@@ -67,7 +67,8 @@ function isAnchorPos(value: unknown): value is AnchorPos {
 // Every name is known before any reference is read, so a scenario may point forward. Ids follow
 // next_seq in entry order, so the same scenario always resolves to the same world.
 export function resolveScenario(scenario: Scenario, nextSeq = 1): ResolvedScenario {
-  const ids: Record<string, Id> = {};
+  // A map, not a plain object: a name such as `__proto__` or `constructor` is a name like any other.
+  const ids = new Map<string, Id>();
   const allocated = scenario.map((_entry, index) => `e${nextSeq + index}`);
   scenario.forEach((entry, index) => {
     const name = entry.id;
@@ -77,15 +78,15 @@ export function resolveScenario(scenario: Scenario, nextSeq = 1): ResolvedScenar
     if (name === "" || ALLOCATED.test(name)) {
       throw new WorldError("invalid_name", `Invalid scenario name ${name} at entry ${index}`);
     }
-    if (Object.hasOwn(ids, name)) {
+    if (ids.has(name)) {
       throw new WorldError("duplicate_name", `Duplicate scenario name ${name} at entry ${index}`);
     }
-    ids[name] = allocated[index] as Id;
+    ids.set(name, allocated[index] as Id);
   });
 
   // A declared name, else a literal id this scenario allocates.
   const known = (value: string): Id | null => {
-    const named = ids[value];
+    const named = ids.get(value);
     if (named !== undefined) {
       return named;
     }
@@ -184,5 +185,6 @@ export function resolveScenario(scenario: Scenario, nextSeq = 1): ResolvedScenar
     };
   });
 
-  return { scenario: resolved, ids };
+  // fromEntries defines own properties, so a name `__proto__` survives into the record.
+  return { scenario: resolved, ids: Object.fromEntries(ids) };
 }

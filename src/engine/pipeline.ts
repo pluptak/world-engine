@@ -7,7 +7,7 @@ import type { Command, CommandContext, Result, TransitionContext } from "./comma
 import { WORLD_AUTHOR } from "./command.js";
 import { eventPerceivers } from "./query.js";
 import { verbRegistry } from "./verbs/index.js";
-import type { Delta, Entity, Id, ReasonData, Snapshot, WorldEvent } from "../model.js";
+import { own, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import { isAgent } from "./verbs/address.js";
 import { resolveTarget } from "./resolve.js";
@@ -77,7 +77,7 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
   }
 
   const authored = command.actor === WORLD_AUTHOR && verb.author_only === true;
-  const actor = authored ? worldAuthor : snapshot.entities[command.actor];
+  const actor = authored ? worldAuthor : own(snapshot.entities, command.actor);
   if (actor === undefined) {
     return unchangedResult(snapshot, command, "invalid", null, "no_such_actor");
   }

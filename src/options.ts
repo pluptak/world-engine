@@ -5,7 +5,7 @@ import { visibleParts } from "./engine/projection.js";
 import { isAgent } from "./engine/verbs/address.js";
 import { verbRegistry } from "./engine/verbs/index.js";
 import { WorldError } from "./errors.js";
-import type { Id, Snapshot } from "./model.js";
+import { own, type Id, type Snapshot } from "./model.js";
 import type { TemplateRegistry } from "./templates.js";
 
 // A command an actor could issue now, to be sent as it is: the verb, its target, and the args a
@@ -47,7 +47,7 @@ export function listOptions(
   request: OptionsRequest,
   dry: (command: Command) => Result,
 ): Options {
-  if (snapshot.entities[actor] === undefined) {
+  if (own(snapshot.entities, actor) === undefined) {
     throw new WorldError("no_such_entity", `Unknown actor ${actor}`);
   }
   const options: Options = { actor, version: snapshot.version, ready: [], needs_args: [] };

@@ -20,8 +20,7 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. Presets, field tiers and roles: [plans/presets-and-roles.md](plans/presets-and-roles.md),
    blocks 3c, 4, 4b, 5–8 in that order.
-2. [Names that are Object members are not ids, templates or names](#names-that-are-object-members-are-not-ids-templates-or-names).
-3. [Consumables: what a used-up thing leaves](#consumables-what-a-used-up-thing-leaves).
+2. [Consumables: what a used-up thing leaves](#consumables-what-a-used-up-thing-leaves).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -58,44 +57,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### Names that are Object members are not ids, templates or names
-
-The entity map, the template registry and a world's names are plain objects, so an id, template or name spelt
-`__proto__`, `constructor`, `toString`, `hasOwnProperty` or `valueOf` finds a member of `Object.prototype` where the
-code asks `=== undefined`. Probing every id-taking input with those five found, from requests the CLI's schema accepts:
-
-- A template of that name is believed. `edit spawn` with `template: "constructor"`, or a scenario entry with it,
-  succeeds and stores an entity of that template; from then on `observe` and `options` throw `TypeError` for the whole
-  world, and the log keeps the edit for good. (`edit` answers `unknown_template` to a name that is merely absent.)
-- An actor, observer or support of that name is believed. A command with such an actor, `observe`, `inspect` and
-  `options` with such an observer, the perceive query with such an observer, and `edit place` with such a support
-  throw `TypeError`, which the CLI answers `internal_error`.
-- `entity("constructor")` and `id("constructor")` return a function, `id("__proto__")` an object, and
-  `actorWorld(world, "constructor")` is built. A scenario entry whose id is `__proto__` is refused `invalid_snapshot`,
-  which names nothing.
-
-- **Lookups:** an own-property read (`own(record, key)`, in `src/model.ts`) wherever a string from outside indexes
-  `entities`, the registry or the names: the actor test in `src/engine/pipeline.ts`, the id match in
-  `src/engine/resolve.ts`, `observe`, `inspect`, `options` and `entity` in `src/api.ts` and `src/engine/projection.ts`,
-  the actor check in `src/actor-world.ts`, the id lookups of `src/engine/verbs/edit.ts` and `src/engine/query.ts`, the
-  template lookups of `src/engine/spawn.ts` (which a scenario goes through) and `edit.ts`, and `World.id`. An id that is in the
-  snapshot already keeps its plain read. A world's names are read with `Object.hasOwn` too, so `__proto__` is a name
-  like any other.
-- **Last gate:** `validateSnapshot` refuses an entity whose template is not an own key of the registry (a new rule and
-  code, `unknown_template`), so what the lookups miss never reaches a stored world, and `verify` and a hand-edited
-  world meet it.
-- **Outcome:** such a name gets exactly what an id like `e999999` gets in the same place (`unresolved`, `invalid`,
-  `no_such_entity`, `unknown_template`, a null, whichever that place gives), and the world is unchanged afterwards.
-- **Tests** (`tests/object-names.test.ts`): each of the five at each place above and the others the probe covered
-  (a target and its part, `give` and `put` destinations, `move`'s `location` and `through`, `take`'s `part`, `trace`
-  and every query form), compared with `e999999` by status, reason code or error code; a spawn and a scenario of each
-  template are refused and leave the world observable; `entity` and `id` answer null; a scenario that names an entity
-  `__proto__` or `constructor` builds a world whose `id()` returns it; the CLI answers none of them `internal_error`.
-  `tests/property-gen.ts` also draws these names where it draws an unknown id (`e999`).
-- **Docs:** `docs/api.md` (ids are `e<N>`; a name or template is looked up by its own keys), `docs/state.md`
-  (the new `validateSnapshot` rule).
-- **Depends on:** nothing.
 
 ### Consumables: what a used-up thing leaves
 

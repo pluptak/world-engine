@@ -1,4 +1,4 @@
-import { defaultCoverage } from "../model.js";
+import { defaultCoverage, own } from "../model.js";
 import type { Entity, Id, Snapshot } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import { claimGrip, holderLayout } from "./carry.js";
@@ -30,7 +30,7 @@ export function spawn(
   templateId: string,
   overrides: EntityOverrides = {},
 ): { snapshot: Snapshot; id: Id } {
-  const template = registry[templateId];
+  const template = own(registry, templateId);
   if (template === undefined) {
     throw new TypeError(`Unknown template ${templateId}`);
   }

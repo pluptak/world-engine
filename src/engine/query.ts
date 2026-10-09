@@ -1,7 +1,7 @@
 import { capacity } from "./capacity.js";
 import { canonicalJson } from "./canonical.js";
 import { effectivePos } from "./geometry.js";
-import type { Entity, Id, Perceivers, Pos, Snapshot, Tri, WorldEvent } from "../model.js";
+import { own, type Entity, type Id, type Perceivers, type Pos, type Snapshot, type Tri, type WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 import { closedEnclosure, inReach, isAgent, reachedAsDoor } from "./verbs/address.js";
 import { isAbstract, isDoor } from "./resolve.js";
@@ -116,7 +116,7 @@ function fact(
   registry: TemplateRegistry,
   query: Extract<Query, { kind: "fact" }>,
 ): Answer {
-  const entity = snapshot.entities[query.subject];
+  const entity = own(snapshot.entities, query.subject);
   if (entity === undefined) {
     return partFact(snapshot, registry, query);
   }
@@ -127,7 +127,7 @@ function fact(
       if (query.object === undefined) {
         return answer("false", "no_object");
       }
-      const other = snapshot.entities[query.object];
+      const other = own(snapshot.entities, query.object);
       if (other === undefined) {
         return answer("false", "no_such_entity");
       }
@@ -139,7 +139,7 @@ function fact(
       if (query.object === undefined) {
         return answer("false", "no_object");
       }
-      if (snapshot.entities[query.object] === undefined) {
+      if (own(snapshot.entities, query.object) === undefined) {
         return answer("false", "no_such_entity");
       }
       return answer(inReach(snapshot, entity.id, query.object) ? "true" : "false", "derived_reach");
@@ -162,7 +162,7 @@ function partFact(
   query: Extract<Query, { kind: "fact" }>,
 ): Answer {
   const separator = query.subject.lastIndexOf(".");
-  const entity = separator > 0 ? snapshot.entities[query.subject.slice(0, separator)] : undefined;
+  const entity = separator > 0 ? own(snapshot.entities, query.subject.slice(0, separator)) : undefined;
   if (entity === undefined) {
     return answer("false", "no_such_entity");
   }
@@ -513,7 +513,7 @@ function perceive(
   events: WorldEvent[],
   query: Extract<Query, { kind: "perceive" }>,
 ): Answer {
-  const observer = snapshot.entities[query.observer];
+  const observer = own(snapshot.entities, query.observer);
   if (observer === undefined) {
     return answer("false", "no_such_entity");
   }
@@ -549,8 +549,8 @@ function perceive(
     event === undefined
       ? query.entity === undefined
         ? undefined
-        : snapshot.entities[query.entity]
-      : snapshot.entities[event.entity];
+        : own(snapshot.entities, query.entity)
+      : own(snapshot.entities, event.entity);
   if (named === undefined) {
     // A `removed` event names an entity that is no longer there to be sensed; what made it is that
     // the world wrote it.
@@ -677,8 +677,8 @@ export function addressable(
   actorId: Id,
   entityId: Id,
 ): boolean {
-  const actor = snapshot.entities[actorId];
-  const entity = snapshot.entities[entityId];
+  const actor = own(snapshot.entities, actorId);
+  const entity = own(snapshot.entities, entityId);
   if (actor === undefined || entity === undefined) {
     return false;
   }
@@ -697,8 +697,8 @@ export function addressable(
 // The half of `addressable` that needs no senses and no templates: what the actor could grope for.
 // A caller that already holds the actor's projection has the other half in its `entities`.
 export function gropable(snapshot: Snapshot, actorId: Id, entityId: Id): boolean {
-  const actor = snapshot.entities[actorId];
-  const entity = snapshot.entities[entityId];
+  const actor = own(snapshot.entities, actorId);
+  const entity = own(snapshot.entities, entityId);
   if (actor === undefined || entity === undefined) {
     return false;
   }

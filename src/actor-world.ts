@@ -4,7 +4,7 @@ import type { Command, Result } from "./engine/command.js";
 import { gropable } from "./engine/query.js";
 import type { Inspection, Projection } from "./engine/projection.js";
 import { WorldError } from "./errors.js";
-import type { Id, ReasonData, Status } from "./model.js";
+import { own, type Id, type ReasonData, type Status } from "./model.js";
 
 // What a character's controller may send: the actor is the view's own, and `perceivers`, which names
 // who else sensed each event, is the world's record rather than anything the actor could know.
@@ -72,7 +72,7 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
       const value = result.reason_data![key]!;
       if (
         typeof value !== "string" ||
-        snapshot.entities[value] === undefined ||
+        own(snapshot.entities, value) === undefined ||
         known.has(value) ||
         gropable(snapshot, actor, value)
       ) {

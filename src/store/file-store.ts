@@ -22,7 +22,7 @@ import { validateSnapshot } from "../engine/validate.js";
 import { lostField } from "../engine/upgrade.js";
 import { attemptOf, type Attempt, type Command, type Result } from "../engine/command.js";
 import { WorldError } from "../errors.js";
-import type { Delta, Id, Snapshot, Status, WorldEvent } from "../model.js";
+import { own, type Delta, type Id, type Snapshot, type Status, type WorldEvent } from "../model.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../templates.js";
 import { pause, withLock } from "./lock.js";
 
@@ -1214,7 +1214,7 @@ export function trace(
   const deltas = cachedDeltas(dir);
   if ("entity" in query) {
     const known =
-      current.entities[query.entity] !== undefined ||
+      own(current.entities, query.entity) !== undefined ||
       deltas.some((delta) => delta.entity === query.entity) ||
       events.some((event) => event.entity === query.entity);
     if (!known) {

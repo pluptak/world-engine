@@ -3,6 +3,13 @@ import type { BeatAction, BeatChild, BeatCondition, BeatRepeat } from "./engine/
 export type Id = string;
 export type Tri = "true" | "false" | "unknown";
 
+// A lookup of a string that came from outside in a record keyed by ids, templates or names: only the
+// record's own keys count, so `constructor` or `__proto__` find nothing instead of a member of
+// Object.prototype.
+export function own<T>(record: Readonly<Record<string, T>>, key: string): T | undefined {
+  return Object.hasOwn(record, key) ? record[key] : undefined;
+}
+
 // Structured refusal data: ints and id strings only, never prose.
 export type ReasonData = Record<string, number | string>;
 

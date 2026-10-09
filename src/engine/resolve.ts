@@ -1,4 +1,4 @@
-import type { Entity, Id, Snapshot } from "../model.js";
+import { own, type Entity, type Id, type Snapshot } from "../model.js";
 import type { TargetAddress } from "./command.js";
 import { WORLD_AUTHOR } from "./command.js";
 import type { TemplateRegistry } from "../templates.js";
@@ -73,7 +73,7 @@ export function resolveTarget(
   if (separator > 0) {
     const entityId = text.slice(0, separator);
     const partName = text.slice(separator + 1);
-    const entity = snapshot.entities[entityId];
+    const entity = own(snapshot.entities, entityId);
     const state =
       entity === undefined || !named(entityId)
         ? undefined
@@ -83,7 +83,7 @@ export function resolveTarget(
     }
   }
 
-  const actor = snapshot.entities[actorId];
+  const actor = own(snapshot.entities, actorId);
   if (actor === undefined) {
     return { status: "unresolved" };
   }

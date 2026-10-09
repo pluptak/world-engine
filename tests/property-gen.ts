@@ -256,6 +256,15 @@ export interface GenContext {
   roll: number;
 }
 
+// An id nothing has: `e999`, or by command a name spelt like a member of Object.prototype, which the
+// world has to treat the same way. Chosen from the command id, so no draw is spent and every seed
+// keeps its sequence.
+const ABSENT_IDS = ["e999", "__proto__", "constructor", "toString", "hasOwnProperty", "valueOf"];
+function absent(context: GenContext): string {
+  const sum = [...context.commandId].reduce((total, char) => total + char.charCodeAt(0), 0);
+  return ABSENT_IDS[sum % ABSENT_IDS.length]!;
+}
+
 export type VerbEntry = (context: GenContext, options?: { ticks?: number }) => Command | WorldEdit;
 
 // One entry per registered verb, in the registry's order; `catalog.test.ts` fails when one is
@@ -268,8 +277,8 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
       draw < 0.45
         ? { to: { x: int(context.rand, -200, 200), y: int(context.rand, -200, 200) } }
         : draw < 0.8
-          ? { location: context.rooms.length > 0 ? pick(context.rand, context.rooms) : "e999" }
-          : { through: doorways(context).length > 0 ? pick(context.rand, doorways(context)) : "e999" };
+          ? { location: context.rooms.length > 0 ? pick(context.rand, context.rooms) : absent(context) }
+          : { through: doorways(context).length > 0 ? pick(context.rand, doorways(context)) : absent(context) };
     return { command_id: context.commandId, actor: context.actor, verb: "move", args };
   },
   take: (context) => ({
@@ -291,7 +300,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     target: context.target,
     args: {
       relation: pick(context.rand, ["on", "in"] as const),
-      destination: context.ids.length > 0 ? pick(context.rand, context.ids) : "e999",
+      destination: context.ids.length > 0 ? pick(context.rand, context.ids) : absent(context),
     },
   }),
   give: (context) => ({
@@ -300,7 +309,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
     verb: "give",
     target: context.target,
     args: {
-      destination: context.agents.length > 0 ? pick(context.rand, context.agents) : "e999",
+      destination: context.agents.length > 0 ? pick(context.rand, context.agents) : absent(context),
     },
   }),
   // A plausible source: what the actor holds, preferring a vessel that has liquid, so a pour
@@ -337,7 +346,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
       target: sources.length > 0 ? pick(context.rand, sources) : context.target,
       args: {
         destination:
-          receivers.length > 0 ? pick(context.rand, receivers) : context.ids[0] ?? "e999",
+          receivers.length > 0 ? pick(context.rand, receivers) : context.ids[0] ?? absent(context),
         ...(context.rand() < 0.5 && { amount: int(context.rand, 1, 100) }),
       },
     };
@@ -375,7 +384,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
         target: `${victim}.${pick(context.rand, detachableParts(context.snapshot, victim))}`,
       };
     }
-    const victim = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+    const victim = context.ids.length > 0 ? pick(context.rand, context.ids) : absent(context);
     const parts = declaredParts(context.snapshot, victim);
     const address =
       parts.length > 0 && context.rand() < 0.5 ? `${victim}.${pick(context.rand, parts)}` : victim;
@@ -446,7 +455,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
         "dog",
         "cat",
       ] as const);
-      const room = context.rooms.length > 0 ? pick(context.rand, context.rooms) : "e999";
+      const room = context.rooms.length > 0 ? pick(context.rand, context.rooms) : absent(context);
       const [first, second] = context.rooms;
       // A location the chain does not lead to: derived state, refused with derived_field.
       if (first !== undefined && second !== undefined && context.rand() < 0.25) {
@@ -474,7 +483,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
       return conflictingPlacement(context);
     }
     if (context.roll < 0.4) {
-      const anchor = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+      const anchor = context.ids.length > 0 ? pick(context.rand, context.ids) : absent(context);
       // An entity cannot set itself down: refused circular_placement.
       if (context.rand() < 0.25) {
         return { kind: "place", target: context.target, support: context.target, pos: null };
@@ -492,7 +501,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
       // Some of these edits are aimed at whatever can burn, so a process is started and withdrawn.
       const burners = context.ids.filter((id) => typeof context.snapshot.entities[id]?.props.burning === "boolean");
       const aimed = burners.length > 0 && context.rand() < 0.4;
-      const subject = aimed ? pick(context.rand, burners) : context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+      const subject = aimed ? pick(context.rand, burners) : context.ids.length > 0 ? pick(context.rand, context.ids) : absent(context);
       const entity = context.snapshot.entities[subject];
       const boolKeys =
         entity === undefined
@@ -561,7 +570,7 @@ function beatEdit(context: GenContext): WorldEdit {
   if (context.rand() < 0.25) {
     return { kind: "cancel_beat", id };
   }
-  const subject = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+  const subject = context.ids.length > 0 ? pick(context.rand, context.ids) : absent(context);
   const action = (): BeatAction => {
     const roll = context.rand();
     if (roll < 0.6) {
@@ -604,8 +613,8 @@ function beatEdit(context: GenContext): WorldEdit {
 
 // Both relations at once, which no entity holds: refused conflicting_placement before anything runs.
 function conflictingPlacement(context: GenContext): Command | WorldEdit {
-  const anchor = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
-  const other = context.ids.length > 0 ? pick(context.rand, context.ids) : "e999";
+  const anchor = context.ids.length > 0 ? pick(context.rand, context.ids) : absent(context);
+  const other = context.ids.length > 0 ? pick(context.rand, context.ids) : absent(context);
   if (context.rand() < 0.5) {
     return {
       kind: "spawn",
@@ -668,7 +677,7 @@ function concealmentEdit(context: GenContext): Command | WorldEdit {
 
   // A name that reaches nothing: whatever it was hiding stays hidden for ever.
   if (roll < 0.2) {
-    return { kind: "place", target, concealed_by: "e999" };
+    return { kind: "place", target, concealed_by: absent(context) };
   }
   // An abstract entity is a mark, so nothing lies under it.
   if (roll < 0.4 && anchors.length > 0) {
@@ -690,7 +699,7 @@ function holderPartEdit(context: GenContext): Command | WorldEdit {
   }
   const holder = pick(context.rand, context.agents);
   if (context.rand() < 0.5) {
-    const support = context.rooms.length > 0 ? pick(context.rand, context.rooms) : "e999";
+    const support = context.rooms.length > 0 ? pick(context.rand, context.rooms) : absent(context);
     return {
       kind: "place",
       target: context.target,
