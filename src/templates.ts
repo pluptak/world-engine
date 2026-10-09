@@ -84,7 +84,12 @@ interface TemplateDecl {
   processes?: ProcessDecl[];
   fields?: Record<string, FieldDecl>;
   catalog?: boolean;
+  // Fields of inherited parts, by name; consumed when the template is resolved, so no key survives it.
+  part_overrides?: Record<string, PartOverride>;
 }
+
+// What a template may change of an inherited part: any field but its name.
+type PartOverride = Partial<Omit<PartDecl, "name">>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -175,6 +180,13 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
     });
   }
 
+  if (Object.hasOwn(value, "part_overrides")) {
+    if (Object.hasOwn(value, "parts")) {
+      throw new TypeError(`${source} declares both parts and part_overrides`);
+    }
+    decl.part_overrides = parsePartOverrides(value.part_overrides, `${source}.part_overrides`);
+  }
+
   if (Object.hasOwn(value, "props")) {
     if (!isRecord(value.props)) {
       throw new TypeError(`${source}.props must be an object`);
@@ -252,6 +264,44 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
   }
 
   return decl;
+}
+
+function parsePartOverrides(value: unknown, label: string): Record<string, PartOverride> {
+  if (!isRecord(value)) {
+    throw new TypeError(`${label} must be an object`);
+  }
+  const overrides: Record<string, PartOverride> = {};
+  for (const [name, part] of Object.entries(value)) {
+    const at = `${label}.${name}`;
+    if (!isRecord(part)) {
+      throw new TypeError(`${at} must be an object`);
+    }
+    assertOnlyKeys(part, ["parent", "contributes", "detachable", "max_integrity", "holds"], at);
+    const override: PartOverride = {};
+    if (Object.hasOwn(part, "parent")) {
+      if (part.parent !== null && typeof part.parent !== "string") {
+        throw new TypeError(`${at}.parent must be a string or null`);
+      }
+      override.parent = part.parent;
+    }
+    if (Object.hasOwn(part, "contributes")) {
+      assertNumericRecord(part.contributes, `${at}.contributes`);
+      override.contributes = { ...part.contributes };
+    }
+    if (Object.hasOwn(part, "detachable")) {
+      if (typeof part.detachable !== "boolean") {
+        throw new TypeError(`${at}.detachable must be a boolean`);
+      }
+      override.detachable = part.detachable;
+    }
+    if (Object.hasOwn(part, "max_integrity")) {
+      assertNumber(part.max_integrity, `${at}.max_integrity`);
+      override.max_integrity = part.max_integrity;
+    }
+    Object.assign(override, parseHolds(part.holds, at));
+    overrides[name] = override;
+  }
+  return overrides;
 }
 
 function parseFields(value: unknown, label: string): Record<string, FieldDecl> {
@@ -493,6 +543,9 @@ function copyParts(parts: readonly PartDecl[]): PartDecl[] {
 }
 
 function requireResolved(decl: TemplateDecl, source: string): Template {
+  if (decl.part_overrides !== undefined) {
+    throw new TypeError(`${source} declares part_overrides and extends nothing`);
+  }
   const missing = ["size_cm", "mass_g", "parts", "props", "break_products", "break_residue"].filter(
     (field) => decl[field as keyof TemplateDecl] === undefined,
   );
@@ -528,7 +581,7 @@ function overParent(parent: Template, decl: TemplateDecl): Template {
     id: decl.id,
     size_cm: decl.size_cm === undefined ? parent.size_cm : { ...decl.size_cm },
     mass_g: decl.mass_g ?? parent.mass_g,
-    parts: decl.parts === undefined ? parent.parts : copyParts(decl.parts),
+    parts: decl.parts !== undefined ? copyParts(decl.parts) : overriddenParts(parent.parts, decl),
     props: { ...parent.props, ...decl.props },
     break_products:
       decl.break_products === undefined
@@ -543,6 +596,30 @@ function overParent(parent: Template, decl: TemplateDecl): Template {
     ...(processes.length > 0 && { processes }),
     ...(Object.keys(fields).length > 0 && { fields }),
   };
+}
+
+// The parent's parts with a child's `part_overrides` merged shallowly onto the part of each name: a
+// field it gives replaces the parent's (a `contributes` as a whole), the rest is inherited. A name the
+// parent has no part of is refused.
+function overriddenParts(parts: readonly PartDecl[], decl: TemplateDecl): PartDecl[] {
+  const overrides = decl.part_overrides;
+  if (overrides === undefined) {
+    return parts as PartDecl[];
+  }
+  for (const name of Object.keys(overrides)) {
+    if (!parts.some((part) => part.name === name)) {
+      throw new TypeError(`${decl.id} part_overrides names ${name}, which it inherits no part of`);
+    }
+  }
+  return copyParts(parts).map((part) => {
+    const override = Object.hasOwn(overrides, part.name) ? overrides[part.name]! : {};
+    return {
+      ...part,
+      ...override,
+      ...(override.contributes !== undefined && { contributes: { ...override.contributes } }),
+      ...(override.holds !== undefined && { holds: { ...override.holds } }),
+    };
+  });
 }
 
 // What being used up leaves, copied, and left out when there is none: the child's own list or record

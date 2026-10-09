@@ -70,18 +70,12 @@ None.
 
 Blocks 1 (field schema), 2 (`update_props`, `derived_field`), 3a (definitions are not written),
 3b (entity props hold to the schema), 3c (traits), 4 (architect forms), 4b (scenarios are the
-architect), 5 (catalogue view) and 6 (inherited companions) are built: `docs/fields.md`. One
+architect), 5 (catalogue view), 6 (inherited companions)
+and 7 (parts merged by name) are built: `docs/fields.md`. One
 block per session, in this order. Each touches the shared registration points CLAUDE.md lists
 (`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
-
-### 7. Parts merged by name
-
-- New template key `part_overrides: { "<part>": { …fields } }`, shallow-merged onto the inherited
-  part of that name; `parts` still replaces the whole list; an unknown name is refused.
-- New `templates/quadruped.json` (`"catalog": false`); `dog` and `cat` extend it. A test holds
-  their resolved templates identical to today's (the hash changes only by the new base).
 
 ### 8. Refinement
 

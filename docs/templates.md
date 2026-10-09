@@ -22,6 +22,9 @@ A template may declare `"extends": "<parent id>"`, resolved once, when the set i
 - the child's own field wins;
 - `props` are shallow-merged over the parent's, and `fields` merged by name;
 - `parts` are replaced only when the child declares them, so a declared list is the whole tree;
+  `part_overrides` (`{ "<part>": { max_integrity, contributes, detachable, parent, holds } }`, beside no
+  `parts`) changes those fields of the inherited part of that name, a `contributes` as a whole, and
+  refuses a name it inherits no part of; `cat` extends `quadruped` this way;
 - `size_cm`, `mass_g`, `break_products`, `break_residue`, `spent_products` and `spent_residue` are inherited unless
   declared.
 

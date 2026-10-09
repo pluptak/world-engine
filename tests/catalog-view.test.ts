@@ -29,7 +29,8 @@ test("every template is offered but the companions of detachable parts, by id", 
   const ids = entries.map((entry) => entry.template);
   deepStrictEqual(ids, [...ids].sort());
   const hidden = Object.keys(shipped).filter((id) => !ids.includes(id)).sort();
-  ok(hidden.length > 0 && hidden.every((id) => id.includes(".")), hidden.join(" "));
+  // Companions, and the one base the shipped set marks `"catalog": false`.
+  ok(hidden.length > 0 && hidden.every((id) => id.includes(".") || id === "quadruped"), hidden.join(" "));
   // A template with a dot is offered only when it is no part's companion; none of these is.
   ok(ids.every((id) => !id.includes(".")));
   for (const id of ["room", "anchor", "glass_shard", "human_hungry", "bottle"]) {
@@ -118,12 +119,13 @@ test("a base marked catalog false is not offered, and its child is", () => {
     parlour_lamp: { id: "parlour_lamp", extends: "base_lamp", props: { fuel: 4 } },
   });
   const ids = catalog(registry).map((entry) => entry.template);
+  ids.forEach((id) => ok(!id.startsWith("quadruped"), id));
   deepStrictEqual([ids.includes("base_lamp"), ids.includes("parlour_lamp"), ids.includes("lantern")], [false, true, true]);
   strictEqual(registry.parlour_lamp?.catalog, undefined);
   // The mark is no entity prop: it is a template key, and `abstract` is another thing.
   strictEqual(registry.base_lamp?.props.abstract, undefined);
-  // The shipped set marks nothing, so its hash does not carry the key at all.
-  ok(Object.values(shipped).every((template) => !("catalog" in template)));
+  // Only a base that says so carries the key; the shipped set has one.
+  deepStrictEqual(Object.values(shipped).filter((template) => "catalog" in template).map((template) => template.id), ["quadruped"]);
   ok(templatesHash(registry) !== templatesHash(shipped));
   throws(() => parseRegistry({ ...shipped, bad: { id: "bad", extends: "stone", catalog: "no" } }), /catalog must be a boolean/);
 });

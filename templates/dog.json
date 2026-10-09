@@ -1,17 +1,7 @@
 {
   "id": "dog",
+  "extends": "quadruped",
   "size_cm": { "w": 60, "d": 25, "h": 60 },
   "mass_g": 25000,
-  "parts": [
-    { "name": "head", "parent": null, "contributes": { "sight": 100, "hearing": 100, "smell": 100, "touch": 100 }, "detachable": false, "max_integrity": 100 },
-    { "name": "jaw", "parent": "head", "contributes": { "mouth_carry": 1 }, "detachable": true, "max_integrity": 40, "holds": { "kind": "grip" } },
-    { "name": "leg_fl", "parent": null, "contributes": { "moving": 25 }, "detachable": false, "max_integrity": 100 },
-    { "name": "leg_fr", "parent": null, "contributes": { "moving": 25 }, "detachable": false, "max_integrity": 100 },
-    { "name": "leg_bl", "parent": null, "contributes": { "moving": 25 }, "detachable": false, "max_integrity": 100 },
-    { "name": "leg_br", "parent": null, "contributes": { "moving": 25 }, "detachable": false, "max_integrity": 100 },
-    { "name": "tail", "parent": null, "contributes": {}, "detachable": false, "max_integrity": 20 }
-  ],
-  "props": { "agent": true, "reach_cm": 60, "carry_limit_g": 5000, "bite_damage": 15, "default_hit_part": "head" },
-  "break_products": [],
-  "break_residue": {}
+  "props": { "reach_cm": 60, "carry_limit_g": 5000, "bite_damage": 15 }
 }

@@ -1,5 +1,5 @@
 {
-  "id": "dog.jaw",
+  "id": "quadruped.jaw",
   "size_cm": { "w": 15, "d": 10, "h": 8 },
   "mass_g": 400,
   "parts": [],

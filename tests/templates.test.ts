@@ -1,4 +1,5 @@
 import { deepStrictEqual, ok, strictEqual, throws as assertThrows } from "node:assert";
+import { createHash } from "node:crypto";
 import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -472,4 +473,86 @@ test("a world cannot be opened on a frozen set whose product names no template",
   raw.stone = { ...raw.stone!, break_products: [{ template: "nonesuch", count: 1 }] };
   writeFileSync(path, JSON.stringify(raw), "utf8");
   assertThrows(() => openWorld(dir), (error: unknown) => error instanceof Error && error.message.includes("names unknown template nonesuch"));
+});
+
+// `part_overrides` changes fields of inherited parts by name, without restating the list.
+
+const kennel = (extra: Record<string, unknown>) =>
+  parseRegistry({ ...JSON.parse(canonicalJson(registry)) as Record<string, unknown>, ...extra });
+
+test("part_overrides merges shallowly onto the inherited part of that name", () => {
+  const resolved = kennel({
+    pup: {
+      id: "pup",
+      extends: "dog",
+      part_overrides: {
+        jaw: { max_integrity: 10 },
+        leg_fl: { contributes: { moving: 10 }, max_integrity: 30 },
+      },
+    },
+    "pup.jaw": { id: "pup.jaw", extends: "dog.jaw" },
+  });
+  const dog = registry.dog!.parts;
+  const pup = resolved.pup!.parts;
+  deepStrictEqual(pup.map((part) => part.name), dog.map((part) => part.name));
+  // A field given replaces the parent's; the rest, grip included, is inherited.
+  deepStrictEqual(pup.find((part) => part.name === "jaw"), { ...dog.find((part) => part.name === "jaw"), max_integrity: 10 });
+  deepStrictEqual(pup.find((part) => part.name === "leg_fl"), { ...dog.find((part) => part.name === "leg_fl"), contributes: { moving: 10 }, max_integrity: 30 });
+  // A part not named is the parent's, and the parent is untouched.
+  deepStrictEqual(pup.find((part) => part.name === "tail"), dog.find((part) => part.name === "tail"));
+  deepStrictEqual(resolved.dog, registry.dog);
+  // The key is consumed on resolution: it is in no template, so none is in the hash.
+  ok(Object.values(resolved).every((template) => !("part_overrides" in template)));
+  // A child of the child inherits the result, not the key.
+  const grandchild = kennel({ pup: { id: "pup", extends: "dog", part_overrides: { tail: { max_integrity: 5 } } }, young: { id: "young", extends: "pup" } });
+  deepStrictEqual(grandchild.young!.parts, grandchild.pup!.parts);
+  strictEqual(grandchild.young!.parts.find((part) => part.name === "tail")?.max_integrity, 5);
+});
+
+test("part_overrides is refused for an unknown part, beside parts, or with no parent, and read strictly", () => {
+  assertThrows(
+    () => kennel({ pup: { id: "pup", extends: "dog", part_overrides: { wing: { max_integrity: 1 } } } }),
+    /pup part_overrides names wing, which it inherits no part of/,
+  );
+  assertThrows(
+    () => kennel({ pup: { id: "pup", extends: "dog", parts: [], part_overrides: {} } }),
+    /declares both parts and part_overrides/,
+  );
+  assertThrows(
+    () => kennel({ orphan: { id: "orphan", size_cm: { w: 1, d: 1, h: 1 }, mass_g: 1, props: {}, break_products: [], break_residue: {}, part_overrides: {} } }),
+    /declares part_overrides and extends nothing/,
+  );
+  for (const [bad, message] of [
+    [{ name: "x" }, /unknown field name/],
+    [{ max_integrity: "9" }, /max_integrity must be a finite number/],
+    [{ detachable: "yes" }, /detachable must be a boolean/],
+    [{ contributes: { moving: "a" } }, /contributes.moving must be a finite number/],
+    [{ holds: { kind: "pocket" } }, /holds must declare kind/],
+    [{ parent: 3 }, /parent must be a string or null/],
+    ["jaw", /must be an object/],
+  ] as const) {
+    assertThrows(() => kennel({ pup: { id: "pup", extends: "dog", part_overrides: { jaw: bad } } }), message);
+  }
+  assertThrows(() => kennel({ pup: { id: "pup", extends: "dog", part_overrides: [] } }), /part_overrides must be an object/);
+  // Making a part detachable asks for its companion, as any detachable part does.
+  assertThrows(
+    () => kennel({ pup: { id: "pup", extends: "dog", part_overrides: { tail: { detachable: true } } } }),
+    /Missing detached part template pup.tail/,
+  );
+});
+
+test("quadruped is the base dog and cat share, and they resolve as they always did", () => {
+  const hashOf = (id: string) => createHash("sha256").update(canonicalJson(registry[id])).digest("hex");
+  // Captured when the base was introduced, from the dog, cat and jaws written out in full.
+  deepStrictEqual(Object.fromEntries(["dog", "cat", "dog.jaw", "cat.jaw", "horse"].map((id) => [id, hashOf(id)])), {
+    dog: "2552cce9df70ffb468e5389573b516001646cf44ec705d977d275a0bfaa9a8bd",
+    cat: "852fcde12694f7c2ed6b933abfe9aa83cf46a93e2a33b7b9c6f96d99bd1ecdb6",
+    "dog.jaw": "a6c327f4da2c1e96b3a9044ea1b6a27923b7a21682b9637ee5c5da01a8dae6d2",
+    "cat.jaw": "a0bd41b0fcf8c753d2e8b771794219c4c925778af63ccf35f982848fa5747cb3",
+    horse: "69977299b6fc25897c8ea6d033425513e076720ac9f7f2b1b1c43ffd62606add",
+  });
+  strictEqual(registry.quadruped?.catalog, false);
+  // dog's jaw is its parent's companion, inherited; cat declares its own.
+  const files = readdirSync(templatesDir);
+  deepStrictEqual([files.includes("dog.jaw.json"), files.includes("cat.jaw.json"), files.includes("quadruped.jaw.json")], [false, true, true]);
 });
