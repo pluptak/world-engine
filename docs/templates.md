@@ -17,10 +17,8 @@ whole number from 0: a set that breaks any of these is refused when it is read (
 templates would lose a product's template is refused `templates_lost_field` (`spent_products.<template>`), as a
 break product's is.
 
-A template may declare `"extends": "<parent id>"`, resolved once, when the set is loaded or parsed.
-Single-parent `extends` is the only inheritance: an authoring tool for definitions, never runtime
-inheritance between entities.
-
+A template may declare `"extends": "<parent id>"`, the only inheritance (one parent, between
+definitions, never between entities), resolved once, when the set is loaded or parsed:
 
 - the child's own field wins;
 - `props` are shallow-merged over the parent's, and `fields` merged by name;

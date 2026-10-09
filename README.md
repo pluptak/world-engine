@@ -10,8 +10,6 @@ events out, never prose. An in-process API (`createWorld`, `openWorld`, `memoryW
 - **Time:** one integer `tick`; beats, template processes and scheduled causes run on it, and seeded dice replay exactly.
 - **Controllers:** `options` lists what an actor can try; `actorWorld` is one actor's sealed view of a world.
 - **History:** a validated append-only store (`verify` replays it), `since`, `trace`, `beat`, stale commands preempted.
-- **Authoring:** presets as templates with `extends` and `part_overrides`, and a catalogue of them; every field
-  has one writer (template, world author or engine). Scenarios place presets with names, anchors, traits and
-  percentage forms; `edit` changes state and `refine` makes a thing a more specific preset; per-world templates and coverage.
+- **Authoring:** presets with `extends` and a catalogue; scenarios with names, anchors, traits and percentage forms; `refine`.
 
 `npm run check` is the gate (Node ≥ 20). Start: `docs/overview.md`; index: `docs/DESIGN.md`; limits: `docs/limits.md`.
