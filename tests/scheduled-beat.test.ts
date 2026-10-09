@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -18,6 +16,7 @@ import { loadTemplates } from "../src/templates.js";
 import { replay } from "../src/store/file-store.js";
 import { fileURLToPath } from "node:url";
 import { buildInitial, genStep, mulberry32, withProcessFixtures } from "./property-gen.js";
+import { tempDir } from "./harness.js";
 
 // A scheduled beat is the architect's intention kept in the snapshot: "at tick 5 someone knocks".
 // When it falls due it becomes ordinary events, sensed (or not) like any others.
@@ -36,8 +35,7 @@ interface Inn {
 
 // ann in the hall with a note and a door; bob in the yard on the other side; the door starts shut.
 function inn(t: { after(callback: () => void): void }): Inn {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-beat-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "w");
   const world = createWorld(dir, [
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },

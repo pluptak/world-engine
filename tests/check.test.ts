@@ -1,7 +1,6 @@
 import { ok, strictEqual } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -73,8 +72,8 @@ test("a check leaves the world directory byte-identical", (t) => {
   strictEqual(world.snapshot().version, 0);
 });
 
-test("a memory world answers checks without moving", () => {
-  const world = memoryWorld(createWorld(mkdtempSync(join(tmpdir(), "check-mem-")), scenario, registry).snapshot(), registry);
+test("a memory world answers checks without moving", (t) => {
+  const world = memoryWorld(createWorld(tempDir(t), scenario, registry).snapshot(), registry);
   const before = world.snapshot();
   const checked = world.check({ command_id: "probe", actor: "e4", verb: "take", target: "bottle" });
   strictEqual(checked.status, "ok");

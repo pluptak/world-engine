@@ -1,7 +1,5 @@
 import { deepStrictEqual, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -17,6 +15,7 @@ import {
   type Scenario,
   type World,
 } from "../src/index.js";
+import { tempDir } from "./harness.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -37,8 +36,7 @@ const scenario: Scenario = [
 ];
 
 function world(t: { after(callback: () => void): void }, coverage?: Coverage): World {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-capabilities-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   return createWorld(join(dir, "w"), scenario, worldBase, coverage === undefined ? {} : { coverage });
 }
 

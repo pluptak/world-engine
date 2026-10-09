@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual, throws as assertThrows } from "node:assert";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -171,9 +170,9 @@ test("a memory world runs the same commands to the same state", (t) => {
   strictEqual(inMemory.entity("e1")?.residue.wine, 750);
 });
 
-test("a memory world keeps no directory and rejects foreign templates", () => {
+test("a memory world keeps no directory and rejects foreign templates", (t) => {
   const stored = createWorld(
-    mkdtempSync(join(tmpdir(), "world-engine-api-seed-")),
+    tempDir(t),
     bottleScenario,
   );
   const seeded = stored.snapshot();

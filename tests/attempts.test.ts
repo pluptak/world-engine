@@ -1,13 +1,13 @@
 import { deepStrictEqual, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { cli as cliRequest } from "./cli-run.js";
 import { AttemptsResponseSchema } from "../src/contract.js";
 import { canonicalJson, createWorld, memoryWorld, WorldError, type Scenario, type World } from "../src/index.js";
+import { tempDir } from "./harness.js";
 
 // Every submission is an attempt, and the world keeps each one with how it came out: what was
 // tried, against which version, its status and reason. A failed attempt has no events and took
@@ -25,8 +25,7 @@ const scenario: Scenario = [
 ];
 
 function worlds(t: { after(callback: () => void): void }): { dir: string; worlds: World[] } {
-  const base = mkdtempSync(join(tmpdir(), "world-engine-attempts-"));
-  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const base = tempDir(t);
   const dir = join(base, "store");
   return {
     dir,

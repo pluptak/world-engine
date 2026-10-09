@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -11,6 +9,7 @@ import { CAUSE_KINDS } from "../src/engine/schedule.js";
 import { SnapshotSchema } from "../src/contract.js";
 import { loadTemplates } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
+import { tempDir } from "./harness.js";
 
 // The self-closing door is the spec for scheduled causes. A door with `closes_after: 2` swings shut
 // two ticks after it is opened, by itself, during whatever command spans that tick; the `closed`
@@ -29,8 +28,7 @@ interface Hall {
 }
 
 function hall(t: { after(callback: () => void): void }): Hall {
-  const base = mkdtempSync(join(tmpdir(), "world-engine-schedule-"));
-  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const base = tempDir(t);
   const dir = join(base, "hall");
   const world = createWorld(dir, [
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },

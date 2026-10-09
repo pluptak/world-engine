@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -9,7 +8,7 @@ import { elevation, effectivePos } from "../src/engine/geometry.js";
 import { spawn } from "../src/engine/spawn.js";
 import type { Snapshot } from "../src/model.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
-import { deepFreeze } from "./harness.js";
+import { deepFreeze, tempDir } from "./harness.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
@@ -39,8 +38,7 @@ const templateFixture = (parts: unknown[]) => ({
 });
 
 test("loadTemplates rejects a part cycle and a missing parent", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-templates-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
 
   writeTemplate(dir, templateFixture([
     { name: "a", parent: "b", contributes: {}, detachable: false, max_integrity: 100 },

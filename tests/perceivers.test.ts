@@ -1,7 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -14,6 +12,7 @@ import {
   type WorldEvent,
 } from "../src/index.js";
 import { CommandResponseSchema } from "../src/contract.js";
+import { tempDir } from "./harness.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -60,8 +59,7 @@ function idOf(world: World, name: string): string {
 
 // The same seed on disk and in memory, so both worlds run the same commands.
 function twoWorlds(t: { after(callback: () => void): void }): { store: World; memory: World } {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-perceivers-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const store = createWorld(join(dir, "w"), doorScenario);
   const memory = memoryWorld(store.snapshot());
   return { store, memory };
@@ -120,8 +118,7 @@ test("a break behind a closed door is heard next door, not seen", (t) => {
 });
 
 test("leaving for a dark room is still listed as seen", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-perceivers-leave-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const store = createWorld(join(dir, "w"), leaveScenario);
   const memory = memoryWorld(store.snapshot());
   for (const world of [store, memory]) {
@@ -169,8 +166,7 @@ test("events carry no perceivers unless asked", (t) => {
 });
 
 test("a CLI command with perceivers reports them through the contract", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-perceivers-cli-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const seed = createWorld(join(dir, "w"), doorScenario);
   const breaker = idOf(seed, "breaker");
   const listener = idOf(seed, "listener");
@@ -226,8 +222,7 @@ test("an edit without the perceivers option yields events with no perceivers key
 });
 
 test("a CLI edit with perceivers: true returns events carrying perceivers", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-edit-perceivers-cli-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const seed = createWorld(join(dir, "w"), doorScenario);
   const listener = idOf(seed, "listener");
   const breaker = idOf(seed, "breaker");

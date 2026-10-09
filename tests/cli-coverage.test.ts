@@ -1,7 +1,6 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -9,6 +8,7 @@ import { cli } from "./cli-run.js";
 import { createWorld, memoryWorld, openWorld, WorldError, type Scenario } from "../src/api.js";
 import { CoverageSchema, ResponseSchema } from "../src/contract.js";
 import { loadTemplates } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -20,12 +20,6 @@ function runCli(input?: string, args: string[] = []) {
   return cli(input, args);
 }
 
-function temporaryDirectory(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-cli-coverage-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
-
 // The coverage a world needs before anything can smell: the default covers sight and hearing only.
 const smellCoverage = {
   relations: ["support", "contained_in", "attached_to", "status", "location", "near"],
@@ -34,7 +28,7 @@ const smellCoverage = {
 };
 
 function coverageFile(t: { after(callback: () => void): void }, coverage: unknown): string {
-  const path = join(temporaryDirectory(t), "coverage.json");
+  const path = join(tempDir(t), "coverage.json");
   writeFileSync(path, typeof coverage === "string" ? coverage : JSON.stringify(coverage));
   return path;
 }
@@ -47,7 +41,7 @@ function issueCodes(result: ReturnType<typeof runCli>): string[] {
 }
 
 test("a world inited with a coverage file answers smell from the sense table", (t) => {
-  const world = join(temporaryDirectory(t), "world");
+  const world = join(tempDir(t), "world");
   const inited = runCli(undefined, ["init", world, innScenario, coverageFile(t, smellCoverage)]);
   strictEqual(inited.status, 0, inited.stderr);
   strictEqual(JSON.parse(inited.stdout).status, "ok");
@@ -63,7 +57,7 @@ test("a world inited with a coverage file answers smell from the sense table", (
   deepStrictEqual(answer, { value: "true", basis_code: "same_location" }, "dog should smell bottle in same room");
 
   // Without coverage file, smell is uncovered
-  const worldNoSmell = join(temporaryDirectory(t), "world-no-smell");
+  const worldNoSmell = join(tempDir(t), "world-no-smell");
   const initedNoSmell = runCli(undefined, ["init", worldNoSmell, innScenario]);
   strictEqual(initedNoSmell.status, 0, initedNoSmell.stderr);
 
@@ -78,7 +72,7 @@ test("a world inited with a coverage file answers smell from the sense table", (
 });
 
 test("init refuses a coverage file it cannot read, and names the file", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   deepStrictEqual(
     issueCodes(runCli(undefined, ["init", join(dir, "world"), bottleScenario, join(dir, "absent.json")])),
     ["no_such_coverage"],
@@ -87,7 +81,7 @@ test("init refuses a coverage file it cannot read, and names the file", (t) => {
 
 test("init refuses a coverage file that is not JSON, and says so", (t) => {
   deepStrictEqual(
-    issueCodes(runCli(undefined, ["init", join(temporaryDirectory(t), "world"), bottleScenario, coverageFile(t, "{not json")])),
+    issueCodes(runCli(undefined, ["init", join(tempDir(t), "world"), bottleScenario, coverageFile(t, "{not json")])),
     ["invalid_coverage_json"],
   );
 });
@@ -96,7 +90,7 @@ test("init refuses a coverage of the wrong shape, naming the field", (t) => {
   const codes = issueCodes(
     runCli(undefined, [
       "init",
-      join(temporaryDirectory(t), "world"),
+      join(tempDir(t), "world"),
       bottleScenario,
       coverageFile(t, { ...smellCoverage, senses: "smell" }),
     ]),
@@ -109,7 +103,7 @@ test("four arguments is still invalid_init_args", (t) => {
   deepStrictEqual(
     issueCodes(runCli(undefined, [
       "init",
-      join(temporaryDirectory(t), "world"),
+      join(tempDir(t), "world"),
       bottleScenario,
       coverageFile(t, smellCoverage),
       "extra.json",
@@ -119,7 +113,7 @@ test("four arguments is still invalid_init_args", (t) => {
 });
 
 test("init without a coverage file still writes the default coverage", (t) => {
-  const world = join(temporaryDirectory(t), "world");
+  const world = join(tempDir(t), "world");
   const inited = runCli(undefined, ["init", world, bottleScenario]);
   strictEqual(inited.status, 0, inited.stderr);
   deepStrictEqual(openWorld(world).snapshot().coverage.senses, ["sight", "hearing"]);
@@ -157,10 +151,10 @@ test("a world covering a sense the engine has no rule for is refused, even with 
     error.issues?.[0]?.code === "coverage_not_computable";
 
   throws(
-    () => createWorld(join(temporaryDirectory(t), "store"), scenario, customRegistry, { coverage: uncapableCoverage }),
+    () => createWorld(join(tempDir(t), "store"), scenario, customRegistry, { coverage: uncapableCoverage }),
     refused,
   );
-  const plain = createWorld(join(temporaryDirectory(t), "memory"), scenario, customRegistry).snapshot();
+  const plain = createWorld(join(tempDir(t), "memory"), scenario, customRegistry).snapshot();
   throws(() => memoryWorld(plain, customRegistry, { room: "e1", taster: "e2" }, { coverage: uncapableCoverage }), refused);
   // Asked anyway, of a world that covers only what the engine computes, taste is unknown, not false.
   const world = memoryWorld(plain, customRegistry, { room: "e1", taster: "e2" });

@@ -1,10 +1,10 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { canonicalJson, createWorld, type Id, type Scenario, type World } from "../src/index.js";
+import { tempDir } from "./harness.js";
 
 // A wait with `until: "sensed"` ends at the first tick its own actor could sense something, the rule
 // the author's `advance` applies to the agents it names: the count is only an upper bound, and the
@@ -21,8 +21,7 @@ interface Night {
 
 // The watch with a knock on its door at tick 5, loud or not.
 function night(t: { after(callback: () => void): void }, loud: boolean): Night {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-wait-until-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const world = createWorld(join(root, "night"), watch, undefined, { seed: 7 });
   const id = (name: string): Id => {
     const found = world.id(name);

@@ -1,12 +1,12 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { after, test } from "node:test";
 import { canonicalJson, createWorld, openWorld, type Scenario, type World } from "../src/index.js";
 import { verbRegistry } from "../src/engine/verbs/index.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 // A store world keeps a checkpoint of its snapshot every 256 accepted commands, bound to the exact
 // bytes of the log that made it, so a read that wants recent history replays the log after the
@@ -20,20 +20,13 @@ const scenario: Scenario = [
   { id: "bob", template: "human", overrides: { name: "bob", location: "room", support: "room", pos: { x: -150, y: 0 } } },
 ];
 
-function root(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-checkpoint-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
-
 let seq = 0;
 
 // Each length of the workload is built once per file, by extending a copy of the longest shorter
 // one, since every world here runs the same commands from the start; a test gets its own copy.
 const LENGTHS = [300, 512, 600, 602];
 const masters = new Map<number, string>();
-const masterRoot = mkdtempSync(join(tmpdir(), "world-engine-checkpoint-master-"));
-after(() => rmSync(masterRoot, { recursive: true, force: true }));
+const masterRoot = tempDir({ after });
 
 function master(count: number): string {
   const kept = masters.get(count);
@@ -66,7 +59,7 @@ function master(count: number): string {
 
 // A world of exactly `count` accepted commands, every one a take or a drop.
 function built(t: { after(callback: () => void): void }, count: number): { dir: string; world: World } {
-  const dir = join(root(t), "w");
+  const dir = join(tempDir(t), "w");
   cpSync(master(count), dir, { recursive: true });
   seq = count + 1;
   return { dir, world: openWorld(dir) };
@@ -143,7 +136,7 @@ test("a checkpoint is written every 256 accepted commands, bound to the log that
 test("reads answer the same with checkpoints, without them, and with damaged ones", (t) => {
   const { dir } = built(t, 600);
   const expected = (() => {
-    const bare = join(root(t), "bare");
+    const bare = join(tempDir(t), "bare");
     cpSync(dir, bare, { recursive: true });
     rmSync(join(bare, "checkpoints"), { recursive: true });
     return answers(bare);
@@ -151,7 +144,7 @@ test("reads answer the same with checkpoints, without them, and with damaged one
   strictEqual(answers(dir), expected);
 
   const damaged = (name: string, damage: (copy: string, first: string) => void): void => {
-    const copy = join(root(t), name);
+    const copy = join(tempDir(t), name);
     cpSync(dir, copy, { recursive: true });
     damage(copy, join(copy, "checkpoints", checkpointNames(copy).at(-1)!));
     strictEqual(answers(copy), expected, name);
@@ -174,7 +167,7 @@ test("reads answer the same with checkpoints, without them, and with damaged one
   // commands from a starting point one step off, so the snapshot is plausible and wrong, and only
   // its initial snapshot can say so.
   damaged("planted from another world", (_copy, file) => {
-    const otherDir = join(root(t), "other");
+    const otherDir = join(tempDir(t), "other");
     const other = createWorld(
       otherDir,
       scenario.map((entry) =>
@@ -198,7 +191,7 @@ test("reads answer the same with checkpoints, without them, and with damaged one
 
 test("a read replays only the log after the checkpoint, not the whole history", (t) => {
   const { dir } = built(t, 600);
-  const bare = join(root(t), "bare");
+  const bare = join(tempDir(t), "bare");
   cpSync(dir, bare, { recursive: true });
   rmSync(join(bare, "checkpoints"), { recursive: true });
 
@@ -235,7 +228,7 @@ test("a second handle uses the checkpoints and extends them", (t) => {
   deepStrictEqual(checkpointNames(dir).map((name) => name.split("-")[0]), ["256", "512"]);
   // The first handle, which saw none of that written, reads it all.
   strictEqual(world.snapshot().version, 600);
-  const bare = join(root(t), "bare");
+  const bare = join(tempDir(t), "bare");
   cpSync(dir, bare, { recursive: true });
   rmSync(join(bare, "checkpoints"), { recursive: true });
   strictEqual(answers(dir), answers(bare));
@@ -257,7 +250,7 @@ test("a new template set makes the old checkpoints go", (t) => {
 
 test("a stale command is judged against its base version from a checkpoint, with the same verdict", (t) => {
   const { dir } = built(t, 602);
-  const bare = join(root(t), "bare");
+  const bare = join(tempDir(t), "bare");
   cpSync(dir, bare, { recursive: true });
   rmSync(join(bare, "checkpoints"), { recursive: true });
   // At 601 the bottle was held and a drop would have worked; at 602 it is already on the floor.

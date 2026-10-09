@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -24,6 +23,7 @@ import {
   type Policy,
   type Sent,
 } from "./actor-harness.js";
+import { tempDir } from "./harness.js";
 
 // The watch played from inside, as a middleware would: each character holds only an `actorWorld`,
 // and a policy chooses its next command from what that view sent it. The test holds the `World` to
@@ -146,8 +146,7 @@ interface Night {
 // The architect's night, as `tests/scenario-watch.test.ts` schedules it: a loud knock at tick 5, and
 // three ticks later the lights fail unless the lantern burns.
 function play(t: { after(callback: () => void): void }, rounds: number): Night {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-night-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "night");
   const world = createWorld(dir, watch, undefined, { seed: 7 });
   const ids: Record<string, Id> = {};

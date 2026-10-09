@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -8,6 +6,7 @@ import { createWorld, WORLD_AUTHOR, type Id, type Result, type World } from "../
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { SHARED_FIXTURES } from "./presets.js";
+import { tempDir } from "./harness.js";
 
 // A room is lit when it says so or when something burning in it gives light, so darkness can fall
 // by itself: a lantern lit in a dark room lets those in it see, a carried one lights wherever its
@@ -34,8 +33,7 @@ interface Dark {
 }
 
 function dark(t: { after(callback: () => void): void }, extra: Parameters<typeof createWorld>[1] = []): Dark {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-light-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const world = createWorld(join(root, "w"), [
     { id: "hall", template: "room", overrides: { name: "hall" } },
     { id: "yard", template: "room", overrides: { name: "yard" } },

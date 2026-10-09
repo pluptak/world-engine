@@ -1,7 +1,6 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -11,6 +10,7 @@ import { nextRandom } from "../src/engine/rng.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { replay } from "../src/store/file-store.js";
 import { loadTemplates, parseRegistry, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 // The dice live in the snapshot: a state that every roll advances, so the same seed and the same
 // commands always roll the same, through any handle and through replay.
@@ -36,8 +36,7 @@ const entries = [
 ];
 
 function open(t: { after(callback: () => void): void }, seed?: number): { dir: string; world: World; lichen: Id; ann: Id } {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-seed-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "w");
   const world = createWorld(dir, entries, registry, seed === undefined ? undefined : { seed });
   return { dir, world, lichen: world.id("lichen")!, ann: world.id("ann")! };
@@ -157,8 +156,7 @@ test("chance_pct is a whole number from 1 to 99 and inherited through extends", 
 });
 
 test("a scenario file may carry a seed, and init gives the world its dice", (t) => {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-seed-cli-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
   const run = (args: string[], input?: string) => cli(input, args);
   const file = join(root, "seeded.json");

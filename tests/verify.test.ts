@@ -19,6 +19,7 @@ import {
   type World,
 } from "../src/index.js";
 import { loadTemplates, parseRegistry, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 // A stored world can prove itself: replay the log from initial.json, deciding every line again as
 // submit did, and compare what that makes with the four files. It names the first difference, and it
@@ -77,8 +78,7 @@ interface Built {
 }
 
 function built(t: { after(callback: () => void): void }): Built {
-  const base = mkdtempSync(join(tmpdir(), "world-engine-verify-"));
-  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const base = tempDir(t);
   const dir = join(base, "w");
   const world = createWorld(dir, scenario, verifyRegistry);
   mixed(world);
@@ -95,8 +95,7 @@ function copyOfBuilt(t: { after(callback: () => void): void }): { dir: string; w
     template = { base, dir };
     process.on("exit", () => rmSync(base, { recursive: true, force: true }));
   }
-  const base = mkdtempSync(join(tmpdir(), "world-engine-verify-copy-"));
-  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const base = tempDir(t);
   const dir = join(base, "w");
   cpSync(template.dir, dir, { recursive: true });
   return { dir, world: openWorld(dir) };

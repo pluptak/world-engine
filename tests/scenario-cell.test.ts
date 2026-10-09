@@ -1,12 +1,12 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createWorld, type Id, type Result, type Scenario, type World } from "../src/index.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { SHARED_FIXTURES } from "./presets.js";
+import { tempDir } from "./harness.js";
 
 // The cell block is the spec for walking. A lit 1000 × 1000 cm room, its origin at the centre, is cut
 // along y = 0 by ten 100 cm sections of bars, wall to wall; the section at x 50 is a locked gate.
@@ -29,8 +29,7 @@ const NAMES = ["block", "bars_m450", "bars_m350", "bars_m250", "gate", "ann", "c
 type Name = (typeof NAMES)[number];
 
 function open(t: { after(callback: () => void): void }): { world: World; ids: Record<Name, Id> } {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-cell-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const world = createWorld(join(dir, "cell"), cell);
   const ids = {} as Record<Name, Id>;
   for (const name of NAMES) {
@@ -62,8 +61,7 @@ function openSwapped(
   const scenario = cell.map((entry) =>
     entry.id === id ? { ...entry, template, overrides: overrides as Scenario[number]["overrides"] } : entry,
   );
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-cell-swapped-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const world = createWorld(join(dir, "cell"), scenario, shippedPresets);
   const ids = {} as Record<Name, Id>;
   for (const name of NAMES) {
@@ -255,8 +253,7 @@ test("the bars hold: too heavy to push, and a pushed cot stops at them", (t) => 
 });
 
 test("arriving through a door is checked where the agent lands", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-cell-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const world = createWorld(join(dir, "two"), [
     { id: "hall", template: "room", overrides: { name: "hall" } },
     { id: "yard", template: "room", overrides: { name: "yard" } },

@@ -1,12 +1,10 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { canonicalJson, createWorld, memoryWorld, WORLD_AUTHOR, type Id, type World } from "../src/index.js";
 import { loadTemplates, parseRegistry, type TemplateRegistry } from "../src/templates.js";
-import { deepFreeze } from "./harness.js";
+import { deepFreeze, tempDir } from "./harness.js";
 
 // A fork is a memory world that starts from a world's snapshot as it is now: same templates, names,
 // coverage and dice, its own history from that version on, and nothing shared with its parent.
@@ -32,8 +30,7 @@ const entries = [
 ];
 
 function open(t: { after(callback: () => void): void }): { world: World; ann: Id; bob: Id } {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-fork-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const world = createWorld(join(root, "w"), entries, registry, { seed: 77 });
   return { world, ann: world.id("ann")!, bob: world.id("bob")! };
 }

@@ -1,8 +1,7 @@
 // test-select: reads docs/verbs*.md
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -12,6 +11,7 @@ import { verbCatalog, verbRegistry } from "../src/engine/verbs/index.js";
 import { VerbsResponseSchema } from "../src/contract.js";
 import { createWorld, type Scenario } from "../src/index.js";
 import { VERB_TABLE } from "./property-gen.js";
+import { tempDir } from "./harness.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -103,8 +103,7 @@ test("mutating the catalog cannot change what a carrier can hold", (t) => {
   ok(mouth);
   mouth.holds = 99;
 
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-catalog-copy-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const scenario: Scenario = [
     { template: "room", overrides: { name: "room" } },
     { template: "dog", overrides: { name: "dog", location: "e1", support: "e1", pos: { x: 0, y: 0 } } },
@@ -119,8 +118,7 @@ test("mutating the catalog cannot change what a carrier can hold", (t) => {
 });
 
 test("a verb that cannot be judged without args says how options offer it, and one that can does not say so", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-catalog-args-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const world = createWorld(dir, [
     { template: "room", overrides: { name: "room", props: { lit: true } } },
     { template: "human", overrides: { name: "ann", location: "e1", support: "e1", pos: { x: 0, y: 0 } } },

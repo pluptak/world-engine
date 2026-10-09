@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -8,6 +6,7 @@ import { createWorld, WORLD_AUTHOR, type Id, type Result, type World } from "../
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
+import { tempDir } from "./harness.js";
 
 // Eating and drinking: a solid thing with `nutrition` is eaten whole or a portion at a time, a vessel's liquid is drunk by
 // the amount, and either lowers the eater's `hunger`, which a hungry body raises by itself.
@@ -23,8 +22,7 @@ interface Table {
 }
 
 function table(t: { after(callback: () => void): void }, gus: { hunger_pct?: number } = {}, extra: Parameters<typeof createWorld>[1] = []): Table {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-consume-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const world = createWorld(join(root, "w"), [
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
     { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
@@ -92,8 +90,7 @@ test("bread is eaten a portion at a time: the hunger each lowers, the loaf that 
 });
 
 test("a thing with no portions is eaten whole, and a malformed portions is not food", (t) => {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-consume-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const kinds = parseRegistry({
     ...registry,
     apple: { id: "apple", extends: "stone", props: { nutrition: 15 } },

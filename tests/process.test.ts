@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -8,6 +6,7 @@ import { canonicalJson, createWorld, memoryWorld, openWorld, WORLD_AUTHOR, type 
 import { validateSnapshot } from "../src/engine/validate.js";
 import type { Snapshot } from "../src/model.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 // A template's process moves an integer prop by itself, every few ticks, while a condition on the
 // entity's props holds. It is scheduled when the condition becomes true and withdrawn when it stops
@@ -50,8 +49,7 @@ interface Camp {
 }
 
 function camp(t: { after(callback: () => void): void }): Camp {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-process-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "camp");
   const world = createWorld(
     dir,
@@ -322,8 +320,7 @@ const withThen = parseRegistry({
 type ThenIds = Record<"tent" | "starver" | "stone" | "candle" | "fruit" | "bowl", Id>;
 
 function thenWorld(t: { after(callback: () => void): void }): { world: World; ids: ThenIds } {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-then-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const world = createWorld(
     join(root, "w"),
     [
@@ -459,8 +456,7 @@ const withRate = parseRegistry({
 });
 
 function ember(t: { after(callback: () => void): void }, props?: Record<string, number | string | boolean>): { world: World; ember: Id } {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-rate-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const world = createWorld(
     join(root, "w"),
     [
@@ -506,8 +502,7 @@ test("every_ticks_prop must name a prop", () => {
 });
 
 test("a hungry body's rate follows hunger_every: a resting body hungers at half the pace", (t) => {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-rate-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   // A body that hungers at half the pace: its rate is a definition, so it is a preset of its own.
   const slow = parseRegistry({
     ...base,

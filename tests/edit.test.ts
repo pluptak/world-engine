@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { existsSync, mkdtempSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -373,8 +372,8 @@ test("spawn derives a missing location and refuses two holders", (t) => {
   strictEqual(conflict.reason_code, "conflicting_placement");
 });
 
-test("a memory edit without options takes the next deterministic command id", () => {
-  const stored = createWorld(mkdtempSync(join(tmpdir(), "world-engine-edit-mem-")), scenario, registry);
+test("a memory edit without options takes the next deterministic command id", (t) => {
+  const stored = createWorld(tempDir(t), scenario, registry);
   const world = memoryWorld(stored.snapshot(), registry);
 
   const first = world.edit({ kind: "place", target: "e3", support: "e2" });

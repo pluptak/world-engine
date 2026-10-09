@@ -1,12 +1,12 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createWorld, type Id, type Result, type Scenario, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 // The workshop is the spec for occupancy and collision, written before either exists. Tests marked
 // `todo` state the wanted behaviour and fail today; each becomes a plain test when it ships.
@@ -32,8 +32,7 @@ const NAMES = ["shop", "bench", "cup", "chair", "stone", "bottle", "ann", "bob",
 type Name = (typeof NAMES)[number];
 
 function open(t: { after(callback: () => void): void }): { world: World; ids: Record<Name, Id> } {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-workshop-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const world = createWorld(join(dir, "workshop"), workshop, registry);
   const ids = {} as Record<Name, Id>;
   for (const name of NAMES) {

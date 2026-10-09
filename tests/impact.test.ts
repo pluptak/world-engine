@@ -1,9 +1,8 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { createWorld, type Coverage, type Result, type Scenario, type World } from "../src/index.js";
+import { tempDir } from "./harness.js";
 
 const TOUCHING: Coverage = {
   relations: ["support", "contained_in", "attached_to", "status", "location", "near"],
@@ -12,8 +11,7 @@ const TOUCHING: Coverage = {
 };
 
 function world(t: { after(callback: () => void): void }, scenario: Scenario): World {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-impact-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   return createWorld(join(dir, "w"), scenario, undefined, { coverage: TOUCHING });
 }
 

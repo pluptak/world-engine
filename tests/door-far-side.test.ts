@@ -1,10 +1,10 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createWorld, type Id, type Scenario, type World } from "../src/index.js";
+import { tempDir } from "./harness.js";
 
 // A door with a position stands in one room and joins two. From the room it leads to, it is reached
 // as an unpositioned door is, from anywhere, so bob in the dark yard names, opens, shuts and walks
@@ -23,8 +23,7 @@ interface Gate {
 // The watch, with a cellar behind a hatch that stands in the gatehouse and leads there: a door of
 // a room bob is not in and not next to.
 function gate(t: { after(callback: () => void): void }): Gate {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-far-door-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const scenario: Scenario = [
     ...watch,
     { id: "cellar", template: "room", overrides: { name: "cellar", props: { lit: true } } },

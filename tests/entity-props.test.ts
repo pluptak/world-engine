@@ -1,12 +1,12 @@
 import { deepStrictEqual, strictEqual, throws } from "node:assert";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { canonicalJson, createWorld, openWorld, verifyWorld, WorldError, type World } from "../src/index.js";
+import { tempDir } from "./harness.js";
 
-function worldWithChest(): { dir: string; world: World; chest: string } {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-entity-props-"));
+function worldWithChest(t: { after(callback: () => void): void }): { dir: string; world: World; chest: string } {
+  const dir = tempDir(t);
   const world = createWorld(join(dir, "w"), [
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
     {
@@ -18,25 +18,19 @@ function worldWithChest(): { dir: string; world: World; chest: string } {
   return { dir, world, chest: world.id("chest")! };
 }
 
-function after(t: { after(callback: () => void): void }, dir: string): void {
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-}
-
 function issuePath(code: string): (issues: readonly { code: string }[]) => boolean {
   return (issues) => issues.some((i) => i.code === code);
 }
 
 test("an edit update_props refuses a prop no template declares", (t) => {
-  const { dir, world } = worldWithChest();
-  after(t, dir);
+  const { world } = worldWithChest(t);
   const refusal = world.edit({ kind: "update_props", target: world.id("chest")!, props: { foo: "bar" } });
   deepStrictEqual([refusal.status, refusal.reason_code], ["refused", "undeclared_prop"]);
   strictEqual(canonicalJson(world.snapshot()) === canonicalJson(world.snapshot()), true);
 });
 
 test("an edit set_props refuses an undeclared prop when replacing", (t) => {
-  const { dir, world, chest } = worldWithChest();
-  after(t, dir);
+  const { world, chest } = worldWithChest(t);
   const subject = world.entity(chest)!;
   const refusal = world.edit({
     kind: "set_props",
@@ -47,8 +41,7 @@ test("an edit set_props refuses an undeclared prop when replacing", (t) => {
 });
 
 test("an edit spawn refuses a prop no template declares in overrides", (t) => {
-  const { dir, world } = worldWithChest();
-  after(t, dir);
+  const { world } = worldWithChest(t);
   const refusal = world.edit({
     kind: "spawn",
     template: "stone",
@@ -58,16 +51,14 @@ test("an edit spawn refuses a prop no template declares in overrides", (t) => {
 });
 
 test("an edit refuses a declared prop with the wrong type", (t) => {
-  const { dir, world } = worldWithChest();
-  after(t, dir);
+  const { world } = worldWithChest(t);
   const hall = world.id("hall")!;
   const refusal = world.edit({ kind: "update_props", target: hall, props: { lit: "yes" } });
   deepStrictEqual([refusal.status, refusal.reason_code], ["refused", "wrong_prop_type"]);
 });
 
 test("an edit refuses a prop whose requires the template does not grant", (t) => {
-  const { dir, world, chest } = worldWithChest();
-  after(t, dir);
+  const { world, chest } = worldWithChest(t);
   // a chest template declares no `openable`, so setting `open` on it fails the
   // requirement check against the template's declared props, not its own
   const refusal = world.edit({ kind: "update_props", target: chest, props: { open: true } });
@@ -75,8 +66,7 @@ test("an edit refuses a prop whose requires the template does not grant", (t) =>
 });
 
 test("a door side needs openable: a stone given from/to is unmet_requires, a door keeps them", (t) => {
-  const { dir, world, chest } = worldWithChest();
-  after(t, dir);
+  const { world, chest } = worldWithChest(t);
   const hall = world.id("hall")!;
   // A stone is a door by shape `isDoor` once it has from and to, but its preset grants no
   // `openable`, so the state write is refused before it can join two rooms.
@@ -92,8 +82,7 @@ test("a door side needs openable: a stone given from/to is unmet_requires, a doo
 });
 
 test("a scenario refuses a wrong-typed or unsatisfied state prop before anything is written", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-entity-props-scenario-"));
-  after(t, dir);
+  const dir = tempDir(t);
   const entry = (props: Record<string, number | string | boolean>) => [
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
     {
@@ -122,8 +111,7 @@ test("a scenario refuses a wrong-typed or unsatisfied state prop before anything
 });
 
 test("a hand-edited world meets each rule on open, and verify names the divergence", (t) => {
-  const handDir = mkdtempSync(join(tmpdir(), "world-engine-entity-props-hand-"));
-  after(t, handDir);
+  const handDir = tempDir(t);
   type Mutate = (entities: Record<string, { props: Record<string, unknown> }>, room: string, chest: string) => void;
   const cases: Array<[string, Mutate]> = [
     ["undeclared_prop", (entities, _room, chest) => { entities[chest]!.props.extra = "nothing"; }],
@@ -157,8 +145,7 @@ test("a hand-edited world meets each rule on open, and verify names the divergen
 });
 
 test("declared props remain writable after the rule", (t) => {
-  const { dir, world, chest } = worldWithChest();
-  after(t, dir);
+  const { world, chest } = worldWithChest(t);
   const lit = world.edit({ kind: "update_props", target: world.id("hall")!, props: { lit: true } });
   deepStrictEqual([lit.status, lit.reason_code], ["ok", undefined]);
   const open = world.edit({ kind: "update_props", target: chest, props: { open: true } });

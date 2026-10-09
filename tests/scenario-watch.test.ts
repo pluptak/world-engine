@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -8,6 +7,7 @@ import { canonicalJson, createWorld, WORLD_AUTHOR, type Id, type Result, type Sc
 import { replay } from "../src/store/file-store.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 // Beats and speech together, as `camp` did for processes: a gatehouse with a door to a dark yard,
 // a guard, a knock the architect scheduled, and lights that fail unless a lantern burns. Steps are
@@ -32,8 +32,7 @@ interface Watch {
 }
 
 function open(t: { after(callback: () => void): void }): Watch {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-watch-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "watch");
   const world = createWorld(dir, watch);
   const id = (name: string): Id => {

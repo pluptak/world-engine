@@ -1,11 +1,10 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createWorld, type Scenario, type World } from "../src/index.js";
 import { loadTemplates, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const shipped = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 const table = shipped.table;
@@ -17,8 +16,7 @@ const registry: TemplateRegistry = {
 };
 
 function world(t: { after(callback: () => void): void }, scenario: Scenario): World {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-landing-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   return createWorld(join(dir, "w"), scenario, registry);
 }
 

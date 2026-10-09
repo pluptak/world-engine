@@ -1,7 +1,6 @@
 import { deepStrictEqual, match, ok, strictEqual } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -18,6 +17,7 @@ import {
   type Op,
 } from "../src/contract.js";
 import { canonicalJson } from "../src/index.js";
+import { tempDir } from "./harness.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -28,14 +28,8 @@ function runCli(input?: string, args: string[] = []) {
   return cli(input, args);
 }
 
-function temporaryDirectory(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-cli-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
-
 function initWorld(t: { after(callback: () => void): void }, scenarioPath = bottleScenario): string {
-  const dir = join(temporaryDirectory(t), "world");
+  const dir = join(tempDir(t), "world");
   const result = runCli(undefined, ["init", dir, scenarioPath]);
   strictEqual(result.status, 0, result.stderr);
   const response = JSON.parse(result.stdout) as { status: string; snapshot_version: number };
@@ -92,7 +86,7 @@ test("CLI command responses parse for every command status", (t) => {
   strictEqual(unresolved.status, 0, unresolved.stderr);
   strictEqual(commandBody(unresolved).status, "unresolved");
 
-  const customScenario = join(temporaryDirectory(t), "ambiguous.json");
+  const customScenario = join(tempDir(t), "ambiguous.json");
   writeFileSync(customScenario, JSON.stringify([
     { template: "room", overrides: { name: "room" } },
     {
@@ -258,7 +252,7 @@ test("malformed JSON is converted to an invalid response", () => {
 });
 
 test("an unknown world reports no_such_world", (t) => {
-  const missing = join(temporaryDirectory(t), "never-created");
+  const missing = join(tempDir(t), "never-created");
   for (const request of [
     { op: "snapshot", world: missing },
     { op: "query", world: missing, query: { kind: "fact", subject: "e1", relation: "status" } },
@@ -293,7 +287,7 @@ test("a world built from other templates reports templates_changed", (t) => {
 });
 
 test("a missing scenario file reports no_such_scenario", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const result = runCli(undefined, [
     "init",
     join(dir, "world"),
@@ -306,10 +300,10 @@ test("a missing scenario file reports no_such_scenario", (t) => {
 });
 
 test("CLI init accepts a scenario with declared names and refuses a duplicate", (t) => {
-  const named = runCli(undefined, ["init", join(temporaryDirectory(t), "named"), bottleScenario]);
+  const named = runCli(undefined, ["init", join(tempDir(t), "named"), bottleScenario]);
   strictEqual(named.status, 0, named.stderr);
 
-  const path = join(temporaryDirectory(t), "duplicate.json");
+  const path = join(tempDir(t), "duplicate.json");
   writeFileSync(
     path,
     JSON.stringify([
@@ -317,7 +311,7 @@ test("CLI init accepts a scenario with declared names and refuses a duplicate", 
       { id: "room", template: "room", overrides: { name: "other" } },
     ]),
   );
-  const refused = runCli(undefined, ["init", join(temporaryDirectory(t), "duplicate"), path]);
+  const refused = runCli(undefined, ["init", join(tempDir(t), "duplicate"), path]);
   strictEqual(refused.status, 2, refused.stderr);
   const response = JSON.parse(refused.stdout) as { issues: Array<{ code: string }> };
   strictEqual(response.issues[0]?.code, "duplicate_name");
@@ -400,7 +394,7 @@ test("a real answer to every op parses with the schema the contract gives that o
 });
 
 test("the process entry answers exactly as runCli does, exit code included", (t) => {
-  const dir = join(temporaryDirectory(t), "w");
+  const dir = join(tempDir(t), "w");
   const inited = cliProcess(undefined, ["init", dir, bottleScenario]);
   strictEqual(inited.status, 0, inited.stderr);
   const request = JSON.stringify({ op: "snapshot", world: dir });

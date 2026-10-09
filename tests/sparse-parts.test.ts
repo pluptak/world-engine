@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { rmSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -8,6 +7,7 @@ import { canonicalJson, createWorld, openWorld, type Result, type Scenario, type
 import { structuralCapacity } from "../src/engine/capacity.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
@@ -21,8 +21,7 @@ const scenario: Scenario = [
 ];
 
 function open(t: { after(callback: () => void): void }): { dir: string; world: World; ann: string; bob: string } {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-sparse-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "w");
   const world = createWorld(dir, scenario);
   const ann = world.id("ann");

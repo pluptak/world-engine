@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -8,6 +7,7 @@ import { canonicalJson, createWorld, WORLD_AUTHOR, type Id, type Result, type Sc
 import { replay } from "../src/store/file-store.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 // Time-driven change end to end, as `inn` did for the verbs: a dark tent, a lantern that burns down,
 // a note under a book, bread, and a hungry body that starves unless it eats. Steps are lettered.
@@ -29,8 +29,7 @@ interface Camp {
 }
 
 function open(t: { after(callback: () => void): void }): Camp {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-camp-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "camp");
   const world = createWorld(dir, camp);
   const id = (name: string): Id => {

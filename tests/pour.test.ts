@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -9,6 +7,7 @@ import { spawn } from "../src/engine/spawn.js";
 import { canonicalJson, createWorld, memoryWorld, type Scenario } from "../src/index.js";
 import type { Entity, Id, Snapshot } from "../src/model.js";
 import { loadTemplates, templatesHash, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const templatesDir = fileURLToPath(new URL("../templates/", import.meta.url));
 const baseRegistry = loadTemplates(templatesDir);
@@ -348,8 +347,7 @@ test("a handless actor cannot pour and the refusal names the capacity", () => {
 });
 
 test("a pour reads the same in a store world and a memory world", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-pour-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const scenario: Scenario = [
     { template: "room", overrides: { name: "room" } },
     {

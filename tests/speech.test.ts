@@ -1,11 +1,10 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { canonicalJson, createWorld, verbs, type Id, type Result, type World } from "../src/index.js";
 import { replay } from "../src/store/file-store.js";
 import { ProjectionSchema } from "../src/contract.js";
+import { tempDir } from "./harness.js";
 
 // Speech is a perception question the engine can answer; what it means is not. A speech act carries
 // an opaque token the caller made up, and the engine never reads it.
@@ -25,8 +24,7 @@ interface Hall {
 // ann, bob (40 cm from ann) and carol (300 cm) in the hall; dan in the yard behind the door; erin and
 // fay in a dark cellar; rex the dog in the hall.
 function hall(t: { after(callback: () => void): void }): Hall {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-speech-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "w");
   const at = (room: string, x: number) => ({ location: room, support: room, pos: { x, y: 0 } });
   const world = createWorld(dir, [

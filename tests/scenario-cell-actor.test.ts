@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -17,6 +16,7 @@ import {
   type Sent,
   type Turn,
 } from "./actor-harness.js";
+import { tempDir } from "./harness.js";
 
 // The cell played from inside (`scenarios/cell.json`, whose rules `tests/scenario-cell.test.ts` holds
 // from outside): ann behind the bars, bob outside holding the key to the gate. Each holds only an
@@ -110,8 +110,7 @@ interface Cell {
 }
 
 function play(t: { after(callback: () => void): void }, rounds: number): Cell {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-cell-actor-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const world = createWorld(join(root, "cell"), cell);
   const ids: Record<string, Id> = {};
   for (const name of ["ann", "bob", "key", "gate", "block"]) {

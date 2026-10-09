@@ -1,12 +1,12 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createWorld, type Id, type Result, type Scenario, type World } from "../src/index.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { SHARED_FIXTURES } from "./presets.js";
+import { tempDir } from "./harness.js";
 
 const cell = JSON.parse(
   readFileSync(fileURLToPath(new URL("../scenarios/cell.json", import.meta.url)), "utf8"),
@@ -20,8 +20,7 @@ const registry = parseRegistry({
 });
 
 function open(t: { after(callback: () => void): void }): World {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-gate-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   return createWorld(join(dir, "cell"), cell, registry);
 }
 

@@ -1,6 +1,5 @@
 import { deepStrictEqual, equal, ok, strictEqual, throws } from "node:assert";
-import { appendFileSync, cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { appendFileSync, cpSync, existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -12,6 +11,7 @@ import { WorldError } from "../src/errors.js";
 import type { Snapshot } from "../src/model.js";
 import { SCHEMA_VERSION } from "../src/store/file-store.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const templatesDir = fileURLToPath(new URL("../templates/", import.meta.url));
 const registry = loadTemplates(templatesDir);
@@ -25,12 +25,6 @@ function initialSnapshot(): Snapshot {
     coverage: { relations: [], senses: [], properties: [] },
     entities: {},
   };
-}
-
-function temporaryDirectory(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-store-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
 }
 
 function bottleWorld(actorX = 0) {
@@ -62,7 +56,7 @@ function bottleWorld(actorX = 0) {
 }
 
 test("create and load preserve a canonical snapshot", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
 
@@ -72,7 +66,7 @@ test("create and load preserve a canonical snapshot", (t) => {
 });
 
 test("replay reproduces the bottle and hand scenarios byte-for-byte", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const room = spawn(initialSnapshot(), registry, "room", { name: "room" });
   const table = spawn(room.snapshot, registry, "table", {
     name: "table",
@@ -137,7 +131,7 @@ test("replay reproduces the bottle and hand scenarios byte-for-byte", (t) => {
 });
 
 test("a stale take is preempted after the bottle is broken and moved out of reach", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld(-50);
   create(dir, scenario.snapshot);
   const basedOn = scenario.snapshot.version;
@@ -178,7 +172,7 @@ test("a stale take is preempted after the bottle is broken and moved out of reac
 });
 
 test("a stale unknown verb remains invalid", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
   const basedOn = scenario.snapshot.version;
@@ -200,7 +194,7 @@ test("a stale unknown verb remains invalid", (t) => {
 });
 
 test("a stale take that fails reach at both versions remains refused", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   // Lit and seen, so the far bottle is named and refused rather than unresolved.
   const seeing = { ...initialSnapshot(), coverage: { relations: [], senses: ["sight"], properties: [] } };
   const room = spawn(seeing, registry, "room", { name: "room", props: { lit: true } });
@@ -237,7 +231,7 @@ test("a stale take that fails reach at both versions remains refused", (t) => {
 });
 
 test("load recovers a logged accepted command after a snapshot-write crash", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
   const command = {
@@ -268,7 +262,7 @@ test("load recovers a logged accepted command after a snapshot-write crash", (t)
 });
 
 test("stale commands on unrelated entities both apply to the current snapshot", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const room = spawn(initialSnapshot(), registry, "room", { name: "room" });
   const actor = spawn(room.snapshot, registry, "human", {
     name: "actor",
@@ -308,7 +302,7 @@ test("stale commands on unrelated entities both apply to the current snapshot", 
 });
 
 test("load reads the world's own template set", (t) => {
-  const root = temporaryDirectory(t);
+  const root = tempDir(t);
   const worldDir = join(root, "world");
   const copiedTemplates = join(root, "templates");
   cpSync(templatesDir, copiedTemplates, { recursive: true });
@@ -330,7 +324,7 @@ test("load reads the world's own template set", (t) => {
 });
 
 test("head.json is created and matches after create", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
 
@@ -347,7 +341,7 @@ test("head.json is created and matches after create", (t) => {
 });
 
 test("head.json is updated after submit", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
 
@@ -370,7 +364,7 @@ test("head.json is updated after submit", (t) => {
 });
 
 test("head.json matches after multiple ok and refused submits", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
 
@@ -407,7 +401,7 @@ test("head.json matches after multiple ok and refused submits", (t) => {
 });
 
 test("load skips log read when head.json matches", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
 
@@ -423,7 +417,7 @@ test("load skips log read when head.json matches", (t) => {
 });
 
 test("missing head.json: load recovers correctly and rewrites it", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
 
@@ -451,7 +445,7 @@ test("missing head.json: load recovers correctly and rewrites it", (t) => {
 });
 
 test("stale head.json: load recovers correctly and rewrites it", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
 
@@ -495,7 +489,7 @@ test("stale head.json: load recovers correctly and rewrites it", (t) => {
 });
 
 test("entryCount uses head.json when available", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
 
@@ -519,7 +513,7 @@ test("entryCount uses head.json when available", (t) => {
 });
 
 test("head.json records both log_entries and ok_entries after mixed submissions", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
 
@@ -558,7 +552,7 @@ test("head.json records both log_entries and ok_entries after mixed submissions"
 });
 
 test("fast path is taken after refused commands (corrupted log line same size)", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   const scenario = bottleWorld();
   create(dir, scenario.snapshot);
 
@@ -606,7 +600,7 @@ test("fast path is taken after refused commands (corrupted log line same size)",
 });
 
 test("a world with no schema marker or another number is refused, never read", (t) => {
-  const dir = temporaryDirectory(t);
+  const dir = tempDir(t);
   create(dir, initialSnapshot(), registry);
   const marker = join(dir, "format.json");
   deepStrictEqual(JSON.parse(readFileSync(marker, "utf8")), { schema_version: SCHEMA_VERSION });

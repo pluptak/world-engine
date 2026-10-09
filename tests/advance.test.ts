@@ -1,12 +1,11 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { canonicalJson, createWorld, memoryWorld, openWorld, WORLD_AUTHOR, type Id, type Result, type World } from "../src/index.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { SHARED_FIXTURES } from "./presets.js";
 import { fileURLToPath } from "node:url";
+import { tempDir } from "./harness.js";
 
 // `advance` is time with no one acting: only the world author may issue it, it runs whatever falls
 // due in the span exactly as a wait would, and nobody senses the command itself.
@@ -21,8 +20,7 @@ interface Hall {
 }
 
 function hall(t: { after(callback: () => void): void }): Hall {
-  const base = mkdtempSync(join(tmpdir(), "world-engine-advance-"));
-  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const base = tempDir(t);
   const dir = join(base, "hall");
   const registry = parseRegistry({
     ...loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))),
@@ -103,9 +101,9 @@ test("an agent cannot advance the clock, and a bad count is invalid", (t) => {
   strictEqual(waited.reason_code, "no_such_actor");
 });
 
-test("advance works with no agent in the world and refuses to overflow the clock", () => {
+test("advance works with no agent in the world and refuses to overflow the clock", (t) => {
   const empty = memoryWorld(
-    createWorldSnapshot(),
+    createWorldSnapshot(t),
   );
   strictEqual(advance(empty, 7).status, "ok");
   strictEqual(empty.snapshot().tick, 7);
@@ -115,14 +113,9 @@ test("advance works with no agent in the world and refuses to overflow the clock
   strictEqual(empty.snapshot().tick, 7);
 });
 
-function createWorldSnapshot() {
-  const base = mkdtempSync(join(tmpdir(), "world-engine-advance-empty-"));
-  try {
-    const world = createWorld(join(base, "w"), [{ id: "hall", template: "room", overrides: { name: "hall" } }]);
-    return world.snapshot();
-  } finally {
-    rmSync(base, { recursive: true, force: true });
-  }
+function createWorldSnapshot(t: { after(callback: () => void): void }) {
+  const world = createWorld(join(tempDir(t), "w"), [{ id: "hall", template: "room", overrides: { name: "hall" } }]);
+  return world.snapshot();
 }
 
 test("nobody senses an advance, but the consequences it runs are sensed", (t) => {

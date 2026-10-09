@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -11,6 +9,7 @@ import {
   type World,
 } from "../src/index.js";
 import { loadTemplates, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const baseRegistry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
@@ -83,8 +82,7 @@ function twoWorlds(
   scenario: Scenario,
   registry: TemplateRegistry,
 ): { store: World; memory: World } {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-perceive-history-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const store = createWorld(join(dir, "w"), scenario, registry);
   const memory = memoryWorld(store.snapshot(), registry);
   return { store, memory };

@@ -1,6 +1,5 @@
 import { deepStrictEqual, strictEqual, throws } from "node:assert";
-import { appendFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { canonicalJson, createWorld, openWorld, type Scenario, type World } from "../src/index.js";
@@ -11,6 +10,7 @@ import {
   readWorldTemplates,
   replayStart,
 } from "../src/store/file-store.js";
+import { tempDir } from "./harness.js";
 
 // The log, events and deltas are read without the writer's turn, so a read can find a last line
 // a writer has only half appended. That fragment is not yet a line: each reader answers as if it
@@ -24,8 +24,7 @@ const scenario: Scenario = [
 ];
 
 function built(t: { after(callback: () => void): void }, count: number): { dir: string; world: World } {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-lines-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "w");
   const world = createWorld(dir, scenario);
   for (let index = 0; index < count; index += 1) {

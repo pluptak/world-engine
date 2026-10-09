@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -17,6 +15,7 @@ import { ProjectionSchema } from "../src/contract.js";
 import { loadTemplates } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
 import { fileURLToPath } from "node:url";
+import { tempDir } from "./harness.js";
 
 const presets = presetRegistry(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
 
@@ -65,8 +64,7 @@ const house: Scenario = [
 ];
 
 function worlds(t: { after(callback: () => void): void }, coverage: Coverage = FULL): World[] {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-projection-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const store = createWorld(join(dir, "house"), house, presets, { coverage });
   const names: Record<string, string> = {};
   for (const entry of house) {

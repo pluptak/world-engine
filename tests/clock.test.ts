@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -13,6 +12,7 @@ import { spawn } from "../src/engine/spawn.js";
 import type { Command } from "../src/engine/command.js";
 import { defaultCoverage, type Snapshot } from "../src/model.js";
 import { loadTemplates, templatesHash } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 // Every ok command takes the time its verb declares, and the clock advances after the verb has
 // resolved: what falls due in that time happens at the end of the command, caused by whatever
@@ -151,8 +151,7 @@ test("every event carries its tick: the command's start, or the tick something f
 });
 
 test("a stored event without its tick is refused on reading", (t) => {
-  const base = mkdtempSync(join(tmpdir(), "world-engine-clock-"));
-  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const base = tempDir(t);
   const dir = join(base, "w");
   const world = createWorld(dir, [
     { id: "room", template: "room", overrides: { name: "room" } },

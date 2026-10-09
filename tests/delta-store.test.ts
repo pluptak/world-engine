@@ -1,6 +1,5 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, existsSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -10,6 +9,7 @@ import { verbRegistry } from "../src/engine/verbs/index.js";
 import { readDeltas, replayWithEvents } from "../src/store/file-store.js";
 import { loadTemplates, parseRegistry, templatesHash } from "../src/templates.js";
 import { genStep, mulberry32, SCENARIO, SEED, withProcessFixtures } from "./property-gen.js";
+import { tempDir } from "./harness.js";
 
 // A store world keeps every accepted command's deltas in deltas.jsonl beside its events, so the
 // history of a field is read, not replayed. The file is a cache of the log: with it missing, short,
@@ -23,12 +23,6 @@ const scenario: Scenario = [
   { id: "bob", template: "human", overrides: { name: "bob", location: "room", support: "room", pos: { x: -80, y: 0 } } },
 ];
 
-function root(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-deltas-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
-}
-
 interface Aged {
   dir: string;
   world: World;
@@ -41,7 +35,7 @@ interface Aged {
 // A short life with every kind of outcome: a push that breaks the bottle, a refusal, blows, an
 // author's spawn and removal.
 function aged(t: { after(callback: () => void): void }): Aged {
-  const dir = join(root(t), "w");
+  const dir = join(tempDir(t), "w");
   const world = createWorld(dir, scenario, undefined, { seed: 7 });
   const ann = world.id("ann")!;
   const bob = world.id("bob")!;
@@ -186,7 +180,7 @@ test("the history of a field is answered as a replay of the log answers it", (t)
 });
 
 test("a trace of a field runs no transition: nothing is replayed", (t) => {
-  const dir = join(root(t), "w");
+  const dir = join(tempDir(t), "w");
   const world = createWorld(dir, scenario);
   for (let index = 0; index < 400; index += 1) {
     const result = world.command({
@@ -229,7 +223,7 @@ function reopened(
   base: Aged,
   damage: (copy: string) => void,
 ): { applied: number; copy: string } {
-  const copy = join(root(t), "copy");
+  const copy = join(tempDir(t), "copy");
   cpSync(base.dir, copy, { recursive: true });
   const expected = replayAnswers(base.dir);
   const all = queries(base.dir);
@@ -318,13 +312,13 @@ test("an upgrade holds the stored deltas to the replay as it does the events", (
     world.upgradeTemplates(parseRegistry({ ...registry, pebble: { id: "pebble", extends: "stone" } }));
     return world;
   };
-  const sound = join(root(t), "sound");
+  const sound = join(tempDir(t), "sound");
   cpSync(base.dir, sound, { recursive: true });
   strictEqual(upgraded(sound).snapshot().version, base.world.snapshot().version);
   strictEqual(canonicalJson(readDeltas(sound)), canonicalJson(replayWithEvents(base.dir).deltas));
 
   // The same length with one entity named another, so only a comparison of the contents can tell.
-  const forged = join(root(t), "forged");
+  const forged = join(tempDir(t), "forged");
   cpSync(base.dir, forged, { recursive: true });
   const text = readFileSync(deltasFile(forged), "utf8");
   const swapped = text.replace('"entity":"e2"', '"entity":"e3"');
@@ -339,7 +333,7 @@ test("an interrupted upgrade is adopted only over deltas that replay", (t) => {
   const next = parseRegistry({ ...registry, pebble: { id: "pebble", extends: "stone" } });
   // The set and the initial snapshot were written; the current snapshot and the head were not.
   const interrupted = (name: string, damage: (copy: string) => void): string => {
-    const copy = join(root(t), name);
+    const copy = join(tempDir(t), name);
     cpSync(base.dir, copy, { recursive: true });
     const current = JSON.parse(readFileSync(join(copy, "snapshot.json"), "utf8")) as { templates_hash: string };
     const initial = JSON.parse(readFileSync(join(copy, "initial.json"), "utf8")) as object;
@@ -366,7 +360,7 @@ test("property: random store worlds keep deltas and field histories equal to the
   const registry = withProcessFixtures(loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))));
   let chains = 0;
   for (let seed = 0; seed < 12; seed += 1) {
-    const dir = join(root(t), `seed-${seed}`);
+    const dir = join(tempDir(t), `seed-${seed}`);
     const world = createWorld(dir, SCENARIO, registry, { seed: SEED });
     const rand = mulberry32(seed + 3100);
     for (let index = 0; index < 30; index += 1) {

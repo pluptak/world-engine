@@ -1,7 +1,6 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { test } from "node:test";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createWorld, memoryWorld, openWorld, type Scenario } from "../src/index.js";
@@ -264,10 +263,10 @@ test("an unreadable ids.json is refused rather than read as no names", (t) => {
   }
 });
 
-test("a memory world takes the names it was built from", () => {
+test("a memory world takes the names it was built from", (t) => {
   const world = memoryWorld(
     createWorld(
-      mkdtempSync(join(tmpdir(), "world-engine-mem-names-")),
+      tempDir(t),
       [
         { id: "room", template: "room", overrides: { name: "room" } },
         { id: "bottle", template: "bottle", overrides: { name: "bottle", location: "room", support: "room", pos: { x: 5, y: 0 } } },
@@ -277,5 +276,5 @@ test("a memory world takes the names it was built from", () => {
     { room: "e1", bottle: "e2" },
   );
   strictEqual(world.id("bottle"), "e2");
-  strictEqual(memoryWorld(createWorld(mkdtempSync(join(tmpdir(), "world-engine-mem-bare-")), []).snapshot()).id("bottle"), null);
+  strictEqual(memoryWorld(createWorld(tempDir(t), []).snapshot()).id("bottle"), null);
 });

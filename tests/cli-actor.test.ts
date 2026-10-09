@@ -1,13 +1,12 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { cli } from "./cli-run.js";
 import { actorWorld, canonicalJson, createWorld, openWorld, type Scenario } from "../src/index.js";
 import { ActorCommandResponseSchema, ResponseSchema } from "../src/contract.js";
+import { tempDir } from "./harness.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -32,8 +31,7 @@ function issueCodes(request: unknown): string[] {
 
 // Ann with a stone at her feet and a chest 300 cm off, in a hall lit or not.
 function hall(t: { after(callback: () => void): void }, lit: boolean): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-cli-actor-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const at = (x: number) => ({ location: "hall", support: "hall", pos: { x, y: 0 } });
   const scenario: Scenario = [
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit } } },

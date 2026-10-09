@@ -1,11 +1,11 @@
 import { deepStrictEqual, equal, ok, strictEqual } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { cli } from "./cli-run.js";
+import { tempDir } from "./harness.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cliPath = fileURLToPath(new URL("../src/cli/main.ts", import.meta.url));
@@ -14,12 +14,6 @@ const handScenario = fileURLToPath(new URL("../scenarios/hand.json", import.meta
 
 function runCli(input?: string, args: string[] = []) {
   return cli(input, args);
-}
-
-function tempRoot(t: { after(callback: () => void): void }): string {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-acceptance-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return dir;
 }
 
 function initWorld(dir: string, scenarioPath: string): void {
@@ -113,7 +107,7 @@ function acceptedCommands(worldDir: string): Array<Record<string, unknown>> {
 }
 
 test("propagation preserves the full causal bottle chain", (t) => {
-  const world = join(tempRoot(t), "bottle-world");
+  const world = join(tempDir(t), "bottle-world");
   initWorld(world, bottleScenario);
   const result = send(world, {
     command_id: "accept-push-table",
@@ -146,7 +140,7 @@ test("propagation preserves the full causal bottle chain", (t) => {
 });
 
 test("capability loss after hand detachment refuses a two-handed take", (t) => {
-  const world = join(tempRoot(t), "hand-world");
+  const world = join(tempDir(t), "hand-world");
   initWorld(world, handScenario);
   let firstHit: Record<string, unknown> | undefined;
   let detachedHit: Record<string, unknown> | undefined;
@@ -213,7 +207,7 @@ test("capability loss after hand detachment refuses a two-handed take", (t) => {
 });
 
 test("both scenarios copy, replay from initial state, and rerun deterministically", (t) => {
-  const rootDir = tempRoot(t);
+  const rootDir = tempDir(t);
   const scenarios = [
     { name: "bottle" as const, path: bottleScenario },
     { name: "hand" as const, path: handScenario },
@@ -251,7 +245,7 @@ test("both scenarios copy, replay from initial state, and rerun deterministicall
 });
 
 test("smell is unknown and sight through an unconnected wall is false", (t) => {
-  const bottleWorld = join(tempRoot(t), "bottle-world");
+  const bottleWorld = join(tempDir(t), "bottle-world");
   initWorld(bottleWorld, bottleScenario);
   const smell = runCli(JSON.stringify({
     op: "query",
@@ -261,7 +255,7 @@ test("smell is unknown and sight through an unconnected wall is false", (t) => {
   strictEqual(smell.status, 0, smell.stderr);
   deepStrictEqual(JSON.parse(smell.stdout), { value: "unknown", basis_code: "uncovered_sense" });
 
-  const rootDir = tempRoot(t);
+  const rootDir = tempDir(t);
   const wallScenarioPath = join(rootDir, "wall.json");
   writeFileSync(wallScenarioPath, JSON.stringify([
     { template: "room", overrides: { name: "left", props: { lit: true } } },
@@ -287,7 +281,7 @@ test("smell is unknown and sight through an unconnected wall is false", (t) => {
 });
 
 test("ambiguous, preempted, and refused commands have distinct statuses", (t) => {
-  const rootDir = tempRoot(t);
+  const rootDir = tempDir(t);
   const ambiguousScenario = join(rootDir, "ambiguous.json");
   writeFileSync(ambiguousScenario, JSON.stringify([
     { template: "room", overrides: { name: "room" } },

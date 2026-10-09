@@ -1,10 +1,10 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { canonicalJson, createWorld, openWorld, type Id, type Result, type Scenario, type World } from "../src/index.js";
+import { tempDir } from "./harness.js";
 
 // Structural resolution end to end, on the workshop: two humans, a dog and a chair declare 31 parts
 // between them, and a world stores state only for the ones something has changed. Harmless work
@@ -16,8 +16,7 @@ const workshop = JSON.parse(
 ) as Scenario;
 
 function open(t: { after(callback: () => void): void }): { dir: string; world: World; id: (name: string) => Id } {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-structure-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "workshop");
   const world = createWorld(dir, workshop);
   const id = (name: string): Id => {

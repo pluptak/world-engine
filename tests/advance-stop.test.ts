@@ -1,6 +1,4 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -9,6 +7,7 @@ import { validateSnapshot } from "../src/engine/validate.js";
 import { replay } from "../src/store/file-store.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { SHARED_FIXTURES } from "./presets.js";
+import { tempDir } from "./harness.js";
 
 // A controller that hands the turn to someone wants time to run until something happens that they
 // could sense. `advance` with `stop_on_perceived` ends at the first tick whose events one of the
@@ -32,8 +31,7 @@ interface Hall {
 // A door that swings shut six ticks after it is opened, between the hall (ann) and the yard, and a
 // vault with no door at all (carol). A hungry body in a cellar of its own (dan) keeps a process pending throughout.
 function hall(t: { after(callback: () => void): void }): Hall {
-  const root = mkdtempSync(join(tmpdir(), "world-engine-stop-"));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir(t);
   const dir = join(root, "w");
   const world = createWorld(dir, [
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },

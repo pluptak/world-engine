@@ -1,6 +1,5 @@
 ﻿import { deepStrictEqual, strictEqual, throws as assertThrows } from "node:assert";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -9,14 +8,13 @@ import { canonicalJson, createWorld, memoryWorld, openWorld, WorldError, type Sc
 import { spawn } from "../src/engine/spawn.js";
 import { defaultCoverage, type Snapshot } from "../src/model.js";
 import { loadTemplates, missingCompanions, parseRegistry, templatesHash, type Template, type TemplateRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
-// A world left behind on disk, cleaned up when the test process exits.
-function seedWorld(): Snapshot {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-upgrade-"));
-  process.on("exit", () => rmSync(dir, { recursive: true, force: true }));
-  return createWorld(join(dir, "w"), bottleScenario).snapshot();
+// A world left behind on disk for the test that asked for it.
+function seedWorld(t: { after(callback: () => void): void }): Snapshot {
+  return createWorld(join(tempDir(t), "w"), bottleScenario).snapshot();
 }
 
 const bottleScenario: Scenario = [
@@ -186,8 +184,8 @@ test("two offences report the lowest entity id first", () => {
   });
 });
 
-test("a memory world refuses a set that orphans a live entity and adopts one that does not", () => {
-  const world = memoryWorld(hurtHand(seedWorld()));
+test("a memory world refuses a set that orphans a live entity and adopts one that does not", (t) => {
+  const world = memoryWorld(hurtHand(seedWorld(t)));
 
   const withoutHand: TemplateRegistry = {
     ...registry,
@@ -222,8 +220,7 @@ test("parseRegistry rejects a registry lacking a detachable part's companion", (
 });
 
 test("a store world's upgradeTemplates refuses a registry lacking a detachable part's companion", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-missing-companion-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const worldDir = join(dir, "world");
   const world = createWorld(worldDir, bottleScenario);
   const before = canonicalJson(world.snapshot());
@@ -246,8 +243,8 @@ test("a store world's upgradeTemplates refuses a registry lacking a detachable p
   strictEqual(Object.keys(stored).length, Object.keys(registry).length);
 });
 
-test("a memory world's upgradeTemplates refuses a registry lacking a detachable part's companion", () => {
-  const world = memoryWorld(hurtHand(seedWorld()));
+test("a memory world's upgradeTemplates refuses a registry lacking a detachable part's companion", (t) => {
+  const world = memoryWorld(hurtHand(seedWorld(t)));
   const before = canonicalJson(world.snapshot());
   const beforeHash = world.snapshot().templates_hash;
 
@@ -266,8 +263,7 @@ test("a memory world's upgradeTemplates refuses a registry lacking a detachable 
 });
 
 test("after refusing a registry lacking a companion, a store world still allows attacks that detach", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-detach-after-reject-"));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const dir = tempDir(t);
   const handScenario: Scenario = [
     { template: "room", overrides: { name: "room" } },
     {

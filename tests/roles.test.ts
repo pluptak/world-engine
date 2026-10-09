@@ -1,11 +1,11 @@
 import { deepStrictEqual, strictEqual, throws } from "node:assert";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { canonicalJson, createWorld, WorldError, type World } from "../src/index.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
+import { tempDir } from "./harness.js";
 
 const shipped = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 
@@ -19,8 +19,8 @@ const CHEST = {
   inner_h_cm: 35,
 } as const;
 
-function chestWorld(): { dir: string; world: World; chest: string } {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-roles-"));
+function chestWorld(t: { after(callback: () => void): void }): { dir: string; world: World; chest: string } {
+  const dir = tempDir(t);
   const world = createWorld(join(dir, "w"), [
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
     {
@@ -32,13 +32,8 @@ function chestWorld(): { dir: string; world: World; chest: string } {
   return { dir, world, chest: world.id("chest")! };
 }
 
-function after(t: { after(callback: () => void): void }, dir: string): void {
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-}
-
 test("an edit spawn that changes or adds a definition is refused, and repeats pass", (t) => {
-  const { dir, world } = chestWorld();
-  after(t, dir);
+  const { world } = chestWorld(t);
   const before = canonicalJson(world.snapshot());
 
   const changed = world.edit({
@@ -94,8 +89,7 @@ test("an edit spawn that changes or adds a definition is refused, and repeats pa
 });
 
 test("set_props replaces, so dropping a definition is refused with the change", (t) => {
-  const { dir, world, chest } = chestWorld();
-  after(t, dir);
+  const { world, chest } = chestWorld(t);
 
   const changed = world.edit({ kind: "set_props", target: chest, props: { ...CHEST, openable: true } });
   deepStrictEqual([changed.status, changed.reason_code], ["refused", "field_not_editable"]);
@@ -110,8 +104,7 @@ test("set_props replaces, so dropping a definition is refused with the change", 
 });
 
 test("update_props merges, so only the keys it writes can differ", (t) => {
-  const { dir, world, chest } = chestWorld();
-  after(t, dir);
+  const { world, chest } = chestWorld(t);
 
   const changed = world.edit({ kind: "update_props", target: chest, props: { openable: true } });
   deepStrictEqual([changed.status, changed.reason_code], ["refused", "field_not_editable"]);
@@ -122,8 +115,7 @@ test("update_props merges, so only the keys it writes can differ", (t) => {
 });
 
 test("a scenario entry is held to the same rule before anything is written", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-roles-scenario-"));
-  after(t, dir);
+  const dir = tempDir(t);
   const base = [
     { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
   ] as const;
@@ -162,8 +154,7 @@ test("a scenario entry is held to the same rule before anything is written", (t)
 });
 
 test("a definition a template declares under fields is held the same way", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-roles-fields-"));
-  after(t, dir);
+  const dir = tempDir(t);
   const registry = parseRegistry({
     ...shipped,
     metronome: {
@@ -187,8 +178,7 @@ test("a definition a template declares under fields is held the same way", (t) =
 });
 
 test("the architect writes placement, names, traits, forms and a few plain states, and no other field", (t) => {
-  const dir = mkdtempSync(join(tmpdir(), "world-engine-roles-architect-"));
-  after(t, dir);
+  const dir = tempDir(t);
   const hall = { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } };
   const at = { location: "hall", support: "hall", pos: { x: 0, y: 0 } };
   const entry = (template: string, overrides: Record<string, unknown>) => [

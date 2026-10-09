@@ -1,13 +1,13 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { canonicalJson, createWorld, openWorld, WorldError, type Scenario } from "../src/index.js";
 import { ResponseSchema } from "../src/contract.js";
 import { readEvents, replay, withWorldLock } from "../src/store/file-store.js";
+import { tempDir } from "./harness.js";
 
 // Writers take turns: a world directory has no server, so two processes writing it at once would
 // each decide against a version the other had already left and rename each other's temporary files.
@@ -26,8 +26,7 @@ const scenario: Scenario = [
 ];
 
 function newWorld(t: Cleanup): string {
-  const base = mkdtempSync(join(tmpdir(), "world-engine-lock-"));
-  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const base = tempDir(t);
   const dir = join(base, "w");
   createWorld(dir, scenario);
   return dir;
@@ -247,8 +246,7 @@ test("the turn is given back when the work throws, and a nested call does not wa
 });
 
 test("a directory that is no world is no_such_world, not a lock error", (t) => {
-  const base = mkdtempSync(join(tmpdir(), "world-engine-lock-"));
-  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const base = tempDir(t);
   throws(() => withWorldLock(join(base, "nowhere"), () => 1), (error) => error instanceof WorldError && error.code === "no_such_world");
 });
 

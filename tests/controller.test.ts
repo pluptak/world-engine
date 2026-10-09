@@ -1,7 +1,6 @@
 import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -9,6 +8,7 @@ import { cli as cliRequest } from "./cli-run.js";
 import { CommandResponseSchema, InspectResponseSchema } from "../src/contract.js";
 import { canonicalJson, createWorld, WorldError, type Coverage, type Id, type Scenario, type World } from "../src/index.js";
 import { defaultCoverage } from "../src/model.js";
+import { tempDir } from "./harness.js";
 
 // What a controller asks between commands: can I reach it, what exactly is that, and what did my
 // own command look like from where I stand. Every answer is a read; none of them writes.
@@ -25,8 +25,7 @@ interface Opened {
 }
 
 function open(t: { after(callback: () => void): void }, name: string, coverage?: Coverage): Opened {
-  const base = mkdtempSync(join(tmpdir(), "world-engine-controller-"));
-  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const base = tempDir(t);
   const dir = join(base, name);
   const world = createWorld(dir, scenario(name), undefined, coverage === undefined ? {} : { coverage });
   const id = (entity: string): Id => {
