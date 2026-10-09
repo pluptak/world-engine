@@ -61,7 +61,8 @@ invariant. A spawn, or a scenario entry, that writes a derived field (`location`
 or `modifiers`) is refused `derived_field` ([fields.md](fields.md)). A spawn's or scenario entry's
 `props` merge onto the template's instead of replacing them, so an entry names only what it changes;
 a write whose definitions differ from the template's is refused `field_not_editable`. `traits` (a map of tokens,
-[state.md](state.md)) are written the same way and by nothing else.
+[state.md](state.md)) are written the same way and by nothing else. A scenario entry alone may use the
+architect forms `fuel_pct`, `liquid`, `condition`, `hunger_pct` and `portions_pct` ([forms.md](forms.md)).
 
 A scenario entry may declare `"id"`, and `location`, `support`, `contained_in`, `concealed_by`,
 `detached_from.entity`, and the props `from`, `to`, and `opens` may name their entity. Names resolve

@@ -121,7 +121,8 @@ const hall: Scenario = [
   {
     id: "spare",
     template: "wine_bottle",
-    overrides: { name: "spare", location: "hall", support: "table" },
+    // A tenth of a bottle, 75, which the pour below empties into the cup.
+    overrides: { name: "spare", location: "hall", support: "table", liquid: { pct: 10 } },
   },
 ];
 

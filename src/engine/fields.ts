@@ -12,6 +12,8 @@ export interface PropField {
   tier: Tier;
   // Props a template must declare beside this one.
   requires?: readonly string[];
+  // The least an integer may be.
+  min?: number;
 }
 
 // Every prop the engine reads. A prop no code reads is declared by its template under `fields`.
@@ -26,6 +28,7 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   bleed_times: { type: "integer", tier: "definition" },
   break_fall_cm: { type: "integer", tier: "definition" },
   burning: { type: "boolean", tier: "state", requires: ["light_source"] },
+  capacity_cm3: { type: "integer", tier: "definition", min: 1 },
   carry_limit_g: { type: "integer", tier: "definition" },
   closes_after: { type: "integer", tier: "definition", requires: ["openable"] },
   container: { type: "boolean", tier: "definition", requires: ["inner_w_cm", "inner_d_cm", "inner_h_cm"] },

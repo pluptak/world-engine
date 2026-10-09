@@ -87,7 +87,7 @@ test("a world keeps its own template set after the source templates change", (t)
 
   const reopened = openWorld(dir);
   strictEqual(canonicalJson(reopened.snapshot()), before);
-  deepStrictEqual(reopened.entity("e1")?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(reopened.entity("e1")?.residue, { glass: 5, wine: 750 });
   strictEqual(reopened.command(wait("wait-1")).status, "ok");
 });
 
@@ -106,7 +106,7 @@ test("a template change reaches only worlds created after it", (t) => {
   notStrictEqual(second.snapshot().templates_hash, firstHash);
   strictEqual(openWorld(firstDir).snapshot().templates_hash, firstHash);
   strictEqual(openWorld(secondDir).snapshot().templates_hash, second.snapshot().templates_hash);
-  deepStrictEqual(first.entity("e3")?.props.liquid_amount, 75);
+  deepStrictEqual(first.entity("e3")?.props.liquid_amount, 750);
 });
 
 test("a world without templates.json does not open", (t) => {
@@ -153,7 +153,7 @@ test("a set that still replays the world's history is adopted", (t) => {
   strictEqual(reopened.snapshot().version, 0);
   notStrictEqual(reopened.snapshot().templates_hash, original);
   strictEqual(reopened.command(pushTable).status, "ok");
-  deepStrictEqual(reopened.entity("e1")?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(reopened.entity("e1")?.residue, { glass: 5, wine: 750 });
 });
 
 test("a set that no longer replays the world's history is refused", (t) => {
@@ -187,7 +187,7 @@ test("an upgrade that changes how the log replays is refused", (t) => {
     (error: unknown) => error instanceof WorldError && error.code === "replay_diverges",
   );
   strictEqual(openWorld(dir).snapshot().templates_hash, before);
-  deepStrictEqual(openWorld(dir).entity("e1")?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(openWorld(dir).entity("e1")?.residue, { glass: 5, wine: 750 });
 });
 
 test("an upgrade that adds a template succeeds and leaves the log untouched", (t) => {
@@ -288,7 +288,7 @@ test("an interrupted upgrade is repaired on the next open", (t) => {
   const repaired = openWorld(dir).snapshot();
   strictEqual(repaired.version, 1);
   strictEqual(repaired.templates_hash, templatesHash(loadTemplates(copies)));
-  deepStrictEqual(repaired.entities.e1?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(repaired.entities.e1?.residue, { glass: 5, wine: 750 });
   strictEqual(
     JSON.parse(readFileSync(join(dir, "head.json"), "utf8")).templates_hash,
     repaired.templates_hash,
@@ -321,7 +321,7 @@ test("an upgrade interrupted before the snapshots are stamped is repaired", (t) 
   const repaired = openWorld(dir).snapshot();
   strictEqual(repaired.version, 1);
   strictEqual(repaired.templates_hash, templatesHash(next));
-  deepStrictEqual(repaired.entities.e1?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(repaired.entities.e1?.residue, { glass: 5, wine: 750 });
 });
 
 test("a set that orphans a live entity is never adopted", (t) => {

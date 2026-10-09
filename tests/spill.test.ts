@@ -169,7 +169,7 @@ test("a vessel that breaks releases through the break alone, never twice", (t) =
       dropped.events.some((event) => event.type === "spilled"),
       false,
     );
-    deepStrictEqual(world.entity(hall)?.residue, { glass: 5, wine: 75 });
+    deepStrictEqual(world.entity(hall)?.residue, { glass: 5, wine: 750 });
     strictEqual(world.entity(flask)?.props.liquid_amount, 0);
     deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
   }

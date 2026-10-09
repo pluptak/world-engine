@@ -177,7 +177,7 @@ test("a bottle put on a table then pushed reproduces the bottle break chain", ()
   );
   strictEqual(result.events[4]?.data.fall_cm, 75);
   strictEqual(result.snapshot.entities[world.bottleId]?.status, "broken");
-  deepStrictEqual(result.snapshot.entities[world.roomId]?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(result.snapshot.entities[world.roomId]?.residue, { glass: 5, wine: 750 });
 });
 
 test("an item put into a container is contained with no support or position", () => {

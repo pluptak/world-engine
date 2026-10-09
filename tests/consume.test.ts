@@ -148,7 +148,8 @@ test("what is carried is eaten from the hand, and refusals are declared", (t) =>
 
 test("a vessel is drunk by the amount and stays, emptied of its material at 0", (t) => {
   const { world, gus } = table(t, { hunger: 50 }, [
-    { id: "wine", template: "wine_bottle", overrides: { name: "wine", location: "hall", support: "hall", pos: { x: -60, y: 20 } } },
+    // A tenth of a bottle, 75, so that the arithmetic below stays small.
+    { id: "wine", template: "wine_bottle", overrides: { name: "wine", location: "hall", support: "hall", pos: { x: -60, y: 20 }, liquid: { pct: 10 } } },
   ]);
   const wine = world.id("wine")!;
   strictEqual(world.entity(wine)?.props.liquid_amount, 75);

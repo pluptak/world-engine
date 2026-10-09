@@ -1,7 +1,7 @@
 # Liquid
 
 Liquid is a prop, not an entity: a vessel declares `liquid_material` and `liquid_amount`, and
-`liquid_amount` counts the cubic centimetres its `inner_*_cm` dimensions do. A vessel emptied by a
+`liquid_amount` counts cubic centimetres, up to its `capacity_cm3` where it declares one (a bottle 750, a cup 250). A vessel emptied by a
 pour or by breaking declares an empty `liquid_material` and `liquid_amount` 0, which is what "holds
 no liquid" means everywhere.
 
@@ -18,7 +18,7 @@ no liquid" means everywhere.
   shut destination, or one inside a shut container, is `container_closed`.
 - It needs `manipulation`, and pours only whole positive integers: an `args.amount` above what the
   source holds is `insufficient_liquid`, and anything else is `invalid_args`.
-- A container's liquid capacity is its inner volume, and overflow is refused rather than capped or
+- A vessel's liquid capacity is its `capacity_cm3`, else its inner volume, and overflow is refused rather than capped or
   spilled: a pour that would exceed it is `container_full` with the numbers. A container already
   holding a different material is `incompatible_liquid`; the same material simply adds up.
 

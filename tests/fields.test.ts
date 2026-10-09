@@ -118,7 +118,7 @@ function sourceFiles(dir: string): string[] {
 
 // Every way the source names a prop: `props.x`, `props["x"]`, a declaration's `prop: "x"` or
 // `<kind>_prop: "x"`, and the bleed's `read("x")`.
-const PROP_READS = [/props\??\.([a-z_]+)/g, /props\["([a-z_]+)"\]/g, /\b(?:[a-z_]+_)?prop: "([a-z_]+)"/g, /\bread\("([a-z_]+)"\)/g];
+const PROP_READS = [/props\??\.([a-z0-9_]+)/g, /props\["([a-z0-9_]+)"\]/g, /\b(?:[a-z_]+_)?prop: "([a-z0-9_]+)"/g, /\bread\("([a-z0-9_]+)"\)/g];
 
 test("the table covers every prop the source reads, and lists none it does not", () => {
   const read = new Set<string>();

@@ -99,7 +99,7 @@ test("pushing a table propagates a deterministic bottle break chain", () => {
   strictEqual(bottle.status, "broken");
   strictEqual(bottle.props.liquid_material, "");
   strictEqual(bottle.props.liquid_amount, 0);
-  deepStrictEqual(result.snapshot.entities[scenario.roomId]?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(result.snapshot.entities[scenario.roomId]?.residue, { glass: 5, wine: 750 });
   strictEqual(
     Object.values(result.snapshot.entities).filter((entity) => entity.template === "glass_shard").length,
     3,
@@ -150,10 +150,10 @@ test("an insufficient fall drops the bottle without breaking it", () => {
   const spilled = result.events.find((event) => event.type === "spilled");
   ok(spilled !== undefined);
   strictEqual(spilled.entity, scenario.bottleId);
-  deepStrictEqual(spilled.data, { material: "wine", amount: 75, to: scenario.roomId });
+  deepStrictEqual(spilled.data, { material: "wine", amount: 750, to: scenario.roomId });
   strictEqual(result.snapshot.entities[scenario.bottleId]?.props.liquid_material, "");
   strictEqual(result.snapshot.entities[scenario.bottleId]?.props.liquid_amount, 0);
-  deepStrictEqual(result.snapshot.entities[scenario.roomId]?.residue, { wine: 75 });
+  deepStrictEqual(result.snapshot.entities[scenario.roomId]?.residue, { wine: 750 });
 });
 
 test("dropping a bottle from hand height breaks it and spills its contents", () => {
@@ -171,7 +171,7 @@ test("dropping a bottle from hand height breaks it and spills its contents", () 
   strictEqual(dropped.data.fall_cm, 100);
   strictEqual(result.events.some((event) => event.type === "broken"), true);
   strictEqual(result.snapshot.entities[scenario.bottleId]?.status, "broken");
-  deepStrictEqual(result.snapshot.entities[scenario.roomId]?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(result.snapshot.entities[scenario.roomId]?.residue, { glass: 5, wine: 750 });
 });
 
 test("solid contents lose containment onto the bottle's landing surface", () => {

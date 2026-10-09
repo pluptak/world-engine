@@ -351,7 +351,7 @@ test("a holder who loses all manipulation drops carried items", () => {
   strictEqual(dropped.cause_id, detached.event_id);
   strictEqual(holdingDrop.snapshot.entities[bottle.id]?.contained_in, null);
   strictEqual(holdingDrop.snapshot.entities[bottle.id]?.status, "broken");
-  deepStrictEqual(holdingDrop.snapshot.entities[setup.roomId]?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(holdingDrop.snapshot.entities[setup.roomId]?.residue, { glass: 5, wine: 750 });
 
   const capability = finalAttack.events.find(
     (event) => event.type === "capability_changed" && event.data.capacity === "manipulation",

@@ -104,7 +104,7 @@ test("removing the table under the bottle produces the break chain caused by the
 
   strictEqual(world.entity("e2"), null);
   strictEqual(world.entity("e3")?.status, "broken");
-  deepStrictEqual(world.entity("e1")?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(world.entity("e1")?.residue, { glass: 5, wine: 750 });
 
   strictEqual(canonicalJson(replay(dir)), canonicalJson(world.snapshot()));
   const entries = readFileSync(join(dir, "log.jsonl"), "utf8")

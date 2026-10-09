@@ -11,8 +11,6 @@ change in the camp cannot is in [limits-camp.md](limits-camp.md); what beats and
 - Smell is holding a liquid or carrying residue, never a property of the material:
   wanted the floor to smell of wine, got a room that smells because it carries residue,
   which is no different from a room that carried water (B6, E4).
-- `liquid_amount` counts the cubic centimetres a vessel's inner dimensions declare, so
-  the shipped bottle holds 75 cm³ and a cup of 288 cm³ is nearly four bottlefuls (B5).
 - `concealed_by` is one relation with no "under" and no "behind": a search finds the
   note under the book and a lifted book uncovers it, but nothing records which (C1, C2).
 - There is no social state: the key moves because a caller said so, and nothing records

@@ -148,7 +148,7 @@ test("pouring half a bottle into a cup moves that amount and leaves the rest", (
 
   strictEqual(result.status, "ok");
   deepStrictEqual(contents(result.snapshot, world.cupId), ["wine", 37]);
-  deepStrictEqual(contents(result.snapshot, world.bottleId), ["wine", 38]);
+  deepStrictEqual(contents(result.snapshot, world.bottleId), ["wine", 713]);
   deepStrictEqual(result.events.map((event) => event.type), ["pour", "poured"]);
   strictEqual(result.events[0]?.entity, world.bottleId);
   strictEqual(result.events[1]?.entity, world.bottleId);
@@ -166,7 +166,8 @@ test("pouring half a bottle into a cup moves that amount and leaves the rest", (
 
 test("pouring without an amount empties the source and leaves it holding no material", () => {
   const world = pourWorld();
-  const result = pour(world, { destination: "cup" });
+  // Less than a full bottle, so that the cup (250) takes all of it.
+  const result = pour(world, { destination: "cup" }, withProps(world, world.bottleId, { liquid_amount: 75 }));
 
   strictEqual(result.status, "ok");
   deepStrictEqual(contents(result.snapshot, world.cupId), ["wine", 75]);
@@ -181,7 +182,7 @@ test("a container holding the same liquid takes the amount on top of what it has
 
   strictEqual(result.status, "ok");
   deepStrictEqual(contents(result.snapshot, world.cupId), ["wine", 50]);
-  deepStrictEqual(contents(result.snapshot, world.bottleId), ["wine", 45]);
+  deepStrictEqual(contents(result.snapshot, world.bottleId), ["wine", 720]);
 });
 
 test("pouring onto a table leaves residue on the table and nothing in any cup", () => {
@@ -204,9 +205,9 @@ test("pouring onto the floor leaves residue in the room, adding to what is there
   const result = pour(world, { destination: world.roomId });
 
   strictEqual(result.status, "ok");
-  deepStrictEqual(result.snapshot.entities[world.roomId]?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(result.snapshot.entities[world.roomId]?.residue, { glass: 5, wine: 750 });
   deepStrictEqual(contents(result.snapshot, world.bottleId), ["", 0]);
-  deepStrictEqual(result.events[1]?.data, { material: "wine", amount: 75, to: world.roomId });
+  deepStrictEqual(result.events[1]?.data, { material: "wine", amount: 750, to: world.roomId });
 });
 
 test("a container already holding another liquid refuses the pour", () => {
@@ -219,7 +220,7 @@ test("a container already holding another liquid refuses the pour", () => {
   deepStrictEqual(result.reason_data, { material: "wine", held_material: "beer" });
   strictEqual(result.deltas.length, 0);
   strictEqual(result.events.length, 0);
-  deepStrictEqual(contents(result.snapshot, world.bottleId), ["wine", 75]);
+  deepStrictEqual(contents(result.snapshot, world.bottleId), ["wine", 750]);
 });
 
 test("a container that cannot hold the whole pour refuses with the numbers", () => {
@@ -229,18 +230,18 @@ test("a container that cannot hold the whole pour refuses with the numbers", () 
 
   strictEqual(result.status, "refused");
   strictEqual(result.reason_code, "container_full");
-  deepStrictEqual(result.reason_data, { requested: 300, held: 0, capacity: 288 });
+  deepStrictEqual(result.reason_data, { requested: 300, held: 0, capacity: 250 });
   deepStrictEqual(contents(result.snapshot, world.bottleId), ["wine", 300]);
 
-  const fitting = pour(world, { destination: "cup", amount: 288 }, full);
+  const fitting = pour(world, { destination: "cup", amount: 250 }, full);
   strictEqual(fitting.status, "ok");
-  deepStrictEqual(contents(fitting.snapshot, world.cupId), ["wine", 288]);
+  deepStrictEqual(contents(fitting.snapshot, world.cupId), ["wine", 250]);
 
   const onceMore = pour(world, { destination: "cup", amount: 1 }, fitting.snapshot);
   strictEqual(onceMore.status, "refused");
   strictEqual(onceMore.reason_code, "container_full");
-  deepStrictEqual(onceMore.reason_data, { requested: 1, held: 288, capacity: 288 });
-  deepStrictEqual(contents(onceMore.snapshot, world.cupId), ["wine", 288]);
+  deepStrictEqual(onceMore.reason_data, { requested: 1, held: 250, capacity: 250 });
+  deepStrictEqual(contents(onceMore.snapshot, world.cupId), ["wine", 250]);
 });
 
 test("a shut container refuses the pour, and so does what one holds", () => {
@@ -292,9 +293,9 @@ strictEqual(
   const empty = withProps(world, world.bottleId, { liquid_amount: 0 });
   strictEqual(pour(world, { destination: "cup" }, empty).reason_code, "nothing_to_pour");
 
-  const asked = pour(world, { destination: "cup", amount: 100 });
+  const asked = pour(world, { destination: "cup", amount: 800 });
   strictEqual(asked.reason_code, "insufficient_liquid");
-  deepStrictEqual(asked.reason_data, { requested: 100, available: 75 });
+  deepStrictEqual(asked.reason_data, { requested: 800, available: 750 });
 
   const itself = pour(world, { destination: "bottle" });
   strictEqual(itself.reason_code, "cannot_pour_into_self");
@@ -393,7 +394,7 @@ test("a pour reads the same in a store world and a memory world", (t) => {
   }
 
   deepStrictEqual(contents(stored.snapshot(), "e3"), ["wine", 37]);
-  deepStrictEqual(stored.snapshot().entities.e1?.residue, { wine: 38 });
+  deepStrictEqual(stored.snapshot().entities.e1?.residue, { wine: 713 });
   deepStrictEqual(contents(stored.snapshot(), "e4"), ["", 0]);
   strictEqual(stored.trace({ entity: "e4", field: "props" }).events.length > 0, true);
 });

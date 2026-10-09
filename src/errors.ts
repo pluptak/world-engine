@@ -23,7 +23,10 @@ export type WorldErrorCode =
   | "invalid_ids"
   | "store_busy"
   | "derived_field"
-  | "field_not_editable";
+  | "field_not_editable"
+  | "invalid_form"
+  | "form_not_applicable"
+  | "no_liquid_material";
 
 export class WorldError extends Error {
   constructor(

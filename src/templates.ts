@@ -630,6 +630,10 @@ function validateProps(template: Template, source: string): void {
     if (!propTypeMatches(type, value)) {
       throw new TypeError(`${source} props.${name} must be ${type === "integer" ? "an" : "a"} ${type}`);
     }
+    const least = PROP_FIELDS[name]?.min;
+    if (least !== undefined && typeof value === "number" && value < least) {
+      throw new TypeError(`${source} props.${name} must be at least ${least}`);
+    }
     for (const required of PROP_FIELDS[name]?.requires ?? []) {
       if (!Object.hasOwn(template.props, required)) {
         throw new TypeError(`${source} props.${name} requires ${required}`);

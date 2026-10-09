@@ -25,9 +25,14 @@ function notPlanned(result: PreconditionResult): Refusal {
   return result.status === "ok" ? { status: "invalid", reason_code: "invalid_args" } : result;
 }
 
-// liquid_amount counts the same cubic centimetres the inner dimensions do, so a container's liquid
-// capacity is its inner volume; a destination that declares no inner dimensions is unbounded here.
+// liquid_amount counts cubic centimetres. A vessel that declares `capacity_cm3` holds that much, apart
+// from its box; otherwise a container's liquid capacity is its inner volume, and a destination that
+// declares neither is unbounded here.
 function liquidCapacity(destination: Entity): number | null {
+  const declared = destination.props.capacity_cm3;
+  if (typeof declared === "number" && Number.isSafeInteger(declared) && declared > 0) {
+    return declared;
+  }
   const width = destination.props.inner_w_cm;
   const depth = destination.props.inner_d_cm;
   const height = destination.props.inner_h_cm;

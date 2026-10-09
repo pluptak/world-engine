@@ -69,40 +69,11 @@ None.
 ## Blocks
 
 Blocks 1 (field schema), 2 (`update_props`, `derived_field`), 3a (definitions are not written),
-3b (entity props hold to the schema) and 3c (traits) are built: `docs/fields.md`. One
+3b (entity props hold to the schema), 3c (traits) and 4 (architect forms) are built: `docs/fields.md`. One
 block per session, in this order. Each touches the shared registration points CLAUDE.md lists
 (`verbs/index.ts`, `errors.ts`, `contract.ts`, `tests/property-gen.ts`, `docs/verbs.md`) only for
 what it adds, and keeps docs within their caps (≤ 40 lines, ≤ 100 columns, indexed in
 `docs/DESIGN.md`). Done = `npm run check` passes, one new test broken and restored, diff read.
-
-### 4. Architect forms
-
-- New definition prop `capacity_cm3` (integer > 0, `fields.ts`): how much liquid a vessel holds,
-  apart from its box. `bottle` declares 750 and its default `liquid_amount` becomes 750 (full);
-  `cup` declares 250. `liquidCapacity` in `src/engine/verbs/pour.ts` reads `capacity_cm3` where a
-  template declares it, else the inner volume as today, so a chest still takes a pour.
-- Five architect forms, accepted in scenario overrides only, converted on write to the one stored
-  value (pure, integer):
-  - `fuel_pct` (0–100), on an entity whose template declares `fuel`: that default × pct / 100;
-  - `liquid: { material?, pct }`, on one whose template declares `capacity_cm3`: `liquid_amount`
-    = capacity × pct / 100 and `liquid_material` = `material`, else the template's; pct 0 stores
-    amount 0 and material `""`;
-  - `condition`, `intact` or `damaged`: entity `integrity` 100 or 50;
-  - `hunger_pct` (0–100), on one whose template declares `hunger`: `hunger` itself, which runs
-    0–100 already;
-  - `portions_pct` (0–100), on one whose template declares `portions`: that default × pct / 100.
-  Percentages floor, except that one above 0 never stores 0 (a candle's 8 fuel at 10% is 1).
-- A form is refused `invalid_form` (not a
-  whole number 0–100, or an unknown condition), `form_not_applicable` (its template declares no
-  prop the form converts to) or `no_liquid_material` (pct above 0 with no material either side).
-- Migration: the bottle's 75 becomes 750 and the cup's 288 becomes 250 wherever a test, scenario
-  or doc quotes them (inventory first, report the count); `docs/limits.md` drops the 75 cm³ line.
-- Tests (`tests/architect-forms.test.ts`): the stored value of each form (full bottle 750, empty
-  cup 0 with no material, a candle at 10% → 1 and at 0% → 0, `damaged` → 50, bread at 50% → 2),
-  each refusal, a pour
-  into a cup bounded by 250, and a chest still bounded by its inner volume.
-- Docs: `docs/fields.md` (`capacity_cm3`, the forms), `docs/liquids.md` (capacity), `docs/api.md`
-  (scenario overrides).
 
 ### 4b. Scenarios are the architect
 

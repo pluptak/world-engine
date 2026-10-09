@@ -350,7 +350,7 @@ function script(ids: Ids): Step[] {
     expect: [{ status: "ok", events: ["put", "moved"] }],
   });
   step({
-    note: "ann pours 30 of the bottle's 75 into the cup",
+    note: "ann pours 30 of the bottle's 750 into the cup",
     run: cmd("B5-pour-cup", "ann", "pour", "bottle", { destination: "cup", amount: 30 }),
     expect: [{ status: "ok", events: ["pour", "poured"] }],
     // The pour row of the sense table: seen and heard by the room, smelt by the only nose in it.
@@ -382,7 +382,7 @@ function script(ids: Ids): Step[] {
       strictEqual(world.entity(ids.bottle)?.props.liquid_amount, 0);
       // The floor keeps the residue; the vessel declares no material at all once it is empty.
       strictEqual(world.entity(ids.bottle)?.props.liquid_material, "");
-      strictEqual(world.entity(ids.common)?.residue.grape_wine, 45);
+      strictEqual(world.entity(ids.common)?.residue.grape_wine, 720);
     },
   });
   step({
@@ -601,7 +601,7 @@ function script(ids: Ids): Step[] {
       // of what the earlier pour left on the floor.
       strictEqual(world.entity(ids.cup)?.props.liquid_material, "");
       strictEqual(world.entity(ids.cup)?.props.liquid_amount, 0);
-      strictEqual(world.entity(ids.common)?.residue.grape_wine, 75);
+      strictEqual(world.entity(ids.common)?.residue.grape_wine, 750);
       // Existence is modelled: what is gone answers false rather than unknown.
       deepStrictEqual(
         world.query({ kind: "fact", subject: ids.ann, relation: "near", object: ids.table }),

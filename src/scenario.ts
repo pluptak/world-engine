@@ -1,5 +1,6 @@
 import { WorldError } from "./errors.js";
 import type { AnchorPos } from "./engine/command.js";
+import type { ArchitectForms } from "./engine/forms.js";
 import type { EntityOverrides } from "./engine/spawn.js";
 import type { Id, Pos } from "./model.js";
 
@@ -8,7 +9,7 @@ export type { AnchorPos };
 // A scenario may give a position against an anchor instead of in centimetres.
 export type ScenarioOverrides = Omit<EntityOverrides, "pos"> & {
   pos?: Pos | AnchorPos | null;
-};
+} & ArchitectForms;
 
 export interface ScenarioEntry {
   id?: string;
@@ -22,7 +23,7 @@ export type Scenario = readonly ScenarioEntry[];
 export interface ResolvedEntry {
   id?: string;
   template: string;
-  overrides?: EntityOverrides;
+  overrides?: EntityOverrides & ArchitectForms;
 }
 
 export interface ResolvedScenario {

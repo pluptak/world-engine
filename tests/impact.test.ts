@@ -67,7 +67,7 @@ test("a stone that travels 13 cm into the bottle breaks it, and the wine lands o
   const result = push(w, "stone", 50);
   deepStrictEqual(types(result), ["push", "moved", "collided", "broken", "spawned", "spawned", "spawned"]);
   strictEqual(w.entity(idOf(w, "bottle"))?.status, "broken");
-  strictEqual(w.entity(idOf(w, "room"))?.residue.wine, 75);
+  strictEqual(w.entity(idOf(w, "room"))?.residue.wine, 750);
   strictEqual(w.entity(idOf(w, "stone"))?.status, "intact");
 });
 

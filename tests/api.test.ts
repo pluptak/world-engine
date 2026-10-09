@@ -83,7 +83,7 @@ test("a command through the API reproduces the causal bottle chain", (t) => {
 
   strictEqual(world.snapshot().version, 1);
   strictEqual(world.entity("e3")?.status, "broken");
-  deepStrictEqual(world.entity("e1")?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(world.entity("e1")?.residue, { glass: 5, wine: 750 });
   strictEqual(world.entity("e99"), null);
 });
 
@@ -120,7 +120,7 @@ test("queries and entities come from the same snapshot", (t) => {
   const bottle = world.entity("e3");
   ok(bottle);
   strictEqual(bottle.status, "broken");
-  deepStrictEqual(world.entity("e1")?.residue, { glass: 5, wine: 75 });
+  deepStrictEqual(world.entity("e1")?.residue, { glass: 5, wine: 750 });
 });
 
 test("a stale command through the API is preempted", (t) => {
@@ -173,7 +173,7 @@ test("a memory world runs the same commands to the same state", (t) => {
     fromDisk.events.map((event) => event.type),
   );
   strictEqual(canonicalJson(fromMemory.snapshot), canonicalJson(fromDisk.snapshot));
-  strictEqual(inMemory.entity("e1")?.residue.wine, 75);
+  strictEqual(inMemory.entity("e1")?.residue.wine, 750);
 });
 
 test("a memory world keeps no directory and rejects foreign templates", () => {

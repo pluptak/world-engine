@@ -312,7 +312,7 @@ test("a store world pushes a wine_bottle off its table into shards and its own r
   strictEqual(result.events[4]?.data.fall_cm, 75);
   strictEqual(world.entity("e3")?.status, "broken");
   strictEqual(world.entity("e3")?.props.liquid_amount, 0);
-  deepStrictEqual(world.entity("e1")?.residue, { glass: 5, grape_wine: 75 });
+  deepStrictEqual(world.entity("e1")?.residue, { glass: 5, grape_wine: 750 });
   strictEqual(
     Object.values(world.snapshot().entities).filter((entity) => entity.template === "glass_shard")
       .length,
@@ -336,7 +336,7 @@ test("a memory world breaks a wine_bottle exactly as a store world does", (t) =>
   strictEqual(inMemory.status, "ok");
   strictEqual(canonicalJson(inMemory.snapshot), canonicalJson(store.snapshot));
   strictEqual(canonicalJson(inMemory.events), canonicalJson(store.events));
-  deepStrictEqual(memory.entity("e1")?.residue, { glass: 5, grape_wine: 75 });
+  deepStrictEqual(memory.entity("e1")?.residue, { glass: 5, grape_wine: 750 });
 });
 
 test("a world needs no template file once it holds the resolved set", (t) => {
@@ -349,7 +349,7 @@ test("a world needs no template file once it holds the resolved set", (t) => {
   const reopened = openWorld(dir);
   strictEqual(canonicalJson(reopened.snapshot()), before);
   strictEqual(reopened.command(pushTable).status, "ok");
-  deepStrictEqual(reopened.entity("e1")?.residue, { glass: 5, grape_wine: 75 });
+  deepStrictEqual(reopened.entity("e1")?.residue, { glass: 5, grape_wine: 750 });
 });
 
 test("a child that inherits a detachable part needs its own companion template", () => {

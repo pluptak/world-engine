@@ -352,6 +352,9 @@ function propIssues(
     } else {
       issues.push(issue("undeclared_prop", [...path, "props", name], `props.${name} is not a declared prop`));
     }
+    if (engine?.min !== undefined && typeof value === "number" && value < engine.min) {
+      issues.push(issue("wrong_prop_type", [...path, "props", name], `props.${name} must be at least ${engine.min}`));
+    }
     const requires = engine?.requires;
     if (requires && requires.some((r) => !template.props?.[r])) {
       issues.push(

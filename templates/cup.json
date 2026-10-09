@@ -8,7 +8,8 @@
     "topples": true,
     "inner_w_cm": 6,
     "inner_d_cm": 6,
-    "inner_h_cm": 8
+    "inner_h_cm": 8,
+    "capacity_cm3": 250
   },
   "break_products": [],
   "break_residue": {}

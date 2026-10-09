@@ -7,7 +7,8 @@
     "topples": true,
     "break_fall_cm": 50,
     "liquid_material": "wine",
-    "liquid_amount": 75,
+    "capacity_cm3": 750,
+    "liquid_amount": 750,
     "liquid_nutrition": 10
   },
   "break_products": [{ "template": "glass_shard", "count": 3 }],

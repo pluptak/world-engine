@@ -79,8 +79,15 @@ export const EntityOverridesSchema = z.object({
 
 // A scenario entry may place its entity against an anchor; a spawn edit may not, so only the
 // scenario's overrides admit the anchor form of a position.
+// The architect's forms (`src/engine/forms.ts`) are scenario-only; the engine refuses a bad one with its own
+// code, so the percentages are numbers here and not narrowed to whole ones.
 export const ScenarioOverridesSchema = EntityOverridesSchema.extend({
   pos: PlacementPosSchema.nullable().optional(),
+  fuel_pct: z.number().optional(),
+  liquid: z.object({ material: z.string().optional(), pct: z.number() }).strict().optional(),
+  condition: z.string().optional(),
+  hunger_pct: z.number().optional(),
+  portions_pct: z.number().optional(),
 });
 
 // A scenario entry may declare a name for the entity it spawns; createWorld resolves names to ids
