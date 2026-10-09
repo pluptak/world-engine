@@ -3,3 +3,5 @@ data/
 docs/superpowers/
 .superpowers/
 .test-map.json
+.claude/
+.devcontainer/
