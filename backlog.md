@@ -19,8 +19,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [A refined entity starts the processes its new preset adds](#a-refined-entity-starts-the-processes-its-new-preset-adds).
-2. [The scale benchmark builds its world again](#the-scale-benchmark-builds-its-world-again).
-3. [The catalogue says when a default is approximate](#the-catalogue-says-when-a-default-is-approximate).
+2. [The catalogue says when a default is approximate](#the-catalogue-says-when-a-default-is-approximate).
+3. [The scale benchmark builds its world again](#the-scale-benchmark-builds-its-world-again).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -67,7 +67,8 @@ Probing `refine` (`docs/refine.md`) found that it does not start a process the n
 schedule empty and the fuel at 20 after six ticks; the same preset placed in a scenario leaks. `reconcileSince`
 (`src/engine/process.ts`) reconciles only entities whose `props` or `entity` delta it sees, and `refine` writes its
 props through `set`, which skips a no-op, so a preset that adds a process on props the entity already has
-changes none: the `template` delta is the only trace and nothing reads it.
+changes none: the `template` delta is the only trace and nothing reads it. `docs/refine.md` already says that
+processes the new preset adds run from then on; today they do not.
 
 - **Fix:** `reconcileSince` also counts a `template` delta as touching its entity, so a refined entity is reconciled
   against its new preset like a spawned one: what can run is scheduled `every_ticks` from now, naming the `edited`
@@ -79,8 +80,8 @@ changes none: the `template` delta is the only trace and nothing reads it.
   `edited` event; a refinement whose new process cannot run (its `while` does not hold) schedules nothing; the
   world replays (`verifyWorld`) and a reopened one agrees; an older world (`lineage` deleted from its
   `templates.json`) is refused, upgraded, then refines and reopens as a candle.
-- **Docs:** `docs/refine.md` (the older-worlds line), `docs/processes.md` (what reconciles a process: a spawn, a prop
-  write and now a refinement).
+- **Docs:** `docs/refine.md` (the older-worlds line; the processes line becomes true as written),
+  `docs/processes.md` (what reconciles a process: a spawn, a prop write and now a refinement).
 - **Depends on:** nothing.
 
 ### The scale benchmark builds its world again
@@ -93,7 +94,10 @@ builds it, so nothing noticed. With a `size` field declared and the chest placed
 last thousand alike), against the 10.6 in `docs/measurements.md`.
 
 - **Share the world:** `scripts/bench-world.ts` exports `scaleRegistry()`, `scaleScenario()` and `scaleCommand()`
-  (moved out of `scripts/bench.ts`, which imports them); the fixes above are made there.
+  (moved out of `scripts/bench.ts`, which imports them; the registry is built inline in `runScale` today); the
+  fixes above are made there.
+- **Clean up:** each of the three runs in `scripts/bench.ts` removes the directory it made when it ends; today
+  every run leaves one in the system temp directory.
 - **Test:** `tests/bench-world.test.ts` builds the world (500 entities, 20 rooms), plays two laps of the cycle
   (`CYCLE` * `ROOMS` * 2 commands), asserts every one is ok and `validateSnapshot` is clean. It times nothing.
 - **Docs:** `docs/measurements.md`: the scale row gets the new run, saying the earlier one predates the schema;
@@ -110,8 +114,10 @@ else, or an error, with nothing in the catalogue to warn it.
 
 - **Fix:** `forms.approximate` (`src/engine/catalog.ts`, `CatalogResponseSchema`): the form names, `liquid` and
   `hunger_pct`, whose listed default is not what leaving it out places, in that order, absent when none. A `liquid`
-  is approximate when the amount is not exactly `pct` of the capacity; a `hunger_pct` when the preset's `hunger`
-  is over 100, in which case it is listed as 100. `fuel_pct` and `portions_pct` default to 100 and are always exact.
+  is approximate when placing its listed `pct` stores another amount than the preset's: `share` in
+  `src/engine/forms.ts` (exported for this) gives what a placement stores, so the floor and the never-0 rule count.
+  A `hunger_pct` is approximate when the preset's `hunger` is over 100, in which case it is listed as 100.
+  `fuel_pct` and `portions_pct` default to 100 and are always exact.
 - **Test:** `tests/catalog-view.test.ts`: the two presets above list their form in `approximate`; every shipped
   entry lists none, and the existing round-trip test also asserts that an entry without `approximate` places as
   its defaults say.
