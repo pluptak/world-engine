@@ -131,3 +131,12 @@ test("the author turns a camera, and a subject it did not see is seen", (t) => {
   strictEqual(world.edit({ kind: "update_props", target: id("camera"), props: { facing_deg: 90 } }).status, "ok");
   deepStrictEqual(sight(id("late")), { value: "true", basis_code: "camera" });
 });
+
+test("an author's edit that leaves a narrow camera with no facing is refused camera_without_facing", (t) => {
+  const { world, id } = open(t, "narrow_camera", 0, []);
+  const camera = id("camera");
+  const { facing_deg: _facing, ...props } = world.entity(camera)!.props;
+  const result = world.edit({ kind: "set_props", target: camera, props });
+  deepStrictEqual([result.status, result.reason_code], ["refused", "camera_without_facing"]);
+  strictEqual(world.entity(camera)?.props.facing_deg, 0);
+});

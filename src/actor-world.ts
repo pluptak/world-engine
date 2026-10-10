@@ -4,6 +4,7 @@ import type { Options, OptionsRequest, ReadyOption } from "./options.js";
 import type { Command, Result } from "./engine/command.js";
 import { PROP_FIELDS } from "./engine/fields.js";
 import { gropable } from "./engine/query.js";
+import { verbRegistry } from "./engine/verbs/index.js";
 import type { Inspection, ObservedEntity, Projection } from "./engine/projection.js";
 import { WorldError } from "./errors.js";
 import { own, type Id, type ReasonData, type Snapshot, type Status } from "./model.js";
@@ -106,8 +107,17 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
     const id = Object.keys(world.snapshot().entities).find((candidate) => alias(candidate) === entity);
     return id === undefined ? text : `${id}${part}`;
   };
-  const unaliasArgs = (args: Record<string, unknown>): Record<string, unknown> =>
-    Object.fromEntries(Object.entries(args).map(([key, value]) => [key, typeof value === "string" ? unalias(value) : value]));
+  // A `token` arg (what `say` says) is opaque text the engine stores and others are told, never a name:
+  // it passes as it is, so neither an alias nor an id-shaped word is rewritten into it.
+  const unaliasArgs = (verb: string, args: Record<string, unknown>): Record<string, unknown> => {
+    const declared = verbRegistry.get(verb)?.args;
+    return Object.fromEntries(
+      Object.entries(args).map(([key, value]) => [
+        key,
+        typeof value === "string" && declared?.[key]?.kind !== "token" ? unalias(value) : value,
+      ]),
+    );
+  };
 
   // Built field by field, so nothing a caller adds (an `actor`, `perceivers`) reaches the world.
   const toCommand = (command: ActorCommand): Command => ({
@@ -115,7 +125,7 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
     actor,
     verb: command.verb,
     ...(command.target !== undefined && { target: unalias(command.target) }),
-    ...(command.args !== undefined && { args: unaliasArgs(command.args) }),
+    ...(command.args !== undefined && { args: unaliasArgs(command.verb, command.args) }),
   });
 
   const entityOut = <T extends ObservedEntity>(entity: T): T => {

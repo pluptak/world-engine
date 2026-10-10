@@ -282,3 +282,15 @@ test("an act out of sight tells the actor nothing, however many ids it used", (t
   ok(sides[0]!.next !== sides[1]!.next);
   strictEqual(sides[0]!.seen, sides[1]!.seen);
 });
+
+test("what a view says is said as it is: an id-shaped word and the actor's own alias are not rewritten", (t) => {
+  for (const world of worlds(t, true)) {
+    const ann = actorWorld(world, ANN);
+    for (const utterance of [STONE, aliasOf(ANN, STONE)]) {
+      const said = ann.command({ command_id: `say-${utterance}`, verb: "say", args: { utterance } });
+      strictEqual(said.status, "ok", utterance);
+      const event = world.since(0).events.filter((entry) => entry.type === "say").at(-1);
+      strictEqual(event?.data.utterance, utterance);
+    }
+  }
+});

@@ -13,7 +13,7 @@ it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
   caller reads with `fact` (B).
 - A camera sees its room, lit, within its cone, and nothing else: no sound, no view across a door,
   no record. The lab's is whole; the corridor's is narrow, turned on the exit door (C, M). The
-  dormitory has none, so an act there reaches only whoever stands in it. The AI hears that room
+  dormitory has none, so an act there is seen only by whoever stands in it; the AI hears that room
   through the intercom, which carries it and no other (C).
 - The AI watches its arm with the lab camera, on the same cable: one cut blinds both. The terminal
   and the arm name the key by two aliases, so a caller holding both views matches them by name,
