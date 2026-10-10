@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
+import { deepStrictEqual, notStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -229,6 +229,26 @@ test("an alias names its thing on the way in, and another actor's alias names no
     const dropped = ann.command({ command_id: "drop-by-bobs", verb: "drop", target: aliasOf(BOB, STONE) });
     strictEqual(dropped.status, "unresolved");
     strictEqual(world.entity(STONE)?.contained_in, ANN);
+  }
+});
+
+test("a raw world id names nothing in a view, and the world still takes one", (t) => {
+  for (const world of worlds(t, true)) {
+    const ann = actorWorld(world, ANN);
+    const byId: ActorCommand = { command_id: "take-by-id", verb: "take", target: STONE };
+    deepStrictEqual([ann.command(byId).status, ann.command(byId).resolved_target], ["unresolved", null]);
+    strictEqual(ann.check(byId).status, "unresolved");
+    strictEqual(ann.inspect(STONE), null);
+    strictEqual(ann.inspect(`${STONE}.x`), null);
+    notStrictEqual(world.entity(STONE)?.contained_in, ANN);
+    // A raw id as a `give`'s destination names nothing either: the stone stays in ann's grip.
+    strictEqual(ann.command({ command_id: "take-by-name", verb: "take", target: "stone" }).status, "ok");
+    const giveById = ann.command({ command_id: "give-by-id", verb: "give", target: "stone", args: { destination: BOB } });
+    strictEqual(giveById.status, "unresolved");
+    strictEqual(world.entity(STONE)?.contained_in, ANN);
+    strictEqual(ann.command({ command_id: "give-by-name", verb: "give", target: "stone", args: { destination: "bob" } }).status, "ok");
+    // The world's own command takes a raw id as it always did: bob, now holding it, drops it by id.
+    strictEqual(world.command({ command_id: "world-drops-by-id", actor: BOB, verb: "drop", target: STONE }).status, "ok");
   }
 });
 

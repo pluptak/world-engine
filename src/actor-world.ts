@@ -77,12 +77,29 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
     own(snapshot.entities, value.split(".")[0]!) !== undefined;
   const aliasValue = (snapshot: Snapshot, value: unknown): unknown =>
     typeof value === "string" && isAddress(snapshot, value) ? alias(value) : value;
-  // One of this actor's aliases, back to the id it stands for; anything else, another actor's alias
-  // included, passes as it is and resolves as text.
+  // A word no name, alias or id in the world is: names are free text, so the builder reads the world's
+  // own names and takes the first `nothing<n>` none of them is. The world answers it as it answers a
+  // name no one holds, and the view never sends it back.
+  const nothing = (): string => {
+    const snapshot = world.snapshot();
+    const taken = new Set<string>(Object.keys(snapshot.entities));
+    for (const entity of Object.values(snapshot.entities)) {
+      taken.add(entity.name.toLowerCase());
+      entity.aliases.forEach((name) => taken.add(name.toLowerCase()));
+    }
+    let n = 0;
+    while (taken.has(`nothing${n}`)) {
+      n += 1;
+    }
+    return `nothing${n}`;
+  };
+  // One of this actor's aliases, back to the id it stands for. A raw world id, or an entity's part
+  // address, names nothing in the actor's view; another actor's alias passes as it is and resolves
+  // as text, as a name no one holds would.
   const unalias = (text: string): string => {
     const match = ALIAS.exec(text);
     if (match === null) {
-      return text;
+      return isAddress(world.snapshot(), text) ? nothing() : text;
     }
     const part = match[1] ?? "";
     const entity = text.slice(0, text.length - part.length);

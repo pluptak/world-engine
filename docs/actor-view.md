@@ -25,7 +25,8 @@ show that something was made out of sight. Each actor is sent its own alias of e
 `aliasOf(actor, id)`: `x` and 12 hex digits of a hash of the two, a part address keeping its part,
 so two actors' names for one thing differ and none carries a count. A projection lists entities in
 alias order. A target or an argument that is one of the actor's aliases is read back to its id on
-the way in; another actor's alias names nothing. The hash hides the count from a controller that
+the way in; another actor's alias, and a raw world id, names nothing: the view passes the first
+`nothing<n>` no name, alias or id of the world is. The hash hides the count from a controller that
 reads its views, not from one that hashes candidate ids to decode them; a key would close that.
 
 The CLI has the same five as ops, each with `world` and `actor`: `actor_observe` (`since_tick?`),

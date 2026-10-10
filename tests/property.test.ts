@@ -387,6 +387,23 @@ test("nobody learns words they did not hear: a projection carries a token exactl
   strictEqual(ownViews >= 20, true, `own views ${ownViews}`);
 });
 
+// The step as a controller sends it to its view: each id it names is that actor's alias of the id, as
+// a raw world id would name nothing there.
+function aliased(step: Command, before: Snapshot): Command {
+  const alias = (value: string): string => {
+    const dot = value.indexOf(".");
+    const entity = dot < 0 ? value : value.slice(0, dot);
+    return Object.hasOwn(before.entities, entity) ? `${aliasOf(step.actor, entity)}${value.slice(entity.length)}` : value;
+  };
+  return {
+    ...step,
+    ...(step.target !== undefined && { target: alias(step.target) }),
+    ...(step.args !== undefined && {
+      args: Object.fromEntries(Object.entries(step.args).map(([key, value]) => [key, typeof value === "string" ? alias(value) : value])),
+    }),
+  };
+}
+
 test("an actor is told only of what it can sense or address: an actor view names nothing else", () => {
   let named = 0;
   let groped = 0;
@@ -404,7 +421,7 @@ test("an actor is told only of what it can sense or address: an actor view names
         continue;
       }
       const raw = world.check(step);
-      const result = actorWorld(world, step.actor).command(step);
+      const result = actorWorld(world, step.actor).command(aliased(step, before));
       strictEqual(["snapshot", "deltas", "events"].some((key) => key in result), false);
       // What it named resolved by the resolution rule, read independently of the view; what else it
       // is told is in its own observation or is one it could name by that same rule. The view names

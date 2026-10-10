@@ -18,10 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [An actor's view names nothing by a world id](#an-actors-view-names-nothing-by-a-world-id).
-2. [The AI watches its arm](#the-ai-watches-its-arm).
-3. [A panel a subject can use](#a-panel-a-subject-can-use).
-4. [A camera that looks one way](#a-camera-that-looks-one-way).
+1. [The AI watches its arm](#the-ai-watches-its-arm).
+2. [A panel a subject can use](#a-panel-a-subject-can-use).
+3. [A camera that looks one way](#a-camera-that-looks-one-way).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -65,30 +64,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### An actor's view names nothing by a world id
-
-An actor's view reads its own aliases back to ids and passes anything else on as text
-(`unalias` in `src/actor-world.ts`), so a raw world id (`e12`, `e12.hand_l`) passes too and
-resolves as the id it is. Reach and perception still gate what it can reach, but the view takes a
-name the actor was never given, and ids are sequential, so a caller can count through them;
-`docs/actor-view.md` describes aliases only.
-
-- **Change** (`src/actor-world.ts`): a target or a string argument that is not one of the actor's
-  aliases but is an entity address (`isAddress` there: an entity id, with or without `.part`) is
-  read back to a value that names nothing, so the world answers it as it answers another actor's
-  alias: `unresolved` for `command` and `check`, `null` for `inspect`. Names and every other
-  string pass as now. The value chosen must never match an id, alias or name (a character names
-  cannot hold, or the view answering `unresolved` itself without a call; the builder picks one and
-  says which).
-- **Tests:** `tests/actor-world.test.ts`: a view's `command`, `check` and `inspect` with a raw id
-  of a thing the actor sees are `unresolved` / `null`, while its alias and its name work; a raw
-  `entity.part` the same; a raw id in an argument (`give`'s `destination`) the same; the world's
-  own `command` with the raw id unchanged. Any existing test that passed a raw id to a view moves
-  to the alias.
-- **Docs:** `docs/actor-view.md` one sentence: a world id names nothing in a view.
-- **Depends on:** nothing. **Not in it:** a keyed alias hash (the open note in `actor-view.md`),
-  names that look like ids (a name equal to an id is read as that id, so it names nothing either).
 
 ### The AI watches its arm
 

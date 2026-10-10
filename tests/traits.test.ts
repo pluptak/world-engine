@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { canonicalJson, createWorld, memoryWorld, WorldError, type Entity, type Id, type Scenario, type World } from "../src/index.js";
+import { aliasOf, canonicalJson, createWorld, memoryWorld, WorldError, type Entity, type Id, type Scenario, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
 import { cli } from "./cli-run.js";
@@ -126,7 +126,7 @@ test("the CLI answers a snapshot, an inspect and an actor inspect that carry tra
   const ann = w.id("ann")!;
   const vase = w.id("vase")!;
   deepStrictEqual(ask({ op: "inspect", world: dir, observer: ann, entity: vase }).inspection.traits, { colour: "brown" });
-  deepStrictEqual(ask({ op: "actor_inspect", world: dir, actor: ann, entity: vase }).inspection.traits, { colour: "brown" });
+  deepStrictEqual(ask({ op: "actor_inspect", world: dir, actor: ann, entity: aliasOf(ann, vase) }).inspection.traits, { colour: "brown" });
   // An edit with traits through the CLI.
   const edit = ask({ op: "edit", world: dir, edit: { kind: "spawn", template: "stone", overrides: { name: "pebble", traits: { shape: "round" }, ...inRoom(70) } } });
   strictEqual(edit.status, "ok");
