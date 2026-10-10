@@ -18,11 +18,10 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A door that takes time to shut](#a-door-that-takes-time-to-shut).
-2. [A remote command that can jam](#a-remote-command-that-can-jam).
-3. [A thing's own integrity](#a-things-own-integrity).
-4. [An intercom](#an-intercom).
-5. [The lab's acceptance table](#the-labs-acceptance-table).
+1. [A remote command that can jam](#a-remote-command-that-can-jam).
+2. [A thing's own integrity](#a-things-own-integrity).
+3. [An intercom](#an-intercom).
+4. [The lab's acceptance table](#the-labs-acceptance-table).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -66,44 +65,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A door that takes time to shut
-
-A door shuts within the command that shuts it, so a subject never runs for a door the AI is
-closing (the roadmap's "a human and the AI act on a door in the same time window"). Simultaneous
-commands stay out of scope; a scheduled cause gives the window instead, as `closes_after` does.
-
-- **Props** (`src/engine/fields.ts`): `shut_ticks` (definition, integer, `requires` openable) and
-  `closing` (state, boolean).
-- **`close`** (`src/engine/verbs/openable.ts`), by hand or by its controller, of a target with a
-  positive `shut_ticks`: emits `closing` (not `closed`), sets `closing: true`, withdraws any pending
-  `close` and schedules one `shut_ticks` ticks on, caused by the `closing`. Nothing is moved aside
-  yet: until it shuts the door is open, so `move` through it works. At the due tick the existing
-  close cause (`runClose` in `src/engine/schedule.ts`) shuts it as now (moving occupants aside)
-  and clears `closing`.
-- **Within the window:** `open` of a closing door is allowed (`already_open` only when it is open
-  and not closing): it clears `closing` and withdraws the shut, under `opened`. `close` and `lock`
-  of a closing door are refused `closing`, one new code, so the AI cannot lock what it has not yet
-  shut and a subject's `open` stops it. Locking a door that is open and not closing stays as today.
-- **Events:** `closing` takes the row of `closed` in `EVENT_SENSES` (`docs/senses.md`).
-- **Snapshot rule** (`src/engine/validate.ts`): `closing: true` on a target that is not open or has
-  no pending `close` is `closing_without_close`, so the author cannot write a window by `edit`.
-- **Lab:** the exit door gets `shut_ticks: 2`; step G's close by ann becomes a `closing` and the
-  push aside two ticks later. A third test in `tests/scenario-lab.test.ts`, same scenario: the
-  terminal unlocks and opens the exit door; it closes it, and bob, in the corridor, walks out
-  through it in the window; the door shuts, and the terminal's lock is ok with bob outside. Then
-  the terminal opens and closes it again, ann opens it in the window, and its `lock` is `closing`
-  until it does shut.
-- **Tests:** `tests/door-window.test.ts`: `closing` and the shut two ticks later, with an occupant
-  moved aside only then; `move` through in the window; `open` stopping it; `close` and `lock`
-  refused `closing`; a remote close the same; the rule refusing an authored `closing`; a door with
-  no `shut_ticks` shutting at once as now; `closes_after` unchanged.
-- **Docs:** `docs/verbs-openables.md` and `docs/schedule.md` (one line each, or a new
-  `docs/door-window.md` if either passes its cap), `docs/limits-lab.md` (a door now gives way to
-  a runner; what the build shows).
-- **Depends on:** nothing. **Not in it:** a `closes_after` swing that takes time (its close stays
-  the end of the swing), opening that takes time, a door that crushes or stops on what is in it
-  (out of scope), and anything about who acted first beyond the order of commands.
 
 ### A remote command that can jam
 

@@ -17,6 +17,9 @@ rule a stored cause of it can break (`invalid`, read by `validateSnapshot`). The
 something due, the modifiers due expire first, then the causes due run in schedule order, each
 emitting under its `cause_id`.
 
+**The shut that takes time.** A `close` of an openable with `shut_ticks` schedules its shut that many
+ticks on, caused by its `closing` ([door-window.md](door-window.md)).
+
 **The self-closing door.** An openable with a positive `closes_after` prop is scheduled to close
 that many ticks after an `open`: a door opened at tick 4 with `closes_after: 2` emits `closed` at 6,
 during whichever command spans 6, caused by its `opened`. An open door is refused `already_open`, so

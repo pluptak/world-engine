@@ -8,7 +8,9 @@ A target that declares `openable` (a door, a gate, a chest) is opened, shut, loc
   through its `from` and `to` props. Without a position it is in reach from anywhere in either room; with
   one it keeps that position in the room it stands in, and from the room it leads to it is reached as an
   unpositioned door is, so from the dark yard one names, opens and shuts the gatehouse door.
-- `close`: a target that is shut (or never opened) is refused `already_closed`; otherwise sets that prop false under `closed`, first moving what stands on the target's footprint
+- `close`: a target that is shut (or never opened) is refused `already_closed`; a target with `shut_ticks`
+  opens its window instead, `closing` ([door-window.md](door-window.md)); otherwise sets that prop false
+  under `closed`, first moving what stands on the target's footprint
   aside, each under a `moved` caused by the `closed` ([schedule.md](schedule.md)); a shut container
   hides its chain, so `take` and `put` refuse `container_closed` and sight inside is `false`.
 - `lock`: sets `locked` under a `locked` event; needs `manipulation` and a carried entity whose

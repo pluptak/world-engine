@@ -26,3 +26,5 @@ it. Nothing here is a proposal.
   stage is read through the trusted `World`, never through a view, the terminal's included (F).
 - An open door blocks its footprint: only a barrier stands open to walking, so no subject can
   stand in a doorway to keep it from shutting; one the author puts there is moved aside (G).
+- The exit door shuts two ticks after its close: a runner gets through in that window, and an open
+  stops the shut. Nothing is simultaneous: a window is only the ticks the door takes (G, window test).

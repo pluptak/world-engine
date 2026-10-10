@@ -1,0 +1,5 @@
+{
+  "id": "shut_door",
+  "extends": "door",
+  "props": { "shut_ticks": 2 }
+}

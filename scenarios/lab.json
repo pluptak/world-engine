@@ -9,7 +9,7 @@
   { "id": "server_door", "template": "door", "overrides": { "name": "server door", "props": { "open": false, "from": "corridor", "to": "server_room" } } },
   {
     "id": "exit_door",
-    "template": "door",
+    "template": "shut_door",
     "overrides": {
       "name": "exit door",
       "location": "corridor",

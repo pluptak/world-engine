@@ -33,11 +33,12 @@ const requirements: Record<Kind, readonly CapacityRequirement[] | undefined> = {
 const openableArgs: Readonly<Record<string, never>> = {};
 const remoteRefuses = ["disconnected", "unpowered"] as const;
 const openRefuses = ["not_openable", "out_of_reach", "already_open", "locked", ...remoteRefuses] as const;
-const closeRefuses = ["not_openable", "out_of_reach", "already_closed", ...remoteRefuses] as const;
+const closeRefuses = ["not_openable", "out_of_reach", "already_closed", "closing", ...remoteRefuses] as const;
 const lockRefuses = [
   "not_openable",
   "out_of_reach",
   "already_locked",
+  "closing",
   "no_key",
   "insufficient_manipulation",
   ...remoteRefuses,
@@ -123,7 +124,8 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
 
   // Opening what is open, shutting what is shut, locking what is locked or unlocking what is not
   // would change nothing but the clock.
-  if (kind === "open" && entity.props.open === true) {
+  // A door on its way shut is open still, so `open` is not a no-op for it: it stops the shut.
+  if (kind === "open" && entity.props.open === true && entity.props.closing !== true) {
     return { status: "refused", reason_code: "already_open" };
   }
   if (kind === "close" && entity.props.open !== true) {
@@ -137,6 +139,10 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
   }
   if (kind === "open" && entity.props.locked === true) {
     return { status: "refused", reason_code: "locked" };
+  }
+  // Until a door on its way shut has shut, neither a shut nor a lock can be made of it.
+  if ((kind === "close" || kind === "lock") && entity.props.closing === true) {
+    return { status: "refused", reason_code: "closing" };
   }
   if (remote(context, entity)) {
     const fault = remoteFault(context.snapshot, entity.id);
@@ -153,14 +159,39 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
   return { status: "ok" };
 }
 
+// A door with `shut_ticks` is shut that many ticks on, not at once: the window opens here, under a
+// `closing` event, and the shut is a scheduled close caused by it. It stays open until then, so
+// `move` goes through, and nothing is moved aside yet.
+function startClosing(context: TransitionContext, entity: Entity, shutTicks: number): void {
+  const eventId = context.emit("closing", entity.id, {}, context.root_event_id);
+  context.set(entity.id, "props", { ...entity.props, closing: true }, eventId);
+  cancel(context, "close", entity.id);
+  schedule(context, {
+    due_tick: context.snapshot.tick + shutTicks,
+    kind: "close",
+    entity: entity.id,
+    cause_id: eventId,
+  });
+}
+
 function transition(context: TransitionContext, kind: Kind): void {
   const target = openableTarget(context, context.target);
   if (target.status === "failed") {
     throw new TypeError("Openable target changed after validation");
   }
 
+  // Opening stops a shut on its way, and a shut that has come clears the window (`schedule.ts`).
+  const { closing: _closing, ...others } = context.snapshot.entities[target.entity.id]?.props ?? {};
+  const shutTicks = target.entity.props.shut_ticks;
+  const shutsLater =
+    kind === "close" && typeof shutTicks === "number" && shutTicks > 0 && Number.isSafeInteger(context.snapshot.tick + shutTicks);
+  if (shutsLater) {
+    startClosing(context, target.entity, shutTicks);
+    return;
+  }
+
   const change = changes[kind];
-  const props = { ...context.snapshot.entities[target.entity.id]?.props, [change.prop]: change.value };
+  const props = { ...others, [change.prop]: change.value };
   const eventId = context.emit(change.event, target.entity.id, {}, context.root_event_id);
   context.set(target.entity.id, "props", props, eventId);
   if (kind === "close") {

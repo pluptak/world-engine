@@ -938,6 +938,7 @@ export const editVerb: Verb = {
     "in_part_unknown_part",
     "in_part_unavailable",
     "grip_occupied",
+    "closing_without_close",
     "part_contents_too_large",
     "container_contents_too_large",
     "invalid_trait",

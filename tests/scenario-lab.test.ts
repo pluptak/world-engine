@@ -57,6 +57,56 @@ test("the lab: the arm takes the key before ann arrives, and a cut cable leaves 
   deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
 });
 
+test("the lab's exit door in its window: bob walks out before it shuts, ann's open stops a shut, and the lock waits for the shut", (t) => {
+  const root = tempDir(t);
+  const { world, id, run } = open(join(root, "window"));
+  const [ann, bob, terminal, door] = [id("ann"), id("bob"), id("terminal"), id("exit_door")];
+  const status = (result: Result) => [result.status, result.reason_code];
+  const shuts = (result: Result) => result.events.filter((event) => event.type === "closed").map((event) => event.entity);
+
+  // The terminal unlocks and opens the exit door; bob, in the dormitory, walks into the corridor by it.
+  deepStrictEqual(status(run(terminal, "unlock", "exit door")), ["ok", undefined]);
+  deepStrictEqual(status(run(terminal, "open", "exit door")), ["ok", undefined]);
+  deepStrictEqual(status(run(bob, "move", undefined, { through: "dormitory door" })), ["ok", undefined]);
+  deepStrictEqual(status(run(bob, "move", undefined, { to: { x: 0, y: 420 } })), ["ok", undefined]);
+
+  // The terminal shuts it: the door is closing, still open, and the lock is refused until it shuts.
+  const closing = run(terminal, "close", "exit door");
+  deepStrictEqual(closing.events.map((event) => [event.type, event.entity]), [
+    ["close", door],
+    ["closing", door],
+  ]);
+  deepStrictEqual([world.entity(door)?.props.open, world.entity(door)?.props.closing], [true, true]);
+  deepStrictEqual(status(run(terminal, "lock", "exit door")), ["refused", "closing"]);
+  // Bob walks out through it in the window. The walk is one tick, and the shut falls due on the tick
+  // the walk ends on: bob has passed while it was still open, and the door shuts with nobody in it.
+  deepStrictEqual(status(run(bob, "move", undefined, { through: "exit door" })), ["ok", undefined]);
+  strictEqual(world.entity(bob)?.location, id("outside"));
+  deepStrictEqual(world.entity(door)?.props.open, false);
+  deepStrictEqual(world.entity(door)?.props.closing, undefined);
+  deepStrictEqual(status(run(terminal, "lock", "exit door")), ["ok", undefined]);
+
+  // The terminal opens it again and shuts it; ann, coming up the corridor, opens it in the window: the
+  // shut stops, the door stays open, and nothing shuts on the clock.
+  deepStrictEqual(status(run(terminal, "unlock", "exit door")), ["ok", undefined]);
+  deepStrictEqual(status(run(terminal, "open", "exit door")), ["ok", undefined]);
+  deepStrictEqual(status(run(terminal, "close", "exit door")), ["ok", undefined]);
+  deepStrictEqual(status(run(ann, "move", undefined, { through: "dormitory door" })), ["ok", undefined]);
+  deepStrictEqual(status(run(ann, "move", undefined, { to: { x: 0, y: 420 } })), ["ok", undefined]);
+  const opened = run(ann, "open", "exit door");
+  deepStrictEqual(opened.events.map((event) => event.type), ["open", "opened"]);
+  deepStrictEqual([world.entity(door)?.props.open, world.entity(door)?.props.closing], [true, undefined]);
+  deepStrictEqual(shuts(run(WORLD_AUTHOR, "advance", undefined, { ticks: 3 })), []);
+  strictEqual(world.entity(door)?.props.open, true);
+
+  // Shut again by the terminal, and the lock waits until the shut has come.
+  deepStrictEqual(status(run(terminal, "close", "exit door")), ["ok", undefined]);
+  deepStrictEqual(status(run(terminal, "lock", "exit door")), ["refused", "closing"]);
+  deepStrictEqual(shuts(run(WORLD_AUTHOR, "advance", undefined, { ticks: 2 })), [door]);
+  deepStrictEqual(status(run(terminal, "lock", "exit door")), ["ok", undefined]);
+  deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
+});
+
 // Everything sent to the world, in order, so a second world can be sent the same.
 type Sent = { command: Command } | { edit: WorldEdit };
 
@@ -167,12 +217,22 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   const walked = run(bob, "move", undefined, { to: { x: 0, y: 450 } });
   deepStrictEqual([walked.status, walked.reason_code, walked.reason_data], ["refused", "blocked", { with: id("exit_door") }]);
   strictEqual(edit({ kind: "place", target: bob, support: id("corridor"), pos: { x: 0, y: 450 } }).status, "ok");
-  const closed = run(ann, "close", "exit door");
-  deepStrictEqual(closed.events.map((event) => [event.type, event.entity]), [
+  // The exit door is a shut door: ann's close opens its window, and the shut comes two ticks on, moving
+  // bob aside only then.
+  const closing = run(ann, "close", "exit door");
+  deepStrictEqual(closing.events.map((event) => [event.type, event.entity]), [
     ["close", id("exit_door")],
-    ["closed", id("exit_door")],
-    ["moved", bob],
+    ["closing", id("exit_door")],
   ]);
+  strictEqual(world.entity(bob)?.pos?.y, 450);
+  const shut = run(WORLD_AUTHOR, "advance", undefined, { ticks: 2 });
+  deepStrictEqual(
+    shut.events.filter((event) => event.type === "closed" || event.type === "moved").map((event) => [event.type, event.entity]),
+    [
+      ["closed", id("exit_door")],
+      ["moved", bob],
+    ],
+  );
   ok(world.entity(bob)?.pos?.y !== 450);
 
   // I. the stage advances on its own: a watch the author set moves it once the exit door is locked and

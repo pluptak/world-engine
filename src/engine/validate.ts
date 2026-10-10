@@ -8,6 +8,7 @@ import { uncomputable } from "./capabilities.js";
 import { isAbstract } from "./resolve.js";
 import { isRngState } from "./rng.js";
 import { CAUSE_KINDS, causeInvalid } from "./schedule.js";
+import { pending } from "./pending.js";
 import { MAX_BEATS, pendingBeatIds } from "./beats.js";
 import { isUtterance } from "./verbs/say.js";
 
@@ -262,6 +263,15 @@ function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
     const target = own(snapshot.entities, opens);
     if (target !== undefined && target.props.openable !== true) {
       issues.push(issue("opens_target_not_openable", [...path, "props", "opens"], opens));
+    }
+  }
+  // A door is closing only while it is open with its shut pending: the window cannot be written alone.
+  if (entity.props.closing === true) {
+    const shutting =
+      entity.props.open === true &&
+      pending(snapshot).some((cause) => cause.kind === "close" && cause.entity === entity.id);
+    if (!shutting) {
+      issues.push(issue("closing_without_close", [...path, "props", "closing"], entity.id));
     }
   }
   return issues;

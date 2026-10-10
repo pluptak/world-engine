@@ -80,7 +80,9 @@ function runClose(context: TransitionContext, cause: CauseOf<"close">): void {
     return;
   }
   const eventId = context.emit("closed", entity.id, {}, cause.cause_id);
-  context.set(entity.id, "props", { ...entity.props, open: false }, eventId);
+  // A door on its way shut has `closing` no longer, once it is shut.
+  const { closing: _closing, ...rest } = entity.props;
+  context.set(entity.id, "props", { ...rest, open: false }, eventId);
   pushOccupantsAside(context, entity.id, eventId);
 }
 
