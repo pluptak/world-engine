@@ -101,19 +101,49 @@ test("a remote command is refused where it breaks: no power at the door, a destr
   const [ai, ann] = [id("ai"), id("ann")];
   // The side door has no power at all; one already locked is refused that first.
   deepStrictEqual(verdict(run(ai, "lock", "side door")), ["refused", "already_locked", undefined]);
-  deepStrictEqual(verdict(run(ai, "unlock", "side door")), ["refused", "unpowered", { at: id("side_door") }]);
+  deepStrictEqual(verdict(run(ai, "unlock", "side door")), [
+    "refused",
+    "unpowered",
+    { at: id("side_door"), cut: id("side_door") },
+  ]);
   // A destroyed panel between door and controller disconnects it.
   strictEqual(run(ann, "move", undefined, { to: { x: 120, y: 0 } }).status, "ok");
   wreck(world, run, ann, "panel");
   deepStrictEqual(verdict(run(ai, "lock", "vault door")), ["refused", "disconnected", { at: id("panel") }]);
 });
 
-test("a destroyed source leaves the door unpowered", (t) => {
+test("a destroyed source leaves the door unpowered, and names the source as the cut", (t) => {
   const { world, id, run } = open(t);
   const [ai, ann] = [id("ai"), id("ann")];
   strictEqual(run(ann, "move", undefined, { to: { x: -120, y: 0 } }).status, "ok");
   wreck(world, run, ann, "generator");
-  deepStrictEqual(verdict(run(ai, "lock", "vault door")), ["refused", "unpowered", { at: id("vault_door") }]);
+  deepStrictEqual(verdict(run(ai, "lock", "vault door")), [
+    "refused",
+    "unpowered",
+    { at: id("vault_door"), cut: id("generator") },
+  ]);
+});
+
+test("a destroyed cable between the door and its source is the cut, not the door", (t) => {
+  const { world, id, run } = open(t);
+  const [ai, ann, door, panel] = [id("ai"), id("ann"), id("vault_door"), id("panel")];
+  // The door now draws from the generator through the panel: the panel is both a link of the control
+  // walk and of the power walk, so a destroyed panel leaves the door unpowered before it is disconnected.
+  strictEqual(world.edit({ kind: "update_props", target: door, props: { powered_by: panel } }).status, "ok");
+  strictEqual(run(ann, "move", undefined, { to: { x: 120, y: 0 } }).status, "ok");
+  wreck(world, run, ann, "panel");
+  deepStrictEqual(verdict(run(ai, "lock", "vault door")), [
+    "refused",
+    "unpowered",
+    { at: door, cut: panel },
+  ]);
+  // The controller's view gives the same refusal with the cut as its alias, where it can name it.
+  const view = actorWorld(world, ai);
+  const refused = view.command({ command_id: "view-cut", verb: "lock", target: aliasOf(ai, door) });
+  deepStrictEqual(
+    [refused.reason_code, refused.reason_data],
+    ["unpowered", { at: aliasOf(ai, door), cut: aliasOf(ai, panel) }],
+  );
 });
 
 test("only the agent the control walk ends at names the door from another room", (t) => {

@@ -111,7 +111,7 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   strictEqual(sees(bob).value, "false");
   strictEqual(sees(id("exit_door")).value, "false");
   const cut = run(terminal, "unlock", "exit door");
-  deepStrictEqual([cut.status, cut.reason_code, cut.reason_data], ["refused", "unpowered", { at: id("exit_door") }]);
+  deepStrictEqual([cut.status, cut.reason_code, cut.reason_data], ["refused", "unpowered", { at: id("exit_door"), cut: cable }]);
   deepStrictEqual(status(run(ann, "unlock", "exit door")), ["ok", undefined]);
 
   // F. the escape advanced nothing: the stage changes by the author's edit alone, a subject's edit is

@@ -19,7 +19,9 @@ device from anywhere, by name or id, and its options offer it, whatever state th
 it does not perceive it. `open`, `close`, `lock` and `unlock` from the controller skip reach, the
 key and hands, and after `already_*` and `locked` walk from the device toward the controller, the
 device included and the controller not: the first link `destroyed` is refused `disconnected`, the
-first without power `unpowered`, each with `{ at }` that link. Everything else, the scheduled
+first without power `unpowered`, each with `{ at }` that link; an `unpowered` also names `cut`: the
+first destroyed entity on that link's `powered_by` walk, else the walk's last entity, which is no
+source (the link itself when it has no `powered_by`). Everything else, the scheduled
 close and moving occupants aside included, is unchanged.
 
 **Manual.** Any other actor acts on the device as before, with no power needed: a key turns the

@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A remote fault names where power stops](#a-remote-fault-names-where-power-stops).
-2. [An experiment stage that advances on its own](#an-experiment-stage-that-advances-on-its-own).
-3. [A manipulator](#a-manipulator).
+1. [An experiment stage that advances on its own](#an-experiment-stage-that-advances-on-its-own).
+2. [A manipulator](#a-manipulator).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -64,25 +63,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A remote fault names where power stops
-
-With the lab's cable cut, the terminal's unlock is `unpowered` `{ at: exit door }`: the link on the
-control walk with no power, not the cable that cut it (`docs/limits-lab.md`, E). A caller deciding
-what to repair, or a story saying what failed, needs the second.
-
-- **Change:** `remoteFault` in `src/engine/power.ts`: an `unpowered` fault's data is
-  `{ at, cut }`, `cut` the first `destroyed` entity on `at`'s `powered_by` walk, else the walk's
-  last entity, which is no source (`at` itself when it has no `powered_by`). `disconnected` is
-  unchanged. A camera's feed (the camera item) reads only whether there is a fault, so nothing
-  else moves.
-- **Tests:** `tests/remote.test.ts`: a destroyed source is `cut` the generator, a door with no
-  `powered_by` is `cut` itself, a destroyed cable between door and source is `cut` the cable;
-  the controller's actor view sends `cut` as its alias. `tests/scenario-lab.test.ts` E expects
-  `{ at: exit door, cut: cable }`.
-- **Docs:** `docs/power.md` (the fault's data), `docs/limits-lab.md` (the E line goes).
-- **Depends on:** nothing. **Not in it:** listing every break, or faults on the `controlled_by` side
-  beyond the first.
 
 ### An experiment stage that advances on its own
 

@@ -14,8 +14,6 @@ it. Nothing here is a proposal.
   door, no record. The lab has none, so an act there reaches only whoever stands in it (C).
 - The terminal sees the exit door it locks only through the corridor's camera, which shares the
   door's cable: one cut both blinds it and stops its unlock (D, E).
-- A cut tells only where the control walk failed: with the cable destroyed the terminal's unlock
-  is `unpowered` at the door, not at the cable, and a key still works by hand (E).
 - An agent's own power is not modelled: an unpowered terminal still senses and acts (E).
 - No manipulator: no agent moves things at another's command, and the terminal has no
   `manipulation` of its own (A).

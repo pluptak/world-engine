@@ -42,7 +42,16 @@ export function controller(snapshot: Snapshot, id: Id): Id | null {
   return last.props.agent === true && typeof last.props.controlled_by !== "string" ? last.id : null;
 }
 
-export type RemoteFault = { reason_code: "disconnected" | "unpowered"; reason_data: { at: Id } };
+export type RemoteFault =
+  | { reason_code: "disconnected"; reason_data: { at: Id } }
+  | { reason_code: "unpowered"; reason_data: { at: Id; cut: Id } };
+
+// Where power stops for a link with none: the first destroyed entity on its `powered_by` walk, else
+// the walk's last entity, which is no source (the link itself when it has no `powered_by`).
+function cutOf(snapshot: Snapshot, link: Id): Id {
+  const path = walk(snapshot, link, "powered_by");
+  return path.find((id) => own(snapshot.entities, id)!.status === "destroyed") ?? path.at(-1)!;
+}
 
 // The first link from the device toward its controller, the device included and the controller
 // not, that cannot carry a command: a destroyed one, then one with no power.
@@ -52,7 +61,7 @@ export function remoteFault(snapshot: Snapshot, device: Id): RemoteFault | null 
       return { reason_code: "disconnected", reason_data: { at: link } };
     }
     if (!powered(snapshot, link)) {
-      return { reason_code: "unpowered", reason_data: { at: link } };
+      return { reason_code: "unpowered", reason_data: { at: link, cut: cutOf(snapshot, link) } };
     }
   }
   return null;
