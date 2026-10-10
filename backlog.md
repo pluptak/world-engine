@@ -21,6 +21,9 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 1. [The schedule is read through the API](#the-schedule-is-read-through-the-api).
 2. [A pending beat is brought forward or put back](#a-pending-beat-is-brought-forward-or-put-back).
 3. [`advance` stops before a beat](#advance-stops-before-a-beat).
+4. [A scene carries its timeline, its slots and its limit](#a-scene-carries-its-timeline-its-slots-and-its-limit).
+5. [A run starts, and ends](#a-run-starts-and-ends).
+6. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -138,3 +141,109 @@ on what is about to run.
   `docs/schedule-api.md`.
 - **Depends on:** nothing (the retime item for its lab step). **Not in it:** stopping before an
   engine cause, a `wait` that stops before a beat (an actor does not know the schedule).
+
+### A scene carries its timeline, its slots and its limit
+
+A scenario says what stands where (`{ seed, entities }`, read in `src/cli/main.ts`); everything
+else a scene needs (`plans/roles.md`) is set after the world exists, by the author's edits. A
+scene is the architect's whole setup, saved: the start of a run must not depend on edits.
+
+- **Format** (`src/scenario.ts`, parsed there for the CLI and `createWorld` alike): the seeded form
+  grows two optional keys. `beats`: a list of `schedule_beat` bodies (`id`, `at_tick`, `action`,
+  `only_if`, `then`, `repeat`, as in `docs/beats.md`), `at_tick` from 1, naming entities by their
+  scenario ids. `run`: `{ tick_limit?, slots? }`, `tick_limit` a positive int, `slots` a list of
+  scenario ids, each an agent (`agent: true`), none twice. Unknown keys are refused, as now.
+- **Validation** is the scene's, whole, before anything is built: a beat as `schedule_beat` would
+  check it (shape, ids unique, subjects present, followers, the 256 bound), a slot that is no
+  agent or no entity, a `run` with neither key. Each fails `invalid_scenario` with the path and the
+  rule, as the scenario's other errors do; nothing is written.
+- **Building:** the beats are queued at creation with a `cause_id` of `null` (a beat's cause today
+  is the `schedule_beat` event; a null is a root, as a process the initial state started), so the
+  stored beat shape and `validateSnapshot` allow `null` for a beat. `run` is kept on the snapshot
+  (`run: { tick_limit?, slots? }`), absent when the scene has none, so every existing world stays
+  as it is. The builder says whether either needs `schema_version` 6 (the store refuses an older
+  world; a field only ever absent before may not need it) and names it in the commit.
+- **Tests:** `tests/scene.test.ts`: a scene with beats builds a world whose schedule holds them at
+  their ticks and runs them as an edited beat would; a follower chain and a repeat; each refusal
+  once; `run` stored and read back by `snapshot()`; the CLI `init` and `createWorld` build the same
+  world; a store world reopened keeps both. `scenarios/watch.json`'s knock, if it is an edit in its
+  test, may move into the scene; the builder says.
+- **Docs:** `docs/scenario.md` or the scenario section of `docs/api.md` (the two keys),
+  `docs/beats.md` one line (a scene's beats have no cause).
+- **Depends on:** nothing. **Not in it:** the pool of beats and the steerable odds (with the
+  director's levers), the run's states (next item), a scene list.
+
+### A run starts, and ends
+
+A run is one simulation made from a scene (`plans/roles.md`). A world with `run` on its snapshot is
+one: it waits to be started, runs, and ends for a reason, and after its end it is a record.
+
+- **State** (`run.state` on the snapshot): `registering` when built, then `running`, then `ended`
+  with `run.ended` `{ reason, tick }`, reason `director`, `tick_limit` or `no_live_players`. A world
+  with no `run` is as now in every way.
+- **Edits** (`src/engine/verbs/edit.ts`, the author's until roles exist): `start_run` on a
+  registering run (else `run_not_registering`), `end_run` on a running one (else
+  `run_not_running`), reason `director`. Each is recorded by its own root event, which nobody
+  senses.
+- **Gates** (`src/engine/pipeline.ts`): while registering, an agent's command and `advance` are
+  refused `run_not_running` and take no time; the author's other edits are allowed (the scene may
+  still be fixed). Once ended, every command and edit is refused `run_ended`; reads answer as
+  ever.
+- **The tick limit:** the clock never passes `tick_limit`: a command that would is cut at the
+  limit (a `wait` or `advance` passes only the ticks left, as `advanced` says), what falls due at
+  that tick runs, and the run ends there, `tick_limit`. A one-tick command at the limit is refused
+  `run_ended` (the builder may instead end the run in the command that reaches it; it says which).
+- **No live players:** with `slots`, after every ok command or edit, a run whose slots are all
+  destroyed or gone ends, `no_live_players`. A run with no `slots` never ends this way.
+- **The end:** the schedule is emptied, recording nothing; modifiers stay as they are, since no
+  time passes again.
+- **Tests:** `tests/run.test.ts`: a fresh run refuses a command and `advance`; `start_run` lets them
+  through; `end_run` refuses everything after and reads still answer; a `wait` across the limit
+  stops at it with what was due there run; a slot's body destroyed by an attack ends the run in
+  that command; each refusal once; a world with no `run` passes all of it untouched. The property
+  test's world has no `run`; a second generator with a small `run` is the builder's choice.
+- **Docs:** new `docs/run.md` and its `docs/DESIGN.md` line; `docs/time.md` one line (the limit).
+- **Depends on:** the scene item. **Not in it:** rounds (next item), roles and handles, who may
+  start or end (the author for now), successors keeping a slot alive.
+
+### A round: every player moves, in an order no one picks, and the clock moves once
+
+Today each command moves the clock by its own duration, so one player's `wait` moves the world for
+all, and the fast outpace the slow (`plans/rounds.md`). In a round every player decides against the
+same world and the clock moves once.
+
+- **API** (`src/api.ts`, `World.round(moves, options?)`; a CLI `round` op): `moves` is a list of
+  commands, at most one per actor (else the round is `invalid`, `duplicate_actor`, and nothing is
+  applied); an actor with none passes. `World.beat` (`docs/api.md`) is the nearest thing today: an
+  ordered batch on one base, each command preempted by what an earlier one did.
+- **Check:** each move is checked against the round's starting world, as a command is now; one that
+  fails there is refused with its own code and takes no part.
+- **Order:** the rest are applied in an order drawn from a stream of its own, a pure function of the
+  seed and the tick (`src/engine/rng.ts` may host it), never `snapshot.rng`, so the jams a round's
+  moves roll are the same whoever else moves. A world with no seed refuses a round of two or more
+  moves `no_seed`. Each move is based on the round's starting version, so one that fails where it
+  would have succeeded at the start is `preempted` (the store's rule), else refused with its own
+  code. Nothing is retried.
+- **Time:** a move takes no time of its own: every move of a round is at the round's tick, and the
+  verbs that last longer than a tick (`wait`, `advance`) and `edit` are not moves (`invalid`,
+  `not_a_round_move`). The command carries the round flag through the log, as `perceivers` does, so
+  replay applies it the same way. After the moves the clock moves one tick (what falls due runs
+  as now). An empty round is that tick alone.
+- **The record:** each move is its own log line with its status, plus the round's number and its
+  place in the order; the closing tick is a line of its own. `attempts` and `since` read them.
+- **In a run:** while running, an agent acts only in a round (a lone `command` is refused
+  `round_only`, `advance` too); outside a run, `round` works on any world, so it is testable alone.
+- **Perception:** each move has its own before and after, so event-form perception and
+  `perceivers` read as now.
+- **Tests:** `tests/round.test.ts`: two agents take one key, one gets it and the other is
+  `preempted`, and the same seed and tick give the same winner on every run while another tick may
+  not; a door's jam roll is the same whether one or three agents move; a move refused at the start
+  takes no part; `wait` in a round is `not_a_round_move`; an empty round is one tick; a self-closing
+  door opened in a round closes on time; a store world replays a round exactly (`verify`); a running
+  run refuses a lone command. The property test gains rounds of random moves.
+- **Backlog:** `## Out of scope` drops "and two commands never share a tick".
+- **Docs:** new `docs/rounds.md` and its `docs/DESIGN.md` line; `docs/time.md` (moves share a tick),
+  `docs/api.md` (`round`).
+- **Depends on:** the run item, for its gate alone. **Not in it:** handles and blind submission
+  (who sees whose move is the next plan's), the director closing rounds or running empty ones,
+  contest rules for a conflict, a carried agent's `move`.
