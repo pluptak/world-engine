@@ -11,7 +11,7 @@ example and `tests/remote.test.ts` the spec.
 
 **Powered.** Walk `powered_by` from the entity: every entity on the walk, the first included, is not
 `destroyed`, and the walk ends at a `power_source`. An entity with neither is unpowered. Destroying
-a link cuts it (`templates/cable.json` takes three human blows); nothing switches a source off.
+a link cuts it (`templates/cable.json` takes one human blow); nothing switches a source off.
 
 **Controlled.** The controller is the agent at the end of the `controlled_by` walk. It names the
 device from anywhere, by name or id, and its options offer it, whatever state the links are in;

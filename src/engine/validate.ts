@@ -318,7 +318,7 @@ function concealmentIssues(
   return issues;
 }
 
-function integrityIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIssue[] {
+function integrityIssues(snapshot: Snapshot, registry: TemplateRegistry, id: Id, path: string[]): SnapshotIssue[] {
   const entity = own(snapshot.entities, id);
   if (entity === undefined) {
     return [];
@@ -326,6 +326,11 @@ function integrityIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
 
   const issues: SnapshotIssue[] = [];
   if (entity.integrity < 0 || entity.integrity > 100) {
+    issues.push(issue("integrity_out_of_range", [...path, "integrity"], `integrity ${entity.integrity}`));
+  }
+  // A partless thing is no higher than its template's `max_integrity`, which is 100 when it declares none.
+  const template = own(registry, entity.template);
+  if (template !== undefined && template.parts.length === 0 && entity.integrity > (template.max_integrity ?? 100)) {
     issues.push(issue("integrity_out_of_range", [...path, "integrity"], `integrity ${entity.integrity}`));
   }
   for (const part of Object.keys(entity.parts).sort()) {
@@ -490,7 +495,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     if (own(registry, entity.template) === undefined) {
       issues.push(issue("unknown_template", [...path, "template"], entity.template));
     }
-    issues.push(...integrityIssues(snapshot, id, path));
+    issues.push(...integrityIssues(snapshot, registry, id, path));
     issues.push(...referenceIssues(snapshot, id, path));
     issues.push(...containerFitIssues(snapshot, registry, id, path));
     issues.push(...traitIssues(entity, path));

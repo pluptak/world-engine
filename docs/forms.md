@@ -20,7 +20,7 @@ stores the exact amount, and reads it back to the architect as a percentage.
 | --- | --- | --- |
 | `fuel_pct` 0–100 | `fuel` | `fuel` = default × pct / 100 |
 | `liquid: { material?, pct }` | `capacity_cm3` | `liquid_amount` = capacity × pct / 100; material |
-| `condition` `intact` or `damaged` | nothing | `integrity` 100 or 50 |
+| `condition` `intact` or `damaged` | nothing | `integrity` the template's max, or half of it ([integrity.md](integrity.md)) |
 | `hunger_pct` 0–100 | `hunger` | `hunger` (it runs 0–100 already) |
 | `portions_pct` 0–100 | `portions` | `portions` = default × pct / 100 |
 

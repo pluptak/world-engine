@@ -39,9 +39,7 @@ test("the lab: the arm takes the key before ann arrives, and a cut cable leaves 
   // Bob cuts the cable in the corridor, as in step E: the arm's power walk now ends in a destroyed link.
   deepStrictEqual(verdict(run(bob, "move", undefined, { through: "dormitory door" })), ["ok", undefined, undefined]);
   deepStrictEqual(verdict(run(bob, "move", undefined, { to: { x: 200, y: 360 } })), ["ok", undefined, undefined]);
-  for (let blow = 0; blow < 3; blow += 1) {
-    strictEqual(run(bob, "attack", "cable").status, "ok");
-  }
+  strictEqual(run(bob, "attack", "cable").status, "ok");
   strictEqual(world.entity(cable)?.status, "destroyed");
 
   // The arm cannot let go: its drop is refused at the arm, with the cable as the cut.
@@ -227,9 +225,7 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   deepStrictEqual(status(run(bob, "move", undefined, { through: "dormitory door" })), ["ok", undefined]);
   deepStrictEqual(status(run(bob, "move", undefined, { to: { x: 200, y: 360 } })), ["ok", undefined]);
   deepStrictEqual(sees(bob), { value: "true", basis_code: "camera" });
-  for (let blow = 0; blow < 3; blow += 1) {
-    strictEqual(run(bob, "attack", "cable").status, "ok");
-  }
+  strictEqual(run(bob, "attack", "cable").status, "ok");
   strictEqual(world.entity(cable)?.status, "destroyed");
   // The cut blinds the camera too: the terminal sees neither bob nor the door.
   strictEqual(sees(bob).value, "false");

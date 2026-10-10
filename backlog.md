@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A thing's own integrity](#a-things-own-integrity).
-2. [An intercom](#an-intercom).
-3. [The lab's acceptance table](#the-labs-acceptance-table).
+1. [An intercom](#an-intercom).
+2. [The lab's acceptance table](#the-labs-acceptance-table).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -64,34 +63,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A thing's own integrity
-
-A thing with no parts starts at integrity 100 whatever it is, so the lab's cable takes three human
-blows (`docs/power.md`), where the power item wanted one: a cable is cut, not demolished. Parts
-already declare `max_integrity`; a partless template gets the same field.
-
-- **Template field** (`src/templates.ts`): top-level `max_integrity`, an integer from 1 to 100,
-  absent meaning 100; allowed only on a template with no `parts` (else refused when the set is
-  loaded, naming the template); inherited through `extends` as any field; inside the hash.
-- **Made at it:** an entity of such a template starts at its `max_integrity` wherever entities
-  are made (`blankFields` in `src/engine/spawn.ts` and its callers: scenario building, `edit`'s
-  `spawn`, break and spent products). An `integrity` override still sets it.
-- **Rule** (`src/engine/validate.ts`): a partless entity's `integrity` above its template's
-  `max_integrity` is `integrity_out_of_range`, so an override, an `edit` or an upgrade that lowers
-  the max past a stored value is refused as any broken invariant is.
-- **Attack:** unchanged; damage comes off the stored integrity, and 0 destroys.
-- **Template:** `templates/cable.json` gets `max_integrity: 40`, so one human blow (40) destroys
-  it. Nothing else changes: the generator, camera and arm keep theirs.
-- **Tests that wreck a cable** change from three blows to one: `tests/remote.test.ts` (the panel,
-  a cable), `tests/camera.test.ts` (the wire), `tests/scenario-lab.test.ts` (E and the arm test),
-  and any other the full suite finds. A new `tests/integrity.test.ts`: a cable spawned at 40, one
-  blow destroys it; a template with parts and `max_integrity` refused when loaded; 0 and 101
-  refused; an override above the max and an `edit` setting it above refused
-  `integrity_out_of_range`; a template without the field at 100 as now.
-- **Docs:** `docs/templates.md` one line, `docs/power.md` (the cable: one blow, not three).
-- **Depends on:** nothing. **Not in it:** a `damaged` status for partless things, armour or damage
-  by material, repair.
 
 ### An intercom
 

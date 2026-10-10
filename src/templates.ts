@@ -68,6 +68,8 @@ export interface Template {
   // `false` for a base the architect is not offered (the catalogue view); absent otherwise. A template's
   // own, never inherited: a child of such a base is offered.
   catalog?: false;
+  // The most integrity a thing with no parts can have, and where it starts; absent means 100 (`docs/integrity.md`).
+  max_integrity?: number;
 }
 
 export type TemplateRegistry = Record<string, Template>;
@@ -88,6 +90,7 @@ interface TemplateDecl {
   processes?: ProcessDecl[];
   fields?: Record<string, FieldDecl>;
   catalog?: boolean;
+  max_integrity?: number;
   // Only a resolved root read back from a frozen set carries it (a template that extends gets its own).
   lineage?: string[];
   // Fields of inherited parts, by name; consumed when the template is resolved, so no key survives it.
@@ -277,6 +280,13 @@ function parseDecl(value: unknown, source: string): TemplateDecl {
       throw new TypeError(`${source}.catalog must be a boolean`);
     }
     decl.catalog = value.catalog;
+  }
+
+  if (Object.hasOwn(value, "max_integrity")) {
+    if (!Number.isSafeInteger(value.max_integrity) || (value.max_integrity as number) < 1 || (value.max_integrity as number) > 100) {
+      throw new TypeError(`${source}.max_integrity must be an integer from 1 to 100`);
+    }
+    decl.max_integrity = value.max_integrity as number;
   }
 
   return decl;
@@ -584,6 +594,7 @@ function requireResolved(decl: TemplateDecl, source: string): Template {
     ...spentOf(decl.spent_products, decl.spent_residue),
     ...(decl.lineage !== undefined && decl.lineage.length > 0 && { lineage: [...decl.lineage] }),
     ...(decl.catalog === false && { catalog: false as const }),
+    ...(decl.max_integrity !== undefined && { max_integrity: decl.max_integrity }),
     ...(decl.processes !== undefined && decl.processes.length > 0 && { processes: copyProcesses(decl.processes) }),
     ...(decl.fields !== undefined && Object.keys(decl.fields).length > 0 && { fields: copyFields(decl.fields) }),
   };
@@ -614,6 +625,9 @@ function overParent(parent: Template, decl: TemplateDecl): Template {
         : { ...decl.break_residue },
     ...spentOf(decl.spent_products ?? parent.spent_products, decl.spent_residue ?? parent.spent_residue),
     lineage: [parent.id, ...(parent.lineage ?? [])],
+    ...((decl.max_integrity ?? parent.max_integrity) !== undefined && {
+      max_integrity: decl.max_integrity ?? parent.max_integrity,
+    }),
     ...(decl.catalog === false && { catalog: false as const }),
     ...(processes.length > 0 && { processes }),
     ...(Object.keys(fields).length > 0 && { fields }),
@@ -748,10 +762,19 @@ function resolveAll(
       template = overParent(template, decls.get(chainId)!);
     }
     validateParts(template, sources.get(id) ?? id);
+    validateMaxIntegrity(template, sources.get(id) ?? id);
     validateProps(template, sources.get(id) ?? id);
     registry[id] = template;
   }
   return registry;
+}
+
+// `max_integrity` is the whole of a partless thing's integrity; a part carries its own, so a template with
+// parts has none of it.
+function validateMaxIntegrity(template: Template, source: string): void {
+  if (template.max_integrity !== undefined && template.parts.length > 0) {
+    throw new TypeError(`${source} declares max_integrity and parts`);
+  }
 }
 
 // A product is spawned by its template id when a thing breaks or is used up, in a transition that has

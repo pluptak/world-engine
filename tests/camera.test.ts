@@ -85,17 +85,17 @@ test("a fed agent sees what stands in the camera's lit room, and nothing a body 
   deepStrictEqual(sees("ann", "stone"), { value: "true", basis_code: "same_location_lit" });
 });
 
-for (const [what, target] of [
-  ["the camera", "cam"],
-  ["its source", "generator"],
-  ["a link on the way", "wire"],
+for (const [what, target, blows] of [
+  ["the camera", "cam", 3],
+  ["its source", "generator", 3],
+  ["a link on the way", "wire", 1],
 ] as const) {
   test(`destroying ${what} ends the feed`, (t) => {
     const { world, id, run, sees } = open(t);
     const ann = id("ann");
     const at = world.entity(id(target))!.pos!;
     strictEqual(run(ann, "move", undefined, { to: { x: at.x, y: at.y - 60 } }).status, "ok");
-    for (let blow = 0; blow < 3; blow += 1) {
+    for (let blow = 0; blow < blows; blow += 1) {
       strictEqual(run(ann, "attack", target).status, "ok");
     }
     strictEqual(world.entity(id(target))?.status, "destroyed");

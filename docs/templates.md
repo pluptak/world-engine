@@ -60,3 +60,5 @@ Dropping `props.default_hit_part` only makes an attack naming no part `invalid_a
 
 Giving the human's `head` `speech` ([speech.md](speech.md)) and `human_hungry` its `fields` changed
 `templates_hash`: a world stored before reports `templates_changed` until `upgradeTemplates`.
+
+A top-level `max_integrity` (partless templates only) is how much a thing with no parts can take: [integrity.md](integrity.md).

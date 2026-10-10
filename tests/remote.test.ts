@@ -62,9 +62,9 @@ function open(t: { after(callback: () => void): void }) {
 
 const verdict = (result: Result) => [result.status, result.reason_code, result.reason_data];
 
-// Three of a human's blows destroy a thing of no parts at full integrity.
-function wreck(world: World, run: (actor: Id, verb: string, target?: string) => Result, ann: Id, target: string): void {
-  for (let blow = 0; blow < 3; blow += 1) {
+// A human's blows destroy a thing of no parts: one takes a cable (40), three a thing at full integrity.
+function wreck(world: World, run: (actor: Id, verb: string, target?: string) => Result, ann: Id, target: string, blows = 3): void {
+  for (let blow = 0; blow < blows; blow += 1) {
     strictEqual(run(ann, "attack", target).status, "ok");
   }
   strictEqual(world.entity(world.id(target)!)?.status, "destroyed");
@@ -108,7 +108,7 @@ test("a remote command is refused where it breaks: no power at the door, a destr
   ]);
   // A destroyed panel between door and controller disconnects it.
   strictEqual(run(ann, "move", undefined, { to: { x: 120, y: 0 } }).status, "ok");
-  wreck(world, run, ann, "panel");
+  wreck(world, run, ann, "panel", 1);
   deepStrictEqual(verdict(run(ai, "lock", "vault door")), ["refused", "disconnected", { at: id("panel") }]);
 });
 
@@ -131,7 +131,7 @@ test("a destroyed cable between the door and its source is the cut, not the door
   // walk and of the power walk, so a destroyed panel leaves the door unpowered before it is disconnected.
   strictEqual(world.edit({ kind: "update_props", target: door, props: { powered_by: panel } }).status, "ok");
   strictEqual(run(ann, "move", undefined, { to: { x: 120, y: 0 } }).status, "ok");
-  wreck(world, run, ann, "panel");
+  wreck(world, run, ann, "panel", 1);
   deepStrictEqual(verdict(run(ai, "lock", "vault door")), [
     "refused",
     "unpowered",

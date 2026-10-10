@@ -81,7 +81,9 @@ export function applyForms(template: Template, overrides: EntityOverrides & Arch
     if (condition !== "intact" && condition !== "damaged") {
       fail("invalid_form", index, "condition must be intact or damaged");
     }
-    result.integrity = condition === "intact" ? 100 : 50;
+    // Intact is the template's whole integrity, damaged half of it: 100 and 50 for a thing with no max.
+    const whole = template.max_integrity ?? 100;
+    result.integrity = condition === "intact" ? whole : Math.floor(whole / 2);
   }
   if (hunger_pct !== undefined) {
     presetInteger(template, "hunger", index, "hunger_pct");

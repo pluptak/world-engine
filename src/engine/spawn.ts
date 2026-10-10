@@ -97,6 +97,7 @@ export function spawn(
     template: templateId,
     name: templateId,
     ...blankFields(),
+    integrity: template.max_integrity ?? 100,
     props: { ...template.props },
     ...copyOverrides(overrides),
   };

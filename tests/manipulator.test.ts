@@ -63,9 +63,9 @@ function open(t: { after(callback: () => void): void }) {
 
 const verdict = (result: Result) => [result.status, result.reason_code, result.reason_data];
 
-// Three of a human's blows destroy a thing of no parts at full integrity.
+// A human's blows destroy a thing of no parts; every target here is a cable, which one blow of 40 destroys.
 function wreck(run: (actor: Id, verb: string, target?: string, args?: Record<string, unknown>) => Result, ann: Id, target: string): void {
-  for (let blow = 0; blow < 3; blow += 1) {
+  for (let blow = 0; blow < 1; blow += 1) {
     strictEqual(run(ann, "attack", target).status, "ok");
   }
 }
