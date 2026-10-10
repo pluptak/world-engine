@@ -1,0 +1,11 @@
+{
+  "id": "terminal",
+  "size_cm": { "w": 60, "d": 60, "h": 180 },
+  "mass_g": 150000,
+  "parts": [
+    { "name": "core", "parent": null, "contributes": { "sight": 100, "hearing": 100, "speech": 100 }, "detachable": false, "max_integrity": 100 }
+  ],
+  "props": { "agent": true },
+  "break_products": [],
+  "break_residue": {}
+}

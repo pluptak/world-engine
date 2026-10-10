@@ -98,9 +98,10 @@ test("fields merge by name through extends, the child's own winning", () => {
   deepStrictEqual(resolved.plant?.fields, { size: { tier: "state", type: "integer" } });
 });
 
-test("every shipped template passes, and only human_hungry declares fields", () => {
+test("every shipped template passes, and only human_hungry and experiment declare fields", () => {
   const declaring = Object.values(base).filter((template) => template.fields !== undefined).map((template) => template.id);
-  deepStrictEqual(declaring.sort(), ["human_hungry"]);
+  deepStrictEqual(declaring.sort(), ["experiment", "human_hungry"]);
+  deepStrictEqual(base.experiment?.fields, { stage: { tier: "state", type: "integer" } });
   deepStrictEqual(base.human_hungry?.fields, {
     hunger_every: { tier: "definition", type: "integer" },
     starvation: { tier: "state", type: "integer" },
