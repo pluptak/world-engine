@@ -27,7 +27,8 @@ export type WorldErrorCode =
   | "field_not_editable"
   | "invalid_form"
   | "form_not_applicable"
-  | "no_liquid_material";
+  | "no_liquid_material"
+  | "invalid_scenario";
 
 export class WorldError extends Error {
   constructor(

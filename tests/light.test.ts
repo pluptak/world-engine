@@ -2,7 +2,7 @@ import { deepStrictEqual, ok, strictEqual } from "node:assert";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { createWorld, WORLD_AUTHOR, type Id, type Result, type World } from "../src/index.js";
+import { createWorld, WORLD_AUTHOR, type Id, type Result, type World, type Scenario } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { SHARED_FIXTURES } from "./presets.js";
@@ -32,7 +32,7 @@ interface Dark {
   yard: Id;
 }
 
-function dark(t: { after(callback: () => void): void }, extra: Parameters<typeof createWorld>[1] = []): Dark {
+function dark(t: { after(callback: () => void): void }, extra: Scenario = []): Dark {
   const root = tempDir(t);
   const world = createWorld(join(root, "w"), [
     { id: "hall", template: "room", overrides: { name: "hall" } },

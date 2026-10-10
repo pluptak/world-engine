@@ -12,6 +12,8 @@ Mapping a tick to a wall-clock time such as 20:05 is the controller's job: the e
   `^[A-Za-z0-9_.:-]{1,64}$`, unique among pending beats (`duplicate_beat`); `at_tick` must be ahead of
   the clock (`beat_in_past`), since the schedule only holds causes ahead of it. The beat's *subject*
   (below) must exist (`no_such_entity`, `invalid`). A malformed beat is `invalid_args`.
+- A scene's beats are queued at creation with a null `cause_id`, as a process the initial state started
+  ([scenario.md](scenario.md)); the `schedule_beat` edit is the only other way one is made.
 - `cancel_beat { id }` withdraws a pending beat and everything it would have chained, recording
   nothing; an id nothing pending carries is `no_such_beat`. Only a beat that is on the schedule can be
   cancelled, not a follower that is not yet scheduled by its parent.

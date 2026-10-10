@@ -731,7 +731,7 @@ function transitionRemove(context: TransitionContext, targetId: Id): void {
 // Takes one entity out of the world under a `removed` event caused by `causeId`, uncovering what it
 // hid and letting go of what it held or carried. False, and nothing written, for an entity that is
 // gone or a room someone is in: the same rule the author's `remove` is held to.
-export function removeEntity(context: TransitionContext, targetId: Id, causeId: Id): boolean {
+export function removeEntity(context: TransitionContext, targetId: Id, causeId: Id | null): boolean {
   const doomed = context.snapshot.entities[targetId];
   if (doomed === undefined || removeRefusal(context, doomed).status !== "ok") {
     return false;

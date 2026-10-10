@@ -241,7 +241,7 @@ export interface CommandContext {
 }
 
 export interface TransitionContext extends CommandContext {
-  root_event_id: Id;
+  root_event_id: Id | null;
   // Every change recorded so far in this command, in order: a live view, not a copy.
   deltas: readonly Delta[];
   // Every event emitted so far in this command, in order: also a live view.

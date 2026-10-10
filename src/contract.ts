@@ -98,11 +98,18 @@ export const ScenarioSchema = z.array(z.object({
   overrides: ScenarioOverridesSchema.optional(),
 }).strict());
 
-// A scenario file is the list above, or that list as `entities` beside the `seed` the world's dice
-// start from (a whole number from 0 to 2^32 - 1); a list alone gives a world no seed.
+// A scenario file is the list above, or a scene: that list as `entities` beside the `seed` the world's
+// dice start from (a whole number from 0 to 2^32 - 1), the `beats` queued at creation and the `run`'s
+// limits (`docs/scenario.md`). A list alone gives a world no seed, no beats and no run. The engine reads
+// each beat's body and each run key, and refuses what is wrong with `invalid_scenario`.
 export const SeededScenarioSchema = z.object({
   seed: z.number().int().min(0).max(4294967295).optional(),
   entities: ScenarioSchema,
+  beats: z.array(z.record(z.string(), z.unknown())).optional(),
+  run: z.object({
+    tick_limit: z.number().int().min(1).optional(),
+    slots: z.array(z.string().min(1)).optional(),
+  }).strict().optional(),
 }).strict();
 
 // The beat action and its followers, written once: a scheduled beat carries them in the snapshot's
@@ -388,11 +395,17 @@ export const ScheduledCauseSchema = z.discriminatedUnion("kind", [
     due_tick: z.number().int(),
     kind: z.literal("beat"),
     entity: IdSchema,
-    cause_id: IdSchema,
+    cause_id: IdSchema.nullable(),
     id: z.string(),
     ...BeatActionFieldsSchema,
   }).strict(),
 ]);
+
+// A scene's run as stored (`docs/scenario.md`): a tick limit, the agents that are its slots, or both.
+export const RunSchema = z.object({
+  tick_limit: z.number().int().min(1).optional(),
+  slots: z.array(IdSchema).min(1).optional(),
+}).strict();
 
 export const SnapshotSchema = z.object({
   version: z.number().int(),
@@ -402,6 +415,7 @@ export const SnapshotSchema = z.object({
   coverage: CoverageSchema,
   entities: z.record(z.string(), EntitySchema),
   schedule: z.array(ScheduledCauseSchema).optional(),
+  run: RunSchema.optional(),
   rng: z.number().int().optional(),
 }).strict();
 

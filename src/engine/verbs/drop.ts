@@ -32,7 +32,7 @@ export function dropCarriedItem(
   context: TransitionContext,
   holderId: Id,
   entityId: Id,
-  causeId: Id,
+  causeId: Id | null,
 ): Id {
   const holder = context.snapshot.entities[holderId];
   const entity = context.snapshot.entities[entityId];

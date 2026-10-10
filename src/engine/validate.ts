@@ -9,6 +9,7 @@ import { isAbstract } from "./resolve.js";
 import { isRngState } from "./rng.js";
 import { CAUSE_KINDS, causeInvalid } from "./schedule.js";
 import { pending } from "./pending.js";
+import { isAgent } from "./verbs/address.js";
 import { MAX_BEATS, pendingBeatIds } from "./beats.js";
 import { isUtterance } from "./verbs/say.js";
 
@@ -602,10 +603,41 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
 
   issues.push(...holderPackingIssues(snapshot, registry));
   issues.push(...scheduleIssues(snapshot));
+  issues.push(...runIssues(snapshot));
   if (snapshot.rng !== undefined && !isRngState(snapshot.rng)) {
     issues.push(issue("invalid_rng", ["rng"], String(snapshot.rng)));
   }
 
+  return issues;
+}
+
+// A run's limits as stored: a positive tick limit, or the agents that are its slots, each named once, or both.
+// A run with neither key is no run to end.
+function runIssues(snapshot: Snapshot): SnapshotIssue[] {
+  const run = snapshot.run;
+  if (run === undefined) {
+    return [];
+  }
+  const issues: SnapshotIssue[] = [];
+  if (run.tick_limit === undefined && run.slots === undefined) {
+    issues.push(issue("invalid_run", ["run"], "neither tick_limit nor slots"));
+  }
+  if (run.tick_limit !== undefined && (!Number.isSafeInteger(run.tick_limit) || run.tick_limit < 1)) {
+    issues.push(issue("invalid_run", ["run", "tick_limit"], String(run.tick_limit)));
+  }
+  if (run.slots !== undefined) {
+    if (run.slots.length === 0) {
+      issues.push(issue("invalid_run", ["run", "slots"], "empty"));
+    }
+    const seen = new Set<Id>();
+    run.slots.forEach((slot, index) => {
+      const path = ["run", "slots", String(index)];
+      if (own(snapshot.entities, slot) === undefined || !isAgent(snapshot, slot) || seen.has(slot)) {
+        issues.push(issue("invalid_run", path, slot));
+      }
+      seen.add(slot);
+    });
+  }
   return issues;
 }
 

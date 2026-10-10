@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A scene carries its timeline, its slots and its limit](#a-scene-carries-its-timeline-its-slots-and-its-limit).
-2. [A run starts, and ends](#a-run-starts-and-ends).
-3. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
+1. [A run starts, and ends](#a-run-starts-and-ends).
+2. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -64,37 +63,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A scene carries its timeline, its slots and its limit
-
-A scenario says what stands where (`{ seed, entities }`, read in `src/cli/main.ts`); everything
-else a scene needs (`plans/roles.md`) is set after the world exists, by the author's edits. A
-scene is the architect's whole setup, saved: the start of a run must not depend on edits.
-
-- **Format** (`src/scenario.ts`, parsed there for the CLI and `createWorld` alike): the seeded form
-  grows two optional keys. `beats`: a list of `schedule_beat` bodies (`id`, `at_tick`, `action`,
-  `only_if`, `then`, `repeat`, as in `docs/beats.md`), `at_tick` from 1, naming entities by their
-  scenario ids. `run`: `{ tick_limit?, slots? }`, `tick_limit` a positive int, `slots` a list of
-  scenario ids, each an agent (`agent: true`), none twice. Unknown keys are refused, as now.
-- **Validation** is the scene's, whole, before anything is built: a beat as `schedule_beat` would
-  check it (shape, ids unique, subjects present, followers, the 256 bound), a slot that is no
-  agent or no entity, a `run` with neither key. Each fails `invalid_scenario` with the path and the
-  rule, as the scenario's other errors do; nothing is written.
-- **Building:** the beats are queued at creation with a `cause_id` of `null` (a beat's cause today
-  is the `schedule_beat` event; a null is a root, as a process the initial state started), so the
-  stored beat shape and `validateSnapshot` allow `null` for a beat. `run` is kept on the snapshot
-  (`run: { tick_limit?, slots? }`), absent when the scene has none, so every existing world stays
-  as it is. The builder says whether either needs `schema_version` 6 (the store refuses an older
-  world; a field only ever absent before may not need it) and names it in the commit.
-- **Tests:** `tests/scene.test.ts`: a scene with beats builds a world whose schedule holds them at
-  their ticks and runs them as an edited beat would; a follower chain and a repeat; each refusal
-  once; `run` stored and read back by `snapshot()`; the CLI `init` and `createWorld` build the same
-  world; a store world reopened keeps both. `scenarios/watch.json`'s knock, if it is an edit in its
-  test, may move into the scene; the builder says.
-- **Docs:** `docs/scenario.md` or the scenario section of `docs/api.md` (the two keys),
-  `docs/beats.md` one line (a scene's beats have no cause).
-- **Depends on:** nothing. **Not in it:** the pool of beats and the steerable odds (with the
-  director's levers), the run's states (next item), a scene list.
 
 ### A run starts, and ends
 

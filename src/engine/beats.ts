@@ -354,7 +354,7 @@ function holds(condition: BeatCondition, snapshot: Snapshot): boolean {
 }
 
 // The first event the action wrote, or the failure that stopped it with nothing written.
-type Fired = { ok: true; eventId: Id } | { ok: false; code: string };
+type Fired = { ok: true; eventId: Id | null } | { ok: false; code: string };
 
 // An edit runs under the beat's own cause, in a context that is the command's but for the edit's
 // verb, command and root event, and a failure puts everything back: the snapshot, the events and the
@@ -420,7 +420,7 @@ function skipped(context: TransitionContext, cause: BeatCause, data: Record<stri
 
 // Each follower is scheduled `delay_ticks` after its parent ran, with the parent's event as its
 // cause. One whose subject is gone, or whose due tick is out of range, is not scheduled.
-function scheduleFollowers(context: TransitionContext, children: BeatChild[] | undefined, parentEvent: Id): void {
+function scheduleFollowers(context: TransitionContext, children: BeatChild[] | undefined, parentEvent: Id | null): void {
   for (const child of children ?? []) {
     const due = context.snapshot.tick + child.delay_ticks;
     const subject = actionSubject(child.action);

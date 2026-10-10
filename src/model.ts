@@ -79,12 +79,12 @@ export type ScheduledCause =
   // A template's process, running on the entity; `cause_id` is null when the initial state started it.
   | { due_tick: number; kind: "process"; entity: Id; cause_id: Id | null; process: string }
   // An authored beat (`engine/beats.ts`): `entity` is the action's subject, `cause_id` the event of the
-  // `schedule_beat` edit, or of the parent beat's action for a chained one.
+  // `schedule_beat` edit, or of the parent beat's action for a chained one; null for one a scene queued.
   | {
       due_tick: number;
       kind: "beat";
       entity: Id;
-      cause_id: Id;
+      cause_id: Id | null;
       id: string;
       action: BeatAction;
       only_if?: BeatCondition;
@@ -92,6 +92,13 @@ export type ScheduledCause =
       // Runs still to come after this one, `every_ticks` apart; absent on the last.
       repeat?: BeatRepeat;
     };
+
+// A scene's run (`engine/scene.ts`, `docs/scenario.md`): the tick the clock may not pass, and the agents
+// whose bodies the run turns on. Absent for a world that is not a run.
+export interface Run {
+  tick_limit?: number;
+  slots?: Id[];
+}
 
 export interface Snapshot {
   version: number;
@@ -102,6 +109,7 @@ export interface Snapshot {
   entities: Record<Id, Entity>;
   // Ordered by due tick, then by when each was scheduled; absent when nothing is pending.
   schedule?: ScheduledCause[];
+  run?: Run;
   // The dice's 32-bit state (`engine/rng.ts`); absent in a world that was never given a seed.
   rng?: number;
 }

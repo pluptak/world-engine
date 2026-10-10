@@ -19,6 +19,22 @@ export interface ScenarioEntry {
 
 export type Scenario = readonly ScenarioEntry[];
 
+// A scene's run limits, by scenario id: `tick_limit` a positive int, `slots` the agents whose bodies the
+// run turns on (`docs/scenario.md`). Either key, or both.
+export interface SceneRun {
+  tick_limit?: number;
+  slots?: readonly string[];
+}
+
+// A scene: the entities, the dice's seed, the beats queued at creation (each a `schedule_beat` body, its
+// entities named by scenario id) and the run. A bare list of entries is a scene with none of them.
+export interface Scene {
+  seed?: number;
+  entities: Scenario;
+  beats?: readonly Record<string, unknown>[];
+  run?: SceneRun;
+}
+
 // What resolveScenario leaves behind: every reference is an id and every position a plain pos.
 export interface ResolvedEntry {
   id?: string;
@@ -41,7 +57,7 @@ const ANCHOR_KEYS = ["anchor", "dx", "dy"];
 // literal the author wrote.
 const REFERENCE_FIELDS = ["location", "support", "contained_in", "concealed_by"] as const;
 const HOLDER_FIELDS = ["location", "support", "contained_in"] as const;
-const REFERENCE_PROPS = ["from", "to", "opens", "powered_by", "controlled_by"] as const;
+export const REFERENCE_PROPS = ["from", "to", "opens", "powered_by", "controlled_by"] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);

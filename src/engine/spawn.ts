@@ -35,7 +35,7 @@ export function spawnUnder(
   context: TransitionContext,
   templateId: string,
   overrides: EntityOverrides,
-  causeEventId: Id,
+  causeEventId: Id | null,
   deltaEventId?: Id,
 ): { id: Id; eventId: Id } {
   const created = spawn(context.snapshot, context.registry, templateId, overrides);

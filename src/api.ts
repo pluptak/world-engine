@@ -28,8 +28,9 @@ import { applyForms, architectWrites, hasForms } from "./engine/forms.js";
 import { spawn } from "./engine/spawn.js";
 import { derivedFieldWritten } from "./engine/verbs/edit.js";
 import { startProcesses } from "./engine/process.js";
+import { sceneSnapshot } from "./engine/scene.js";
 import { isRngState } from "./engine/rng.js";
-import { resolveScenario, type Scenario } from "./scenario.js";
+import { resolveScenario, type Scene, type Scenario } from "./scenario.js";
 import { validateSnapshot } from "./engine/validate.js";
 import { WorldError } from "./errors.js";
 import { defaultCoverage, own, type Coverage, type Delta, type Entity, type Id, type ReasonData, type ScheduledCause, type Snapshot, type Status, type WorldEvent } from "./model.js";
@@ -454,14 +455,16 @@ function checkedUpgradeTarget(next: TemplateRegistry | undefined, templatesDirec
 
 export function createWorld(
   dir: string,
-  scenario: Scenario,
+  scenario: Scenario | Scene,
   registry?: TemplateRegistry,
   options?: WorldOptions,
 ): World {
+  // A bare list of entries is a scene with no seed, beats or run.
+  const scene: Scene = "entities" in scenario ? scenario : { entities: scenario };
   const templates = activeRegistry(registry);
-  const initial = initialSnapshot(templates, options?.coverage, options?.seed);
+  const initial = initialSnapshot(templates, options?.coverage, options?.seed ?? scene.seed);
   // Names resolve before the first spawn, so a bad name is refused before anything is written.
-  const resolved = resolveScenario(scenario, initial.next_seq);
+  const resolved = resolveScenario(scene.entities, initial.next_seq);
   let snapshot = initial;
   for (const [index, entry] of resolved.scenario.entries()) {
     // A scenario is the architect's: it writes placement, names, traits, the forms and a few plain
@@ -485,6 +488,8 @@ export function createWorld(
   }
   // What the templates set going has no event behind it yet; its first `changed` is a root.
   snapshot = startProcesses(snapshot, templates);
+  // The scene's beats and run are checked against what was made, before anything is written.
+  snapshot = sceneSnapshot(snapshot, resolved.ids, scene);
   assertValid(snapshot, templates);
   create(dir, snapshot, templates, resolved.ids);
   return storeWorld(dir, templates, resolved.ids);
@@ -710,7 +715,7 @@ export { canonicalJson, verbCatalog as verbs, WorldError, WORLD_AUTHOR };
 export { ENGINE_CAPABILITIES } from "./engine/capabilities.js";
 export type { CatalogEntry, CatalogForms } from "./engine/catalog.js";
 export type { WorldErrorCode } from "./errors.js";
-export type { Scenario, ScenarioEntry } from "./scenario.js";
+export type { Scene, SceneRun, Scenario, ScenarioEntry } from "./scenario.js";
 export { startProcesses } from "./engine/process.js";
 export type { Attempt, Command, Result, WorldEdit } from "./engine/command.js";
 export type { ScheduleFilter } from "./engine/pending.js";

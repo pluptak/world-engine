@@ -94,8 +94,6 @@ function initializeWorld(out: CliOutput, dir: string, scenarioPath: string, cove
     writeResponse(out, { status: "invalid", issues: parsedScenario.error.issues });
     return;
   }
-  const entities = Array.isArray(parsedScenario.data) ? parsedScenario.data : parsedScenario.data.entities;
-  const seed = Array.isArray(parsedScenario.data) ? undefined : parsedScenario.data.seed;
 
   // Coverage is optional, and a world that declares none keeps the defaults. Each way the file can
   // be wrong gets its own code, so a caller knows whether to fix the path, the JSON or the shape.
@@ -124,10 +122,7 @@ function initializeWorld(out: CliOutput, dir: string, scenarioPath: string, cove
     coverage = parsedCoverage.data;
   }
 
-  const world = createWorld(dir, entities, undefined, {
-    ...(coverage === undefined ? {} : { coverage }),
-    ...(seed === undefined ? {} : { seed }),
-  });
+  const world = createWorld(dir, parsedScenario.data, undefined, coverage === undefined ? undefined : { coverage });
   out.stdout += `${canonicalJson({ status: "ok", world: dir, snapshot_version: world.snapshot().version })}\n`;
 }
 

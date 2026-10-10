@@ -3,7 +3,7 @@
 Something the world does by itself, later: a self-closing door, a wound that bleeds, and a template's
 process ([processes.md](processes.md)). A snapshot's `schedule` lists what is pending, each cause with
 its `due_tick`, `kind` (`close`, `bleed`, `process` or `beat`), `entity` and `cause_id`, the event that set it
-going (null for a process the initial state started); a bleed also carries `remaining` and a process
+going (null for a process the initial state started, or a beat a scene queued); a bleed also carries `remaining` and a process
 its `process` id. It
 is ordered by due tick, then by when each was scheduled, and absent when nothing is pending, so a
 world that never schedules anything stores nothing for it (`src/engine/schedule.ts`).
