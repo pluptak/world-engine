@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The AI watches its arm](#the-ai-watches-its-arm).
-2. [A panel a subject can use](#a-panel-a-subject-can-use).
-3. [A camera that looks one way](#a-camera-that-looks-one-way).
+1. [A panel a subject can use](#a-panel-a-subject-can-use).
+2. [A camera that looks one way](#a-camera-that-looks-one-way).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -64,30 +63,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### The AI watches its arm
-
-The arm works blind: the lab room has no camera (`docs/limits-lab.md`, C), so the terminal drives
-the arm without seeing what it takes. A second camera, on the same cable, is a scenario change and
-nothing else, and shows what driving two bodies from one caller looks like.
-
-- **Lab** (`scenarios/lab.json`): `lab_camera`, template `camera`, in the lab at (300, -300),
-  `powered_by` the cable and `controlled_by` the terminal.
-- **Steps that change** (`tests/scenario-lab.test.ts`): C, where ann's take in the lab reached ann
-  alone and the terminal did not see the key, now has the terminal among the take's sight
-  perceivers, basis `camera`; what C showed (an act out of every camera's sight reaches only who
-  stands there) moves to the server room or wherever the build finds no camera, or is dropped from
-  limits if nowhere is left. Any other step the camera changes is updated and named in the commit.
-- **The arm test** gains the terminal's side: before the arm takes the key, the terminal sees it
-  (`camera`); after, it sees the key in the arm's grip; once bob cuts the cable it sees neither,
-  and the arm's drop is `unpowered` as now. The two views name the key by different aliases
-  (`aliasOf(terminal, key)` and `aliasOf(arm, key)` differ), so the test drives the arm by name,
-  as a caller holding both views must.
-- **Docs:** `docs/limits-lab.md` (C rewritten; a new line: a caller driving the terminal and the
-  arm sees one key under two aliases and matches them by name, which two keys of one name would
-  defeat).
-- **Depends on:** nothing. **Not in it:** any engine change; one alias across a controller's
-  bodies (a decision for the maintainer, recorded only as a limit).
 
 ### A panel a subject can use
 

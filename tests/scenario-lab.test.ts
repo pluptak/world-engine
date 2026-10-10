@@ -3,15 +3,16 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { createWorld, WORLD_AUTHOR, type Command, type WorldEdit, type Id, type Result, type Scenario, type World } from "../src/index.js";
+import { actorWorld, aliasOf, createWorld, WORLD_AUTHOR, type Command, type WorldEdit, type Id, type Result, type Scenario, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
 import { tempDir } from "./harness.js";
 
 // The underground lab written with today's mechanics: eight subjects in a dormitory, a corridor to
 // the lab and to the server room, and an exit door, shut and locked, whose key lies in the lab. The
-// AI's body is the terminal in the server room, which controls the exit door and watches the
-// corridor's camera over a cable from the generator; the experiment's stage is a prop nothing reads.
+// AI's body is the terminal in the server room, which controls the exit door and the arm and watches
+// the corridor's and the lab's cameras over a cable from the generator; the experiment's stage is a
+// prop nothing reads.
 // Steps are lettered; `docs/limits-lab.md` says what the lab wanted that they show it cannot say.
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
@@ -23,12 +24,20 @@ test("the lab: the arm takes the key before ann arrives, and a cut cable leaves 
   const root = tempDir(t);
   const dir = join(root, "arm");
   const { world, id, run } = open(dir);
-  const [arm, ann, bob, key, cable] = [id("arm"), id("ann"), id("bob"), id("key"), id("cable")];
+  const [arm, ann, bob, key, cable, terminal] = [id("arm"), id("ann"), id("bob"), id("key"), id("cable"), id("terminal")];
   const verdict = (result: Result) => [result.status, result.reason_code, result.reason_data];
+  const sees = (entity: Id) => world.query({ kind: "perceive", observer: terminal, sense: "sight", entity });
 
+  // The lab camera, on the cable, shows the terminal the key on the lab floor before the arm takes it.
+  deepStrictEqual(sees(key), { value: "true", basis_code: "camera" });
   // The arm takes the key from the lab floor, within its reach, before ann comes in.
   deepStrictEqual(verdict(run(arm, "take", "key")), ["ok", undefined, undefined]);
   strictEqual(world.entity(key)?.contained_in, arm);
+  // The key in the arm's grip is still in the camera's sight; the terminal's view names it by its own alias,
+  // which is not the arm's, so the test drives the arm by name, as a caller holding both views must.
+  deepStrictEqual(sees(key), { value: "true", basis_code: "camera" });
+  ok(aliasOf(terminal, key) !== aliasOf(arm, key));
+  ok(actorWorld(world, terminal).observe().entities.some((entity) => entity.id === aliasOf(terminal, key)));
 
   // Ann comes in and stands by the key, and her take from the arm's grip is refused: a grip is not a pocket.
   deepStrictEqual(verdict(run(ann, "move", undefined, { through: "dormitory door" })), ["ok", undefined, undefined]);
@@ -41,6 +50,8 @@ test("the lab: the arm takes the key before ann arrives, and a cut cable leaves 
   deepStrictEqual(verdict(run(bob, "move", undefined, { to: { x: 200, y: 360 } })), ["ok", undefined, undefined]);
   strictEqual(run(bob, "attack", "cable").status, "ok");
   strictEqual(world.entity(cable)?.status, "destroyed");
+  // The cut blinds the camera too: the terminal no longer sees the key in the arm's grip.
+  strictEqual(sees(key).value, "false");
 
   // The arm cannot let go: its drop is refused at the arm, with the cable as the cut.
   deepStrictEqual(verdict(run(arm, "drop", "key")), ["refused", "unpowered", { at: arm, cut: cable }]);
@@ -217,12 +228,23 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
     basis_code: "relation_state",
   });
 
-  // C. the terminal senses the server room and, by camera, the corridor: ann's take in the lab
-  // reached ann alone, and the key there is not seen from it.
+  // C. the terminal senses the server room and, by camera, the corridor and the lab: ann's take in the lab
+  // reached ann and the terminal, which sees the key there through the lab camera, and no one else.
   for (const event of took.events) {
-    deepStrictEqual([event.perceivers?.sight, event.perceivers?.hearing], [[ann], []]);
+    deepStrictEqual([event.perceivers?.sight, event.perceivers?.hearing], [[terminal, ann].sort(), []]);
   }
-  deepStrictEqual(world.query({ kind: "perceive", observer: terminal, sense: "sight", entity: id("key") }).value, "false");
+  // The key is in ann's hand now, and ann is out of the lab: nothing the lab camera sees holds it.
+  deepStrictEqual(world.query({ kind: "perceive", observer: terminal, sense: "sight", entity: id("key") }), {
+    value: "false",
+    basis_code: "not_perceptible",
+  });
+  // A move in the dormitory, where no camera looks, reaches the dormitory's subjects and not the terminal.
+  const shuffle = run(bob, "move", undefined, { to: { x: -250, y: 60 } }, true);
+  strictEqual(shuffle.status, "ok");
+  const dormitory = subjects.filter((subject) => subject !== ann).sort();
+  for (const event of shuffle.events) {
+    deepStrictEqual(event.perceivers?.sight.slice().sort(), dormitory);
+  }
 
   // D. the terminal locks the exit door it controls from the server room: no key, no hands, no reach,
   // and it sees the door it locks through the corridor's camera.

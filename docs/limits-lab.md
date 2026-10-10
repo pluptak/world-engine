@@ -12,9 +12,12 @@ it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
 - Escape is no event: a subject who leaves is a subject whose `location` is `outside`, which a
   caller reads with `fact` (B).
 - A camera sees its own room whole and lit, and nothing else: no sound, no cone, no view across a
-  door, no record. The lab room has none, so an act there reaches only whoever stands in it.
-  The AI speaks to and hears the dormitory through its intercom, which carries that room and no
-  other (C).
+  door, no record. The lab and the corridor have one each, the dormitory none, so an act there
+  reaches only whoever stands in it. The AI speaks to and hears the dormitory through its
+  intercom, which carries that room and no other (C).
+- The AI watches its arm with the lab camera, on the same cable: one cut blinds both. The terminal
+  and the arm name the key by two aliases, so a caller holding both views matches them by name,
+  which two keys of one name would defeat (arm test).
 - The terminal sees the exit door it locks only through the corridor's camera, which shares the
   door's cable: one cut both blinds it and stops its unlock (D, E).
 - The terminal runs on the generator itself, so a cut cable leaves it running; with the generator
