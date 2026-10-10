@@ -4,7 +4,8 @@ What `scenarios/lab.json` (eight subjects, a corridor, a lab, a server room, an 
 with its key in the lab, controlled by the AI's terminal over a cable from a generator, and an
 experiment's stage) could not say, and what the
 engine does instead. One line per limit, with the step of `tests/scenario-lab.test.ts` that shows
-it. Nothing here is a proposal.
+it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
+`tests/acceptance-lab.test.ts`, beside the scenario test.
 
 - Nothing is the AI: an agent is a body, so the terminal is one more agent with sight, hearing and
   speech, and who it acts for, and what losing it means, is the caller's (A).

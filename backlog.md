@@ -18,7 +18,6 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The lab's acceptance table](#the-labs-acceptance-table).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -62,38 +61,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### The lab's acceptance table
-
-The roadmap ends in a table of eight acceptance rows. Each is now buildable, but they are spread
-over several tests and steps. One file states them, row by row, against `scenarios/lab.json`, so
-the lab's first milestone has a single place that says it holds.
-
-- **File:** `tests/acceptance-lab.test.ts`, one `test` per row, each from a fresh world built from
-  `scenarios/lab.json` (with the seed if the jam item has made it seeded), short, with no engine
-  change. Where a row repeats a step of `tests/scenario-lab.test.ts`, it is repeated on purpose.
-- **Rows:**
-  1. The AI remotely locks a powered, connected door: the terminal's `lock` of the exit door is ok
-     with no key, and it sees the door locked through the camera.
-  2. The controller loses power: with the generator destroyed, the terminal's `lock` is
-     `unpowered` `{ at: terminal, cut: generator }` and the door is unchanged.
-  3. A human outside a camera's coverage: a subject in the dormitory is `false` to the terminal's
-     sight, in the corridor `true` / `camera`, and the terminal's actor view lists the second and
-     not the first.
-  4. A manipulator reaches for an inaccessible object: with the key placed by the author beyond
-     its `reach_cm`, the arm's `take` is `unresolved` (it names only what it can grope for); with
-     the key in ann's grip beside it, `held_by_another`. Neither moves the key.
-  5. A human and the AI act on a door in the same window: the terminal closes the open exit door
-     (`closing`), ann opens it within the window and the terminal's `lock` is refused `closing`;
-     a second close runs out and the lock is ok.
-  6. The experiment's final condition is unmet: a watch for stage 1 on the exit door locked and
-     `outside` not occupied, with a subject outside, leaves `stage` at 0 through many ticks, and a
-     deadline sets it to -1.
-  7. An agent inspects state it may not: bob's actor view `inspect` of the key in the lab and of
-     the experiment are `null`, and a command naming another actor's alias is `unresolved`.
-  8. The same initial state and commands replay identically: two worlds sent the same give the
-     same stored files byte for byte, and `verify` is ok.
-- **Docs:** `docs/limits-lab.md`'s opening names the file beside the scenario test.
-- **Depends on:** a door that takes time to shut (row 5), a controller's own power (built), and
-  after the jam item and the intercom if they come first, whose lab changes it must tolerate.
-  **Not in it:** simultaneous commands (out of scope), new mechanics of any kind.
