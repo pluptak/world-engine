@@ -19,7 +19,7 @@ grip, and not felt otherwise; a `collided` is felt through what it hit as well.
 `authored` is `edit`, `advance`, `placed`, `edited`, `removed`, `beat_skipped`, and a `spawned` whose cause is one of those:
 the world author's own work, which nobody senses, though its consequences (`displaced`, `dropped`,
 `broken`, a product's `spawned`) are sensed as any other event. `pour` is `pour`, `poured` and
-`spilled`; `broken` is a break whose entity held a liquid or residue; `event` is any other (a `jammed`, [jam.md](jam.md), among them). The
+`spilled`; `broken` is a break whose entity held a liquid or residue; `event` is any other. The
 `entity-` rows are the entity form, where there is no event and so nothing is loud. `found` is read
 against the concealer it names, `revealed` against the thing revealed. `sounded` (an authored beat's knock or bang, [beats.md](beats.md)) is the `event` row for hearing and
 nothing else: never seen (`unseen`), never smelt, never touched, and heard next door only when its data says

@@ -29,7 +29,8 @@ it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
   stage is read through the trusted `World`, never through a view, the terminal's included (F).
 - An open door blocks its footprint: only a barrier stands open to walking, so no subject can
   stand in a doorway to keep it from shutting; one the author puts there is moved aside (G).
-- The exit door jams a quarter of the time: the terminal's command may be lost to the world's dice, and
-  it learns of the jam only through the camera, never why (K).
+- The exit door jams a quarter of the time: the terminal's command may be lost to the world's dice,
+  and it learns of the jam only through the camera, never why (K).
 - The exit door shuts two ticks after its close: a runner gets through in that window, and an open
-  stops the shut. Nothing is simultaneous: a window is only the ticks the door takes (G, window test).
+  stops the shut. Nothing is simultaneous: a window is only the ticks the door takes
+  (G, window test).

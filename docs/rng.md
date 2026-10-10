@@ -29,7 +29,8 @@ clock moved. A caller that wants chance gives the world a seed first.
 miss writes nothing and emits nothing, but the next run is scheduled as if the run had happened, so
 the process keeps trying. A hit is a run like any other. Attack hit chance is not built on this yet.
 
-**Second consumer.** A remote command to a device with a `jam_pct` rolls once and is jammed under that chance ([jam.md](jam.md)).
+**Second consumer.** A remote command to a device with a `jam_pct` rolls once and is jammed under
+that chance ([jam.md](jam.md)).
 
 `tests/seed.test.ts` is the spec. The property test's worlds are seeded, its `lichen` rolls on every
 tick it can, and the generator now and then replaces the state with an edit.

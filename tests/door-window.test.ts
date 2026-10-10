@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { createWorld, WORLD_AUTHOR, type Id, type Result, type Scenario, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
-import { loadTemplates } from "../src/templates.js";
+import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { fileURLToPath } from "node:url";
 import { tempDir } from "./harness.js";
 
@@ -145,4 +145,27 @@ test("a door with no shut_ticks shuts at once, as before", (t) => {
   const { world, id, run } = open(t);
   strictEqual(world.edit({ kind: "place", target: id("ann"), support: id("hall"), pos: { x: 300, y: 250 } }).status, "ok");
   deepStrictEqual(types(run(id("ann"), "close", "plain")), ["close", "closed"]);
+});
+
+test("an unlock in a longer window leaves the door closing: an open still stops it, and a lock still waits", (t) => {
+  const long = parseRegistry({ ...registry, long_door: { id: "long_door", extends: "door", props: { shut_ticks: 4 } } });
+  const world = createWorld(join(tempDir(t), "long"), [
+    { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
+    { id: "yard", template: "room", overrides: { name: "yard", props: { lit: true } } },
+    { id: "door", template: "long_door", overrides: { name: "door", props: { open: true, from: "hall", to: "yard" } } },
+    { id: "key", template: "key", overrides: { name: "key", location: "hall", support: "hall", pos: { x: 50, y: 0 }, props: { opens: "door" } } },
+    { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
+  ], long);
+  const [ann, door] = [world.id("ann")!, world.id("door")!];
+  let seq = 0;
+  const act = (verb: string): Result => world.command({ command_id: `l${(seq += 1)}`, actor: ann, verb, target: verb === "take" ? "key" : "door" });
+  for (const verb of ["take", "lock", "close", "unlock"]) {
+    strictEqual(act(verb).status, "ok", verb);
+  }
+  deepStrictEqual([world.entity(door)?.props.open, world.entity(door)?.props.closing, world.entity(door)?.props.locked], [true, true, false]);
+  deepStrictEqual(validateSnapshot(world.snapshot(), long), []);
+  deepStrictEqual(verdict(act("lock")), ["refused", "closing"]);
+  deepStrictEqual(verdict(act("open")), ["ok", undefined]);
+  deepStrictEqual([world.entity(door)?.props.open, world.entity(door)?.props.closing], [true, undefined]);
+  deepStrictEqual(types(world.command({ command_id: "late", actor: WORLD_AUTHOR, verb: "advance", args: { ticks: 5 } })), []);
 });

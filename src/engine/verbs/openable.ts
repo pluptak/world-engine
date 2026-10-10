@@ -195,8 +195,10 @@ function transition(context: TransitionContext, kind: Kind): void {
     return;
   }
 
-  // Opening stops a shut on its way, and a shut that has come clears the window (`schedule.ts`).
-  const { closing: _closing, ...others } = context.snapshot.entities[target.entity.id]?.props ?? {};
+  // Opening stops a shut on its way, and a shut that has come clears the window (`schedule.ts`); an
+  // unlock in the window leaves it as it is, the shut still to come.
+  const current = context.snapshot.entities[target.entity.id]?.props ?? {};
+  const { closing: _closing, ...others } = current;
   const shutTicks = target.entity.props.shut_ticks;
   const shutsLater =
     kind === "close" && typeof shutTicks === "number" && shutTicks > 0 && Number.isSafeInteger(context.snapshot.tick + shutTicks);
@@ -206,7 +208,7 @@ function transition(context: TransitionContext, kind: Kind): void {
   }
 
   const change = changes[kind];
-  const props = { ...others, [change.prop]: change.value };
+  const props = { ...(kind === "open" ? others : current), [change.prop]: change.value };
   const eventId = context.emit(change.event, target.entity.id, {}, context.root_event_id);
   context.set(target.entity.id, "props", props, eventId);
   if (kind === "close") {
