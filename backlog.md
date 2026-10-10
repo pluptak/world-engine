@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-None: every item is built.
+1. [A camera](#a-camera).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -62,3 +62,42 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
+
+### A camera
+
+The lab's AI locks the exit door blind and senses only its own room (`docs/limits-lab.md`, C and
+D). A camera is a thing in a room whose sight is the sight of the agent its feed reaches, over
+the same two links a door has: `controlled_by` toward that agent, `powered_by` toward a source.
+
+- **Template and prop:** `camera` (definition, boolean) in `src/engine/fields.ts`;
+  `templates/camera.json`, small and light, not an agent, `camera: true`. It is placed like any
+  thing (no mounting, no height), and a human can see it, take it if it fits, or destroy it.
+- **The feed:** a camera feeds the agent `controller(camera)` names (`src/engine/power.ts`) while
+  the camera is not `destroyed` and `remoteFault(camera)` is null: it, and every link on to the
+  agent, intact and powered. `feeds(snapshot, observer)` there lists those cameras, sorted by id.
+- **Sight** (`perceive` in `src/engine/query.ts`): when the observer's own sight answers false at
+  the location step (after `observer_destroyed`, `no_sense_capacity`, `abstract`, `authored`,
+  `unseen`, `concealed` and `enclosed`, which a camera does not change), each feeding camera is
+  tried as if the observer stood where it stands, its own room only and lit: the first that sees
+  answers `true` / `camera`; none does, the body's own `false` stands. The observer still needs
+  sight capacity of its own. Hearing, smell and touch never cross a camera.
+- **What follows from `perceive`, unchanged:** `observe` and the actor view list what a camera
+  shows, with its facts; `perceivers` name the fed agent under `sight`; `addressable` lets the
+  agent name what it sees, and its own reach still refuses acting on it (`out_of_reach`);
+  event-form sight reads the camera as it was before or after the event.
+- **Lab** (`scenarios/lab.json`): a camera in the corridor, `powered_by` the cable and
+  `controlled_by` the terminal. `tests/scenario-lab.test.ts`: in D the terminal sees the exit door
+  and bob in the corridor, basis `camera`, and still nothing in the lab (C); in E, once the cable
+  is cut, it sees neither.
+- **Tests:** `tests/camera.test.ts`, a small world: a fed agent sees a thing in the camera's lit
+  room (`camera`), not in a dark one, not a concealed or enclosed one, not one in the next room
+  through an open door; no longer once the camera, its source or a link is destroyed; an agent
+  the feed does not reach sees nothing; an observer with no sight capacity sees nothing through
+  it; an act in the room lists the fed agent among `perceivers.sight`; the agent's `observe`
+  and its actor view list the thing, and it can name it but not take it.
+- **Docs:** new `docs/camera.md`; one line each in `docs/perception.md` and `docs/senses.md` for
+  the basis `camera`; `docs/power.md` one line (a camera is a device too); `docs/limits-lab.md`
+  updated (the door is no longer locked blind; what a camera does not do, as the build shows).
+- **Depends on:** power and remote control (built). **Not in it:** sound through a camera, a
+  view across a door, a cone or a facing, delay or recording, a camera moving or turning, a
+  human watching a feed, and anything that tells a subject it is watched beyond seeing the camera.
