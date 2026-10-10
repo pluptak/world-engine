@@ -7,6 +7,7 @@ import {
   WORLD_AUTHOR,
   type Attempt,
   type Command,
+  type RoundMark,
   type Result,
   type WorldEdit,
 } from "./engine/command.js";
@@ -22,6 +23,7 @@ import {
 import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./engine/query.js";
 import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
 import { scheduled, type ScheduleFilter } from "./engine/pending.js";
+import { planRound, type RoundPlan } from "./engine/round.js";
 import { assertNoLostField } from "./engine/upgrade.js";
 import { verbCatalog } from "./engine/verbs/index.js";
 import { applyForms, architectWrites, hasForms } from "./engine/forms.js";
@@ -107,9 +109,22 @@ export interface TraceResult {
   events: WorldEvent[];
 }
 
+// One round: its status and, when it was taken, its number, each move's result in the order the moves
+// were given, and the closing tick. A round refused before it starts takes no part at all.
+export interface RoundResult {
+  status: Status;
+  reason_code?: string;
+  round?: number;
+  results: Result[];
+  closing?: Result;
+}
+
 export interface World {
   command(command: Command, options?: CommandOptions): Result;
   beat(commands: Command[], options?: CommandOptions): Result[];
+  // One round (`docs/rounds.md`): the moves decided against the same world, taken in an order no caller
+  // picks, and then the clock's tick. Each move and the close is one log line.
+  round(moves: readonly Command[]): RoundResult;
   edit(edit: WorldEdit, options?: EditOptions): Result;
   check(command: Command): CheckResult;
   // What the actor can try now: the commands that would be accepted, the verbs that need args to be
@@ -143,6 +158,56 @@ export interface World {
   // names, coverage and dice state. Its history begins at this version, and it shares nothing mutable
   // with its parent: what either does afterwards the other never sees.
   fork(): World;
+}
+
+// The round's moves in the order the plan gives, then its closing tick. `attempt` decides or logs one command:
+// a move the plan refused where the round started is logged as refused, with no part in the world.
+function playRound(
+  moves: readonly Command[],
+  plan: RoundPlan,
+  number: number,
+  start: number,
+  attempt: (command: Command, basedOn: number | undefined, round: RoundMark, decided?: Result) => Result,
+): RoundResult {
+  const results = new Array<Result>(moves.length);
+  for (const [index, refused] of plan.early) {
+    results[index] = attempt({ ...moves[index]!, round: true }, start, { number }, refused);
+  }
+  plan.order.forEach((index, position) => {
+    results[index] = attempt({ ...moves[index]!, round: true }, start, { number, place: position + 1 });
+  });
+  const closing = attempt(
+    { command_id: `round-${number}-close`, actor: WORLD_AUTHOR, verb: "advance", args: { ticks: 1 }, round: true },
+    undefined,
+    { number, close: true },
+  );
+  // The round is taken when its tick is: a close refused (a run that has ended) refuses the round too.
+  return {
+    status: closing.status,
+    ...(closing.reason_code === undefined ? {} : { reason_code: closing.reason_code }),
+    round: number,
+    results,
+    closing,
+  };
+}
+
+// A round's number is one more than the rounds the log already closes.
+function roundNumber(attempts: readonly Attempt[]): number {
+  return attempts.filter((attempt) => attempt.round?.close === true).length + 1;
+}
+
+// `round` is the round's own flag: a command that carries it outside `World.round` is refused, so a caller
+// cannot make a move that takes no time of its own.
+function roundFlagged(snapshot: Snapshot, command: Command): Result {
+  return {
+    status: "invalid",
+    command_id: command.command_id,
+    resolved_target: null,
+    reason_code: "invalid_args",
+    snapshot,
+    deltas: [],
+    events: [],
+  };
 }
 
 function checkResult(result: Result): CheckResult {
@@ -347,13 +412,30 @@ function storeWorld(
 
   const world: World = {
     command: (command, options) =>
-      withObservation(world, active, command.actor, submit(dir, command, options?.basedOn, active), options),
+      command.round === true
+        ? roundFlagged(load(dir, active), command)
+        : withObservation(world, active, command.actor, submit(dir, command, options?.basedOn, active), options),
     // One shared base version for the whole beat, so later commands see earlier ones as stale;
     // one log line per command, each with its own status.
     beat: (commands, options) => {
       const base = options?.basedOn ?? load(dir, active).version;
-      return commands.map((command) => submit(dir, command, base, active));
+      return commands.map((command) =>
+        command.round === true ? roundFlagged(load(dir, active), command) : submit(dir, command, base, active),
+      );
     },
+    round: (moves) =>
+      withWorldLock(dir, () => {
+        const start = load(dir, active);
+        const plan = planRound(start, active, moves);
+        if (plan.status !== "ok") {
+          return { status: plan.status, ...(plan.reason_code === undefined ? {} : { reason_code: plan.reason_code }), results: [] };
+        }
+        // The number is read under the turn, so two processes rounding at once name distinct rounds.
+        const number = roundNumber(readAttempts(dir, 0, active));
+        return playRound(moves, plan, number, start.version, (command, basedOn, round, decided) =>
+          submit(dir, command, basedOn, active, round, decided),
+        );
+      }),
     edit: (edit, options) => {
       // The count of logged submissions names the next edit: every submission appends exactly one
       // line, so the id follows the world rather than the handle, and the same sequence of calls
@@ -561,7 +643,7 @@ export function memoryWorld(
     return null;
   }
 
-  function submitMemory(command: Command, basedOn: number): Result {
+  function submitMemory(command: Command, basedOn: number, round?: RoundMark): Result {
     submissions += 1;
     const base = current.version;
     const result = resolveSubmission(
@@ -571,7 +653,7 @@ export function memoryWorld(
       basedOn,
       (version) => history.get(version) ?? null,
     );
-    tried.push(attemptOf(command, basedOn, base, result));
+    tried.push(attemptOf(command, basedOn, base, result, round));
     if (result.status === "ok") {
       current = result.snapshot;
       events.push(...result.events);
@@ -583,10 +665,27 @@ export function memoryWorld(
 
   const world: World = {
     command: (command, options) =>
-      withObservation(world, templates, command.actor, submitMemory(command, options?.basedOn ?? current.version), options),
+      command.round === true
+        ? roundFlagged(current, command)
+        : withObservation(world, templates, command.actor, submitMemory(command, options?.basedOn ?? current.version), options),
     beat: (commands, options) => {
       const base = options?.basedOn ?? current.version;
-      return commands.map((command) => submitMemory(command, base));
+      return commands.map((command) => (command.round === true ? roundFlagged(current, command) : submitMemory(command, base)));
+    },
+    round: (moves) => {
+      const start = current;
+      const plan = planRound(start, templates, moves);
+      if (plan.status !== "ok") {
+        return { status: plan.status, ...(plan.reason_code === undefined ? {} : { reason_code: plan.reason_code }), results: [] };
+      }
+      return playRound(moves, plan, roundNumber(tried), start.version, (command, basedOn, round, decided) => {
+        if (decided === undefined) {
+          return submitMemory(command, basedOn ?? current.version, round);
+        }
+        submissions += 1;
+        tried.push(attemptOf(command, basedOn ?? current.version, current.version, decided, round));
+        return decided;
+      });
     },
     edit: (edit, options) =>
       submitMemory(

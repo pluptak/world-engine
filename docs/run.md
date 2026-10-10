@@ -10,13 +10,16 @@ refuses both `no_run`. Each is recorded by its own `edit` event, which nobody se
 
 **Gates.** A registering run takes no command but an edit, so an agent's command and the author's
 `advance` are refused `run_not_running` and take no time; the author's other edits go through to
-set the scene up. An ended run takes no command and no edit at all, each refused `run_ended`. Reads
-answer as ever. These refusals belong to the world, not a verb, as scenery's does.
+set the scene up. A running run takes an agent's command and the `advance` only in a round, else
+`round_only` ([rounds.md](rounds.md)). An ended run takes no command and no edit at all, each
+refused `run_ended`. Reads answer as ever. These refusals belong to the world, not a verb, as
+scenery's does.
 
-**The tick limit.** A running run's clock never passes `tick_limit`. A command that would is cut
-at the limit: a `wait` or `advance` passes the ticks left, and its `advanced` says how many. What
-falls due at that tick runs, and the command that reaches the limit ends the run there, with reason
-`tick_limit`. Nothing is left to run at the limit: a command sent after it is refused `run_ended`.
+**The tick limit.** A running run's clock never passes `tick_limit`. While it runs, time passes only
+in rounds, one tick each, so the round whose close reaches the limit runs what falls due there and
+ends the run, with reason `tick_limit`. Nothing is left to run at the limit: a round after it is
+refused `run_ended`. The pipeline also cuts any timed command at the limit, which a running run's
+commands cannot reach by way of a round, since a move takes no time and `wait` is not a move.
 
 **No live players.** A run with `slots` ends, `no_live_players`, after any ok command or edit that
 leaves none of its slots alive: each is gone from the world or destroyed (a bleed-out counts). A

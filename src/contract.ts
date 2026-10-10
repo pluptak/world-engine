@@ -265,6 +265,13 @@ export const RequestSchema = z.discriminatedUnion("op", [
     commands: z.array(CommandSchema),
     include_snapshot: z.boolean().optional(),
   }).strict(),
+  // One round (`docs/rounds.md`): the moves decided against one world, taken in an order no caller picks,
+  // and the clock's one tick. A move carries no `round` flag: the round sets it.
+  z.object({
+    op: z.literal("round"),
+    world: z.string().min(1),
+    moves: z.array(CommandSchema),
+  }).strict(),
   z.object({
     op: z.literal("query"),
     world: z.string().min(1),
@@ -586,15 +593,23 @@ export const SinceResponseSchema = z.object({
   events: z.array(WorldEventSchema),
 }).strict();
 
+// Where a logged command stood in a round (`docs/rounds.md`).
+export const RoundMarkSchema = z.object({
+  number: z.number().int(),
+  place: z.number().int().optional(),
+  close: z.literal(true).optional(),
+}).strict();
+
 export const AttemptsResponseSchema = z.object({
   attempts: z.array(z.object({
-    command: CommandSchema,
+    command: CommandSchema.extend({ round: z.boolean().optional() }),
     based_on_version: z.number().int(),
     version: z.number().int(),
     status: StatusSchema,
     reason_code: z.string().optional(),
     reason_data: ReasonDataSchema.optional(),
     candidates: z.array(IdSchema).optional(),
+    round: RoundMarkSchema.optional(),
   }).strict()),
 }).strict();
 
@@ -627,6 +642,14 @@ export const ScheduleResponseSchema = z.object({
 
 export const BeatResponseSchema = z.object({
   results: z.array(CommandResponseSchema),
+}).strict();
+
+export const RoundResponseSchema = z.object({
+  status: StatusSchema,
+  reason_code: z.string().optional(),
+  round: z.number().int().optional(),
+  results: z.array(CommandResponseSchema),
+  closing: CommandResponseSchema.optional(),
 }).strict();
 
 export const VerbsResponseSchema = z.object({
@@ -711,6 +734,7 @@ export const RESPONSES = {
   trace: TraceResponseSchema,
   schedule: ScheduleResponseSchema,
   beat: BeatResponseSchema,
+  round: RoundResponseSchema,
   verbs: VerbsResponseSchema,
   capabilities: CapabilitiesResponseSchema,
   catalog: CatalogResponseSchema,

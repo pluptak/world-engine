@@ -7,13 +7,20 @@ import { withSchedule } from "./pending.js";
 // reason. The gate and the clock's limit read the state here; an edit sets it and a command ends it.
 
 // What the run's state refuses, or null. An ended run takes no command and no edit. One still registering
-// takes no command but an edit: its edits are how the author sets it going.
-export function runRefusal(snapshot: Snapshot, isEdit: boolean): string | null {
+// takes no command but an edit: its edits are how the author sets it going. A running one takes an agent's
+// command and the author's advance only in a round (`docs/rounds.md`), so a lone one is `round_only`.
+export function runRefusal(snapshot: Snapshot, verb: string, authored: boolean, round: boolean): string | null {
   const state = snapshot.run?.state;
   if (state === "ended") {
     return "run_ended";
   }
-  return state === "registering" && !isEdit ? "run_not_running" : null;
+  if (verb === "edit") {
+    return null;
+  }
+  if (state === "registering") {
+    return "run_not_running";
+  }
+  return state === "running" && !round && (!authored || verb === "advance") ? "round_only" : null;
 }
 
 // The ticks a running run may still pass before its limit, or null when no limit applies.

@@ -7,6 +7,11 @@ import { reconcileSince } from "./process.js";
 import { pruneSchedule, runCause } from "./schedule.js";
 import type { StopBeat } from "./command.js";
 
+// A verb that takes exactly one tick, whatever its args: a round's moves are these (`docs/rounds.md`).
+export function isOneTickVerb(verb: Verb): boolean {
+  return "ticks" in verb.duration && verb.duration.ticks === 1;
+}
+
 // Every verb declares how many ticks it takes: a fixed count, or the value of one of its int args.
 // Only an ok command takes time; a refused or invalid one leaves `tick` where it was.
 export function commandDuration(verb: Verb, command: Command): number | null {

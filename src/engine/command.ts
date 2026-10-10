@@ -179,6 +179,17 @@ export interface Command {
   args?: Record<string, unknown>;
   // Ask for the batch form of perceive: every event of an ok command names its perceivers.
   perceivers?: boolean;
+  // Set only by `World.round` (`docs/rounds.md`): a move of a round takes no time of its own, and the
+  // round's close is the one tick it moves. Never set by a caller of `command`.
+  round?: boolean;
+}
+
+// Where a logged command stood in a round: the round's number, the place of a move in the order it was
+// applied (absent for one refused where the round started), and `close` on the round's closing tick.
+export interface RoundMark {
+  number: number;
+  place?: number;
+  close?: true;
 }
 
 export interface Result {
@@ -222,14 +233,23 @@ export interface Attempt {
   reason_code?: string;
   reason_data?: ReasonData;
   candidates?: Id[];
+  // Set on a command logged by a round (`docs/rounds.md`).
+  round?: RoundMark;
 }
 
-export function attemptOf(command: Command, basedOn: number, version: number, result: Result): Attempt {
+export function attemptOf(
+  command: Command,
+  basedOn: number,
+  version: number,
+  result: Result,
+  round?: RoundMark,
+): Attempt {
   return {
     command,
     based_on_version: basedOn,
     version,
     status: result.status,
+    ...(round === undefined ? {} : { round }),
     ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
     ...(result.reason_data !== undefined && { reason_data: result.reason_data }),
     ...(result.candidates !== undefined && { candidates: result.candidates }),

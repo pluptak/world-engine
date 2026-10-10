@@ -1,5 +1,5 @@
 import { canonicalJson } from "./canonical.js";
-import { advanceClock, commandDuration } from "./clock.js";
+import { advanceClock, commandDuration, isOneTickVerb } from "./clock.js";
 import { finishRun, runRefusal, ticksLeft } from "./run.js";
 import { reconcileSince } from "./process.js";
 import { NoSeedError, nextRandom } from "./rng.js";
@@ -76,7 +76,7 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     return unchangedResult(snapshot, command, "invalid", null, "not_an_agent");
   }
   // A run's state takes some commands (`docs/run.md`). The world's, not a verb's, so no verb declares it.
-  const runCode = runRefusal(snapshot, command.verb === "edit");
+  const runCode = runRefusal(snapshot, command.verb, authored, command.round === true);
   if (runCode !== null) {
     return unchangedResult(snapshot, command, "refused", null, runCode);
   }
@@ -127,8 +127,9 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     );
   }
 
-  // Checked once the verb has accepted its args, so a bad `wait` stays the verb's own refusal.
-  const duration = commandDuration(verb, command);
+  // Checked once the verb has accepted its args, so a bad `wait` stays the verb's own refusal. A round's
+  // move takes no time of its own: the round's close is the tick the clock moves (`docs/rounds.md`).
+  const duration = command.round === true && isOneTickVerb(verb) ? 0 : commandDuration(verb, command);
   if (duration === null) {
     throw new TypeError(`Verb ${command.verb} accepted a command without a duration`);
   }

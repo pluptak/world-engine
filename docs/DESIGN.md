@@ -23,6 +23,7 @@ What is built, nothing aspirational, one concept per file:
 - [schedule-api.md](schedule-api.md): reading that schedule through `World.schedule`, filtered.
 - [scenario.md](scenario.md): a scene: the entities, the seed, the beats queued at creation and the run's limits.
 - [run.md](run.md): a run made from a scene: registering, running, ended, and the limit and the slots that end it.
+- [rounds.md](rounds.md): a round: every move decided against one world, in an order no caller picks, one tick.
 - [processes.md](processes.md): a template's prop that changes by itself while a condition holds: candles, moss.
 - [beats.md](beats.md): the architect's scheduled interventions: a knock at tick 305, the lights failing at 310.
 - [beats-watch.md](beats-watch.md): a beat's `all` condition and watches, which keep watch until their action has run.

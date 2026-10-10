@@ -18,6 +18,21 @@ export function nextRandom(state: number): { value: number; state: number } {
   return { value: ((t ^ (t >>> 14)) >>> 0) / RNG_MODULUS, state: next };
 }
 
+// The order a round takes its moves in: a permutation drawn from a stream of its own, started from the
+// dice's state at the round's start and the tick. It reads the dice and never advances them, so the order
+// is a pure function of the seed and the tick, and no move's roll decides who goes first.
+export function roundOrder<T>(state: number, tick: number, items: readonly T[]): T[] {
+  let stream = (state ^ Math.imul(tick + 1, 0x9e3779b9)) >>> 0;
+  const order = [...items];
+  for (let i = order.length - 1; i > 0; i -= 1) {
+    const drawn = nextRandom(stream);
+    stream = drawn.state;
+    const j = Math.floor(drawn.value * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
+  }
+  return order;
+}
+
 // Thrown by a roll in a world that has no seed: the pipeline turns it into a refusal, so a world is
 // never given a seed it did not ask for.
 export class NoSeedError extends Error {

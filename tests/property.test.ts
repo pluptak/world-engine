@@ -461,3 +461,31 @@ test("an actor is told only of what it can sense or address: an actor view names
   strictEqual(groped >= 1, true, `groped ${groped}`);
   strictEqual(withheld >= 5, true, `withheld ${withheld}`);
 });
+
+test("random rounds of moves, each actor once a round, still validate after every round", () => {
+  // A round decides its moves against one world, takes them in a drawn order and moves the clock once: each
+  // step is validated, and the moves that land are counted so the rounds are not all refused.
+  let rounds = 0;
+  let landed = 0;
+  for (let seed = 0; seed < 60; seed += 1) {
+    const rand = mulberry32(seed);
+    const world = memoryWorld(buildInitial(registry), registry);
+    for (let i = 0; i < 30; i += 1) {
+      const actors = new Set<string>();
+      const moves: Command[] = [];
+      for (let k = 0; k < 3; k += 1) {
+        const step = genStep(rand, world.snapshot(), `round-${seed}-${i}-${k}`);
+        if ("verb" in step && !actors.has(step.actor)) {
+          actors.add(step.actor);
+          moves.push(step);
+        }
+      }
+      const round = world.round(moves);
+      rounds += round.status === "ok" ? 1 : 0;
+      landed += round.results.filter((result) => result.status === "ok").length;
+      deepStrictEqual(validateSnapshot(world.snapshot(), registry), [], `round-${seed}-${i}`);
+    }
+  }
+  strictEqual(rounds >= 500, true, `rounds ${rounds}`);
+  strictEqual(landed >= 100, true, `landed ${landed}`);
+});

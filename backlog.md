@@ -18,7 +18,6 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -49,7 +48,7 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - The verbs `turn` (it needs a facing direction), `use` (too general), `throw` (it would deal impact damage
   to agents) and `bandage` (a bleed stops by its count).
 - Pathfinding: a caller routes around a barrier in several moves. Agents acting in parallel: a `beat` is an
-  ordered batch, and two commands never share a tick.
+  ordered batch.
 - A gate or door that crushes what is in its way (a prop turning it on, the damage deciding whether the thing
   is destroyed or stops the closure): postponed in favour of pushing aside.
 - Migrating stored worlds between `schema_version`s: an older world is refused, never read as if it matched
@@ -62,45 +61,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A round: every player moves, in an order no one picks, and the clock moves once
-
-Today each command moves the clock by its own duration, so one player's `wait` moves the world for
-all, and the fast outpace the slow (`plans/rounds.md`). In a round every player decides against the
-same world and the clock moves once.
-
-- **API** (`src/api.ts`, `World.round(moves, options?)`; a CLI `round` op): `moves` is a list of
-  commands, at most one per actor (else the round is `invalid`, `duplicate_actor`, and nothing is
-  applied); an actor with none passes. `World.beat` (`docs/api.md`) is the nearest thing today: an
-  ordered batch on one base, each command preempted by what an earlier one did.
-- **Check:** each move is checked against the round's starting world, as a command is now; one that
-  fails there is refused with its own code and takes no part.
-- **Order:** the rest are applied in an order drawn from a stream of its own, a pure function of the
-  seed and the tick (`src/engine/rng.ts` may host it), never `snapshot.rng`, so the jams a round's
-  moves roll are the same whoever else moves. A world with no seed refuses a round of two or more
-  moves `no_seed`. Each move is based on the round's starting version, so one that fails where it
-  would have succeeded at the start is `preempted` (the store's rule), else refused with its own
-  code. Nothing is retried.
-- **Time:** a move takes no time of its own: every move of a round is at the round's tick, and the
-  verbs that last longer than a tick (`wait`, `advance`) and `edit` are not moves (`invalid`,
-  `not_a_round_move`). The command carries the round flag through the log, as `perceivers` does, so
-  replay applies it the same way. After the moves the clock moves one tick (what falls due runs
-  as now). An empty round is that tick alone.
-- **The record:** each move is its own log line with its status, plus the round's number and its
-  place in the order; the closing tick is a line of its own. `attempts` and `since` read them.
-- **In a run:** while running, an agent acts only in a round (a lone `command` is refused
-  `round_only`, `advance` too); outside a run, `round` works on any world, so it is testable alone.
-- **Perception:** each move has its own before and after, so event-form perception and
-  `perceivers` read as now.
-- **Tests:** `tests/round.test.ts`: two agents take one key, one gets it and the other is
-  `preempted`, and the same seed and tick give the same winner on every run while another tick may
-  not; a door's jam roll is the same whether one or three agents move; a move refused at the start
-  takes no part; `wait` in a round is `not_a_round_move`; an empty round is one tick; a self-closing
-  door opened in a round closes on time; a store world replays a round exactly (`verify`); a running
-  run refuses a lone command. The property test gains rounds of random moves.
-- **Backlog:** `## Out of scope` drops "and two commands never share a tick".
-- **Docs:** new `docs/rounds.md` and its `docs/DESIGN.md` line; `docs/time.md` (moves share a tick),
-  `docs/api.md` (`round`).
-- **Depends on:** the run item, for its gate alone. **Not in it:** handles and blind submission
-  (who sees whose move is the next plan's), the director closing rounds or running empty ones,
-  contest rules for a conflict, a carried agent's `move`.

@@ -28,7 +28,8 @@ duration and that nothing due inside it is left behind.
 
 Modifiers are not all that falls due: a door can close itself ([schedule.md](schedule.md)), and at
 a tick with both, the modifiers expire first. What it does not do: agents do not act in parallel;
-two commands in a beat never share a tick.
+two commands in a beat never share a tick. A round's moves do share one: they are decided against the
+same world and take the round's tick, and the clock moves once at its close ([rounds.md](rounds.md)).
 
 **Waking early.** `advance` may name agents (`stop_on_perceived`) and then ends at the first tick whose
 events one of them could sense, after everything due at that tick has run; `ticks` is the upper bound

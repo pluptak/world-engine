@@ -20,7 +20,7 @@ import { canonicalJson } from "../engine/canonical.js";
 import { traceQuery, type TraceQuery } from "../engine/trace.js";
 import { validateSnapshot } from "../engine/validate.js";
 import { assertNoLostField } from "../engine/upgrade.js";
-import { attemptOf, type Attempt, type Command, type Result } from "../engine/command.js";
+import { attemptOf, type Attempt, type Command, type Result, type RoundMark } from "../engine/command.js";
 import { WorldError } from "../errors.js";
 import { own, type Delta, type Id, type Snapshot, type WorldEvent } from "../model.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../templates.js";
@@ -803,13 +803,33 @@ export function resolveSubmission(
   return basedResult?.status === "ok" ? { ...result, status: "preempted" } : result;
 }
 
+// The result a logged attempt says it had, with nothing applied: what a refusal at a round's start was.
+function loggedRefusal(snapshot: Snapshot, entry: Attempt): Result {
+  return {
+    status: entry.status,
+    command_id: entry.command.command_id,
+    resolved_target: null,
+    ...(entry.reason_code === undefined ? {} : { reason_code: entry.reason_code }),
+    ...(entry.reason_data === undefined ? {} : { reason_data: entry.reason_data }),
+    ...(entry.candidates === undefined ? {} : { candidates: entry.candidates }),
+    snapshot,
+    deltas: [],
+    events: [],
+  };
+}
+
+// `round` marks the command as a round's (`docs/rounds.md`), and `decided` is a result already reached
+// where the round started, which is logged as it is: a move refused there takes no part, however the world
+// looks by its turn.
 export function submit(
   dir: string,
   command: Command,
   based_on_version?: number,
   registry?: TemplateRegistry,
+  round?: RoundMark,
+  decided?: Result,
 ): Result {
-  return withWorldLock(dir, () => submitLocked(dir, command, based_on_version, registry));
+  return withWorldLock(dir, () => submitLocked(dir, command, based_on_version, registry, round, decided));
 }
 
 function submitLocked(
@@ -817,15 +837,17 @@ function submitLocked(
   command: Command,
   based_on_version: number | undefined,
   registry: TemplateRegistry | undefined,
+  round: RoundMark | undefined,
+  decided: Result | undefined,
 ): Result {
   const templates = activeRegistry(dir, registry);
   const current = load(dir, templates);
   const basedOn = based_on_version ?? current.version;
-  const result = resolveSubmission(current, templates, command, basedOn, (version) =>
-    snapshotAtVersion(dir, version, templates),
-  );
+  const result =
+    decided ??
+    resolveSubmission(current, templates, command, basedOn, (version) => snapshotAtVersion(dir, version, templates));
 
-  const entry: LogEntry = attemptOf(command, basedOn, current.version, result);
+  const entry: LogEntry = attemptOf(command, basedOn, current.version, result, round);
   const logPath = join(dir, snapshots.log);
   const eventsPath = join(dir, snapshots.events);
   const deltasPath = join(dir, snapshots.deltas);
@@ -1065,8 +1087,13 @@ function verifyLocked(dir: string, templates: TemplateRegistry): Verification {
     if (based.has(snapshot.version)) {
       kept.set(snapshot.version, snapshot);
     }
-    const result = resolveSubmission(snapshot, templates, entry.command, entry.based_on_version, (version) => kept.get(version) ?? null);
-    const decided = attemptOf(entry.command, entry.based_on_version, snapshot.version, result);
+    // A move a round refused where it started is replayed as logged: the world it would be judged against
+    // now is not the one it was judged in, and it took no part.
+    const refusedAtStart = entry.round !== undefined && entry.round.place === undefined && entry.round.close !== true;
+    const result = refusedAtStart
+      ? loggedRefusal(snapshot, entry)
+      : resolveSubmission(snapshot, templates, entry.command, entry.based_on_version, (version) => kept.get(version) ?? null);
+    const decided = attemptOf(entry.command, entry.based_on_version, snapshot.version, result, entry.round);
     if (canonicalJson(decided) !== log.lines[index]) {
       const same = decided.status === entry.status && decided.reason_code === entry.reason_code;
       return diverges("log.jsonl", index + 1, same ? "differs" : "status_differs");

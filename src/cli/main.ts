@@ -211,6 +211,16 @@ function dispatch(request: Request): unknown {
           .map((result) => commandResponse(result, includeSnapshot)),
       };
     }
+    case "round": {
+      const result = openWorld(request.world).round(request.moves);
+      return {
+        status: result.status,
+        ...(result.reason_code === undefined ? {} : { reason_code: result.reason_code }),
+        ...(result.round === undefined ? {} : { round: result.round }),
+        results: result.results.map((item) => commandResponse(item, false)),
+        ...(result.closing === undefined ? {} : { closing: commandResponse(result.closing, false) }),
+      };
+    }
     case "query": {
       const world = openWorld(request.world);
       return world.query(request.query);
