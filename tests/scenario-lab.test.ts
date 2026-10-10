@@ -19,6 +19,44 @@ const lab = JSON.parse(
   readFileSync(fileURLToPath(new URL("../scenarios/lab.json", import.meta.url)), "utf8"),
 ) as Scenario;
 
+test("the lab: the arm takes the key before ann arrives, and a cut cable leaves it holding until ann's blow frees it", (t) => {
+  const root = tempDir(t);
+  const dir = join(root, "arm");
+  const { world, id, run } = open(dir);
+  const [arm, ann, bob, key, cable] = [id("arm"), id("ann"), id("bob"), id("key"), id("cable")];
+  const verdict = (result: Result) => [result.status, result.reason_code, result.reason_data];
+
+  // The arm takes the key from the lab floor, within its reach, before ann comes in.
+  deepStrictEqual(verdict(run(arm, "take", "key")), ["ok", undefined, undefined]);
+  strictEqual(world.entity(key)?.contained_in, arm);
+
+  // Ann comes in and stands by the key, and her take from the arm's grip is refused: a grip is not a pocket.
+  deepStrictEqual(verdict(run(ann, "move", undefined, { through: "dormitory door" })), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(ann, "move", undefined, { through: "lab door" })), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(ann, "move", undefined, { to: { x: -200, y: 60 } })), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(ann, "take", "key")), ["refused", "held_by_another", undefined]);
+
+  // Bob cuts the cable in the corridor, as in step E: the arm's power walk now ends in a destroyed link.
+  deepStrictEqual(verdict(run(bob, "move", undefined, { through: "dormitory door" })), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(bob, "move", undefined, { to: { x: 200, y: 360 } })), ["ok", undefined, undefined]);
+  for (let blow = 0; blow < 3; blow += 1) {
+    strictEqual(run(bob, "attack", "cable").status, "ok");
+  }
+  strictEqual(world.entity(cable)?.status, "destroyed");
+
+  // The arm cannot let go: its drop is refused at the arm, with the cable as the cut.
+  deepStrictEqual(verdict(run(arm, "drop", "key")), ["refused", "unpowered", { at: arm, cut: cable }]);
+  strictEqual(world.entity(key)?.contained_in, arm);
+
+  // Ann, still beside the arm, blows its gripper, which has 40 integrity: the gripper is destroyed, and the
+  // arm drops the key as a body that loses its hands does. Ann takes it from the floor.
+  deepStrictEqual(verdict(run(ann, "attack", `${arm}.gripper`)), ["ok", undefined, undefined]);
+  strictEqual(world.entity(key)?.contained_in, null);
+  deepStrictEqual(verdict(run(ann, "take", "key")), ["ok", undefined, undefined]);
+  strictEqual(world.entity(key)?.contained_in, ann);
+  deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
+});
+
 // Everything sent to the world, in order, so a second world can be sent the same.
 type Sent = { command: Command } | { edit: WorldEdit };
 
@@ -62,10 +100,10 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   const [ann, bob, terminal, experiment] = [id("ann"), id("bob"), id("terminal"), id("experiment")];
   const status = (result: Result) => [result.status, result.reason_code];
 
-  // A. the world builds and holds its invariants: eight subjects and the terminal are its agents.
+  // A. the world builds and holds its invariants: eight subjects, the terminal and the arm are its agents.
   deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
   const agents = Object.values(world.snapshot().entities).filter((entity) => entity.props.agent === true);
-  deepStrictEqual(agents.map((entity) => entity.template).sort(), [...Array<string>(8).fill("human"), "terminal"]);
+  deepStrictEqual(agents.map((entity) => entity.template).sort(), ["arm", ...Array<string>(8).fill("human"), "terminal"]);
 
   // B. ann walks to the lab, takes the key, comes back, unlocks and opens the exit door and leaves:
   // escaped is no event, only where she is.

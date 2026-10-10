@@ -43,5 +43,6 @@ What is built, nothing aspirational, one concept per file:
 - [limits-camp.md](limits-camp.md): what light, processes and eating cannot express.
 - [limits-watch.md](limits-watch.md), [limits-actor.md](limits-actor.md): the watch, outside and in, and the cell, in.
 - [power.md](power.md): `powered_by`, `controlled_by`, and openables run by a controller.
+- [manipulator.md](manipulator.md): an arm with a gripper, run by a controller over its control walk.
 - [camera.md](camera.md): a camera's sight, lent to the agent its feed reaches.
 - [limits-lab.md](limits-lab.md): the underground lab, with today's mechanics.

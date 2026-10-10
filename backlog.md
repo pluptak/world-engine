@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A manipulator](#a-manipulator).
+No item is queued.
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,37 +63,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
 
-### A manipulator
-
-The lab has no arm the AI can drive (`docs/limits-lab.md`, A). The first try is the one the
-roadmap named: an agent with hands and reach and no legs, run by the controller through the same
-links as a door. One rule is new: an agent that is `controlled_by` something acts only while its
-control walk carries the command, which is also the first agent whose power matters.
-
-- **Template:** `templates/arm.json`: an agent with a `base` (no capacity) and a `gripper`
-  (`manipulation` 50, `holds` grip, `max_integrity` 40 so one human blow destroys it), `reach_cm`
-  150, `hand_height_cm` 100; no `moving`, `sight`, `hearing` or `speech`, so it addresses only what
-  it can reach (`gropable`). Who sends its commands is the caller's: the AI's controller is handed
-  `actorWorld(world, arm)` beside the terminal's.
-- **Rule** (`src/engine/pipeline.ts`, after the agency check, before the target is resolved): an
-  actor with `controlled_by` whose `remoteFault` is not null is refused with that fault's code and
-  data (`disconnected`, `unpowered`), as `scenery` is refused there, a code no verb declares. An
-  agent with no `controlled_by` acts as now, the terminal included.
-- **Lab** (`scenarios/lab.json`): the arm in the lab within reach of the key, `powered_by` the
-  cable, `controlled_by` the terminal. A second test in `tests/scenario-lab.test.ts`, from the same
-  scenario: the arm takes the key before ann arrives; her `take` from its grip is refused (the
-  existing grip rule); bob cuts the cable and the arm's `drop` is `unpowered`; ann attacks the
-  gripper, the arm drops the key as a body that loses its hands does, and she takes it. The first
-  test's steps are unchanged, the arm idle in them.
-- **Tests:** `tests/manipulator.test.ts`: the arm takes, puts and gives within reach and is refused
-  `out_of_reach` beyond it; it cannot `move` (`insufficient_moving` or the code the engine gives);
-  every command is refused `unpowered` or `disconnected` at the link, with data, once a link
-  fails, and works again when the author restores the link (`set_props`); an agent with no
-  `controlled_by` is untouched by the rule; the arm's actor view holds only what touch and reach
-  give it.
-- **Docs:** new `docs/manipulator.md`; `docs/power.md` one line (a controlled agent);
-  `docs/limits-lab.md` (the manipulator line becomes what the arm cannot do: see, move, or be
-  driven by anything but a caller).
-- **Depends on:** power and remote control (built); after the fault item, so its refusals carry
-  `cut`. **Not in it:** an arm that sees through a camera, durations or a command in progress,
-  joints or a track, the terminal's own power.

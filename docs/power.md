@@ -31,7 +31,8 @@ lock of a door whose cable is cut.
 link cannot be removed; a walk that loops is `power_loop` or `control_loop`.
 
 A camera is a device too: it feeds its controller while its walk carries a command
-([camera.md](camera.md)).
+([camera.md](camera.md)). An agent with a `controlled_by` is held to the same walk before any verb
+([manipulator.md](manipulator.md)).
 
 Not modelled: a human using a panel at a distance, power for anything else (lights, the controller
 itself), delays and partial failure, and who may use a controller beyond the walk.

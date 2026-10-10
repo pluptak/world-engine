@@ -15,8 +15,9 @@ it. Nothing here is a proposal.
 - The terminal sees the exit door it locks only through the corridor's camera, which shares the
   door's cable: one cut both blinds it and stops its unlock (D, E).
 - An agent's own power is not modelled: an unpowered terminal still senses and acts (E).
-- No manipulator: no agent moves things at another's command, and the terminal has no
-  `manipulation` of its own (A).
+- The arm (A) takes, puts and gives only within its reach, and sees and moves nothing; it acts only
+  while the terminal's link to it carries, and the terminal has no `manipulation` of its own
+  ([manipulator.md](manipulator.md)).
 - A stage nothing but a watch advances: `stage` is a prop an author's `edit` or a beat writes, so
   no escape moves it, and a subject's `edit` is `invalid_author` (F). A watch reads its condition at
   most once a tick, so a condition that holds and lapses within one command is missed (I).

@@ -1,0 +1,12 @@
+{
+  "id": "arm",
+  "size_cm": { "w": 20, "d": 20, "h": 100 },
+  "mass_g": 8000,
+  "parts": [
+    { "name": "base", "parent": null, "contributes": {}, "detachable": false, "max_integrity": 100 },
+    { "name": "gripper", "parent": "base", "contributes": { "manipulation": 50 }, "detachable": false, "max_integrity": 40, "holds": { "kind": "grip" } }
+  ],
+  "props": { "agent": true, "reach_cm": 150, "hand_height_cm": 100 },
+  "break_products": [],
+  "break_residue": {}
+}
