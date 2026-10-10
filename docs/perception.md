@@ -15,12 +15,12 @@ subject may name one part, `<entity>.<part>`: `status`, `integrity` and `attache
 read the stored entry or the template default and write nothing; any other field is `false` /
 `not_a_part_field`, and a part the template does not declare is `false` / `no_such_part`.
 
-Sight needs light. A room is lit when its `lit` prop is true, or when something located in it has
-`light_source: true` and `burning: true` (`isLit` in `src/engine/query.ts`): on the floor, on a
-table, in a hand or a pocket, but not shut in a closed container and not once destroyed; `light`
-and `douse` set `burning` ([verbs-other.md](verbs-other.md)), and nothing stores the answer. Sight
-across an open door needs both rooms lit (`adjacent_open_door_lit`), an unlit room is
-`location_unlit`, a camera lends its lit room, and an intercom its hearing, to the agent it feeds ([camera.md](camera.md), [intercom.md](intercom.md)).
+Sight needs light. A room is lit by its `lit` prop, or by something in it with `light_source: true`
+and `burning: true` (`isLit` in `query.ts`), a hand or a pocket included, but not one shut in a
+closed container or destroyed; `light` and `douse` set `burning` ([verbs-other.md](verbs-other.md)),
+and nothing stores the answer. Sight across an open door needs both rooms lit
+(`adjacent_open_door_lit`), an unlit room is `location_unlit`, and a camera lends its lit room, an
+intercom its sounds, to the agent it feeds ([camera.md](camera.md), [intercom.md](intercom.md)).
 
 The sense table lives in [senses.md](senses.md): one row per event class; touch ignores rooms and
 reads the observer's own body and grips (`own_body`), never an authored event, else `not_touching`.

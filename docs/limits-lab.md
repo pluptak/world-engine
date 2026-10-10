@@ -12,7 +12,7 @@ it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
 - Escape is no event: a subject who leaves is a subject whose `location` is `outside`, which a
   caller reads with `fact` (B).
 - A camera sees its own room whole and lit, and nothing else: no sound, no cone, no view across a
-  door, no record. The lab's corridor has none, so an act there reaches only whoever stands in it.
+  door, no record. The lab room has none, so an act there reaches only whoever stands in it.
   The AI speaks to and hears the dormitory through its intercom, which carries that room and no
   other (C).
 - The terminal sees the exit door it locks only through the corridor's camera, which shares the

@@ -335,10 +335,8 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   deepStrictEqual([dark.status, dark.reason_code, dark.reason_data], ["refused", "unpowered", { at: terminal, cut: generator }]);
   strictEqual(run(ann, "say", undefined, { utterance: "here" }, true).events[0]?.perceivers?.hearing.includes(terminal), false);
   // The intercom is silent too: the generator is gone, so the terminal cannot speak through it.
-  deepStrictEqual(
-    [run(terminal, "say", undefined, { utterance: "lost" }).status, run(terminal, "say", undefined, { utterance: "lost" }).reason_code],
-    ["refused", "unpowered"],
-  );
+  const lost = run(terminal, "say", undefined, { utterance: "lost" });
+  deepStrictEqual([lost.status, lost.reason_code], ["refused", "unpowered"]);
   deepStrictEqual(world.query({ kind: "perceive", observer: terminal, sense: "sight", entity: ann }), {
     value: "false",
     basis_code: "unpowered",

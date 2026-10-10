@@ -156,13 +156,14 @@ test("row 6: a watch for stage 1 leaves the stage at 0 through many ticks while 
   strictEqual(run(WORLD_AUTHOR, "advance", undefined, { ticks: 30 }).status, "ok");
   strictEqual(world.entity(experiment)?.props.stage, 0);
 
-  // The deadline comes and the stage is still 0: it is set to -1.
+  // The deadline comes only if the stage is still 0, and it is: the stage is set to -1.
   strictEqual(
     edit({
       kind: "schedule_beat",
       id: "deadline",
       at_tick: tick() + 1,
       action: { kind: "set_props", target: experiment, props: { abstract: true, stage: -1 } },
+      only_if: { entity: experiment, prop: "stage", op: "eq", value: 0 },
     } as WorldEdit).status,
     "ok",
   );
@@ -174,8 +175,8 @@ test("row 7: an agent's view inspects neither the key nor the experiment, and a 
   const { world, id, run } = open(t);
   const [bob, ann, key, experiment] = [id("bob"), id("ann"), id("key"), id("experiment")];
   const view = actorWorld(world, bob);
-  strictEqual(view.inspect(key), null);
-  strictEqual(view.inspect(experiment), null);
+  strictEqual(view.inspect(aliasOf(bob, key)), null);
+  strictEqual(view.inspect(aliasOf(bob, experiment)), null);
   // Ann's alias for the key is no name in bob's view.
   const theirs = aliasOf(ann, key);
   const named = view.command({ command_id: "bob-takes", verb: "take", target: theirs });
