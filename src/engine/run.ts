@@ -51,11 +51,12 @@ export function endRun(context: TransitionContext, reason: RunEnd["reason"]): vo
   context.snapshot = withSchedule({ ...context.snapshot, run: { ...run, state: "ended", ended } }, []);
 }
 
-// After an ok command or edit: a run that has reached its limit ends for that reason, and a run whose slots
-// are all destroyed or gone ends for no live players. A run with no slots never ends the second way.
+// After an ok command or edit: a running run that has reached its limit ends for that reason, and one whose
+// slots are all destroyed or gone ends for no live players. A run with no slots never ends the second way. A
+// registering run never ends by itself: the author may still be fixing its scene.
 export function finishRun(context: TransitionContext): void {
   const run = context.snapshot.run;
-  if (run === undefined || run.state === "ended") {
+  if (run === undefined || run.state !== "running") {
     return;
   }
   if (run.tick_limit !== undefined && context.snapshot.tick >= run.tick_limit) {

@@ -21,9 +21,9 @@ ends the run, with reason `tick_limit`. Nothing is left to run at the limit: a r
 refused `run_ended`. The pipeline also cuts any timed command at the limit, which a running run's
 commands cannot reach by way of a round, since a move takes no time and `wait` is not a move.
 
-**No live players.** A run with `slots` ends, `no_live_players`, after any ok command or edit that
-leaves none of its slots alive: each is gone from the world or destroyed (a bleed-out counts). A
-run with no slots never ends this way.
+**No live players.** A running run with `slots` ends, `no_live_players`, after any ok command or
+edit that leaves none of its slots alive: each is gone from the world or destroyed (a bleed-out
+counts). A run with no slots, or one still registering, never ends this way.
 
 **The end.** What is still scheduled is dropped with nothing recorded, since no time passes again;
 modifiers stay as they were. The end is in the snapshot's `run.ended`, and `validateSnapshot`

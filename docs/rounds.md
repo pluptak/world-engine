@@ -11,9 +11,10 @@ round's starting world, and one that fails there is refused with its own code an
 
 **Order.** The rest are taken in an order drawn from a stream of their own: started from the dice's
 state at the round's start and the tick, sorted by actor first, and never advancing the dice
-(`roundOrder` in `src/engine/rng.ts`). So the order is a pure function of the seed and the tick, and
-no move's roll decides who goes first. Each move is based on the round's starting version, so a move
-that would have succeeded there but fails after an earlier move is `preempted`; nothing is retried.
+(`roundOrder` in `src/engine/rng.ts`). So the order is a pure function of the dice's state and the
+tick, and no move's roll in the round decides who goes first. Each move is based on the round's
+starting version, so a move that would have succeeded there but fails after an earlier move is
+`preempted`; nothing is retried.
 
 **Time.** A move takes no time of its own. The clock moves one tick when the round closes, and what
 falls due in it runs as now; an empty round is that tick alone. A move's command carries the round
@@ -25,7 +26,8 @@ marked `close`. `attempts` and `since` read them as they read any command. A `co
 that carries the round flag is refused `invalid_args`: only a round makes a move take no time.
 
 **In a run.** While a run is running, an agent acts only in a round: a lone command, and the
-author's `advance`, are refused `round_only` ([run.md](run.md)). A run that is ended refuses a round
+author's `advance`, are refused `round_only` ([run.md](run.md)); `check` and `options` judge an
+agent's command as a move, so they list what a round would take. A run that is ended refuses a round
 as it refuses anything; a round outside a run works on any world.
 
 **Not in it.** Handles and blind submission (who sees whose move), the director closing rounds,

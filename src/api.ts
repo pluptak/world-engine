@@ -23,7 +23,7 @@ import {
 import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./engine/query.js";
 import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
 import { scheduled, type ScheduleFilter } from "./engine/pending.js";
-import { planRound, type RoundPlan } from "./engine/round.js";
+import { isRoundMove, notAMove, planRound, type RoundPlan } from "./engine/round.js";
 import { assertNoLostField } from "./engine/upgrade.js";
 import { verbCatalog } from "./engine/verbs/index.js";
 import { applyForms, architectWrites, hasForms } from "./engine/forms.js";
@@ -309,8 +309,14 @@ function observeThrough(
 }
 
 // The version rule with the same gate as a real submission, but never a write and never a log line:
-// based on the current version, so nothing here can be preempted.
+// based on the current version, so nothing here can be preempted. In a running run an agent acts only in a
+// round, so its command is judged as a move of one, and a verb that is no move is `not_a_round_move`.
 function dryRun(current: Snapshot, registry: TemplateRegistry, command: Command): Result {
+  if (current.run?.state === "running" && command.actor !== WORLD_AUTHOR) {
+    return isRoundMove(command.verb)
+      ? resolveSubmission(current, registry, { ...command, round: true }, current.version, () => null)
+      : notAMove(current, command);
+  }
   return resolveSubmission(current, registry, command, current.version, () => null);
 }
 

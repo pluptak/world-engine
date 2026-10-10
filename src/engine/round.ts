@@ -25,7 +25,7 @@ export function isRoundMove(verb: string): boolean {
   return declared === undefined || isOneTickVerb(declared);
 }
 
-function notAMove(snapshot: Snapshot, command: Command): Result {
+export function notAMove(snapshot: Snapshot, command: Command): Result {
   return {
     status: "invalid",
     command_id: command.command_id,

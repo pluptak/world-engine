@@ -158,6 +158,29 @@ test("a slot removed by the author ends the run at the edit, for no live players
   deepStrictEqual(reason(run(world, WORLD_AUTHOR, "advance", undefined, { ticks: 1 })), ["refused", "run_ended"]);
 });
 
+test("a registering run whose slot the author removes keeps registering: its scene is still being fixed", (t) => {
+  const { world, id } = open(t);
+  strictEqual(edit(world, { kind: "remove", target: id("ann") }).status, "ok");
+  strictEqual(world.snapshot().run?.state, "registering");
+  strictEqual(world.snapshot().run?.ended, undefined);
+});
+
+test("in a running run, check and options judge an agent's command as a move of a round", (t) => {
+  const { world, id } = open(t);
+  strictEqual(edit(world, { kind: "start_run" }).status, "ok");
+  const take: Command = { command_id: "probe-take", actor: id("ann"), verb: "take", target: "stone" };
+  strictEqual(world.check(take).status, "ok");
+  deepStrictEqual(
+    reason(world.check({ command_id: "probe-wait", actor: id("ann"), verb: "wait", args: { ticks: 1 } }) as Result),
+    ["invalid", "not_a_round_move"],
+  );
+  ok(world.options(id("ann")).ready.some((option) => option.verb === "take" && option.target === id("stone")));
+  ok(!world.options(id("ann")).ready.some((option) => option.verb === "wait"));
+  // A check writes nothing and moves no clock.
+  strictEqual(world.snapshot().tick, 0);
+  strictEqual(world.attempts(0).length, 1);
+});
+
 test("a world with no run takes every command and time untouched, and refuses start_run and end_run no_run", (t) => {
   const dir = join(tempDir(t), "plain");
   const world = createWorld(dir, { entities: scene().entities });
