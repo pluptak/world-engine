@@ -18,7 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-No item is queued.
+1. [A controller's own power](#a-controllers-own-power).
+2. [A door that takes time to shut](#a-door-that-takes-time-to-shut).
+3. [A remote command that can jam](#a-remote-command-that-can-jam).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,3 +65,106 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
 
+### A controller's own power
+
+An agent's own power is not modelled: with the generator destroyed the terminal still senses and
+acts (`docs/limits-lab.md`, E), and the roadmap's acceptance row "the controller loses power" has
+nothing to fail. The arm already answers to its walk; the terminal answers to nothing.
+
+- **Rule:** `agentFault(snapshot, agent)` in `src/engine/power.ts`, which the pipeline's check
+  after the agency check calls in place of `remoteFault`:
+  - an agent with `controlled_by`: its `remoteFault`, else its controller's own `agentFault`, so an
+    arm whose terminal has no power is refused with the terminal's fault;
+  - else an agent with `powered_by` that is not `powered()`: `unpowered` `{ at: agent, cut }`,
+    `cut` as `remoteFault` names it;
+  - else null: an agent with neither link (every human) is untouched.
+- **Senses** (`perceive` in `src/engine/query.ts`, after `observer_destroyed`): an observer with
+  `powered_by` that is not `powered()` answers `false` / `unpowered` for every sense, touch
+  included, so its camera feeds, `perceivers`, `observe`, its actor view and a `wait` until sensed
+  all go dark through `perceive` with no change of their own. Power back (the author relinks it)
+  and it senses and acts again: nothing is stored.
+- **Lab** (`scenarios/lab.json`): the terminal `powered_by` the generator itself, so the cut cable
+  of E leaves it running. A new last step of the first test in `tests/scenario-lab.test.ts`: a
+  subject opens the server room and destroys the generator; the terminal's `wait` is `unpowered`
+  `{ at: terminal, cut: generator }`, it no longer hears a subject who speaks beside it, and a
+  beat the author scheduled still runs (the world's time is not the terminal's).
+- **Tests:** `tests/agent-power.test.ts`, a small world: a powered terminal acts and senses; with
+  its source destroyed every verb is refused with that data and each sense answers `unpowered`; a
+  camera it controls feeds nothing; an arm it controls is refused with the terminal's fault; the
+  author's `update_props` to a second generator brings both back; a human is untouched.
+- **Docs:** `docs/power.md` (an agent's own power; split if past its cap), `docs/perception.md` and
+  `docs/senses.md` one line each for the basis `unpowered` (split `perception.md`, at its cap, if
+  needed), `docs/limits-lab.md` (the E line goes; what the build shows).
+- **Depends on:** nothing. **Not in it:** batteries or a terminal that fails slowly, power for
+  humans or lights, a body that loses power mid-command (commands are finished outcomes).
+
+### A door that takes time to shut
+
+A door shuts within the command that shuts it, so a subject never runs for a door the AI is
+closing (the roadmap's "a human and the AI act on a door in the same time window"). Simultaneous
+commands stay out of scope; a scheduled cause gives the window instead, as `closes_after` does.
+
+- **Props** (`src/engine/fields.ts`): `shut_ticks` (definition, integer, `requires` openable) and
+  `closing` (state, boolean).
+- **`close`** (`src/engine/verbs/openable.ts`), by hand or by its controller, of a target with a
+  positive `shut_ticks`: emits `closing` (not `closed`), sets `closing: true`, withdraws any pending
+  `close` and schedules one `shut_ticks` ticks on, caused by the `closing`. Nothing is moved aside
+  yet: until it shuts the door is open, so `move` through it works. At the due tick the existing
+  close cause (`runClose` in `src/engine/schedule.ts`) shuts it as now (moving occupants aside)
+  and clears `closing`.
+- **Within the window:** `open` of a closing door is allowed (`already_open` only when it is open
+  and not closing): it clears `closing` and withdraws the shut, under `opened`. `close` and `lock`
+  of a closing door are refused `closing`, one new code, so the AI cannot lock what it has not yet
+  shut and a subject's `open` stops it. Locking a door that is open and not closing stays as today.
+- **Events:** `closing` takes the row of `closed` in `EVENT_SENSES` (`docs/senses.md`).
+- **Snapshot rule** (`src/engine/validate.ts`): `closing: true` on a target that is not open or has
+  no pending `close` is `closing_without_close`, so the author cannot write a window by `edit`.
+- **Lab:** the exit door gets `shut_ticks: 2`; step G's close by ann becomes a `closing` and the
+  push aside two ticks later. A third test in `tests/scenario-lab.test.ts`, same scenario: the
+  terminal unlocks and opens the exit door; it closes it, and bob, in the corridor, walks out
+  through it in the window; the door shuts, and the terminal's lock is ok with bob outside. Then
+  the terminal opens and closes it again, ann opens it in the window, and its `lock` is `closing`
+  until it does shut.
+- **Tests:** `tests/door-window.test.ts`: `closing` and the shut two ticks later, with an occupant
+  moved aside only then; `move` through in the window; `open` stopping it; `close` and `lock`
+  refused `closing`; a remote close the same; the rule refusing an authored `closing`; a door with
+  no `shut_ticks` shutting at once as now; `closes_after` unchanged.
+- **Docs:** `docs/verbs-openables.md` and `docs/schedule.md` (one line each, or a new
+  `docs/door-window.md` if either passes its cap), `docs/limits-lab.md` (a door now gives way to
+  a runner; what the build shows).
+- **Depends on:** nothing. **Not in it:** a `closes_after` swing that takes time (its close stays
+  the end of the swing), opening that takes time, a door that crushes or stops on what is in it
+  (out of scope), and anything about who acted first beyond the order of commands.
+
+### A remote command that can jam
+
+A remote command to a door always works when its links carry it; the roadmap asks that one "must
+not guarantee that the door successfully operates". The world's dice (`docs/rng.md`) give a
+failure that replays exactly.
+
+- **Prop** (`src/engine/fields.ts`): `jam_pct` (definition, integer 0 to 100, `requires`
+  openable).
+- **Roll** (`src/engine/verbs/openable.ts`): a command from the device's controller to a target
+  with a positive `jam_pct` rolls `context.random()` once, after every precondition; under
+  `jam_pct` it is jammed: status `ok`, the tick spent, one `jammed` event on the device with
+  `{ verb }` and nothing else (no prop change, no shut scheduled, no occupant moved). A refusal
+  cannot advance the dice (its snapshot is the input), so a jam is an `ok` with nothing done. A
+  manual command never rolls; a target with no `jam_pct` never rolls, so no world without one
+  changes; a world with no seed is refused `no_seed`, as any roll is.
+- **Who knows:** `jammed` takes the row of `closed` in `EVENT_SENSES`; the controller's actor view
+  sees it only as it sees anything, so the lab's terminal learns of a jam on the exit door by its
+  camera, and a controller with none learns `ok` and nothing more.
+- **Lab:** `scenarios/lab.json` takes the seeded form (`{ seed, entities }`) and the exit door
+  `jam_pct: 25`; the lab tests' loader reads that form. Each existing remote step is pinned by the
+  seed; any that now jams is kept by a seed that does not, or retried, and a new step finds the
+  seed's first jam, `jammed` seen by the terminal through the camera, the door unchanged. A
+  replay of the whole log is byte-identical (H).
+- **Tests:** `tests/jam.test.ts`: with `jam_pct: 100` every remote verb is `jammed` with nothing
+  changed, and with 0 none is; a hand on the same door never jams; a seeded run gives the same
+  jams on replay; a world with no seed is `no_seed` for a jamming device and untouched for one
+  without; the controller perceives `jammed` through a camera and not without one.
+- **Docs:** `docs/power.md` one line (a device that jams) or a new `docs/jam.md` past its cap,
+  `docs/senses.md` one row, `docs/limits-lab.md`.
+- **Depends on:** none; after the timed shut if built after it, where a jammed `close` starts no
+  window. **Not in it:** wear or a jam that persists (each command rolls afresh), jams for cameras or
+  the arm, a controller told why, and repair.
