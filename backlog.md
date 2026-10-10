@@ -21,6 +21,7 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 1. [An actor's view names nothing by a world id](#an-actors-view-names-nothing-by-a-world-id).
 2. [The AI watches its arm](#the-ai-watches-its-arm).
 3. [A panel a subject can use](#a-panel-a-subject-can-use).
+4. [A camera that looks one way](#a-camera-that-looks-one-way).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -155,3 +156,46 @@ the door, in turn, each command against the world as the last left it.
 - **Depends on:** nothing. **Not in it:** a keyed or locked panel, panels for cameras, intercoms
   or the arm, the AI seeing who stands at the panel beyond its cameras, priority between the
   controller and a panel.
+
+### A camera that looks one way
+
+A camera sees its whole room (`docs/camera.md`, `docs/limits-lab.md`, C), so nothing in the
+corridor escapes the AI while the cable holds, and no subject can slip past along a blind wall.
+A cone on the camera is the first facing the engine has, and the cheapest: it is a device's,
+fixed by the author, and no body faces anywhere. Facing for bodies stays a candidate.
+
+- **Props** (`src/engine/fields.ts`): `facing_deg` (state, integer 0 to 359: degrees counter-
+  clockwise from +x, the room's own axes, `requires` camera) and `cone_deg` (definition, integer 1
+  to 360, `requires` camera; absent is 360, the whole room as now). `facing_deg` is state so a
+  scenario and the author set it; `cone_deg` is a template's, so a narrow camera is a template
+  (`templates/narrow_camera.json`, extends `camera`, `cone_deg: 60`), as `shut_door` is.
+- **The rule** (the camera loop in `perceive`, `src/engine/query.ts`): a camera with a `cone_deg`
+  below 360 sees a subject only when the angle between its facing and the line from the camera's
+  position to the subject's effective position (`effectivePos`) is at most `cone_deg / 2`, the edge
+  included. A subject at the camera's own position, or with no position (an unpositioned door), is
+  seen as now. For an event, the subject's position at the end read (before or after the command,
+  as the event form already reads both). A camera with no `facing_deg` and a cone is a broken
+  snapshot (`camera_without_facing`, `src/engine/validate.ts`), so the rule never guesses.
+- **Arithmetic:** compare the dot product of the facing's unit vector and the offset against the
+  offset's length times the cosine of half the cone. It is a query and writes nothing, so no
+  float reaches the snapshot; `Math.cos`, `Math.sin` and `Math.hypot` of the same integers give
+  the same answer every run. Facing and cone are integers so tests can sit exactly on an edge.
+- **Nothing else changes:** no new basis (out of the cone the body's own answer stands, as with a
+  camera in another room); `perceivers`, `observe` and the actor view follow `perceive`; hearing
+  through an intercom is not directional.
+- **Lab** (`scenarios/lab.json`): the corridor's camera becomes a `narrow_camera` with
+  `facing_deg: 65`, toward the exit door. Every earlier step keeps its result (the exit door, bob
+  at (200, 360) and the cable lie within 30 degrees of 65 from (-400, -400)); the builder checks
+  each and names any that moves. A new step: a subject at (400, -300) in the corridor is not seen
+  by the terminal, and seen once the author turns the camera to `facing_deg: 7`.
+- **Tests:** `tests/camera-cone.test.ts`, a small world: a subject inside the cone seen, outside
+  not; on the edge seen; at the camera's position seen; an unpositioned door seen; a carried thing
+  read at its holder; a cone of 360 and a camera with none both the whole room; an event read at
+  the subject's position before or after (a subject walking into the cone is seen doing it); a
+  cone without a facing refused by the rule; the author's `update_props` turning it.
+- **Docs:** `docs/camera.md` (the cone; split if past its cap), `docs/fields.md` if it lists
+  props, `docs/limits-lab.md` (C: a camera now has a cone; what the build shows),
+  `docs/limits.md` (sight has no facing: still true of bodies).
+- **Depends on:** nothing; after the AI-watches-its-arm item if built after it (that camera keeps
+  the whole lab room). **Not in it:** a camera the controller turns (no `turn` verb: out of
+  scope), facing or a cone for bodies, distance limits, occlusion by things in the room, height.

@@ -18,11 +18,8 @@ Priorities there, then deleting it here in the same commit.
 - **Who authors templates.** The catalogue is `templates/`: an architect picks presets and never
   writes one, and a world author changes state, never a definition. Open: who adds a preset a scene
   needs, and whether that is ever done while a world runs or only between worlds (`upgradeTemplates`).
-- **The laboratory's next mechanics.** In this order, each written up only once `docs/limits-lab.md`
-  shows the lab needs it, with acceptance tests in the item itself:
-  1. Facing and a camera cone, only if the lab needs directional sight (see facing, below).
-  Decided: the AI's identity is not its body; what losing a terminal or a cable does is only what
-  the simulation defines, and where the AI runs is a scenario's choice. Simultaneous actions stay
-  out (`backlog.md`). Open: everything each item will need to settle.
-- **Facing and a sight cone.** In a lit room every act is seen (`docs/limits.md`); the costliest of
-  the limits, revisit when a concrete world needs what darkness, concealment and staging cannot give.
+- **Facing and a sight cone for bodies.** In a lit room every act is seen (`docs/limits.md`); the
+  costliest of the limits, revisit when a concrete world needs what darkness, concealment and
+  staging cannot give. A camera's cone is in `backlog.md`; a body's would also need a facing that
+  changes as it moves or turns, and `turn` is out of scope. Open: who sets a body's facing, and
+  whether hearing or touch ever reads it.
