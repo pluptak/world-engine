@@ -20,10 +20,7 @@ Priorities there, then deleting it here in the same commit.
   needs, and whether that is ever done while a world runs or only between worlds (`upgradeTemplates`).
 - **The laboratory's next mechanics.** In this order, each written up only once `docs/limits-lab.md`
   shows the lab needs it, with acceptance tests in the item itself:
-  1. An experiment stage that advances when a condition over several entities holds.
-  2. A manipulator, first as an agent with `manipulation`, no `moving` and its reach; a rule only where
-     a test shows the need.
-  3. Facing and a camera cone, only if the lab needs directional sight (see facing, below).
+  1. Facing and a camera cone, only if the lab needs directional sight (see facing, below).
   Decided: the AI's identity is not its body; what losing a terminal or a cable does is only what
   the simulation defines, and where the AI runs is a scenario's choice. Simultaneous actions stay
   out (`backlog.md`). Open: everything each item will need to settle.
