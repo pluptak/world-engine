@@ -31,6 +31,7 @@ import {
   pendingBeatIds,
 } from "../beats.js";
 import { pending, withCause, withSchedule } from "../pending.js";
+import { endRun, startRun } from "../run.js";
 import { refreshSubtreeLocations, wouldLoop } from "./address.js";
 import { dropCarriedItem } from "./drop.js";
 import { revealConcealed } from "./search.js";
@@ -222,6 +223,10 @@ export function parseEdit(value: unknown): WorldEdit | null {
       return parseScheduleBeat(value);
     case "cancel_beat":
       return onlyKeys(value, ["kind", "id"]) && isBeatId(value.id) ? { kind: "cancel_beat", id: value.id } : null;
+    case "start_run":
+      return onlyKeys(value, ["kind"]) ? { kind: "start_run" } : null;
+    case "end_run":
+      return onlyKeys(value, ["kind"]) ? { kind: "end_run" } : null;
     case "retime_beat":
       return onlyKeys(value, ["kind", "id", "at_tick"]) && isBeatId(value.id) && Number.isSafeInteger(value.at_tick)
         ? { kind: "retime_beat", id: value.id, at_tick: value.at_tick as number }
@@ -557,6 +562,18 @@ function cancelBeatRefusal(context: CommandContext, edit: CancelBeatEdit): Preco
   return waiting ? { status: "ok" } : refused("no_such_beat");
 }
 
+// A run no scene made has nothing to start or end; a run starts once, from registering, and ends from running.
+function runEditRefusal(snapshot: Snapshot, kind: "start_run" | "end_run"): PreconditionResult {
+  const run = snapshot.run;
+  if (run === undefined) {
+    return refused("no_run");
+  }
+  if (kind === "start_run") {
+    return run.state === "registering" ? { status: "ok" } : refused("run_not_registering");
+  }
+  return run.state === "running" ? { status: "ok" } : refused("run_not_running");
+}
+
 function retimeBeatRefusal(context: CommandContext, edit: RetimeBeatEdit): PreconditionResult {
   const waiting = pending(context.snapshot).some((cause) => cause.kind === "beat" && cause.id === edit.id);
   if (!waiting) {
@@ -599,6 +616,9 @@ function preconditions(context: CommandContext): PreconditionResult {
   }
   if (edit.kind === "set_seed") {
     return context.target === null ? { status: "ok" } : invalid("unexpected_target");
+  }
+  if (edit.kind === "start_run" || edit.kind === "end_run") {
+    return context.target === null ? runEditRefusal(context.snapshot, edit.kind) : invalid("unexpected_target");
   }
   if (edit.kind === "schedule_beat" || edit.kind === "cancel_beat" || edit.kind === "retime_beat") {
     if (context.target !== null) {
@@ -819,6 +839,14 @@ function transition(context: TransitionContext): void {
     context.snapshot = { ...context.snapshot, rng: edit.seed };
     return;
   }
+  if (edit.kind === "start_run") {
+    startRun(context);
+    return;
+  }
+  if (edit.kind === "end_run") {
+    endRun(context, "director");
+    return;
+  }
   if (edit.kind === "schedule_beat") {
     // The beat is the `edit` event's to cause: what it does when due names that event.
     const { kind: _kind, at_tick, ...beat } = edit;
@@ -979,6 +1007,9 @@ export const editVerb: Verb = {
     "undeclared_prop",
     "wrong_prop_type",
     "unmet_requires",
+    "no_run",
+    "run_not_registering",
+    "run_not_running",
   ],
   preconditions,
   transition,

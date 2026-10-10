@@ -158,6 +158,9 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("cancel_beat"), id: z.string() }).strict(),
   // The engine checks the id is pending and the tick ahead, answering `no_such_beat` and `beat_in_past`.
   z.object({ kind: z.literal("retime_beat"), id: z.string(), at_tick: z.number().int() }).strict(),
+  // The run's edits: a registering run starts, a running one ends (`docs/run.md`).
+  z.object({ kind: z.literal("start_run") }).strict(),
+  z.object({ kind: z.literal("end_run") }).strict(),
   z.object({
     kind: z.literal("set_part"),
     target: IdSchema,
@@ -401,10 +404,15 @@ export const ScheduledCauseSchema = z.discriminatedUnion("kind", [
   }).strict(),
 ]);
 
-// A scene's run as stored (`docs/scenario.md`): a tick limit, the agents that are its slots, or both.
+// A scene's run as stored (`docs/run.md`): a tick limit, the agents that are its slots, or both, and its state.
 export const RunSchema = z.object({
   tick_limit: z.number().int().min(1).optional(),
   slots: z.array(IdSchema).min(1).optional(),
+  state: z.enum(["registering", "running", "ended"]),
+  ended: z.object({
+    reason: z.enum(["director", "tick_limit", "no_live_players"]),
+    tick: z.number().int(),
+  }).strict().optional(),
 }).strict();
 
 export const SnapshotSchema = z.object({

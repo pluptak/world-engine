@@ -140,6 +140,15 @@ export interface CancelBeatEdit {
   id: string;
 }
 
+// Starts a run that is registering, or ends one that is running with the reason `director` (`docs/run.md`).
+export interface StartRunEdit {
+  kind: "start_run";
+}
+
+export interface EndRunEdit {
+  kind: "end_run";
+}
+
 // Moves a pending beat to `at_tick`, ahead of the clock, and changes nothing else about it: its action,
 // condition, followers and cause stay as they were. A repeating beat's next run moves; its later runs follow.
 export interface RetimeBeatEdit {
@@ -158,7 +167,9 @@ export type WorldEdit =
   | SeedEdit
   | ScheduleBeatEdit
   | CancelBeatEdit
-  | RetimeBeatEdit;
+  | RetimeBeatEdit
+  | StartRunEdit
+  | EndRunEdit;
 
 export interface Command {
   command_id: Id;

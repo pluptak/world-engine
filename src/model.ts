@@ -93,11 +93,20 @@ export type ScheduledCause =
       repeat?: BeatRepeat;
     };
 
-// A scene's run (`engine/scene.ts`, `docs/scenario.md`): the tick the clock may not pass, and the agents
-// whose bodies the run turns on. Absent for a world that is not a run.
+// A scene's run (`engine/scene.ts`, `docs/run.md`): the tick the clock may not pass, the agents whose
+// bodies the run turns on, and its state. Absent for a world that is not a run; `ended` only once ended.
+export type RunState = "registering" | "running" | "ended";
+
+export interface RunEnd {
+  reason: "director" | "tick_limit" | "no_live_players";
+  tick: number;
+}
+
 export interface Run {
   tick_limit?: number;
   slots?: Id[];
+  state: RunState;
+  ended?: RunEnd;
 }
 
 export interface Snapshot {

@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A run starts, and ends](#a-run-starts-and-ends).
-2. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
+1. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,39 +62,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A run starts, and ends
-
-A run is one simulation made from a scene (`plans/roles.md`). A world with `run` on its snapshot is
-one: it waits to be started, runs, and ends for a reason, and after its end it is a record.
-
-- **State** (`run.state` on the snapshot): `registering` when built, then `running`, then `ended`
-  with `run.ended` `{ reason, tick }`, reason `director`, `tick_limit` or `no_live_players`. A world
-  with no `run` is as now in every way.
-- **Edits** (`src/engine/verbs/edit.ts`, the author's until roles exist): `start_run` on a
-  registering run (else `run_not_registering`), `end_run` on a running one (else
-  `run_not_running`), reason `director`. Each is recorded by its own root event, which nobody
-  senses.
-- **Gates** (`src/engine/pipeline.ts`): while registering, an agent's command and `advance` are
-  refused `run_not_running` and take no time; the author's other edits are allowed (the scene may
-  still be fixed). Once ended, every command and edit is refused `run_ended`; reads answer as
-  ever.
-- **The tick limit:** the clock never passes `tick_limit`: a command that would is cut at the
-  limit (a `wait` or `advance` passes only the ticks left, as `advanced` says), what falls due at
-  that tick runs, and the run ends there, `tick_limit`. A one-tick command at the limit is refused
-  `run_ended` (the builder may instead end the run in the command that reaches it; it says which).
-- **No live players:** with `slots`, after every ok command or edit, a run whose slots are all
-  destroyed or gone ends, `no_live_players`. A run with no `slots` never ends this way.
-- **The end:** the schedule is emptied, recording nothing; modifiers stay as they are, since no
-  time passes again.
-- **Tests:** `tests/run.test.ts`: a fresh run refuses a command and `advance`; `start_run` lets them
-  through; `end_run` refuses everything after and reads still answer; a `wait` across the limit
-  stops at it with what was due there run; a slot's body destroyed by an attack ends the run in
-  that command; each refusal once; a world with no `run` passes all of it untouched. The property
-  test's world has no `run`; a second generator with a small `run` is the builder's choice.
-- **Docs:** new `docs/run.md` and its `docs/DESIGN.md` line; `docs/time.md` one line (the limit).
-- **Depends on:** the scene item. **Not in it:** rounds (next item), roles and handles, who may
-  start or end (the author for now), successors keeping a slot alive.
 
 ### A round: every player moves, in an order no one picks, and the clock moves once
 

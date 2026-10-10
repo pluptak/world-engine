@@ -141,6 +141,7 @@ function sceneRun(snapshot: Snapshot, names: Readonly<Record<string, Id>>, run: 
     run: {
       ...(run.tick_limit === undefined ? {} : { tick_limit: run.tick_limit }),
       ...(run.slots === undefined ? {} : { slots }),
+      state: "registering",
     },
   };
 }

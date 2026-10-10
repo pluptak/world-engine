@@ -12,7 +12,8 @@ A scenario file is a list of entries, or a scene: `{ seed?, entities, beats?, ru
   no event set them going, as for a process the initial state started.
 - `run`: `{ tick_limit?, slots? }`. `tick_limit` a positive int; `slots` the scenario ids of agents,
   each named once. Either key or both; neither is `empty_run`. It is stored as the snapshot's `run`,
-  absent when the scene has none, and `snapshot()` reads it back.
+  registering until the author starts it ([run.md](run.md)); absent when the scene has none, and
+  `snapshot()` reads it back.
 
 **Checks.** Every check runs before anything is written, and a refusal is `invalid_scenario` with
 the path and the rule, such as `beats[2].action.entity: no_such_entity`. The rules are

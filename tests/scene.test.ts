@@ -83,7 +83,8 @@ test("a run's limits and slots are stored and read back by snapshot(), and a sce
   const { world } = build(t, { run: { tick_limit: 20, slots: ["ann"] } });
   const ann = world.id("ann");
   ok(ann !== null);
-  deepStrictEqual(world.snapshot().run, { tick_limit: 20, slots: [ann] });
+  // A scene's run is registering until the author starts it (`tests/run.test.ts`).
+  deepStrictEqual(world.snapshot().run, { tick_limit: 20, slots: [ann], state: "registering" });
   strictEqual("run" in build(t).world.snapshot(), false);
 });
 

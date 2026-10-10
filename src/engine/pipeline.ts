@@ -1,5 +1,6 @@
 import { canonicalJson } from "./canonical.js";
 import { advanceClock, commandDuration } from "./clock.js";
+import { finishRun, runRefusal, ticksLeft } from "./run.js";
 import { reconcileSince } from "./process.js";
 import { NoSeedError, nextRandom } from "./rng.js";
 import { pruneSchedule } from "./schedule.js";
@@ -74,6 +75,11 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
   if (!authored && !isAgent(snapshot, actor.id)) {
     return unchangedResult(snapshot, command, "invalid", null, "not_an_agent");
   }
+  // A run's state takes some commands (`docs/run.md`). The world's, not a verb's, so no verb declares it.
+  const runCode = runRefusal(snapshot, command.verb === "edit");
+  if (runCode !== null) {
+    return unchangedResult(snapshot, command, "refused", null, runCode);
+  }
   // An agent a controller runs acts only while its control walk carries the command, and one with a
   // `powered_by` only while it has power (`docs/power.md`).
   const fault = authored ? null : agentFault(snapshot, actor.id);
@@ -129,6 +135,10 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
   if (!Number.isSafeInteger(snapshot.tick + duration)) {
     return unchangedResult(snapshot, command, "invalid", null, "clock_overflow");
   }
+  // The clock never passes a running run's limit: a command that would is cut at it (`docs/run.md`).
+  const left = ticksLeft(snapshot);
+  const ticks = left !== null && duration > left ? left : duration;
+  const cut = ticks !== duration;
 
   let working = snapshot;
   const events: WorldEvent[] = [];
@@ -223,11 +233,12 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     // due in that time happens after it.
     const wake = verb.wake_on?.(command) ?? [];
     const stop = verb.stop_before?.(command, snapshot) ?? null;
-    const elapsed = advanceClock(transitionContext, duration, wake, stop);
-    // A command that asked to be woken, or to stop before a beat, says how long it ran, on its own event.
-    if (wake.length > 0 || stop !== null) {
+    const elapsed = advanceClock(transitionContext, ticks, wake, stop);
+    // A command that asked to be woken, to stop before a beat, or was cut at a run's limit says how long it ran.
+    if (wake.length > 0 || stop !== null || cut) {
       events[0] = { ...events[0]!, data: { advanced: elapsed } };
     }
+    finishRun(transitionContext);
   } catch (error) {
     // A roll in a world with no seed, wherever in the command it fell (the verb's own transition
     // or a cause that ran as the clock moved): the whole command is refused and nothing is kept.

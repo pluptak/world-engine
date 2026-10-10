@@ -49,7 +49,7 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
   `invalid_args`. Once that beat has run, or is cancelled or pruned, nothing stops the clock, and a repeat's
   later run does not stop it either.
 - `edit`: carries one `spawn`, `remove`, `place`, `set_props` (replaces), `update_props` (merges),
-  `set_part`, `refine` ([refine.md](refine.md)), `set_seed`, `schedule_beat`, `cancel_beat` or `retime_beat` as `args.edit` (`set_seed` gives the world's dice a state, [rng.md](rng.md); the beats put
+  `set_part`, `refine` ([refine.md](refine.md)), `set_seed`, `schedule_beat`, `cancel_beat`, `retime_beat`, `start_run` or `end_run` as `args.edit` (`set_seed` gives the world's dice a state, [rng.md](rng.md); the beats put
   the author's own interventions on the schedule, [beats.md](beats.md)), and
   refuses with the code of the first snapshot rule its result breaks ([relations.md](relations.md)).
   A `place` may write `pos` as `{anchor, dx, dy}` ([space.md](space.md)) and `concealed_by`, which

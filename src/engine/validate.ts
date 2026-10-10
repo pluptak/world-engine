@@ -611,8 +611,11 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
   return issues;
 }
 
-// A run's limits as stored: a positive tick limit, or the agents that are its slots, each named once, or both.
-// A run with neither key is no run to end.
+// A run as stored: a positive tick limit, or the agents that are its slots, each named once, or both, and
+// its state. An ended run has its reason and its tick, and nothing still scheduled (`docs/run.md`).
+const RUN_STATES = ["registering", "running", "ended"];
+const RUN_REASONS = ["director", "tick_limit", "no_live_players"];
+
 function runIssues(snapshot: Snapshot): SnapshotIssue[] {
   const run = snapshot.run;
   if (run === undefined) {
@@ -632,11 +635,26 @@ function runIssues(snapshot: Snapshot): SnapshotIssue[] {
     const seen = new Set<Id>();
     run.slots.forEach((slot, index) => {
       const path = ["run", "slots", String(index)];
-      if (own(snapshot.entities, slot) === undefined || !isAgent(snapshot, slot) || seen.has(slot)) {
+      // A slot may be gone, which ends the run as a destroyed one does; one still in the world is an agent's body.
+      const body = own(snapshot.entities, slot);
+      if ((body !== undefined && body.props.agent !== true) || seen.has(slot)) {
         issues.push(issue("invalid_run", path, slot));
       }
       seen.add(slot);
     });
+  }
+  if (!RUN_STATES.includes(run.state)) {
+    issues.push(issue("invalid_run", ["run", "state"], String(run.state)));
+  }
+  if (run.state === "ended") {
+    if (run.ended === undefined || !RUN_REASONS.includes(run.ended.reason)) {
+      issues.push(issue("invalid_run", ["run", "ended"], "no reason"));
+    }
+    if (snapshot.schedule !== undefined && snapshot.schedule.length > 0) {
+      issues.push(issue("invalid_run", ["run", "ended"], "schedule after the end"));
+    }
+  } else if (run.ended !== undefined) {
+    issues.push(issue("invalid_run", ["run", "ended"], "not ended"));
   }
   return issues;
 }
