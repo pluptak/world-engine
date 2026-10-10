@@ -24,7 +24,7 @@
   { "id": "key", "template": "key", "overrides": { "name": "key", "location": "lab", "support": "lab", "pos": { "x": -300, "y": 0 }, "props": { "opens": "exit_door" } } },
   { "id": "experiment", "template": "experiment", "overrides": { "name": "experiment", "location": "lab", "support": "lab", "pos": { "x": 300, "y": 300 } } },
   { "id": "arm", "template": "arm", "overrides": { "name": "arm", "location": "lab", "support": "lab", "pos": { "x": -200, "y": 0 }, "props": { "powered_by": "cable", "controlled_by": "terminal" } } },
-  { "id": "terminal", "template": "terminal", "overrides": { "name": "terminal", "location": "server_room", "support": "server_room", "pos": { "x": 0, "y": 0 } } },
+  { "id": "terminal", "template": "terminal", "overrides": { "name": "terminal", "location": "server_room", "support": "server_room", "pos": { "x": 0, "y": 0 }, "props": { "powered_by": "generator" } } },
   { "id": "ann", "template": "human", "overrides": { "name": "ann", "location": "dormitory", "support": "dormitory", "pos": { "x": -350, "y": 0 } } },
   { "id": "bob", "template": "human", "overrides": { "name": "bob", "location": "dormitory", "support": "dormitory", "pos": { "x": -250, "y": 0 } } },
   { "id": "cid", "template": "human", "overrides": { "name": "cid", "location": "dormitory", "support": "dormitory", "pos": { "x": -150, "y": 0 } } },

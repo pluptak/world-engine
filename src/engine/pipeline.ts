@@ -10,7 +10,7 @@ import { eventPerceivers } from "./query.js";
 import { verbRegistry } from "./verbs/index.js";
 import { own, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
-import { remoteFault } from "./power.js";
+import { agentFault } from "./power.js";
 import { isAgent } from "./verbs/address.js";
 import { isScenery, resolveTarget } from "./resolve.js";
 
@@ -74,8 +74,9 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
   if (!authored && !isAgent(snapshot, actor.id)) {
     return unchangedResult(snapshot, command, "invalid", null, "not_an_agent");
   }
-  // An agent a controller runs acts only while its control walk carries the command (`docs/power.md`).
-  const fault = !authored && typeof actor.props.controlled_by === "string" ? remoteFault(snapshot, actor.id) : null;
+  // An agent a controller runs acts only while its control walk carries the command, and one with a
+  // `powered_by` only while it has power (`docs/power.md`).
+  const fault = authored ? null : agentFault(snapshot, actor.id);
   if (fault !== null) {
     return unchangedResult(snapshot, command, "refused", null, fault.reason_code, undefined, fault.reason_data);
   }

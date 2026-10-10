@@ -14,7 +14,8 @@ it. Nothing here is a proposal.
   door, no record. The lab has none, so an act there reaches only whoever stands in it (C).
 - The terminal sees the exit door it locks only through the corridor's camera, which shares the
   door's cable: one cut both blinds it and stops its unlock (D, E).
-- An agent's own power is not modelled: an unpowered terminal still senses and acts (E).
+- The terminal runs on the generator itself, so a cut cable leaves it running; with the generator
+  destroyed it neither acts nor senses, and its own refusal is all it learns of why (J).
 - The arm (A) takes, puts and gives only within its reach, and sees and moves nothing; it acts only
   while the terminal's link to it carries, and the terminal has no `manipulation` of its own
   ([manipulator.md](manipulator.md)).

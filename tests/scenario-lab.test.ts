@@ -93,7 +93,7 @@ type Run = (actor: Id, verb: string, target?: string, args?: Record<string, unkn
 
 const STORED = ["log.jsonl", "events.jsonl", "deltas.jsonl", "snapshot.json"];
 
-test("the lab: an escape by key, an AI that locks a door it cannot see, a cut cable, a stage a watch moves", (t) => {
+test("the lab: an escape by key, an AI that locks a door it cannot see, a cut cable, a stage a watch moves, a terminal without power", (t) => {
   const root = tempDir(t);
   const dir = join(root, "lab");
   const { world, id, sent, run, edit } = open(dir);
@@ -214,6 +214,30 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   );
   strictEqual(world.entity(experiment)?.props.stage, 1);
   deepStrictEqual((world.snapshot().schedule ?? []).filter((cause) => cause.kind === "beat"), []);
+
+  // J. the terminal runs on the generator itself, so the cut cable left it running; ann opens the server
+  // room and destroys the generator, and the terminal can neither act nor sense, while the world's time
+  // and the author's beats go on without it.
+  const generator = id("generator");
+  deepStrictEqual(status(run(ann, "open", "server door")), ["ok", undefined]);
+  deepStrictEqual(status(run(ann, "move", undefined, { through: "server door" })), ["ok", undefined]);
+  deepStrictEqual(status(run(ann, "move", undefined, { to: { x: 300, y: 220 } })), ["ok", undefined]);
+  ok(run(ann, "say", undefined, { utterance: "here" }, true).events[0]?.perceivers?.hearing.includes(terminal));
+  for (let blow = 0; blow < 3; blow += 1) {
+    strictEqual(run(ann, "attack", "generator").status, "ok");
+  }
+  strictEqual(world.entity(generator)?.status, "destroyed");
+  const dark = run(terminal, "wait", undefined, { ticks: 1 });
+  deepStrictEqual([dark.status, dark.reason_code, dark.reason_data], ["refused", "unpowered", { at: terminal, cut: generator }]);
+  strictEqual(run(ann, "say", undefined, { utterance: "here" }, true).events[0]?.perceivers?.hearing.includes(terminal), false);
+  deepStrictEqual(world.query({ kind: "perceive", observer: terminal, sense: "sight", entity: ann }), {
+    value: "false",
+    basis_code: "unpowered",
+  });
+  const stageTwo = { kind: "set_props", target: experiment, props: { abstract: true, stage: 2 } } as const;
+  strictEqual(edit({ kind: "schedule_beat", id: "after", at_tick: tick() + 1, action: stageTwo } as WorldEdit).status, "ok");
+  strictEqual(clock(1).status, "ok");
+  strictEqual(world.entity(experiment)?.props.stage, 2);
 
   // H. the stored world replays, and the same scenario sent the same gives the same files, byte for byte.
   deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);

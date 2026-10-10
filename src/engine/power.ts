@@ -67,6 +67,27 @@ export function remoteFault(snapshot: Snapshot, device: Id): RemoteFault | null 
   return null;
 }
 
+// Why an agent cannot act or sense now: a controlled one its own control walk's fault, else its
+// controller's; any other its own power, when it has a `powered_by`. Null for an agent with neither.
+export function agentFault(snapshot: Snapshot, agent: Id): RemoteFault | null {
+  const entity = own(snapshot.entities, agent);
+  if (entity === undefined) {
+    return null;
+  }
+  if (typeof entity.props.controlled_by === "string") {
+    const fault = remoteFault(snapshot, agent);
+    if (fault !== null) {
+      return fault;
+    }
+    const head = controller(snapshot, agent);
+    return head === null ? null : agentFault(snapshot, head);
+  }
+  if (typeof entity.props.powered_by === "string" && !powered(snapshot, agent)) {
+    return { reason_code: "unpowered", reason_data: { at: agent, cut: cutOf(snapshot, agent) } };
+  }
+  return null;
+}
+
 // The cameras whose feed reaches the observer now: each one not destroyed, its control walk ending
 // at the observer and carrying a command, in id order.
 export function feeds(snapshot: Snapshot, observer: Id): Id[] {

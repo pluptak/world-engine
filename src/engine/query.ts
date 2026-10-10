@@ -7,7 +7,7 @@ import { closedEnclosure, doorJoins, inReach, isAgent, reachedAsDoor } from "./v
 import { isAbstract, isDoor } from "./resolve.js";
 import { effectivePart } from "./parts.js";
 import { computesSense } from "./capabilities.js";
-import { controller, feeds } from "./power.js";
+import { controller, feeds, powered } from "./power.js";
 
 // The one declared threshold for `near`: two positions in the same room this far apart or closer are
 // near. Squared, because the arithmetic stays integer and no square root is ever taken.
@@ -532,6 +532,10 @@ function perceive(
   // A destroyed body senses nothing, whatever its parts: the same end that stops it acting.
   if (observer.status === "destroyed") {
     return answer("false", "observer_destroyed");
+  }
+  // A body that runs on power senses nothing without it (`docs/power.md`).
+  if (typeof observer.props.powered_by === "string" && !powered(snapshot, observer.id)) {
+    return answer("false", "unpowered");
   }
   if ((capacity(snapshot, registry, observer.id, query.sense) ?? 0) === 0) {
     return answer("false", "no_sense_capacity");

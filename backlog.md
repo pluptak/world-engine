@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A controller's own power](#a-controllers-own-power).
-2. [A door that takes time to shut](#a-door-that-takes-time-to-shut).
-3. [A remote command that can jam](#a-remote-command-that-can-jam).
+1. [A door that takes time to shut](#a-door-that-takes-time-to-shut).
+2. [A remote command that can jam](#a-remote-command-that-can-jam).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -64,39 +63,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A controller's own power
-
-An agent's own power is not modelled: with the generator destroyed the terminal still senses and
-acts (`docs/limits-lab.md`, E), and the roadmap's acceptance row "the controller loses power" has
-nothing to fail. The arm already answers to its walk; the terminal answers to nothing.
-
-- **Rule:** `agentFault(snapshot, agent)` in `src/engine/power.ts`, which the pipeline's check
-  after the agency check calls in place of `remoteFault`:
-  - an agent with `controlled_by`: its `remoteFault`, else its controller's own `agentFault`, so an
-    arm whose terminal has no power is refused with the terminal's fault;
-  - else an agent with `powered_by` that is not `powered()`: `unpowered` `{ at: agent, cut }`,
-    `cut` as `remoteFault` names it;
-  - else null: an agent with neither link (every human) is untouched.
-- **Senses** (`perceive` in `src/engine/query.ts`, after `observer_destroyed`): an observer with
-  `powered_by` that is not `powered()` answers `false` / `unpowered` for every sense, touch
-  included, so its camera feeds, `perceivers`, `observe`, its actor view and a `wait` until sensed
-  all go dark through `perceive` with no change of their own. Power back (the author relinks it)
-  and it senses and acts again: nothing is stored.
-- **Lab** (`scenarios/lab.json`): the terminal `powered_by` the generator itself, so the cut cable
-  of E leaves it running. A new last step of the first test in `tests/scenario-lab.test.ts`: a
-  subject opens the server room and destroys the generator; the terminal's `wait` is `unpowered`
-  `{ at: terminal, cut: generator }`, it no longer hears a subject who speaks beside it, and a
-  beat the author scheduled still runs (the world's time is not the terminal's).
-- **Tests:** `tests/agent-power.test.ts`, a small world: a powered terminal acts and senses; with
-  its source destroyed every verb is refused with that data and each sense answers `unpowered`; a
-  camera it controls feeds nothing; an arm it controls is refused with the terminal's fault; the
-  author's `update_props` to a second generator brings both back; a human is untouched.
-- **Docs:** `docs/power.md` (an agent's own power; split if past its cap), `docs/perception.md` and
-  `docs/senses.md` one line each for the basis `unpowered` (split `perception.md`, at its cap, if
-  needed), `docs/limits-lab.md` (the E line goes; what the build shows).
-- **Depends on:** nothing. **Not in it:** batteries or a terminal that fails slowly, power for
-  humans or lights, a body that loses power mid-command (commands are finished outcomes).
 
 ### A door that takes time to shut
 

@@ -22,14 +22,14 @@ and `douse` set `burning` ([verbs-other.md](verbs-other.md)), and nothing stores
 across an open door needs both rooms lit (`adjacent_open_door_lit`), an unlit room is
 `location_unlit`, and a camera lends its lit room to the agent it feeds ([camera.md](camera.md)).
 
-The sense table lives in [senses.md](senses.md): one row per event class, with a touch column
-that ignores rooms — touch reads the observer's own body and grips (`own_body`), never an
-authored event, and anything else is `not_touching`.
+The sense table lives in [senses.md](senses.md): one row per event class; touch ignores rooms and
+reads the observer's own body and grips (`own_body`), never an authored event, else `not_touching`.
 
 An event-form perceive reads the world at both ends of the command that produced it and is true if
 it is true at either; `perceivers: true` names, per event and by sense, every agent that could have
 sensed it. A destroyed observer senses nothing, `false` / `observer_destroyed`, so `observe` lists
-nothing for it and `inspect` is `null`; its own end it still sensed, from the moment before.
+nothing for it and `inspect` is `null`; its own end it still sensed, from the moment before. A body
+with no power on its `powered_by` walk senses nothing: `false` / `unpowered` ([power.md](power.md)).
 
 What an agent can name in a command is a perception question too (`addressable`): itself, its room,
 what it senses now by a covered sight, smell or touch, or what it could grope for, in reach,

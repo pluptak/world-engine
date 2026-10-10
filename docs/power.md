@@ -9,10 +9,9 @@ example and `tests/remote.test.ts` the spec.
 - `controlled_by` (state): the next link toward the agent that controls this entity, a panel or
   the agent. Both may be written by the architect, and a scenario resolves them as ids.
 
-**Powered.** Walk `powered_by` from the entity: every entity on the walk, the first included, is
-not `destroyed`, and the walk ends at a `power_source`. An entity with neither is unpowered.
-Destroying a link cuts it (`templates/cable.json` takes three human blows); nothing switches a
-source off.
+**Powered.** Walk `powered_by` from the entity: every entity on the walk, the first included, is not
+`destroyed`, and the walk ends at a `power_source`. An entity with neither is unpowered. Destroying
+a link cuts it (`templates/cable.json` takes three human blows); nothing switches a source off.
 
 **Controlled.** The controller is the agent at the end of the `controlled_by` walk. It names the
 device from anywhere, by name or id, and its options offer it, whatever state the links are in;
@@ -28,11 +27,14 @@ close and moving occupants aside included, is unchanged.
 lock of a door whose cable is cut.
 
 **Rules** ([relations.md](relations.md) R8): a link naming no entity is `dangling_reference`, so a
-link cannot be removed; a walk that loops is `power_loop` or `control_loop`.
+link cannot be removed; a walk that loops is `power_loop` or `control_loop`. A camera is a device
+too: it feeds its controller while its walk carries a command ([camera.md](camera.md)).
 
-A camera is a device too: it feeds its controller while its walk carries a command
-([camera.md](camera.md)). An agent with a `controlled_by` is held to the same walk before any verb
-([manipulator.md](manipulator.md)).
+**An agent's own power** (`agentFault`, checked before any verb). One with a `controlled_by` is held
+to that walk and then to its controller's own fault ([manipulator.md](manipulator.md)); any other
+with a `powered_by` acts only while powered, else every command is refused `unpowered`
+`{ at: itself, cut }` and every sense is `false` / `unpowered`. Nothing is stored: power back, it
+acts and senses again. An agent with neither, a human, is untouched (`tests/agent-power.test.ts`).
 
-Not modelled: a human using a panel at a distance, power for anything else (lights, the controller
-itself), delays and partial failure, and who may use a controller beyond the walk.
+Not modelled: a human using a panel at a distance, power for lights or humans, batteries or a slow
+failure, delays and partial failure, and who may use a controller beyond the walk.
