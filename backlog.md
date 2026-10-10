@@ -18,9 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Every pending cause has a ref, and the schedule is read through the API](#every-pending-cause-has-a-ref-and-the-schedule-is-read-through-the-api).
-2. [The author postpones, holds, releases and cancels a pending cause](#the-author-postpones-holds-releases-and-cancels-a-pending-cause).
-3. [`advance` stops before a cause](#advance-stops-before-a-cause).
+1. [The schedule is read through the API](#the-schedule-is-read-through-the-api).
+2. [A pending beat is brought forward or put back](#a-pending-beat-is-brought-forward-or-put-back).
+3. [`advance` stops before a beat](#advance-stops-before-a-beat).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -65,106 +65,76 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
 
-### Every pending cause has a ref, and the schedule is read through the API
+### The schedule is read through the API
 
-Everything the world will do by itself is one list, `snapshot.schedule` (`docs/schedule.md`), but
-a cause has no name: a door's close is "the `close` on e7", and only a beat has an id, the
-author's own. A caller that wants to read what comes next digs through `snapshot()`, and nothing
-can point at one pending cause to act on it (the next item).
+Everything the world will do by itself is one list, `snapshot.schedule` (`docs/schedule.md`). A
+caller that wants to read what comes next (the director and observer of `plans/roles.md`) digs
+through `snapshot()`. Only a beat is ever named, by the id its author gave it; the engine's own
+causes (a close, a bleed, a process) are read, never addressed, since no role may retime what the
+engine decided.
 
-- **Ref** (`src/model.ts` `ScheduledCause`, `src/engine/pending.ts`): every cause gets `ref`, `c<n>`
-  from a counter of its own on the snapshot (`next_cause`, absent until the first cause), so no
-  entity or event id moves; the builder confirms no existing expected id shifts. `withCause`
-  allocates it, the one place a cause is added. A run that schedules the next (a bleed, a
-  process's reconcile, a beat's follower) makes a new cause with a new ref; a repeating beat keeps
-  its ref across runs, as it keeps its id, since it is one pending beat. A beat's `id` stays the
-  author's token beside it.
-- **Snapshot rules** (`src/engine/validate.ts`): a missing or malformed ref, a ref used twice, or
-  a ref at or above `next_cause` is `invalid_cause_ref`. Stored worlds become `schema_version` 6
-  (an older one is refused, as AGENTS.md has it).
 - **Read** (`src/api.ts`): `World.schedule(filter?)`, `filter` `{ kind?, entity?, until_tick? }`,
-  returns the pending causes in run order as stored (`ref`, `kind`, `entity`, `due_tick`,
-  `cause_id`, and the kind's own fields). The CLI gets a `schedule` op (`src/cli/main.ts`, its
-  request and response in `src/contract.ts` and `RESPONSES`). `actorWorld` gets nothing and the
-  `actor_*` ops none: what the world will do is not something an actor knows.
-- **Tests:** `tests/schedule-api.test.ts`: a door's `open` lists its close with a ref, `close` by
-  hand takes it off; a bleed's next run and a process's next run have new refs; a repeating
-  beat's ref is the same on every run; the filter by kind, entity and `until_tick`; the CLI op
-  answers the same; a store world reopened lists the same refs; a duplicated or missing ref is
-  refused by `validateSnapshot`. `tests/schedule.test.ts` holds the contract's stored shape in step
-  as now. The property test's every step stays valid.
+  returns the pending causes in run order as stored. The CLI gets a `schedule` op
+  (`src/cli/main.ts`, its request and response in `src/contract.ts` and `RESPONSES`). `actorWorld`
+  gets nothing and the `actor_*` ops none: what the world will do is not something an actor knows.
+  No stored shape changes, so `schema_version` stays 5.
+- **Tests:** `tests/schedule-api.test.ts`: a door's `open` lists its close and `close` by hand takes
+  it off; a bleed, a process and a repeating beat listed with their own fields; the filter by
+  kind, entity and `until_tick`, and an empty list when nothing is pending; the CLI op answers the
+  same; a store world reopened lists the same.
 - **Lab:** step G (`tests/scenario-lab.test.ts`) reads the exit door's pending shut through
   `World.schedule({ entity: exit_door })` instead of the snapshot, if it reads it at all.
-- **Docs:** new `docs/schedule-api.md` (refs and the read; its `docs/DESIGN.md` line);
-  `docs/schedule.md` one line on `ref`; `docs/api.md` the method; `CLAUDE.md` `schema_version` 6.
-- **Depends on:** nothing. **Not in it:** writes (next item), an actor's view of the schedule.
+- **Docs:** new `docs/schedule-api.md` (the read, and that only beats are named; its
+  `docs/DESIGN.md` line); `docs/api.md` the method.
+- **Depends on:** nothing. **Not in it:** an id for the engine's causes, an actor's view of the
+  schedule, roles.
 
-### The author postpones, holds, releases and cancels a pending cause
+### A pending beat is brought forward or put back
 
-The schedule decides when the door shuts; a story needs to say "not yet". Today only a beat can be
-withdrawn (`cancel_beat`), and nothing can be delayed or held. These are the author's, as every
-edit is now; which role may use them is settled with the roles.
+A story keeps its beats queued before the scene runs and moves them; it never invents one
+(`plans/roles.md`). `cancel_beat` takes one off; nothing moves one.
 
-- **Edits** (`src/engine/verbs/edit.ts`), each naming a cause by `ref`:
-  - `postpone { ref, ticks }` (`ticks` a positive int): the cause falls due `ticks` later, ordered
-    after what is already due at that tick, as if scheduled now. A held cause is `cause_held`.
-  - `hold { ref }`: the cause keeps `ticks_left` (its due tick minus the clock) in place of
-    `due_tick`, and the clock passes it by. Held twice is `cause_held`.
-  - `release { ref, at_tick? }`: due at the clock plus `ticks_left`, or at `at_tick`, which must
-    be ahead (`beat_in_past`). Not held is `cause_not_held`.
-  - `cancel { ref }`: off the schedule, a beat's followers with it, as `cancel_beat` does, which
-    stays as it is.
-  - A ref nothing pending carries is `no_such_cause`; a postpone past the largest safe integer is
-    `clock_overflow`. The new codes are declared on `edit` and registered as AGENTS.md says.
+- **Edit** (`src/engine/verbs/edit.ts`): `retime_beat { id, at_tick }`. The pending beat of that
+  id falls due at `at_tick`, sooner or later, ordered after what is already due at that tick, as
+  if scheduled now; `at_tick` must be ahead of the clock (`beat_in_past`). An id nothing pending
+  carries is `no_such_beat`, as for `cancel_beat`; a follower not yet scheduled by its parent is
+  not pending. A repeating beat moves its next run, and the runs after it keep `every_ticks` from
+  there. Its action, condition, followers and cause are unchanged: a retime moves when, never what.
 - **The record** is the edit's own root event, as for `cancel_beat`: no new event type, nobody
   senses it, `since` and `attempts` show it.
-- **What a hold means for each kind:** a held cause is still pending, so a process is not
-  scheduled twice by `reconcile`, and a reconcile that finds the process can no longer run
-  withdraws it, held or not; a held cause whose entity goes is pruned like any other; a held
-  close leaves the door as it is (a `shut_ticks` door stays `closing`, so `lock` stays refused
-  `closing` and `open` still withdraws the shut).
-- **Snapshot rules:** a held cause has a positive integer `ticks_left` and no `due_tick`, and held
-  causes are listed after every due one, in the order they were held (`invalid_cause_hold`,
-  `schedule_unordered`). `World.schedule` shows them with `due_tick: null` and `held: true`.
-- **Tests:** `tests/schedule-edit.test.ts`, a small world: a self-closing door's close postponed
-  closes later and not at its old tick; held, it never closes however long the clock runs;
-  released, it closes `ticks_left` later, or at `at_tick`; cancelled, never; a held process and a
-  held bleed the same; a held beat's subject removed prunes it; every refusal code once; `check`
-  of a postpone writes nothing. The property generator issues the four edits on refs it reads
-  from the schedule, and every step stays valid.
-- **Lab:** a new step in `tests/scenario-lab.test.ts`: the terminal closes the exit door, the
-  author holds its shut, ann walks through the open door in more ticks than `shut_ticks`, the
-  author releases it and it shuts behind her. `docs/limits-lab.md` G gains: the door's timing is
-  the author's to stretch, never a subject's.
-- **Docs:** `docs/schedule-api.md` (the four edits), `docs/verbs-other.md` one line under the
-  edit, `docs/schedule.md` one line on held causes.
-- **Depends on:** the ref item above. **Not in it:** a subject or a thing blocking a cause (a
-  wedge: world state the cause reads when it runs, a later lab item), creating a cause other than
-  a beat, an event of its own for each edit.
+- **Tests:** `tests/scheduled-beat.test.ts` (or a new file if it is past its size): a sound beat
+  brought forward sounds at the new tick and not at the old; put back, the same; a repeating
+  beat retimed keeps its count and spacing; a chain's followers fall due from when the parent
+  runs; two beats at one tick keep the order rule; both refusals; `check` of a retime writes
+  nothing. The property generator retimes and cancels beats it reads from the schedule, and
+  every step stays valid.
+- **Lab:** a new step in `tests/scenario-lab.test.ts`: the deadline beat is queued, then brought
+  forward before ann reaches the key, and the stage is what the earlier deadline makes it.
+- **Docs:** `docs/beats.md` one line beside `cancel_beat` (split if past its size),
+  `docs/schedule-api.md`.
+- **Depends on:** nothing. **Not in it:** retiming the engine's causes (a door's shut, a bleed, a
+  process), holding a beat with no tick, which role may retime (`plans/roles.md`).
 
-### `advance` stops before a cause
+### `advance` stops before a beat
 
-A caller pacing the world to a story wants time to run up to a moment and stop there, so it can
-let that moment happen, delay it or drop it. `advance` stops on what an agent senses
-(`stop_on_perceived`), never on what is about to run.
+A caller pacing the world to a story wants time to run up to a beat and stop there, so it can let
+it run, move it or drop it. `advance` stops on what an agent senses (`stop_on_perceived`), never
+on what is about to run.
 
 - **Arg** (`advanceVerb` in `src/engine/verbs/wait.ts`, `src/engine/clock.ts`): `stop_before`, a
-  ref, optional. The advance ends at the tick before the cause falls due, everything due before it
-  run, the cause still pending; `ticks` stays the upper bound, and `stop_on_perceived` may end it
-  sooner. The `advance` event's `advanced` says how many ticks passed, as now.
-- **Edge cases:** a ref nothing pending carries is `no_such_cause`; a held cause, or one due at
-  the very next tick, leaves nothing to run up to and is refused `cause_not_ahead`, taking no time.
-  A cause withdrawn or postponed by what runs during the advance no longer stops it, and the
-  advance runs on to `ticks` or to the cause's new tick, whichever comes first.
-- **Tests:** in `tests/schedule-api.test.ts`: an advance of 10 before a close due in 4 ends after
-  3 ticks with the close pending, and a second advance of 1 runs it; a close withdrawn by an
-  earlier cause in the span (a beat that edits the door shut) lets the advance run its full
-  ticks; `stop_on_perceived` earlier than the cause wins; both refusals. Two advances that end
-  where one would have leave the same world, as the time property already holds.
-- **Lab:** the step of the hold item starts with an advance stopped before the exit door's shut,
-  so the author decides at the last tick.
+  beat id, optional. The advance ends at the tick before the beat falls due, everything due before
+  it run, the beat still pending; `ticks` stays the upper bound, and `stop_on_perceived` may end
+  it sooner. The `advance` event's `advanced` says how many ticks passed, as now.
+- **Edge cases:** an id nothing pending carries is `no_such_beat`; a beat due at the very next tick
+  leaves nothing to run up to and is refused `beat_not_ahead`, taking no time. A beat cancelled or
+  pruned by what runs during the advance no longer stops it, and the advance runs its full
+  `ticks`. A repeating beat stops it before its next run only.
+- **Tests:** in `tests/schedule-api.test.ts`: an advance of 10 before a beat due in 4 ends after 3
+  ticks with the beat pending, and an advance of 1 runs it; a beat pruned with its subject earlier
+  in the span lets the advance run its full ticks; `stop_on_perceived` earlier than the beat wins;
+  both refusals. Two advances that end where one would have leave the same world.
+- **Lab:** the retime step starts with an advance stopped before the deadline beat.
 - **Docs:** `docs/verbs-other.md` (`advance`), `docs/time.md` one line beside waking early,
   `docs/schedule-api.md`.
-- **Depends on:** the ref item (and the hold item for its lab step). **Not in it:** stopping on a
-  kind or an entity rather than one ref, a `wait` that stops before a cause (an actor does not
-  know the schedule).
+- **Depends on:** nothing (the retime item for its lab step). **Not in it:** stopping before an
+  engine cause, a `wait` that stops before a beat (an actor does not know the schedule).
