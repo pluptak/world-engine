@@ -18,6 +18,11 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
+1. [Players register, and the director's handle may do only what a director does](#players-register-and-the-directors-handle-may-do-only-what-a-director-does).
+2. [A player's handle submits blind, and the director closes the round](#a-players-handle-submits-blind-and-the-director-closes-the-round).
+3. [The director's levers: a pool of beats, a door's odds, and quiet rounds skipped](#the-directors-levers-a-pool-of-beats-a-doors-odds-and-quiet-rounds-skipped).
+4. [A character being carried cannot walk](#a-character-being-carried-cannot-walk).
+5. [A body that is destroyed may leave a successor, and the player follows it](#a-body-that-is-destroyed-may-leave-a-successor-and-the-player-follows-it).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -61,3 +66,148 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
+
+### Players register, and the director's handle may do only what a director does
+
+Everyone who touches a run is the world author today: any caller with the `World` may edit, round
+or end it. `plans/roles.md` makes a role a set of permissions a handle carries. This item adds the
+first two roles and the record of who did what; the moves stay `World.round`'s until the next.
+
+- **Registering** (`src/engine/verbs/edit.ts`, `src/engine/run.ts`): an edit
+  `register_player { handle, slot }` on a registering run binds a player's handle (a token, as a
+  beat id is) to one slot, stored on the run (`run.players`: `{ handle, slot }` in the order they
+  registered). Refused `run_not_registering`, `no_such_slot` (not one of the run's slots),
+  `slot_taken`, `handle_taken`. One slot per handle for now. A slot nobody registers stays idle,
+  as `plans/roles.md` decided. `validateSnapshot` holds the shape (`invalid_run`).
+- **Who did it:** an `Attempt` (`src/engine/command.ts`) gains `by: { role, handle? }`, `role`
+  one of `author`, `director`, `player`, written by the handle the command came through and
+  absent for the bare `World`, which is the author as now. `attempts`, `verify` and replay carry it.
+- **Edits declare their roles:** each edit kind names the roles that may send it (a table in
+  `edit.ts`, beside the parse), and one sent under another role is refused `role_forbidden`
+  (declared on `edit`). The director's: `register_player`, `start_run`, `end_run`, `retime_beat`,
+  `cancel_beat`. The author keeps every kind.
+- **The director's handle** (`src/director-world.ts`, exported beside `actorWorld`):
+  `directorWorld(world)` reads everything a `World` reads (`snapshot`, `schedule`, `query`,
+  `observe`, `inspect`, `since`, `attempts`), and writes only through `edit` under the role
+  `director`, and `round` (the author's, until the next item takes it). It has no `command`.
+- **CLI** (`src/cli/main.ts`, `src/contract.ts`): a `director_edit` op beside the `actor_*` ops;
+  the plain `edit` op stays the author's.
+- **Tests:** `tests/director.test.ts`: registering binds and each refusal once; the director's
+  `spawn`, `set_props` and `advance` are `role_forbidden` while its five kinds go through; every
+  log line names its role (`author` for the bare world, `director` for the handle) and a store
+  world replays it (`verify`); a slot registered and then its body destroyed ends the run as
+  before.
+- **Docs:** new `docs/roles.md` (the roles built so far, and that access to the files is the
+  host's) and its `docs/DESIGN.md` line; `docs/run.md` one line (registering).
+- **Depends on:** nothing. **Not in it:** a player's handle (next item), several slots per handle,
+  the architect as a role (a scene is a file, made outside any world).
+
+### A player's handle submits blind, and the director closes the round
+
+A round takes every move at once (`World.round`), so whoever calls it sees them all. Each player
+submits on its own and sees only its own; the director closes the round without seeing what was
+submitted (`plans/rounds.md`).
+
+- **The player's handle** (`src/player-world.ts`): `playerWorld(world, handle)` is the actor view
+  (`actorWorld`, `docs/actor-view.md`) of the registered slot's body, under the role `player`,
+  without `command`, plus `submit(move)` (verb, target, args, as an `ActorCommand`; the actor is the
+  slot), `withdraw()`, and `pending()` (its own move, or null). A new `submit` replaces the old. A
+  handle not registered, or whose run is not running, is refused `not_registered` /
+  `run_not_running`; `check` and `options` judge the move as a round's, as they now do.
+- **Pending moves** are not world state: no version, no snapshot, no log line until the round
+  closes. A store world keeps them in a file of their own beside the log (`pending.json`, written
+  under the world's lock, `docs/locking.md`), a memory world in the handle's world; a `verify` and a
+  replay ignore it. Nothing a player reads names another's move; the director learns only which
+  handles have submitted (`submitted()`), never what.
+- **Closing** (`directorWorld`): `closeRound()` takes every pending move, runs `World.round` with
+  them under the role each player submitted with (so each move's log line says `player` and its
+  handle, and the close says `director`), and clears them. The director's handle loses the bare
+  `round` the last item gave it.
+- **CLI:** `player_submit`, `player_withdraw`, `player_pending` and the actor reads under a
+  `handle`; `director_submitted`, `director_close_round`.
+- **Tests:** `tests/player.test.ts`: two players submit, neither's `pending` nor any read shows the
+  other's; the director's `submitted` lists both handles and no move; `closeRound` applies both in
+  the round's order with the right roles in the log; a resubmit replaces, a withdraw passes; an
+  unregistered handle and a player before the start are refused; a store world's pending moves
+  survive a second process opening it and are cleared at the close; `verify` passes with moves
+  pending.
+- **Docs:** `docs/roles.md` (the player), `docs/rounds.md` (submitting and closing).
+- **Depends on:** the item above. **Not in it:** timeouts (the host's), the director's levers and
+  empty rounds (next item), one handle driving several bodies.
+
+### The director's levers: a pool of beats, a door's odds, and quiet rounds skipped
+
+The director steers through what the architect tied (`plans/roles.md`): it moves queued beats
+already; it cannot yet play a beat the architect left untimed, change a door's odds, or let time
+run while every player waits.
+
+- **The pool** (scene `run.pool`, `src/engine/scene.ts`): beat bodies with no `at_tick`, checked as
+  the scene's beats are, ids unique across beats and pool, stored on the run. An edit
+  `play_beat { id, at_tick }` (director and author) takes the beat out of the pool and queues it,
+  caused by the edit's event; refused `no_such_pool_beat`, `beat_in_past`. A pool beat plays once.
+- **Odds** (scene `run.odds`: `[{ entity, prop: "jam_pct", min, max }]`, doors only, as decided):
+  an edit `steer { entity, prop, value }` (director and author) sets the value in force on the run
+  (`run.steered`), refused `not_steerable` (no such entry) or `out_of_range`; `jams` in
+  `src/engine/verbs/openable.ts` reads the steered value before the template's. The template's
+  value is untouched, so nothing is written to a definition prop.
+- **Quiet rounds:** a player's handle may `idle()`: it passes every round until it submits again.
+  `closeRounds({ max, stop_before? })` on the director's handle closes empty rounds while every
+  registered player with a live body is idle, refused `players_active` otherwise; it stops after
+  `max`, one round before the beat `stop_before` names (as `advance` does), or after the first
+  round whose events a registered player's body could sense (`sensedBy`, as `stop_on_perceived`),
+  so no player sleeps through what reaches it. Each round is logged as a closed empty round.
+- **Tests:** `tests/director-levers.test.ts`: a pool beat played sounds at its tick, a second play
+  is `no_such_pool_beat`; a steered door jams at the steered odds (a seeded run, the roll pinned)
+  and out of range is refused; quiet rounds stop at `max`, before a beat, and at a knock a player
+  hears, and are refused while one player is active; every lever is in the log under `director`.
+- **Docs:** `docs/roles.md` (the levers), `docs/scenario.md` (`pool`, `odds`), `docs/run.md`.
+- **Depends on:** the two items above. **Not in it:** a budget of pulls, odds other than doors'
+  `jam_pct`, a director that picks outcomes.
+
+### A character being carried cannot walk
+
+One character may carry another (`plans/roles.md`): nothing in `take` refuses an agent, and a hand
+has no weight limit (`src/engine/carry.ts` limits only what a mouth carries). But a carried agent's
+own `move` would pull it out of its carrier's grip.
+
+- **Rule** (`src/engine/verbs/move.ts`): an agent held by another (in an agent's grip or mouth, or
+  inside a container something holds) is refused `being_carried` on `move`, with
+  `{ carrier }` in its data. It keeps its senses, speech and hands; `take` from its own grip and
+  `drop` still work. Nothing else changes: its carrier moves it as any held thing.
+- **Tests:** `tests/carry-agent.test.ts`: a human takes a dog, the dog's `move` is
+  `being_carried` and it still sees the room its carrier walks into; dropped, it moves again; a
+  human carries a wounded human (the builder notes that no weight limit applies, a recorded
+  limit, not changed here) who can still `say`; a third agent's `take` from the carrier's grip is
+  `held_by_another` as now. The property test's every step stays valid.
+- **Docs:** `docs/verbs-moving.md` (one line), and
+  `docs/limits.md` one line (a hand carries any weight).
+- **Depends on:** nothing. **Not in it:** a weight limit for hands, struggling free, a carried
+  agent's bite or attack on its carrier being refused (they work as now).
+
+### A body that is destroyed may leave a successor, and the player follows it
+
+A player whose bodies are all destroyed is out; a character meant to go on does so by its
+template (`plans/roles.md`): its destruction leaves at most one agent, and the binding passes to it.
+
+- **Template** (`src/templates.ts`, `src/engine/fields.ts`): `successor`, a definition prop naming
+  one template, which must exist and be an agent; refused when the templates load otherwise, naming
+  the template. No shipped template gets one, so the shipped set's `templates_hash` is unchanged;
+  tests build their own registry.
+- **On destruction** (`hurt` in `src/engine/harm.ts`, which the attack, the bleed and a process's
+  damage share): after the `destroyed` and its drops, the successor is spawned where the body lies
+  (its location, support and position), caused by `destroyed`, with `succeeds: <body id>` (a
+  state prop, a history reference like `detached_from`, never a dangling link). What the body held
+  falls as now; the body stays, destroyed.
+- **The binding follows** by the record: a slot's live body is the slot's entity, or the newest
+  successor along `succeeds` from it. `finishRun`'s `no_live_players` reads it, and a player's
+  handle (after the player item) drives it and sees through it; until then `World.round` takes a
+  move from the successor like any agent.
+- **Tests:** `tests/successor.test.ts`: a template with a `successor` loads, one naming a non-agent
+  or a missing template is refused; a body destroyed by an attack, by a bleed and by a process each
+  leaves one successor where it lay, caused by `destroyed`; the successor of a successor; a run
+  whose only slot dies with a successor keeps running and ends when the successor is destroyed;
+  with the player item built, the player's handle drives the successor.
+- **Docs:** `docs/templates.md` (the field), `docs/run.md` (a slot's live body), `docs/roles.md`
+  if built.
+- **Depends on:** nothing for the engine half; the player item for its handle test. **Not in it:**
+  what the body held passing to the successor, a successor of a body removed rather than destroyed.
