@@ -1,59 +1,55 @@
 # Roles
 
-Who may do what to a world, and when. A plan, not built: `backlog.md` items come from it one at a
-time. Today there are two roles, the world author (`WORLD_AUTHOR`: every `edit` and `advance`, at
-any time) and the agents (commands, `actorWorld`).
+Who may do what, and when. A plan, not built: `backlog.md` items come from it one at a time. Today
+there are two roles, the world author (`WORLD_AUTHOR`: every `edit` and `advance`, at any time) and
+the agents (commands, `actorWorld`).
 
 ## Roles are permission sets
 
 A role is not an entity and not a mind: it is a set of permissions a handle carries, and whoever
-holds the handle (a human, an AI agent, a test, a middleware) is outside the engine. The engine
-checks each operation against the set it arrives with and records the set in the log, so
-`attempts` shows under which role each thing was done. One controller may hold several handles.
+holds it (a human, an AI agent, a test, a middleware) is outside the engine. The engine checks each
+operation against the set it arrives with and records the role in the log, so `attempts` shows
+under which role each thing was done. `WORLD_AUTHOR` stays, every permission at once, for tests and
+repair, until the roles replace it.
 
-- **Architect.** Builds the scene while it is stopped: `spawn`, `remove`, `place`, `set_props` of
-  state-tier props only (`src/engine/fields.ts`), `schedule_beat`, the seed, the scene's tick limit,
-  and the odds the director may steer, each with its range. Nothing else: no definition props, no
-  parts, no templates. When the scene is ready it says so (`ready`); any edit after that withdraws
-  it. After a stop it comes back to continue the same world or to take its state as the blueprint
-  of a new one (a new log whose initial state is that snapshot).
-- **Director.** Starts a scene the architect made ready, and from then until it stops steers it:
-  brings a queued beat forward, puts it back or cancels it, runs the clock (`advance`, stopping
-  before a beat), steers the odds within the architect's ranges, and stops the scene. It never
-  makes a beat, never retimes what the engine scheduled (a door's shut, a bleed, a process), never
-  edits the world. It reads everything, but on a stopped scene it may do nothing but `start`.
-  Further powers are for later.
-- **Character.** Drives a body: commands, and senses through one view. Any agent the templates
-  allow, not a human only: a dog, a terminal, a sword with a will. Free to do anything the engine
-  allows and nothing else. A body may be several entities, apart from each other (the lab's AI is
-  its terminal, its arm and its cameras): the permission names every entity it drives, and its view
-  is one view with one alias for each thing, read through all of their senses.
-- **Observer.** Reads and never writes, so nothing it does reaches the world; not an entity, so it
-  is never a perceiver, never woken, never in `options`, never named. It sees through a lens set
-  when the handle is made: following a character (its view plus chosen insight, such as what is
-  concealed), one room whatever its light, or the whole world.
-- **`WORLD_AUTHOR`** stays, every permission at once, for tests and repair, until the four replace
-  it.
+## One flow
 
-## The scene
+A simulation is one run: a world made from a scene, started once, ended once. Nothing continues a
+run or turns it back into a scene.
 
-A snapshot is `stopped` (a world with none), `ready` or `running`. The architect works on a stopped
-scene and readies it; the director starts a ready one. A scene stops when the director says so or
-when its tick limit, set by the architect, runs out, so no simulation runs forever. A stop resets
-every timer: the schedule is emptied (beats, shuts, bleeds, processes) and modifiers expire, so the
-next run starts from the architect's queue alone; processes start again from their props at the
-next start. Characters' commands and the director's steering are refused on a scene that is not
-running (`scene_not_running`), the architect's edits on one that is (`scene_running`).
+1. **Architect: makes a scene.** Sets the scene up (entities, places, state-tier props of
+   `src/engine/fields.ts`, the seed), queues its timeline of beats (a knock included: everything
+   that will happen by intention is queued here), declares the odds the director may steer, each
+   with its range, and the tick limit. Then it saves the scene. It never touches a run.
+2. **Director: runs it, as a game master.** Picks a scene from the saved ones, makes a run from it,
+   registers the players (binds each one's handle to its character's body) and starts it. During
+   the run it reads everything and, from what it sees, steers the odds within their ranges and
+   brings a queued beat forward, puts it back or cancels it; it runs the clock (`advance`,
+   stopping before a beat). It never makes a beat, never retimes what the engine scheduled (a
+   door's shut, a bleed, a process) and never edits the world. It declares the end; the tick limit
+   ends a run it does not. Its further powers are for later.
+3. **Character: plays.** Acts and senses in the running world through one view (`actorWorld`),
+   free to do anything the engine allows and nothing else. Any agent the templates allow, not a
+   human only: a dog, a terminal, a sword with a will. A body may be several entities apart (the
+   lab's AI is its terminal, its arm and its cameras): the handle names every entity it drives, and
+   its view has one alias for each thing, read through all of their senses.
+
+## The run
+
+A run is `registering`, `running` or `ended`. Before the start nothing acts and no time passes;
+characters' commands and the director's steering are refused on a run that is not running
+(`run_not_running`). The end stops the clock: every pending cause is dropped, nothing more is
+accepted, and the world stays readable as the record of the run. The scene's beats are queued
+at the start, their ticks counted from it.
 
 ## Open
 
-1. A stop: does the clock keep counting (events never go back within one world) and only a
-   blueprint start at 0, or does a continuation start at 0 as well?
-2. The odds the director steers: which are steerable (`jam_pct`, a process's `chance_pct`) and how a
-   steer is stored (a state prop beside the template's value, read in its place).
-3. A body of several entities: whether the arm and the cameras stay separate agents the permission
-   lists, or become parts of one body that stands in several places (parts share their entity's
-   position today). The first is a permission change; the second an engine change.
-4. A character that is a thing: whether an agent can be carried (a sword with a will) and still act.
-5. The observer's lenses, and whether any sees the schedule.
-6. The director's further powers.
+1. What a saved scene is: today's `scenarios/*.json` grown with beats, odds and the tick limit, or
+   a snapshot saved from a world the architect edited; and where the list of scenes lives (a
+   directory the host names, the engine reading it, or the host alone).
+2. The steerable odds: which (`jam_pct`, a process's `chance_pct`) and how a steer is stored (a
+   state prop read in place of the template's value).
+3. A body of several entities: separate agents one handle lists, or parts of one body standing in
+   several places (parts share their entity's position today, so that is an engine change).
+4. A character that is a thing: whether an agent can be carried (the sword) and still act.
+5. An observer (a player with no body and no voice, read only) is out of this flow; kept for later?
