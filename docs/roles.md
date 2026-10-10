@@ -30,7 +30,8 @@ the body the handle's slot is bound to, under the player role: `observe`, `inspe
 `check`, and no `command`. It also `submit`s one move for the next round, `withdraw`s it and reads
 its `pending()` move. A new submit replaces the old. Refused `not_registered` for an unregistered
 handle and `run_not_running` before the run starts. Nothing it reads names another player's move,
-and its pending move is held in the world, not in its state ([rounds.md](rounds.md)).
+and its pending move is held in the world, not in its state ([rounds.md](rounds.md)). A player
+drives the successor that took its body over (`docs/templates.md`).
 
 **The levers.** The director steers through what the architect tied, and no more. A run's `pool`
 holds beats with no tick: `play_beat { id, at_tick }` takes one out and queues it, caused by the

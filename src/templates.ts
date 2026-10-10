@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { canonicalJson } from "./engine/canonical.js";
+import { own } from "./model.js";
 import { PROP_FIELDS, propTypeMatches, type PropType, type Tier } from "./engine/fields.js";
 
 export type HoldsDecl = { kind: "grip" } | { kind: "space"; inner_w_cm: number; inner_d_cm: number; inner_h_cm: number };
@@ -717,6 +718,7 @@ function resolveTemplates(
     if (inherited.length === 0) {
       assertMissingCompanions(registry);
       assertProducts(registry, sources);
+      assertSuccessors(registry);
       return registry;
     }
     for (const [id, parent] of inherited) {
@@ -964,6 +966,21 @@ export function parseRegistry(value: unknown, source = "templates.json"): Templa
   }
 
   return resolveTemplates(decls, sources);
+}
+
+// A successor is an agent template the set holds: the body it takes over is an agent too, so one that names
+// anything else is refused when the set loads, with the template named (`docs/templates.md`).
+function assertSuccessors(registry: TemplateRegistry): void {
+  for (const template of Object.values(registry)) {
+    const successor = template.props.successor;
+    if (successor === undefined) {
+      continue;
+    }
+    const target = typeof successor === "string" ? own(registry, successor) : undefined;
+    if (target === undefined || target.props.agent !== true) {
+      throw new TypeError(`${template.id} names successor ${String(successor)}, which is not an agent template`);
+    }
+  }
 }
 
 const hashCache = new WeakMap<TemplateRegistry, string>();

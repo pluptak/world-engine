@@ -25,8 +25,8 @@ refused `run_ended`. The pipeline also cuts any timed command at the limit, whic
 commands cannot reach by way of a round, since a move takes no time and `wait` is not a move.
 
 **No live players.** A running run with `slots` ends, `no_live_players`, after any ok command or
-edit that leaves none of its slots alive: each is gone from the world or destroyed (a bleed-out
-counts). A run with no slots, or one still registering, never ends this way.
+edit that leaves none of its slots' live bodies alive (`docs/templates.md`). A run with no slots,
+or one still registering, never ends this way.
 
 **Levers.** While the run is registering or running, the director may play a pool beat, steer a
 door's odds within the range its scene gave, and close quiet rounds while every player is idle

@@ -63,3 +63,9 @@ Giving the human's `head` `speech` ([speech.md](speech.md)) and `human_hungry` i
 
 A top-level `max_integrity` (partless templates only) is how much a thing with no parts can take:
 [integrity.md](integrity.md).
+
+**Successors.** `props.successor` names one agent template the set holds, refused when the set
+loads otherwise. A body of a template that names one is destroyed (by an attack, a bleed or a
+process) and leaves an agent of that template where it lay, caused by the destruction, with
+`props.succeeds` naming the body it took over. The body stays, destroyed. No shipped template names
+a successor.

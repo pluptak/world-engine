@@ -18,7 +18,6 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A body that is destroyed may leave a successor, and the player follows it](#a-body-that-is-destroyed-may-leave-a-successor-and-the-player-follows-it).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -62,31 +61,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A body that is destroyed may leave a successor, and the player follows it
-
-A player whose bodies are all destroyed is out; a character meant to go on does so by its
-template (`plans/roles.md`): its destruction leaves at most one agent, and the binding passes to it.
-
-- **Template** (`src/templates.ts`, `src/engine/fields.ts`): `successor`, a definition prop naming
-  one template, which must exist and be an agent; refused when the templates load otherwise, naming
-  the template. No shipped template gets one, so the shipped set's `templates_hash` is unchanged;
-  tests build their own registry.
-- **On destruction** (`hurt` in `src/engine/harm.ts`, which the attack, the bleed and a process's
-  damage share): after the `destroyed` and its drops, the successor is spawned where the body lies
-  (its location, support and position), caused by `destroyed`, with `succeeds: <body id>` (a
-  state prop, a history reference like `detached_from`, never a dangling link). What the body held
-  falls as now; the body stays, destroyed.
-- **The binding follows** by the record: a slot's live body is the slot's entity, or the newest
-  successor along `succeeds` from it. `finishRun`'s `no_live_players` reads it, and a player's
-  handle (after the player item) drives it and sees through it; until then `World.round` takes a
-  move from the successor like any agent.
-- **Tests:** `tests/successor.test.ts`: a template with a `successor` loads, one naming a non-agent
-  or a missing template is refused; a body destroyed by an attack, by a bleed and by a process each
-  leaves one successor where it lay, caused by `destroyed`; the successor of a successor; a run
-  whose only slot dies with a successor keeps running and ends when the successor is destroyed;
-  with the player item built, the player's handle drives the successor.
-- **Docs:** `docs/templates.md` (the field), `docs/run.md` (a slot's live body), `docs/roles.md`
-  if built.
-- **Depends on:** nothing for the engine half; the player item for its handle test. **Not in it:**
-  what the body held passing to the successor, a successor of a body removed rather than destroyed.

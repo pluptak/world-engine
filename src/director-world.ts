@@ -1,6 +1,7 @@
 import type { EditOptions, RoundResult, World } from "./api.js";
 import type { Command, Result, WorldEdit } from "./engine/command.js";
 import { INTERNAL } from "./internal.js";
+import { liveBodyOf } from "./engine/run.js";
 import type { Id } from "./model.js";
 
 // The director's handle (`docs/roles.md`): everything a World reads, and writes only through `edit`, under
@@ -32,14 +33,16 @@ export type QuietRounds =
 
 export function directorWorld(world: World): DirectorWorld {
   const pending = world[INTERNAL].pending;
-  // A registered player whose body is in the world and not destroyed.
-  const liveSlots = (): Id[] =>
-    (world.snapshot().run?.players ?? [])
-      .map((player) => player.slot)
-      .filter((slot) => {
-        const entity = world.snapshot().entities[slot];
+  // The live body of each registered player that is in the world and not destroyed (`liveBodyOf`).
+  const liveSlots = (): Id[] => {
+    const snapshot = world.snapshot();
+    return (snapshot.run?.players ?? [])
+      .map((player) => liveBodyOf(snapshot, player.slot))
+      .filter((body) => {
+        const entity = snapshot.entities[body];
         return entity !== undefined && entity.status !== "destroyed";
       });
+  };
   const pendingDue = (id: string): number | null => {
     const cause = world.schedule({ kind: "beat" }).find((entry) => entry.kind === "beat" && entry.id === id);
     return cause === undefined ? null : cause.due_tick;
@@ -56,9 +59,15 @@ export function directorWorld(world: World): DirectorWorld {
     submitted: () => pending.handles(),
     closeRound: () => {
       const handles = pending.handles();
+      // Each move is the body the handle drives when the round closes, which a successor may have taken over.
+      const snapshot = world.snapshot();
       const moves = handles.flatMap((handle): Command[] => {
         const command = pending.get(handle);
-        return command === null ? [] : [{ ...command, by: { role: "player", handle } }];
+        const slot = snapshot.run?.players?.find((player) => player.handle === handle)?.slot;
+        if (command === null || slot === undefined) {
+          return [];
+        }
+        return [{ ...command, actor: liveBodyOf(snapshot, slot), by: { role: "player", handle } }];
       });
       const result = world[INTERNAL].roundAs(moves);
       if (result.status === "ok") {
@@ -70,7 +79,9 @@ export function directorWorld(world: World): DirectorWorld {
       const idle = new Set(pending.idlers());
       const moving = new Set(pending.handles());
       const players = world.snapshot().run?.players ?? [];
-      const liveHandles = players.filter((player) => liveSlots().includes(player.slot)).map((player) => player.handle);
+      const liveHandles = players
+        .filter((player) => liveSlots().includes(liveBodyOf(world.snapshot(), player.slot)))
+        .map((player) => player.handle);
       // Every live player must be idle: one that has a move, or has not passed, keeps the time as it is.
       if (liveHandles.some((handle) => !idle.has(handle) || moving.has(handle))) {
         return { status: "refused", reason_code: "players_active", rounds: 0 };

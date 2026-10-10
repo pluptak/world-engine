@@ -60,6 +60,25 @@ export function endRun(context: TransitionContext, reason: RunEnd["reason"]): vo
   context.snapshot = withSchedule({ ...context.snapshot, run: { ...run, state: "ended", ended } }, []);
 }
 
+// The body a slot's player drives now: the slot's entity, or the newest successor along `succeeds` from it,
+// and so on down the chain (`docs/templates.md`). A slot with no successor is its own body.
+export function liveBodyOf(snapshot: Snapshot, slot: Id): Id {
+  let current = slot;
+  for (let steps = 0; steps < 256; steps += 1) {
+    let next: Id | null = null;
+    for (const entity of Object.values(snapshot.entities)) {
+      if (entity.props.succeeds === current && (next === null || Number(entity.id.slice(1)) > Number(next.slice(1)))) {
+        next = entity.id;
+      }
+    }
+    if (next === null) {
+      return current;
+    }
+    current = next;
+  }
+  return current;
+}
+
 // After an ok command or edit: a running run that has reached its limit ends for that reason, and one whose
 // slots are all destroyed or gone ends for no live players. A run with no slots never ends the second way. A
 // registering run never ends by itself: the author may still be fixing its scene.
@@ -72,9 +91,9 @@ export function finishRun(context: TransitionContext): void {
     endRun(context, "tick_limit");
     return;
   }
-  // A slot is alive while its body is in the world and not destroyed.
+  // A slot is alive while its live body is in the world and not destroyed (`liveBodyOf`).
   const alive = (id: string): boolean => {
-    const entity = own(context.snapshot.entities, id);
+    const entity = own(context.snapshot.entities, liveBodyOf(context.snapshot, id));
     return entity !== undefined && entity.status !== "destroyed";
   };
   if (run.slots !== undefined && !run.slots.some(alive)) {

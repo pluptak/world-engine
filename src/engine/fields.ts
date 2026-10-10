@@ -69,6 +69,10 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   opens: { type: "id", tier: "state" },
   // A panel: a link a subject at it may work its device through (`docs/panel.md`).
   panel: { type: "boolean", tier: "definition" },
+  // A body that is destroyed leaves an agent of this template where it lay (`docs/templates.md`).
+  successor: { type: "string", tier: "definition" },
+  // The body a successor took over from: a history reference, never a link that must still be there.
+  succeeds: { type: "string", tier: "state" },
   portions: { type: "integer", tier: "state" },
   power_source: { type: "boolean", tier: "definition" },
   powered_by: { type: "id", tier: "state" },

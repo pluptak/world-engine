@@ -5,6 +5,7 @@ import type { OptionsRequest } from "./options.js";
 import { INTERNAL } from "./internal.js";
 import { WorldError } from "./errors.js";
 import type { Id } from "./model.js";
+import { liveBodyOf } from "./engine/run.js";
 
 // A player's handle (`docs/roles.md`): the actor view of the body its slot is bound to, under the player
 // role. It submits one move at a time for the next round, which is held in the world until the director
@@ -24,10 +25,12 @@ export interface PlayerWorld {
 
 export type PlayerResult = { status: "ok" } | { status: "refused"; reason_code: string };
 
-// The slot a handle is bound to, or null when the handle is not registered.
+// The body a handle drives: the body its slot is bound to, or the successor that took it over (`liveBodyOf`).
+// Null when the handle is not registered.
 function slotOf(world: World, handle: string): Id | null {
-  const player = world.snapshot().run?.players?.find((entry) => entry.handle === handle);
-  return player?.slot ?? null;
+  const snapshot = world.snapshot();
+  const player = snapshot.run?.players?.find((entry) => entry.handle === handle);
+  return player === undefined ? null : liveBodyOf(snapshot, player.slot);
 }
 
 export function playerWorld(world: World, handle: string): PlayerWorld {

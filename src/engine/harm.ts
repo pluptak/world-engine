@@ -1,7 +1,8 @@
 import type { TransitionContext } from "./command.js";
 import { inSpacePart } from "./carry.js";
 import { dropCarriedItem } from "./verbs/drop.js";
-import type { Id } from "../model.js";
+import { own, type Id } from "../model.js";
+import { spawnUnder } from "./spawn.js";
 
 // Takes `amount` from an entity's own integrity under a `damaged` event, or a `destroyed` one that
 // sets its status when nothing is left; a body that is destroyed holds nothing, so what its grips and
@@ -34,6 +35,17 @@ export function hurt(
     });
   for (const itemId of held) {
     dropCarriedItem(context, body.id, itemId, eventId);
+  }
+  // A body whose template names a successor leaves one where it lay, caused by its destruction. The body stays,
+  // destroyed, and the successor's `succeeds` is the record of whose it is (`docs/templates.md`).
+  const successor = own(context.registry, body.template)?.props.successor;
+  if (typeof successor === "string") {
+    spawnUnder(
+      context,
+      successor,
+      { name: body.name, location: body.location, support: body.support, pos: body.pos, props: { succeeds: body.id } },
+      eventId,
+    );
   }
   return { eventId, destroyed: true };
 }
