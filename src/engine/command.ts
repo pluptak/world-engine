@@ -316,6 +316,12 @@ export interface VerbCatalogEntry {
   refuses: readonly string[];
 }
 
+// The beat an advance stops before: its id, and the tick it falls due at, which names the one run stopped for.
+export interface StopBeat {
+  id: string;
+  due_tick: number;
+}
+
 export interface Verb {
   requires_target: boolean;
   // Only the reserved author `world` may issue it, and it needs no agent body: `edit` and `advance`.
@@ -326,6 +332,9 @@ export interface Verb {
   // Agents whose senses end this command's time early, read from the command: the clock stops at
   // the first tick one of them could sense something, and the root event says how long it ran.
   wake_on?: (command: Command) => readonly Id[];
+  // For a verb whose time may end before its span, at a pending beat (`docs/time.md`): the beat, read from
+  // the snapshot the command is decided against. Null when the command names none.
+  stop_before?: (command: Command, snapshot: Snapshot) => StopBeat | null;
   // Where the root event lands and what it carries, when it is not the target (or the actor) with no
   // data: a speaker's `say` is on the speaker even when it is addressed to another.
   rootEvent?: (command: Command, actor: Entity, target: TargetAddress | null) => { entity: Id; data: Record<string, unknown> };

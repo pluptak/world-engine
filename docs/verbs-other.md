@@ -42,7 +42,12 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
   tick has run, and the `advance` event's data says `{ advanced: n }`, the ticks that passed, so the
   caller can resume with another `advance`. A listed id that is no entity or no agent is `invalid`
   with `no_such_actor`, a destroyed body `observer_destroyed`, and anything but a list of ids
-  `invalid_args`. `clock_overflow` is judged on the upper bound.
+  `invalid_args`. `clock_overflow` is judged on the upper bound. With `args.stop_before`, a pending beat's
+  id, the clock ends one tick before the beat falls due and the beat stays pending for a later span; the
+  `advance` event's `advanced` is then given too. A beat due at the very next tick is `beat_not_ahead`, an
+  id nothing pending carries `no_such_beat` (both refused, taking no time), and an id that is not a token
+  `invalid_args`. Once that beat has run, or is cancelled or pruned, nothing stops the clock, and a repeat's
+  later run does not stop it either.
 - `edit`: carries one `spawn`, `remove`, `place`, `set_props` (replaces), `update_props` (merges),
   `set_part`, `refine` ([refine.md](refine.md)), `set_seed`, `schedule_beat`, `cancel_beat` or `retime_beat` as `args.edit` (`set_seed` gives the world's dice a state, [rng.md](rng.md); the beats put
   the author's own interventions on the schedule, [beats.md](beats.md)), and

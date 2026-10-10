@@ -386,19 +386,22 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   strictEqual(edit({ kind: "place", target: ann, support: id("corridor"), pos: { x: -200, y: 0 } }).status, "ok");
   strictEqual(clock(1).status, "ok");
   strictEqual(world.entity(experiment)?.props.stage, 1);
-  // The deadline is queued three ticks on, then brought forward to the tick after next. It finds the stage
-  // advanced, so its condition is false and it is skipped, at the tick it was brought to.
+  // The deadline is queued four ticks on, and an advance stopped before it ends a tick short, with the
+  // deadline still pending. The author then puts it back two ticks: it finds the stage advanced, so its
+  // condition is false and it is skipped, at the tick it was put back to.
   const deadline = { kind: "set_props", target: experiment, props: { abstract: true, stage: -1 } } as const;
-  const due = tick() + 2;
+  const due = tick() + 4;
   strictEqual(
-    edit({ kind: "schedule_beat", id: "deadline", at_tick: due + 3, action: deadline, only_if: { entity: experiment, prop: "stage", op: "eq", value: 0 } } as WorldEdit).status,
+    edit({ kind: "schedule_beat", id: "deadline", at_tick: due, action: deadline, only_if: { entity: experiment, prop: "stage", op: "eq", value: 0 } } as WorldEdit).status,
     "ok",
   );
-  strictEqual(edit({ kind: "retime_beat", id: "deadline", at_tick: due } as WorldEdit).status, "ok");
+  const stopped = run(WORLD_AUTHOR, "advance", undefined, { ticks: 10, stop_before: "deadline" });
+  deepStrictEqual([stopped.status, stopped.events[0]?.data, tick()], ["ok", { advanced: 3 }, due - 1]);
+  strictEqual(edit({ kind: "retime_beat", id: "deadline", at_tick: due + 2 } as WorldEdit).status, "ok");
   const late = clock(4);
   deepStrictEqual(
     late.events.filter((event) => event.type === "beat_skipped").map((event) => [event.data.id, event.data.reason, event.tick]),
-    [["deadline", "condition", due]],
+    [["deadline", "condition", due + 2]],
   );
   strictEqual(world.entity(experiment)?.props.stage, 1);
   deepStrictEqual(world.schedule({ kind: "beat" }), []);

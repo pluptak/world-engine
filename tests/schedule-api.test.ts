@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { cli } from "./cli-run.js";
-import { createWorld, openWorld, type Id, type Result, type Scenario, type World } from "../src/index.js";
+import { canonicalJson, createWorld, openWorld, WORLD_AUTHOR, type Id, type Result, type Scenario, type World } from "../src/index.js";
 import { loadTemplates, type TemplateRegistry } from "../src/templates.js";
 import { presetRegistry } from "./presets.js";
 import { tempDir } from "./harness.js";
@@ -157,4 +157,88 @@ test("the CLI's schedule op answers the same list, with its filter", (t) => {
   deepStrictEqual(answer.schedule, world.schedule());
   const onlyBeats = JSON.parse(cli(JSON.stringify({ op: "schedule", world: dir, filter: { kind: "beat" } })).stdout) as { schedule: unknown };
   deepStrictEqual(onlyBeats.schedule, []);
+});
+
+// `advance` with `stop_before` (`docs/time.md`): time ends one tick short of a pending beat's due tick.
+function advance(world: World, args: Record<string, unknown>): Result {
+  seq += 1;
+  return world.command({ command_id: `adv${seq}`, actor: WORLD_AUTHOR, verb: "advance", args });
+}
+const soundedAt = (result: Result): number[] => result.events.filter((event) => event.type === "sounded").map((event) => event.tick);
+const knock = (world: World, at: number, entity: Id, id = "knock"): Result =>
+  world.edit({ kind: "schedule_beat", id, at_tick: at, action: { kind: "sound", entity } });
+
+test("an advance stopped before a beat ends a tick short of it, the beat still pending, and a plain advance runs it", (t) => {
+  const world = open(t);
+  const door = id(world, "door");
+  strictEqual(knock(world, 4, door).status, "ok");
+  // `ticks` stays the upper bound: two ticks pass, short of the beat.
+  const bounded = advance(world, { ticks: 2, stop_before: "knock" });
+  deepStrictEqual([bounded.status, bounded.events[0]?.data], ["ok", { advanced: 2 }]);
+  // From tick 2 the beat is due at 4: the advance ends at 3, with the beat pending.
+  const stopped = advance(world, { ticks: 10, stop_before: "knock" });
+  deepStrictEqual([stopped.status, stopped.events[0]?.data, world.snapshot().tick], ["ok", { advanced: 1 }, 3]);
+  deepStrictEqual(world.schedule({ kind: "beat" }).map((cause) => cause.due_tick), [4]);
+  // The beat is due at the very next tick, so there is no time to run up to it: refused, and nothing passes.
+  const next = advance(world, { ticks: 1, stop_before: "knock" });
+  deepStrictEqual([next.status, next.reason_code, world.snapshot().tick], ["refused", "beat_not_ahead", 3]);
+  // A plain advance of one tick runs it.
+  deepStrictEqual(soundedAt(advance(world, { ticks: 1 })), [4]);
+  deepStrictEqual(world.schedule({ kind: "beat" }), []);
+});
+
+test("an advance refuses a beat nothing pending carries, and a stop that is not an id, and takes no time", (t) => {
+  const world = open(t);
+  strictEqual(knock(world, 1, id(world, "door")).status, "ok");
+  const unknown = advance(world, { ticks: 5, stop_before: "nothing" });
+  deepStrictEqual([unknown.status, unknown.reason_code, world.snapshot().tick], ["refused", "no_such_beat", 0]);
+  const malformed = advance(world, { ticks: 5, stop_before: "not an id" });
+  deepStrictEqual([malformed.status, malformed.reason_code, world.snapshot().tick], ["invalid", "invalid_args", 0]);
+  // Due at tick 1, which is the very next tick from 0: refused beat_not_ahead, as the other two are.
+  deepStrictEqual([advance(world, { ticks: 5, stop_before: "knock" }).reason_code, world.snapshot().tick], ["beat_not_ahead", 0]);
+});
+
+test("a beat pruned with its subject earlier in the span no longer stops the advance, which runs its full ticks", (t) => {
+  const world = open(t, [{ id: "stone", template: "stone", overrides: { name: "stone", location: "hall", support: "hall", pos: { x: 60, y: 0 } } }]);
+  const stone = id(world, "stone");
+  strictEqual(world.edit({ kind: "schedule_beat", id: "gone", at_tick: 2, action: { kind: "remove", target: stone } }).status, "ok");
+  strictEqual(knock(world, 4, stone).status, "ok");
+  const full = advance(world, { ticks: 10, stop_before: "knock" });
+  deepStrictEqual([full.status, full.events[0]?.data, world.snapshot().tick], ["ok", { advanced: 10 }, 10]);
+  deepStrictEqual(world.schedule(), []);
+});
+
+test("an earlier stop on what an agent senses wins over the beat, and the beat stays pending", (t) => {
+  const world = open(t);
+  const [door, ann] = [id(world, "door"), id(world, "ann")];
+  strictEqual(knock(world, 8, door).status, "ok");
+  strictEqual(knock(world, 3, door, "bang").status, "ok");
+  const woken = advance(world, { ticks: 10, stop_on_perceived: [ann], stop_before: "knock" });
+  deepStrictEqual([woken.status, woken.events[0]?.data, world.snapshot().tick], ["ok", { advanced: 3 }, 3]);
+  deepStrictEqual(world.schedule({ kind: "beat" }).map((cause) => [cause.due_tick, cause.kind === "beat" ? cause.id : ""]), [[8, "knock"]]);
+});
+
+test("a repeating beat stops an advance before its next run only: the runs after it come in a plain advance", (t) => {
+  const world = open(t);
+  strictEqual(
+    world.edit({ kind: "schedule_beat", id: "knock", at_tick: 3, action: { kind: "sound", entity: id(world, "door") }, repeat: { every_ticks: 2, times: 2 } }).status,
+    "ok",
+  );
+  const stopped = advance(world, { ticks: 10, stop_before: "knock" });
+  deepStrictEqual([stopped.status, stopped.events[0]?.data, world.snapshot().tick], ["ok", { advanced: 2 }, 2]);
+  deepStrictEqual(soundedAt(advance(world, { ticks: 10 })), [3, 5, 7]);
+});
+
+test("two advances that end where one would have leave the same world", (t) => {
+  const single = open(t);
+  const split = open(t);
+  for (const world of [single, split]) {
+    strictEqual(knock(world, 4, id(world, "door")).status, "ok");
+  }
+  strictEqual(advance(single, { ticks: 10 }).status, "ok");
+  strictEqual(advance(split, { ticks: 10, stop_before: "knock" }).status, "ok");
+  strictEqual(advance(split, { ticks: 7 }).status, "ok");
+  strictEqual(split.snapshot().tick, single.snapshot().tick);
+  deepStrictEqual(split.schedule(), single.schedule());
+  strictEqual(canonicalJson(split.snapshot().entities), canonicalJson(single.snapshot().entities));
 });

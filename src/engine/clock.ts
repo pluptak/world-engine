@@ -5,6 +5,7 @@ import { sensedBy } from "./query.js";
 import { pending, withSchedule } from "./pending.js";
 import { reconcileSince } from "./process.js";
 import { pruneSchedule, runCause } from "./schedule.js";
+import type { StopBeat } from "./command.js";
 
 // Every verb declares how many ticks it takes: a fixed count, or the value of one of its int args.
 // Only an ok command takes time; a refused or invalid one leaves `tick` where it was.
@@ -51,12 +52,14 @@ function nextDue(snapshot: Snapshot, after: number, until: number): number | nul
 //
 // With `wake` (agent ids), the clock ends early at the first tick whose events one of them could
 // sense, after everything due at that tick has run, so a tick's events are never split. The span is
-// then only an upper bound. Returns the ticks that passed.
-export function advanceClock(context: TransitionContext, ticks: number, wake: readonly Id[] = []): number {
+// then only an upper bound. With `stop`, the clock never reaches the stop beat's tick while that beat is
+// still pending there: it ends one tick short, and the beat runs in a later span. Returns the ticks that passed.
+export function advanceClock(context: TransitionContext, ticks: number, wake: readonly Id[] = [], stop: StopBeat | null = null): number {
   const startTick = context.snapshot.tick;
   const endTick = startTick + ticks;
+  const limit = (): number => Math.min(endTick, stopLimit(context.snapshot, stop));
   for (;;) {
-    const tick = nextDue(context.snapshot, context.snapshot.tick, endTick);
+    const tick = nextDue(context.snapshot, context.snapshot.tick, limit());
     if (tick === null) {
       break;
     }
@@ -78,8 +81,21 @@ export function advanceClock(context: TransitionContext, ticks: number, wake: re
       }
     }
   }
-  context.snapshot = { ...context.snapshot, tick: endTick };
-  return ticks;
+  const reached = limit();
+  context.snapshot = { ...context.snapshot, tick: reached };
+  return reached - startTick;
+}
+
+// One tick short of the stop beat's tick while that same run is still pending there. Once it has run, or
+// has been cancelled or pruned, nothing stops the clock; a repeat's later run is a different tick, so it does not.
+function stopLimit(snapshot: Snapshot, stop: StopBeat | null): number {
+  if (stop === null) {
+    return Infinity;
+  }
+  const waiting = pending(snapshot).some(
+    (cause) => cause.kind === "beat" && cause.id === stop.id && cause.due_tick === stop.due_tick,
+  );
+  return waiting ? stop.due_tick - 1 : Infinity;
 }
 
 function expireAt(context: TransitionContext, expirationTick: number): void {

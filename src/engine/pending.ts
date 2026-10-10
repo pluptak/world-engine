@@ -1,3 +1,4 @@
+import type { TransitionContext } from "./command.js";
 import type { Id, ScheduledCause, Snapshot } from "../model.js";
 
 export function pending(snapshot: Snapshot): readonly ScheduledCause[] {
@@ -33,4 +34,14 @@ export function withCause(snapshot: Snapshot, cause: ScheduledCause): Snapshot {
   const at = list.findIndex((entry) => entry.due_tick > cause.due_tick);
   list.splice(at === -1 ? list.length : at, 0, cause);
   return withSchedule(snapshot, list);
+}
+
+// Drops the causes whose entity is gone, so a removed subject's causes go with it: the pipeline does this
+// after a verb's transition, and a beat's own edit does it before its result is checked.
+export function pruneSchedule(context: TransitionContext): void {
+  const list = pending(context.snapshot);
+  const kept = list.filter((entry) => context.snapshot.entities[entry.entity] !== undefined);
+  if (kept.length !== list.length) {
+    context.snapshot = withSchedule(context.snapshot, kept);
+  }
 }

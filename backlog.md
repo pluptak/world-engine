@@ -18,10 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [`advance` stops before a beat](#advance-stops-before-a-beat).
-2. [A scene carries its timeline, its slots and its limit](#a-scene-carries-its-timeline-its-slots-and-its-limit).
-3. [A run starts, and ends](#a-run-starts-and-ends).
-4. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
+1. [A scene carries its timeline, its slots and its limit](#a-scene-carries-its-timeline-its-slots-and-its-limit).
+2. [A run starts, and ends](#a-run-starts-and-ends).
+3. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -65,30 +64,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### `advance` stops before a beat
-
-A caller pacing the world to a story wants time to run up to a beat and stop there, so it can let
-it run, move it or drop it. `advance` stops on what an agent senses (`stop_on_perceived`), never
-on what is about to run.
-
-- **Arg** (`advanceVerb` in `src/engine/verbs/wait.ts`, `src/engine/clock.ts`): `stop_before`, a
-  beat id, optional. The advance ends at the tick before the beat falls due, everything due before
-  it run, the beat still pending; `ticks` stays the upper bound, and `stop_on_perceived` may end
-  it sooner. The `advance` event's `advanced` says how many ticks passed, as now.
-- **Edge cases:** an id nothing pending carries is `no_such_beat`; a beat due at the very next tick
-  leaves nothing to run up to and is refused `beat_not_ahead`, taking no time. A beat cancelled or
-  pruned by what runs during the advance no longer stops it, and the advance runs its full
-  `ticks`. A repeating beat stops it before its next run only.
-- **Tests:** in `tests/schedule-api.test.ts`: an advance of 10 before a beat due in 4 ends after 3
-  ticks with the beat pending, and an advance of 1 runs it; a beat pruned with its subject earlier
-  in the span lets the advance run its full ticks; `stop_on_perceived` earlier than the beat wins;
-  both refusals. Two advances that end where one would have leave the same world.
-- **Lab:** the retime step starts with an advance stopped before the deadline beat.
-- **Docs:** `docs/verbs-other.md` (`advance`), `docs/time.md` one line beside waking early,
-  `docs/schedule-api.md`.
-- **Depends on:** nothing (the retime item for its lab step). **Not in it:** stopping before an
-  engine cause, a `wait` that stops before a beat (an actor does not know the schedule).
 
 ### A scene carries its timeline, its slots and its limit
 

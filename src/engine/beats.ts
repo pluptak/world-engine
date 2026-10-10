@@ -14,7 +14,7 @@ import {
   type SingleCondition,
   type TransitionContext,
 } from "./command.js";
-import { withCause } from "./pending.js";
+import { pruneSchedule, withCause } from "./pending.js";
 import { resolveTarget } from "./resolve.js";
 import { isAgent } from "./verbs/address.js";
 import { editVerb, parseEdit } from "./verbs/edit.js";
@@ -393,6 +393,9 @@ function fireEdit(context: TransitionContext, cause: BeatCause, action: Exclude<
   const eventMark = events.length;
   const deltaMark = deltas.length;
   editVerb.transition(fire);
+  // The removal of a subject takes its other pending causes with it before the result is checked, as it
+  // does for an edit the author sends.
+  pruneSchedule(fire);
   const guard = editVerb.validateResult?.(fire) ?? { status: "ok" as const };
   if (guard.status !== "ok") {
     context.snapshot = snapshot;

@@ -2,11 +2,11 @@ import type { TransitionContext } from "./command.js";
 import { pushOccupantsAside } from "./verbs/gate.js";
 import { hurt } from "./harm.js";
 import type { Id, ScheduledCause } from "../model.js";
-import { pending, withCause, withSchedule } from "./pending.js";
+import { pending, pruneSchedule, withCause, withSchedule } from "./pending.js";
 import { runProcess } from "./process.js";
 import { beatInvalid, runBeat } from "./beats.js";
 
-export { pending, withSchedule };
+export { pending, pruneSchedule, withSchedule };
 
 export function schedule(context: TransitionContext, cause: ScheduledCause): void {
   context.snapshot = withCause(context.snapshot, cause);
@@ -22,14 +22,6 @@ export function cancel(context: TransitionContext, kind: ScheduledCause["kind"],
 }
 
 // A cause whose entity is gone has nothing left to act on; it goes with the entity.
-export function pruneSchedule(context: TransitionContext): void {
-  const list = pending(context.snapshot);
-  const kept = list.filter((entry) => context.snapshot.entities[entry.entity] !== undefined);
-  if (kept.length !== list.length) {
-    context.snapshot = withSchedule(context.snapshot, kept);
-  }
-}
-
 // A body's bleeding, read from its props when each bleed runs: so much integrity every so many
 // ticks, so many times. Any of the three missing or not a positive integer, and it does not bleed.
 function bleeding(props: Record<string, unknown>): { damage: number; every: number; times: number } | null {

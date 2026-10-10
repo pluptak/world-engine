@@ -222,9 +222,10 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
     // The verb resolves at the tick it was given; only then does its time pass, and whatever falls
     // due in that time happens after it.
     const wake = verb.wake_on?.(command) ?? [];
-    const elapsed = advanceClock(transitionContext, duration, wake);
-    // A command that asked to be woken says how long it ran, on its own event.
-    if (wake.length > 0) {
+    const stop = verb.stop_before?.(command, snapshot) ?? null;
+    const elapsed = advanceClock(transitionContext, duration, wake, stop);
+    // A command that asked to be woken, or to stop before a beat, says how long it ran, on its own event.
+    if (wake.length > 0 || stop !== null) {
       events[0] = { ...events[0]!, data: { advanced: elapsed } };
     }
   } catch (error) {

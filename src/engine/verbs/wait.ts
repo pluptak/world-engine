@@ -1,6 +1,8 @@
 import { commandDuration } from "../clock.js";
-import { WORLD_AUTHOR, type Command, type CommandContext, type PreconditionResult, type Verb } from "../command.js";
-import { own, type Id } from "../../model.js";
+import { WORLD_AUTHOR, type Command, type CommandContext, type PreconditionResult, type StopBeat, type Verb } from "../command.js";
+import { own, type Id, type Snapshot } from "../../model.js";
+import { isBeatId } from "../beats.js";
+import { pending } from "../pending.js";
 import { isAgent } from "./address.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
@@ -60,7 +62,29 @@ function advancePreconditions(context: CommandContext): PreconditionResult {
       return { status: "invalid", reason_code: watcher?.status === "destroyed" ? "observer_destroyed" : "no_such_actor" };
     }
   }
-  return { status: "ok" };
+  const stop = context.command.args?.stop_before;
+  if (stop === undefined) {
+    return { status: "ok" };
+  }
+  if (typeof stop !== "string" || !isBeatId(stop)) {
+    return { status: "invalid", reason_code: "invalid_args" };
+  }
+  const cause = pending(context.snapshot).find((entry) => entry.kind === "beat" && entry.id === stop);
+  if (cause === undefined) {
+    return { status: "refused", reason_code: "no_such_beat" };
+  }
+  // The beat falls due at the very next tick: there is no time to run up to it, so nothing passes.
+  return cause.due_tick <= context.snapshot.tick + 1 ? { status: "refused", reason_code: "beat_not_ahead" } : { status: "ok" };
+}
+
+// The beat `stop_before` names, as it is pending in the snapshot the command is decided against.
+function stopBeat(command: Command, snapshot: Snapshot): StopBeat | null {
+  const id = command.args?.stop_before;
+  if (typeof id !== "string") {
+    return null;
+  }
+  const cause = pending(snapshot).find((entry) => entry.kind === "beat" && entry.id === id);
+  return cause === undefined ? null : { id, due_tick: cause.due_tick };
 }
 
 // Time with no one acting: the world author lets ticks pass, so a controller that schedules several
@@ -70,11 +94,16 @@ export const advanceVerb: Verb = {
   author_only: true,
   requires_target: false,
   // `ticks` is an upper bound when `stop_on_perceived` names agents: time ends at the first tick one
-  // of them could sense an event of.
-  args: { ticks: { kind: "int" }, stop_on_perceived: { kind: "address_list", optional: true } },
-  refuses: [],
+  // of them could sense an event of. `stop_before` names a pending beat: time ends one tick before it falls due.
+  args: {
+    ticks: { kind: "int" },
+    stop_on_perceived: { kind: "address_list", optional: true },
+    stop_before: { kind: "token", optional: true },
+  },
+  refuses: ["no_such_beat", "beat_not_ahead"],
   duration: { arg: "ticks" },
   wake_on: (command) => listed(command) ?? [],
+  stop_before: stopBeat,
   preconditions: advancePreconditions,
   transition: () => {},
 };

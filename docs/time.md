@@ -34,5 +34,10 @@ two commands in a beat never share a tick.
 events one of them could sense, after everything due at that tick has run; `ticks` is the upper bound
 and the `advance` event's `advanced` the ticks that passed. What was due later stays pending
 ([verbs-other.md](verbs-other.md)). Two advances that end where one would have leave the same world.
+
+**Stopping before a beat.** `advance` may instead name a pending beat (`stop_before`) and end
+one tick short of the tick it falls due, so the caller can run it, move it or drop it
+([schedule-api.md](schedule-api.md)).
+
 An agent's `wait` with `until: "sensed"` does the same for itself: it ends at the first tick its own senses
 reach, so an idle character need not wait a tick at a time to learn of a knock as it falls.
