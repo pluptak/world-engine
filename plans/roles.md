@@ -1,55 +1,69 @@
 # Roles
 
-Who may do what, and when. A plan, not built: `backlog.md` items come from it one at a time. Today
-there are two roles, the world author (`WORLD_AUTHOR`: every `edit` and `advance`, at any time) and
-the agents (commands, `actorWorld`).
+Who may do what, and when. A plan, not built: `backlog.md` items come from it one at a time, and
+[rounds.md](rounds.md) is its companion on time. Today there are two roles, the world author
+(`WORLD_AUTHOR`: every `edit` and `advance`, at any time) and the agents (commands, `actorWorld`).
 
-## Roles are permission sets
+## Words
 
-A role is not an entity and not a mind: it is a set of permissions a handle carries, and whoever
-holds it (a human, an AI agent, a test, a middleware) is outside the engine. The engine checks each
-operation against the set it arrives with and records the role in the log, so `attempts` shows
-under which role each thing was done. `WORLD_AUTHOR` stays, every permission at once, for tests and
-repair, until the roles replace it.
+- **Principal:** whoever is outside the engine: a human, an LLM agent, a test, a middleware.
+- **Handle:** what a principal holds to act on a world; one principal may hold several.
+- **Role:** a set of permissions a handle carries. A role is not an entity and not a mind.
+- **Actor:** the entity a command is made by. **Viewpoint:** the entity perception is computed for.
+- The engine checks every operation against its handle's role, and every log line names the handle
+  and the role. Access to the files is the host's: a principal given the world's directory has
+  every power, so the host hands out handles, never the world.
+- The engine answers in codes and data (`reason_code`, `basis_code`, typed events); prose is a
+  narrator's, outside the engine, and narration never changes the world.
 
-## One flow
+## Scene and run
 
-A simulation is one run: a world made from a scene, started once, ended once. Nothing continues a
-run or turns it back into a scene.
+A **scene** is the architect's: a setup, a timeline, its levers and limits, made and then marked
+ready (an edit after that withdraws it). A **run** is one simulation made from a ready scene: it
+starts once and ends once, at tick 0 with its own history. A run is never continued or turned back
+into a scene; to play again is to make a new run from the same scene, which replays the same way
+given the same inputs.
 
-1. **Architect: makes a scene.** Sets the scene up (entities, places, state-tier props of
-   `src/engine/fields.ts`, the seed), queues its timeline of beats (a knock included: everything
-   that will happen by intention is queued here), declares the odds the director may steer, each
-   with its range, and the tick limit. Then it saves the scene. It never touches a run.
-2. **Director: runs it, as a game master.** Picks a scene from the saved ones, makes a run from it,
-   registers the players (binds each one's handle to its character's body) and starts it. During
-   the run it reads everything and, from what it sees, steers the odds within their ranges and
-   brings a queued beat forward, puts it back or cancels it; it runs the clock (`advance`,
-   stopping before a beat). It never makes a beat, never retimes what the engine scheduled (a
-   door's shut, a bleed, a process) and never edits the world. It declares the end; the tick limit
-   ends a run it does not. Its further powers are for later.
-3. **Character: plays.** Acts and senses in the running world through one view (`actorWorld`),
-   free to do anything the engine allows and nothing else. Any agent the templates allow, not a
-   human only: a dog, a terminal, a sword with a will. A body may be several entities apart (the
-   lab's AI is its terminal, its arm and its cameras): the handle names every entity it drives, and
-   its view has one alias for each thing, read through all of their senses.
+## The roles
 
-## The run
+1. **Architect: makes a scene.** Entities and places, state-tier props (`src/engine/fields.ts`),
+   the seed; the timeline of beats (everything that happens by intention, a knock included) and a
+   pool of beats the director may play; the odds the director may steer, each with its range; the
+   tick limit; the player slots (which bodies a player may take). Marks it ready. Never touches a
+   run.
+2. **Director: runs it, from behind.** Picks a ready scene, makes a run, registers the players
+   (binds each player's handle to its slot) and starts it. It reads everything but the moves
+   players have submitted and not yet resolved. It acts only through levers the architect tied:
+   bringing a queued beat forward, putting it back or cancelling it, playing a beat from the pool,
+   steering odds within their ranges, and running the clock. It acts between rounds, before anyone
+   submits for the next ([rounds.md](rounds.md)), so it shapes what comes and never answers a move.
+   Every lever it pulls becomes ordinary events with a cause in the world, so a character sees the
+   knock, never the hand, and the log shows every pull. It never makes a beat, never retimes what
+   the engine scheduled (a door's shut, a bleed, a process), never edits the world, never decides
+   for a character. It ends the run; the tick limit ends one it does not. A budget of pulls, and any
+   further powers, are for later.
+3. **Character: plays.** A player bound to a body, which may be any agent the templates allow (a
+   dog, a terminal, a sword with a will) and may be several entities in several places (the lab's
+   AI is its terminal, its arm and its cameras). Control is not composition: the binding lists the
+   entities it drives, and its view has one alias for each thing, read through all their senses.
+   Free to do anything the engine allows and nothing else.
 
-A run is `registering`, `running` or `ended`. Before the start nothing acts and no time passes;
-characters' commands and the director's steering are refused on a run that is not running
-(`run_not_running`). The end stops the clock: every pending cause is dropped, nothing more is
-accepted, and the world stays readable as the record of the run. The scene's beats are queued
-at the start, their ticks counted from it.
+`WORLD_AUTHOR` stays, every permission at once, for tests and repair, until the roles replace it.
+
+## Perception is not a turn
+
+What a viewpoint perceives depends on its senses and its state, never on whose turn it is, and
+reading never costs time. Conditions act through what they take away: a stun lowers capacities
+(built), and bound, asleep, unconscious, blind or deaf would each take its own senses and
+capacities, any of them together. Each is its own item, when a scene needs it.
 
 ## Open
 
-1. What a saved scene is: today's `scenarios/*.json` grown with beats, odds and the tick limit, or
-   a snapshot saved from a world the architect edited; and where the list of scenes lives (a
-   directory the host names, the engine reading it, or the host alone).
-2. The steerable odds: which (`jam_pct`, a process's `chance_pct`) and how a steer is stored (a
-   state prop read in place of the template's value).
-3. A body of several entities: separate agents one handle lists, or parts of one body standing in
-   several places (parts share their entity's position today, so that is an engine change).
-4. A character that is a thing: whether an agent can be carried (the sword) and still act.
-5. An observer (a player with no body and no voice, read only) is out of this flow; kept for later?
+1. What a saved scene is: today's `scenarios/*.json` grown with beats, the pool, ranges, the tick
+   limit and slots, validated as a whole by the engine; the host keeps the list of scenes.
+2. How a steered odd is stored: a state prop read in place of the template's value.
+3. A character that is a thing: whether an agent can be carried (the sword) and still act.
+4. A slot no player takes: the body stands idle, is removed, or the run cannot start.
+5. A player whose bodies are all destroyed, and an observer role (a player with no body, read
+   only): one view for both, or neither yet. An ended run is readable by whoever holds it.
+6. A run with no live player left: ended at once, or left to the tick limit.
