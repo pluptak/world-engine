@@ -57,13 +57,27 @@ reading never costs time. Conditions act through what they take away: a stun low
 (built), and bound, asleep, unconscious, blind or deaf would each take its own senses and
 capacities, any of them together. Each is its own item, when a scene needs it.
 
+## Decided
+
+1. **A saved scene** is today's `scenarios/*.json` grown with the beats, the pool, the ranges, the
+   tick limit and the slots, validated as a whole by the engine; the host keeps the list of scenes.
+   An architect may build it in a throwaway world first. A sturdier form is for later.
+2. **A steered odd** is per entity: the scene names the entity, the odd (`jam_pct` today) and its
+   range; the director's steer is a state value on that entity, read in place of the template's
+   while set, refused outside its range, and in force from the next round.
+3. **A character may carry another** (a wounded one carried off), within the carrier's limits; the
+   one carried keeps its senses and voice, but its own `move` is refused while it is held, so it
+   never pulls against its carrier. An agent that is a thing (the sword) is carried the same way.
+4. **A slot no player takes** leaves its body in the world, idle: it never acts, and others may see,
+   carry or hurt it.
+5. **A player whose bodies are all destroyed is out**: the handle can no longer act or read. A
+   character meant to go on does so by its template: its destruction leaves a ghost (a new agent,
+   as a break leaves its products), and the player's binding passes to it. No observer role for now.
+6. **A run with no live player left ends at once**, its end reason in the log (`no_live_players`,
+   beside `director` and `tick_limit`).
+
 ## Open
 
-1. What a saved scene is: today's `scenarios/*.json` grown with beats, the pool, ranges, the tick
-   limit and slots, validated as a whole by the engine; the host keeps the list of scenes.
-2. How a steered odd is stored: a state prop read in place of the template's value.
-3. A character that is a thing: whether an agent can be carried (the sword) and still act.
-4. A slot no player takes: the body stands idle, is removed, or the run cannot start.
-5. A player whose bodies are all destroyed, and an observer role (a player with no body, read
-   only): one view for both, or neither yet. An ended run is readable by whoever holds it.
-6. A run with no live player left: ended at once, or left to the tick limit.
+1. Whether a process's `chance_pct` is steerable from the first item, or doors' `jam_pct` alone.
+2. A ghost: how a template says what its destruction leaves to be driven, and that the binding
+   follows (the code a carried `move` is refused with is the build's to name).
