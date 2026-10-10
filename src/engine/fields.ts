@@ -63,6 +63,8 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   open: { type: "boolean", tier: "state", requires: ["openable"] },
   openable: { type: "boolean", tier: "definition" },
   opens: { type: "id", tier: "state" },
+  // A panel: a link a subject at it may work its device through (`docs/panel.md`).
+  panel: { type: "boolean", tier: "definition" },
   portions: { type: "integer", tier: "state" },
   power_source: { type: "boolean", tier: "definition" },
   powered_by: { type: "id", tier: "state" },

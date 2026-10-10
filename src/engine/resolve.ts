@@ -4,7 +4,7 @@ import { WORLD_AUTHOR } from "./command.js";
 import type { TemplateRegistry } from "../templates.js";
 import { effectivePart } from "./parts.js";
 import { addressable } from "./query.js";
-import { controller } from "./power.js";
+import { controller, panelFor } from "./power.js";
 
 export type TargetResolution =
   | { status: "resolved"; target: TargetAddress }
@@ -106,7 +106,10 @@ export function resolveTarget(
     .filter((id) => {
       const entity = snapshot.entities[id];
       // What the actor controls is named from wherever the actor is.
-      if (entity === undefined || !(inViewOf(entity, actor.location) || controller(snapshot, id) === actorId)) {
+      if (
+        entity === undefined ||
+        !(inViewOf(entity, actor.location) || controller(snapshot, id) === actorId || panelFor(snapshot, id, actorId) !== null)
+      ) {
         return false;
       }
       return (

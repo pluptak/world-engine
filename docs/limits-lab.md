@@ -34,6 +34,7 @@ it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
   stand in a doorway to keep it from shutting; one the author puts there is moved aside (G).
 - The exit door jams a quarter of the time: the terminal's command may be lost to the world's dice,
   and it learns of the jam only through the camera, never why (K).
+- A panel is whoever reaches it: the AI and a subject undo each other's commands in turn (L).
 - The exit door shuts two ticks after its close: a runner gets through in that window, and an open
   stops the shut. Nothing is simultaneous: a window is only the ticks the door takes
   (G, window test).

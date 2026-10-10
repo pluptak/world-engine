@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A panel a subject can use](#a-panel-a-subject-can-use).
-2. [A camera that looks one way](#a-camera-that-looks-one-way).
+1. [A camera that looks one way](#a-camera-that-looks-one-way).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,49 +62,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A panel a subject can use
-
-Only the terminal works the exit door from afar; a subject must stand at the door with the key.
-The roadmap's devices have "local versus remote control, permissions": a panel is the local
-control, and reaching it is the permission. The AI and a subject at the panel can then both work
-the door, in turn, each command against the world as the last left it.
-
-- **Prop and template:** `panel` (definition, boolean) in `src/engine/fields.ts`;
-  `templates/panel.json`: 30×10×40, 3 kg, not an agent, `panel: true`.
-- **A panel is a link** on a device's control walk (`controlled_by` from the device names the
-  panel, the panel names the controller), so the controller works through it as through any link,
-  and a destroyed or unpowered panel is `disconnected` / `unpowered` for the controller too.
-- **Working a device at a panel** (`src/engine/verbs/openable.ts`): an actor that is not the
-  controller, cannot reach the device, and reaches (`inReach`) an intact panel on the device's
-  control walk works the device as the controller does: no reach to the device, key or hands, the
-  fault taken on the walk from the device to that panel, the panel included, the rest of the walk
-  to the controller not. An actor that can reach the device works it by hand as now. The nearest
-  such panel on the walk (first from the device) is the one used.
-- **Addressing:** `gropable` (`src/engine/query.ts`) and the name match in `src/engine/resolve.ts`
-  also allow a device whose control walk passes through a panel the actor reaches, as they allow
-  the controller; `options` then offers it. A helper beside `controller` in `src/engine/power.ts`
-  (`panelFor(snapshot, device, actor)`: the panel used, or null) serves all three.
-- **Lab** (`scenarios/lab.json`): a panel in the server room at (-300, 0), `powered_by` the
-  generator, `controlled_by` the terminal; the exit door's `controlled_by` becomes the panel. A new
-  test in `tests/scenario-lab.test.ts`: the terminal locks the exit door; ann opens the server
-  door, stands at the panel and unlocks and opens the exit door through it with no key; the
-  terminal closes and, after the shut, locks it again; ann destroys the panel and the terminal's
-  `unlock` is `disconnected` `{ at: panel }`, while ann's own key still works by hand. The earlier
-  steps keep their results (the walk now passes through a powered panel; any jam the seed moves is
-  repinned and named in the commit).
-- **Tests:** `tests/panel.test.ts`, a small world: a human at a panel opens, closes, locks and
-  unlocks a door in another room with no key; out of the panel's reach the door is `unresolved`
-  by name; a human beside the door works it by hand, with its key, even when a panel is near; an
-  unpowered panel or a cut link between door and panel refuses the human `unpowered` /
-  `disconnected`, a link beyond the panel does not; the controller works through the panel and is
-  refused at a destroyed one; a jamming door jams a panel's command too (it is remote).
-- **Docs:** new `docs/panel.md` and its `docs/DESIGN.md` line; `docs/power.md` one line (split if
-  past its cap); `docs/verbs-openables.md` one line; `docs/limits-lab.md` (who may use the panel is
-  whoever reaches it; the AI and a subject undo each other in turn).
-- **Depends on:** nothing. **Not in it:** a keyed or locked panel, panels for cameras, intercoms
-  or the arm, the AI seeing who stands at the panel beyond its cameras, priority between the
-  controller and a panel.
 
 ### A camera that looks one way
 

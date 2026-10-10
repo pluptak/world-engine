@@ -36,5 +36,5 @@ with a `powered_by` acts only while powered, else every command is refused `unpo
 `{ at: itself, cut }` and every sense is `false` / `unpowered`. Nothing is stored: power back, it
 acts and senses again. An agent with neither, a human, is untouched (`tests/agent-power.test.ts`).
 
-Not modelled: a human using a panel at a distance, power for lights or humans, batteries or a slow
-failure, delays and partial failure, and who may use a controller beyond the walk.
+Not modelled: power for lights or humans, batteries or a slow failure, delays and partial failure,
+and who may use a controller beyond the walk. A subject at a panel is in [panel.md](panel.md).

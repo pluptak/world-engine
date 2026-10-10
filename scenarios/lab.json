@@ -17,7 +17,7 @@
         "location": "corridor",
         "support": "corridor",
         "pos": { "x": 0, "y": 450 },
-        "props": { "open": false, "locked": true, "from": "corridor", "to": "outside", "powered_by": "cable", "controlled_by": "terminal" }
+        "props": { "open": false, "locked": true, "from": "corridor", "to": "outside", "powered_by": "cable", "controlled_by": "server_panel" }
       }
     },
     { "id": "generator", "template": "generator", "overrides": { "name": "generator", "location": "server_room", "support": "server_room", "pos": { "x": 300, "y": 300 } } },
@@ -36,6 +36,7 @@
     { "id": "fay", "template": "human", "overrides": { "name": "fay", "location": "dormitory", "support": "dormitory", "pos": { "x": 150, "y": 0 } } },
     { "id": "gus", "template": "human", "overrides": { "name": "gus", "location": "dormitory", "support": "dormitory", "pos": { "x": 250, "y": 0 } } },
     { "id": "hal", "template": "human", "overrides": { "name": "hal", "location": "dormitory", "support": "dormitory", "pos": { "x": 350, "y": 0 } } },
-    { "id": "lab_camera", "template": "camera", "overrides": { "name": "lab camera", "location": "lab", "support": "lab", "pos": { "x": 300, "y": -300 }, "props": { "powered_by": "cable", "controlled_by": "terminal" } } }
+    { "id": "lab_camera", "template": "camera", "overrides": { "name": "lab camera", "location": "lab", "support": "lab", "pos": { "x": 300, "y": -300 }, "props": { "powered_by": "cable", "controlled_by": "terminal" } } },
+    { "id": "server_panel", "template": "panel", "overrides": { "name": "server panel", "location": "server_room", "support": "server_room", "pos": { "x": -300, "y": 0 }, "props": { "powered_by": "generator", "controlled_by": "terminal" } } }
   ]
 }

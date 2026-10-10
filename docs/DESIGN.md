@@ -49,4 +49,5 @@ What is built, nothing aspirational, one concept per file:
 - [jam.md](jam.md): a device with `jam_pct` may jam the remote command its controller sends.
 - [manipulator.md](manipulator.md): an arm with a gripper, run by a controller over its control walk.
 - [camera.md](camera.md): a camera's sight, lent to the agent its feed reaches.
+- [panel.md](panel.md): a panel a subject at it works a device through, as its controller does.
 - [limits-lab.md](limits-lab.md): the underground lab, with today's mechanics.

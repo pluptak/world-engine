@@ -116,6 +116,51 @@ test("the lab's exit door in its window: bob walks out before it shuts, ann's op
   deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
 });
 
+// L. the server panel is the local control of the exit door (`docs/panel.md`): ann works the door through it
+// with no key, the terminal works it through the same panel, and once ann has blown the panel up her own key
+// works the door by hand.
+test("the lab's server panel: ann works the exit door through it with no key, and her key works it by hand once the panel is gone", (t) => {
+  const { world, id, run } = open(join(tempDir(t), "panel"));
+  const [ann, terminal, door, panel] = [id("ann"), id("terminal"), id("exit_door"), id("server_panel")];
+  const verdict = (result: Result) => [result.status, result.reason_code, result.reason_data];
+
+  // Ann takes the key in the lab, comes out, and opens the server door from the corridor and walks through.
+  deepStrictEqual(verdict(run(ann, "move", undefined, { through: "dormitory door" })), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(ann, "move", undefined, { through: "lab door" })), ["ok", undefined, undefined]);
+  strictEqual(run(ann, "take", "key").status, "ok");
+  deepStrictEqual(verdict(run(ann, "move", undefined, { through: "lab door" })), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(ann, "open", "server door")), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(ann, "move", undefined, { through: "server door" })), ["ok", undefined, undefined]);
+  // By the panel she puts the key down, so she has no key when she works the door.
+  deepStrictEqual(verdict(run(ann, "move", undefined, { to: { x: -300, y: 60 } })), ["ok", undefined, undefined]);
+  strictEqual(run(ann, "drop", "key").status, "ok");
+
+  // The exit door is in the corridor, out of her hands' reach: she unlocks and opens it through the panel.
+  deepStrictEqual(verdict(run(ann, "unlock", "exit door")), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(ann, "open", "exit door")), ["ok", undefined, undefined]);
+  strictEqual(world.entity(door)?.props.open, true);
+
+  // The terminal, through the same panel, shuts the door; after the shut it locks it again.
+  deepStrictEqual(run(terminal, "close", "exit door").events.map((event) => event.type), ["close", "closing"]);
+  deepStrictEqual(run(WORLD_AUTHOR, "advance", undefined, { ticks: 2 }).events.filter((event) => event.type === "closed").map((event) => event.entity), [door]);
+  deepStrictEqual(verdict(run(terminal, "lock", "exit door")), ["ok", undefined, undefined]);
+  strictEqual(world.entity(door)?.props.locked, true);
+
+  // Ann blows the panel to pieces. The terminal's unlock is refused where its walk ends at the panel.
+  for (let blow = 0; blow < 3; blow += 1) {
+    strictEqual(run(ann, "attack", "server panel").status, "ok");
+  }
+  strictEqual(world.entity(panel)?.status, "destroyed");
+  deepStrictEqual(verdict(run(terminal, "unlock", "exit door")), ["refused", "disconnected", { at: panel }]);
+
+  // Ann takes the key from where she dropped it, goes out through the server door, and unlocks the exit door by hand.
+  strictEqual(run(ann, "take", "key").status, "ok");
+  deepStrictEqual(verdict(run(ann, "move", undefined, { through: "server door" })), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(ann, "move", undefined, { to: { x: 0, y: 420 } })), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(ann, "unlock", "exit door")), ["ok", undefined, undefined]);
+  strictEqual(world.entity(door)?.props.locked, false);
+});
+
 // K. the exit door jams: the terminal works it, unlocking and locking it in turn, and each command that
 // does not jam moves it on. The seed's first jam is the ninth roll; the camera shows it, and the door is as it was.
 test("the lab's exit door jams under the terminal: the first jam the seed gives is seen by the camera, and the door stays as it was", (t) => {

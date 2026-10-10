@@ -1,4 +1,5 @@
 import { own, type Entity, type Id, type Snapshot } from "../model.js";
+import { inReach } from "./verbs/address.js";
 
 // The two links a device may have, each a prop naming one entity (`docs/power.md`). Loops are
 // refused by `validateSnapshot`; the walks still stop at one, so a bad snapshot cannot hang them.
@@ -53,10 +54,9 @@ function cutOf(snapshot: Snapshot, link: Id): Id {
   return path.find((id) => own(snapshot.entities, id)!.status === "destroyed") ?? path.at(-1)!;
 }
 
-// The first link from the device toward its controller, the device included and the controller
-// not, that cannot carry a command: a destroyed one, then one with no power.
-export function remoteFault(snapshot: Snapshot, device: Id): RemoteFault | null {
-  for (const link of walk(snapshot, device, "controlled_by").slice(0, -1)) {
+// The first of these links that cannot carry a command: a destroyed one, then one with no power.
+function faultOn(snapshot: Snapshot, links: Id[]): RemoteFault | null {
+  for (const link of links) {
     if (own(snapshot.entities, link)!.status === "destroyed") {
       return { reason_code: "disconnected", reason_data: { at: link } };
     }
@@ -65,6 +65,36 @@ export function remoteFault(snapshot: Snapshot, device: Id): RemoteFault | null 
     }
   }
   return null;
+}
+
+// The first link from the device toward its controller, the device included and the controller
+// not, that cannot carry a command.
+export function remoteFault(snapshot: Snapshot, device: Id): RemoteFault | null {
+  return faultOn(snapshot, walk(snapshot, device, "controlled_by").slice(0, -1));
+}
+
+// The same walk, cut at the panel a subject works the device through: the panel included, the rest of
+// the walk to the controller not (`docs/panel.md`).
+export function panelFault(snapshot: Snapshot, device: Id, panel: Id): RemoteFault | null {
+  const path = walk(snapshot, device, "controlled_by");
+  return faultOn(snapshot, path.slice(0, path.indexOf(panel) + 1));
+}
+
+// The panel an actor works a device through, for an actor that is not the device's controller and
+// cannot reach the device by hand: the nearest intact panel on the device's control walk, first from
+// the device, that the actor can reach. Null when there is none or the walk ends at no agent.
+export function panelFor(snapshot: Snapshot, device: Id, actor: Id): Id | null {
+  if (controller(snapshot, device) === null) {
+    return null;
+  }
+  return (
+    walk(snapshot, device, "controlled_by")
+      .slice(1, -1)
+      .find((id) => {
+        const entity = own(snapshot.entities, id)!;
+        return entity.props.panel === true && entity.status !== "destroyed" && inReach(snapshot, actor, id);
+      }) ?? null
+  );
 }
 
 // Why an agent cannot act or sense now: a controlled one its own control walk's fault, else its
