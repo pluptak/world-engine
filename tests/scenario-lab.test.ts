@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { createWorld, type Command, type WorldEdit, type Id, type Result, type Scenario, type World } from "../src/index.js";
+import { createWorld, WORLD_AUTHOR, type Command, type WorldEdit, type Id, type Result, type Scenario, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
 import { tempDir } from "./harness.js";
@@ -55,7 +55,7 @@ type Run = (actor: Id, verb: string, target?: string, args?: Record<string, unkn
 
 const STORED = ["log.jsonl", "events.jsonl", "deltas.jsonl", "snapshot.json"];
 
-test("the lab: an escape by key, an AI that locks a door it cannot see, a cut cable, a stage only the author moves", (t) => {
+test("the lab: an escape by key, an AI that locks a door it cannot see, a cut cable, a stage a watch moves", (t) => {
   const root = tempDir(t);
   const dir = join(root, "lab");
   const { world, id, sent, run, edit } = open(dir);
@@ -114,13 +114,12 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   deepStrictEqual([cut.status, cut.reason_code, cut.reason_data], ["refused", "unpowered", { at: id("exit_door"), cut: cable }]);
   deepStrictEqual(status(run(ann, "unlock", "exit door")), ["ok", undefined]);
 
-  // F. the escape advanced nothing: the stage changes by the author's edit alone, a subject's edit is
-  // not the author's, and an abstract experiment is perceived by nobody, the terminal included.
+  // F. the escape advanced nothing: the stage is 0 and stays so until a watch the author set moves it
+  // (I), a subject's edit is not the author's, and an abstract experiment is perceived by nobody, the terminal included.
   strictEqual(world.entity(experiment)?.props.stage, 0);
   const asked = { kind: "update_props", target: experiment, props: { stage: 1 } } as const;
   deepStrictEqual(status(run(bob, "edit", undefined, { edit: asked })), ["invalid", "invalid_author"]);
-  strictEqual(edit(asked).status, "ok");
-  strictEqual(world.entity(experiment)?.props.stage, 1);
+  strictEqual(world.entity(experiment)?.props.stage, 0);
   deepStrictEqual(world.query({ kind: "perceive", observer: ann, sense: "sight", entity: experiment }), {
     value: "false",
     basis_code: "abstract",
@@ -137,6 +136,46 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
     ["moved", bob],
   ]);
   ok(world.entity(bob)?.pos?.y !== 450);
+
+  // I. the stage advances on its own: a watch the author set moves it once the exit door is locked and
+  // nobody is outside, and a deadline the author set for later finds it advanced, so it is skipped.
+  const tick = (): number => world.snapshot().tick;
+  const clock = (ticks: number): Result => run(WORLD_AUTHOR, "advance", undefined, { ticks });
+  const stageOne = { kind: "set_props", target: experiment, props: { abstract: true, stage: 1 } } as const;
+  const lock = {
+    all: [
+      { entity: id("exit_door"), prop: "locked", op: "eq", value: true },
+      { room: id("outside"), occupied: false },
+    ],
+  };
+  strictEqual(
+    edit({ kind: "schedule_beat", id: "watch", at_tick: tick() + 1, action: stageOne, only_if: lock, repeat: { every_ticks: 1, times: 1000, until_ran: true } } as WorldEdit).status,
+    "ok",
+  );
+  // Ann is outside and the door is shut but unlocked: the watch is silent.
+  strictEqual(clock(2).status, "ok");
+  strictEqual(world.entity(experiment)?.props.stage, 0);
+  // Ann locks the door from outside with her key: it is locked, but she is still outside.
+  strictEqual(run(ann, "lock", "exit door").status, "ok");
+  strictEqual(clock(1).status, "ok");
+  strictEqual(world.entity(experiment)?.props.stage, 0);
+  // The author puts ann back in the corridor: nobody is outside, the door is locked, the watch fires.
+  strictEqual(edit({ kind: "place", target: ann, support: id("corridor"), pos: { x: -200, y: 0 } }).status, "ok");
+  strictEqual(clock(1).status, "ok");
+  strictEqual(world.entity(experiment)?.props.stage, 1);
+  // The deadline finds the stage advanced, so its condition is false and it is skipped.
+  const deadline = { kind: "set_props", target: experiment, props: { abstract: true, stage: -1 } } as const;
+  strictEqual(
+    edit({ kind: "schedule_beat", id: "deadline", at_tick: tick() + 3, action: deadline, only_if: { entity: experiment, prop: "stage", op: "eq", value: 0 } } as WorldEdit).status,
+    "ok",
+  );
+  const late = clock(4);
+  deepStrictEqual(
+    late.events.filter((event) => event.type === "beat_skipped").map((event) => [event.data.id, event.data.reason]),
+    [["deadline", "condition"]],
+  );
+  strictEqual(world.entity(experiment)?.props.stage, 1);
+  deepStrictEqual((world.snapshot().schedule ?? []).filter((cause) => cause.kind === "beat"), []);
 
   // H. the stored world replays, and the same scenario sent the same gives the same files, byte for byte.
   deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);

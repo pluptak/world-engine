@@ -95,7 +95,14 @@ export interface OccupiedCondition {
   occupied: boolean;
 }
 
-export type BeatCondition = PropCondition | InCondition | OccupiedCondition;
+export type SingleCondition = PropCondition | InCondition | OccupiedCondition;
+
+// Every one of its conditions holds: one to `MAX_ALL` of the single forms, no nesting.
+export interface AllCondition {
+  all: SingleCondition[];
+}
+
+export type BeatCondition = SingleCondition | AllCondition;
 
 // A beat that follows another, `delay_ticks` after its parent runs.
 export interface BeatChild {
@@ -106,10 +113,13 @@ export interface BeatChild {
   then?: BeatChild[];
 }
 
-// A beat that comes round again: `times` more runs, `every_ticks` apart, after the first.
+// A beat that comes round again: `times` more runs, `every_ticks` apart, after the first. With
+// `until_ran` it is a watch: it ends after the first run whose action ran, and a run whose condition
+// is false records nothing.
 export interface BeatRepeat {
   every_ticks: number;
   times: number;
+  until_ran?: true;
 }
 
 // Puts a beat on the schedule for `at_tick`, which must be ahead of the clock. A repeating beat has

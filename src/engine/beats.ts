@@ -7,8 +7,11 @@ import {
   type BeatCondition,
   type BeatRepeat,
   type Command,
+  type InCondition,
+  type OccupiedCondition,
   type PropCondition,
   type ScheduleBeatEdit,
+  type SingleCondition,
   type TransitionContext,
 } from "./command.js";
 import { withCause } from "./pending.js";
@@ -25,6 +28,8 @@ export const MAX_BEATS = 256;
 export const MAX_DEPTH = 4;
 // Runs a repeating beat may have after its first.
 export const MAX_REPEATS = 1000;
+// Single conditions one `all` holds: from one to this many.
+export const MAX_ALL = 16;
 
 type BeatCause = Extract<ScheduledCause, { kind: "beat" }>;
 
@@ -48,19 +53,38 @@ function nonEmpty(value: unknown): value is string {
   return typeof value === "string" && value.length > 0;
 }
 
-// One of three forms, told apart by their keys; a mix of forms, or none, is malformed.
+// `{ all: [...] }` holds when each of its one to `MAX_ALL` single conditions does; the singles are not
+// nested. Otherwise one of three forms, told apart by their keys; a mix of forms, or none, is malformed.
 function parseCondition(value: unknown): BeatCondition | null {
+  if (isRecord(value) && "all" in value) {
+    if (!onlyKeys(value, ["all"]) || !Array.isArray(value.all) || value.all.length === 0 || value.all.length > MAX_ALL) {
+      return null;
+    }
+    const all: SingleCondition[] = [];
+    for (const entry of value.all as unknown[]) {
+      const single = parseSingleCondition(entry);
+      if (single === null) {
+        return null;
+      }
+      all.push(single);
+    }
+    return { all };
+  }
+  return parseSingleCondition(value);
+}
+
+function parseSingleCondition(value: unknown): SingleCondition | null {
   if (!isRecord(value)) {
     return null;
   }
   if ("in" in value) {
     return onlyKeys(value, ["entity", "in"]) && nonEmpty(value.entity) && nonEmpty(value.in)
-      ? (value as unknown as BeatCondition)
+      ? (value as unknown as InCondition)
       : null;
   }
   if ("room" in value || "occupied" in value) {
     return onlyKeys(value, ["room", "occupied"]) && nonEmpty(value.room) && typeof value.occupied === "boolean"
-      ? (value as unknown as BeatCondition)
+      ? (value as unknown as OccupiedCondition)
       : null;
   }
   return parsePropCondition(value);
@@ -92,16 +116,21 @@ function parsePropCondition(value: Record<string, unknown>): PropCondition | nul
 function parseRepeat(value: unknown): BeatRepeat | null {
   if (
     !isRecord(value) ||
-    !onlyKeys(value, ["every_ticks", "times"]) ||
+    !onlyKeys(value, ["every_ticks", "times", "until_ran"]) ||
     !Number.isSafeInteger(value.every_ticks) ||
     (value.every_ticks as number) < 1 ||
     !Number.isSafeInteger(value.times) ||
     (value.times as number) < 1 ||
-    (value.times as number) > MAX_REPEATS
+    (value.times as number) > MAX_REPEATS ||
+    (value.until_ran !== undefined && value.until_ran !== true)
   ) {
     return null;
   }
-  return { every_ticks: value.every_ticks as number, times: value.times as number };
+  return {
+    every_ticks: value.every_ticks as number,
+    times: value.times as number,
+    ...(value.until_ran === true && { until_ran: true as const }),
+  };
 }
 
 function parseAction(value: unknown): BeatAction | null {
@@ -267,7 +296,31 @@ function occupied(snapshot: Snapshot, room: Id): boolean {
   return Object.values(snapshot.entities).some((entity) => entity.location === room && isAgent(snapshot, entity.id));
 }
 
+// The entities the conditions of a beat read: each single condition's entity, or its room.
+export function conditionSubjects(condition: BeatCondition): Id[] {
+  const singles = "all" in condition ? condition.all : [condition];
+  return singles.map((single) => ("room" in single ? single.room : single.entity));
+}
+
+// Every condition a `schedule_beat` carries, its followers' included, in the order they are written.
+export function editConditions(edit: ScheduleBeatEdit): BeatCondition[] {
+  const found: BeatCondition[] = edit.only_if === undefined ? [] : [edit.only_if];
+  const visit = (children: BeatChild[] | undefined): void => {
+    for (const child of children ?? []) {
+      if (child.only_if !== undefined) {
+        found.push(child.only_if);
+      }
+      visit(child.then);
+    }
+  };
+  visit(edit.then);
+  return found;
+}
+
 function holds(condition: BeatCondition, snapshot: Snapshot): boolean {
+  if ("all" in condition) {
+    return condition.all.every((single) => holds(single, snapshot));
+  }
   if ("in" in condition) {
     // A room that is not there holds nothing, so asking after it needs no check of its own.
     return snapshot.entities[condition.entity]?.location === condition.in;
@@ -400,20 +453,28 @@ function scheduleNextRun(context: TransitionContext, cause: BeatCause): void {
   const { repeat: _spent, ...rest } = cause;
   const next: BeatCause = { ...rest, due_tick: due };
   if (repeat.times > 1) {
-    next.repeat = { every_ticks: repeat.every_ticks, times: repeat.times - 1 };
+    next.repeat = { ...repeat, times: repeat.times - 1 };
   }
   context.snapshot = withCause(context.snapshot, next);
 }
 
+// A watch (a repeating beat with `until_ran`) records nothing while its condition is false, and ends
+// after the first run whose action ran; a failed run is still recorded and the watch goes on.
 export function runBeat(context: TransitionContext, cause: BeatCause): void {
+  const watch = cause.repeat?.until_ran === true;
   if (cause.only_if !== undefined && !holds(cause.only_if, context.snapshot)) {
-    skipped(context, cause, { reason: "condition" });
+    if (!watch) {
+      skipped(context, cause, { reason: "condition" });
+    }
   } else {
     const fired = fire(context, cause);
     if (!fired.ok) {
       skipped(context, cause, { reason: "failed", code: fired.code });
     } else {
       scheduleFollowers(context, cause.then, fired.eventId);
+      if (watch) {
+        return;
+      }
     }
   }
   scheduleNextRun(context, cause);

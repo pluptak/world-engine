@@ -629,3 +629,151 @@ test("property: a presence condition holds exactly when the snapshot says so, ov
   ok(seen.in[0] >= 40 && seen.in[1] >= 200, `in ${seen.in}`);
   ok(seen.occupied[0] >= 40 && seen.occupied[1] >= 40, `occupied ${seen.occupied}`);
 });
+
+// `all` holds when each of its conditions does, so an author can wait for several things at once.
+test("an all-condition holds only when every one of its conditions does", (t) => {
+  const h = inn(t);
+  const sound = { kind: "sound" as const, entity: h.door };
+  const schedule = (id: string, only_if: unknown) =>
+    strictEqual(edit(h.world, { kind: "schedule_beat", id, at_tick: 2, action: sound, only_if } as WorldEdit).status, "ok");
+  const holding = [
+    { entity: h.note, in: h.hall },
+    { room: h.hall, occupied: true },
+    { entity: h.hall, prop: "lit", op: "eq", value: true },
+  ];
+  schedule("all-true", { all: holding });
+  schedule("all-false", { all: [...holding, { room: h.hall, occupied: false }] });
+  const run = advance(h.world, 3);
+  deepStrictEqual(
+    run.events.filter((event) => event.type === "beat_skipped").map((event) => [event.data.id, event.data.reason]),
+    [["all-false", "condition"]],
+  );
+  strictEqual(run.events.filter((event) => event.type === "sounded").length, 1);
+});
+
+test("an all-condition holds one to sixteen single conditions, none nested, and names what it reads", (t) => {
+  const h = inn(t);
+  const sound = { kind: "sound" as const, entity: h.door };
+  const code = (only_if: unknown): [string, string | undefined] => {
+    const result = edit(h.world, { kind: "schedule_beat", id: "x", at_tick: 3, action: sound, only_if } as WorldEdit);
+    if (result.status === "ok") {
+      strictEqual(edit(h.world, { kind: "cancel_beat", id: "x" }).status, "ok");
+    }
+    return [result.status, result.reason_code];
+  };
+  const one = { entity: h.note, in: h.hall };
+  const bad: unknown[] = [
+    { all: [] },
+    { all: Array<unknown>(17).fill(one) },
+    { all: [{ all: [one] }] },
+    { all: [one], in: h.hall },
+    { all: "one" },
+    { all: [{}] },
+    { all: [one, { room: h.hall }] },
+  ];
+  for (const only_if of bad) {
+    deepStrictEqual(code(only_if), ["invalid", "invalid_args"], JSON.stringify(only_if));
+  }
+  deepStrictEqual(code({ all: Array<unknown>(16).fill(one) }), ["ok", undefined]);
+  // A missing entity or room in an `all` is refused now, as the subject of a beat is.
+  deepStrictEqual(code({ all: [one, { room: "e999", occupied: true }] }), ["invalid", "no_such_entity"]);
+  deepStrictEqual(code({ all: [one, { entity: "e999", in: h.hall }] }), ["invalid", "no_such_entity"]);
+  // A follower's `all` is held to the same rules, and names what it reads too.
+  strictEqual(
+    edit(h.world, {
+      kind: "schedule_beat",
+      id: "parent",
+      at_tick: 3,
+      action: sound,
+      then: [{ id: "child", delay_ticks: 1, action: sound, only_if: { all: [one, { room: "e999", occupied: true }] } }],
+    } as WorldEdit).status,
+    "invalid",
+  );
+  strictEqual(h.world.snapshot().schedule, undefined);
+});
+
+// A watch is `repeat` with `until_ran`: silent while its condition is false, and it ends once its action
+// has run. The door is shut at first, so a beat that waits for it to open sounds once, then is spent.
+test("a watch is silent while its condition is false, runs once it holds, then leaves the schedule", (t) => {
+  const h = inn(t);
+  const sound = { kind: "sound" as const, entity: h.door };
+  strictEqual(
+    edit(h.world, {
+      kind: "schedule_beat",
+      id: "watch",
+      at_tick: 2,
+      action: sound,
+      only_if: { entity: h.door, prop: "open", op: "eq", value: true },
+      repeat: { every_ticks: 1, times: 5, until_ran: true },
+    } as WorldEdit).status,
+    "ok",
+  );
+  const quiet = advance(h.world, 2);
+  deepStrictEqual(types(quiet).filter((type) => type !== "advance"), []);
+  ok(h.world.snapshot().schedule?.some((cause) => cause.kind === "beat" && cause.id === "watch"));
+
+  strictEqual(edit(h.world, { kind: "update_props", target: h.door, props: { open: true } }).status, "ok");
+  const ran = advance(h.world, 1);
+  strictEqual(ran.events.filter((event) => event.type === "sounded").length, 1);
+  strictEqual(h.world.snapshot().schedule, undefined);
+
+  // Spent: the door stays open and nothing more is heard.
+  deepStrictEqual(types(advance(h.world, 5)).filter((type) => type !== "advance"), []);
+  deepStrictEqual(validateSnapshot(h.world.snapshot(), registry), []);
+});
+
+test("a watch whose edit is refused records each failed run and goes on", (t) => {
+  const h = inn(t);
+  strictEqual(
+    edit(h.world, {
+      kind: "schedule_beat",
+      id: "stuck",
+      at_tick: 2,
+      action: { kind: "place", target: h.note, contained_in: h.ann },
+      only_if: { room: h.hall, occupied: true },
+      repeat: { every_ticks: 1, times: 2, until_ran: true },
+    } as WorldEdit).status,
+    "ok",
+  );
+  const run = advance(h.world, 4);
+  deepStrictEqual(
+    run.events.filter((event) => event.type === "beat_skipped").map((event) => [event.data.id, event.data.reason]),
+    [["stuck", "failed"], ["stuck", "failed"], ["stuck", "failed"]],
+  );
+  strictEqual(h.world.snapshot().schedule, undefined);
+});
+
+test("cancel_beat withdraws a watch before it runs", (t) => {
+  const h = inn(t);
+  strictEqual(
+    edit(h.world, {
+      kind: "schedule_beat",
+      id: "watch",
+      at_tick: 2,
+      action: { kind: "sound", entity: h.door },
+      only_if: { entity: h.door, prop: "open", op: "eq", value: true },
+      repeat: { every_ticks: 1, times: 3, until_ran: true },
+    } as WorldEdit).status,
+    "ok",
+  );
+  strictEqual(edit(h.world, { kind: "cancel_beat", id: "watch" }).status, "ok");
+  strictEqual(h.world.snapshot().schedule, undefined);
+  strictEqual(edit(h.world, { kind: "update_props", target: h.door, props: { open: true } }).status, "ok");
+  deepStrictEqual(types(advance(h.world, 4)).filter((type) => type !== "advance"), []);
+});
+
+test("the validator holds a stored all-condition and a stored watch to the same shapes", (t) => {
+  const h = inn(t);
+  strictEqual(edit(h.world, { kind: "schedule_beat", id: "knock", at_tick: 5, action: { kind: "sound", entity: h.door } }).status, "ok");
+  const base = h.world.snapshot();
+  const [cause] = base.schedule!;
+  ok(cause !== undefined && cause.kind === "beat");
+  const codes = (extra: Record<string, unknown>): string[] =>
+    validateSnapshot({ ...base, schedule: [{ ...cause, ...extra } as typeof cause] }, registry).map((issue) => issue.code);
+  const one = { entity: h.note, in: h.hall };
+  deepStrictEqual(codes({ only_if: { all: [one, { room: h.hall, occupied: true }] } }), []);
+  deepStrictEqual(codes({ only_if: { all: [] } }), ["invalid_beat"]);
+  deepStrictEqual(codes({ only_if: { all: [{ all: [one] }] } }), ["invalid_beat"]);
+  deepStrictEqual(codes({ repeat: { every_ticks: 1, times: 3, until_ran: true } }), []);
+  deepStrictEqual(codes({ repeat: { every_ticks: 1, times: 3, until_ran: false } }), ["invalid_beat"]);
+});

@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [An experiment stage that advances on its own](#an-experiment-stage-that-advances-on-its-own).
-2. [A manipulator](#a-manipulator).
+1. [A manipulator](#a-manipulator).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,40 +62,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### An experiment stage that advances on its own
-
-The lab's `stage` moves only when the author edits it (`docs/limits-lab.md`, F). Beats already
-run author edits at a tick, under a condition (`docs/beats.md`); two additions let one wait for a
-condition over several entities and run once when it holds, which is a stage that advances itself
-and, with a plain beat, a deadline.
-
-- **`only_if: { all: [ ... ] }`:** a fourth form, true when every listed condition of the three
-  existing forms holds (`{ entity, prop, op, value }`, `{ entity, in }`, `{ room, occupied }`);
-  no nesting, from 1 to 16 entries, else `invalid_args` and, stored, `invalid_beat`. Each entry's
-  `entity` or `room` must exist when scheduled (`no_such_entity`), as a single condition's must.
-- **`repeat.until_ran: true`:** a repeating beat that ends after its first run whose action ran
-  (the condition held and the edit was not refused). Until then a run whose condition is false
-  records nothing, no `beat_skipped`, since a watch that finds nothing is not news; a failed
-  edit still emits `beat_skipped` `failed` and the watch goes on. `times` still bounds it.
-- **Where:** `src/engine/beats.ts` (the forms, the run), `src/engine/verbs/edit.ts` (the
-  `schedule_beat` checks), the stored-beat rule in `src/engine/validate.ts`, `src/contract.ts`
-  (the beat schemas).
-- **Lab:** `tests/scenario-lab.test.ts` gains a step: the author schedules a watch, every tick,
-  setting `stage` to 1 once the exit door is `locked` and `outside` is not `occupied`, and a
-  deadline beat at a later tick setting it to -1 `only_if` `stage` is still 0. The terminal's
-  remote lock with nobody outside advances the stage at the next tick; the deadline then finds
-  stage 1 and is skipped `condition`.
-- **Tests:** `tests/scheduled-beat.test.ts`: `all` true and false, with each form in it; a bad
-  `all` refused (empty, 17 entries, nested, an unknown entity); an `until_ran` watch silent while
-  false, running once, then gone from the schedule; one whose edit is refused emitting `failed`
-  and running again; `cancel_beat` withdrawing a watch.
-- **Docs:** `docs/beats.md` (both additions; split into a second file if it passes its cap),
-  `docs/limits-lab.md` (the F line: the stage advances on a condition, and a watch reads at most
-  once a tick, so a condition that holds and lapses within one command is missed).
-- **Depends on:** nothing. **Not in it:** `any`/`not`, conditions on events (a door that was
-  locked, rather than is), a stage the subjects or the AI can perceive (the experiment stays
-  abstract), stages as data on the template.
 
 ### A manipulator
 

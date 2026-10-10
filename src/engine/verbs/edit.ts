@@ -22,7 +22,9 @@ import {
 import {
   MAX_BEATS,
   actionSubject,
+  conditionSubjects,
   editBeatIds,
+  editConditions,
   isBeatId,
   parseScheduleBeat,
   pendingBeatIds,
@@ -526,6 +528,12 @@ function partRefusal(
 function scheduleBeatRefusal(context: CommandContext, edit: ScheduleBeatEdit): PreconditionResult {
   const subject = actionSubject(edit.action);
   if (subject === null || own(context.snapshot.entities, subject) === undefined) {
+    return invalid("no_such_entity");
+  }
+  // An `all` names what it reads up front, its followers' included: one that is not there makes it
+  // false for good, so it is refused now. A single condition on a missing entity is read false later.
+  const read = editConditions(edit).flatMap((condition) => ("all" in condition ? conditionSubjects(condition) : []));
+  if (read.some((id) => own(context.snapshot.entities, id) === undefined)) {
     return invalid("no_such_entity");
   }
   if (edit.at_tick <= context.snapshot.tick) {

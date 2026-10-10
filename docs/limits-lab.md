@@ -17,8 +17,9 @@ it. Nothing here is a proposal.
 - An agent's own power is not modelled: an unpowered terminal still senses and acts (E).
 - No manipulator: no agent moves things at another's command, and the terminal has no
   `manipulation` of its own (A).
-- A stage nothing advances: `stage` is a prop only the author's `edit` writes, so no escape or
-  other condition moves it, and a subject's `edit` is `invalid_author` (F).
+- A stage nothing but a watch advances: `stage` is a prop an author's `edit` or a beat writes, so
+  no escape moves it, and a subject's `edit` is `invalid_author` (F). A watch reads its condition at
+  most once a tick, so a condition that holds and lapses within one command is missed (I).
 - An experiment no one perceives: an abstract entity answers sight `false` / `abstract`, so the
   stage is read through the trusted `World`, never through a view, the terminal's included (F).
 - An open door blocks its footprint: only a barrier stands open to walking, so no subject can

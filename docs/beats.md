@@ -33,8 +33,9 @@ before it falls due is pruned with it, as every cause is, recording nothing.
 next door only when `loud`; never seen (`false` / `unseen`, wherever the observer stands); no smell;
 no touch.
 
-**Conditions.** `only_if` is read at the due tick, in one of three forms told apart by their keys; a
-mix of forms, or none, is `invalid_args`, and a stored one is held to the same shapes (`invalid_beat`):
+**Conditions.** `only_if` is read at the due tick, in one of three forms told apart by their keys (an
+`all` of them is in [beats-watch.md](beats-watch.md)); a mix of forms, or none, is `invalid_args`, and a
+stored one is held to the same shapes (`invalid_beat`):
 
 - `{ entity, prop, op, value }` (`op`: `eq ne lt lte gt gte`; the orderings need a number) against the
   entity's `props`. A missing entity or prop is false.
@@ -63,8 +64,9 @@ sounds, its condition skips it, its edit is refused) the next is scheduled that 
 and the same cause, one fewer run to come; the stored cause carries the runs still to come and drops
 `repeat` on the last. It is one pending beat and one id however many runs are left, so the bound and
 `duplicate_beat` are as before, `cancel_beat` withdraws every run still to come, and a beat whose
-subject is gone ends there. A repeating beat has no `then` (`invalid_args`): a run would schedule its
-followers' ids again while the last run's were still pending, and ids share one namespace.
+subject is gone ends there. With `until_ran` it is a watch ([beats-watch.md](beats-watch.md)). A
+repeating beat has no `then` (`invalid_args`): a run would schedule its followers' ids again while the
+last run's were still pending, and ids share one namespace.
 
 **Order.** The cause kind is `beat`: `{ due_tick, kind, entity, cause_id, id, action, only_if?, then? }`,
 where `cause_id` is the event the `schedule_beat` edit emitted. Two beats due at one tick run in the
