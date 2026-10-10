@@ -779,7 +779,7 @@ export const RESPONSES = {
   player_check: CheckResponseSchema,
   player_submit: PlayerResultSchema,
   player_withdraw: PlayerResultSchema,
-  player_pending: z.object({ move: CommandSchema.nullable() }).strict(),
+  player_pending: z.object({ move: ActorCommandSchema.nullable() }).strict(),
   director_submitted: z.object({ handles: z.array(z.string()) }).strict(),
   director_close_round: RoundResponseSchema,
   query: AnswerSchema,

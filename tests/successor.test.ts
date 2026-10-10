@@ -153,10 +153,30 @@ test("with the player item, a player drives the successor that took its body ove
   ok(heir !== undefined);
   const dana = playerWorld(run, "dana");
   deepStrictEqual(dana.submit({ command_id: "dana-move", verb: "move", args: { to: { x: 20, y: 0 } } }), { status: "ok" });
-  strictEqual(dana.pending()?.actor, heir);
+  strictEqual(dana.pending()?.command_id, "dana-move");
   // The round takes the move as the successor's: the successor stands where dana sent it.
   const closed = directorWorld(run).closeRound();
   strictEqual(closed.status, "ok");
   deepStrictEqual(closed.results[0]?.status, "ok");
   deepStrictEqual(run.entity(heir!)?.pos, { x: 20, y: 0 });
+});
+
+test("a body that dies while carried leaves its successor at its carrier's feet, and time goes on", (t) => {
+  const { world, id } = frail(t);
+  const [ann, bob] = [id("ann"), id("bob")];
+  strictEqual(act(world, bob, "attack", `${ann}.hand_r`).status, "ok");
+  strictEqual(act(world, bob, "take", ann).status, "ok");
+  strictEqual(world.entity(ann)?.contained_in, bob);
+  for (let i = 0; i < 20 && world.entity(ann)?.status !== "destroyed"; i += 1) {
+    strictEqual(act(world, bob, "wait", undefined, { ticks: 1 }).status, "ok");
+  }
+  strictEqual(world.entity(ann)?.status, "destroyed");
+  const [heir] = successorsOf(world, ann);
+  ok(heir !== undefined);
+  const placed = world.entity(heir!);
+  deepStrictEqual(
+    [placed?.contained_in, placed?.support, placed?.pos],
+    [null, world.entity(bob)?.support, world.entity(bob)?.pos],
+  );
+  strictEqual(act(world, bob, "wait", undefined, { ticks: 1 }).status, "ok");
 });

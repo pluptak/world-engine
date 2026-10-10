@@ -6,6 +6,7 @@ import { PROP_FIELDS } from "./engine/fields.js";
 import { gropable } from "./engine/query.js";
 import { verbRegistry } from "./engine/verbs/index.js";
 import type { Inspection, ObservedEntity, Projection } from "./engine/projection.js";
+import { VIEW_COMMANDS } from "./internal.js";
 import { WorldError } from "./errors.js";
 import { own, type Id, type ReasonData, type Snapshot, type Status } from "./model.js";
 
@@ -230,7 +231,7 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
     })),
   });
 
-  return {
+  const view: ActorWorld = {
     actor,
     observe: (options = {}) =>
       toActor(world.observe(actor, options.since_tick === undefined ? {} : { since_tick: options.since_tick })),
@@ -255,4 +256,6 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
       return { ...verdict(result, observation), observation: toActor(observation) };
     },
   };
+  VIEW_COMMANDS.set(view, toCommand);
+  return view;
 }

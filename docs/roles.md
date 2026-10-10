@@ -28,7 +28,8 @@ round with the players' moves (`closeRound`, [rounds.md](rounds.md)). The CLI's
 **The player's handle.** `playerWorld(world, handle)` (`src/player-world.ts`) is the actor view of
 the body the handle's slot is bound to, under the player role: `observe`, `inspect`, `options` and
 `check`, and no `command`. It also `submit`s one move for the next round, `withdraw`s it and reads
-its `pending()` move. A new submit replaces the old. Refused `not_registered` for an unregistered
+its `pending()` move, both written as the view writes (its aliases or names; a world id names
+nothing). A new submit replaces the old. Refused `not_registered` for an unregistered
 handle and `run_not_running` before the run starts. Nothing it reads names another player's move,
 and its pending move is held in the world, not in its state ([rounds.md](rounds.md)). A player
 drives the successor that took its body over (`docs/templates.md`).

@@ -1,5 +1,10 @@
 import type { Command } from "./engine/command.js";
 import type { RoundResult } from "./api.js";
+import type { ActorCommand, ActorWorld } from "./actor-world.js";
+
+// What a view would send for a move, aliases read back to ids as its own `check` reads them: a player's
+// handle holds its move this way. Kept here, never exported by the package, since it decodes aliases.
+export const VIEW_COMMANDS = new WeakMap<ActorWorld, (command: ActorCommand) => Command>();
 
 // What a world keeps for its handles (`docs/roles.md`): the players' pending moves, and the one way a round
 // is taken with roles on its moves. Keyed by a symbol the public `World` type carries but nobody's caller

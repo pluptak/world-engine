@@ -66,6 +66,7 @@ A top-level `max_integrity` (partless templates only) is how much a thing with n
 
 **Successors.** `props.successor` names one agent template the set holds, refused when the set
 loads otherwise. A body of a template that names one is destroyed (by an attack, a bleed or a
-process) and leaves an agent of that template where it lay, caused by the destruction, with
+process) and leaves an agent of that template where it lay (at its carrier's feet if it was held,
+as a used-up thing's products go), caused by the destruction, with
 `props.succeeds` naming the body it took over. The body stays, destroyed. No shipped template names
 a successor.

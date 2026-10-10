@@ -271,6 +271,17 @@ function fitting(context: TransitionContext, at: Placement, size: { w: number; d
   return fitting(context, placementOf(context, holder), size);
 }
 
+// Where a new thing of `templateId` goes when it takes the place of `entity`: where the entity stood, or at
+// its holder's feet, or beside a container it does not fit, as a used-up thing's products go. A destroyed
+// body's successor (`engine/harm.ts`) is placed this way, so a body carried when it dies leaves its successor
+// on the floor rather than in a grip that holds one item.
+export function placeInstead(context: TransitionContext, entity: Entity, templateId: string): Placement {
+  const at = placementOf(context, entity);
+  const size = context.registry[templateId]?.size_cm;
+  const lands = size === undefined ? at : fitting(context, at, size);
+  return { ...lands, pos: lands.pos === null ? null : { ...lands.pos } };
+}
+
 // An entity used up: a `spent` event on it, then each of its template's `spent_products` spawned where it
 // stood and its `spent_residue` added to the surface they went to, every `spawned` caused by `spent`, and
 // last the entity itself removed under `spent`. What the author's `edit remove` and a process's `remove`

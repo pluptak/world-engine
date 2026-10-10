@@ -1,8 +1,9 @@
 import type { World } from "./api.js";
-import { actorWorld, type ActorCheck, type ActorCommand, type ActorObserveOptions, type ActorOptions, type ActorProjection, type ActorWorld } from "./actor-world.js";
+import { actorWorld, aliasOf, type ActorCheck, type ActorCommand, type ActorObserveOptions, type ActorOptions, type ActorProjection, type ActorWorld } from "./actor-world.js";
 import type { Command } from "./engine/command.js";
 import type { OptionsRequest } from "./options.js";
-import { INTERNAL } from "./internal.js";
+import { INTERNAL, VIEW_COMMANDS } from "./internal.js";
+import { verbRegistry } from "./engine/verbs/index.js";
 import { WorldError } from "./errors.js";
 import type { Id } from "./model.js";
 import { liveBodyOf } from "./engine/run.js";
@@ -16,11 +17,13 @@ export interface PlayerWorld {
   options(request?: OptionsRequest): ActorOptions;
   // Judged as a round's move, as the actor view judges any command (`docs/actor-view.md`).
   check(command: ActorCommand): ActorCheck;
+  // A move written as the view writes things: its own aliases or names, never a world id.
   submit(move: ActorCommand): PlayerResult;
   withdraw(): PlayerResult;
   // Passes every round until the handle submits again, and drops any move (`docs/rounds.md`).
   idle(): PlayerResult;
-  pending(): Command | null;
+  // The move held for the next round, written as the view writes it.
+  pending(): ActorCommand | null;
 }
 
 export type PlayerResult = { status: "ok" } | { status: "refused"; reason_code: string };
@@ -55,14 +58,10 @@ export function playerWorld(world: World, handle: string): PlayerWorld {
       if (world.snapshot().run?.state !== "running") {
         return refusal("run_not_running");
       }
-      // The move is the slot's own: a round takes it as the player's, under the round's version it names.
-      const command: Command = {
-        command_id: move.command_id,
-        actor: found,
-        verb: move.verb,
-        ...(move.target === undefined ? {} : { target: move.target }),
-        ...(move.args === undefined ? {} : { args: move.args }),
-      };
+      // The move is the slot's own, read back from the view's aliases as the view's own `check` reads it, so
+      // a target the view offered resolves and a world id names nothing.
+      const view = actorWorld(world, found);
+      const command: Command = VIEW_COMMANDS.get(view)!(move);
       world[INTERNAL].pending.set(handle, command);
       return { status: "ok" };
     },
@@ -81,8 +80,23 @@ export function playerWorld(world: World, handle: string): PlayerWorld {
       return { status: "ok" };
     },
     pending: () => {
-      slot();
-      return world[INTERNAL].pending.get(handle);
+      const body = slot();
+      const held = world[INTERNAL].pending.get(handle);
+      if (held === null) {
+        return null;
+      }
+      // Written back as the view writes: an id becomes the body's alias for it, and the actor is not said.
+      const snapshot = world.snapshot();
+      const out = (value: unknown): unknown =>
+        typeof value === "string" && snapshot.entities[value.split(".")[0]!] !== undefined ? aliasOf(body, value) : value;
+      return {
+        command_id: held.command_id,
+        verb: held.verb,
+        ...(held.target === undefined ? {} : { target: out(held.target) as string }),
+        ...(held.args === undefined
+          ? {}
+          : { args: Object.fromEntries(Object.entries(held.args).map(([key, value]) => [key, verbRegistry.get(held.verb)?.args?.[key]?.kind === "token" ? value : out(value)])) }),
+      };
     },
   };
 }
