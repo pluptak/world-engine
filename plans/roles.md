@@ -62,22 +62,32 @@ capacities, any of them together. Each is its own item, when a scene needs it.
 1. **A saved scene** is today's `scenarios/*.json` grown with the beats, the pool, the ranges, the
    tick limit and the slots, validated as a whole by the engine; the host keeps the list of scenes.
    An architect may build it in a throwaway world first. A sturdier form is for later.
-2. **A steered odd** is per entity: the scene names the entity, the odd (`jam_pct` today) and its
-   range; the director's steer is a state value on that entity, read in place of the template's
-   while set, refused outside its range, and in force from the next round.
+2. **A steered odd** is per entity: the scene names the entity, the odd and its range; the
+   director's steer is a state value on that entity, read in place of the template's while set,
+   refused outside its range, and in force from the next round. Doors' `jam_pct` only, until the
+   idea is tested and proves useful; a process's `chance_pct` and the rest come after.
 3. **A character may carry another** (a wounded one carried off), within the carrier's limits; the
    one carried keeps its senses and voice, but its own `move` is refused while it is held, so it
    never pulls against its carrier. An agent that is a thing (the sword) is carried the same way.
 4. **A slot no player takes** leaves its body in the world, idle: it never acts, and others may see,
    carry or hurt it.
-5. **A player whose bodies are all destroyed is out**: the handle can no longer act or read. A
-   character meant to go on does so by its template: its destruction leaves a ghost (a new agent,
-   as a break leaves its products), and the player's binding passes to it. No observer role for now.
+5. **A player whose bodies are all destroyed is out**: the handle can no longer act or read. No
+   observer role for now. A character meant to go on does so by its template: its destruction
+   leaves a successor, and the player's binding passes to it.
+   - A body a player can be bound to is an agent (`agent: true`, a definition prop): `human`,
+     `quadruped` and its animals, `horse`, `terminal`, `arm` today. Nothing else marks it, and
+     nothing binds today: any caller names any agent as the actor.
+   - A destroyed body today stays, `status: destroyed`, and leaves nothing; `break_products` are
+     what a breakable leaves when a fall breaks it, not what damage leaves.
+   - A template may name what its destruction leaves to be driven: at most one agent template,
+     refused when the templates load if it names more or a non-agent. It is spawned where the body
+     lay, caused by the `destroyed`, and the body stays as it is.
+   - The binding follows by the record, not by a list of the run's: the successor carries the id
+     of the body it succeeds, so the handle's bodies are its slot and whatever succeeds them.
 6. **A run with no live player left ends at once**, its end reason in the log (`no_live_players`,
    beside `director` and `tick_limit`).
 
 ## Open
 
-1. Whether a process's `chance_pct` is steerable from the first item, or doors' `jam_pct` alone.
-2. A ghost: how a template says what its destruction leaves to be driven, and that the binding
-   follows (the code a carried `move` is refused with is the build's to name).
+1. The successor's field names (the template's, and the one on the successor naming its body), and
+   whether what the body held passes to the successor or falls as it does now.

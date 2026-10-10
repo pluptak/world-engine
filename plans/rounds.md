@@ -43,13 +43,20 @@ pair gets its own contest rule, one at a time.
   share a tick") rules out today; that line goes when the first round item is written.
 - A command applied in a round does not move the clock; the round does, once.
 
+## Decided
+
+1. **No submission is a pass**, and it is a character's only way to let time go by: in a run a
+   character has no `wait` and no `wait` until sensed, and no move lasts longer than a round. The
+   principal reads the world after each round and decides again. How long a round waits for a
+   submission is the host's.
+2. **Blocking goes one way.** The engine may stop a character (a stun, a carrier's grip, a body
+   gone), and a character's move is then refused with the code that says why; a character can
+   never hold up a round or the world.
+
 ## Open
 
-1. A move that takes longer than a tick (`wait 5`, an `advance`): it occupies the player for that
-   many rounds, or it is not a round move at all.
-2. A player who submits nothing: a pass. How long a round waits is the host's.
-3. A player who cannot act (destroyed, stunned past moving): a pass the engine makes for it, or a
-   refusal it learns from.
-4. The director running the clock: rounds with no moves, or `advance` kept beside them.
-5. What reads "before or after the command" (event-form perception, `perceivers`) means for moves
+1. The director running the clock: closing a round, and whether it may run several empty rounds at
+   once while every player passes (a long quiet stretch), or one at a time.
+2. What reads "before or after the command" (event-form perception, `perceivers`) means for moves
    that share a tick: before or after each move, as now.
+3. `wait` outside a run: kept for tests and single-agent worlds, or removed once rounds exist.
