@@ -24,6 +24,9 @@ export type Scenario = readonly ScenarioEntry[];
 export interface SceneRun {
   tick_limit?: number;
   slots?: readonly string[];
+  // Beat bodies with no `at_tick`, which the director plays (`docs/beats.md`), and the odds it may steer.
+  pool?: readonly Record<string, unknown>[];
+  odds?: readonly { entity: string; prop: "jam_pct"; min: number; max: number }[];
 }
 
 // A scene: the entities, the dice's seed, the beats queued at creation (each a `schedule_beat` body, its

@@ -108,12 +108,39 @@ export interface Player {
   slot: Id;
 }
 
+// A beat the director may play (`docs/beats.md`): a beat body with no tick, held until it is played.
+export interface PoolBeat {
+  id: string;
+  action: BeatAction;
+  only_if?: BeatCondition;
+  then?: BeatChild[];
+  repeat?: BeatRepeat;
+}
+
+// The range a director may steer a device's odds within (`docs/roles.md`); only `jam_pct` of a door.
+export interface Odds {
+  entity: Id;
+  prop: "jam_pct";
+  min: number;
+  max: number;
+}
+
+// The value a director has steered a device's odds to, in force until it steers again.
+export interface Steered {
+  entity: Id;
+  prop: "jam_pct";
+  value: number;
+}
+
 export interface Run {
   tick_limit?: number;
   slots?: Id[];
   state: RunState;
   ended?: RunEnd;
   players?: Player[];
+  pool?: PoolBeat[];
+  odds?: Odds[];
+  steered?: Steered[];
 }
 
 export interface Snapshot {

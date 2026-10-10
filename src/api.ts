@@ -218,16 +218,29 @@ function roleless(moves: readonly Command[]): boolean {
 // replay never reads it, and nothing in the world's state depends on it (`docs/roles.md`).
 function storedPending(dir: string): PendingStore {
   const path = join(dir, "pending.json");
-  type Entry = { handle: string; command: Command };
+  type Entry = { handle: string; command?: Command; idle?: true };
   // A list, not an object: a handle is any token, `__proto__` included.
   const read = (): Entry[] => (existsSync(path) ? (JSON.parse(readFileSync(path, "utf8")) as Entry[]) : []);
-  const write = (entries: Entry[]): void => atomicWrite(path, canonicalJson(entries));
+  const put = (handle: string, entry: Entry | null): void =>
+    withWorldLock(dir, () => {
+      const rest = read().filter((other) => other.handle !== handle);
+      atomicWrite(path, canonicalJson(entry === null ? rest : [...rest, entry]));
+    });
   return {
     get: (handle) => read().find((entry) => entry.handle === handle)?.command ?? null,
-    set: (handle, command) =>
-      withWorldLock(dir, () => write([...read().filter((entry) => entry.handle !== handle), { handle, command }])),
-    clear: (handle) => withWorldLock(dir, () => write(read().filter((entry) => entry.handle !== handle))),
-    handles: () => read().map((entry) => entry.handle).sort(),
+    set: (handle, command) => put(handle, { handle, command }),
+    setIdle: (handle) => put(handle, { handle, idle: true }),
+    clear: (handle) => put(handle, null),
+    handles: () =>
+      read()
+        .filter((entry) => entry.command !== undefined)
+        .map((entry) => entry.handle)
+        .sort(),
+    idlers: () =>
+      read()
+        .filter((entry) => entry.idle === true)
+        .map((entry) => entry.handle)
+        .sort(),
   };
 }
 
@@ -732,16 +745,28 @@ export function memoryWorld(
   }
 
   // The players' pending moves of this memory world: held in the world, as a store world's file is.
-  const held = new Map<string, Command>();
+  const held = new Map<string, { command?: Command; idle?: true }>();
   const memoryPending: PendingStore = {
-    get: (handle) => held.get(handle) ?? null,
+    get: (handle) => held.get(handle)?.command ?? null,
     set: (handle, command) => {
-      held.set(handle, command);
+      held.set(handle, { command });
+    },
+    setIdle: (handle) => {
+      held.set(handle, { idle: true });
     },
     clear: (handle) => {
       held.delete(handle);
     },
-    handles: () => [...held.keys()].sort(),
+    handles: () =>
+      [...held.entries()]
+        .filter(([, entry]) => entry.command !== undefined)
+        .map(([handle]) => handle)
+        .sort(),
+    idlers: () =>
+      [...held.entries()]
+        .filter(([, entry]) => entry.idle === true)
+        .map(([handle]) => handle)
+        .sort(),
   };
   // A round of this world's history (`docs/rounds.md`): roles are allowed only in the director's close.
   const roundMemory = (moves: readonly Command[], byAllowed: boolean): RoundResult => {

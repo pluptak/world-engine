@@ -4,8 +4,8 @@ A run is one simulation made from a scene ([scenario.md](scenario.md)). The snap
 its `state`: `registering` when the scene is built, `running` once the author starts it, and `ended`
 for a reason, with `ended` `{ reason, tick }`. A world with no `run` is not a run and is untouched.
 
-**Registering.** A director binds each player's handle to a slot with `register_player` while the run is
-registering ([roles.md](roles.md)).
+**Registering.** A director binds each player's handle to a slot with `register_player` while the
+run is registering ([roles.md](roles.md)).
 
 **Edits.** `start_run` moves a registering run to running (else `run_not_registering`), and
 `end_run` ends a running one with reason `director` (else `run_not_running`). A world with no run
@@ -27,6 +27,10 @@ commands cannot reach by way of a round, since a move takes no time and `wait` i
 **No live players.** A running run with `slots` ends, `no_live_players`, after any ok command or
 edit that leaves none of its slots alive: each is gone from the world or destroyed (a bleed-out
 counts). A run with no slots, or one still registering, never ends this way.
+
+**Levers.** While the run is registering or running, the director may play a pool beat, steer a
+door's odds within the range its scene gave, and close quiet rounds while every player is idle
+([roles.md](roles.md)).
 
 **The end.** What is still scheduled is dropped with nothing recorded, since no time passes again;
 modifiers stay as they were. The end is in the snapshot's `run.ended`, and `validateSnapshot`

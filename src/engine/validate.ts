@@ -622,7 +622,7 @@ function runIssues(snapshot: Snapshot): SnapshotIssue[] {
     return [];
   }
   const issues: SnapshotIssue[] = [];
-  if (run.tick_limit === undefined && run.slots === undefined) {
+  if (run.tick_limit === undefined && run.slots === undefined && run.pool === undefined && run.odds === undefined) {
     issues.push(issue("invalid_run", ["run"], "neither tick_limit nor slots"));
   }
   if (run.tick_limit !== undefined && (!Number.isSafeInteger(run.tick_limit) || run.tick_limit < 1)) {

@@ -1,7 +1,7 @@
 import { WorldError } from "../errors.js";
-import { own, type Id, type Snapshot } from "../model.js";
+import { own, type Id, type Odds, type PoolBeat, type Snapshot } from "../model.js";
 import { REFERENCE_PROPS, type Scene, type SceneRun } from "../scenario.js";
-import { actionSubject, editBeatIds, MAX_BEATS, parseScheduleBeat } from "./beats.js";
+import { actionSubject, editBeatIds, MAX_BEATS, parseScheduleBeat, pendingBeatIds } from "./beats.js";
 import type { BeatAction, BeatChild } from "./command.js";
 import { withCause } from "./pending.js";
 import { isAgent } from "./verbs/address.js";
@@ -113,9 +113,59 @@ function queueBeats(snapshot: Snapshot, names: Readonly<Record<string, Id>>, bea
   return next;
 }
 
-// A run names a limit or its slots: a positive tick limit, and slots that are agents the scene made, each once.
+// A pool beat is a beat body with no tick: checked as a beat is, and its id unique among the beats the scene
+// queued and the pool's own (`docs/beats.md`). It is kept for the director to play.
+function scenePool(snapshot: Snapshot, names: Readonly<Record<string, Id>>, bodies: readonly unknown[], taken: string[]): PoolBeat[] {
+  const used = new Set(taken);
+  return bodies.map((body, index): PoolBeat => {
+    const path = `run.pool[${index}]`;
+    if (!isRecord(body) || "at_tick" in body) {
+      throw refused(path, "invalid_beat");
+    }
+    const resolved = resolveBody(body, names, path) as Record<string, unknown>;
+    // The tick is a placeholder the shape check needs; a pool beat is played at a tick the director names.
+    const parsed = parseScheduleBeat({ ...resolved, at_tick: 1, kind: "schedule_beat" });
+    if (parsed === null) {
+      throw refused(path, "invalid_beat");
+    }
+    subjectOf(snapshot, parsed.action, parsed.then, path);
+    for (const id of editBeatIds(parsed)) {
+      if (used.has(id)) {
+        throw refused(path, "duplicate_beat");
+      }
+      used.add(id);
+    }
+    return {
+      id: parsed.id,
+      action: parsed.action,
+      ...(parsed.only_if === undefined ? {} : { only_if: parsed.only_if }),
+      ...(parsed.then === undefined ? {} : { then: parsed.then }),
+      ...(parsed.repeat === undefined ? {} : { repeat: parsed.repeat }),
+    };
+  });
+}
+
+// Odds a director may steer: a door's `jam_pct`, within a range the scene sets, which must be a whole range
+// from 0 to 100 (`docs/roles.md`).
+function sceneOdds(snapshot: Snapshot, names: Readonly<Record<string, Id>>, odds: NonNullable<SceneRun["odds"]>): Odds[] {
+  return odds.map((entry, index): Odds => {
+    const path = `run.odds[${index}]`;
+    const entity = named(names, entry.entity, `${path}.entity`);
+    if (typeof snapshot.entities[entity]?.props.open !== "boolean") {
+      throw refused(`${path}.entity`, "not_a_door");
+    }
+    const inRange = (value: number) => Number.isSafeInteger(value) && value >= 0 && value <= 100;
+    if (!inRange(entry.min) || !inRange(entry.max) || entry.min > entry.max) {
+      throw refused(path, "invalid_odds");
+    }
+    return { entity, prop: "jam_pct", min: entry.min, max: entry.max };
+  });
+}
+
+// A run names a limit, its slots, a pool or odds: a positive tick limit, agents that are its slots, beats for
+// the director to play, and the odds it may steer. A run with none of these is no run to end or steer.
 function sceneRun(snapshot: Snapshot, names: Readonly<Record<string, Id>>, run: SceneRun): Snapshot {
-  if (run.tick_limit === undefined && run.slots === undefined) {
+  if (run.tick_limit === undefined && run.slots === undefined && run.pool === undefined && run.odds === undefined) {
     throw refused("run", "empty_run");
   }
   if (run.tick_limit !== undefined && (!Number.isSafeInteger(run.tick_limit) || run.tick_limit < 1)) {
@@ -136,11 +186,15 @@ function sceneRun(snapshot: Snapshot, names: Readonly<Record<string, Id>>, run: 
     }
     slots.push(id);
   });
+  const pool = run.pool === undefined ? undefined : scenePool(snapshot, names, run.pool, pendingBeatIds(snapshot.schedule ?? []));
+  const odds = run.odds === undefined ? undefined : sceneOdds(snapshot, names, run.odds);
   return {
     ...snapshot,
     run: {
       ...(run.tick_limit === undefined ? {} : { tick_limit: run.tick_limit }),
       ...(run.slots === undefined ? {} : { slots }),
+      ...(pool === undefined ? {} : { pool }),
+      ...(odds === undefined ? {} : { odds }),
       state: "registering",
     },
   };

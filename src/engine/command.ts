@@ -147,6 +147,21 @@ export interface RegisterPlayerEdit {
   slot: Id;
 }
 
+// The director plays a pool beat at a tick ahead of the clock (`docs/roles.md`).
+export interface PlayBeatEdit {
+  kind: "play_beat";
+  id: string;
+  at_tick: number;
+}
+
+// Steers a door's odds to a value in force within the range the scene set (`docs/roles.md`).
+export interface SteerEdit {
+  kind: "steer";
+  entity: Id;
+  prop: "jam_pct";
+  value: number;
+}
+
 // Starts a run that is registering, or ends one that is running with the reason `director` (`docs/run.md`).
 export interface StartRunEdit {
   kind: "start_run";
@@ -177,7 +192,9 @@ export type WorldEdit =
   | RetimeBeatEdit
   | StartRunEdit
   | EndRunEdit
-  | RegisterPlayerEdit;
+  | RegisterPlayerEdit
+  | PlayBeatEdit
+  | SteerEdit;
 
 export interface Command {
   command_id: Id;

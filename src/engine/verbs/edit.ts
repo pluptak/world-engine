@@ -16,6 +16,8 @@ import {
   type By,
   type CancelBeatEdit,
   type RegisterPlayerEdit,
+  type PlayBeatEdit,
+  type SteerEdit,
   type RetimeBeatEdit,
   type ScheduleBeatEdit,
   type TransitionContext,
@@ -228,6 +230,17 @@ export function parseEdit(value: unknown): WorldEdit | null {
     case "register_player":
       return onlyKeys(value, ["kind", "handle", "slot"]) && isBeatId(value.handle) && isId(value.slot)
         ? { kind: "register_player", handle: value.handle, slot: value.slot }
+        : null;
+    case "play_beat":
+      return onlyKeys(value, ["kind", "id", "at_tick"]) && isBeatId(value.id) && Number.isSafeInteger(value.at_tick)
+        ? { kind: "play_beat", id: value.id, at_tick: value.at_tick as number }
+        : null;
+    case "steer":
+      return onlyKeys(value, ["kind", "entity", "prop", "value"]) &&
+        isId(value.entity) &&
+        value.prop === "jam_pct" &&
+        Number.isSafeInteger(value.value)
+        ? { kind: "steer", entity: value.entity, prop: "jam_pct", value: value.value as number }
         : null;
     case "start_run":
       return onlyKeys(value, ["kind"]) ? { kind: "start_run" } : null;
@@ -588,7 +601,81 @@ function registerRefusal(snapshot: Snapshot, edit: RegisterPlayerEdit): Precondi
 }
 
 // The edits a director may send: the levers it was given and the run's own record, never the scene.
-const DIRECTOR_EDITS: readonly string[] = ["register_player", "start_run", "end_run", "retime_beat", "cancel_beat"];
+const DIRECTOR_EDITS: readonly string[] = [
+  "register_player",
+  "start_run",
+  "end_run",
+  "retime_beat",
+  "cancel_beat",
+  "play_beat",
+  "steer",
+];
+
+// A pool beat is played once, at a tick ahead of the clock, under an id nothing pending already carries.
+function playRefusal(snapshot: Snapshot, edit: PlayBeatEdit): PreconditionResult {
+  const run = snapshot.run;
+  if (run === undefined) {
+    return refused("no_run");
+  }
+  if (!(run.pool ?? []).some((entry) => entry.id === edit.id)) {
+    return refused("no_such_pool_beat");
+  }
+  if (edit.at_tick <= snapshot.tick) {
+    return refused("beat_in_past");
+  }
+  return pendingBeatIds(pending(snapshot)).includes(edit.id) ? refused("duplicate_beat") : { status: "ok" };
+}
+
+// A door's odds are steered only where the scene gave a range, and within it.
+function steerRefusal(snapshot: Snapshot, edit: SteerEdit): PreconditionResult {
+  const run = snapshot.run;
+  if (run === undefined) {
+    return refused("no_run");
+  }
+  const odds = (run.odds ?? []).find((entry) => entry.entity === edit.entity && entry.prop === edit.prop);
+  if (odds === undefined) {
+    return refused("not_steerable");
+  }
+  return edit.value < odds.min || edit.value > odds.max ? refused("out_of_range") : { status: "ok" };
+}
+
+// The pool beat leaves the pool and is queued at its tick, caused by this edit's event, as a `schedule_beat` is.
+function transitionPlay(context: TransitionContext, edit: PlayBeatEdit): void {
+  const run = context.snapshot.run;
+  const beat = run?.pool?.find((entry) => entry.id === edit.id);
+  if (run === undefined || beat === undefined) {
+    throw new TypeError("Play changed after validation");
+  }
+  const subject = actionSubject(beat.action);
+  if (subject === null) {
+    throw new TypeError("Pool beat without a subject after validation");
+  }
+  const rest = { ...context.snapshot, run: { ...run, pool: (run.pool ?? []).filter((entry) => entry.id !== edit.id) } };
+  context.snapshot = withCause(rest, {
+    kind: "beat",
+    due_tick: edit.at_tick,
+    entity: subject,
+    cause_id: context.root_event_id,
+    id: beat.id,
+    action: beat.action,
+    ...(beat.only_if === undefined ? {} : { only_if: beat.only_if }),
+    ...(beat.then === undefined ? {} : { then: beat.then }),
+    ...(beat.repeat === undefined ? {} : { repeat: beat.repeat }),
+  });
+}
+
+// The steered value takes the place of any earlier one for the same device and prop, and is in force from now.
+function transitionSteer(context: TransitionContext, edit: SteerEdit): void {
+  const run = context.snapshot.run;
+  if (run === undefined) {
+    throw new TypeError("Steer without a run after validation");
+  }
+  const rest = (run.steered ?? []).filter((entry) => !(entry.entity === edit.entity && entry.prop === edit.prop));
+  context.snapshot = {
+    ...context.snapshot,
+    run: { ...run, steered: [...rest, { entity: edit.entity, prop: edit.prop, value: edit.value }] },
+  };
+}
 
 // Whether the role a command was sent under may send this kind of edit (`docs/roles.md`).
 function roleMay(by: By | undefined, kind: string): boolean {
@@ -661,6 +748,12 @@ function preconditions(context: CommandContext): PreconditionResult {
   }
   if (edit.kind === "register_player") {
     return context.target === null ? registerRefusal(context.snapshot, edit) : invalid("unexpected_target");
+  }
+  if (edit.kind === "play_beat") {
+    return context.target === null ? playRefusal(context.snapshot, edit) : invalid("unexpected_target");
+  }
+  if (edit.kind === "steer") {
+    return context.target === null ? steerRefusal(context.snapshot, edit) : invalid("unexpected_target");
   }
   if (edit.kind === "schedule_beat" || edit.kind === "cancel_beat" || edit.kind === "retime_beat") {
     if (context.target !== null) {
@@ -885,6 +978,14 @@ function transition(context: TransitionContext): void {
     registerPlayer(context, edit.handle, edit.slot);
     return;
   }
+  if (edit.kind === "play_beat") {
+    transitionPlay(context, edit);
+    return;
+  }
+  if (edit.kind === "steer") {
+    transitionSteer(context, edit);
+    return;
+  }
   if (edit.kind === "start_run") {
     startRun(context);
     return;
@@ -1060,6 +1161,9 @@ export const editVerb: Verb = {
     "slot_taken",
     "handle_taken",
     "role_forbidden",
+    "no_such_pool_beat",
+    "not_steerable",
+    "out_of_range",
   ],
   preconditions,
   transition,

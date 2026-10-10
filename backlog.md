@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The director's levers: a pool of beats, a door's odds, and quiet rounds skipped](#the-directors-levers-a-pool-of-beats-a-doors-odds-and-quiet-rounds-skipped).
-2. [A character being carried cannot walk](#a-character-being-carried-cannot-walk).
-3. [A body that is destroyed may leave a successor, and the player follows it](#a-body-that-is-destroyed-may-leave-a-successor-and-the-player-follows-it).
+1. [A character being carried cannot walk](#a-character-being-carried-cannot-walk).
+2. [A body that is destroyed may leave a successor, and the player follows it](#a-body-that-is-destroyed-may-leave-a-successor-and-the-player-follows-it).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -64,35 +63,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### The director's levers: a pool of beats, a door's odds, and quiet rounds skipped
-
-The director steers through what the architect tied (`plans/roles.md`): it moves queued beats
-already; it cannot yet play a beat the architect left untimed, change a door's odds, or let time
-run while every player waits.
-
-- **The pool** (scene `run.pool`, `src/engine/scene.ts`): beat bodies with no `at_tick`, checked as
-  the scene's beats are, ids unique across beats and pool, stored on the run. An edit
-  `play_beat { id, at_tick }` (director and author) takes the beat out of the pool and queues it,
-  caused by the edit's event; refused `no_such_pool_beat`, `beat_in_past`. A pool beat plays once.
-- **Odds** (scene `run.odds`: `[{ entity, prop: "jam_pct", min, max }]`, doors only, as decided):
-  an edit `steer { entity, prop, value }` (director and author) sets the value in force on the run
-  (`run.steered`), refused `not_steerable` (no such entry) or `out_of_range`; `jams` in
-  `src/engine/verbs/openable.ts` reads the steered value before the template's. The template's
-  value is untouched, so nothing is written to a definition prop.
-- **Quiet rounds:** a player's handle may `idle()`: it passes every round until it submits again.
-  `closeRounds({ max, stop_before? })` on the director's handle closes empty rounds while every
-  registered player with a live body is idle, refused `players_active` otherwise; it stops after
-  `max`, one round before the beat `stop_before` names (as `advance` does), or after the first
-  round whose events a registered player's body could sense (`sensedBy`, as `stop_on_perceived`),
-  so no player sleeps through what reaches it. Each round is logged as a closed empty round.
-- **Tests:** `tests/director-levers.test.ts`: a pool beat played sounds at its tick, a second play
-  is `no_such_pool_beat`; a steered door jams at the steered odds (a seeded run, the roll pinned)
-  and out of range is refused; quiet rounds stop at `max`, before a beat, and at a knock a player
-  hears, and are refused while one player is active; every lever is in the log under `director`.
-- **Docs:** `docs/roles.md` (the levers), `docs/scenario.md` (`pool`, `odds`), `docs/run.md`.
-- **Depends on:** the two items above. **Not in it:** a budget of pulls, odds other than doors'
-  `jam_pct`, a director that picks outcomes.
 
 ### A character being carried cannot walk
 

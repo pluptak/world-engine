@@ -109,6 +109,13 @@ export const SeededScenarioSchema = z.object({
   run: z.object({
     tick_limit: z.number().int().min(1).optional(),
     slots: z.array(z.string().min(1)).optional(),
+    pool: z.array(z.record(z.string(), z.unknown())).optional(),
+    odds: z.array(z.object({
+      entity: z.string().min(1),
+      prop: z.literal("jam_pct"),
+      min: z.number().int().min(0).max(100),
+      max: z.number().int().min(0).max(100),
+    }).strict()).optional(),
   }).strict().optional(),
 }).strict();
 
@@ -161,6 +168,9 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
   // The run's edits: a registering run starts, a running one ends (`docs/run.md`).
   z.object({ kind: z.literal("start_run") }).strict(),
   z.object({ kind: z.literal("register_player"), handle: z.string().min(1), slot: IdSchema }).strict(),
+  // The director's levers (`docs/roles.md`): play a pool beat now, and steer a door's jam odds.
+  z.object({ kind: z.literal("play_beat"), id: z.string(), at_tick: z.number().int() }).strict(),
+  z.object({ kind: z.literal("steer"), entity: IdSchema, prop: z.literal("jam_pct"), value: z.number().int() }).strict(),
   z.object({ kind: z.literal("end_run") }).strict(),
   z.object({
     kind: z.literal("set_part"),
@@ -443,6 +453,9 @@ export const RunSchema = z.object({
     tick: z.number().int(),
   }).strict().optional(),
   players: z.array(z.object({ handle: z.string().min(1), slot: IdSchema }).strict()).optional(),
+  pool: z.array(z.record(z.string(), z.unknown())).optional(),
+  odds: z.array(z.object({ entity: IdSchema, prop: z.literal("jam_pct"), min: z.number().int(), max: z.number().int() }).strict()).optional(),
+  steered: z.array(z.object({ entity: IdSchema, prop: z.literal("jam_pct"), value: z.number().int() }).strict()).optional(),
 }).strict();
 
 // The role a command was sent under (`docs/roles.md`); absent for the author.

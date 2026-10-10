@@ -193,7 +193,9 @@ function startClosing(context: TransitionContext, entity: Entity, shutTicks: num
 // A remote command to a device with a `jam_pct` rolls once, and a roll under the chance jams it: the
 // tick is spent and the device does nothing else. A hand never rolls.
 function jams(context: TransitionContext, entity: Entity): boolean {
-  const pct = entity.props.jam_pct;
+  // A director's steered odds (`docs/roles.md`) are in force over the template's value, which is left as it is.
+  const steered = context.snapshot.run?.steered?.find((entry) => entry.entity === entity.id && entry.prop === "jam_pct");
+  const pct = steered?.value ?? entity.props.jam_pct;
   if (typeof pct !== "number" || pct <= 0 || !remote(context, entity)) {
     return false;
   }

@@ -17,6 +17,8 @@ export interface PlayerWorld {
   check(command: ActorCommand): ActorCheck;
   submit(move: ActorCommand): PlayerResult;
   withdraw(): PlayerResult;
+  // Passes every round until the handle submits again, and drops any move (`docs/rounds.md`).
+  idle(): PlayerResult;
   pending(): Command | null;
 }
 
@@ -66,6 +68,13 @@ export function playerWorld(world: World, handle: string): PlayerWorld {
         return refusal("not_registered");
       }
       world[INTERNAL].pending.clear(handle);
+      return { status: "ok" };
+    },
+    idle: () => {
+      if (slotOf(world, handle) === null) {
+        return refusal("not_registered");
+      }
+      world[INTERNAL].pending.setIdle(handle);
       return { status: "ok" };
     },
     pending: () => {
