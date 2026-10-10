@@ -74,7 +74,7 @@ function walk(run: (actor: Id, verb: string, target?: string, args?: Record<stri
   strictEqual(run(ann, "move", undefined, { to }).status, "ok");
 }
 
-test("the arm takes, puts and gives within reach, and is refused out_of_reach beyond it", (t) => {
+test("the arm takes, puts and gives within reach, and cannot name what lies beyond it", (t) => {
   const { world, id, run } = open(t);
   const [arm, ann, key, chest] = [id("arm"), id("ann"), id("key"), id("chest")];
   strictEqual(run(arm, "take", "key").status, "ok");
