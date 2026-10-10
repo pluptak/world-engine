@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-None: every item is built.
+1. [Power and remote control](#power-and-remote-control).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -62,3 +62,60 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
+
+### Power and remote control
+
+The lab's AI cannot lock a door from the server room (`docs/limits-lab.md`, D), and nothing is
+powered (E). Two named links, each a prop naming one entity, give a door a controller and a power
+supply; the openable verbs a body uses are the ones a controller uses, with reach, key and hands
+replaced by the links. A remote command can fail, and says where.
+
+- **Props** (`src/engine/fields.ts`): `power_source` (boolean, definition): an intact one supplies
+  power. `powered_by` (id, state): the next link toward a source, a cable or the source itself.
+  `controlled_by` (id, state): the next link toward the agent that controls this entity, a panel or
+  the agent. Both ids may be written by the architect (`ARCHITECT_PROPS` in `forms.ts`).
+- **Reading them**, `src/engine/power.ts`, pure:
+  - `powered(snapshot, id)`: walk `powered_by` from the entity; every entity on the walk, the
+    first included, is not `destroyed`, and the walk ends at a `power_source`. An entity with
+    neither prop is unpowered.
+  - `controller(snapshot, id)`: the agent the `controlled_by` walk ends at, or null.
+  - `remoteFault(snapshot, actor, device)`: the first fault along the control walk from the device
+    to the actor, the device included and the actor not: a link `destroyed` is `disconnected`, one
+    whose `powered()` is false is `unpowered`, each with `{ at: <link id> }`; null when none.
+- **Addressing:** `gropable` (`src/engine/query.ts`) also answers true for an entity whose
+  `controller` is the actor, whatever the state of the links, so a fault is refused with its code,
+  never `unresolved`. The terminal names the exit door; it still does not perceive it (cameras are
+  the next item), and an actor's options list it.
+- **Verbs** (`src/engine/verbs/openable.ts`): when `controller(target)` is the actor, `open`,
+  `close`, `lock` and `unlock` skip reach, the key and `requires` (`manipulation`) and refuse
+  `remoteFault`'s code instead, after `already_*` and `locked`; everything else, the transition,
+  the scheduled close and moving occupants aside included, is unchanged. Any other actor, a human
+  beside the door, acts on it as now, with no power needed: the lock is mechanical too.
+  `disconnected` and `unpowered` join those four verbs' `refuses` and the registration points.
+- **Snapshot rules** (`src/engine/validate.ts`): a `powered_by` or `controlled_by` naming no
+  entity is `dangling_reference`, so `remove` of a link is refused; a walk that loops is
+  `power_loop` or `control_loop` (`linkLoop`). Destroying a link keeps the entity, so the walk
+  breaks and the fault names it.
+- **Templates:** `generator` (`power_source`, heavy, in a room) and `cable` (small, light,
+  `max_integrity` low enough that one human `attack` destroys it, no `break_products`).
+- **Lab** (`scenarios/lab.json`): a generator in the server room, a cable in the corridor powered
+  by it, the exit door `powered_by` the cable and `controlled_by` the terminal.
+  `tests/scenario-lab.test.ts` step D becomes the terminal locking the exit door ok with no key; a
+  new step after it has a subject destroy the cable, the terminal's `unlock` then `unpowered` with
+  `{ at: cable }`, and ann's key still unlocking it by hand. Step E's `powered` line goes.
+- **Tests:** `tests/remote.test.ts`, a small world of its own: remote lock, unlock, open and close
+  ok with no key, hands or reach; a remote close moves an occupant aside; `unpowered` for a
+  destroyed source and for a door with no `powered_by`; `disconnected` for a destroyed panel
+  between door and agent; an agent the walk does not end at is `unresolved` from another room;
+  `already_locked` before a fault; the actor view names the door by alias and lists it in
+  options; the snapshot rules refuse a dangling link and a loop of each kind. `tests/fields.test.ts`
+  and the property test's verb table if the new codes need them.
+- **Docs:** new `docs/power.md` (the props, the two walks, the faults, what stays manual);
+  `docs/relations.md` one row each for `props.powered_by` and `props.controlled_by` (split the file if it
+  passes its cap); `docs/verbs-openables.md` one line; `docs/limits-lab.md` loses the remote-control
+  and power lines and gains what the build shows (an agent's own power is not modelled: an
+  unpowered terminal still senses and acts).
+- **Depends on:** the lab item (built). **Not in it:** a human using a panel to act at a distance;
+  switching a source off (it is cut by destroying it or a cable); power for anything but remote
+  control (lights, cameras, the terminal itself); delays and partial failure; who may use a
+  controller beyond the walk ending at them.

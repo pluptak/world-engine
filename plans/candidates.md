@@ -20,14 +20,11 @@ Priorities there, then deleting it here in the same commit.
   needs, and whether that is ever done while a world runs or only between worlds (`upgradeTemplates`).
 - **The laboratory's next mechanics.** In this order, each written up only once `docs/limits-lab.md`
   shows the lab needs it, with acceptance tests in the item itself:
-  1. Power and remote control: `powered_by` and `controlled_by`, two named relations and no general
-     graph, so a lockable door can be locked from a controller; a remote command can fail (no power,
-     no connection, a broken door) and says why. A cable may be an ordinary entity with integrity.
-  2. A camera that perceives its whole room for whoever is connected to it, its feed gone with its power.
-  3. An experiment stage that advances when a condition over several entities holds.
-  4. A manipulator, first as an agent with `manipulation`, no `moving` and its reach; a rule only where
+  1. A camera that perceives its whole room for whoever is connected to it, its feed gone with its power.
+  2. An experiment stage that advances when a condition over several entities holds.
+  3. A manipulator, first as an agent with `manipulation`, no `moving` and its reach; a rule only where
      a test shows the need.
-  5. Facing and a camera cone, only if the lab needs directional sight (see facing, below).
+  4. Facing and a camera cone, only if the lab needs directional sight (see facing, below).
   Decided: the AI's identity is not its body; what losing a terminal or a cable does is only what
   the simulation defines, and where the AI runs is a scenario's choice. Simultaneous actions stay
   out (`backlog.md`). Open: everything each item will need to settle.
