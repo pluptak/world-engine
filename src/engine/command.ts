@@ -140,6 +140,13 @@ export interface CancelBeatEdit {
   id: string;
 }
 
+// Binds a player's handle to one of a registering run's slots (`docs/roles.md`).
+export interface RegisterPlayerEdit {
+  kind: "register_player";
+  handle: string;
+  slot: Id;
+}
+
 // Starts a run that is registering, or ends one that is running with the reason `director` (`docs/run.md`).
 export interface StartRunEdit {
   kind: "start_run";
@@ -169,7 +176,8 @@ export type WorldEdit =
   | CancelBeatEdit
   | RetimeBeatEdit
   | StartRunEdit
-  | EndRunEdit;
+  | EndRunEdit
+  | RegisterPlayerEdit;
 
 export interface Command {
   command_id: Id;
@@ -182,6 +190,14 @@ export interface Command {
   // Set only by `World.round` (`docs/rounds.md`): a move of a round takes no time of its own, and the
   // round's close is the one tick it moves. Never set by a caller of `command`.
   round?: boolean;
+  // The role the command was sent under (`docs/roles.md`), set by a handle. Absent for the bare World,
+  // which is the author.
+  by?: By;
+}
+
+export interface By {
+  role: "author" | "director" | "player";
+  handle?: string;
 }
 
 // Where a logged command stood in a round: the round's number, the place of a move in the order it was
@@ -235,6 +251,8 @@ export interface Attempt {
   candidates?: Id[];
   // Set on a command logged by a round (`docs/rounds.md`).
   round?: RoundMark;
+  // The role the command was sent under, absent for the author.
+  by?: By;
 }
 
 export function attemptOf(
@@ -250,6 +268,7 @@ export function attemptOf(
     version,
     status: result.status,
     ...(round === undefined ? {} : { round }),
+    ...(command.by === undefined ? {} : { by: command.by }),
     ...(result.reason_code !== undefined && { reason_code: result.reason_code }),
     ...(result.reason_data !== undefined && { reason_data: result.reason_data }),
     ...(result.candidates !== undefined && { candidates: result.candidates }),

@@ -160,6 +160,7 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("retime_beat"), id: z.string(), at_tick: z.number().int() }).strict(),
   // The run's edits: a registering run starts, a running one ends (`docs/run.md`).
   z.object({ kind: z.literal("start_run") }).strict(),
+  z.object({ kind: z.literal("register_player"), handle: z.string().min(1), slot: IdSchema }).strict(),
   z.object({ kind: z.literal("end_run") }).strict(),
   z.object({
     kind: z.literal("set_part"),
@@ -224,6 +225,16 @@ export const RequestSchema = z.discriminatedUnion("op", [
   }).strict(),
   z.object({
     op: z.literal("edit"),
+    world: z.string().min(1),
+    command_id: IdSchema.optional(),
+    based_on_version: z.number().int().optional(),
+    edit: WorldEditSchema,
+    perceivers: z.boolean().optional(),
+    include_snapshot: z.boolean().optional(),
+  }).strict(),
+  // A director's edit (`docs/roles.md`): the same as `edit`, sent under the director role.
+  z.object({
+    op: z.literal("director_edit"),
     world: z.string().min(1),
     command_id: IdSchema.optional(),
     based_on_version: z.number().int().optional(),
@@ -420,6 +431,13 @@ export const RunSchema = z.object({
     reason: z.enum(["director", "tick_limit", "no_live_players"]),
     tick: z.number().int(),
   }).strict().optional(),
+  players: z.array(z.object({ handle: z.string().min(1), slot: IdSchema }).strict()).optional(),
+}).strict();
+
+// The role a command was sent under (`docs/roles.md`); absent for the author.
+export const BySchema = z.object({
+  role: z.enum(["author", "director", "player"]),
+  handle: z.string().min(1).optional(),
 }).strict();
 
 export const SnapshotSchema = z.object({
@@ -602,7 +620,7 @@ export const RoundMarkSchema = z.object({
 
 export const AttemptsResponseSchema = z.object({
   attempts: z.array(z.object({
-    command: CommandSchema.extend({ round: z.boolean().optional() }),
+    command: CommandSchema.extend({ round: z.boolean().optional(), by: BySchema.optional() }),
     based_on_version: z.number().int(),
     version: z.number().int(),
     status: StatusSchema,
@@ -610,6 +628,7 @@ export const AttemptsResponseSchema = z.object({
     reason_data: ReasonDataSchema.optional(),
     candidates: z.array(IdSchema).optional(),
     round: RoundMarkSchema.optional(),
+    by: BySchema.optional(),
   }).strict()),
 }).strict();
 
@@ -723,6 +742,7 @@ export type Op = Request["op"];
 export const RESPONSES = {
   command: CommandResponseSchema,
   edit: CommandResponseSchema,
+  director_edit: CommandResponseSchema,
   query: AnswerSchema,
   snapshot: SnapshotSchema,
   check: CheckResponseSchema,

@@ -1,5 +1,5 @@
 import type { TransitionContext } from "./command.js";
-import type { RunEnd, Snapshot } from "../model.js";
+import type { Id, RunEnd, Snapshot } from "../model.js";
 import { own } from "../model.js";
 import { withSchedule } from "./pending.js";
 
@@ -30,6 +30,15 @@ export function ticksLeft(snapshot: Snapshot): number | null {
     return null;
   }
   return Math.max(0, run.tick_limit - snapshot.tick);
+}
+
+// Binds a player's handle to a slot; the record keeps the order they registered in.
+export function registerPlayer(context: TransitionContext, handle: string, slot: Id): void {
+  const run = context.snapshot.run;
+  if (run === undefined) {
+    throw new TypeError("Registration without a run");
+  }
+  context.snapshot = { ...context.snapshot, run: { ...run, players: [...(run.players ?? []), { handle, slot }] } };
 }
 
 export function startRun(context: TransitionContext): void {

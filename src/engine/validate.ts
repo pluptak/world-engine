@@ -643,6 +643,19 @@ function runIssues(snapshot: Snapshot): SnapshotIssue[] {
       seen.add(slot);
     });
   }
+  // Each player is bound to one of the run's slots, once per handle and once per slot.
+  const players = run.players ?? [];
+  const handles = new Set<string>();
+  const bound = new Set<Id>();
+  players.forEach((player, index) => {
+    const path = ["run", "players", String(index)];
+    const slot = run.slots?.includes(player.slot) ?? false;
+    if (!slot || handles.has(player.handle) || bound.has(player.slot)) {
+      issues.push(issue("invalid_run", path, player.handle));
+    }
+    handles.add(player.handle);
+    bound.add(player.slot);
+  });
   if (!RUN_STATES.includes(run.state)) {
     issues.push(issue("invalid_run", ["run", "state"], String(run.state)));
   }

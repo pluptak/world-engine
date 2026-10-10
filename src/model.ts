@@ -102,11 +102,18 @@ export interface RunEnd {
   tick: number;
 }
 
+// A player's handle bound to one of the run's slots, in the order they registered (`docs/roles.md`).
+export interface Player {
+  handle: string;
+  slot: Id;
+}
+
 export interface Run {
   tick_limit?: number;
   slots?: Id[];
   state: RunState;
   ended?: RunEnd;
+  players?: Player[];
 }
 
 export interface Snapshot {

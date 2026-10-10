@@ -4,6 +4,9 @@ A run is one simulation made from a scene ([scenario.md](scenario.md)). The snap
 its `state`: `registering` when the scene is built, `running` once the author starts it, and `ended`
 for a reason, with `ended` `{ reason, tick }`. A world with no `run` is not a run and is untouched.
 
+**Registering.** A director binds each player's handle to a slot with `register_player` while the run is
+registering ([roles.md](roles.md)).
+
 **Edits.** `start_run` moves a registering run to running (else `run_not_registering`), and
 `end_run` ends a running one with reason `director` (else `run_not_running`). A world with no run
 refuses both `no_run`. Each is recorded by its own `edit` event, which nobody senses.

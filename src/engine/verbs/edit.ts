@@ -13,7 +13,9 @@ import {
   type PreconditionResult,
   type PropsEdit,
   type SpawnEdit,
+  type By,
   type CancelBeatEdit,
+  type RegisterPlayerEdit,
   type RetimeBeatEdit,
   type ScheduleBeatEdit,
   type TransitionContext,
@@ -31,7 +33,7 @@ import {
   pendingBeatIds,
 } from "../beats.js";
 import { pending, withCause, withSchedule } from "../pending.js";
-import { endRun, startRun } from "../run.js";
+import { endRun, registerPlayer, startRun } from "../run.js";
 import { refreshSubtreeLocations, wouldLoop } from "./address.js";
 import { dropCarriedItem } from "./drop.js";
 import { revealConcealed } from "./search.js";
@@ -223,6 +225,10 @@ export function parseEdit(value: unknown): WorldEdit | null {
       return parseScheduleBeat(value);
     case "cancel_beat":
       return onlyKeys(value, ["kind", "id"]) && isBeatId(value.id) ? { kind: "cancel_beat", id: value.id } : null;
+    case "register_player":
+      return onlyKeys(value, ["kind", "handle", "slot"]) && isBeatId(value.handle) && isId(value.slot)
+        ? { kind: "register_player", handle: value.handle, slot: value.slot }
+        : null;
     case "start_run":
       return onlyKeys(value, ["kind"]) ? { kind: "start_run" } : null;
     case "end_run":
@@ -562,6 +568,36 @@ function cancelBeatRefusal(context: CommandContext, edit: CancelBeatEdit): Preco
   return waiting ? { status: "ok" } : refused("no_such_beat");
 }
 
+// A registration binds a handle to one of a registering run's slots: one slot per handle, one handle per slot.
+function registerRefusal(snapshot: Snapshot, edit: RegisterPlayerEdit): PreconditionResult {
+  const run = snapshot.run;
+  if (run === undefined) {
+    return refused("no_run");
+  }
+  if (run.state !== "registering") {
+    return refused("run_not_registering");
+  }
+  if (!(run.slots ?? []).includes(edit.slot)) {
+    return refused("no_such_slot");
+  }
+  const players = run.players ?? [];
+  if (players.some((player) => player.slot === edit.slot)) {
+    return refused("slot_taken");
+  }
+  return players.some((player) => player.handle === edit.handle) ? refused("handle_taken") : { status: "ok" };
+}
+
+// The edits a director may send: the levers it was given and the run's own record, never the scene.
+const DIRECTOR_EDITS: readonly string[] = ["register_player", "start_run", "end_run", "retime_beat", "cancel_beat"];
+
+// Whether the role a command was sent under may send this kind of edit (`docs/roles.md`).
+function roleMay(by: By | undefined, kind: string): boolean {
+  if (by === undefined || by.role === "author") {
+    return true;
+  }
+  return by.role === "director" && DIRECTOR_EDITS.includes(kind);
+}
+
 // A run no scene made has nothing to start or end; a run starts once, from registering, and ends from running.
 function runEditRefusal(snapshot: Snapshot, kind: "start_run" | "end_run"): PreconditionResult {
   const run = snapshot.run;
@@ -608,6 +644,9 @@ function preconditions(context: CommandContext): PreconditionResult {
   if (edit === null) {
     return invalid("invalid_args");
   }
+  if (!roleMay(context.command.by, edit.kind)) {
+    return refused("role_forbidden");
+  }
   if (edit.kind === "spawn") {
     if (context.target !== null) {
       return invalid("unexpected_target");
@@ -619,6 +658,9 @@ function preconditions(context: CommandContext): PreconditionResult {
   }
   if (edit.kind === "start_run" || edit.kind === "end_run") {
     return context.target === null ? runEditRefusal(context.snapshot, edit.kind) : invalid("unexpected_target");
+  }
+  if (edit.kind === "register_player") {
+    return context.target === null ? registerRefusal(context.snapshot, edit) : invalid("unexpected_target");
   }
   if (edit.kind === "schedule_beat" || edit.kind === "cancel_beat" || edit.kind === "retime_beat") {
     if (context.target !== null) {
@@ -839,6 +881,10 @@ function transition(context: TransitionContext): void {
     context.snapshot = { ...context.snapshot, rng: edit.seed };
     return;
   }
+  if (edit.kind === "register_player") {
+    registerPlayer(context, edit.handle, edit.slot);
+    return;
+  }
   if (edit.kind === "start_run") {
     startRun(context);
     return;
@@ -1010,6 +1056,10 @@ export const editVerb: Verb = {
     "no_run",
     "run_not_registering",
     "run_not_running",
+    "no_such_slot",
+    "slot_taken",
+    "handle_taken",
+    "role_forbidden",
   ],
   preconditions,
   transition,

@@ -18,11 +18,10 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Players register, and the director's handle may do only what a director does](#players-register-and-the-directors-handle-may-do-only-what-a-director-does).
-2. [A player's handle submits blind, and the director closes the round](#a-players-handle-submits-blind-and-the-director-closes-the-round).
-3. [The director's levers: a pool of beats, a door's odds, and quiet rounds skipped](#the-directors-levers-a-pool-of-beats-a-doors-odds-and-quiet-rounds-skipped).
-4. [A character being carried cannot walk](#a-character-being-carried-cannot-walk).
-5. [A body that is destroyed may leave a successor, and the player follows it](#a-body-that-is-destroyed-may-leave-a-successor-and-the-player-follows-it).
+1. [A player's handle submits blind, and the director closes the round](#a-players-handle-submits-blind-and-the-director-closes-the-round).
+2. [The director's levers: a pool of beats, a door's odds, and quiet rounds skipped](#the-directors-levers-a-pool-of-beats-a-doors-odds-and-quiet-rounds-skipped).
+3. [A character being carried cannot walk](#a-character-being-carried-cannot-walk).
+4. [A body that is destroyed may leave a successor, and the player follows it](#a-body-that-is-destroyed-may-leave-a-successor-and-the-player-follows-it).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -66,41 +65,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### Players register, and the director's handle may do only what a director does
-
-Everyone who touches a run is the world author today: any caller with the `World` may edit, round
-or end it. `plans/roles.md` makes a role a set of permissions a handle carries. This item adds the
-first two roles and the record of who did what; the moves stay `World.round`'s until the next.
-
-- **Registering** (`src/engine/verbs/edit.ts`, `src/engine/run.ts`): an edit
-  `register_player { handle, slot }` on a registering run binds a player's handle (a token, as a
-  beat id is) to one slot, stored on the run (`run.players`: `{ handle, slot }` in the order they
-  registered). Refused `run_not_registering`, `no_such_slot` (not one of the run's slots),
-  `slot_taken`, `handle_taken`. One slot per handle for now. A slot nobody registers stays idle,
-  as `plans/roles.md` decided. `validateSnapshot` holds the shape (`invalid_run`).
-- **Who did it:** an `Attempt` (`src/engine/command.ts`) gains `by: { role, handle? }`, `role`
-  one of `author`, `director`, `player`, written by the handle the command came through and
-  absent for the bare `World`, which is the author as now. `attempts`, `verify` and replay carry it.
-- **Edits declare their roles:** each edit kind names the roles that may send it (a table in
-  `edit.ts`, beside the parse), and one sent under another role is refused `role_forbidden`
-  (declared on `edit`). The director's: `register_player`, `start_run`, `end_run`, `retime_beat`,
-  `cancel_beat`. The author keeps every kind.
-- **The director's handle** (`src/director-world.ts`, exported beside `actorWorld`):
-  `directorWorld(world)` reads everything a `World` reads (`snapshot`, `schedule`, `query`,
-  `observe`, `inspect`, `since`, `attempts`), and writes only through `edit` under the role
-  `director`, and `round` (the author's, until the next item takes it). It has no `command`.
-- **CLI** (`src/cli/main.ts`, `src/contract.ts`): a `director_edit` op beside the `actor_*` ops;
-  the plain `edit` op stays the author's.
-- **Tests:** `tests/director.test.ts`: registering binds and each refusal once; the director's
-  `spawn`, `set_props` and `advance` are `role_forbidden` while its five kinds go through; every
-  log line names its role (`author` for the bare world, `director` for the handle) and a store
-  world replays it (`verify`); a slot registered and then its body destroyed ends the run as
-  before.
-- **Docs:** new `docs/roles.md` (the roles built so far, and that access to the files is the
-  host's) and its `docs/DESIGN.md` line; `docs/run.md` one line (registering).
-- **Depends on:** nothing. **Not in it:** a player's handle (next item), several slots per handle,
-  the architect as a role (a scene is a file, made outside any world).
 
 ### A player's handle submits blind, and the director closes the round
 

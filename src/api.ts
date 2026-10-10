@@ -7,6 +7,7 @@ import {
   WORLD_AUTHOR,
   type Attempt,
   type Command,
+  type By,
   type RoundMark,
   type Result,
   type WorldEdit,
@@ -72,6 +73,8 @@ export interface EditOptions {
   command_id?: Id;
   basedOn?: number;
   perceivers?: boolean;
+  // The role the edit is sent under: a handle sets it (`src/director-world.ts`), a bare World leaves it out.
+  by?: By;
 }
 
 // What a world's initial snapshot declares over the defaults. Coverage says what the engine can
@@ -196,8 +199,12 @@ function roundNumber(attempts: readonly Attempt[]): number {
   return attempts.filter((attempt) => attempt.round?.close === true).length + 1;
 }
 
-// `round` is the round's own flag: a command that carries it outside `World.round` is refused, so a caller
-// cannot make a move that takes no time of its own.
+// A command that carries the round flag, or a role, is not a caller's to send: the round sets the first and a
+// handle the second, so one that does is refused rather than obeyed.
+function isFlagged(command: Command): boolean {
+  return command.round === true || command.by !== undefined;
+}
+
 function roundFlagged(snapshot: Snapshot, command: Command): Result {
   return {
     status: "invalid",
@@ -331,7 +338,7 @@ export function catalog(registry?: TemplateRegistry): CatalogEntry[] {
 
 // Every edit is a command by the reserved author, so it is logged and replayed like one; the
 // caller names the edit, the world names the command only when the caller does not.
-function editCommand(edit: WorldEdit, commandId: Id, perceivers?: boolean): Command {
+function editCommand(edit: WorldEdit, commandId: Id, perceivers?: boolean, by?: By): Command {
   const command: Command = {
     command_id: commandId,
     actor: WORLD_AUTHOR,
@@ -343,6 +350,9 @@ function editCommand(edit: WorldEdit, commandId: Id, perceivers?: boolean): Comm
   }
   if (perceivers === true) {
     command.perceivers = true;
+  }
+  if (by !== undefined) {
+    command.by = by;
   }
   return command;
 }
@@ -418,7 +428,7 @@ function storeWorld(
 
   const world: World = {
     command: (command, options) =>
-      command.round === true
+      isFlagged(command)
         ? roundFlagged(load(dir, active), command)
         : withObservation(world, active, command.actor, submit(dir, command, options?.basedOn, active), options),
     // One shared base version for the whole beat, so later commands see earlier ones as stale;
@@ -426,7 +436,7 @@ function storeWorld(
     beat: (commands, options) => {
       const base = options?.basedOn ?? load(dir, active).version;
       return commands.map((command) =>
-        command.round === true ? roundFlagged(load(dir, active), command) : submit(dir, command, base, active),
+        isFlagged(command) ? roundFlagged(load(dir, active), command) : submit(dir, command, base, active),
       );
     },
     round: (moves) =>
@@ -450,7 +460,7 @@ function storeWorld(
       return withWorldLock(dir, () =>
         submit(
           dir,
-          editCommand(edit, options?.command_id ?? `edit-${entryCount(dir) + 1}`, options?.perceivers),
+          editCommand(edit, options?.command_id ?? `edit-${entryCount(dir) + 1}`, options?.perceivers, options?.by),
           options?.basedOn,
           active,
         ),
@@ -671,12 +681,12 @@ export function memoryWorld(
 
   const world: World = {
     command: (command, options) =>
-      command.round === true
+      isFlagged(command)
         ? roundFlagged(current, command)
         : withObservation(world, templates, command.actor, submitMemory(command, options?.basedOn ?? current.version), options),
     beat: (commands, options) => {
       const base = options?.basedOn ?? current.version;
-      return commands.map((command) => (command.round === true ? roundFlagged(current, command) : submitMemory(command, base)));
+      return commands.map((command) => (isFlagged(command) ? roundFlagged(current, command) : submitMemory(command, base)));
     },
     round: (moves) => {
       const start = current;
@@ -695,7 +705,7 @@ export function memoryWorld(
     },
     edit: (edit, options) =>
       submitMemory(
-        editCommand(edit, options?.command_id ?? `edit-${submissions + 1}`, options?.perceivers),
+        editCommand(edit, options?.command_id ?? `edit-${submissions + 1}`, options?.perceivers, options?.by),
         options?.basedOn ?? current.version,
       ),
     check: (command) => checkResult(dryRun(current, templates, command)),

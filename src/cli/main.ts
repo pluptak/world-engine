@@ -16,6 +16,7 @@ import {
   type WorldEdit,
 } from "../api.js";
 import { actorWorld } from "../actor-world.js";
+import { directorWorld } from "../director-world.js";
 import { verdictFields } from "../engine/command.js";
 import {
   CoverageSchema,
@@ -186,6 +187,16 @@ function dispatch(request: Request): unknown {
         request.edit as WorldEdit,
         { command_id: request.command_id, basedOn: request.based_on_version, perceivers: request.perceivers },
       );
+      return commandResponse(result, request.include_snapshot === true);
+    }
+    // A director's edit: the handle sends it under the director role, and the engine refuses what that role may not.
+    case "director_edit": {
+      const world = directorWorld(openWorld(request.world));
+      const result = world.edit(request.edit as WorldEdit, {
+        command_id: request.command_id,
+        basedOn: request.based_on_version,
+        perceivers: request.perceivers,
+      });
       return commandResponse(result, request.include_snapshot === true);
     }
     case "check": {
