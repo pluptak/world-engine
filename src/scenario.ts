@@ -36,11 +36,12 @@ const ROOM = "room";
 const ANCHOR_KEYS = ["anchor", "dx", "dy"];
 
 // location, support and contained_in are ids; detached_from carries one alongside a part name.
-// A door's from/to and a key's opens are ids too, read as props because props are free-form; these
-// three are the whole list, and every other prop stays the literal the author wrote.
+// A door's from/to, a key's opens and a device's powered_by and controlled_by are ids too, read as
+// props because props are free-form; these are the whole list, and every other prop stays the
+// literal the author wrote.
 const REFERENCE_FIELDS = ["location", "support", "contained_in", "concealed_by"] as const;
 const HOLDER_FIELDS = ["location", "support", "contained_in"] as const;
-const REFERENCE_PROPS = ["from", "to", "opens"] as const;
+const REFERENCE_PROPS = ["from", "to", "opens", "powered_by", "controlled_by"] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);

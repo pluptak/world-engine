@@ -41,4 +41,5 @@ What is built, nothing aspirational, one concept per file:
 - [limits-workshop.md](limits-workshop.md): what occupancy, impact and landing cannot express.
 - [limits-camp.md](limits-camp.md): what light, processes and eating cannot express.
 - [limits-watch.md](limits-watch.md), [limits-actor.md](limits-actor.md): the watch, outside and in, and the cell, in.
+- [power.md](power.md): `powered_by`, `controlled_by`, and openables run by a controller.
 - [limits-lab.md](limits-lab.md): the underground lab, with today's mechanics.

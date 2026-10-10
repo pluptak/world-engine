@@ -7,6 +7,7 @@ import { closedEnclosure, doorJoins, inReach, isAgent, reachedAsDoor } from "./v
 import { isAbstract, isDoor } from "./resolve.js";
 import { effectivePart } from "./parts.js";
 import { computesSense } from "./capabilities.js";
+import { controller } from "./power.js";
 
 // The one declared threshold for `near`: two positions in the same room this far apart or closer are
 // near. Squared, because the arithmetic stays integer and no square root is ever taken.
@@ -704,6 +705,10 @@ export function gropable(snapshot: Snapshot, actorId: Id, entityId: Id): boolean
   const entity = own(snapshot.entities, entityId);
   if (actor === undefined || entity === undefined) {
     return false;
+  }
+  // What the actor controls it names from anywhere, so a broken link is refused with its fault.
+  if (controller(snapshot, entityId) === actorId) {
+    return true;
   }
   if (entity.concealed_by !== null || closedEnclosure(snapshot, entityId) !== null) {
     return false;

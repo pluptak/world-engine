@@ -4,6 +4,7 @@ import { capacityRefusal } from "../carry.js";
 import { reachedAsDoor, withinReach, reachData } from "./address.js";
 import { pushOccupantsAside } from "./gate.js";
 import { cancel, schedule } from "../schedule.js";
+import { controller, remoteFault } from "../power.js";
 
 type Kind = "open" | "close" | "lock" | "unlock";
 
@@ -30,10 +31,25 @@ const requirements: Record<Kind, readonly CapacityRequirement[] | undefined> = {
 };
 
 const openableArgs: Readonly<Record<string, never>> = {};
-const openRefuses = ["not_openable", "out_of_reach", "already_open", "locked"] as const;
-const closeRefuses = ["not_openable", "out_of_reach", "already_closed"] as const;
-const lockRefuses = ["not_openable", "out_of_reach", "already_locked", "no_key", "insufficient_manipulation"] as const;
-const unlockRefuses = ["not_openable", "out_of_reach", "already_unlocked", "no_key", "insufficient_manipulation"] as const;
+const remoteRefuses = ["disconnected", "unpowered"] as const;
+const openRefuses = ["not_openable", "out_of_reach", "already_open", "locked", ...remoteRefuses] as const;
+const closeRefuses = ["not_openable", "out_of_reach", "already_closed", ...remoteRefuses] as const;
+const lockRefuses = [
+  "not_openable",
+  "out_of_reach",
+  "already_locked",
+  "no_key",
+  "insufficient_manipulation",
+  ...remoteRefuses,
+] as const;
+const unlockRefuses = [
+  "not_openable",
+  "out_of_reach",
+  "already_unlocked",
+  "no_key",
+  "insufficient_manipulation",
+  ...remoteRefuses,
+] as const;
 
 const refuses: Record<Kind, readonly string[]> = {
   open: openRefuses,
@@ -78,7 +94,7 @@ function openableTarget(context: CommandContext, address: TargetAddress | null):
   if (entity.props.openable !== true) {
     return { status: "failed", result: { status: "refused", reason_code: "not_openable" } };
   }
-  if (!inReach(context, entity)) {
+  if (!remote(context, entity) && !inReach(context, entity)) {
     const data = reachData(context.snapshot, context.actor.id, entity.id);
     return {
       status: "failed",
@@ -90,6 +106,12 @@ function openableTarget(context: CommandContext, address: TargetAddress | null):
     };
   }
   return { status: "resolved", entity };
+}
+
+// A device whose control walk ends at the actor takes its command there: no reach, key or hands,
+// only links that carry it (`docs/power.md`).
+function remote(context: CommandContext, entity: Entity): boolean {
+  return controller(context.snapshot, entity.id) === context.actor.id;
 }
 
 function preconditions(context: CommandContext, kind: Kind): PreconditionResult {
@@ -115,6 +137,10 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
   }
   if (kind === "open" && entity.props.locked === true) {
     return { status: "refused", reason_code: "locked" };
+  }
+  if (remote(context, entity)) {
+    const fault = remoteFault(context.snapshot, entity.id);
+    return fault === null ? { status: "ok" } : { status: "refused", ...fault };
   }
   if (changes[kind].needsKey && !carriedKeyFor(context, entity.id)) {
     return { status: "refused", reason_code: "no_key" };

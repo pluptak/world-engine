@@ -16,3 +16,4 @@ T7 `validate.test.ts` "a concealer shares the room, and neither end may be a mar
 `conceal.test.ts` "an abstract entity can neither conceal nor be concealed".
 T8 `holders.test.ts` "each in_part rule fires on a snapshot wrong in exactly that way", "hands_full
 on a third item" and "hand loss drops its grip only".
+T9 `remote.test.ts` "a link must name something, and neither walk may loop".

@@ -249,6 +249,12 @@ function referenceIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIs
       }
     }
   }
+  for (const link of ["powered_by", "controlled_by"] as const) {
+    const ref = entity.props[link];
+    if (typeof ref === "string" && own(snapshot.entities, ref) === undefined) {
+      issues.push(issue("dangling_reference", [...path, "props", link], `unknown entity ${ref}`));
+    }
+  }
   // A key's `opens` is a live reference to what it can turn, but a key outlives the lock it names:
   // an absent target is left alone, one that cannot be opened is not.
   const opens = entity.props.opens;
@@ -449,6 +455,8 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
   // One issue per loop, however many entities sit in it.
   const reportedLoops = new Set<Id>();
   const reportedConcealLoops = new Set<Id>();
+  const reportedPowerLoops = new Set<Id>();
+  const reportedControlLoops = new Set<Id>();
 
   // Coverage chooses among what the engine computes; a name it has no rule for would answer false
   // where the world meant "modelled", so it is refused rather than answered.
@@ -479,6 +487,14 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
     issues.push(...concealmentIssues(snapshot, registry, reportedConcealLoops, id, path));
     issues.push(...holderIssues(snapshot, registry, id, path));
     issues.push(...propIssues(registry, entity, path));
+    const link = (prop: string) => (entity: Entity) => {
+      const next = entity.props[prop];
+      return typeof next === "string" ? next : null;
+    };
+    issues.push(...loopIssues(linkLoop(snapshot, id, link("powered_by")), id, reportedPowerLoops, path, "power_loop"));
+    issues.push(
+      ...loopIssues(linkLoop(snapshot, id, link("controlled_by")), id, reportedControlLoops, path, "control_loop"),
+    );
 
     // A room is where things are, never a thing somewhere: nothing holds, supports or hides it.
     if (

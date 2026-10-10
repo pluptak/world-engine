@@ -924,6 +924,8 @@ export const editVerb: Verb = {
     "concealed_by_abstract",
     "concealed_by_not_same_room",
     "concealed_by_cycle",
+    "power_loop",
+    "control_loop",
     "in_part_holder_mismatch",
     "in_part_unknown_part",
     "in_part_unavailable",

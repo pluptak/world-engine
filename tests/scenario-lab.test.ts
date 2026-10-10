@@ -10,7 +10,8 @@ import { tempDir } from "./harness.js";
 
 // The underground lab written with today's mechanics: eight subjects in a dormitory, a corridor to
 // the lab and to the server room, and an exit door, shut and locked, whose key lies in the lab. The
-// AI's body is the terminal in the server room; the experiment's stage is a prop nothing reads.
+// AI's body is the terminal in the server room, which controls the exit door over a cable from the
+// generator; the experiment's stage is a prop nothing reads.
 // Steps are lettered; `docs/limits-lab.md` says what the lab wanted that they show it cannot say.
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
@@ -54,7 +55,7 @@ type Run = (actor: Id, verb: string, target?: string, args?: Record<string, unkn
 
 const STORED = ["log.jsonl", "events.jsonl", "deltas.jsonl", "snapshot.json"];
 
-test("the lab with today's mechanics: an escape by key, an AI that only sees its room, a stage only the author moves", (t) => {
+test("the lab: an escape by key, an AI that locks a door it cannot see, a cut cable, a stage only the author moves", (t) => {
   const root = tempDir(t);
   const dir = join(root, "lab");
   const { world, id, sent, run, edit } = open(dir);
@@ -89,11 +90,24 @@ test("the lab with today's mechanics: an escape by key, an AI that only sees its
   }
   deepStrictEqual(world.query({ kind: "perceive", observer: terminal, sense: "sight", entity: id("key") }).value, "false");
 
-  // D. the terminal cannot lock the exit door: it cannot even name it from the server room, and
-  // nothing connects it to the door.
-  deepStrictEqual(status(run(terminal, "lock", "exit door")), ["unresolved", undefined]);
+  // D. the terminal locks the exit door it controls from the server room: no key, no hands, no reach.
+  deepStrictEqual(status(run(terminal, "lock", "exit door")), ["ok", undefined]);
+  strictEqual(world.entity(id("exit_door"))?.props.locked, true);
 
-  // E. the escape advanced nothing: the stage changes by the author's edit alone, a subject's edit is
+  // E. bob cuts the cable in the corridor: the terminal's unlock is refused where power stops, and
+  // ann's key still turns the lock by hand from outside.
+  const cable = id("cable");
+  deepStrictEqual(status(run(bob, "move", undefined, { through: "dormitory door" })), ["ok", undefined]);
+  deepStrictEqual(status(run(bob, "move", undefined, { to: { x: 200, y: 360 } })), ["ok", undefined]);
+  for (let blow = 0; blow < 3; blow += 1) {
+    strictEqual(run(bob, "attack", "cable").status, "ok");
+  }
+  strictEqual(world.entity(cable)?.status, "destroyed");
+  const cut = run(terminal, "unlock", "exit door");
+  deepStrictEqual([cut.status, cut.reason_code, cut.reason_data], ["refused", "unpowered", { at: id("exit_door") }]);
+  deepStrictEqual(status(run(ann, "unlock", "exit door")), ["ok", undefined]);
+
+  // F. the escape advanced nothing: the stage changes by the author's edit alone, a subject's edit is
   // not the author's, and an abstract experiment is perceived by nobody, the terminal included.
   strictEqual(world.entity(experiment)?.props.stage, 0);
   const asked = { kind: "update_props", target: experiment, props: { stage: 1 } } as const;
@@ -104,12 +118,8 @@ test("the lab with today's mechanics: an escape by key, an AI that only sees its
     value: "false",
     basis_code: "abstract",
   });
-  // Nor is there power to give the terminal: a prop no template declares is refused.
-  strictEqual(edit({ kind: "update_props", target: terminal, props: { powered: true } }).reason_code, "undeclared_prop");
-
-  // F. bob cannot walk into the open doorway, since a door blocks its footprint open or shut; the
+  // G. bob cannot walk into the open doorway, since a door blocks its footprint open or shut; the
   // author puts him there, and ann shutting the door from outside moves him aside first.
-  deepStrictEqual(status(run(bob, "move", undefined, { through: "dormitory door" })), ["ok", undefined]);
   const walked = run(bob, "move", undefined, { to: { x: 0, y: 450 } });
   deepStrictEqual([walked.status, walked.reason_code, walked.reason_data], ["refused", "blocked", { with: id("exit_door") }]);
   strictEqual(edit({ kind: "place", target: bob, support: id("corridor"), pos: { x: 0, y: 450 } }).status, "ok");
@@ -121,7 +131,7 @@ test("the lab with today's mechanics: an escape by key, an AI that only sees its
   ]);
   ok(world.entity(bob)?.pos?.y !== 450);
 
-  // G. the stored world replays, and the same scenario sent the same gives the same files, byte for byte.
+  // H. the stored world replays, and the same scenario sent the same gives the same files, byte for byte.
   deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
   strictEqual(world.verify().ok, true);
   const again = open(join(root, "again"));

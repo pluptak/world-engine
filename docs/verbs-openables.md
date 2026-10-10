@@ -16,3 +16,5 @@ A target that declares `openable` (a door, a gate, a chest) is opened, shut, loc
   reach and before the key.
 - `unlock`: the same requirement, clearing `locked` under `unlocked`; a target that is not locked (or
   never was) is refused `already_unlocked`, in the same place.
+- From the target's controller, all four skip reach, the key and hands, and refuse `disconnected`
+  or `unpowered` where a link fails ([power.md](power.md)).
