@@ -232,6 +232,17 @@ export const RequestSchema = z.discriminatedUnion("op", [
     perceivers: z.boolean().optional(),
     include_snapshot: z.boolean().optional(),
   }).strict(),
+  // A player's handle (`docs/roles.md`): its own reads, and its one pending move for the next round.
+  z.object({ op: z.literal("player_observe"), world: z.string().min(1), handle: z.string().min(1), since_tick: z.number().int().optional() }).strict(),
+  z.object({ op: z.literal("player_inspect"), world: z.string().min(1), handle: z.string().min(1), entity: IdSchema }).strict(),
+  z.object({ op: z.literal("player_options"), world: z.string().min(1), handle: z.string().min(1), refused: z.boolean().optional() }).strict(),
+  z.object({ op: z.literal("player_check"), world: z.string().min(1), handle: z.string().min(1), move: ActorCommandSchema }).strict(),
+  z.object({ op: z.literal("player_submit"), world: z.string().min(1), handle: z.string().min(1), move: ActorCommandSchema }).strict(),
+  z.object({ op: z.literal("player_withdraw"), world: z.string().min(1), handle: z.string().min(1) }).strict(),
+  z.object({ op: z.literal("player_pending"), world: z.string().min(1), handle: z.string().min(1) }).strict(),
+  // The director's view of the players: which handles have submitted, and the round it closes.
+  z.object({ op: z.literal("director_submitted"), world: z.string().min(1) }).strict(),
+  z.object({ op: z.literal("director_close_round"), world: z.string().min(1) }).strict(),
   // A director's edit (`docs/roles.md`): the same as `edit`, sent under the director role.
   z.object({
     op: z.literal("director_edit"),
@@ -663,6 +674,12 @@ export const BeatResponseSchema = z.object({
   results: z.array(CommandResponseSchema),
 }).strict();
 
+// A player's submit or withdraw: taken, or refused with its code.
+export const PlayerResultSchema = z.object({
+  status: z.enum(["ok", "refused"]),
+  reason_code: z.string().optional(),
+}).strict();
+
 export const RoundResponseSchema = z.object({
   status: StatusSchema,
   reason_code: z.string().optional(),
@@ -743,6 +760,15 @@ export const RESPONSES = {
   command: CommandResponseSchema,
   edit: CommandResponseSchema,
   director_edit: CommandResponseSchema,
+  player_observe: ActorProjectionSchema,
+  player_inspect: InspectResponseSchema,
+  player_options: ActorOptionsResponseSchema,
+  player_check: CheckResponseSchema,
+  player_submit: PlayerResultSchema,
+  player_withdraw: PlayerResultSchema,
+  player_pending: z.object({ move: CommandSchema.nullable() }).strict(),
+  director_submitted: z.object({ handles: z.array(z.string()) }).strict(),
+  director_close_round: RoundResponseSchema,
   query: AnswerSchema,
   snapshot: SnapshotSchema,
   check: CheckResponseSchema,

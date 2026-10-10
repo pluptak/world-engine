@@ -54,11 +54,15 @@ import {
   trace as foldTrace,
   verify as verifyStore,
   type Verification,
+  atomicWrite,
   withWorldLock,
   writeWorldTemplates,
 } from "./store/file-store.js";
 import { loadTemplates, missingCompanions, templatesHash, type TemplateRegistry } from "./templates.js";
 import { listOptions, type Options, type OptionsRequest } from "./options.js";
+import { INTERNAL, type PendingStore, type WorldInternals } from "./internal.js";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const templatesDirectory = fileURLToPath(new URL("../templates/", import.meta.url));
 
@@ -128,6 +132,8 @@ export interface World {
   // One round (`docs/rounds.md`): the moves decided against the same world, taken in an order no caller
   // picks, and then the clock's tick. Each move and the close is one log line.
   round(moves: readonly Command[]): RoundResult;
+  // The handles' own state and the round with roles (`src/internal.ts`): not for a caller of `World`.
+  readonly [INTERNAL]: WorldInternals;
   edit(edit: WorldEdit, options?: EditOptions): Result;
   check(command: Command): CheckResult;
   // What the actor can try now: the commands that would be accepted, the verbs that need args to be
@@ -171,6 +177,7 @@ function playRound(
   number: number,
   start: number,
   attempt: (command: Command, basedOn: number | undefined, round: RoundMark, decided?: Result) => Result,
+  closingBy?: By,
 ): RoundResult {
   const results = new Array<Result>(moves.length);
   for (const [index, refused] of plan.early) {
@@ -180,7 +187,14 @@ function playRound(
     results[index] = attempt({ ...moves[index]!, round: true }, start, { number, place: position + 1 });
   });
   const closing = attempt(
-    { command_id: `round-${number}-close`, actor: WORLD_AUTHOR, verb: "advance", args: { ticks: 1 }, round: true },
+    {
+      command_id: `round-${number}-close`,
+      actor: WORLD_AUTHOR,
+      verb: "advance",
+      args: { ticks: 1 },
+      round: true,
+      ...(closingBy === undefined ? {} : { by: closingBy }),
+    },
     undefined,
     { number, close: true },
   );
@@ -191,6 +205,29 @@ function playRound(
     round: number,
     results,
     closing,
+  };
+}
+
+// A round's moves carry no role unless the round is a director's closing of the players' moves: a role
+// on a move is set by a handle, never by a caller of `round`.
+function roleless(moves: readonly Command[]): boolean {
+  return moves.every((move) => move.by === undefined);
+}
+
+// The players' pending moves of a store world: a file beside the log, written under the world's turn. A
+// replay never reads it, and nothing in the world's state depends on it (`docs/roles.md`).
+function storedPending(dir: string): PendingStore {
+  const path = join(dir, "pending.json");
+  type Entry = { handle: string; command: Command };
+  // A list, not an object: a handle is any token, `__proto__` included.
+  const read = (): Entry[] => (existsSync(path) ? (JSON.parse(readFileSync(path, "utf8")) as Entry[]) : []);
+  const write = (entries: Entry[]): void => atomicWrite(path, canonicalJson(entries));
+  return {
+    get: (handle) => read().find((entry) => entry.handle === handle)?.command ?? null,
+    set: (handle, command) =>
+      withWorldLock(dir, () => write([...read().filter((entry) => entry.handle !== handle), { handle, command }])),
+    clear: (handle) => withWorldLock(dir, () => write(read().filter((entry) => entry.handle !== handle))),
+    handles: () => read().map((entry) => entry.handle).sort(),
   };
 }
 
@@ -426,6 +463,29 @@ function storeWorld(
     return replayed;
   };
 
+  // A round of this world's log (`docs/rounds.md`): roles are allowed only in the director's close.
+  const roundStored = (moves: readonly Command[], byAllowed: boolean): RoundResult => {
+    if (!byAllowed && !roleless(moves)) {
+      return { status: "invalid", reason_code: "invalid_args", results: [] };
+    }
+    return withWorldLock(dir, () => {
+      const start = load(dir, active);
+      const plan = planRound(start, active, moves);
+      if (plan.status !== "ok") {
+        return { status: plan.status, ...(plan.reason_code === undefined ? {} : { reason_code: plan.reason_code }), results: [] };
+      }
+      // The number is read under the turn, so two processes rounding at once name distinct rounds.
+      const number = roundNumber(readAttempts(dir, 0, active));
+      return playRound(
+        moves,
+        plan,
+        number,
+        start.version,
+        (command, basedOn, round, decided) => submit(dir, command, basedOn, active, round, decided),
+        byAllowed ? { role: "director" } : undefined,
+      );
+    });
+  };
   const world: World = {
     command: (command, options) =>
       isFlagged(command)
@@ -439,19 +499,11 @@ function storeWorld(
         isFlagged(command) ? roundFlagged(load(dir, active), command) : submit(dir, command, base, active),
       );
     },
-    round: (moves) =>
-      withWorldLock(dir, () => {
-        const start = load(dir, active);
-        const plan = planRound(start, active, moves);
-        if (plan.status !== "ok") {
-          return { status: plan.status, ...(plan.reason_code === undefined ? {} : { reason_code: plan.reason_code }), results: [] };
-        }
-        // The number is read under the turn, so two processes rounding at once name distinct rounds.
-        const number = roundNumber(readAttempts(dir, 0, active));
-        return playRound(moves, plan, number, start.version, (command, basedOn, round, decided) =>
-          submit(dir, command, basedOn, active, round, decided),
-        );
-      }),
+    round: (moves) => roundStored(moves, false),
+    [INTERNAL]: {
+      pending: storedPending(dir),
+      roundAs: (moves) => roundStored(moves, true),
+    },
     edit: (edit, options) => {
       // The count of logged submissions names the next edit: every submission appends exactly one
       // line, so the id follows the world rather than the handle, and the same sequence of calls
@@ -679,6 +731,44 @@ export function memoryWorld(
     return result;
   }
 
+  // The players' pending moves of this memory world: held in the world, as a store world's file is.
+  const held = new Map<string, Command>();
+  const memoryPending: PendingStore = {
+    get: (handle) => held.get(handle) ?? null,
+    set: (handle, command) => {
+      held.set(handle, command);
+    },
+    clear: (handle) => {
+      held.delete(handle);
+    },
+    handles: () => [...held.keys()].sort(),
+  };
+  // A round of this world's history (`docs/rounds.md`): roles are allowed only in the director's close.
+  const roundMemory = (moves: readonly Command[], byAllowed: boolean): RoundResult => {
+    if (!byAllowed && !roleless(moves)) {
+      return { status: "invalid", reason_code: "invalid_args", results: [] };
+    }
+    const start = current;
+    const plan = planRound(start, templates, moves);
+    if (plan.status !== "ok") {
+      return { status: plan.status, ...(plan.reason_code === undefined ? {} : { reason_code: plan.reason_code }), results: [] };
+    }
+    return playRound(
+      moves,
+      plan,
+      roundNumber(tried),
+      start.version,
+      (command, basedOn, round, decided) => {
+        if (decided === undefined) {
+          return submitMemory(command, basedOn ?? current.version, round);
+        }
+        submissions += 1;
+        tried.push(attemptOf(command, basedOn ?? current.version, current.version, decided, round));
+        return decided;
+      },
+      byAllowed ? { role: "director" } : undefined,
+    );
+  };
   const world: World = {
     command: (command, options) =>
       isFlagged(command)
@@ -688,20 +778,10 @@ export function memoryWorld(
       const base = options?.basedOn ?? current.version;
       return commands.map((command) => (isFlagged(command) ? roundFlagged(current, command) : submitMemory(command, base)));
     },
-    round: (moves) => {
-      const start = current;
-      const plan = planRound(start, templates, moves);
-      if (plan.status !== "ok") {
-        return { status: plan.status, ...(plan.reason_code === undefined ? {} : { reason_code: plan.reason_code }), results: [] };
-      }
-      return playRound(moves, plan, roundNumber(tried), start.version, (command, basedOn, round, decided) => {
-        if (decided === undefined) {
-          return submitMemory(command, basedOn ?? current.version, round);
-        }
-        submissions += 1;
-        tried.push(attemptOf(command, basedOn ?? current.version, current.version, decided, round));
-        return decided;
-      });
+    round: (moves) => roundMemory(moves, false),
+    [INTERNAL]: {
+      pending: memoryPending,
+      roundAs: (moves) => roundMemory(moves, true),
     },
     edit: (edit, options) =>
       submitMemory(

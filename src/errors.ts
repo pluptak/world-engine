@@ -28,7 +28,8 @@ export type WorldErrorCode =
   | "invalid_form"
   | "form_not_applicable"
   | "no_liquid_material"
-  | "invalid_scenario";
+  | "invalid_scenario"
+  | "not_registered";
 
 export class WorldError extends Error {
   constructor(

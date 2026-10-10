@@ -21,8 +21,16 @@ store's log and `verify` carry it.
 
 **The director's handle.** It reads everything a `World` reads (`snapshot`, `schedule`, `query`,
 `observe`, `inspect`, `since`, `attempts`) and writes only through `edit`, under the director
-role. It has no `command`: a director never acts as a character. `round` is still the
-author's. The CLI's `director_edit` op is the same `edit` under that role.
+role. It has no `command` and no `round`: a director never acts as a character. It closes a
+round with the players' moves (`closeRound`, [rounds.md](rounds.md)). The CLI's
+`director_edit` op is the same `edit` under that role.
 
-**Not in it.** A player's handle, several slots per handle, and the architect as a role (a scene
-is a file, made outside any world).
+**The player's handle.** `playerWorld(world, handle)` (`src/player-world.ts`) is the actor view of
+the body the handle's slot is bound to, under the player role: `observe`, `inspect`, `options` and
+`check`, and no `command`. It also `submit`s one move for the next round, `withdraw`s it and reads
+its `pending()` move. A new submit replaces the old. Refused `not_registered` for an unregistered
+handle and `run_not_running` before the run starts. Nothing it reads names another player's move,
+and its pending move is held in the world, not in its state ([rounds.md](rounds.md)).
+
+**Not in it.** Several slots per handle, timeouts (the host's), and the architect as a role (a
+scene is a file, made outside any world).

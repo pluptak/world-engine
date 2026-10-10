@@ -13,6 +13,7 @@ import {
   RESPONSES,
   ResponseSchema,
   SnapshotSchema,
+  ValidationFailureSchema,
   StatusSchema,
   type Op,
 } from "../src/contract.js";
@@ -374,6 +375,17 @@ test("a real answer to every op parses with the schema the contract gives that o
     observe: { op: "observe", world, observer: "e4" },
     snapshot: { op: "snapshot", world },
     director_edit: { op: "director_edit", world, edit: { kind: "set_seed", seed: 8 } },
+    // No player is registered in this world, so a player's reads and submits are refused: their answers are
+    // the failure a refused op gives, which is the answer the contract holds them to.
+    player_observe: { op: "player_observe", world, handle: "dana" },
+    player_inspect: { op: "player_inspect", world, handle: "dana", entity: "e3" },
+    player_options: { op: "player_options", world, handle: "dana" },
+    player_check: { op: "player_check", world, handle: "dana", move: { command_id: "p1", verb: "take", target: "bottle" } },
+    player_submit: { op: "player_submit", world, handle: "dana", move: { command_id: "p2", verb: "wait", args: { ticks: 1 } } },
+    player_withdraw: { op: "player_withdraw", world, handle: "dana" },
+    player_pending: { op: "player_pending", world, handle: "dana" },
+    director_submitted: { op: "director_submitted", world },
+    director_close_round: { op: "director_close_round", world },
     round: { op: "round", world, moves: [{ command_id: "r1", actor: "e4", verb: "wait", args: { ticks: 1 } }] },
     schedule: { op: "schedule", world, filter: { kind: "beat" } },
     verbs: { op: "verbs" },
@@ -390,9 +402,15 @@ test("a real answer to every op parses with the schema the contract gives that o
   };
   deepStrictEqual(Object.keys(requests).sort(), OPS);
   for (const [op, request] of Object.entries(requests) as Array<[Op, Record<string, unknown>]>) {
-    const answer = JSON.parse(ask(request)) as unknown;
+    // A player's op may answer its own refusal (exit 0), or, for want of a registered player, the failure every
+    // refusal gives (exit 2). Any other op must answer and exit 0.
+    const player = op.startsWith("player_");
+    const run = runCli(JSON.stringify(request));
+    ok(player ? run.status === 0 || run.status === 2 : run.status === 0, `${op}: ${run.stdout}${run.stderr}`);
+    const answer = JSON.parse(run.stdout) as unknown;
     const parsed = RESPONSES[op].safeParse(answer);
-    ok(parsed.success, `${op}: ${parsed.success ? "" : parsed.error.message}`);
+    const refused = player && ValidationFailureSchema.safeParse(answer).success;
+    ok(parsed.success || refused, `${op}: ${parsed.success ? "" : parsed.error.message}`);
   }
 });
 

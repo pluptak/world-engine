@@ -13,10 +13,12 @@ import {
   type Coverage,
   type Delta,
   type Result,
+  type RoundResult,
   type WorldEdit,
 } from "../api.js";
 import { actorWorld } from "../actor-world.js";
 import { directorWorld } from "../director-world.js";
+import { playerWorld } from "../player-world.js";
 import { verdictFields } from "../engine/command.js";
 import {
   CoverageSchema,
@@ -127,6 +129,17 @@ function initializeWorld(out: CliOutput, dir: string, scenarioPath: string, cove
   out.stdout += `${canonicalJson({ status: "ok", world: dir, snapshot_version: world.snapshot().version })}\n`;
 }
 
+// A round's answer: its status, its number when taken, each move's result and the close.
+function roundResponse(result: RoundResult) {
+  return {
+    status: result.status,
+    ...(result.reason_code === undefined ? {} : { reason_code: result.reason_code }),
+    ...(result.round === undefined ? {} : { round: result.round }),
+    results: result.results.map((item) => commandResponse(item, false)),
+    ...(result.closing === undefined ? {} : { closing: commandResponse(result.closing, false) }),
+  };
+}
+
 // A spawned entity arrives as one delta on the field "entity"; the contract also reports the relation
 // fields it came with, so a caller can follow support and containment without reading the snapshot.
 function commandResponse(result: Result, includeSnapshot: boolean) {
@@ -199,6 +212,29 @@ function dispatch(request: Request): unknown {
       });
       return commandResponse(result, request.include_snapshot === true);
     }
+    // A player's handle: its actor view, and its pending move. An unregistered handle is `not_registered`.
+    case "player_observe":
+      return playerWorld(openWorld(request.world), request.handle).observe(
+        request.since_tick === undefined ? {} : { since_tick: request.since_tick },
+      );
+    case "player_inspect":
+      return { inspection: playerWorld(openWorld(request.world), request.handle).inspect(request.entity) };
+    case "player_options":
+      return playerWorld(openWorld(request.world), request.handle).options(
+        request.refused === undefined ? {} : { refused: request.refused },
+      );
+    case "player_check":
+      return playerWorld(openWorld(request.world), request.handle).check(request.move);
+    case "player_submit":
+      return playerWorld(openWorld(request.world), request.handle).submit(request.move);
+    case "player_withdraw":
+      return playerWorld(openWorld(request.world), request.handle).withdraw();
+    case "player_pending":
+      return { move: playerWorld(openWorld(request.world), request.handle).pending() };
+    case "director_submitted":
+      return { handles: directorWorld(openWorld(request.world)).submitted() };
+    case "director_close_round":
+      return roundResponse(directorWorld(openWorld(request.world)).closeRound());
     case "check": {
       const world = openWorld(request.world);
       return world.check(request.command);
@@ -222,16 +258,8 @@ function dispatch(request: Request): unknown {
           .map((result) => commandResponse(result, includeSnapshot)),
       };
     }
-    case "round": {
-      const result = openWorld(request.world).round(request.moves);
-      return {
-        status: result.status,
-        ...(result.reason_code === undefined ? {} : { reason_code: result.reason_code }),
-        ...(result.round === undefined ? {} : { round: result.round }),
-        results: result.results.map((item) => commandResponse(item, false)),
-        ...(result.closing === undefined ? {} : { closing: commandResponse(result.closing, false) }),
-      };
-    }
+    case "round":
+      return roundResponse(openWorld(request.world).round(request.moves));
     case "query": {
       const world = openWorld(request.world);
       return world.query(request.query);

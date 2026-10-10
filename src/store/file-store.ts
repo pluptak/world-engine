@@ -194,7 +194,7 @@ function assertTemplates(snapshot: Pick<Snapshot, "templates_hash">, registry: T
 
 // The temporary is named for the process, so a writer that does not hold the turn (a world being
 // made) cannot rename another's file out from under it.
-function atomicWrite(path: string, contents: string): void {
+export function atomicWrite(path: string, contents: string): void {
   const temporary = `${path}.${process.pid}.tmp`;
   writeFileSync(temporary, contents, "utf8");
   // Windows will not replace a file another process has open at that instant, and a reader that

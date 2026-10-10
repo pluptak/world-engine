@@ -30,6 +30,14 @@ author's `advance`, are refused `round_only` ([run.md](run.md)); `check` and `op
 agent's command as a move, so they list what a round would take. A run that is ended refuses a round
 as it refuses anything; a round outside a run works on any world.
 
-**Not in it.** Handles and blind submission (who sees whose move), the director closing rounds,
-contest rules for a conflict, and a carried agent's move. Tests: `tests/round.test.ts`; the property
-test runs random rounds and validates each step.
+**Submitting and closing.** A player's handle submits one move at a time for the next round, which
+is held in the world as pending, not as state: no version and no log line until the round closes
+([roles.md](roles.md)). The director's `closeRound()` takes every pending move as one round, each
+under its player's role, and the close under the director's; it clears them only when the round is
+taken. A round the world refuses keeps them for the next close. The director learns which handles
+have submitted, never their moves. A store world keeps pending moves in `pending.json` beside its
+log, under its turn; a replay never reads it.
+
+**Not in it.** Contest rules for a conflict, the director's levers and quiet rounds (next), and a
+carried agent's move. Tests: `tests/round.test.ts`, `tests/player.test.ts`; the property test runs
+random rounds and validates each step.

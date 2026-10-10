@@ -18,10 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A player's handle submits blind, and the director closes the round](#a-players-handle-submits-blind-and-the-director-closes-the-round).
-2. [The director's levers: a pool of beats, a door's odds, and quiet rounds skipped](#the-directors-levers-a-pool-of-beats-a-doors-odds-and-quiet-rounds-skipped).
-3. [A character being carried cannot walk](#a-character-being-carried-cannot-walk).
-4. [A body that is destroyed may leave a successor, and the player follows it](#a-body-that-is-destroyed-may-leave-a-successor-and-the-player-follows-it).
+1. [The director's levers: a pool of beats, a door's odds, and quiet rounds skipped](#the-directors-levers-a-pool-of-beats-a-doors-odds-and-quiet-rounds-skipped).
+2. [A character being carried cannot walk](#a-character-being-carried-cannot-walk).
+3. [A body that is destroyed may leave a successor, and the player follows it](#a-body-that-is-destroyed-may-leave-a-successor-and-the-player-follows-it).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -65,39 +64,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A player's handle submits blind, and the director closes the round
-
-A round takes every move at once (`World.round`), so whoever calls it sees them all. Each player
-submits on its own and sees only its own; the director closes the round without seeing what was
-submitted (`plans/rounds.md`).
-
-- **The player's handle** (`src/player-world.ts`): `playerWorld(world, handle)` is the actor view
-  (`actorWorld`, `docs/actor-view.md`) of the registered slot's body, under the role `player`,
-  without `command`, plus `submit(move)` (verb, target, args, as an `ActorCommand`; the actor is the
-  slot), `withdraw()`, and `pending()` (its own move, or null). A new `submit` replaces the old. A
-  handle not registered, or whose run is not running, is refused `not_registered` /
-  `run_not_running`; `check` and `options` judge the move as a round's, as they now do.
-- **Pending moves** are not world state: no version, no snapshot, no log line until the round
-  closes. A store world keeps them in a file of their own beside the log (`pending.json`, written
-  under the world's lock, `docs/locking.md`), a memory world in the handle's world; a `verify` and a
-  replay ignore it. Nothing a player reads names another's move; the director learns only which
-  handles have submitted (`submitted()`), never what.
-- **Closing** (`directorWorld`): `closeRound()` takes every pending move, runs `World.round` with
-  them under the role each player submitted with (so each move's log line says `player` and its
-  handle, and the close says `director`), and clears them. The director's handle loses the bare
-  `round` the last item gave it.
-- **CLI:** `player_submit`, `player_withdraw`, `player_pending` and the actor reads under a
-  `handle`; `director_submitted`, `director_close_round`.
-- **Tests:** `tests/player.test.ts`: two players submit, neither's `pending` nor any read shows the
-  other's; the director's `submitted` lists both handles and no move; `closeRound` applies both in
-  the round's order with the right roles in the log; a resubmit replaces, a withdraw passes; an
-  unregistered handle and a player before the start are refused; a store world's pending moves
-  survive a second process opening it and are cleared at the close; `verify` passes with moves
-  pending.
-- **Docs:** `docs/roles.md` (the player), `docs/rounds.md` (submitting and closing).
-- **Depends on:** the item above. **Not in it:** timeouts (the host's), the director's levers and
-  empty rounds (next item), one handle driving several bodies.
 
 ### The director's levers: a pool of beats, a door's odds, and quiet rounds skipped
 
