@@ -33,7 +33,7 @@ root. The `open` verb's own close is never doubled.
 **Processes.** A template's processes run as a third kind, scheduled and withdrawn as the props that
 govern them change ([processes.md](processes.md)).
 
-**Beats.** The author's own interventions, `schedule_beat` and `cancel_beat`, are the fourth kind
+**Beats.** The author's own interventions, `schedule_beat`, `cancel_beat` and `retime_beat`, are the fourth kind
 ([beats.md](beats.md)): a sound or an edit at a tick, with conditions, followers, or a repeat. A beat pruned with its
 subject records nothing, and a beat with an unmet condition or a refused action emits `beat_skipped`.
 

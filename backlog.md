@@ -18,11 +18,10 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A pending beat is brought forward or put back](#a-pending-beat-is-brought-forward-or-put-back).
-2. [`advance` stops before a beat](#advance-stops-before-a-beat).
-3. [A scene carries its timeline, its slots and its limit](#a-scene-carries-its-timeline-its-slots-and-its-limit).
-4. [A run starts, and ends](#a-run-starts-and-ends).
-5. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
+1. [`advance` stops before a beat](#advance-stops-before-a-beat).
+2. [A scene carries its timeline, its slots and its limit](#a-scene-carries-its-timeline-its-slots-and-its-limit).
+3. [A run starts, and ends](#a-run-starts-and-ends).
+4. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -66,32 +65,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A pending beat is brought forward or put back
-
-A story keeps its beats queued before the scene runs and moves them; it never invents one
-(`plans/roles.md`). `cancel_beat` takes one off; nothing moves one.
-
-- **Edit** (`src/engine/verbs/edit.ts`): `retime_beat { id, at_tick }`. The pending beat of that
-  id falls due at `at_tick`, sooner or later, ordered after what is already due at that tick, as
-  if scheduled now; `at_tick` must be ahead of the clock (`beat_in_past`). An id nothing pending
-  carries is `no_such_beat`, as for `cancel_beat`; a follower not yet scheduled by its parent is
-  not pending. A repeating beat moves its next run, and the runs after it keep `every_ticks` from
-  there. Its action, condition, followers and cause are unchanged: a retime moves when, never what.
-- **The record** is the edit's own root event, as for `cancel_beat`: no new event type, nobody
-  senses it, `since` and `attempts` show it.
-- **Tests:** `tests/scheduled-beat.test.ts` (or a new file if it is past its size): a sound beat
-  brought forward sounds at the new tick and not at the old; put back, the same; a repeating
-  beat retimed keeps its count and spacing; a chain's followers fall due from when the parent
-  runs; two beats at one tick keep the order rule; both refusals; `check` of a retime writes
-  nothing. The property generator retimes and cancels beats it reads from the schedule, and
-  every step stays valid.
-- **Lab:** a new step in `tests/scenario-lab.test.ts`: the deadline beat is queued, then brought
-  forward before ann reaches the key, and the stage is what the earlier deadline makes it.
-- **Docs:** `docs/beats.md` one line beside `cancel_beat` (split if past its size),
-  `docs/schedule-api.md`.
-- **Depends on:** nothing. **Not in it:** retiming the engine's causes (a door's shut, a bleed, a
-  process), holding a beat with no tick, which role may retime (`plans/roles.md`).
 
 ### `advance` stops before a beat
 

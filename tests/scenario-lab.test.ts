@@ -386,16 +386,19 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   strictEqual(edit({ kind: "place", target: ann, support: id("corridor"), pos: { x: -200, y: 0 } }).status, "ok");
   strictEqual(clock(1).status, "ok");
   strictEqual(world.entity(experiment)?.props.stage, 1);
-  // The deadline finds the stage advanced, so its condition is false and it is skipped.
+  // The deadline is queued three ticks on, then brought forward to the tick after next. It finds the stage
+  // advanced, so its condition is false and it is skipped, at the tick it was brought to.
   const deadline = { kind: "set_props", target: experiment, props: { abstract: true, stage: -1 } } as const;
+  const due = tick() + 2;
   strictEqual(
-    edit({ kind: "schedule_beat", id: "deadline", at_tick: tick() + 3, action: deadline, only_if: { entity: experiment, prop: "stage", op: "eq", value: 0 } } as WorldEdit).status,
+    edit({ kind: "schedule_beat", id: "deadline", at_tick: due + 3, action: deadline, only_if: { entity: experiment, prop: "stage", op: "eq", value: 0 } } as WorldEdit).status,
     "ok",
   );
+  strictEqual(edit({ kind: "retime_beat", id: "deadline", at_tick: due } as WorldEdit).status, "ok");
   const late = clock(4);
   deepStrictEqual(
-    late.events.filter((event) => event.type === "beat_skipped").map((event) => [event.data.id, event.data.reason]),
-    [["deadline", "condition"]],
+    late.events.filter((event) => event.type === "beat_skipped").map((event) => [event.data.id, event.data.reason, event.tick]),
+    [["deadline", "condition", due]],
   );
   strictEqual(world.entity(experiment)?.props.stage, 1);
   deepStrictEqual(world.schedule({ kind: "beat" }), []);

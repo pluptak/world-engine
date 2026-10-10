@@ -149,6 +149,8 @@ export const WorldEditSchema = z.discriminatedUnion("kind", [
     ...BeatActionFieldsSchema,
   }).strict(),
   z.object({ kind: z.literal("cancel_beat"), id: z.string() }).strict(),
+  // The engine checks the id is pending and the tick ahead, answering `no_such_beat` and `beat_in_past`.
+  z.object({ kind: z.literal("retime_beat"), id: z.string(), at_tick: z.number().int() }).strict(),
   z.object({
     kind: z.literal("set_part"),
     target: IdSchema,

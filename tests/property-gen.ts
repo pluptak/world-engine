@@ -6,6 +6,8 @@ import { WORLD_AUTHOR, type BeatAction, type Command, type ScheduleBeatEdit, typ
 import { spawn } from "../src/engine/spawn.js";
 import { resolveScenario } from "../src/scenario.js";
 import { startProcesses } from "../src/engine/process.js";
+import { pendingBeatIds } from "../src/engine/beats.js";
+import { pending } from "../src/engine/pending.js";
 import { loadTemplates, parseRegistry, templatesHash, type TemplateRegistry } from "../src/templates.js";
 import { SHARED_FIXTURES } from "./presets.js";
 import { own, type Delta, type Entity, type Id, type Snapshot, type WorldEvent } from "../src/model.js";
@@ -595,12 +597,18 @@ function refineEdit(context: GenContext): WorldEdit {
 }
 
 // A beat scheduled a few ticks ahead (now and then in the past, or under an id already taken), a
-// withdrawal of one that may not exist, and chains: sounds, a prop set on an entity, and followers.
-// Ids come from a small pool so that clashes happen.
+// withdrawal of one that may not exist, a pending beat moved to another tick, and chains: sounds, a
+// prop set on an entity, and followers. Ids come from a small pool so that clashes happen.
 function beatEdit(context: GenContext): WorldEdit {
   const id = `b${int(context.rand, 0, 12)}`;
   if (context.rand() < 0.25) {
     return { kind: "cancel_beat", id };
+  }
+  if (context.rand() < 0.2) {
+    // Of a beat on the schedule when there is one, else of an id that may not be pending.
+    const waiting = pendingBeatIds(pending(context.snapshot));
+    const target = waiting.length > 0 ? pick(context.rand, waiting) : id;
+    return { kind: "retime_beat", id: target, at_tick: context.snapshot.tick + int(context.rand, -1, 6) };
   }
   const subject = context.ids.length > 0 ? pick(context.rand, context.ids) : absent(context);
   const action = (): BeatAction => {

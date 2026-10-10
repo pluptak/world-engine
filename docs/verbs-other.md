@@ -44,7 +44,7 @@ Striking, searching, lighting, waiting, and the author's edit and advance.
   with `no_such_actor`, a destroyed body `observer_destroyed`, and anything but a list of ids
   `invalid_args`. `clock_overflow` is judged on the upper bound.
 - `edit`: carries one `spawn`, `remove`, `place`, `set_props` (replaces), `update_props` (merges),
-  `set_part`, `refine` ([refine.md](refine.md)), `set_seed`, `schedule_beat` or `cancel_beat` as `args.edit` (`set_seed` gives the world's dice a state, [rng.md](rng.md); the beats put
+  `set_part`, `refine` ([refine.md](refine.md)), `set_seed`, `schedule_beat`, `cancel_beat` or `retime_beat` as `args.edit` (`set_seed` gives the world's dice a state, [rng.md](rng.md); the beats put
   the author's own interventions on the schedule, [beats.md](beats.md)), and
   refuses with the code of the first snapshot rule its result breaks ([relations.md](relations.md)).
   A `place` may write `pos` as `{anchor, dx, dy}` ([space.md](space.md)) and `concealed_by`, which

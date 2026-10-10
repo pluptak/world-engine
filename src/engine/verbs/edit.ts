@@ -14,6 +14,7 @@ import {
   type PropsEdit,
   type SpawnEdit,
   type CancelBeatEdit,
+  type RetimeBeatEdit,
   type ScheduleBeatEdit,
   type TransitionContext,
   type Verb,
@@ -221,6 +222,10 @@ export function parseEdit(value: unknown): WorldEdit | null {
       return parseScheduleBeat(value);
     case "cancel_beat":
       return onlyKeys(value, ["kind", "id"]) && isBeatId(value.id) ? { kind: "cancel_beat", id: value.id } : null;
+    case "retime_beat":
+      return onlyKeys(value, ["kind", "id", "at_tick"]) && isBeatId(value.id) && Number.isSafeInteger(value.at_tick)
+        ? { kind: "retime_beat", id: value.id, at_tick: value.at_tick as number }
+        : null;
     case "remove":
       if (!onlyKeys(value, ["kind", "target"]) || !isId(value.target)) {
         return null;
@@ -552,6 +557,14 @@ function cancelBeatRefusal(context: CommandContext, edit: CancelBeatEdit): Preco
   return waiting ? { status: "ok" } : refused("no_such_beat");
 }
 
+function retimeBeatRefusal(context: CommandContext, edit: RetimeBeatEdit): PreconditionResult {
+  const waiting = pending(context.snapshot).some((cause) => cause.kind === "beat" && cause.id === edit.id);
+  if (!waiting) {
+    return refused("no_such_beat");
+  }
+  return edit.at_tick <= context.snapshot.tick ? refused("beat_in_past") : { status: "ok" };
+}
+
 function propsRefusal(
   context: CommandContext,
   subject: Entity,
@@ -587,11 +600,14 @@ function preconditions(context: CommandContext): PreconditionResult {
   if (edit.kind === "set_seed") {
     return context.target === null ? { status: "ok" } : invalid("unexpected_target");
   }
-  if (edit.kind === "schedule_beat" || edit.kind === "cancel_beat") {
+  if (edit.kind === "schedule_beat" || edit.kind === "cancel_beat" || edit.kind === "retime_beat") {
     if (context.target !== null) {
       return invalid("unexpected_target");
     }
-    return edit.kind === "schedule_beat" ? scheduleBeatRefusal(context, edit) : cancelBeatRefusal(context, edit);
+    if (edit.kind === "schedule_beat") {
+      return scheduleBeatRefusal(context, edit);
+    }
+    return edit.kind === "cancel_beat" ? cancelBeatRefusal(context, edit) : retimeBeatRefusal(context, edit);
   }
   if (
     context.target === null ||
@@ -820,6 +836,18 @@ function transition(context: TransitionContext): void {
       context.snapshot,
       pending(context.snapshot).filter((cause) => cause.kind !== "beat" || cause.id !== edit.id),
     );
+    return;
+  }
+  if (edit.kind === "retime_beat") {
+    // Taken off and put back at its new tick, so it runs after whatever is already due then, as if
+    // scheduled now. The `edit` event is the record, as for a cancel.
+    const list = pending(context.snapshot);
+    const cause = list.find((entry) => entry.kind === "beat" && entry.id === edit.id);
+    if (cause === undefined) {
+      throw new TypeError("Edit changed after validation");
+    }
+    const rest = withSchedule(context.snapshot, list.filter((entry) => entry !== cause));
+    context.snapshot = withCause(rest, { ...cause, due_tick: edit.at_tick });
     return;
   }
   const target = context.target;

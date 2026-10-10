@@ -140,6 +140,14 @@ export interface CancelBeatEdit {
   id: string;
 }
 
+// Moves a pending beat to `at_tick`, ahead of the clock, and changes nothing else about it: its action,
+// condition, followers and cause stay as they were. A repeating beat's next run moves; its later runs follow.
+export interface RetimeBeatEdit {
+  kind: "retime_beat";
+  id: string;
+  at_tick: number;
+}
+
 export type WorldEdit =
   | SpawnEdit
   | RemoveEdit
@@ -149,7 +157,8 @@ export type WorldEdit =
   | RefineEdit
   | SeedEdit
   | ScheduleBeatEdit
-  | CancelBeatEdit;
+  | CancelBeatEdit
+  | RetimeBeatEdit;
 
 export interface Command {
   command_id: Id;

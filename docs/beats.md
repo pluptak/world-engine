@@ -15,6 +15,10 @@ Mapping a tick to a wall-clock time such as 20:05 is the controller's job: the e
 - `cancel_beat { id }` withdraws a pending beat and everything it would have chained, recording
   nothing; an id nothing pending carries is `no_such_beat`. Only a beat that is on the schedule can be
   cancelled, not a follower that is not yet scheduled by its parent.
+- `retime_beat { id, at_tick }` brings a pending beat forward or puts it back, keeping its action,
+  condition, followers and cause; it runs after whatever is due at `at_tick`, as if scheduled then.
+  `at_tick` must be ahead of the clock (`beat_in_past`), and an id nothing pending carries is
+  `no_such_beat`. A repeating beat's next run moves and its later runs keep `every_ticks` from there.
 
 **Actions.** A closed set, data, never code:
 
