@@ -724,11 +724,37 @@ function perceive(
       event === undefined ? subject.location : eventLocation(event, subject),
       at,
     );
-    if (at !== null && at === where && isLit(snapshot, at)) {
+    if (at !== null && at === where && isLit(snapshot, at) && inCone(snapshot, own(snapshot.entities, camera)!, subject.id)) {
       return answer("true", "camera");
     }
   }
   return body;
+}
+
+// Whether a camera's cone takes in a subject (`docs/camera.md`): the angle between its facing and the
+// line to the subject is at most half the cone, the edge included. A camera with no cone sees its whole
+// room, as does a subject with no position or one at the camera's own spot. A cone with no facing is
+// a broken snapshot (`camera_without_facing`), so it sees nothing rather than guess one. The tolerance
+// only keeps an edge that is exact in whole centimetres from losing to a float's last digit.
+function inCone(snapshot: Snapshot, camera: Entity, subject: Id): boolean {
+  const cone = camera.props.cone_deg;
+  if (typeof cone !== "number" || cone >= 360) {
+    return true;
+  }
+  const facing = camera.props.facing_deg;
+  const from = effectivePos(snapshot, camera.id);
+  const to = effectivePos(snapshot, subject);
+  if (typeof facing !== "number" || from === null) {
+    return false;
+  }
+  if (to === null || (to.x === from.x && to.y === from.y)) {
+    return true;
+  }
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const theta = (facing * Math.PI) / 180;
+  const along = Math.cos(theta) * dx + Math.sin(theta) * dy;
+  return along >= Math.hypot(dx, dy) * Math.cos((cone * Math.PI) / 360) - 1e-9;
 }
 
 export function query(

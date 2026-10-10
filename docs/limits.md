@@ -19,8 +19,8 @@ change in the camp cannot is in [limits-camp.md](limits-camp.md); what beats and
   half spill (E2).
 - Touch is all or nothing, and snatching from a hand isn't modelled: a pocket theft is unfelt,
   and taking from a hand is refused (B2c, G2).
-- Sight has no facing: in a lit room the silent, unfelt pocket theft is still seen by its
-  victim, so a theft goes unnoticed only in the dark (B2c).
+- Sight of a body has no facing (a camera's cone is in `docs/camera.md`): in a lit room the silent,
+  unfelt pocket theft is still seen by its victim, so a theft goes unnoticed only in the dark (B2c).
 - Silence is by event type, not by care: a `take` is silent whether it is a careful lift or a
   clumsy grab, and a `move` is heard however softly it is made.
 - A `beat` is an ordered batch against one base, not simultaneous action: no initiative, and no

@@ -11,10 +11,10 @@ it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
   speech, and who it acts for, and what losing it means, is the caller's (A).
 - Escape is no event: a subject who leaves is a subject whose `location` is `outside`, which a
   caller reads with `fact` (B).
-- A camera sees its own room whole and lit, and nothing else: no sound, no cone, no view across a
-  door, no record. The lab and the corridor have one each, the dormitory none, so an act there
-  reaches only whoever stands in it. The AI speaks to and hears the dormitory through its
-  intercom, which carries that room and no other (C).
+- A camera sees its room, lit, within its cone, and nothing else: no sound, no view across a door,
+  no record. The lab's is whole; the corridor's is narrow, turned on the exit door (C, M). The
+  dormitory has none, so an act there reaches only whoever stands in it. The AI hears that room
+  through the intercom, which carries it and no other (C).
 - The AI watches its arm with the lab camera, on the same cable: one cut blinds both. The terminal
   and the arm name the key by two aliases, so a caller holding both views matches them by name,
   which two keys of one name would defeat (arm test).

@@ -115,7 +115,7 @@ const ARCHITECT_FIELDS: ReadonlySet<string> = new Set([
   "pos",
   ...FORM_KEYS,
 ]);
-const ARCHITECT_PROPS: ReadonlySet<string> = new Set(["open", "locked", "burning", "lit", "from", "to", "opens", "powered_by", "controlled_by"]);
+const ARCHITECT_PROPS: ReadonlySet<string> = new Set(["open", "locked", "burning", "lit", "from", "to", "opens", "powered_by", "controlled_by", "facing_deg"]);
 
 // The first field or prop (`props.<name>`) of a scenario entry's overrides the architect may not
 // write, or null. Run on the entry as written, before the forms become the raw props they convert to.

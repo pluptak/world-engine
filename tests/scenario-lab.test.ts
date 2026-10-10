@@ -15,6 +15,8 @@ import { tempDir } from "./harness.js";
 // prop nothing reads.
 // Steps are lettered; `docs/limits-lab.md` says what the lab wanted that they show it cannot say.
 
+const verdict = (result: Result) => [result.status, result.reason_code, result.reason_data];
+
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 const lab = JSON.parse(
   readFileSync(fileURLToPath(new URL("../scenarios/lab.json", import.meta.url)), "utf8"),
@@ -25,8 +27,7 @@ test("the lab: the arm takes the key before ann arrives, and a cut cable leaves 
   const dir = join(root, "arm");
   const { world, id, run } = open(dir);
   const [arm, ann, bob, key, cable, terminal] = [id("arm"), id("ann"), id("bob"), id("key"), id("cable"), id("terminal")];
-  const verdict = (result: Result) => [result.status, result.reason_code, result.reason_data];
-  const sees = (entity: Id) => world.query({ kind: "perceive", observer: terminal, sense: "sight", entity });
+    const sees = (entity: Id) => world.query({ kind: "perceive", observer: terminal, sense: "sight", entity });
 
   // The lab camera, on the cable, shows the terminal the key on the lab floor before the arm takes it.
   deepStrictEqual(sees(key), { value: "true", basis_code: "camera" });
@@ -116,13 +117,26 @@ test("the lab's exit door in its window: bob walks out before it shuts, ann's op
   deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
 });
 
+// M. the corridor's camera is a narrow camera: a 60-degree cone turned toward the exit door. A subject in the
+// corridor outside the cone is unseen by the terminal; the author turns the camera, and the terminal sees her.
+test("the lab's corridor camera looks at 65 degrees: a subject outside its cone is unseen, until the author turns it to 7", (t) => {
+  const { world, id, run, edit } = open(join(tempDir(t), "cone"));
+  const [ann, terminal, camera] = [id("ann"), id("terminal"), id("camera")];
+  const sees = () => world.query({ kind: "perceive", observer: terminal, sense: "sight", entity: ann });
+  deepStrictEqual(verdict(run(ann, "move", undefined, { through: "dormitory door" })), ["ok", undefined, undefined]);
+  deepStrictEqual(verdict(run(ann, "move", undefined, { to: { x: 400, y: -300 } })), ["ok", undefined, undefined]);
+  // From the camera at (-400, -400) she is 7 degrees off the exit door's 65-degree facing by 58: out of the cone.
+  strictEqual(sees().value, "false");
+  strictEqual(edit({ kind: "update_props", target: camera, props: { facing_deg: 7 } }).status, "ok");
+  deepStrictEqual(sees(), { value: "true", basis_code: "camera" });
+});
+
 // L. the server panel is the local control of the exit door (`docs/panel.md`): ann works the door through it
 // with no key, the terminal works it through the same panel, and once ann has blown the panel up her own key
 // works the door by hand.
 test("the lab's server panel: ann works the exit door through it with no key, and her key works it by hand once the panel is gone", (t) => {
   const { world, id, run } = open(join(tempDir(t), "panel"));
   const [ann, terminal, door, panel] = [id("ann"), id("terminal"), id("exit_door"), id("server_panel")];
-  const verdict = (result: Result) => [result.status, result.reason_code, result.reason_data];
 
   // Ann takes the key in the lab, comes out, and opens the server door from the corridor and walks through.
   deepStrictEqual(verdict(run(ann, "move", undefined, { through: "dormitory door" })), ["ok", undefined, undefined]);

@@ -36,9 +36,13 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   carry_limit_g: { type: "integer", tier: "definition" },
   closes_after: { type: "integer", tier: "definition", requires: ["openable"] },
   closing: { type: "boolean", tier: "state", requires: ["openable"] },
+  // The whole angle a camera sees, centred on its facing; absent or 360 is the whole room (`docs/camera.md`).
+  cone_deg: { type: "integer", tier: "definition", min: 1, max: 360, requires: ["camera"] },
   container: { type: "boolean", tier: "definition", requires: ["inner_w_cm", "inner_d_cm", "inner_h_cm"] },
   controlled_by: { type: "id", tier: "state" },
   default_hit_part: { type: "string", tier: "definition" },
+  // The way a camera looks, in degrees counter-clockwise from +x, and the whole angle it sees (`docs/camera.md`).
+  facing_deg: { type: "integer", tier: "state", min: 0, max: 359, requires: ["camera"] },
   from: { type: "id", tier: "state", requires: ["openable"] },
   fuel: { type: "integer", tier: "state", requires: ["light_source"] },
   gap_cm: { type: "integer", tier: "definition", requires: ["barrier"] },

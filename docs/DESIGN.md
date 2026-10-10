@@ -48,6 +48,6 @@ What is built, nothing aspirational, one concept per file:
 - [integrity.md](integrity.md): a template with no parts may declare `max_integrity`, the most it can take.
 - [jam.md](jam.md): a device with `jam_pct` may jam the remote command its controller sends.
 - [manipulator.md](manipulator.md): an arm with a gripper, run by a controller over its control walk.
-- [camera.md](camera.md): a camera's sight, lent to the agent its feed reaches.
+- [camera.md](camera.md): a camera's sight, lent to the agent its feed reaches, within its cone.
 - [panel.md](panel.md): a panel a subject at it works a device through, as its controller does.
 - [limits-lab.md](limits-lab.md): the underground lab, with today's mechanics.

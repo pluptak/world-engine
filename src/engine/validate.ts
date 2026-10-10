@@ -318,6 +318,17 @@ function concealmentIssues(
   return issues;
 }
 
+// A camera with a cone short of the whole room must face somewhere: its cone is read from its facing and
+// nothing else (`docs/camera.md`).
+function cameraIssues(snapshot: Snapshot, id: Id, path: string[]): SnapshotIssue[] {
+  const entity = own(snapshot.entities, id);
+  const cone = entity?.props.cone_deg;
+  if (entity === undefined || typeof cone !== "number" || cone >= 360 || typeof entity.props.facing_deg === "number") {
+    return [];
+  }
+  return [issue("camera_without_facing", [...path, "props", "facing_deg"], "facing_deg")];
+}
+
 function integrityIssues(snapshot: Snapshot, registry: TemplateRegistry, id: Id, path: string[]): SnapshotIssue[] {
   const entity = own(snapshot.entities, id);
   if (entity === undefined) {
@@ -496,6 +507,7 @@ export function validateSnapshot(snapshot: Snapshot, registry: TemplateRegistry)
       issues.push(issue("unknown_template", [...path, "template"], entity.template));
     }
     issues.push(...integrityIssues(snapshot, registry, id, path));
+    issues.push(...cameraIssues(snapshot, id, path));
     issues.push(...referenceIssues(snapshot, id, path));
     issues.push(...containerFitIssues(snapshot, registry, id, path));
     issues.push(...traitIssues(entity, path));

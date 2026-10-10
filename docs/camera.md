@@ -22,5 +22,14 @@ view list what it shows; an act in its room names the fed agent among `perceiver
 can name what it sees, and its own reach still refuses acting on it; an event is read against the
 camera as it was before or after the event's command.
 
-Not modelled: sound, a cone or a facing, a camera that moves or turns, delay and recording, a human
-watching a feed, and anything telling a subject it is watched beyond seeing the camera.
+**Cone.** A camera with a `cone_deg` below 360 (a template's definition;
+`templates/narrow_camera.json` is 60, facing 0 until set) sees only within half that angle either
+side of its `facing_deg`, which is state: a scenario or `update_props` sets it, in degrees
+counter-clockwise from +x. The edge is in. A subject at the camera's own spot, or with no
+position, is seen as now.
+A cone with no facing is refused at creation (`camera_without_facing`). The test is `inCone` in
+`src/engine/query.ts`, with a float tolerance of 1e-9 so an edge exact in whole centimetres holds.
+`tests/camera-cone.test.ts` is its spec.
+
+Not modelled: sound, a camera that moves or turns (there is no `turn` verb), delay and recording, a
+human watching a feed, and anything telling a subject it is watched beyond seeing the camera.
