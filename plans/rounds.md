@@ -53,10 +53,16 @@ pair gets its own contest rule, one at a time.
    gone), and a character's move is then refused with the code that says why; a character can
    never hold up a round or the world.
 
+3. **Time moves only by rounds** in a running run, and the director closes each: at once, or when
+   the host's timeout runs out, with or without moves. A round with no moves is one tick, as
+   `advance 1` is today. It may run several empty rounds at once only while every player passes,
+   so no one loses a chance to act; `advance` stopping before a beat (`backlog.md`) becomes running
+   empty rounds up to the round before it.
+4. **Before and after stay per move.** Each move in a round has its own before and after, as each
+   command has now, so event-form perception and `perceivers` read as they do; the tick is shared,
+   the order of moves is recorded.
+
 ## Open
 
-1. The director running the clock: closing a round, and whether it may run several empty rounds at
-   once while every player passes (a long quiet stretch), or one at a time.
-2. What reads "before or after the command" (event-form perception, `perceivers`) means for moves
-   that share a tick: before or after each move, as now.
-3. `wait` outside a run: kept for tests and single-agent worlds, or removed once rounds exist.
+1. `wait` outside a run: kept for tests and single-agent worlds (the suite uses it throughout), or
+   removed once rounds exist.
