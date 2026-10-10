@@ -21,8 +21,8 @@ to anything else is left out, so a stone seen through a door into a lit room has
 `since_tick`, every one at that tick or later; both is `invalid_tick`), with its `event_id`, `tick`,
 `type` and the senses, each read through event-form `perceive`, true before or after its command. It
 names the `entity` when the observer saw, smelt or felt the event. One only heard names nobody and
-says `from` instead: `here` for a sound in the observer's own room, `next_door` for a loud one
-through a doorway. A voice in the dark, a footstep, a knock on a door the observer cannot see tell
+says `from` instead: `here` for a sound in the observer's own room, `intercom` for one heard
+through an intercom, `next_door` for a loud one through a doorway. A voice in the dark, a footstep, a knock on a door the observer cannot see tell
 where they came from and not what made them; the controller knows who spoke because it issued the
 command. `Result.events`, `since`, `trace` and `perceivers` stay the omniscient record and name
 every entity. A push in a lit room is seen and heard; lifting a ring from a pocket in the dark is

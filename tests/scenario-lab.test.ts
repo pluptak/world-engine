@@ -189,6 +189,18 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   const agents = Object.values(world.snapshot().entities).filter((entity) => entity.props.agent === true);
   deepStrictEqual(agents.map((entity) => entity.template).sort(), ["arm", ...Array<string>(8).fill("human"), "terminal"]);
 
+  // A2. the terminal speaks through the dormitory intercom: every subject there hears it through the
+  // intercom, and ann answers from there, which the terminal hears through it too.
+  const heardBy = (observer: Id, event: string) => world.query({ kind: "perceive", observer, event_id: event, sense: "hearing" });
+  const wake = run(terminal, "say", undefined, { utterance: "wake" });
+  const subjects = agents.filter((entity) => entity.template === "human").map((entity) => entity.id);
+  deepStrictEqual(
+    subjects.map((subject) => heardBy(subject, wake.events[0]!.event_id)),
+    subjects.map(() => ({ value: "true", basis_code: "intercom" })),
+  );
+  const who = run(ann, "say", undefined, { utterance: "who" });
+  deepStrictEqual(heardBy(terminal, who.events[0]!.event_id), { value: "true", basis_code: "intercom" });
+
   // B. ann walks to the lab, takes the key, comes back, unlocks and opens the exit door and leaves:
   // escaped is no event, only where she is.
   deepStrictEqual(status(run(ann, "move", undefined, { through: "dormitory door" })), ["ok", undefined]);
@@ -322,6 +334,11 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   const dark = run(terminal, "wait", undefined, { ticks: 1 });
   deepStrictEqual([dark.status, dark.reason_code, dark.reason_data], ["refused", "unpowered", { at: terminal, cut: generator }]);
   strictEqual(run(ann, "say", undefined, { utterance: "here" }, true).events[0]?.perceivers?.hearing.includes(terminal), false);
+  // The intercom is silent too: the generator is gone, so the terminal cannot speak through it.
+  deepStrictEqual(
+    [run(terminal, "say", undefined, { utterance: "lost" }).status, run(terminal, "say", undefined, { utterance: "lost" }).reason_code],
+    ["refused", "unpowered"],
+  );
   deepStrictEqual(world.query({ kind: "perceive", observer: terminal, sense: "sight", entity: ann }), {
     value: "false",
     basis_code: "unpowered",

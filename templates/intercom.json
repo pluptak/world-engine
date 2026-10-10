@@ -1,0 +1,9 @@
+{
+  "id": "intercom",
+  "size_cm": { "w": 20, "d": 10, "h": 20 },
+  "mass_g": 1000,
+  "parts": [],
+  "props": { "intercom": true },
+  "break_products": [],
+  "break_residue": {}
+}

@@ -20,7 +20,7 @@ Sight needs light. A room is lit when its `lit` prop is true, or when something 
 table, in a hand or a pocket, but not shut in a closed container and not once destroyed; `light`
 and `douse` set `burning` ([verbs-other.md](verbs-other.md)), and nothing stores the answer. Sight
 across an open door needs both rooms lit (`adjacent_open_door_lit`), an unlit room is
-`location_unlit`, and a camera lends its lit room to the agent it feeds ([camera.md](camera.md)).
+`location_unlit`, a camera lends its lit room, and an intercom its hearing, to the agent it feeds ([camera.md](camera.md), [intercom.md](intercom.md)).
 
 The sense table lives in [senses.md](senses.md): one row per event class; touch ignores rooms and
 reads the observer's own body and grips (`own_body`), never an authored event, else `not_touching`.

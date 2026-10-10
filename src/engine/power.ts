@@ -88,16 +88,16 @@ export function agentFault(snapshot: Snapshot, agent: Id): RemoteFault | null {
   return null;
 }
 
-// The cameras whose feed reaches the observer now: each one not destroyed, its control walk ending
-// at the observer and carrying a command, in id order.
-export function feeds(snapshot: Snapshot, observer: Id): Id[] {
+// The devices of one kind (a camera's sight, an intercom's sound) whose feed reaches the observer now:
+// each one not destroyed, its control walk ending at the observer and carrying a command, in id order.
+export function feeds(snapshot: Snapshot, observer: Id, kind: "camera" | "intercom"): Id[] {
   return Object.keys(snapshot.entities)
     .sort()
     .filter((id) => {
-      const camera = own(snapshot.entities, id)!;
+      const device = own(snapshot.entities, id)!;
       return (
-        camera.props.camera === true &&
-        camera.status !== "destroyed" &&
+        (kind === "camera" ? device.props.camera === true : device.props.intercom === true) &&
+        device.status !== "destroyed" &&
         controller(snapshot, id) === observer &&
         remoteFault(snapshot, id) === null
       );

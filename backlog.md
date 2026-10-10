@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [An intercom](#an-intercom).
-2. [The lab's acceptance table](#the-labs-acceptance-table).
+1. [The lab's acceptance table](#the-labs-acceptance-table).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,50 +62,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### An intercom
-
-The AI can say nothing to the subjects and hears only its own room: a camera carries no sound
-(`docs/limits-lab.md`, C), and the terminal stands in the server room. An intercom is the hearing
-counterpart of a camera: a device that carries its room's sounds to the agent it feeds, and that
-agent's speech out into its room.
-
-- **Prop and template:** `intercom` (definition, boolean) in `src/engine/fields.ts`;
-  `templates/intercom.json`: small (20×10×20), 1 kg, not an agent, `intercom: true`.
-- **The feed:** as a camera's (`docs/camera.md`): an intercom feeds `controller(intercom)` while it
-  is not destroyed and `remoteFault` is null. `feeds` in `src/engine/power.ts` takes the prop to
-  look for (`camera` or `intercom`), its callers passing `camera`.
-- **Listening** (`perceive` in `src/engine/query.ts`, after the body's own answer and the camera
-  loop): for `hearing`, when the body's answer is false, each intercom feeding the observer is
-  tried as if the observer stood at the intercom: its own room only, the hearing row's same-room
-  rule (`always`, or `volume` with `heardAtVolume` measured from the intercom), so a whisper is
-  heard only within `NEAR_THRESHOLD_CM` of it and a hand act stays `quiet`. True is `intercom`.
-  Never next door, never smell, sight or touch.
-- **Speaking:** for `hearing` of a `say` event (whose entity is the speaker), when the listener's
-  own answer is false, each intercom feeding the speaker that stands in the listener's room is
-  tried as the speaker: `heardAtVolume(snapshot, listener, intercom, event)`, true `intercom`.
-  Only `say` is carried out; the speaker's other sounds are not.
-- **What follows unchanged:** `perceivers`, `observe`, the actor view and a `wait` until sensed
-  read `perceive`. An unpowered speaker cannot `say` at all (the previous item), and an intercom
-  whose walk fails carries nothing either way.
-- **Lab** (`scenarios/lab.json`): an intercom in the dormitory, `powered_by` the generator and
-  `controlled_by` the terminal. A step right after A in the first test of
-  `tests/scenario-lab.test.ts`: the terminal says `wake` with `perceivers`, and every subject
-  hears it, basis `intercom`; ann answers `who` and the terminal hears her. The later steps are
-  unchanged, and J shows the intercom silent with the generator gone.
-- **Tests:** `tests/intercom.test.ts`, a small world: a fed agent hears a normal `say` in the
-  intercom's room and not a whisper far from it, not a take (`quiet`), not a sound next door; its
-  own `say` is heard by a body in the intercom's room and not one beyond NEAR of it for a
-  whisper, not next door; a human's `say` beside the controller is not carried out; a destroyed
-  or unpowered intercom carries nothing; an agent it does not feed hears nothing through it; a
-  subject's actor view lists the controller's `say`.
-- **Docs:** new `docs/intercom.md` and its `docs/DESIGN.md` line; the basis `intercom` in
-  `docs/senses.md` and `docs/perception.md` (at its cap: split it if needed); `docs/power.md` one
-  line (an intercom is a device), split if past its cap; `docs/limits-lab.md` (C: a camera still
-  carries no sound; the AI speaks where it has an intercom).
-- **Depends on:** a controller's own power (built). **Not in it:** delay, recording, a human
-  using an intercom, broadcast across rooms beyond those that hold one, volume changed by the
-  device.
 
 ### The lab's acceptance table
 

@@ -11,7 +11,9 @@ it. Nothing here is a proposal.
 - Escape is no event: a subject who leaves is a subject whose `location` is `outside`, which a
   caller reads with `fact` (B).
 - A camera sees its own room whole and lit, and nothing else: no sound, no cone, no view across a
-  door, no record. The lab has none, so an act there reaches only whoever stands in it (C).
+  door, no record. The lab's corridor has none, so an act there reaches only whoever stands in it.
+  The AI speaks to and hears the dormitory through its intercom, which carries that room and no
+  other (C).
 - The terminal sees the exit door it locks only through the corridor's camera, which shares the
   door's cable: one cut both blinds it and stops its unlock (D, E).
 - The terminal runs on the generator itself, so a cut cable leaves it running; with the generator

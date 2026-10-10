@@ -501,16 +501,53 @@ function smells(subject: Entity): boolean {
   return Object.keys(subject.residue).some((name) => (subject.residue[name] ?? 0) > 0);
 }
 
-// Whether speech at its volume reaches this observer in the speaker's room: a whisper only within
-// `NEAR_THRESHOLD_CM` of the speaker (both positions known), anything louder the whole room. A
-// speaker hears their own.
-function heardAtVolume(snapshot: Snapshot, observer: Entity, speaker: Entity, event: WorldEvent | undefined): boolean {
-  if (event?.data.volume !== "whisper" || observer.id === speaker.id) {
+// Whether speech at its volume reaches a listener (an agent, or an intercom standing for one): a whisper
+// only within `NEAR_THRESHOLD_CM` of the speaker (both positions known), anything louder the whole
+// room. A speaker hears their own.
+function heardAtVolume(snapshot: Snapshot, listener: Id, speaker: Entity, event: WorldEvent | undefined): boolean {
+  if (event?.data.volume !== "whisper" || listener === speaker.id) {
     return true;
   }
-  const here = effectivePos(snapshot, observer.id);
+  const here = effectivePos(snapshot, listener);
   const there = effectivePos(snapshot, speaker.id);
   return here !== null && there !== null && withinThreshold(here, there);
+}
+
+// What intercoms carry to an observer, hearing only (`docs/intercom.md`). Listening: a sound in the room
+// of an intercom that feeds the observer, heard as the hearing row has it for an observer standing at the
+// intercom. Speaking: a `say` by the agent an intercom it controls, heard in that intercom's room. Nothing
+// crosses a door.
+function heardThroughIntercom(
+  snapshot: Snapshot,
+  observer: Entity,
+  subject: Entity,
+  event: WorldEvent | undefined,
+  sense: Sense,
+): boolean {
+  for (const id of feeds(snapshot, observer.id, "intercom")) {
+    const device = own(snapshot.entities, id)!;
+    const where = targetLocationForPerception(
+      subject,
+      event === undefined ? subject.location : eventLocation(event, subject),
+      device.location,
+    );
+    if (
+      device.location !== null &&
+      where === device.location &&
+      (sense.same === "always" || (sense.same === "volume" && heardAtVolume(snapshot, device.id, subject, event)))
+    ) {
+      return true;
+    }
+  }
+  if (event?.type === "say") {
+    for (const id of feeds(snapshot, subject.id, "intercom")) {
+      const device = own(snapshot.entities, id)!;
+      if (device.location !== null && device.location === observer.location && heardAtVolume(snapshot, observer.id, device, event)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function perceive(
@@ -637,7 +674,7 @@ function perceive(
         if (
           sense.same === "always" ||
           (sense.same === "odorous" && smells(subject)) ||
-          (sense.same === "volume" && heardAtVolume(snapshot, observer, subject, event))
+          (sense.same === "volume" && heardAtVolume(snapshot, observer.id, subject, event))
         ) {
           return answer("true", "same_location");
         }
@@ -668,10 +705,19 @@ function perceive(
     // Only senses the engine computes get this far (`computesSense`), and each has a rule above.
     throw new TypeError(`No rule for sense ${query.sense}`);
   })();
+  // What the body cannot hear, an intercom may carry; a `quiet` hand act is not carried (`docs/intercom.md`).
+  if (
+    query.sense === "hearing" &&
+    body.value === "false" &&
+    body.basis_code !== "quiet" &&
+    heardThroughIntercom(snapshot, observer, subject, event, sensesFor(event, events).hearing)
+  ) {
+    return answer("true", "intercom");
+  }
   if (query.sense !== "sight" || body.value === "true") {
     return body;
   }
-  for (const camera of feeds(snapshot, observer.id)) {
+  for (const camera of feeds(snapshot, observer.id, "camera")) {
     const at = own(snapshot.entities, camera)!.location;
     const where = targetLocationForPerception(
       subject,
