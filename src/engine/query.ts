@@ -7,7 +7,7 @@ import { closedEnclosure, doorJoins, inReach, isAgent, reachedAsDoor } from "./v
 import { isAbstract, isDoor } from "./resolve.js";
 import { effectivePart } from "./parts.js";
 import { computesSense } from "./capabilities.js";
-import { controller } from "./power.js";
+import { controller, feeds } from "./power.js";
 
 // The one declared threshold for `near`: two positions in the same room this far apart or closer are
 // near. Squared, because the arithmetic stays integer and no square root is ever taken.
@@ -603,61 +603,80 @@ function perceive(
     return answer("false", "enclosed");
   }
 
-  const observerLocation = observer.location;
-  let targetLocation = event === undefined ? subject.location : eventLocation(event, subject);
-  targetLocation = targetLocationForPerception(subject, targetLocation, observerLocation);
-  if (observerLocation === null || targetLocation === null) {
-    return answer("false", "not_perceptible");
-  }
-  const crossesDoors = query.sense === "hearing" || query.sense === "smell";
-  const rule = sensesFor(event, events);
-  // A `moved` the hands caused is as silent as the act behind it: footsteps stay audible, and the
-  // door never carries what the room itself does not hear.
-  if (
-    query.sense === "hearing" &&
-    event !== undefined &&
-    event.type === "moved" &&
-    handCaused(event, events)
-  ) {
-    return answer("false", "quiet");
-  }
-  // The rule has a column for each of the two senses that read it, and only those two come this far.
-  const sense = query.sense === "hearing" ? rule.hearing : rule.smell;
-  if (observerLocation === targetLocation) {
-    if (crossesDoors) {
-      if (
-        sense.same === "always" ||
-        (sense.same === "odorous" && smells(subject)) ||
-        (sense.same === "volume" && heardAtVolume(snapshot, observer, subject, event))
-      ) {
-        return answer("true", "same_location");
+  // The body's own answer from where it stands; then, for sight it does not have, each camera that
+  // feeds it, as if it stood there: that room only, lit (`docs/camera.md`).
+  const body = ((): Answer => {
+    const observerLocation = observer.location;
+    let targetLocation = event === undefined ? subject.location : eventLocation(event, subject);
+    targetLocation = targetLocationForPerception(subject, targetLocation, observerLocation);
+    if (observerLocation === null || targetLocation === null) {
+      return answer("false", "not_perceptible");
+    }
+    const crossesDoors = query.sense === "hearing" || query.sense === "smell";
+    const rule = sensesFor(event, events);
+    // A `moved` the hands caused is as silent as the act behind it: footsteps stay audible, and the
+    // door never carries what the room itself does not hear.
+    if (
+      query.sense === "hearing" &&
+      event !== undefined &&
+      event.type === "moved" &&
+      handCaused(event, events)
+    ) {
+      return answer("false", "quiet");
+    }
+    // The rule has a column for each of the two senses that read it, and only those two come this far.
+    const sense = query.sense === "hearing" ? rule.hearing : rule.smell;
+    if (observerLocation === targetLocation) {
+      if (crossesDoors) {
+        if (
+          sense.same === "always" ||
+          (sense.same === "odorous" && smells(subject)) ||
+          (sense.same === "volume" && heardAtVolume(snapshot, observer, subject, event))
+        ) {
+          return answer("true", "same_location");
+        }
+        return answer("false", sense.basis);
       }
-      return answer("false", sense.basis);
+      if (query.sense === "sight") {
+        return isLit(snapshot, observerLocation)
+          ? answer("true", "same_location_lit")
+          : answer("false", "location_unlit");
+      }
+      throw new TypeError(`No rule for sense ${query.sense}`);
     }
-    if (query.sense === "sight") {
-      return isLit(snapshot, observerLocation)
-        ? answer("true", "same_location_lit")
-        : answer("false", "location_unlit");
-    }
-    throw new TypeError(`No rule for sense ${query.sense}`);
-  }
 
-  if (query.sense === "sight") {
-    const connected = connectedByDoor(snapshot, observerLocation, targetLocation, true);
-    const bothLit = isLit(snapshot, observerLocation) && isLit(snapshot, targetLocation);
-    return connected && bothLit
-      ? answer("true", "adjacent_open_door_lit")
-      : answer("false", connected ? "location_unlit" : "not_perceptible");
+    if (query.sense === "sight") {
+      const connected = connectedByDoor(snapshot, observerLocation, targetLocation, true);
+      const bothLit = isLit(snapshot, observerLocation) && isLit(snapshot, targetLocation);
+      return connected && bothLit
+        ? answer("true", "adjacent_open_door_lit")
+        : answer("false", connected ? "location_unlit" : "not_perceptible");
+    }
+    if (crossesDoors) {
+      return connectedByDoor(snapshot, observerLocation, targetLocation, false) &&
+        sense.door === "loud" &&
+        loudEvent(event)
+        ? answer("true", "adjacent_loud_event")
+        : answer("false", "not_perceptible");
+    }
+    // Only senses the engine computes get this far (`computesSense`), and each has a rule above.
+    throw new TypeError(`No rule for sense ${query.sense}`);
+  })();
+  if (query.sense !== "sight" || body.value === "true") {
+    return body;
   }
-  if (crossesDoors) {
-    return connectedByDoor(snapshot, observerLocation, targetLocation, false) &&
-      sense.door === "loud" &&
-      loudEvent(event)
-      ? answer("true", "adjacent_loud_event")
-      : answer("false", "not_perceptible");
+  for (const camera of feeds(snapshot, observer.id)) {
+    const at = own(snapshot.entities, camera)!.location;
+    const where = targetLocationForPerception(
+      subject,
+      event === undefined ? subject.location : eventLocation(event, subject),
+      at,
+    );
+    if (at !== null && at === where && isLit(snapshot, at)) {
+      return answer("true", "camera");
+    }
   }
-  // Only senses the engine computes get this far (`computesSense`), and each has a rule above.
-  throw new TypeError(`No rule for sense ${query.sense}`);
+  return body;
 }
 
 export function query(

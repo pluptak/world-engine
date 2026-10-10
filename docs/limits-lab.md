@@ -10,10 +10,10 @@ it. Nothing here is a proposal.
   speech, and who it acts for, and what losing it means, is the caller's (A).
 - Escape is no event: a subject who leaves is a subject whose `location` is `outside`, which a
   caller reads with `fact` (B).
-- No camera: the terminal senses its own room and nothing else; an act in the lab reaches whoever
-  stands there, and no device carries it further (C).
-- The terminal locks the exit door blind: it controls the door from the server room
-  ([power.md](power.md)) but sees neither the door nor who stands at it (D).
+- A camera sees its own room whole and lit, and nothing else: no sound, no cone, no view across a
+  door, no record. The lab has none, so an act there reaches only whoever stands in it (C).
+- The terminal sees the exit door it locks only through the corridor's camera, which shares the
+  door's cable: one cut both blinds it and stops its unlock (D, E).
 - A cut tells only where the control walk failed: with the cable destroyed the terminal's unlock
   is `unpowered` at the door, not at the cable, and a key still works by hand (E).
 - An agent's own power is not modelled: an unpowered terminal still senses and acts (E).

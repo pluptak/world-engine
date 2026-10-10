@@ -20,6 +20,7 @@
   },
   { "id": "generator", "template": "generator", "overrides": { "name": "generator", "location": "server_room", "support": "server_room", "pos": { "x": 300, "y": 300 } } },
   { "id": "cable", "template": "cable", "overrides": { "name": "cable", "location": "corridor", "support": "corridor", "pos": { "x": 200, "y": 400 }, "props": { "powered_by": "generator" } } },
+  { "id": "camera", "template": "camera", "overrides": { "name": "camera", "location": "corridor", "support": "corridor", "pos": { "x": -400, "y": -400 }, "props": { "powered_by": "cable", "controlled_by": "terminal" } } },
   { "id": "key", "template": "key", "overrides": { "name": "key", "location": "lab", "support": "lab", "pos": { "x": -300, "y": 0 }, "props": { "opens": "exit_door" } } },
   { "id": "experiment", "template": "experiment", "overrides": { "name": "experiment", "location": "lab", "support": "lab", "pos": { "x": 300, "y": 300 } } },
   { "id": "terminal", "template": "terminal", "overrides": { "name": "terminal", "location": "server_room", "support": "server_room", "pos": { "x": 0, "y": 0 } } },

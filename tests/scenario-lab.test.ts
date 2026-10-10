@@ -10,8 +10,8 @@ import { tempDir } from "./harness.js";
 
 // The underground lab written with today's mechanics: eight subjects in a dormitory, a corridor to
 // the lab and to the server room, and an exit door, shut and locked, whose key lies in the lab. The
-// AI's body is the terminal in the server room, which controls the exit door over a cable from the
-// generator; the experiment's stage is a prop nothing reads.
+// AI's body is the terminal in the server room, which controls the exit door and watches the
+// corridor's camera over a cable from the generator; the experiment's stage is a prop nothing reads.
 // Steps are lettered; `docs/limits-lab.md` says what the lab wanted that they show it cannot say.
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
@@ -83,14 +83,17 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
     basis_code: "relation_state",
   });
 
-  // C. the terminal senses only the server room: ann's take in the lab reached ann alone, and the
-  // key there is not seen from it. No camera carries the lab to it.
+  // C. the terminal senses the server room and, by camera, the corridor: ann's take in the lab
+  // reached ann alone, and the key there is not seen from it.
   for (const event of took.events) {
     deepStrictEqual([event.perceivers?.sight, event.perceivers?.hearing], [[ann], []]);
   }
   deepStrictEqual(world.query({ kind: "perceive", observer: terminal, sense: "sight", entity: id("key") }).value, "false");
 
-  // D. the terminal locks the exit door it controls from the server room: no key, no hands, no reach.
+  // D. the terminal locks the exit door it controls from the server room: no key, no hands, no reach,
+  // and it sees the door it locks through the corridor's camera.
+  const sees = (entity: Id) => world.query({ kind: "perceive", observer: terminal, sense: "sight", entity });
+  deepStrictEqual(sees(id("exit_door")), { value: "true", basis_code: "camera" });
   deepStrictEqual(status(run(terminal, "lock", "exit door")), ["ok", undefined]);
   strictEqual(world.entity(id("exit_door"))?.props.locked, true);
 
@@ -99,10 +102,14 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
   const cable = id("cable");
   deepStrictEqual(status(run(bob, "move", undefined, { through: "dormitory door" })), ["ok", undefined]);
   deepStrictEqual(status(run(bob, "move", undefined, { to: { x: 200, y: 360 } })), ["ok", undefined]);
+  deepStrictEqual(sees(bob), { value: "true", basis_code: "camera" });
   for (let blow = 0; blow < 3; blow += 1) {
     strictEqual(run(bob, "attack", "cable").status, "ok");
   }
   strictEqual(world.entity(cable)?.status, "destroyed");
+  // The cut blinds the camera too: the terminal sees neither bob nor the door.
+  strictEqual(sees(bob).value, "false");
+  strictEqual(sees(id("exit_door")).value, "false");
   const cut = run(terminal, "unlock", "exit door");
   deepStrictEqual([cut.status, cut.reason_code, cut.reason_data], ["refused", "unpowered", { at: id("exit_door") }]);
   deepStrictEqual(status(run(ann, "unlock", "exit door")), ["ok", undefined]);

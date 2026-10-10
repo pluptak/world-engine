@@ -31,6 +31,7 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   bleed_times: { type: "integer", tier: "definition" },
   break_fall_cm: { type: "integer", tier: "definition" },
   burning: { type: "boolean", tier: "state", requires: ["light_source"] },
+  camera: { type: "boolean", tier: "definition" },
   capacity_cm3: { type: "integer", tier: "definition", min: 1 },
   carry_limit_g: { type: "integer", tier: "definition" },
   closes_after: { type: "integer", tier: "definition", requires: ["openable"] },

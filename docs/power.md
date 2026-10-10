@@ -28,5 +28,8 @@ lock of a door whose cable is cut.
 **Rules** ([relations.md](relations.md) R8): a link naming no entity is `dangling_reference`, so a
 link cannot be removed; a walk that loops is `power_loop` or `control_loop`.
 
-Not modelled: a human using a panel at a distance, power for anything else (lights, cameras, the
-controller itself), delays and partial failure, and who may use a controller beyond the walk.
+A camera is a device too: it feeds its controller while its walk carries a command
+([camera.md](camera.md)).
+
+Not modelled: a human using a panel at a distance, power for anything else (lights, the controller
+itself), delays and partial failure, and who may use a controller beyond the walk.

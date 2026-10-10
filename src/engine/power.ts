@@ -57,3 +57,19 @@ export function remoteFault(snapshot: Snapshot, device: Id): RemoteFault | null 
   }
   return null;
 }
+
+// The cameras whose feed reaches the observer now: each one not destroyed, its control walk ending
+// at the observer and carrying a command, in id order.
+export function feeds(snapshot: Snapshot, observer: Id): Id[] {
+  return Object.keys(snapshot.entities)
+    .sort()
+    .filter((id) => {
+      const camera = own(snapshot.entities, id)!;
+      return (
+        camera.props.camera === true &&
+        camera.status !== "destroyed" &&
+        controller(snapshot, id) === observer &&
+        remoteFault(snapshot, id) === null
+      );
+    });
+}
