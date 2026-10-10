@@ -403,6 +403,7 @@ export const EVENT_SENSES: Readonly<Record<string, EventSenses>> = {
   opened: AUDIBLE_SENSES,
   closed: AUDIBLE_SENSES,
   closing: AUDIBLE_SENSES,
+  jammed: AUDIBLE_SENSES,
   locked: AUDIBLE_SENSES,
   unlocked: AUDIBLE_SENSES,
   // A spawn the physics made — a break product, a severed part — is an event like any other; only a

@@ -17,7 +17,7 @@ import { tempDir } from "./harness.js";
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 const lab = JSON.parse(
   readFileSync(fileURLToPath(new URL("../scenarios/lab.json", import.meta.url)), "utf8"),
-) as Scenario;
+) as { seed: number; entities: Scenario };
 
 test("the lab: the arm takes the key before ann arrives, and a cut cable leaves it holding until ann's blow frees it", (t) => {
   const root = tempDir(t);
@@ -107,11 +107,47 @@ test("the lab's exit door in its window: bob walks out before it shuts, ann's op
   deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
 });
 
+// K. the exit door jams: the terminal works it, unlocking and locking it in turn, and each command that
+// does not jam moves it on. The seed's first jam is the ninth roll; the camera shows it, and the door is as it was.
+test("the lab's exit door jams under the terminal: the first jam the seed gives is seen by the camera, and the door stays as it was", (t) => {
+  const { world, id, run } = open(join(tempDir(t), "jam"));
+  const [terminal, door] = [id("terminal"), id("exit_door")];
+  const sees = (entity: Id) => world.query({ kind: "perceive", observer: terminal, sense: "sight", entity });
+  let worked = 0;
+  let jam: Result | undefined;
+  let jammedVerb = "";
+  while (jam === undefined) {
+    ok(worked < 20, "the seed jams within twenty rolls");
+    const verb = world.entity(door)?.props.locked === true ? "unlock" : "lock";
+    const before = world.entity(door)?.props.locked;
+    const result = run(terminal, verb, "exit door", undefined, true);
+    strictEqual(result.status, "ok");
+    if (result.events.some((event) => event.type === "jammed")) {
+      jam = result;
+      jammedVerb = verb;
+      strictEqual(world.entity(door)?.props.locked, before);
+    } else {
+      worked += 1;
+      ok(world.entity(door)?.props.locked !== before);
+    }
+  }
+  // The seed's first jam is the ninth roll; the eight before it moved the door.
+  strictEqual(worked, 8);
+  deepStrictEqual(jam.events.map((event) => [event.type, event.entity]), [
+    [jammedVerb, door],
+    ["jammed", door],
+  ]);
+  deepStrictEqual(jam.events[1]?.data, { verb: jammedVerb });
+  ok(jam.events[1]?.perceivers?.sight.includes(terminal));
+  deepStrictEqual(sees(door), { value: "true", basis_code: "camera" });
+  deepStrictEqual(validateSnapshot(world.snapshot(), registry), []);
+});
+
 // Everything sent to the world, in order, so a second world can be sent the same.
 type Sent = { command: Command } | { edit: WorldEdit };
 
 function open(dir: string): { world: World; id: (name: string) => Id; sent: Sent[]; run: Run; edit: (edit: WorldEdit) => Result } {
-  const world = createWorld(dir, lab);
+  const world = createWorld(dir, lab.entities, undefined, { seed: lab.seed });
   const id = (name: string): Id => {
     const found = world.id(name);
     ok(found !== null, name);

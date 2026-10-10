@@ -174,10 +174,25 @@ function startClosing(context: TransitionContext, entity: Entity, shutTicks: num
   });
 }
 
+// A remote command to a device with a `jam_pct` rolls once, and a roll under the chance jams it: the
+// tick is spent and the device does nothing else. A hand never rolls.
+function jams(context: TransitionContext, entity: Entity): boolean {
+  const pct = entity.props.jam_pct;
+  if (typeof pct !== "number" || pct <= 0 || !remote(context, entity)) {
+    return false;
+  }
+  return context.random() * 100 < pct;
+}
+
 function transition(context: TransitionContext, kind: Kind): void {
   const target = openableTarget(context, context.target);
   if (target.status === "failed") {
     throw new TypeError("Openable target changed after validation");
+  }
+
+  if (jams(context, target.entity)) {
+    context.emit("jammed", target.entity.id, { verb: kind }, context.root_event_id);
+    return;
   }
 
   // Opening stops a shut on its way, and a shut that has come clears the window (`schedule.ts`).

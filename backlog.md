@@ -18,10 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A remote command that can jam](#a-remote-command-that-can-jam).
-2. [A thing's own integrity](#a-things-own-integrity).
-3. [An intercom](#an-intercom).
-4. [The lab's acceptance table](#the-labs-acceptance-table).
+1. [A thing's own integrity](#a-things-own-integrity).
+2. [An intercom](#an-intercom).
+3. [The lab's acceptance table](#the-labs-acceptance-table).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -65,39 +64,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A remote command that can jam
-
-A remote command to a door always works when its links carry it; the roadmap asks that one "must
-not guarantee that the door successfully operates". The world's dice (`docs/rng.md`) give a
-failure that replays exactly.
-
-- **Prop** (`src/engine/fields.ts`): `jam_pct` (definition, integer 0 to 100, `requires`
-  openable).
-- **Roll** (`src/engine/verbs/openable.ts`): a command from the device's controller to a target
-  with a positive `jam_pct` rolls `context.random()` once, after every precondition; under
-  `jam_pct` it is jammed: status `ok`, the tick spent, one `jammed` event on the device with
-  `{ verb }` and nothing else (no prop change, no shut scheduled, no occupant moved). A refusal
-  cannot advance the dice (its snapshot is the input), so a jam is an `ok` with nothing done. A
-  manual command never rolls; a target with no `jam_pct` never rolls, so no world without one
-  changes; a world with no seed is refused `no_seed`, as any roll is.
-- **Who knows:** `jammed` takes the row of `closed` in `EVENT_SENSES`; the controller's actor view
-  sees it only as it sees anything, so the lab's terminal learns of a jam on the exit door by its
-  camera, and a controller with none learns `ok` and nothing more.
-- **Lab:** `scenarios/lab.json` takes the seeded form (`{ seed, entities }`) and the exit door
-  `jam_pct: 25`; the lab tests' loader reads that form. Each existing remote step is pinned by the
-  seed; any that now jams is kept by a seed that does not, or retried, and a new step finds the
-  seed's first jam, `jammed` seen by the terminal through the camera, the door unchanged. A
-  replay of the whole log is byte-identical (H).
-- **Tests:** `tests/jam.test.ts`: with `jam_pct: 100` every remote verb is `jammed` with nothing
-  changed, and with 0 none is; a hand on the same door never jams; a seeded run gives the same
-  jams on replay; a world with no seed is `no_seed` for a jamming device and untouched for one
-  without; the controller perceives `jammed` through a camera and not without one.
-- **Docs:** `docs/power.md` one line (a device that jams) or a new `docs/jam.md` past its cap,
-  `docs/senses.md` one row, `docs/limits-lab.md`.
-- **Depends on:** none; after the timed shut if built after it, where a jammed `close` starts no
-  window. **Not in it:** wear or a jam that persists (each command rolls afresh), jams for cameras or
-  the arm, a controller told why, and repair.
 
 ### A thing's own integrity
 

@@ -50,6 +50,8 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   inner_d_cm: { type: "integer", tier: "definition" },
   inner_h_cm: { type: "integer", tier: "definition" },
   inner_w_cm: { type: "integer", tier: "definition" },
+  // The chance, in percent, that a remote command to this device is jammed (`docs/jam.md`).
+  jam_pct: { type: "integer", tier: "definition", min: 0, max: 100, requires: ["openable"] },
   light_source: { type: "boolean", tier: "definition" },
   liquid_amount: { type: "integer", tier: "state" },
   liquid_material: { type: "string", tier: "state" },

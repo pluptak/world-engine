@@ -1,0 +1,5 @@
+{
+  "id": "jamming_door",
+  "extends": "shut_door",
+  "props": { "jam_pct": 25 }
+}
