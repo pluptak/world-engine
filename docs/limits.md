@@ -25,3 +25,4 @@ change in the camp cannot is in [limits-camp.md](limits-camp.md); what beats and
   clumsy grab, and a `move` is heard however softly it is made.
 - A `beat` is an ordered batch against one base, not simultaneous action: no initiative, and no
   tie-break for two agents acting in the same instant (`tests/beat.test.ts`).
+- A hand carries any weight: nothing limits what a grip holds, so a human can be carried as a cat is.

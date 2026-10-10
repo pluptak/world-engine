@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A character being carried cannot walk](#a-character-being-carried-cannot-walk).
-2. [A body that is destroyed may leave a successor, and the player follows it](#a-body-that-is-destroyed-may-leave-a-successor-and-the-player-follows-it).
+1. [A body that is destroyed may leave a successor, and the player follows it](#a-body-that-is-destroyed-may-leave-a-successor-and-the-player-follows-it).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,26 +62,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A character being carried cannot walk
-
-One character may carry another (`plans/roles.md`): nothing in `take` refuses an agent, and a hand
-has no weight limit (`src/engine/carry.ts` limits only what a mouth carries). But a carried agent's
-own `move` would pull it out of its carrier's grip.
-
-- **Rule** (`src/engine/verbs/move.ts`): an agent held by another (in an agent's grip or mouth, or
-  inside a container something holds) is refused `being_carried` on `move`, with
-  `{ carrier }` in its data. It keeps its senses, speech and hands; `take` from its own grip and
-  `drop` still work. Nothing else changes: its carrier moves it as any held thing.
-- **Tests:** `tests/carry-agent.test.ts`: a human takes a dog, the dog's `move` is
-  `being_carried` and it still sees the room its carrier walks into; dropped, it moves again; a
-  human carries a wounded human (the builder notes that no weight limit applies, a recorded
-  limit, not changed here) who can still `say`; a third agent's `take` from the carrier's grip is
-  `held_by_another` as now. The property test's every step stays valid.
-- **Docs:** `docs/verbs-moving.md` (one line), and
-  `docs/limits.md` one line (a hand carries any weight).
-- **Depends on:** nothing. **Not in it:** a weight limit for hands, struggling free, a carried
-  agent's bite or attack on its carrier being refused (they work as now).
 
 ### A body that is destroyed may leave a successor, and the player follows it
 

@@ -114,7 +114,7 @@ test("a carried actor is told who carries it, felt for in the dark", (t) => {
     // could name her itself: the view names her as the holder.
     ok(tib.observe().entities.every((entity) => entity.id !== ANN));
     for (const verdict of [tib.check(walk), tib.command(walk)]) {
-      deepStrictEqual([verdict.status, verdict.reason_code, verdict.reason_data], ["refused", "carried", { by: aliasOf("e6", ANN) }]);
+      deepStrictEqual([verdict.status, verdict.reason_code, verdict.reason_data], ["refused", "being_carried", { carrier: aliasOf("e6", ANN) }]);
     }
     strictEqual(tib.command({ command_id: "nose-ann", verb: "attack", target: "ann" }).resolved_target, aliasOf("e6", ANN));
   }

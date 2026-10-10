@@ -8,9 +8,10 @@ An agent moving itself, and moving what stands in a room. Walking rules are in
   to the room on the other side: a shut one is `no_open_door`, anything but a door of its room
   `invalid_location`, and the landing is judged as for `location`. Exactly one of the three, else
   `invalid_args`. It refuses
-  `blocked` and `out_of_bounds` ([walking.md](walking.md)), and `carried` (naming the holder) for an
-  agent held by another; emits `moved`, carrying what it holds, and uncovers what it or anything it
-  carries was hiding. An agent standing on furniture steps down, checked only where it lands.
+  `blocked` and `out_of_bounds` ([walking.md](walking.md)), and `being_carried` (naming the carrier)
+  for an agent held by another, which keeps its senses, speech and hands; emits `moved`, carrying
+  what it holds, and uncovers what it or anything it carries was hiding. An agent standing on
+  furniture steps down, checked only where it lands.
   `args.location` names only the agent's own room or one a door of it leads to, open or shut
   (`no_open_door`); any other id is `invalid_location`, as one that names no room, so a move cannot
   map the world.

@@ -64,13 +64,13 @@ test("an agent held by another goes where it is carried", () => {
   strictEqual(world.edit({ kind: "place", target: ids.ann!, contained_in: ids.bob!, in_part: "hand_l", pos: null }).status, "ok");
   deepStrictEqual(outcome(act(world, ids.ann!, "move", undefined, { to: { x: -100, y: 0 } })), [
     "refused",
-    "carried",
-    { by: ids.bob },
+    "being_carried",
+    { carrier: ids.bob },
   ]);
   deepStrictEqual(outcome(act(world, ids.ann!, "move", undefined, { location: ids.yard })), [
     "refused",
-    "carried",
-    { by: ids.bob },
+    "being_carried",
+    { carrier: ids.bob },
   ]);
 });
 

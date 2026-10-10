@@ -1,8 +1,8 @@
 import { capacity } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
-import { own, type Pos } from "../../model.js";
+import { own, type Entity, type Id, type Pos, type Snapshot } from "../../model.js";
 import { isDoor, resolveTarget } from "../resolve.js";
-import { doorJoins, refreshSubtreeLocations, subtreeOf } from "./address.js";
+import { doorJoins, isAgent, refreshSubtreeLocations, subtreeOf } from "./address.js";
 import { revealConcealed } from "./search.js";
 import { effectivePos, walkStop, type WalkStop } from "../geometry.js";
 
@@ -112,15 +112,33 @@ function hasOpenDoor(context: CommandContext, to: string): boolean {
     });
 }
 
+// The agent that carries a held agent: the first agent up its containment chain, or, with none, the thing it
+// sits in. Only called for an entity that is held, so there is always a holder to start from.
+function carrierOf(snapshot: Snapshot, entity: Entity): Id {
+  const first = entity.contained_in!;
+  let holder: Id | null = first;
+  for (let steps = 0; holder !== null && steps < 64; steps += 1) {
+    const body: Entity | undefined = own(snapshot.entities, holder);
+    if (body === undefined) {
+      break;
+    }
+    if (isAgent(snapshot, body.id)) {
+      return body.id;
+    }
+    holder = body.contained_in;
+  }
+  return first;
+}
+
 function preconditions(context: CommandContext): PreconditionResult {
   const asked = destination(context);
   if (asked === null) {
     return { status: "invalid", reason_code: "invalid_args" };
   }
-  // Held in someone's grip or mouth, an agent goes where it is carried.
+  // Held in someone's grip or mouth, an agent goes where it is carried: its own walk is not its to make, and
+  // what it keeps (its senses, speech, hands) is not changed by being held.
   if (context.actor.contained_in !== null) {
-    const by = context.actor.contained_in;
-    return { status: "refused", reason_code: "carried", reason_data: { by } };
+    return { status: "refused", reason_code: "being_carried", reason_data: { carrier: carrierOf(context.snapshot, context.actor) } };
   }
 
   const moving = capacity(context.snapshot, context.registry, context.actor.id, "moving") ?? 0;
@@ -243,7 +261,7 @@ export const moveVerb: Verb = {
   duration: { ticks: 1 },
   requires_target: false,
   args: { to: { kind: "pos" }, location: { kind: "room" }, through: { kind: "address" } },
-  refuses: ["carried", "insufficient_moving", "no_open_door", "blocked", "out_of_bounds"],
+  refuses: ["being_carried", "insufficient_moving", "no_open_door", "blocked", "out_of_bounds"],
   suggest,
   free_args: true,
   preconditions,

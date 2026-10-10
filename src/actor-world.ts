@@ -183,7 +183,7 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
       }
     }
     // Besides what it senses, an actor could name what it can grope for (`addressable`), so a
-    // holder felt for in the dark is named as a refusal's `carried` by.
+    // holder felt for in the dark is named as a refusal's `carrier`.
     const snapshot = world.snapshot();
     const data: ReasonData = {};
     for (const key of Object.keys(result.reason_data ?? {}).sort()) {
