@@ -20,6 +20,9 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. [A door that takes time to shut](#a-door-that-takes-time-to-shut).
 2. [A remote command that can jam](#a-remote-command-that-can-jam).
+3. [A thing's own integrity](#a-things-own-integrity).
+4. [An intercom](#an-intercom).
+5. [The lab's acceptance table](#the-labs-acceptance-table).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -134,3 +137,110 @@ failure that replays exactly.
 - **Depends on:** none; after the timed shut if built after it, where a jammed `close` starts no
   window. **Not in it:** wear or a jam that persists (each command rolls afresh), jams for cameras or
   the arm, a controller told why, and repair.
+
+### A thing's own integrity
+
+A thing with no parts starts at integrity 100 whatever it is, so the lab's cable takes three human
+blows (`docs/power.md`), where the power item wanted one: a cable is cut, not demolished. Parts
+already declare `max_integrity`; a partless template gets the same field.
+
+- **Template field** (`src/templates.ts`): top-level `max_integrity`, an integer from 1 to 100,
+  absent meaning 100; allowed only on a template with no `parts` (else refused when the set is
+  loaded, naming the template); inherited through `extends` as any field; inside the hash.
+- **Made at it:** an entity of such a template starts at its `max_integrity` wherever entities
+  are made (`blankFields` in `src/engine/spawn.ts` and its callers: scenario building, `edit`'s
+  `spawn`, break and spent products). An `integrity` override still sets it.
+- **Rule** (`src/engine/validate.ts`): a partless entity's `integrity` above its template's
+  `max_integrity` is `integrity_out_of_range`, so an override, an `edit` or an upgrade that lowers
+  the max past a stored value is refused as any broken invariant is.
+- **Attack:** unchanged; damage comes off the stored integrity, and 0 destroys.
+- **Template:** `templates/cable.json` gets `max_integrity: 40`, so one human blow (40) destroys
+  it. Nothing else changes: the generator, camera and arm keep theirs.
+- **Tests that wreck a cable** change from three blows to one: `tests/remote.test.ts` (the panel,
+  a cable), `tests/camera.test.ts` (the wire), `tests/scenario-lab.test.ts` (E and the arm test),
+  and any other the full suite finds. A new `tests/integrity.test.ts`: a cable spawned at 40, one
+  blow destroys it; a template with parts and `max_integrity` refused when loaded; 0 and 101
+  refused; an override above the max and an `edit` setting it above refused
+  `integrity_out_of_range`; a template without the field at 100 as now.
+- **Docs:** `docs/templates.md` one line, `docs/power.md` (the cable: one blow, not three).
+- **Depends on:** nothing. **Not in it:** a `damaged` status for partless things, armour or damage
+  by material, repair.
+
+### An intercom
+
+The AI can say nothing to the subjects and hears only its own room: a camera carries no sound
+(`docs/limits-lab.md`, C), and the terminal stands in the server room. An intercom is the hearing
+counterpart of a camera: a device that carries its room's sounds to the agent it feeds, and that
+agent's speech out into its room.
+
+- **Prop and template:** `intercom` (definition, boolean) in `src/engine/fields.ts`;
+  `templates/intercom.json`: small (20×10×20), 1 kg, not an agent, `intercom: true`.
+- **The feed:** as a camera's (`docs/camera.md`): an intercom feeds `controller(intercom)` while it
+  is not destroyed and `remoteFault` is null. `feeds` in `src/engine/power.ts` takes the prop to
+  look for (`camera` or `intercom`), its callers passing `camera`.
+- **Listening** (`perceive` in `src/engine/query.ts`, after the body's own answer and the camera
+  loop): for `hearing`, when the body's answer is false, each intercom feeding the observer is
+  tried as if the observer stood at the intercom: its own room only, the hearing row's same-room
+  rule (`always`, or `volume` with `heardAtVolume` measured from the intercom), so a whisper is
+  heard only within `NEAR_THRESHOLD_CM` of it and a hand act stays `quiet`. True is `intercom`.
+  Never next door, never smell, sight or touch.
+- **Speaking:** for `hearing` of a `say` event (whose entity is the speaker), when the listener's
+  own answer is false, each intercom feeding the speaker that stands in the listener's room is
+  tried as the speaker: `heardAtVolume(snapshot, listener, intercom, event)`, true `intercom`.
+  Only `say` is carried out; the speaker's other sounds are not.
+- **What follows unchanged:** `perceivers`, `observe`, the actor view and a `wait` until sensed
+  read `perceive`. An unpowered speaker cannot `say` at all (the previous item), and an intercom
+  whose walk fails carries nothing either way.
+- **Lab** (`scenarios/lab.json`): an intercom in the dormitory, `powered_by` the generator and
+  `controlled_by` the terminal. A step right after A in the first test of
+  `tests/scenario-lab.test.ts`: the terminal says `wake` with `perceivers`, and every subject
+  hears it, basis `intercom`; ann answers `who` and the terminal hears her. The later steps are
+  unchanged, and J shows the intercom silent with the generator gone.
+- **Tests:** `tests/intercom.test.ts`, a small world: a fed agent hears a normal `say` in the
+  intercom's room and not a whisper far from it, not a take (`quiet`), not a sound next door; its
+  own `say` is heard by a body in the intercom's room and not one beyond NEAR of it for a
+  whisper, not next door; a human's `say` beside the controller is not carried out; a destroyed
+  or unpowered intercom carries nothing; an agent it does not feed hears nothing through it; a
+  subject's actor view lists the controller's `say`.
+- **Docs:** new `docs/intercom.md` and its `docs/DESIGN.md` line; the basis `intercom` in
+  `docs/senses.md` and `docs/perception.md` (at its cap: split it if needed); `docs/power.md` one
+  line (an intercom is a device), split if past its cap; `docs/limits-lab.md` (C: a camera still
+  carries no sound; the AI speaks where it has an intercom).
+- **Depends on:** a controller's own power (built). **Not in it:** delay, recording, a human
+  using an intercom, broadcast across rooms beyond those that hold one, volume changed by the
+  device.
+
+### The lab's acceptance table
+
+The roadmap ends in a table of eight acceptance rows. Each is now buildable, but they are spread
+over several tests and steps. One file states them, row by row, against `scenarios/lab.json`, so
+the lab's first milestone has a single place that says it holds.
+
+- **File:** `tests/acceptance-lab.test.ts`, one `test` per row, each from a fresh world built from
+  `scenarios/lab.json` (with the seed if the jam item has made it seeded), short, with no engine
+  change. Where a row repeats a step of `tests/scenario-lab.test.ts`, it is repeated on purpose.
+- **Rows:**
+  1. The AI remotely locks a powered, connected door: the terminal's `lock` of the exit door is ok
+     with no key, and it sees the door locked through the camera.
+  2. The controller loses power: with the generator destroyed, the terminal's `lock` is
+     `unpowered` `{ at: terminal, cut: generator }` and the door is unchanged.
+  3. A human outside a camera's coverage: a subject in the dormitory is `false` to the terminal's
+     sight, in the corridor `true` / `camera`, and the terminal's actor view lists the second and
+     not the first.
+  4. A manipulator reaches for an inaccessible object: with the key placed by the author beyond
+     its `reach_cm`, the arm's `take` is `unresolved` (it names only what it can grope for); with
+     the key in ann's grip beside it, `held_by_another`. Neither moves the key.
+  5. A human and the AI act on a door in the same window: the terminal closes the open exit door
+     (`closing`), ann opens it within the window and the terminal's `lock` is refused `closing`;
+     a second close runs out and the lock is ok.
+  6. The experiment's final condition is unmet: a watch for stage 1 on the exit door locked and
+     `outside` not occupied, with a subject outside, leaves `stage` at 0 through many ticks, and a
+     deadline sets it to -1.
+  7. An agent inspects state it may not: bob's actor view `inspect` of the key in the lab and of
+     the experiment are `null`, and a command naming another actor's alias is `unresolved`.
+  8. The same initial state and commands replay identically: two worlds sent the same give the
+     same stored files byte for byte, and `verify` is ok.
+- **Docs:** `docs/limits-lab.md`'s opening names the file beside the scenario test.
+- **Depends on:** a door that takes time to shut (row 5), a controller's own power (built), and
+  after the jam item and the intercom if they come first, whose lab changes it must tolerate.
+  **Not in it:** simultaneous commands (out of scope), new mechanics of any kind.
