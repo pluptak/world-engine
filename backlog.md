@@ -18,12 +18,11 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The schedule is read through the API](#the-schedule-is-read-through-the-api).
-2. [A pending beat is brought forward or put back](#a-pending-beat-is-brought-forward-or-put-back).
-3. [`advance` stops before a beat](#advance-stops-before-a-beat).
-4. [A scene carries its timeline, its slots and its limit](#a-scene-carries-its-timeline-its-slots-and-its-limit).
-5. [A run starts, and ends](#a-run-starts-and-ends).
-6. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
+1. [A pending beat is brought forward or put back](#a-pending-beat-is-brought-forward-or-put-back).
+2. [`advance` stops before a beat](#advance-stops-before-a-beat).
+3. [A scene carries its timeline, its slots and its limit](#a-scene-carries-its-timeline-its-slots-and-its-limit).
+4. [A run starts, and ends](#a-run-starts-and-ends).
+5. [A round: every player moves, in an order no one picks, and the clock moves once](#a-round-every-player-moves-in-an-order-no-one-picks-and-the-clock-moves-once).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -67,30 +66,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### The schedule is read through the API
-
-Everything the world will do by itself is one list, `snapshot.schedule` (`docs/schedule.md`). A
-caller that wants to read what comes next (the director and observer of `plans/roles.md`) digs
-through `snapshot()`. Only a beat is ever named, by the id its author gave it; the engine's own
-causes (a close, a bleed, a process) are read, never addressed, since no role may retime what the
-engine decided.
-
-- **Read** (`src/api.ts`): `World.schedule(filter?)`, `filter` `{ kind?, entity?, until_tick? }`,
-  returns the pending causes in run order as stored. The CLI gets a `schedule` op
-  (`src/cli/main.ts`, its request and response in `src/contract.ts` and `RESPONSES`). `actorWorld`
-  gets nothing and the `actor_*` ops none: what the world will do is not something an actor knows.
-  No stored shape changes, so `schema_version` stays 5.
-- **Tests:** `tests/schedule-api.test.ts`: a door's `open` lists its close and `close` by hand takes
-  it off; a bleed, a process and a repeating beat listed with their own fields; the filter by
-  kind, entity and `until_tick`, and an empty list when nothing is pending; the CLI op answers the
-  same; a store world reopened lists the same.
-- **Lab:** step G (`tests/scenario-lab.test.ts`) reads the exit door's pending shut through
-  `World.schedule({ entity: exit_door })` instead of the snapshot, if it reads it at all.
-- **Docs:** new `docs/schedule-api.md` (the read, and that only beats are named; its
-  `docs/DESIGN.md` line); `docs/api.md` the method.
-- **Depends on:** nothing. **Not in it:** an id for the engine's causes, an actor's view of the
-  schedule, roles.
 
 ### A pending beat is brought forward or put back
 

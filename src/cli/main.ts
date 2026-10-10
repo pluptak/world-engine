@@ -252,6 +252,8 @@ function dispatch(request: Request): unknown {
       const world = openWorld(request.world);
       return actorWorld(world, request.actor).command(request.command);
     }
+    case "schedule":
+      return { schedule: openWorld(request.world).schedule(request.filter ?? {}) };
     case "snapshot":
       return openWorld(request.world).snapshot();
     default: {

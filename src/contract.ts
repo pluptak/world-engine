@@ -268,6 +268,16 @@ export const RequestSchema = z.discriminatedUnion("op", [
     op: z.literal("snapshot"),
     world: z.string().min(1),
   }).strict(),
+  // What the world will do by itself, as stored, filtered (`docs/schedule-api.md`); changes nothing.
+  z.object({
+    op: z.literal("schedule"),
+    world: z.string().min(1),
+    filter: z.object({
+      kind: z.enum(["close", "bleed", "process", "beat"]).optional(),
+      entity: IdSchema.optional(),
+      until_tick: z.number().int().optional(),
+    }).strict().optional(),
+  }).strict(),
   z.object({
     op: z.literal("verbs"),
   }).strict(),
@@ -355,6 +365,33 @@ export const CoverageSchema = z.object({
   properties: z.array(z.string()),
 }).strict();
 
+// A pending cause as stored (`docs/schedule.md`), also what the schedule read answers with.
+export const ScheduledCauseSchema = z.discriminatedUnion("kind", [
+  z.object({ due_tick: z.number().int(), kind: z.literal("close"), entity: IdSchema, cause_id: IdSchema.nullable() }).strict(),
+  z.object({
+    due_tick: z.number().int(),
+    kind: z.literal("bleed"),
+    entity: IdSchema,
+    cause_id: IdSchema,
+    remaining: z.number().int(),
+  }).strict(),
+  z.object({
+    due_tick: z.number().int(),
+    kind: z.literal("process"),
+    entity: IdSchema,
+    cause_id: IdSchema.nullable(),
+    process: z.string(),
+  }).strict(),
+  z.object({
+    due_tick: z.number().int(),
+    kind: z.literal("beat"),
+    entity: IdSchema,
+    cause_id: IdSchema,
+    id: z.string(),
+    ...BeatActionFieldsSchema,
+  }).strict(),
+]);
+
 export const SnapshotSchema = z.object({
   version: z.number().int(),
   tick: z.number().int(),
@@ -362,31 +399,7 @@ export const SnapshotSchema = z.object({
   templates_hash: z.string(),
   coverage: CoverageSchema,
   entities: z.record(z.string(), EntitySchema),
-  schedule: z.array(z.discriminatedUnion("kind", [
-    z.object({ due_tick: z.number().int(), kind: z.literal("close"), entity: IdSchema, cause_id: IdSchema.nullable() }).strict(),
-    z.object({
-      due_tick: z.number().int(),
-      kind: z.literal("bleed"),
-      entity: IdSchema,
-      cause_id: IdSchema,
-      remaining: z.number().int(),
-    }).strict(),
-    z.object({
-      due_tick: z.number().int(),
-      kind: z.literal("process"),
-      entity: IdSchema,
-      cause_id: IdSchema.nullable(),
-      process: z.string(),
-    }).strict(),
-    z.object({
-      due_tick: z.number().int(),
-      kind: z.literal("beat"),
-      entity: IdSchema,
-      cause_id: IdSchema,
-      id: z.string(),
-      ...BeatActionFieldsSchema,
-    }).strict(),
-  ])).optional(),
+  schedule: z.array(ScheduledCauseSchema).optional(),
   rng: z.number().int().optional(),
 }).strict();
 
@@ -584,6 +597,10 @@ export const TraceResponseSchema = z.object({
   events: z.array(WorldEventSchema),
 }).strict();
 
+export const ScheduleResponseSchema = z.object({
+  schedule: z.array(ScheduledCauseSchema),
+}).strict();
+
 export const BeatResponseSchema = z.object({
   results: z.array(CommandResponseSchema),
 }).strict();
@@ -668,6 +685,7 @@ export const RESPONSES = {
   attempts: AttemptsResponseSchema,
   verify: VerifyResponseSchema,
   trace: TraceResponseSchema,
+  schedule: ScheduleResponseSchema,
   beat: BeatResponseSchema,
   verbs: VerbsResponseSchema,
   capabilities: CapabilitiesResponseSchema,

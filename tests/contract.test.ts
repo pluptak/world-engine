@@ -373,6 +373,7 @@ test("a real answer to every op parses with the schema the contract gives that o
     query: { op: "query", world, query: { kind: "fact", subject: "e3", relation: "status" } },
     observe: { op: "observe", world, observer: "e4" },
     snapshot: { op: "snapshot", world },
+    schedule: { op: "schedule", world, filter: { kind: "beat" } },
     verbs: { op: "verbs" },
     capabilities: { op: "capabilities" },
     catalog: { op: "catalog", world },

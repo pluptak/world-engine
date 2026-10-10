@@ -2,7 +2,7 @@
 
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)`, `openWorld(dir)`, and
 `memoryWorld(snapshot)` return a `World` with `command`, `edit`, `check`, `options`, `since`,
-`attempts`, `trace`, `beat`, `upgradeTemplates`, `verify`, `query`, `observe` and `inspect`
+`attempts`, `trace`, `schedule` ([schedule-api.md](schedule-api.md)), `beat`, `upgradeTemplates`, `verify`, `query`, `observe` and `inspect`
 ([projection.md](projection.md)), `snapshot`, `entity`, `catalog` ([catalog.md](catalog.md)), `id` and `fork`. `verbs()` is the verb catalog and
 `ENGINE_CAPABILITIES` what the engine computes; the CLI answers both (`op` `verbs`, `capabilities`).
 

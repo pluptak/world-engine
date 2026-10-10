@@ -21,6 +21,7 @@ import {
 } from "./engine/projection.js";
 import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./engine/query.js";
 import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
+import { scheduled, type ScheduleFilter } from "./engine/pending.js";
 import { assertNoLostField } from "./engine/upgrade.js";
 import { verbCatalog } from "./engine/verbs/index.js";
 import { applyForms, architectWrites, hasForms } from "./engine/forms.js";
@@ -31,7 +32,7 @@ import { isRngState } from "./engine/rng.js";
 import { resolveScenario, type Scenario } from "./scenario.js";
 import { validateSnapshot } from "./engine/validate.js";
 import { WorldError } from "./errors.js";
-import { defaultCoverage, own, type Coverage, type Delta, type Entity, type Id, type ReasonData, type Snapshot, type Status, type WorldEvent } from "./model.js";
+import { defaultCoverage, own, type Coverage, type Delta, type Entity, type Id, type ReasonData, type ScheduledCause, type Snapshot, type Status, type WorldEvent } from "./model.js";
 import {
   attempts as readAttempts,
   create,
@@ -129,6 +130,8 @@ export interface World {
   // One entity in detail, as the observer could sense it now; null when nothing of it is sensed.
   inspect(observer: Id, entity: Id): Inspection | null;
   snapshot(): Snapshot;
+  // What the world will do by itself that matches the filter, in run order, as stored (`docs/schedule-api.md`).
+  schedule(filter?: ScheduleFilter): ScheduledCause[];
   entity(id: Id): Entity | null;
   // The presets an architect may place in this world's template set, with their forms.
   catalog(): CatalogEntry[];
@@ -415,6 +418,7 @@ function storeWorld(
       observeThrough(world, active, observer, options, (tick) => readEvents(dir).filter((event) => event.tick >= tick)),
     inspect: (observer, entity) => inspectThrough(world, active, observer, entity),
     snapshot: () => load(dir, active),
+    schedule: (filter) => scheduled(load(dir, active), filter),
     catalog: () => catalogOf(active),
     entity: (id) => own(load(dir, active).entities, id) ?? null,
     id: (name) => own(names, name) ?? null,
@@ -693,6 +697,7 @@ export function memoryWorld(
       }),
     inspect: (observer, entity) => inspectThrough(world, templates, observer, entity),
     snapshot: () => current,
+    schedule: (filter) => scheduled(current, filter),
     catalog: () => catalogOf(templates),
     entity: (id) => own(current.entities, id) ?? null,
     id: (name) => own(names, name) ?? null,
@@ -708,6 +713,7 @@ export type { WorldErrorCode } from "./errors.js";
 export type { Scenario, ScenarioEntry } from "./scenario.js";
 export { startProcesses } from "./engine/process.js";
 export type { Attempt, Command, Result, WorldEdit } from "./engine/command.js";
+export type { ScheduleFilter } from "./engine/pending.js";
 export type { Answer, Query } from "./engine/query.js";
 export type { HeardFrom, Inspection, ObservedEntity, ObservedEvent, Projection } from "./engine/projection.js";
 export type { BlockedOption, Options, OptionsRequest, ReadyOption } from "./options.js";

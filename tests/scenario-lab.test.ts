@@ -398,7 +398,7 @@ test("the lab: an escape by key, an AI that locks a door it cannot see, a cut ca
     [["deadline", "condition"]],
   );
   strictEqual(world.entity(experiment)?.props.stage, 1);
-  deepStrictEqual((world.snapshot().schedule ?? []).filter((cause) => cause.kind === "beat"), []);
+  deepStrictEqual(world.schedule({ kind: "beat" }), []);
 
   // J. the terminal runs on the generator itself, so the cut cable left it running; ann opens the server
   // room and destroys the generator, and the terminal can neither act nor sense, while the world's time
