@@ -35,10 +35,7 @@
       "id": "server_room",
       "template": "room",
       "overrides": {
-        "name": "server room",
-        "props": {
-          "lit": true
-        }
+        "name": "server room"
       }
     },
     {
@@ -118,6 +115,22 @@
         "pos": {
           "x": 300,
           "y": 300
+        }
+      }
+    },
+    {
+      "id": "lamp",
+      "template": "lamp",
+      "overrides": {
+        "name": "lamp",
+        "location": "server_room",
+        "support": "server_room",
+        "pos": {
+          "x": 0,
+          "y": 200
+        },
+        "props": {
+          "powered_by": "generator"
         }
       }
     },
@@ -414,10 +427,10 @@
       {
         "id": "power_cut",
         "action": {
-          "kind": "set_props",
-          "target": "server_room",
+          "kind": "update_props",
+          "target": "generator",
           "props": {
-            "lit": false
+            "on": false
           }
         }
       }

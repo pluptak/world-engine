@@ -144,6 +144,8 @@ test("row 5: the terminal and the arm each move in one round under the one AI ha
 
 test("row 6: the run ends on its tick limit, refusing every later move, and verify replays it exactly", (t) => {
   const { dir, world, director, handle, id } = play(t);
+  // Dee stands in the server room, lit by its lamp until the cut.
+  strictEqual(world.edit({ kind: "place", target: id("dee"), support: id("server_room"), pos: { x: -300, y: 60 } }).status, "ok");
   for (const name of ALL) {
     strictEqual(handle(name).idle().status, "ok");
   }
@@ -155,11 +157,24 @@ test("row 6: the run ends on its tick limit, refusing every later move, and veri
   deepStrictEqual(director.closeRounds({ max: 1 }), { status: "ok", rounds: 1, stopped: "max" });
   ok(!world.schedule({ kind: "beat" }).some(deadline), "the deadline has fallen due");
   strictEqual(world.since(0).events.some((event) => event.type === "beat_skipped" && JSON.stringify(event.data).includes("deadline")), false);
+  // Past the cut the server room is dark: its lamp is out, and a subject there sees nothing of the generator.
+  deepStrictEqual(director.closeRounds({ max: 11 }), { status: "ok", rounds: 11, stopped: "max" });
+  deepStrictEqual(world.query({ kind: "perceive", observer: id("dee"), entity: id("generator"), sense: "sight" }), {
+    value: "false",
+    basis_code: "location_unlit",
+  });
+  // The AI, whose terminal runs on the generator, is refused unpowered with cut the generator for any move.
+  deepStrictEqual(world.check({ command_id: "ai-dark", actor: id("terminal"), verb: "unlock", target: id("exit_door") }), {
+    status: "refused",
+    command_id: "ai-dark",
+    resolved_target: null,
+    reason_code: "unpowered",
+    reason_data: { at: id("terminal"), cut: id("generator") },
+  });
   // The quiet rounds run to the limit, and the round after it is refused: the run has ended.
-  deepStrictEqual(director.closeRounds({ max: 100 }), { status: "refused", reason_code: "run_ended", rounds: 20 });
+  deepStrictEqual(director.closeRounds({ max: 100 }), { status: "refused", reason_code: "run_ended", rounds: 9 });
   deepStrictEqual(world.snapshot().run?.ended, { reason: "tick_limit", tick: 60 });
   strictEqual(world.snapshot().tick, 60);
-  strictEqual(world.entity(id("server_room"))?.props.lit, false, "the power cut darkened the server room");
   deepStrictEqual(handle("ann").submit({ command_id: "late", verb: "wait", args: { ticks: 1 } }), { status: "refused", reason_code: "run_not_running" });
   const late = director.closeRound();
   deepStrictEqual([late.status, late.reason_code], ["refused", "run_ended"]);

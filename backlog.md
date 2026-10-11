@@ -18,16 +18,15 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The lab's power cut cuts power](#the-labs-power-cut-cuts-power).
-2. [A beat that writes a definition prop is refused when scheduled](#a-beat-that-writes-a-definition-prop-is-refused-when-scheduled).
-3. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
-4. [A hand's carry limit](#a-hands-carry-limit).
-5. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
-6. [Submitting a move is cheap](#submitting-a-move-is-cheap).
-7. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-8. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-9. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-10. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [A beat that writes a definition prop is refused when scheduled](#a-beat-that-writes-a-definition-prop-is-refused-when-scheduled).
+2. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
+3. [A hand's carry limit](#a-hands-carry-limit).
+4. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
+5. [Submitting a move is cheap](#submitting-a-move-is-cheap).
+6. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
+7. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
+8. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+9. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -71,23 +70,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 _None: every item is shipped. Only the maintainer adds one, under Priorities._
-
-### The lab's power cut cuts power
-
-The lab run's pool beat `power_cut` sets the server room's `lit: false` by hand, and a limit says a
-generator cannot fail (`docs/limits-lab.md`, "As a run").
-
-- **Scene** (`scenarios/lab-run.json`): the server room loses its own `lit` and gains a lamp on the
-  generator; `power_cut` becomes `update_props { on: false }` on the generator. `scenarios/lab.json`
-  stays as it is.
-- **Tests:** `tests/acceptance-lab-run.test.ts` row 6: after the cut the server room is dark
-  (`isLit` false, a subject there sees `false` / `location_unlit`), and the AI, whose terminal runs
-  on the generator, is refused `unpowered` with `cut` the generator for any move; the other rows
-  pass unchanged, which they must, since the room is lit until the cut.
-- **Docs:** `docs/limits-lab.md` (the generator line goes; what the run still cannot say stays),
-  `docs/scenario.md` only if it describes the pool.
-- **Depends on:** the three items above. **Not in it:** restoring power in the lab, a
-  `darkened` event.
 
 ### A beat that writes a definition prop is refused when scheduled
 

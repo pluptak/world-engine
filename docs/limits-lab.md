@@ -43,9 +43,6 @@ The lab played as a run (`scenarios/lab-run.json`: the same entities, nine slots
 queued deadline, the door's odds steered within 10 to 50, a tick limit of 60), one test per row of
 `tests/acceptance-lab-run.test.ts`. What the run could not say:
 
-- A generator cannot fail: nothing switches a source off, and `power_source` is a definition. The
-  pool's second beat darkens the server room (`lit: false`), a power failure only in the sense of
-  [beats-actions.md](beats-actions.md) (row 6).
 - A heard sound names no source to its listener: a subject in the dormitory learns that something
   sounded, not where it came from (row 3).
 - The odds show only as an earlier jam, and the AI learns of it only through the camera, never why:
