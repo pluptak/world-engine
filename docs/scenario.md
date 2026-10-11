@@ -29,5 +29,6 @@ way by `validateSnapshot`.
 **Versions.** A world without a scene stores nothing new: `run` is absent, and a beat with a null
 `cause_id` is only ever written by a scene. So `schema_version` stays 5.
 
-**Not in it.** The pool of beats and the odds a director steers ([roles.md](roles.md)), the run's
-states, and a list of scenes. Tests: `tests/scene.test.ts`.
+**Not in it.** The pool of beats and the odds a director steers
+([roles-levers.md](roles-levers.md)), the run's states, and a list of scenes.
+Tests: `tests/scene.test.ts`.
