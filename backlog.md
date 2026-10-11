@@ -18,10 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Clean-ups after roles and rounds: a successor's name, and CLAUDE.md](#clean-ups-after-roles-and-rounds-a-successors-name-and-claudemd).
-2. [One player's handle drives several bodies](#one-players-handle-drives-several-bodies).
-3. [The lab played as a run](#the-lab-played-as-a-run).
-4. [Measure rounds](#measure-rounds).
+1. [One player's handle drives several bodies](#one-players-handle-drives-several-bodies).
+2. [The lab played as a run](#the-lab-played-as-a-run).
+3. [Measure rounds](#measure-rounds).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -65,30 +64,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### Clean-ups after roles and rounds: a successor's name, and CLAUDE.md
-
-Three loose ends from the last builds, each small, decided here so no builder has to.
-
-- **A successor's name** (`hurt` in `src/engine/harm.ts`): a successor is spawned with the dead
-  body's `name`, so the destroyed body and the one that took over answer to the same name and a
-  command naming it is `ambiguous`. The successor takes its template's own default name instead (as
-  any spawn does, `src/engine/spawn.ts`); the body keeps its name, since it is still that body. A
-  player's handle never needed the name: it drives the successor by its binding.
-- **Kept as built, recorded:** `move`'s refusal stays `being_carried` with `{ carrier }`; `wait`
-  stays for worlds that are not running runs (tests, single-agent worlds), refused there as a round
-  move as now. Nothing changes in the code for either.
-- **`CLAUDE.md`:** the layout section knows nothing of scenes, runs, rounds or handles. One bullet
-  each, in the style of the others, naming the files (`src/engine/scene.ts`, `src/engine/run.ts`,
-  `src/engine/round.ts`, `src/director-world.ts`, `src/player-world.ts`, `src/internal.ts`) and the
-  docs (`docs/scenario.md`, `docs/run.md`, `docs/rounds.md`, `docs/roles.md`,
-  `docs/schedule-api.md`); the `World` method list gains `schedule` and `round`; the CLI op list
-  gains the `player_*` and `director_*` ops. Only what is built, nothing planned.
-- **Tests:** `tests/successor.test.ts`: the successor answers to its template's name, the body to
-  its own, and a command naming the body's name resolves to the body, not `ambiguous`.
-- **Docs:** `docs/templates.md` (the successor's name), `CLAUDE.md`.
-- **Depends on:** nothing. **Not in it:** a scene naming a successor (a later need), renaming the
-  body.
 
 ### One player's handle drives several bodies
 

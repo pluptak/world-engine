@@ -131,7 +131,7 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   names the first byte of `log.jsonl`, `events.jsonl`, `deltas.jsonl`, `snapshot.json` or a checkpoint that differs
   (`docs/persistence.md`).
 - `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
-  `command`/`edit`/`check`/`options`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`/`catalog`;
+  `command`/`edit`/`check`/`options`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`/`catalog`/`schedule`/`round`;
   `options` (`src/options.ts`) dry-runs every non-author verb against everything the actor can name
   (`addressable`) and sorts the verdicts into `ready`, `needs_args` and, on request, `blocked`; a verb's `suggest` lists the arg sets
   to try (`give`, `put`, `move`, `pour`), `free_args` the args no list holds, `aims_at_parts` (`attack`) has it
@@ -170,12 +170,22 @@ checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the lo
   past snapshots so stale commands preempt exactly like store-backed ones.
 - `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
   `check` | `options` | `since` | `attempts` | `query` | `observe` | `inspect` | `snapshot` | `verbs` |
-  `capabilities` | `catalog` | `schema` | `verify`, and the five `actor_*` ops of `docs/actor-view.md`, through `actorWorld`), calls one
+  `capabilities` | `catalog` | `schema` | `verify`, and the five `actor_*` ops of `docs/actor-view.md`, through `actorWorld`, and the `player_*` and `director_*` ops of `docs/roles.md`, through the handles), calls one
   `World` method, `verbCatalog` or returns `ENGINE_CAPABILITIES` (`src/engine/capabilities.ts`: the
   relations and senses the engine computes, which `validateSnapshot` holds coverage to), and
   validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`
   builds a world from spawn specs in `scenarios/*.json`. A failure becomes `{status:"invalid",
   issues}` with exit code 2.
+- `src/engine/scene.ts`: a scene (`{ seed?, entities, beats?, run? }`, `docs/scenario.md`) built into a snapshot by
+  `sceneSnapshot`; a bare list is a scene with no seed, beats or run. `src/engine/run.ts`: a run's life
+  (`docs/run.md`), registering, running, then ended with its reason, and `liveBodyOf`, the body a slot is
+  driven through.
+- `src/engine/round.ts`: one round of moves (`World.round`, `docs/rounds.md`): each move decided against the
+  same world, taken in an order from the dice's own stream, the clock moving once.
+- `src/director-world.ts` and `src/player-world.ts`: the two handles of `docs/roles.md`. A director registers
+  players and closes rounds; a player's handle observes, checks and submits one move per body it drives.
+  `src/internal.ts` holds what they share with the view, and is never exported by the package.
+- The run documents: `docs/scenario.md`, `docs/run.md`, `docs/rounds.md`, `docs/roles.md`, `docs/schedule-api.md`.
 
 ## Templates
 

@@ -39,14 +39,15 @@ export function hurt(
   }
   // A body whose template names a successor leaves one where it lay, caused by its destruction: a body carried
   // when it dies leaves it at its carrier's feet (`placeInstead`). The body stays, destroyed, and the
-  // successor's `succeeds` is the record of whose it is (`docs/templates.md`).
+  // successor's `succeeds` is the record of whose it is (`docs/templates.md`). The successor takes its
+  // template's own name, so the destroyed body and the one that took over never share one.
   const successor = own(context.registry, body.template)?.props.successor;
   if (typeof successor === "string") {
     const lands = placeInstead(context, context.snapshot.entities[body.id]!, successor);
     spawnUnder(
       context,
       successor,
-      { name: body.name, ...lands, props: { succeeds: body.id } },
+      { ...lands, props: { succeeds: body.id } },
       eventId,
     );
   }

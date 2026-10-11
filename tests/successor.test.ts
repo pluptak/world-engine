@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
+import { deepStrictEqual, notStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { cpSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -179,4 +179,20 @@ test("a body that dies while carried leaves its successor at its carrier's feet,
     [null, world.entity(bob)?.support, world.entity(bob)?.pos],
   );
   strictEqual(act(world, bob, "wait", undefined, { ticks: 1 }).status, "ok");
+});
+
+test("a successor answers to its template's name, the body to its own, and a command naming the body resolves to the body, not ambiguous", (t) => {
+  // The successor takes its template's name, so the dead body and its heir never share "ann".
+  const { world, id } = frail(t);
+  const [ann, bob] = [id("ann"), id("bob")];
+  strictEqual(act(world, bob, "attack", `${ann}.hand_r`).status, "ok");
+  act(world, bob, "wait", undefined, { ticks: 7 });
+  strictEqual(world.entity(ann)?.name, "ann");
+  const [successor] = successorsOf(world, ann);
+  ok(successor !== undefined);
+  strictEqual(world.entity(successor)?.name, "human");
+  strictEqual(world.id("ann"), ann);
+  const named = act(world, bob, "take", "ann");
+  notStrictEqual(named.status, "ambiguous");
+  strictEqual(named.status !== "ok" || named.events.some((event) => event.entity === ann), true, "a take naming ann acts on the body");
 });

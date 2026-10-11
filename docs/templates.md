@@ -68,5 +68,7 @@ A top-level `max_integrity` (partless templates only) is how much a thing with n
 loads otherwise. A body of a template that names one is destroyed (by an attack, a bleed or a
 process) and leaves an agent of that template where it lay (at its carrier's feet if it was held,
 as a used-up thing's products go), caused by the destruction, with
-`props.succeeds` naming the body it took over. The body stays, destroyed. No shipped template names
+`props.succeeds` naming the body it took over. The successor takes its template's name, not the
+body's, so a command naming the body never meets a second one of the same name (`ambiguous`). The
+body keeps its own name and stays, destroyed. No shipped template names
 a successor.
