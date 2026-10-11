@@ -75,6 +75,9 @@ Guidance for coding agents in this directory.
 - `world-engine/README.md` ≤ 15 lines. `docs/` describes **what is built, nothing aspirational**, one
   concept per file, each ≤ 40 lines and ≤ 100 columns; `docs/DESIGN.md` is the index of those files.
   A topic that outgrows its cap splits into a new file rather than losing content.
+- Write for humans first: plain words, short sentences, lists over paragraphs. Where a shape,
+  chain, or flow is easier drawn than described (support chain, cause chain, file layout), add a
+  small ASCII schematic, no tooling needed.
 
 ## Out of scope
 

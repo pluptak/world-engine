@@ -57,7 +57,7 @@ of the clock (`schedule_not_ahead`, since the clock runs everything due), causes
 (`invalid_process`) or pending twice on one entity (`duplicate_process`), and a malformed beat
 (`invalid_beat`), a beat id used twice (`duplicate_beat`) or more than 256 of them (`too_many_beats`). The schedule is not a
 field of any entity, so like `tick` its changes are not deltas; the events are the record. Stored
-worlds are `schema_version` 3 since.
+worlds are `schema_version` 5 since.
 
 `tests/schedule.test.ts` is the spec, with the pushed-aside gate in
 `tests/scenario-cell.test.ts`. The property test's door and chest close themselves, so random

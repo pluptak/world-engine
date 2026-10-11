@@ -1,14 +1,28 @@
 # Transition pipeline
 
-Commands pass through target resolution, preconditions, a verb transition, physical consequences,
-and causal events, and return a status, deltas, and events chained by command and cause ID. Non-ok
-results leave the snapshot unchanged; a success advances the clock by its verb's duration once the
-transition has run ([time.md](time.md)), bumps its version, and a verb may declare
-`validateResult`, run after its transition: it refuses a result that breaks an invariant. The engine
-is pure: a transition takes a snapshot and returns a new one; I/O stays outside.
+A command is a try. The engine answers in fixed steps:
 
-Each verb declares its args, its duration, the capacities it needs and the refusal codes it can
-return; `verbs()` is the catalog read from those declarations, and a refusal with an undeclared code
-is an engine bug that throws. Every verb is indexed in [verbs.md](verbs.md), with its rules in a
-family file. A target names only what its actor can address
-([perception.md](perception.md)).
+- Find the target: name, alias, or `entity.part`.
+- Check the actor and the verb's preconditions.
+- Run the verb's transition.
+- Run physical consequences: support loss, falls, breaks.
+- Answer with a status, deltas, and events chained by `cause_id`.
+
+```
+command -> resolve -> checks -> transition -> physical -> events
+                                              -> clock (+1 tick)
+```
+
+- Any status but `ok` changes nothing.
+- `ok` moves `tick` by the verb's duration ([time.md](time.md)).
+- `ok` bumps `version`.
+- A verb may declare `validateResult`. It refuses a result
+  that breaks an invariant.
+- Pure core: a transition takes a snapshot and returns a new one.
+- I/O stays outside the engine.
+- Each verb declares its args, duration, capacities, and refusal codes.
+- A refusal with an undeclared code is a bug. It throws.
+- All verbs are indexed in [verbs.md](verbs.md).
+- Rules live in the family file the index links.
+- A target names only what the actor can address
+  ([perception.md](perception.md)).
