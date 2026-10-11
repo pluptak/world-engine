@@ -34,7 +34,7 @@ same world and take the round's tick, and the clock moves once at its close ([ro
 **Waking early.** `advance` may name agents (`stop_on_perceived`) and then ends at the first tick whose
 events one of them could sense, after everything due at that tick has run; `ticks` is the upper bound
 and the `advance` event's `advanced` the ticks that passed. What was due later stays pending
-([verbs-other.md](verbs-other.md)). Two advances that end where one would have leave the same world.
+([verbs-time.md](verbs-time.md)). Two advances that end where one would have leave the same world.
 
 **A run's limit.** A running run's clock never passes its `tick_limit`: a `wait` or `advance` that would is cut
 at it, and the run ends there ([run.md](run.md)).

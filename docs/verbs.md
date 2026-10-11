@@ -30,11 +30,11 @@ This is the index: one line per verb, its rules in the family file it links to.
 - `close`: shuts it ([verbs-openables.md](verbs-openables.md)).
 - `lock`: locks it with a carried key ([verbs-openables.md](verbs-openables.md)).
 - `unlock`: unlocks it with a carried key ([verbs-openables.md](verbs-openables.md)).
-- `attack`: strikes with the first mode the attacker can use ([verbs-other.md](verbs-other.md)).
-- `search`: looks under or behind a target ([verbs-other.md](verbs-other.md)).
-- `light`: sets a light source burning ([verbs-other.md](verbs-other.md)).
-- `douse`: puts it out ([verbs-other.md](verbs-other.md)).
-- `say`: says an opaque token at a volume, heard by who can hear it ([verbs-other.md](verbs-other.md)).
-- `wait`: lets ticks pass ([verbs-other.md](verbs-other.md)).
-- `advance`: the world author lets ticks pass, with no one acting ([verbs-other.md](verbs-other.md)).
-- `edit`: the world author's one change ([verbs-other.md](verbs-other.md)).
+- `attack`: strikes with the first mode the attacker can use ([verbs-combat.md](verbs-combat.md)).
+- `search`: looks under or behind a target ([verbs-sensing.md](verbs-sensing.md)).
+- `light`: sets a light source burning ([verbs-sensing.md](verbs-sensing.md)).
+- `douse`: puts it out ([verbs-sensing.md](verbs-sensing.md)).
+- `say`: says an opaque token at a volume, heard by who can hear it ([verbs-sensing.md](verbs-sensing.md)).
+- `wait`: lets ticks pass ([verbs-time.md](verbs-time.md)).
+- `advance`: the world author lets ticks pass, with no one acting ([verbs-time.md](verbs-time.md)).
+- `edit`: the world author's one change ([verbs-edit.md](verbs-edit.md)).

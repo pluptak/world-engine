@@ -6,7 +6,7 @@ schedule ([schedule.md](schedule.md)); when it falls due it becomes ordinary eve
 observer senses as it would any others. (Not the `beat` of `World`, an ordered batch of commands.)
 Mapping a tick to a wall-clock time such as 20:05 is the controller's job: the engine knows ticks only.
 
-**Authoring.** Two `edit` kinds, issued by the world author like the rest ([verbs-other.md](verbs-other.md)):
+**Authoring.** Two `edit` kinds, issued by the world author like the rest ([verbs-edit.md](verbs-edit.md)):
 
 - `schedule_beat { id, at_tick, action, only_if?, then? }`. `id` is a token matching
   `^[A-Za-z0-9_.:-]{1,64}$`, unique among pending beats (`duplicate_beat`); `at_tick` must be ahead of

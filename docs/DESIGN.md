@@ -9,7 +9,10 @@ What is built, nothing aspirational, one concept per file:
 - [verbs-moving.md](verbs-moving.md): `move`, `push`, `pull`.
 - [verbs-holding.md](verbs-holding.md): `take`, `drop`, `put`, `give`, `pour`, `consume`.
 - [verbs-openables.md](verbs-openables.md): `open`, `close`, `lock`, `unlock`.
-- [verbs-other.md](verbs-other.md): `attack`, `search`, `light`, `douse`, `wait`, `advance`, `edit`.
+- [verbs-combat.md](verbs-combat.md): `attack`.
+- [verbs-sensing.md](verbs-sensing.md): `search`, `light`, `douse`, `say`.
+- [verbs-time.md](verbs-time.md): `wait`, `advance`.
+- [verbs-edit.md](verbs-edit.md): `edit`.
 - [state.md](state.md): snapshots, validation, templates, parts, capacities, physical consequences.
 - [structure.md](structure.md): parts, sparse part state, what writes it, and severing.
 - [templates.md](templates.md), [fields.md](fields.md): templates, upgrades; each prop's tier.

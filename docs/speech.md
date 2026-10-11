@@ -5,7 +5,7 @@ not, and the engine never holds the words (`AGENTS.md`: no prose crosses the bou
 world state, never knowledge). A speech act carries an opaque *token* the caller made up, and the
 caller keeps the text and maps the token to it outside.
 
-**The verb.** `say` ([verbs-other.md](verbs-other.md)): `args.utterance`, a token matching
+**The verb.** `say` ([verbs-sensing.md](verbs-sensing.md)): `args.utterance`, a token matching
 `^[A-Za-z0-9_.:-]{1,64}$` that is stored and never interpreted; `args.volume`, `whisper`, `normal` (the
 default) or `shout`; an optional target, the addressee, any entity address. It needs a `speech`
 capacity of 50 from the actor's parts (`requires`, as `lock` needs `manipulation`) and takes one tick.

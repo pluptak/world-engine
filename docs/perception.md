@@ -17,7 +17,7 @@ read the stored entry or the template default and write nothing; any other field
 
 Sight needs light. A room is lit by its `lit` prop, or by something in it with `light_source: true`
 and `burning: true` (`isLit` in `query.ts`), a hand or a pocket included, but not one shut in a
-closed container or destroyed; `light` and `douse` set `burning` ([verbs-other.md](verbs-other.md)),
+closed container or destroyed; `light` and `douse` set `burning` ([verbs-sensing.md](verbs-sensing.md)),
 and nothing stores the answer. Sight across an open door needs both rooms lit
 (`adjacent_open_door_lit`), an unlit room is `location_unlit`, and a camera lends its lit room, an
 intercom its sounds, to the agent it feeds ([camera.md](camera.md), [intercom.md](intercom.md)).
