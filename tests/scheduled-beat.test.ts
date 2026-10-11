@@ -812,6 +812,34 @@ test("a beat writing an undeclared prop or a prop of the wrong type is refused w
   strictEqual(h.world.snapshot().schedule, undefined);
 });
 
+test("a beat writing a definition prop is refused when scheduled, and repeating one is queued", (t) => {
+  const h = inn(t);
+  const spawned = edit(h.world, {
+    kind: "spawn",
+    template: "generator",
+    overrides: { name: "gen", location: h.hall, support: h.hall, pos: { x: -200, y: 0 } },
+  });
+  strictEqual(spawned.status, "ok");
+  const gen = Object.keys(h.world.snapshot().entities).find((id) => h.world.snapshot().entities[id]?.name === "gen")!;
+  ok(gen !== undefined);
+  const refusedWith = (action: unknown) => {
+    const result = edit(h.world, { kind: "schedule_beat", id: "bad", at_tick: 3, action } as WorldEdit);
+    return [result.status, result.reason_code];
+  };
+  // Changing a definition, or dropping one by replacing without it, can never run.
+  deepStrictEqual(refusedWith({ kind: "update_props", target: gen, props: { power_source: false } }), ["refused", "field_not_editable"]);
+  deepStrictEqual(refusedWith({ kind: "set_props", target: h.door, props: { open: false } }), ["refused", "field_not_editable"]);
+  // Repeating a definition's own value changes nothing about it: both beats are queued.
+  strictEqual(
+    edit(h.world, { kind: "schedule_beat", id: "same", at_tick: 3, action: { kind: "update_props", target: gen, props: { power_source: true } } }).status,
+    "ok",
+  );
+  strictEqual(
+    edit(h.world, { kind: "schedule_beat", id: "same-set", at_tick: 4, action: { kind: "set_props", target: h.door, props: { openable: true } } }).status,
+    "ok",
+  );
+});
+
 test("a beat writing declared props is queued, and runs when due", (t) => {
   const h = inn(t);
   strictEqual(
@@ -841,6 +869,24 @@ test("a scene's beat or follower writing an undeclared prop fails the scene, and
     "beats[0].then[0]: undeclared_prop",
   );
   refusal({ run: { tick_limit: 9, pool: [{ id: "dim", action: { kind: "set_props", target: "hall", props: { lit: 3 } } }] } }, "run.pool[0]: wrong_prop_type");
+});
+
+test("a scene's beat writing a definition prop fails the scene, and so does a pool beat", (t) => {
+  const scene = (extra: Record<string, unknown>) => ({
+    entities: [
+      { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
+      { id: "gen", template: "generator", overrides: { name: "gen", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
+    ],
+    ...extra,
+  });
+  const refusal = (extra: Record<string, unknown>, rule: string) =>
+    throws(
+      () => createWorld(join(tempDir(t), "refused"), scene(extra) as never, registry),
+      (error: unknown) => error instanceof WorldError && error.code === "invalid_scenario" && error.message.includes(rule),
+      rule,
+    );
+  refusal({ beats: [{ id: "cut", at_tick: 2, action: { kind: "update_props", target: "gen", props: { power_source: false } } }] }, "beats[0]: field_not_editable");
+  refusal({ run: { tick_limit: 9, pool: [{ id: "cut", action: { kind: "update_props", target: "gen", props: { power_source: false } } }] } }, "run.pool[0]: field_not_editable");
 });
 
 test("an update_props beat queued in a scene merges its prop when due", (t) => {

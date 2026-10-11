@@ -13,6 +13,7 @@ import { isAgent } from "./verbs/address.js";
 import { MAX_BEATS, pendingBeatIds } from "./beats.js";
 import type { BeatAction } from "./command.js";
 import { isUtterance } from "./verbs/say.js";
+import { definitionWritten } from "./verbs/edit.js";
 
 export interface SnapshotIssue {
   code: string;
@@ -423,7 +424,16 @@ export function beatPropRefusal(snapshot: Snapshot, registry: TemplateRegistry, 
       return first.code;
     }
   }
-  return null;
+  // Whether it changes a definition depends only on the template and the props written, so one
+  // that would can never run: a `set_props` that would drop or change one, or an `update_props`
+  // that writes one with another value, read through `definitionWritten` itself.
+  const full = own(registry, subject.template);
+  if (full === undefined) {
+    return null;
+  }
+  const resulting =
+    action.kind === "set_props" ? { ...action.props } : { ...subject.props, ...action.props };
+  return definitionWritten(full, resulting) === null ? null : "field_not_editable";
 }
 
 // What sits in a holder's part: in_part is set exactly when the holder declares holder parts,

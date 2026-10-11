@@ -18,15 +18,14 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A beat that writes a definition prop is refused when scheduled](#a-beat-that-writes-a-definition-prop-is-refused-when-scheduled).
-2. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
-3. [A hand's carry limit](#a-hands-carry-limit).
-4. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
-5. [Submitting a move is cheap](#submitting-a-move-is-cheap).
-6. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-7. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-8. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-9. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
+2. [A hand's carry limit](#a-hands-carry-limit).
+3. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
+4. [Submitting a move is cheap](#submitting-a-move-is-cheap).
+5. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
+6. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
+7. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+8. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -70,25 +69,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 _None: every item is shipped. Only the maintainer adds one, under Priorities._
-
-### A beat that writes a definition prop is refused when scheduled
-
-A `set_props` or `update_props` beat that would change a definition prop is accepted when scheduled
-and skipped when due (`beat_skipped`, code `field_not_editable`, from `propsRefusal` in
-`src/engine/verbs/edit.ts`). Whether it changes one depends only on the subject's template and the
-props written (`definitionWritten`), so it can never run.
-
-- **Rule** (`beatPropRefusal` in `src/engine/validate.ts`, beside the prop checks the last item put
-  there): after the per-prop codes, a `set_props` whose props would drop or change a definition, or
-  an `update_props` that writes one with another value, is `field_not_editable`, read through
-  `definitionWritten` itself, not a copy. `schedule_beat`, followers, a scene's beats and its pool
-  all get it through the one function.
-- **Tests:** `tests/scheduled-beat.test.ts`: `update_props { power_source: false }` on a generator
-  is refused `field_not_editable` when scheduled; a `set_props` that leaves out a template's
-  definition likewise; one that repeats the definition's own value is queued; a scene beat fails
-  `invalid_scenario` with the rule.
-- **Docs:** `docs/beats-actions.md` (the line the last item added gains the code).
-- **Depends on:** nothing. **Not in it:** other edit kinds' refusals at scheduling.
 
 ### A heard sound tells which way it came
 
