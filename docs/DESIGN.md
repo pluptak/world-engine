@@ -21,12 +21,13 @@ What is built, nothing aspirational, one concept per file:
 - [carrying.md](carrying.md): holding parts, grips and pockets, and what losing a part drops.
 - [api.md](api.md): the `World` API, edits, scenarios and names.
 - [space.md](space.md): anchors, offsets and the derived `near` relation.
+- [scenery.md](scenery.md): what is seen but no verb reaches.
 - [provenance.md](provenance.md): what `cause_id` records, how `trace` walks it, and its limits.
-- [schedule.md](schedule.md): what the world does by itself later: the self-closing door.
+- [schedule.md](schedule.md): the causes the world runs by itself, by kind, and how they run.
 - [schedule-api.md](schedule-api.md): reading that schedule through `World.schedule`, filtered.
 - [scenario.md](scenario.md): a scene: the entities, the seed, the beats queued at creation and the run's limits.
 - [run.md](run.md): a run made from a scene: registering, running, ended, and the limit and the slots that end it.
-- [roles.md](roles.md): the roles a handle carries: the author, the director, and what each may send.
+- [roles.md](roles.md): the author, director and player roles, and the director's levers.
 - [rounds.md](rounds.md): a round: every move decided against one world, in an order no caller picks, one tick.
 - [processes.md](processes.md): declaring a prop that changes by itself, and reconciling it.
 - [processes-then.md](processes-then.md): what the run that reaches the bound does.
