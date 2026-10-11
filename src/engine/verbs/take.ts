@@ -1,6 +1,6 @@
 import { capacities } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
-import { carryAlternatives, carryCheck, gripPlacement, heldCount, holderLayout } from "../carry.js";
+import { carryAlternatives, carryCheck, gripPlacement, handsHeldMass, heldCount, holderLayout } from "../carry.js";
 import { closedEnclosure, gapRefusal, isAgent, refuseOutOfReach, wouldLoop } from "./address.js";
 import { revealConcealed } from "./search.js";
 
@@ -48,6 +48,7 @@ function preconditions(context: CommandContext): PreconditionResult {
     context.registry,
     heldCount(context.snapshot, context.actor.id),
     context.verb.carry_alternatives ?? [],
+    handsHeldMass(context.snapshot, context.registry, context.actor.id, entity.id),
   );
   if (!carry.ok) {
     return {

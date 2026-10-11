@@ -1,7 +1,9 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { createWorld, type Id, type Result, type Scenario, type World } from "../src/index.js";
+import { loadTemplates, parseRegistry } from "../src/templates.js";
 import { tempDir } from "./harness.js";
 
 // A character held by another (`docs/verbs-moving.md`): it keeps its senses, speech and hands, but its own
@@ -60,7 +62,7 @@ test("a cat held by a human cannot walk, but it sees the room its carrier walks 
 });
 
 test("a human held by another still speaks, and cannot walk", (t) => {
-  // A held human keeps its speech: a weight is no limit on what a hand holds, as the builder found.
+  // A held human keeps its speech: one body is within what the hands hold.
   const { world, id } = open(t);
   const [ann, bob] = [id("ann"), id("bob")];
   strictEqual(act(world, ann, "take", "bob").status, "ok");
@@ -75,4 +77,67 @@ test("a third agent cannot take a held agent from its carrier's hand", (t) => {
   const grabbed = act(world, cid, "take", "bob");
   deepStrictEqual([grabbed.status, grabbed.reason_code], ["refused", "held_by_another"]);
   strictEqual(world.entity(bob)?.contained_in, ann);
+});
+
+test("a human carries one body but not two, and takes the other once one is put down", (t) => {
+  const { world, id } = open(t);
+  const [ann, bob, cid] = [id("ann"), id("bob"), id("cid")];
+  strictEqual(act(world, ann, "take", "bob").status, "ok");
+  const second = act(world, ann, "take", "cid");
+  deepStrictEqual([second.status, second.reason_code], ["refused", "too_heavy"]);
+  strictEqual(act(world, ann, "drop", "bob").status, "ok");
+  strictEqual(act(world, ann, "take", "cid").status, "ok");
+  strictEqual(world.entity(cid)?.contained_in, ann);
+});
+
+test("a give lands within the limit: loaded hands take a light thing handed over", (t) => {
+  const { world, id } = open(t);
+  const [ann, tib, bob, cid] = [id("ann"), id("tib"), id("bob"), id("cid")];
+  strictEqual(act(world, cid, "take", "bob").status, "ok");
+  strictEqual(act(world, ann, "take", "tib").status, "ok");
+  strictEqual(act(world, ann, "give", "tib", { destination: "cid" }).status, "ok");
+  strictEqual(world.entity(tib)?.contained_in, cid);
+});
+
+// A crate too heavy for any hands: 90 kg against a human's 80.
+const heavyTemplates = parseRegistry({
+  ...loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url))),
+  heavy_crate: { id: "heavy_crate", extends: "crate", mass_g: 90000 },
+});
+
+function heavyRoom(t: { after(callback: () => void): void }, extra: Scenario): { world: World; id: (name: string) => Id } {
+  const world = createWorld(
+    join(tempDir(t), "heavy"),
+    [
+      { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } },
+      { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
+      { id: "cid", template: "human", overrides: { name: "cid", location: "hall", support: "hall", pos: { x: 100, y: 0 } } },
+      ...extra,
+    ],
+    heavyTemplates,
+  );
+  const id = (name: string): Id => {
+    const found = world.id(name);
+    ok(found !== null, name);
+    return found;
+  };
+  return { world, id };
+}
+
+test("a 90 kg crate is too_heavy for a human to take", (t) => {
+  const { world, id } = heavyRoom(t, [
+    { id: "crate", template: "heavy_crate", overrides: { name: "crate", location: "hall", support: "hall", pos: { x: 60, y: 0 } } },
+  ]);
+  const taken = act(world, id("ann"), "take", "crate");
+  deepStrictEqual([taken.status, taken.reason_code], ["refused", "too_heavy"]);
+});
+
+test("a give past the limit is refused too_heavy: loaded hands cannot take the crate", (t) => {
+  const { world, id } = heavyRoom(t, [
+    { id: "bob", template: "human", overrides: { name: "bob", location: "hall", contained_in: "cid", in_part: "hand_l" } },
+    { id: "crate", template: "heavy_crate", overrides: { name: "crate", location: "hall", contained_in: "ann", in_part: "hand_r" } },
+  ]);
+  const given = act(world, id("ann"), "give", "crate", { destination: "cid" });
+  deepStrictEqual([given.status, given.reason_code], ["refused", "too_heavy"]);
+  strictEqual(world.entity(id("crate"))?.contained_in, id("ann"));
 });

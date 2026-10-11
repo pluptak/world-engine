@@ -18,13 +18,12 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A hand's carry limit](#a-hands-carry-limit).
-2. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
-3. [Submitting a move is cheap](#submitting-a-move-is-cheap).
-4. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-5. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-6. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-7. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
+2. [Submitting a move is cheap](#submitting-a-move-is-cheap).
+3. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
+4. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
+5. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+6. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -68,27 +67,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 _None: every item is shipped. Only the maintainer adds one, under Priorities._
-
-### A hand's carry limit
-
-A hand carries any weight (`src/engine/carry.ts`: only a mouth's alternative reads a mass limit), so
-one human carries another, or two (`docs/limits.md`).
-
-- **Prop** (`src/engine/fields.ts`): `hand_carry_limit_g`, definition, integer; the most an agent
-  holds in its hands at once, by the mass rule the mouth's `carry_limit_g` reads. Absent means no
-  limit, so no animal changes.
-- **Rule:** the `manipulation` alternative refuses `too_heavy` when what the hands already hold plus
-  the item would pass the limit. `give` and `take` read it as they read the mouth's, through the
-  alternatives (`carryCheck`); attack's drop-on-loss rule is unchanged.
-- **Template:** `templates/human.json` gains `hand_carry_limit_g: 80000`: a human carries another
-  (70 kg) but not two, nor anything heavier. **Decision to confirm:** 80 kg. The templates hash
-  moves.
-- **Tests:** `tests/carry-agent.test.ts`: a human carries a wounded human; a second body is
-  `too_heavy`; one put down, the other is taken; the file that tests `too_heavy`: a 90 kg crate is
-  `too_heavy` for a human. The property test's every step stays valid.
-- **Docs:** `docs/verbs-holding.md` (the limit), `docs/limits.md` (the line goes).
-- **Depends on:** nothing. **Not in it:** dragging, two agents carrying one thing, a body's weight
-  slowing its walk.
 
 ### A player's observe is cheap on a stored world
 

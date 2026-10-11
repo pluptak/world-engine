@@ -11,10 +11,10 @@ import { misfit } from "./fit.js";
 import { partState } from "./parts.js";
 
 // What it takes to hold a thing, declared once and read by take, give, and the loss of a carrier:
-// hands scale with the item's hands_required; a mouth takes one thing at a time, never a
-// two-handed one, and only up to the carrier's own limit.
+// hands scale with the item's hands_required and together hold at most their limit; a mouth takes
+// one thing at a time, never a two-handed one, and only up to the carrier's own limit.
 export const carryAlternatives: readonly CarryAlternative[] = [
-  { capacity: "manipulation", per_hand: 50 },
+  { capacity: "manipulation", per_hand: 50, mass_limit_prop: "hand_carry_limit_g" },
   { capacity: "mouth_carry", at_least: 1, max_hands: 1, mass_limit_prop: "carry_limit_g", holds: 1 },
 ];
 
@@ -316,6 +316,30 @@ export function spaceRefusal(
   return data === null ? null : { reason_code: "too_large", reason_data: data };
 }
 
+// The mass the holder's hands already carry: what its grips hold, the item itself left out so a
+// take that only moves it between grips does not count it twice. Spaces (pockets) are not hands.
+export function handsHeldMass(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  holderId: Id,
+  exclude: Id | null,
+): number {
+  const holder = snapshot.entities[holderId];
+  if (holder === undefined) {
+    return 0;
+  }
+  const grips = new Set(holderLayout(registry, holder.template).grips);
+  let mass = 0;
+  for (const held of heldInParts(snapshot, holderId)) {
+    if (held.id === exclude || !grips.has(held.in_part)) {
+      continue;
+    }
+    const each = registry[snapshot.entities[held.id]?.template ?? ""]?.mass_g;
+    mass += typeof each === "number" ? each : 0;
+  }
+  return mass;
+}
+
 function alternativeFailure(
   caps: Record<string, number> | null,
   carrierProps: Record<string, number | string | boolean>,
@@ -323,6 +347,7 @@ function alternativeFailure(
   registry: TemplateRegistry,
   otherHeld: number,
   alternative: CarryAlternative,
+  handsMassG?: number,
 ): Failure | null {
   if (caps === null) {
     return {
@@ -334,14 +359,26 @@ function alternativeFailure(
   }
   const hands = handsOf(item);
   if (alternative.per_hand !== undefined) {
-    return (caps[alternative.capacity] ?? 0) >= hands * alternative.per_hand
-      ? null
-      : {
-          kind: "capacity",
-          capacity: alternative.capacity,
-          have: caps[alternative.capacity] ?? 0,
-          need: hands * alternative.per_hand,
-        };
+    if ((caps[alternative.capacity] ?? 0) < hands * alternative.per_hand) {
+      return {
+        kind: "capacity",
+        capacity: alternative.capacity,
+        have: caps[alternative.capacity] ?? 0,
+        need: hands * alternative.per_hand,
+      };
+    }
+    // Hands hold at most their limit at once: what they already hold plus the item. Absent the
+    // prop there is no limit, so bodies without one carry as before.
+    if (alternative.mass_limit_prop !== undefined && handsMassG !== undefined) {
+      const limit = carrierProps[alternative.mass_limit_prop];
+      if (typeof limit === "number") {
+        const each = registry[item.template]?.mass_g;
+        if ((typeof each === "number" ? each : 0) + handsMassG > limit) {
+          return { kind: "weight", capacity: alternative.capacity };
+        }
+      }
+    }
+    return null;
   }
   if ((caps[alternative.capacity] ?? 0) < (alternative.at_least ?? 1)) {
     return {
@@ -377,10 +414,11 @@ export function carryCheck(
   registry: TemplateRegistry,
   otherHeld: number,
   alternatives: readonly CarryAlternative[],
+  handsMassG?: number,
 ): { ok: true } | { ok: false; reason_code: string; reason_data?: ReasonData } {
   let worst: { code: string; rank: number; reason_data?: ReasonData } | null = null;
   for (const alternative of alternatives) {
-    const failure = alternativeFailure(caps, carrierProps, item, registry, otherHeld, alternative);
+    const failure = alternativeFailure(caps, carrierProps, item, registry, otherHeld, alternative, handsMassG);
     if (failure === null) {
       return { ok: true };
     }

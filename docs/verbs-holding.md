@@ -7,7 +7,9 @@ Taking, setting down, passing and eating things. Grips, pockets and what losing 
 - `take`: lifts a thing out of whatever holds it into a free grip ([carrying.md](carrying.md));
   taking oneself, or what holds one, is `circular_placement`. What the actor holds already, in the grip
   the take would put it in (the default one, or `args.part`), is `already_held`; from a pocket, or to
-  another named grip, it still moves.
+  another named grip, it still moves. Hands hold at most `hand_carry_limit_g` at once, what they
+  already hold plus the item (`too_heavy` past it; a human's 80 kg holds one body but not two,
+  and no pocket counts); absent the prop, no limit holds.
 - `drop`: sets down what a grip holds, at the actor's own position (a carried agent's is its
   carrier's), then resolves the fall.
 - `put`: names `args.destination` and `args.relation` (`on` or `in`); it emits one `moved` and

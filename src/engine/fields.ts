@@ -48,6 +48,7 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   gap_cm: { type: "integer", tier: "definition", requires: ["barrier"] },
   // A gauge marked on a vessel or a light: how fine a look reads its amount, in percent.
   gauge_pct: { type: "integer", tier: "definition", min: 1, max: 25, divides: 100 },
+  hand_carry_limit_g: { type: "integer", tier: "definition" },
   hand_height_cm: { type: "integer", tier: "definition" },
   hands_required: { type: "integer", tier: "definition" },
   hunger: { type: "integer", tier: "state" },

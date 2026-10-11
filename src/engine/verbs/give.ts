@@ -1,7 +1,7 @@
 import { capacities } from "../capacity.js";
 import type { CommandContext, PreconditionResult, TransitionContext, Verb } from "../command.js";
 import type { Id } from "../../model.js";
-import { carryAlternatives, carryCheck, gripPlacement, heldCount, inSpacePart } from "../carry.js";
+import { carryAlternatives, carryCheck, gripPlacement, handsHeldMass, heldCount, inSpacePart } from "../carry.js";
 import { addressEntity, addressText, gapRefusal, isAgent, refuseOutOfReach, wouldLoop } from "./address.js";
 
 function preconditions(context: CommandContext): PreconditionResult {
@@ -60,6 +60,7 @@ function preconditions(context: CommandContext): PreconditionResult {
     context.registry,
     heldCount(context.snapshot, recipient.id),
     context.verb.carry_alternatives ?? [],
+    handsHeldMass(context.snapshot, context.registry, recipient.id, item.id),
   );
   if (!carry.ok) {
     return {
