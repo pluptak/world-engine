@@ -23,6 +23,7 @@ echo '{"op":"snapshot","world":"data/w1"}' | npm run world --silent          # o
 npm run bench                                   # 10k store commands; ms/cmd for the first and last 1k
 npm run bench:scale                             # 500 entities, 20 rooms: ms/cmd and a pipeline/validate/rest split
 npm run bench:reads                             # cost of since/observe/query/trace as the log grows to 10k
+npm run bench:rounds                            # 8 players' moves over 1,000 rounds, then 200 quiet ones: ms/round by phase
 ```
 
 `scripts/test-select.ts` picks tests by `.test-map.json` (gitignored, written by `npm run check` or

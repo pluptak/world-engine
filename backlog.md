@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Measure rounds](#measure-rounds).
+(None: every item above is built. The unplanned gaps are in plans/candidates.md.)
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,20 +63,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
 
-### Measure rounds
-
-Nothing has measured rounds: a submit writes `pending.json`, `closeRound` decides each move against
-the round's start and then applies it, quiet rounds observe every player's body after each round,
-and a camera's feed scans every entity on every perception.
-
-- **Bench** (`scripts/bench.ts --rounds`, `npm run bench:rounds`): a store world of 500 entities in
-  20 rooms (as `--scale`), 8 registered players and a director, 1,000 rounds of one move per player
-  through the handles, then 200 quiet rounds; report ms per round for the first and last 100, and
-  a split: submits, the round's check, its apply, the close, the quiet rounds' observation.
-- **Record** the numbers in `docs/measurements.md` with the machine note the others carry. No
-  optimisation in this item: if one part dominates, the commit says which, and a later item is the
-  maintainer's to promote.
-- **Tests:** the rounds workload builds and runs with tiny counts in the suite, untimed, as
-  `tests/bench-world.test.ts` does for `--scale`.
-- **Depends on:** nothing; best after the lab run, which may change what a round does.
-  **Not in it:** any optimisation, caches (a candidate).

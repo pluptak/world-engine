@@ -6,6 +6,7 @@ import { canonicalJson } from "../src/engine/canonical.js";
 import { apply } from "../src/engine/pipeline.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { scaleCommand, scaleRegistry, scaleScenario } from "./bench-world.js";
+import { runRoundsWorkload } from "./bench-rounds.js";
 
 // Two workloads. The default is a fixed alternating take/drop on a four-entity world: deterministic,
 // all-ok, it exercises submission, transitions, and persistence per command. `--scale` runs a
@@ -226,10 +227,20 @@ function runReadsIn(dir: string, scenario: Scenario, sizes: number[]): void {
   console.log(JSON.stringify({ workload: "reads", rows }));
 }
 
+// The rounds of the scale world, one move per player a round through its handle, then quiet rounds
+// (`scripts/bench-rounds.ts`, `docs/measurements.md`): 1,000 rounds of moves and 200 quiet ones.
+function runRounds(): void {
+  inTempWorld("world-engine-bench-rounds-", (dir) => {
+    console.log(JSON.stringify({ workload: "rounds", ...runRoundsWorkload(dir, { rounds: 1000, quiet: 200 }) }));
+  });
+}
+
 if (process.argv.includes("--reads")) {
   runReads();
 } else if (process.argv.includes("--scale")) {
   runScale();
+} else if (process.argv.includes("--rounds")) {
+  runRounds();
 } else {
   runSmall();
 }

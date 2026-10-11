@@ -18,6 +18,7 @@
     "bench": "node --import tsx scripts/bench.ts",
     "bench:scale": "node --import tsx scripts/bench.ts --scale",
     "bench:reads": "node --import tsx scripts/bench.ts --reads",
+    "bench:rounds": "node --import tsx scripts/bench.ts --rounds",
     "world": "node --import tsx src/cli/main.ts"
   },
   "devDependencies": {
