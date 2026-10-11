@@ -37,4 +37,4 @@ for up to half a second.
 
 **Limits.** It serialises processes on one machine over a local file system. A holder stalled for
 over a minute loses its turn. A taker of a stale lock can race another taker doing the same, which
-is the one window left. What it costs is in [measurements.md](measurements.md).
+is the one window left. What it costs is in [measurements-writers.md](measurements-writers.md).

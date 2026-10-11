@@ -28,9 +28,9 @@ A caller should treat it as "not modelled here" and decide whether to assume, as
 template may `extends` another (`wine_bottle` extends `bottle`). Actions check capacities such as
 `manipulation`, never parts, so a severed hand changes what an agent can do with no special case.
 
-**Scale and non-goals.** Built for room-sized scenes (tens of entities; geometry is pairwise, there
-is no spatial index) at about 5 ms per command on a few entities and about 10 ms at 500
-([measurements.md](measurements.md)). Damage and impact are fixed arithmetic; chance exists only as the world's
-seeded dice, which a template process rolls and which replay exactly ([rng.md](rng.md)). A `beat` is an
-ordered batch, not simultaneous action ([limits.md](limits.md)). What is out of scope is in
-`backlog.md`.
+**Scale and non-goals.** Built for room-sized scenes (tens of entities; geometry is pairwise,
+there is no spatial index) at about 5 ms per command on a few entities and about 10 ms at 500
+(see [measurements-commands.md](measurements-commands.md)). Damage and impact are fixed arithmetic;
+chance exists only as the world's seeded dice, which a template process rolls and which replay
+exactly ([rng.md](rng.md)). A `beat` is an ordered batch, not simultaneous action
+([limits.md](limits.md)). What is out of scope is in `backlog.md`.

@@ -30,5 +30,5 @@ is ever caught by it. A stale command is re-evaluated against the current snapsh
 becomes `preempted` when it would have succeeded at its base version.
 
 **Scale.** What a command costs as the world grows is measured, not promised: see
-[measurements.md](measurements.md) (`npm run bench`, `npm run bench:scale`).
+[measurements-commands.md](measurements-commands.md) (`npm run bench`, `npm run bench:scale`).
 

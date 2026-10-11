@@ -41,7 +41,9 @@ What is built, nothing aspirational, one concept per file:
 - [beats-actions.md](beats-actions.md): what runs at the due tick: actions, conditions, failure.
 - [beats-chains.md](beats-chains.md): followers after a run, and repeats.
 - [beats-watch.md](beats-watch.md): a beat's `all` condition and watches, which keep watch until their action has run.
-- [measurements.md](measurements.md): timings and other measured results, with the command that makes each.
+- [measurements.md](measurements.md): what a read costs as the log grows.
+- [measurements-commands.md](measurements-commands.md): what a command costs as the world grows.
+- [measurements-writers.md](measurements-writers.md): what writers' turns cost.
 - [speech.md](speech.md): saying an opaque token at a volume, and who hears it.
 - [rng.md](rng.md): the world's dice, a seed in the snapshot, so chance replays exactly.
 - [bleeding.md](bleeding.md): a severed part's wound, bleeding by itself until its count runs out.
