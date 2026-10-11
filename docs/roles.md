@@ -44,6 +44,10 @@ the handle does not drive is refused `not_a_body`, and a submit without one `bod
 body's move that its successor takes over is that successor's (`liveBodyOf`). A body removed
 from the world senses nothing, and the view reads through the slot's other bodies.
 
+A body that is out (destroyed, or gone from the world, with no successor) is refused `body_out`
+by `submit` and `check`; its `options` are empty with that `reason_code`. A move submitted while the
+body lived is the round's to decide, as it is now.
+
 **Not in it.** Several slots per handle, a body joining or leaving a slot during a run, timeouts
 (the host's), the architect as a role (a scene is a file, made outside any world), a budget of
 pulls, odds other than a door's `jam_pct`, and a director that picks outcomes.

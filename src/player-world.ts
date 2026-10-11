@@ -5,7 +5,7 @@ import type { OptionsRequest } from "./options.js";
 import { INTERNAL, VIEW_COMMANDS } from "./internal.js";
 import { verbRegistry } from "./engine/verbs/index.js";
 import { WorldError } from "./errors.js";
-import type { Id } from "./model.js";
+import { own, type Id, type Snapshot } from "./model.js";
 import { driverBodies, liveBodyOf } from "./engine/run.js";
 
 // A player's handle (`docs/roles.md`): the actor view of the bodies its slot drives, under the player role. It
@@ -18,8 +18,9 @@ export interface PlayerWorld {
   // What any of the slot's bodies senses, once each.
   observe(options?: ActorObserveOptions): ActorProjection;
   inspect(entity: Id): ReturnType<ActorWorld["inspect"]>;
-  // One body's options: `body` names it when the slot holds several, and it is the body alone otherwise.
-  options(request?: OptionsRequest & { body?: string }): ActorOptions;
+  // One body's options: `body` names it when the slot holds several, and it is the body alone otherwise. A body that is
+  // out has none, and says why (`body_out`).
+  options(request?: OptionsRequest & { body?: string }): PlayerOptions;
   // Judged as a round's move, as the actor view judges any command (`docs/actor-view.md`), for the body it names.
   check(command: PlayerMove): ActorCheck;
   // A move written as the view writes things: its own aliases or names, never a world id.
@@ -33,6 +34,15 @@ export interface PlayerWorld {
 }
 
 export type PlayerResult = { status: "ok" } | { status: "refused"; reason_code: string };
+
+export type PlayerOptions = ActorOptions & { reason_code?: "body_out" };
+
+// A body is out when the world no longer holds it, or holds it destroyed, and no successor took its place (`liveBodyOf`).
+// A move for it would be decided against nothing, so the handle refuses it when it is submitted, not when the round runs.
+function bodyOut(snapshot: Snapshot, body: Id): boolean {
+  const entity = own(snapshot.entities, liveBodyOf(snapshot, body));
+  return entity === undefined || entity.status === "destroyed";
+}
 
 // A handle's slot: the slot's first body, which names it, and the bodies it drives now, in slot order (`driverBodies`).
 interface Bound {
@@ -62,14 +72,14 @@ export function playerWorld(world: World, handle: string): PlayerWorld {
     }
     return found;
   };
-  // The view of one body, for a read or a check that names it: a throw when the body is unnamed or not the handle's.
-  const viewOf = (body: string | undefined): ActorWorld => {
+  // The body a read or a check names, with its slot: a throw when the body is unnamed or not the handle's.
+  const namedOf = (body: string | undefined): { found: Bound; id: Id } => {
     const found = bound();
     const id = bodyNamed(found, body);
     if (id === null) {
       throw new WorldError(body === undefined ? "body_required" : "not_a_body", `No body ${body ?? ""} is driven by ${handle}`);
     }
-    return actorWorld(world, id, found.root, found.bodies);
+    return { found, id };
   };
   // The view that reads through every body of the slot, as the first of them still in the world: a slot whose first
   // body was removed reads through the rest.
@@ -82,13 +92,22 @@ export function playerWorld(world: World, handle: string): PlayerWorld {
   return {
     observe: (options) => slotView().observe(options),
     inspect: (entity) => slotView().inspect(entity),
-    options: (request) =>
-      viewOf(request?.body).options(
+    options: (request) => {
+      const { found, id } = namedOf(request?.body);
+      if (bodyOut(world.snapshot(), id)) {
+        return { actor: aliasOf(found.root, id), ready: [], needs_args: [], reason_code: "body_out" };
+      }
+      return actorWorld(world, id, found.root, found.bodies).options(
         request === undefined ? undefined : request.refused === undefined ? {} : { refused: request.refused },
-      ),
+      );
+    },
     check: (move) => {
       const { body, ...command } = move;
-      return viewOf(body).check(command);
+      const { found, id } = namedOf(body);
+      if (bodyOut(world.snapshot(), id)) {
+        return { status: "refused", command_id: command.command_id, resolved_target: null, reason_code: "body_out" };
+      }
+      return actorWorld(world, id, found.root, found.bodies).check(command);
     },
     submit: (move) => {
       const found = boundOf(world, handle);
@@ -101,6 +120,9 @@ export function playerWorld(world: World, handle: string): PlayerWorld {
       const id = bodyNamed(found, move.body);
       if (id === null) {
         return refusal(move.body === undefined ? "body_required" : "not_a_body");
+      }
+      if (bodyOut(world.snapshot(), id)) {
+        return refusal("body_out");
       }
       // The move is the body's own, read back from the view's aliases as the view's own `check` reads it, so a
       // target the view offered resolves and a world id names nothing.

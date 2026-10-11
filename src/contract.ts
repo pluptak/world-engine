@@ -598,6 +598,9 @@ export const OptionsResponseSchema = z.object({
 
 export const ActorOptionsResponseSchema = OptionsResponseSchema.omit({ version: true }).strict();
 
+// A player's options: the body's, or none and `body_out` when the body is out (`docs/roles.md`).
+export const PlayerOptionsResponseSchema = ActorOptionsResponseSchema.extend({ reason_code: z.literal("body_out").optional() }).strict();
+
 // The verdict a command or a check answers with, written once: the two responses agree about which
 // fields a verdict carries, and `attempts` rows carry the same codes.
 const VerdictFieldsSchema = {
@@ -777,7 +780,7 @@ export const RESPONSES = {
   director_edit: CommandResponseSchema,
   player_observe: ActorProjectionSchema,
   player_inspect: InspectResponseSchema,
-  player_options: ActorOptionsResponseSchema,
+  player_options: PlayerOptionsResponseSchema,
   player_check: CheckResponseSchema,
   player_submit: PlayerResultSchema,
   player_withdraw: PlayerResultSchema,

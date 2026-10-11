@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A move for a body that is out is refused when submitted](#a-move-for-a-body-that-is-out-is-refused-when-submitted).
+Nothing is queued.
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -62,19 +62,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A move for a body that is out is refused when submitted
-
-A player's handle takes a move for a body that is destroyed or removed and has no successor, and
-the round then logs it `invalid` / `not_an_agent`. The player should learn at once, and the log
-should not carry a move nobody could make.
-
-- **Rule** (`submit` in `src/player-world.ts`): a move whose body (`liveBodyOf`) is destroyed or no
-  longer in the world is refused `body_out`. `check` and `options` for that body answer the same
-  refusal. A body that dies after its move was submitted is still the round's to decide, as now.
-- **Tests:** `tests/player-slots.test.ts`: a two-body slot whose first body is destroyed refuses
-  that body's move `body_out` and takes the other's; a one-body slot whose body has a successor
-  still submits (to the successor); a move submitted before its body dies is logged as the round
-  decides it.
-- **Docs:** `docs/roles.md` (the refusal, beside `not_a_body`).
-- **Depends on:** nothing. **Not in it:** dropping held moves when a body dies.

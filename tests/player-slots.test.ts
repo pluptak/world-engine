@@ -189,3 +189,51 @@ test("a slot whose first body is removed reads through the rest: observe and ins
   deepStrictEqual(dana.submit({ command_id: "a2-take", verb: "take", target: alias("stone"), body: alias("ann2") }), { status: "ok" });
   deepStrictEqual(directorWorld(world).closeRound().results.map((result) => result.status), ["ok"]);
 });
+
+test("a move for a body that is out is refused body_out when submitted, and the other body's still goes in", (t) => {
+  // Ann is destroyed and has no successor: dana's move for her is refused, and ann2's move is taken.
+  const reg = registry(t);
+  const { world, id, alias } = started(t, "hall", reg);
+  const snapshot = structuredClone(world.snapshot());
+  snapshot.entities[id("ann")]!.status = "destroyed";
+  const run = memoryWorld(snapshot, reg, { ann: id("ann"), ann2: id("ann2"), bob: id("bob") });
+  const dana = playerWorld(run, "dana");
+  const move = { command_id: "ann-walk", verb: "move", args: { to: { x: 20, y: 0 } }, body: alias("ann") };
+  deepStrictEqual(dana.submit(move), { status: "refused", reason_code: "body_out" });
+  deepStrictEqual(dana.check(move), { status: "refused", command_id: "ann-walk", resolved_target: null, reason_code: "body_out" });
+  deepStrictEqual(dana.options({ body: alias("ann") }), { actor: alias("ann"), ready: [], needs_args: [], reason_code: "body_out" });
+  deepStrictEqual(dana.submit({ command_id: "ann2-walk", verb: "move", args: { to: { x: 20, y: 0 } }, body: alias("ann2") }), { status: "ok" });
+  deepStrictEqual(dana.pending().map((held) => held.command_id), ["ann2-walk"]);
+  deepStrictEqual(dana.withdraw(alias("ann")), { status: "ok" });
+});
+
+test("a one-body slot whose body has a successor still submits, to the successor", (t) => {
+  const reg = registry(t);
+  const made = createWorld(join(tempDir(t), "one-body"), { seed: 11, entities: scene("hall", "frail_human").entities, run: { tick_limit: 40, slots: ["ann"] } }, reg);
+  const id = (name: string): Id => made.id(name)!;
+  directorWorld(made).edit({ kind: "register_player", handle: "dana", slot: id("ann") }, { command_id: "reg" });
+  directorWorld(made).edit({ kind: "start_run" }, { command_id: "start" });
+  const snapshot = structuredClone(made.snapshot());
+  snapshot.entities[id("ann")]!.integrity = 8;
+  const run = memoryWorld(snapshot, reg, { ann: id("ann"), bob: id("bob") });
+  roundAct(run, id("bob"), "attack", `${id("ann")}.hand_r`);
+  for (let round = 0; round < 12 && run.entity(id("ann"))?.status !== "destroyed"; round += 1) {
+    run.round([]);
+  }
+  const heir = Object.values(run.snapshot().entities).find((entity) => entity.props.succeeds === id("ann"))?.id;
+  ok(heir !== undefined, "ann has a successor");
+  const dana = playerWorld(run, "dana");
+  deepStrictEqual(dana.submit({ command_id: "heir-walk", verb: "move", args: { to: { x: 20, y: 0 } } }), { status: "ok" });
+  deepStrictEqual(directorWorld(run).closeRound().results.map((result) => result.status), ["ok"]);
+  deepStrictEqual(run.entity(heir!)?.pos, { x: 20, y: 0 });
+});
+
+test("a move submitted while its body lived is decided by the round, not refused, once the body is gone", (t) => {
+  const { world, id, alias } = started(t);
+  deepStrictEqual(playerWorld(world, "dana").submit({ command_id: "ann-late", verb: "move", args: { to: { x: 20, y: 0 } }, body: alias("ann") }), { status: "ok" });
+  strictEqual(world.edit({ kind: "remove", target: id("ann") }).status, "ok");
+  const closed = directorWorld(world).closeRound();
+  const late = closed.results.find((result) => result.command_id === "ann-late");
+  ok(late !== undefined && late.status !== "ok", "the round decides it, and the move does not go through");
+  ok(world.attempts(0).some((attempt) => attempt.command.command_id === "ann-late" && attempt.round?.number === closed.round), "the round logs it");
+});
