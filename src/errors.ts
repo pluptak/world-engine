@@ -29,7 +29,9 @@ export type WorldErrorCode =
   | "form_not_applicable"
   | "no_liquid_material"
   | "invalid_scenario"
-  | "not_registered";
+  | "not_registered"
+  | "body_required"
+  | "not_a_body";
 
 export class WorldError extends Error {
   constructor(

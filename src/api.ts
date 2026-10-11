@@ -218,22 +218,41 @@ function roleless(moves: readonly Command[]): boolean {
 // replay never reads it, and nothing in the world's state depends on it (`docs/roles.md`).
 function storedPending(dir: string): PendingStore {
   const path = join(dir, "pending.json");
-  type Entry = { handle: string; command?: Command; idle?: true };
+  // An entry holds a handle's moves, one per body, or its idle mark. One written with a single `command` reads as
+  // that one move.
+  type Entry = { handle: string; moves?: Command[]; command?: Command; idle?: true };
+  const movesOf = (entry: Entry | undefined): Command[] =>
+    entry === undefined ? [] : (entry.moves ?? (entry.command === undefined ? [] : [entry.command]));
   // A list, not an object: a handle is any token, `__proto__` included.
   const read = (): Entry[] => (existsSync(path) ? (JSON.parse(readFileSync(path, "utf8")) as Entry[]) : []);
-  const put = (handle: string, entry: Entry | null): void =>
+  // Rewrites one handle's entry under the world's turn: `change` sees the entry as it is then, and returns the one
+  // to keep, or null to keep none.
+  const update = (handle: string, change: (current: Entry | undefined) => Entry | null): void =>
     withWorldLock(dir, () => {
-      const rest = read().filter((other) => other.handle !== handle);
-      atomicWrite(path, canonicalJson(entry === null ? rest : [...rest, entry]));
+      const all = read();
+      const next = change(all.find((entry) => entry.handle === handle));
+      const rest = all.filter((other) => other.handle !== handle);
+      atomicWrite(path, canonicalJson(next === null ? rest : [...rest, next]));
     });
   return {
-    get: (handle) => read().find((entry) => entry.handle === handle)?.command ?? null,
-    set: (handle, command) => put(handle, { handle, command }),
-    setIdle: (handle) => put(handle, { handle, idle: true }),
-    clear: (handle) => put(handle, null),
+    moves: (handle) => movesOf(read().find((entry) => entry.handle === handle)),
+    set: (handle, command) =>
+      update(handle, (current) => ({
+        handle,
+        moves: [...movesOf(current).filter((move) => move.actor !== command.actor), command],
+      })),
+    setIdle: (handle) => update(handle, () => ({ handle, idle: true })),
+    clear: (handle, body) =>
+      update(handle, (current) => {
+        if (body === undefined) {
+          return null;
+        }
+        const moves = movesOf(current).filter((move) => move.actor !== body);
+        return moves.length === 0 ? null : { handle, moves };
+      }),
     handles: () =>
       read()
-        .filter((entry) => entry.command !== undefined)
+        .filter((entry) => movesOf(entry).length > 0)
         .map((entry) => entry.handle)
         .sort(),
     idlers: () =>
@@ -745,21 +764,31 @@ export function memoryWorld(
   }
 
   // The players' pending moves of this memory world: held in the world, as a store world's file is.
-  const held = new Map<string, { command?: Command; idle?: true }>();
+  const held = new Map<string, { moves?: Command[]; idle?: true }>();
   const memoryPending: PendingStore = {
-    get: (handle) => held.get(handle)?.command ?? null,
+    moves: (handle) => held.get(handle)?.moves ?? [],
     set: (handle, command) => {
-      held.set(handle, { command });
+      const moves = (held.get(handle)?.moves ?? []).filter((move) => move.actor !== command.actor);
+      held.set(handle, { moves: [...moves, command] });
     },
     setIdle: (handle) => {
       held.set(handle, { idle: true });
     },
-    clear: (handle) => {
-      held.delete(handle);
+    clear: (handle, body) => {
+      if (body === undefined) {
+        held.delete(handle);
+        return;
+      }
+      const moves = (held.get(handle)?.moves ?? []).filter((move) => move.actor !== body);
+      if (moves.length === 0) {
+        held.delete(handle);
+      } else {
+        held.set(handle, { moves });
+      }
     },
     handles: () =>
       [...held.entries()]
-        .filter(([, entry]) => entry.command !== undefined)
+        .filter(([, entry]) => (entry.moves?.length ?? 0) > 0)
         .map(([handle]) => handle)
         .sort(),
     idlers: () =>

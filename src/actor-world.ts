@@ -68,11 +68,41 @@ export function aliasOf(actor: Id, id: Id): string {
 
 const ALIAS = /^x[0-9a-f]{12}(\..+)?$/;
 
-export function actorWorld(world: World, actor: Id): ActorWorld {
+// The projections of several bodies as one: an entity once, with the facts of the first body that senses it, and an
+// event once, in the order the events happened (`ev<n>`). Named for `observer`, the view's key.
+function mergeProjections(parts: readonly Projection[], observer: Id): Projection {
+  const entities = new Map<Id, ObservedEntity>();
+  const events = new Map<Id, Projection["events"][number]>();
+  for (const part of parts) {
+    for (const entity of part.entities) {
+      if (!entities.has(entity.id)) {
+        entities.set(entity.id, entity);
+      }
+    }
+    for (const event of part.events) {
+      if (!events.has(event.event_id)) {
+        events.set(event.event_id, event);
+      }
+    }
+  }
+  const seq = (id: Id): number => Number(id.slice(2));
+  return {
+    observer,
+    version: Math.max(...parts.map((part) => part.version)),
+    unknown_senses: parts[0]?.unknown_senses ?? [],
+    entities: [...entities.values()],
+    events: [...events.values()].sort((a, b) => seq(a.event_id) - seq(b.event_id)),
+  };
+}
+
+// A view of one body. `key` is what the view names things by (`aliasOf`): a slot's first body, so every body of a
+// slot names a thing alike. `senses` are the bodies the view reads through: observe and inspect merge over them, in
+// slot order (`docs/roles.md`). The actor is the body a check or command is for.
+export function actorWorld(world: World, actor: Id, key: Id = actor, senses: readonly Id[] = [actor]): ActorWorld {
   if (world.entity(actor) === null) {
     throw new WorldError("no_such_entity", `Unknown actor ${actor}`);
   }
-  const alias = (id: Id): string => aliasOf(actor, id);
+  const alias = (id: Id): string => aliasOf(key, id);
   // An entity id or a part address of one, in the world as it is: the strings an actor's alias
   // stands for. Anything else (a name, a relation, a token) is left as it is.
   const isAddress = (snapshot: Snapshot, value: string): boolean =>
@@ -231,15 +261,36 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
     })),
   });
 
+  // What the senses of every body in the view sense, as one projection (`mergeProjections`).
+  const observeAll = (sinceTick?: number): Projection =>
+    mergeProjections(
+      senses.map((sense) => world.observe(sense, sinceTick === undefined ? {} : { since_tick: sinceTick })),
+      key,
+    );
+  // What the bodies sense after a command, since the version it was applied to (`withObservation`): the actor's own
+  // observation when it is the only body, and each other body's since the same version.
+  const observedAfter = (result: Result): Projection => {
+    const since = result.status === "ok" ? result.snapshot.version - 1 : world.snapshot().version;
+    return mergeProjections(
+      senses.map((sense) => (sense === actor && result.observation !== undefined ? result.observation : world.observe(sense, { since }))),
+      key,
+    );
+  };
+
   const view: ActorWorld = {
     actor,
-    observe: (options = {}) =>
-      toActor(world.observe(actor, options.since_tick === undefined ? {} : { since_tick: options.since_tick })),
+    observe: (options = {}) => toActor(observeAll(options.since_tick)),
     inspect: (entity) => {
-      const inspection = world.inspect(actor, unalias(entity));
-      return inspection === null ? null : inspectionOut(inspection);
+      const id = unalias(entity);
+      for (const sense of senses) {
+        const inspection = world.inspect(sense, id);
+        if (inspection !== null) {
+          return inspectionOut(inspection);
+        }
+      }
+      return null;
     },
-    check: (command) => verdict(world.check(toCommand(command)), world.observe(actor)),
+    check: (command) => verdict(world.check(toCommand(command)), observeAll()),
     options: (request) => {
       const options = world.options(actor, request);
       const snapshot = world.snapshot();
@@ -252,7 +303,7 @@ export function actorWorld(world: World, actor: Id): ActorWorld {
     },
     command: (command) => {
       const result = world.command(toCommand(command), { observe: true });
-      const observation = result.observation ?? world.observe(actor);
+      const observation = observedAfter(result);
       return { ...verdict(result, observation), observation: toActor(observation) };
     },
   };

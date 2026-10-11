@@ -1,4 +1,5 @@
 import type { Command } from "./engine/command.js";
+import type { Id } from "./model.js";
 import type { RoundResult } from "./api.js";
 import type { ActorCommand, ActorWorld } from "./actor-world.js";
 
@@ -11,17 +12,19 @@ export const VIEW_COMMANDS = new WeakMap<ActorWorld, (command: ActorCommand) => 
 // names, so a caller of `command` or `round` can never reach a role it was not given.
 export const INTERNAL: unique symbol = Symbol("world internals");
 
-// A player's move, held until its round closes: the command as a round move, its actor the handle's slot.
-// Held by the world, never in its state: no version, no snapshot and no log line until the round closes.
-// A handle may instead be idle, passing every round until it submits again (`docs/rounds.md`).
+// A player's moves, held until their round closes: each a command as a round move, its actor the body it is for. A
+// handle holds one move per body it drives (`docs/roles.md`). Held by the world, never in its state: no version, no
+// snapshot and no log line until the round closes. A handle may instead be idle, passing every round until it
+// submits again (`docs/rounds.md`).
 export interface PendingStore {
-  get(handle: string): Command | null;
-  // A move, which replaces an idle mark.
+  // The handle's moves, in the order they were submitted.
+  moves(handle: string): Command[];
+  // A move for its actor's body, which replaces that body's move and any idle mark.
   set(handle: string, command: Command): void;
-  // Idle: passes the rounds, and drops any move.
+  // Idle: passes the rounds, and drops every move.
   setIdle(handle: string): void;
-  // Drops the handle's entry, move or idle mark.
-  clear(handle: string): void;
+  // Drops the move for one body, or else every move and any idle mark.
+  clear(handle: string, body?: Id): void;
   // The handles that hold a move.
   handles(): string[];
   // The handles that are idle.

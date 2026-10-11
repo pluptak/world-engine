@@ -140,7 +140,7 @@ export interface CancelBeatEdit {
   id: string;
 }
 
-// Binds a player's handle to one of a registering run's slots (`docs/roles.md`).
+// Binds a player's handle to one of a registering run's slots, named by the slot's first body (`docs/roles.md`).
 export interface RegisterPlayerEdit {
   kind: "register_player";
   handle: string;

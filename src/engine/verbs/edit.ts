@@ -35,7 +35,7 @@ import {
   pendingBeatIds,
 } from "../beats.js";
 import { pending, withCause, withSchedule } from "../pending.js";
-import { endRun, registerPlayer, startRun } from "../run.js";
+import { endRun, registerPlayer, slotRoots, startRun } from "../run.js";
 import { refreshSubtreeLocations, wouldLoop } from "./address.js";
 import { dropCarriedItem } from "./drop.js";
 import { revealConcealed } from "./search.js";
@@ -581,7 +581,8 @@ function cancelBeatRefusal(context: CommandContext, edit: CancelBeatEdit): Preco
   return waiting ? { status: "ok" } : refused("no_such_beat");
 }
 
-// A registration binds a handle to one of a registering run's slots: one slot per handle, one handle per slot.
+// A registration binds a handle to one of a registering run's slots, named by its first body: one slot per handle,
+// one handle per slot.
 function registerRefusal(snapshot: Snapshot, edit: RegisterPlayerEdit): PreconditionResult {
   const run = snapshot.run;
   if (run === undefined) {
@@ -590,7 +591,7 @@ function registerRefusal(snapshot: Snapshot, edit: RegisterPlayerEdit): Precondi
   if (run.state !== "registering") {
     return refused("run_not_registering");
   }
-  if (!(run.slots ?? []).includes(edit.slot)) {
+  if (!slotRoots(snapshot).includes(edit.slot)) {
     return refused("no_such_slot");
   }
   const players = run.players ?? [];

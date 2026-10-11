@@ -48,8 +48,8 @@ test("two players submit blind: neither's reads or pending move shows the other'
   const eve = playerWorld(world, "eve");
   deepStrictEqual(dana.submit({ command_id: "dana-take", verb: "take", target: "stone" }), { status: "ok" });
   deepStrictEqual(eve.submit({ command_id: "eve-take", verb: "take", target: "stone" }), { status: "ok" });
-  deepStrictEqual(dana.pending()?.command_id, "dana-take");
-  deepStrictEqual(eve.pending()?.command_id, "eve-take");
+  deepStrictEqual(dana.pending().map((move) => move.command_id), ["dana-take"]);
+  deepStrictEqual(eve.pending().map((move) => move.command_id), ["eve-take"]);
   // Nothing dana reads names eve's move, and the other way round.
   ok(!JSON.stringify(dana.observe()).includes("eve-take"));
   ok(!JSON.stringify(eve.observe()).includes("dana-take"));
@@ -83,9 +83,9 @@ test("a resubmit replaces the move, a withdraw leaves none, and a round with no 
   const dana = playerWorld(world, "dana");
   dana.submit({ command_id: "first", verb: "wait", args: { ticks: 1 } });
   dana.submit({ command_id: "second", verb: "take", target: "stone" });
-  deepStrictEqual(dana.pending()?.command_id, "second");
+  deepStrictEqual(dana.pending().map((move) => move.command_id), ["second"]);
   deepStrictEqual(dana.withdraw(), { status: "ok" });
-  strictEqual(dana.pending(), null);
+  deepStrictEqual(dana.pending(), []);
   const quiet = directorWorld(world).closeRound();
   deepStrictEqual([quiet.status, quiet.results.length], ["ok", 0]);
   strictEqual(world.snapshot().tick, 1);
@@ -107,7 +107,7 @@ test("a store world's pending moves survive a second process opening it, verify 
   strictEqual(world.verify().ok, true);
   // A second handle on the same directory sees the move, and the director there closes the round with it.
   const again = openWorld(dir);
-  deepStrictEqual(playerWorld(again, "dana").pending()?.command_id, "dana-take");
+  deepStrictEqual(playerWorld(again, "dana").pending().map((move) => move.command_id), ["dana-take"]);
   deepStrictEqual(directorWorld(again).submitted(), ["dana"]);
   strictEqual(directorWorld(again).closeRound().status, "ok");
   deepStrictEqual(directorWorld(openWorld(dir)).submitted(), []);
@@ -121,7 +121,7 @@ test("a player's move is written as its view writes: an alias it was offered res
   ok(take?.target !== undefined && take.target !== id("stone"));
   deepStrictEqual(dana.submit({ command_id: "by-alias", verb: "take", target: take.target }), { status: "ok" });
   // What the handle holds is said back in the view's own words: no world id, no actor.
-  deepStrictEqual(dana.pending(), { command_id: "by-alias", verb: "take", target: take.target });
+  deepStrictEqual(dana.pending(), [{ command_id: "by-alias", verb: "take", target: take.target }]);
   const closed = directorWorld(world).closeRound();
   deepStrictEqual(closed.results.map((result) => result.status), ["ok"]);
   strictEqual(world.entity(id("stone"))?.contained_in, id("ann"));

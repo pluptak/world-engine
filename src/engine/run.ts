@@ -1,5 +1,5 @@
 import type { TransitionContext } from "./command.js";
-import type { Id, RunEnd, Snapshot } from "../model.js";
+import type { Id, RunEnd, Snapshot, SlotEntry } from "../model.js";
 import { own } from "../model.js";
 import { withSchedule } from "./pending.js";
 
@@ -79,6 +79,24 @@ export function liveBodyOf(snapshot: Snapshot, slot: Id): Id {
   return current;
 }
 
+// The bodies a slot holds, in the order the scene named them: one id, or the list a slot of several is stored as.
+export function slotMembers(entry: SlotEntry): readonly Id[] {
+  return typeof entry === "string" ? [entry] : entry;
+}
+
+// The first body of each slot: the id a registration names the slot by (`docs/roles.md`).
+export function slotRoots(snapshot: Snapshot): Id[] {
+  return (snapshot.run?.slots ?? []).map((entry) => slotMembers(entry)[0]!);
+}
+
+// The bodies a slot's player drives now, in slot order: each member's live body (`liveBodyOf`), once each. A slot
+// that names no entry (a root no scene holds) is its one body alone.
+export function driverBodies(snapshot: Snapshot, root: Id): Id[] {
+  const entry = (snapshot.run?.slots ?? []).find((slot) => slotMembers(slot)[0] === root);
+  const members = entry === undefined ? [root] : slotMembers(entry);
+  return [...new Set(members.map((member) => liveBodyOf(snapshot, member)))];
+}
+
 // After an ok command or edit: a running run that has reached its limit ends for that reason, and one whose
 // slots are all destroyed or gone ends for no live players. A run with no slots never ends the second way. A
 // registering run never ends by itself: the author may still be fixing its scene.
@@ -91,12 +109,12 @@ export function finishRun(context: TransitionContext): void {
     endRun(context, "tick_limit");
     return;
   }
-  // A slot is alive while its live body is in the world and not destroyed (`liveBodyOf`).
-  const alive = (id: string): boolean => {
-    const entity = own(context.snapshot.entities, liveBodyOf(context.snapshot, id));
+  // A slot is alive while one of its bodies' live body is in the world and not destroyed (`liveBodyOf`).
+  const alive = (body: Id): boolean => {
+    const entity = own(context.snapshot.entities, liveBodyOf(context.snapshot, body));
     return entity !== undefined && entity.status !== "destroyed";
   };
-  if (run.slots !== undefined && !run.slots.some(alive)) {
+  if (run.slots !== undefined && !run.slots.some((entry) => slotMembers(entry).some(alive))) {
     endRun(context, "no_live_players");
   }
 }

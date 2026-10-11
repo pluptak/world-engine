@@ -15,9 +15,7 @@ it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
   no record. The lab's is whole; the corridor's is narrow, turned on the exit door (C, M). The
   dormitory has none, so an act there is seen only by whoever stands in it; the AI hears that room
   through the intercom, which carries it and no other (C).
-- The AI watches its arm with the lab camera, on the same cable: one cut blinds both. The terminal
-  and the arm name the key by two aliases, so a caller holding both views matches them by name,
-  which two keys of one name would defeat (arm test).
+- The AI watches its arm with the lab camera, on the same cable: one cut blinds both.
 - The terminal sees the exit door it locks only through the corridor's camera, which shares the
   door's cable: one cut both blinds it and stops its unlock (D, E).
 - The terminal runs on the generator itself, so a cut cable leaves it running; with the generator

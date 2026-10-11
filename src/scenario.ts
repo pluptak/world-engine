@@ -20,10 +20,10 @@ export interface ScenarioEntry {
 export type Scenario = readonly ScenarioEntry[];
 
 // A scene's run limits, by scenario id: `tick_limit` a positive int, `slots` the agents whose bodies the
-// run turns on (`docs/scenario.md`). Either key, or both.
+// run turns on, each slot one id or a list of several (`docs/scenario.md`). Either key, or both.
 export interface SceneRun {
   tick_limit?: number;
-  slots?: readonly string[];
+  slots?: readonly (string | readonly string[])[];
   // Beat bodies with no `at_tick`, which the director plays (`docs/beats.md`), and the odds it may steer.
   pool?: readonly Record<string, unknown>[];
   odds?: readonly { entity: string; prop: "jam_pct"; min: number; max: number }[];

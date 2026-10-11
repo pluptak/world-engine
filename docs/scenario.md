@@ -14,7 +14,8 @@ A scenario file is a list of entries, or a scene: `{ seed?, entities, beats?, ru
   an `id` unique among the beats and the pool, which the director plays (`play_beat`,
   [roles.md](roles.md)). `odds`: `{ entity, prop: "jam_pct", min, max }` for a door, a whole range
   from 0 to 100 the director may steer it within. A run needs one of the four keys. The rest of the
-  run: `tick_limit` a positive int; `slots` the scenario ids of agents, each named once. Either key
+  run: `tick_limit` a positive int; `slots` the scenario ids of agents, each named once, one id a
+  slot of one body, or a list of ids a slot of several (`roles.md`), named by its first id. Either key
   or both; neither is `empty_run`. It is stored as the snapshot's `run`, registering until the
   author starts it ([run.md](run.md)); absent when the scene has none, and `snapshot()` reads it
   back.

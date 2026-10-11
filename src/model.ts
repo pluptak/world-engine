@@ -132,9 +132,12 @@ export interface Steered {
   value: number;
 }
 
+// A slot is one body, stored as its id, or several, stored as their list (`docs/roles.md`). Its first body names it.
+export type SlotEntry = Id | Id[];
+
 export interface Run {
   tick_limit?: number;
-  slots?: Id[];
+  slots?: SlotEntry[];
   state: RunState;
   ended?: RunEnd;
   players?: Player[];

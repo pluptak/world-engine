@@ -220,17 +220,18 @@ function dispatch(request: Request): unknown {
     case "player_inspect":
       return { inspection: playerWorld(openWorld(request.world), request.handle).inspect(request.entity) };
     case "player_options":
-      return playerWorld(openWorld(request.world), request.handle).options(
-        request.refused === undefined ? {} : { refused: request.refused },
-      );
+      return playerWorld(openWorld(request.world), request.handle).options({
+        ...(request.body === undefined ? {} : { body: request.body }),
+        ...(request.refused === undefined ? {} : { refused: request.refused }),
+      });
     case "player_check":
       return playerWorld(openWorld(request.world), request.handle).check(request.move);
     case "player_submit":
       return playerWorld(openWorld(request.world), request.handle).submit(request.move);
     case "player_withdraw":
-      return playerWorld(openWorld(request.world), request.handle).withdraw();
+      return playerWorld(openWorld(request.world), request.handle).withdraw(request.body);
     case "player_pending":
-      return { move: playerWorld(openWorld(request.world), request.handle).pending() };
+      return { moves: playerWorld(openWorld(request.world), request.handle).pending() };
     case "director_submitted":
       return { handles: directorWorld(openWorld(request.world)).submitted() };
     case "director_close_round":

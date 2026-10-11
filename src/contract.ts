@@ -42,6 +42,8 @@ export const CommandSchema = z.object({
 // What an actor op may send: the actor is the request's own, and `perceivers` is the world's record,
 // so a command that names either is invalid rather than quietly obeyed.
 const ActorCommandSchema = CommandSchema.pick({ command_id: true, verb: true, target: true, args: true }).strict();
+// A player's move names its body by the view's alias when the handle drives several (`docs/roles.md`).
+const PlayerMoveSchema = ActorCommandSchema.extend({ body: z.string().min(1).optional() }).strict();
 
 export const QuerySchema = z.discriminatedUnion("kind", [
   z.object({
@@ -108,7 +110,7 @@ export const SeededScenarioSchema = z.object({
   beats: z.array(z.record(z.string(), z.unknown())).optional(),
   run: z.object({
     tick_limit: z.number().int().min(1).optional(),
-    slots: z.array(z.string().min(1)).optional(),
+    slots: z.array(z.union([z.string().min(1), z.array(z.string().min(1)).min(1)])).optional(),
     pool: z.array(z.record(z.string(), z.unknown())).optional(),
     odds: z.array(z.object({
       entity: z.string().min(1),
@@ -245,10 +247,10 @@ export const RequestSchema = z.discriminatedUnion("op", [
   // A player's handle (`docs/roles.md`): its own reads, and its one pending move for the next round.
   z.object({ op: z.literal("player_observe"), world: z.string().min(1), handle: z.string().min(1), since_tick: z.number().int().optional() }).strict(),
   z.object({ op: z.literal("player_inspect"), world: z.string().min(1), handle: z.string().min(1), entity: IdSchema }).strict(),
-  z.object({ op: z.literal("player_options"), world: z.string().min(1), handle: z.string().min(1), refused: z.boolean().optional() }).strict(),
-  z.object({ op: z.literal("player_check"), world: z.string().min(1), handle: z.string().min(1), move: ActorCommandSchema }).strict(),
-  z.object({ op: z.literal("player_submit"), world: z.string().min(1), handle: z.string().min(1), move: ActorCommandSchema }).strict(),
-  z.object({ op: z.literal("player_withdraw"), world: z.string().min(1), handle: z.string().min(1) }).strict(),
+  z.object({ op: z.literal("player_options"), world: z.string().min(1), handle: z.string().min(1), body: z.string().min(1).optional(), refused: z.boolean().optional() }).strict(),
+  z.object({ op: z.literal("player_check"), world: z.string().min(1), handle: z.string().min(1), move: PlayerMoveSchema }).strict(),
+  z.object({ op: z.literal("player_submit"), world: z.string().min(1), handle: z.string().min(1), move: PlayerMoveSchema }).strict(),
+  z.object({ op: z.literal("player_withdraw"), world: z.string().min(1), handle: z.string().min(1), body: z.string().min(1).optional() }).strict(),
   z.object({ op: z.literal("player_pending"), world: z.string().min(1), handle: z.string().min(1) }).strict(),
   // The director's view of the players: which handles have submitted, and the round it closes.
   z.object({ op: z.literal("director_submitted"), world: z.string().min(1) }).strict(),
@@ -446,7 +448,7 @@ export const ScheduledCauseSchema = z.discriminatedUnion("kind", [
 // A scene's run as stored (`docs/run.md`): a tick limit, the agents that are its slots, or both, and its state.
 export const RunSchema = z.object({
   tick_limit: z.number().int().min(1).optional(),
-  slots: z.array(IdSchema).min(1).optional(),
+  slots: z.array(z.union([IdSchema, z.array(IdSchema).min(1)])).min(1).optional(),
   state: z.enum(["registering", "running", "ended"]),
   ended: z.object({
     reason: z.enum(["director", "tick_limit", "no_live_players"]),
@@ -779,7 +781,7 @@ export const RESPONSES = {
   player_check: CheckResponseSchema,
   player_submit: PlayerResultSchema,
   player_withdraw: PlayerResultSchema,
-  player_pending: z.object({ move: ActorCommandSchema.nullable() }).strict(),
+  player_pending: z.object({ moves: z.array(PlayerMoveSchema) }).strict(),
   director_submitted: z.object({ handles: z.array(z.string()) }).strict(),
   director_close_round: RoundResponseSchema,
   query: AnswerSchema,

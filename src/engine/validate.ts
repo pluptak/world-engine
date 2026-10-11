@@ -632,24 +632,32 @@ function runIssues(snapshot: Snapshot): SnapshotIssue[] {
     if (run.slots.length === 0) {
       issues.push(issue("invalid_run", ["run", "slots"], "empty"));
     }
+    // Each body is named once across the slots; a slot of several is a list of them, never empty.
     const seen = new Set<Id>();
-    run.slots.forEach((slot, index) => {
-      const path = ["run", "slots", String(index)];
-      // A slot may be gone, which ends the run as a destroyed one does; one still in the world is an agent's body.
-      const body = own(snapshot.entities, slot);
-      if ((body !== undefined && body.props.agent !== true) || seen.has(slot)) {
-        issues.push(issue("invalid_run", path, slot));
+    run.slots.forEach((entry, index) => {
+      const members = typeof entry === "string" ? [entry] : entry;
+      if (members.length === 0) {
+        issues.push(issue("invalid_run", ["run", "slots", String(index)], "empty"));
       }
-      seen.add(slot);
+      members.forEach((slot, member) => {
+        const path = typeof entry === "string" ? ["run", "slots", String(index)] : ["run", "slots", String(index), String(member)];
+        // A slot may be gone, which ends the run as a destroyed one does; one still in the world is an agent's body.
+        const body = own(snapshot.entities, slot);
+        if ((body !== undefined && body.props.agent !== true) || seen.has(slot)) {
+          issues.push(issue("invalid_run", path, slot));
+        }
+        seen.add(slot);
+      });
     });
   }
-  // Each player is bound to one of the run's slots, once per handle and once per slot.
+  // Each player is bound to one of the run's slots by its first body, once per handle and once per slot.
   const players = run.players ?? [];
   const handles = new Set<string>();
   const bound = new Set<Id>();
+  const roots = (run.slots ?? []).map((entry) => (typeof entry === "string" ? entry : entry[0]));
   players.forEach((player, index) => {
     const path = ["run", "players", String(index)];
-    const slot = run.slots?.includes(player.slot) ?? false;
+    const slot = roots.includes(player.slot);
     if (!slot || handles.has(player.handle) || bound.has(player.slot)) {
       issues.push(issue("invalid_run", path, player.handle));
     }

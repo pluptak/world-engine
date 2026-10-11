@@ -153,7 +153,7 @@ test("with the player item, a player drives the successor that took its body ove
   ok(heir !== undefined);
   const dana = playerWorld(run, "dana");
   deepStrictEqual(dana.submit({ command_id: "dana-move", verb: "move", args: { to: { x: 20, y: 0 } } }), { status: "ok" });
-  strictEqual(dana.pending()?.command_id, "dana-move");
+  deepStrictEqual(dana.pending().map((move) => move.command_id), ["dana-move"]);
   // The round takes the move as the successor's: the successor stands where dana sent it.
   const closed = directorWorld(run).closeRound();
   strictEqual(closed.status, "ok");

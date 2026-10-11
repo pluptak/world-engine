@@ -1,5 +1,5 @@
 import { WorldError } from "../errors.js";
-import { own, type Id, type Odds, type PoolBeat, type Snapshot } from "../model.js";
+import { own, type Id, type Odds, type PoolBeat, type SlotEntry, type Snapshot } from "../model.js";
 import { REFERENCE_PROPS, type Scene, type SceneRun } from "../scenario.js";
 import { actionSubject, editBeatIds, MAX_BEATS, parseScheduleBeat, pendingBeatIds } from "./beats.js";
 import type { BeatAction, BeatChild } from "./command.js";
@@ -174,17 +174,28 @@ function sceneRun(snapshot: Snapshot, names: Readonly<Record<string, Id>>, run: 
   if (run.slots !== undefined && run.slots.length === 0) {
     throw refused("run.slots", "invalid_run");
   }
-  const slots: Id[] = [];
-  (run.slots ?? []).forEach((name, index) => {
+  // A slot is one id, or a list of several named bodies (`docs/roles.md`); a list of one is stored as its id.
+  const slots: SlotEntry[] = [];
+  const bodies: Id[] = [];
+  (run.slots ?? []).forEach((entry, index) => {
     const path = `run.slots[${index}]`;
-    const id = named(names, name, path);
-    if (!isAgent(snapshot, id)) {
-      throw refused(path, "not_an_agent");
+    const members = typeof entry === "string" ? [entry] : entry;
+    if (members.length === 0) {
+      throw refused(path, "invalid_run");
     }
-    if (slots.includes(id)) {
-      throw refused(path, "duplicate_slot");
-    }
-    slots.push(id);
+    const ids = members.map((name, member) => {
+      const memberPath = typeof entry === "string" ? path : `${path}[${member}]`;
+      const id = named(names, name, memberPath);
+      if (!isAgent(snapshot, id)) {
+        throw refused(memberPath, "not_an_agent");
+      }
+      if (bodies.includes(id)) {
+        throw refused(memberPath, "duplicate_slot");
+      }
+      bodies.push(id);
+      return id;
+    });
+    slots.push(ids.length === 1 ? ids[0]! : ids);
   });
   const pool = run.pool === undefined ? undefined : scenePool(snapshot, names, run.pool, pendingBeatIds(snapshot.schedule ?? []));
   const odds = run.odds === undefined ? undefined : sceneOdds(snapshot, names, run.odds);

@@ -1,8 +1,8 @@
 import type { EditOptions, RoundResult, World } from "./api.js";
 import type { Command, Result, WorldEdit } from "./engine/command.js";
 import { INTERNAL } from "./internal.js";
-import { liveBodyOf } from "./engine/run.js";
-import type { Id } from "./model.js";
+import { driverBodies, liveBodyOf } from "./engine/run.js";
+import type { Id, Snapshot } from "./model.js";
 
 // The director's handle (`docs/roles.md`): everything a World reads, and writes only through `edit`, under
 // the director role, so the engine refuses what a director may not send. It has no `command`: a director
@@ -33,15 +33,16 @@ export type QuietRounds =
 
 export function directorWorld(world: World): DirectorWorld {
   const pending = world[INTERNAL].pending;
-  // The live body of each registered player that is in the world and not destroyed (`liveBodyOf`).
-  const liveSlots = (): Id[] => {
+  // The bodies of a slot that are in the world and not destroyed (`driverBodies`).
+  const liveOf = (snapshot: Snapshot, slot: Id): Id[] =>
+    driverBodies(snapshot, slot).filter((body) => {
+      const entity = snapshot.entities[body];
+      return entity !== undefined && entity.status !== "destroyed";
+    });
+  // The live bodies of every registered player.
+  const liveBodies = (): Id[] => {
     const snapshot = world.snapshot();
-    return (snapshot.run?.players ?? [])
-      .map((player) => liveBodyOf(snapshot, player.slot))
-      .filter((body) => {
-        const entity = snapshot.entities[body];
-        return entity !== undefined && entity.status !== "destroyed";
-      });
+    return (snapshot.run?.players ?? []).flatMap((player) => liveOf(snapshot, player.slot));
   };
   const pendingDue = (id: string): number | null => {
     const cause = world.schedule({ kind: "beat" }).find((entry) => entry.kind === "beat" && entry.id === id);
@@ -59,16 +60,12 @@ export function directorWorld(world: World): DirectorWorld {
     submitted: () => pending.handles(),
     closeRound: () => {
       const handles = pending.handles();
-      // Each move is the body the handle drives when the round closes, which a successor may have taken over.
+      // Each move is for the body it was submitted for, which a successor may have taken over since: the round
+      // takes it for the body the handle drives when the round closes.
       const snapshot = world.snapshot();
-      const moves = handles.flatMap((handle): Command[] => {
-        const command = pending.get(handle);
-        const slot = snapshot.run?.players?.find((player) => player.handle === handle)?.slot;
-        if (command === null || slot === undefined) {
-          return [];
-        }
-        return [{ ...command, actor: liveBodyOf(snapshot, slot), by: { role: "player", handle } }];
-      });
+      const moves = handles.flatMap((handle): Command[] =>
+        pending.moves(handle).map((command) => ({ ...command, actor: liveBodyOf(snapshot, command.actor), by: { role: "player", handle } })),
+      );
       const result = world[INTERNAL].roundAs(moves);
       if (result.status === "ok") {
         handles.forEach((handle) => pending.clear(handle));
@@ -80,7 +77,7 @@ export function directorWorld(world: World): DirectorWorld {
       const moving = new Set(pending.handles());
       const players = world.snapshot().run?.players ?? [];
       const liveHandles = players
-        .filter((player) => liveSlots().includes(liveBodyOf(world.snapshot(), player.slot)))
+        .filter((player) => liveOf(world.snapshot(), player.slot).length > 0)
         .map((player) => player.handle);
       // Every live player must be idle: one that has a move, or has not passed, keeps the time as it is.
       if (liveHandles.some((handle) => !idle.has(handle) || moving.has(handle))) {
@@ -106,7 +103,7 @@ export function directorWorld(world: World): DirectorWorld {
         }
         rounds += 1;
         // A registered body that sensed anything the round made stops the quiet: no player sleeps through it.
-        if (liveSlots().some((slot) => world.observe(slot, { since: before }).events.length > 0)) {
+        if (liveBodies().some((body) => world.observe(body, { since: before }).events.length > 0)) {
           return { status: "ok", rounds, stopped: "heard" };
         }
       }

@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [One player's handle drives several bodies](#one-players-handle-drives-several-bodies).
-2. [The lab played as a run](#the-lab-played-as-a-run).
-3. [Measure rounds](#measure-rounds).
+1. [The lab played as a run](#the-lab-played-as-a-run).
+2. [Measure rounds](#measure-rounds).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -65,37 +64,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
 
-### One player's handle drives several bodies
-
-The lab's AI is a terminal and an arm (two agents) seeing through two cameras; a handle binds one
-slot, which is one body, so the AI would need two handles and see the key under two aliases
-(`docs/limits-lab.md`). `plans/roles.md` decided: control is not composition; a player's binding
-lists the bodies it drives, and its view is one view with one alias for each thing.
-
-- **Slots** (`src/engine/scene.ts`, `src/model.ts`): a scene's slot is an id or a list of ids, each
-  an agent, none in two slots. A slot is named by its first body (`register_player`'s `slot`, the
-  run's `players`), so a one-body slot is stored as now. A slot is alive while any of its bodies'
-  live body is (`liveBodyOf`, per body).
-- **The view** (`src/player-world.ts`, `src/actor-world.ts`): aliases are keyed by the slot (its
-  first body) rather than by the body, so every body of a slot names a thing alike. `observe` reads
-  through every live body: an entity any of them senses is listed once (its facts from the first
-  body in slot order that senses it), and an event any of them senses once, in event order.
-  `inspect` likewise. `options(body?)` and `check(move)` are per body.
-- **Moves:** one move per body per round, since each body is an agent with its own tick:
-  `submit(move)` names the body by `body`, its alias in the view (omitted when the slot has one
-  body), and `pending()` lists the handle's moves by body. The director's `submitted()` still
-  names handles only. A one-body handle works exactly as now.
-- **Tests:** `tests/player.test.ts` (or a new file): a two-body slot registers under its first body;
-  its view names one stone alike from both bodies; `observe` lists what either body senses, once; a
-  move for each body in one round, each logged under the handle; a move naming a body not its own
-  is refused; the slot lives while one body does and ends the run for no live players when both
-  are gone; a successor of one body is driven in its place.
-- **Docs:** `docs/roles.md` (several bodies), `docs/scenario.md` (a slot's list),
-  `docs/limits-lab.md` (the two-alias line goes, since one handle now sees one key).
-- **Depends on:** nothing. **Not in it:** cameras as bodies (a camera feeds its controller's
-  sight already, so the terminal's view includes them), a body joining or leaving a slot during
-  a run.
-
 ### The lab played as a run
 
 The lab (`scenarios/lab.json`, `tests/scenario-lab.test.ts`) drove every engine change, but it runs
@@ -127,7 +95,7 @@ scene, registration, blind rounds, the director's levers, successors and replay.
   script finds are fixed in the same item and named in the commit; a missing mechanic is a limit,
   not a fix.
 - **Docs:** `docs/limits-lab.md`, `docs/scenario.md` (the lab run as the worked example).
-- **Depends on:** the two items above. **Not in it:** an LLM player, a host loop beyond the test's
+- **Depends on:** nothing now; the two items it named are built. **Not in it:** an LLM player, a host loop beyond the test's
   script, timeouts.
 
 ### Measure rounds
