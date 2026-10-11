@@ -12,7 +12,7 @@
   - Lit rooms are read from what burns ([perception.md](perception.md)).
   - Burning is a template process ([processes-shipped.md](processes-shipped.md)):
     `lantern` burns 1 fuel a tick and snuffs at 0; `candle`
-    burns less and is used up at 0.
+    burns less and is used up at 0, leaving the world.
 - `douse`: the same the other way, under `doused`.
   - Refuses `not_burning` and the same four others.
 - `say`: says an opaque token at a volume.

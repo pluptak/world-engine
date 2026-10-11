@@ -9,5 +9,6 @@
   - `options` tries each part of a body in view still on
     (`aims_at_parts`, [verbs.md](verbs.md)).
   - With no part named, the blow falls on `default_hit_part`.
-  - A blow at what is destroyed already is `already_destroyed`.
+  - A blow at what is destroyed already, or under a destroyed part, is
+    `already_destroyed`.
   - Reach is checked first. It emits nothing.

@@ -54,9 +54,12 @@ What is built, nothing aspirational, one concept per file:
 - [persistence-derived.md](persistence-derived.md): checkpoints and deltas, derived from the log.
 - [persistence-verify.md](persistence-verify.md): verifying a world, and upgrading its templates.
 - [locking.md](locking.md): writers' turns.
+- [locking-crash.md](locking-crash.md): a stale lock taken over, and a dead writer's leftovers swept.
 - [perception.md](perception.md): queries, perception, and coverage.
 - [senses.md](senses.md): the sense table both queries and tests read.
+- [senses-bases.md](senses-bases.md): the basis codes a perception answers with.
 - [projection.md](projection.md), [actor-view.md](actor-view.md): observation; one actor's side.
+- [projection-inspect.md](projection-inspect.md): one entity in detail; a command's observation.
 - [liquids.md](liquids.md): liquid in props, and the `pour` verb.
 - [forms.md](forms.md): the architect's percentages and conditions in a scenario, and `capacity_cm3`.
 - [catalog.md](catalog.md): the presets an architect may place, with their forms and defaults.

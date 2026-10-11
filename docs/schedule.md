@@ -34,7 +34,7 @@ one stored form:
 - a malformed beat (`invalid_beat`), a beat id used twice
   (`duplicate_beat`), or more than 256 (`too_many_beats`).
 The schedule is not a field of any entity. Like `tick`, its changes are not deltas;
-the events are the record. Stored worlds are `schema_version` 5 since.
+the events are the record. Stored worlds are `schema_version` 5.
 
 `tests/schedule.test.ts` is the spec; property runs cover schedule,
 withdraw, overtake, remove. Pushed-aside gate: `tests/scenario-cell.test.ts`.

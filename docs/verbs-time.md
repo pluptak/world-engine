@@ -6,7 +6,8 @@
     `ticks` is an upper bound. The clock ends at the first tick
     whose events the waiter itself could sense.
   - The `wait` event says `{ advanced: n }`: the ticks that passed.
-- `advance`: the same for the world author (`actor: "world"`).
+- `advance`: the same for the world author (`actor: "world"`), which has
+  no body and so cannot `wait`. What falls due runs under its own cause.
   - An agent issuing it is `invalid` (`invalid_author`).
   - A missing or non-positive count is `invalid_args`.
   - Its own event is authored work nobody senses.
@@ -19,12 +20,14 @@
   - A destroyed body is `observer_destroyed`.
   - Anything but a list of ids is `invalid_args`.
   - `clock_overflow` is judged on the upper bound.
-  - The `advance` event says `{ advanced: n }` too.
+  - The `advance` event says `{ advanced: n }` too, so the caller can
+    resume with another `advance`.
   - With `stop_before`, a pending beat's id, the clock ends one
     tick before the beat falls due. The beat stays pending.
   - A beat due at the very next tick is `beat_not_ahead`.
   - An id nothing pending carries is `no_such_beat`.
   - Both are refused, taking no time.
   - An id that is not a token is `invalid_args`.
-  - Once that beat has run, nothing stops the clock.
+  - Once that beat has run, or is cancelled or pruned, nothing stops
+    the clock.
   - A repeat's later run does not stop it either.

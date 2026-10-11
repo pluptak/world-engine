@@ -2,15 +2,17 @@
 
 A command is a try. The engine answers in fixed steps:
 
+- Check the actor: it exists and can act.
 - Find the target: name, alias, or `entity.part`.
-- Check the actor and the verb's preconditions.
+- Check the verb's preconditions.
 - Run the verb's transition.
 - Run physical consequences: support loss, falls, breaks.
+- Move the clock by the verb's duration.
 - Answer with a status, deltas, and events chained by `cause_id`.
 
 ```
-command -> resolve -> checks -> transition -> physical -> events
-                                              -> clock (+1 tick)
+command -> actor -> target -> preconditions -> transition -> clock
+                                               + physical     + duration (0, 1 or n)
 ```
 
 - Any status but `ok` changes nothing.
@@ -21,6 +23,7 @@ command -> resolve -> checks -> transition -> physical -> events
 - Pure core: a transition takes a snapshot and returns a new one.
 - I/O stays outside the engine.
 - Each verb declares its args, duration, capacities, and refusal codes.
+- `verbs()` is the catalog read from those declarations.
 - A refusal with an undeclared code is a bug. It throws.
 - All verbs are indexed in [verbs.md](verbs.md).
 - Rules live in the family file the index links.
