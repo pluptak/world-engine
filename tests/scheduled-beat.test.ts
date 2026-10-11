@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok, strictEqual } from "node:assert";
+import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
@@ -10,6 +10,7 @@ import {
   type Result,
   type WorldEdit,
   type World,
+  WorldError,
 } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
@@ -791,21 +792,55 @@ test("a beat may merge props: an update_props beat sets one prop and keeps the r
   ok(before.lit === true, "the room was lit before the beat");
 });
 
-test("an update_props beat naming an undeclared prop is scheduled as a set_props one is, and skipped when due as it is", (t) => {
+test("a beat writing an undeclared prop or a prop of the wrong type is refused when scheduled, and nothing is queued", (t) => {
   const h = inn(t);
-  const both = [
-    { id: "bad-update", at_tick: 3, action: { kind: "update_props", target: h.hall, props: { no_such_prop: 1 } } },
-    { id: "bad-set", at_tick: 4, action: { kind: "set_props", target: h.hall, props: { no_such_prop: 1 } } },
-  ];
-  for (const wanted of both) {
-    strictEqual(edit(h.world, { kind: "schedule_beat", ...wanted } as WorldEdit).status, "ok");
-  }
-  const skipped = advance(h.world, 5).events.filter((event) => event.type === "beat_skipped");
+  const before = h.world.snapshot();
+  const refusedWith = (action: unknown, follow?: unknown[]) => {
+    const result = edit(h.world, { kind: "schedule_beat", id: "bad", at_tick: 3, action, ...(follow === undefined ? {} : { then: follow }) } as WorldEdit);
+    return [result.status, result.reason_code];
+  };
+  deepStrictEqual(refusedWith({ kind: "update_props", target: h.hall, props: { no_such_prop: 1 } }), ["refused", "undeclared_prop"]);
+  deepStrictEqual(refusedWith({ kind: "set_props", target: h.hall, props: { no_such_prop: 1 } }), ["refused", "undeclared_prop"]);
+  deepStrictEqual(refusedWith({ kind: "update_props", target: h.hall, props: { lit: "yes" } }), ["refused", "wrong_prop_type"]);
+  // A follower's bad prop refuses the whole beat, its parent included.
   deepStrictEqual(
-    skipped.map((event) => [event.tick, event.data]),
-    [[3, { id: "bad-update", reason: "failed", code: "undeclared_prop" }], [4, { id: "bad-set", reason: "failed", code: "undeclared_prop" }]],
+    refusedWith({ kind: "sound", entity: h.door }, [{ id: "dim", delay_ticks: 1, action: { kind: "update_props", target: h.hall, props: { no_such_prop: 1 } } }]),
+    ["refused", "undeclared_prop"],
   );
-  strictEqual(h.world.snapshot().entities[h.hall]!.props.lit, true);
+  strictEqual(h.world.schedule({ kind: "beat" }).length, 0);
+  strictEqual(h.world.snapshot().version, before.version);
+  strictEqual(h.world.snapshot().schedule, undefined);
+});
+
+test("a beat writing declared props is queued, and runs when due", (t) => {
+  const h = inn(t);
+  strictEqual(
+    edit(h.world, { kind: "schedule_beat", id: "dim", at_tick: 3, action: { kind: "update_props", target: h.hall, props: { lit: false } } }).status,
+    "ok",
+  );
+  strictEqual(h.world.schedule({ kind: "beat" }).length, 1);
+  advance(h.world, 4);
+  strictEqual(h.world.snapshot().entities[h.hall]!.props.lit, false);
+});
+
+test("a scene's beat or follower writing an undeclared prop fails the scene, and so does a pool beat", (t) => {
+  const bad = { kind: "update_props", target: "hall", props: { no_such_prop: 1 } };
+  const scene = (extra: Record<string, unknown>) => ({
+    entities: [{ id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } }],
+    ...extra,
+  });
+  const refusal = (extra: Record<string, unknown>, rule: string) =>
+    throws(
+      () => createWorld(join(tempDir(t), "refused"), scene(extra) as never, registry),
+      (error: unknown) => error instanceof WorldError && error.code === "invalid_scenario" && error.message.includes(rule),
+      rule,
+    );
+  refusal({ beats: [{ id: "dim", at_tick: 2, action: bad }] }, "beats[0]: undeclared_prop");
+  refusal(
+    { beats: [{ id: "knock", at_tick: 2, action: { kind: "update_props", target: "hall", props: { lit: true } }, then: [{ id: "dim", delay_ticks: 1, action: bad }] }] },
+    "beats[0].then[0]: undeclared_prop",
+  );
+  refusal({ run: { tick_limit: 9, pool: [{ id: "dim", action: { kind: "set_props", target: "hall", props: { lit: 3 } } }] } }, "run.pool[0]: wrong_prop_type");
 });
 
 test("an update_props beat queued in a scene merges its prop when due", (t) => {

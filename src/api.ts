@@ -668,7 +668,7 @@ export function createWorld(
   // What the templates set going has no event behind it yet; its first `changed` is a root.
   snapshot = startProcesses(snapshot, templates);
   // The scene's beats and run are checked against what was made, before anything is written.
-  snapshot = sceneSnapshot(snapshot, resolved.ids, scene);
+  snapshot = sceneSnapshot(snapshot, templates, resolved.ids, scene);
   assertValid(snapshot, templates);
   create(dir, snapshot, templates, resolved.ids);
   return storeWorld(dir, templates, resolved.ids);

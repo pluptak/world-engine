@@ -11,6 +11,7 @@ import { CAUSE_KINDS, causeInvalid } from "./schedule.js";
 import { pending } from "./pending.js";
 import { isAgent } from "./verbs/address.js";
 import { MAX_BEATS, pendingBeatIds } from "./beats.js";
+import type { BeatAction } from "./command.js";
 import { isUtterance } from "./verbs/say.js";
 
 export interface SnapshotIssue {
@@ -368,30 +369,61 @@ function propIssues(
   const issues: SnapshotIssue[] = [];
   const template: Partial<Template> = own(registry, entity.template) ?? {};
   for (const [name, value] of Object.entries(entity.props)) {
-    const engine = PROP_FIELDS[name];
-    const field = engine ?? template.fields?.[name];
-    if (engine) {
-      if (!propTypeMatches(engine.type, value)) {
-        issues.push(issue("wrong_prop_type", [...path, "props", name], `props.${name} must be ${engine.type}`));
-      }
-    } else if (field !== undefined) {
-      if (!propTypeMatches(field.type, value)) {
-        issues.push(issue("wrong_prop_type", [...path, "props", name], `props.${name} must be ${field.type}`));
-      }
-    } else {
-      issues.push(issue("undeclared_prop", [...path, "props", name], `props.${name} is not a declared prop`));
-    }
-    if (engine?.min !== undefined && typeof value === "number" && value < engine.min) {
-      issues.push(issue("wrong_prop_type", [...path, "props", name], `props.${name} must be at least ${engine.min}`));
-    }
-    const requires = engine?.requires;
-    if (requires && requires.some((r) => !template.props?.[r])) {
-      issues.push(
-        issue("unmet_requires", [...path, "props", name], `props.${name} requires ${requires.join(", ")}`),
-      );
-    }
+    issues.push(...propValueIssues(template, name, value, [...path, "props", name]));
   }
   return issues;
+}
+
+// The problems one prop of a template's entity would have with this value. A beat's write is held to the same
+// rule (`beatPropRefusal`), so one that the snapshot would refuse is refused when it is scheduled.
+function propValueIssues(
+  template: Partial<Template>,
+  name: string,
+  value: Entity["props"][string],
+  path: string[],
+): SnapshotIssue[] {
+  const issues: SnapshotIssue[] = [];
+  const engine = PROP_FIELDS[name];
+  const field = engine ?? template.fields?.[name];
+  if (engine) {
+    if (!propTypeMatches(engine.type, value)) {
+      issues.push(issue("wrong_prop_type", path, `props.${name} must be ${engine.type}`));
+    }
+  } else if (field !== undefined) {
+    if (!propTypeMatches(field.type, value)) {
+      issues.push(issue("wrong_prop_type", path, `props.${name} must be ${field.type}`));
+    }
+  } else {
+    issues.push(issue("undeclared_prop", path, `props.${name} is not a declared prop`));
+  }
+  if (engine?.min !== undefined && typeof value === "number" && value < engine.min) {
+    issues.push(issue("wrong_prop_type", path, `props.${name} must be at least ${engine.min}`));
+  }
+  const requires = engine?.requires;
+  if (requires && requires.some((r) => !template.props?.[r])) {
+    issues.push(issue("unmet_requires", path, `props.${name} requires ${requires.join(", ")}`));
+  }
+  return issues;
+}
+
+// The code of the first prop a `set_props` or `update_props` action would write that its subject's template
+// refuses, or null. A missing subject is not judged here: the caller says that.
+export function beatPropRefusal(snapshot: Snapshot, registry: TemplateRegistry, action: BeatAction): string | null {
+  if (action.kind !== "set_props" && action.kind !== "update_props") {
+    return null;
+  }
+  const subject = own(snapshot.entities, action.target);
+  if (subject === undefined) {
+    return null;
+  }
+  const template: Partial<Template> = own(registry, subject.template) ?? {};
+  for (const [name, value] of Object.entries(action.props)) {
+    const [first] = propValueIssues(template, name, value, []);
+    if (first !== undefined) {
+      return first.code;
+    }
+  }
+  return null;
 }
 
 // What sits in a holder's part: in_part is set exactly when the holder declares holder parts,

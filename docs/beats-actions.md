@@ -36,3 +36,5 @@ When false the beat does nothing and emits `beat_skipped { id, reason: "conditio
 snapshot rule it would break, nothing it did is kept and the beat emits
 `beat_skipped { id, reason: "failed", code }` with the refusal's code.
 `beat_skipped` is authored work: nobody senses it.
+
+A `set_props` or `update_props` whose prop its subject's template does not declare, or declares with another type, is refused when scheduled with that rule's code (`undeclared_prop`, `wrong_prop_type`), follower included; a scene's beat fails `invalid_scenario` the same way.

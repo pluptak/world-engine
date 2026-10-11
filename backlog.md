@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A beat that writes a prop its subject cannot hold is refused when scheduled](#a-beat-that-writes-a-prop-its-subject-cannot-hold-is-refused-when-scheduled).
+_None open._
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -61,29 +61,4 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 ## Items
 
-Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A beat that writes a prop its subject cannot hold is refused when scheduled
-
-A `set_props` or `update_props` beat naming a prop its subject's template does not declare, or a
-value of the wrong type, is accepted when scheduled and skipped when due (`beat_skipped`, code
-`undeclared_prop`; `tests/scheduled-beat.test.ts` pins it). A world's templates never change, so
-such a beat can never run: the author should learn when writing it, not ticks later.
-
-- **Rule** (`scheduleBeatRefusal` in `src/engine/verbs/edit.ts`): a beat whose action is `set_props`
-  or `update_props` has each prop it writes checked against its subject's template by the rule
-  `validateSnapshot` applies to an entity's props (`src/engine/validate.ts`: `undeclared_prop`,
-  `wrong_prop_type`, `unmet_requires`, already on `edit`'s `refuses`), and is refused with the
-  first code. The same holds for every follower in its `then`, whose subject exists when scheduled
-  (a follower whose subject does not exist yet is decided when due, as now). One function does the
-  check; the rule is not written twice.
-- **Where else:** a scene's `beats` and `run.pool` (`src/engine/scene.ts`) fail
-  `invalid_scenario` with the beat's path and the code as the rule; `play_beat` needs nothing new,
-  since its beat was checked at the scene.
-- **Tests:** `tests/scheduled-beat.test.ts`: the test that pins the skip becomes one that refuses
-  both kinds at scheduling with `undeclared_prop`, and a wrong type with `wrong_prop_type`; a
-  follower's bad prop refuses its parent; a scene beat and a pool beat with one fail
-  `invalid_scenario`; a beat that writes declared props still runs.
-- **Docs:** `docs/beats-actions.md` (one line).
-- **Depends on:** nothing. **Not in it:** checking other actions' args at scheduling beyond what
-  is checked now.
+_None: every item is shipped. Only the maintainer adds one, under Priorities._

@@ -4,7 +4,9 @@ import { REFERENCE_PROPS, type Scene, type SceneRun } from "../scenario.js";
 import { actionSubject, editBeatIds, MAX_BEATS, parseScheduleBeat, pendingBeatIds } from "./beats.js";
 import type { BeatAction, BeatChild } from "./command.js";
 import { withCause } from "./pending.js";
+import { beatPropRefusal } from "./validate.js";
 import { isAgent } from "./verbs/address.js";
+import type { TemplateRegistry } from "../templates.js";
 
 // A scene's beats name entities by their scenario ids; these keys hold one. A prop that holds one is
 // listed in REFERENCE_PROPS, as an entry's prop is.
@@ -60,19 +62,35 @@ function resolveBody(value: unknown, names: Readonly<Record<string, Id>>, path: 
   return body;
 }
 
-// Every subject a beat and its followers act on is an entity of the world, as it is for a `schedule_beat`.
-function subjectOf(snapshot: Snapshot, action: BeatAction, then: readonly BeatChild[] | undefined, path: string): Id {
+// Every subject a beat and its followers act on is an entity of the world, as it is for a `schedule_beat`, and every
+// prop one writes is one its template holds.
+function subjectOf(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  action: BeatAction,
+  then: readonly BeatChild[] | undefined,
+  path: string,
+): Id {
   const subject = actionSubject(action);
   if (subject === null || own(snapshot.entities, subject) === undefined) {
     throw refused(path, "no_such_entity");
   }
-  (then ?? []).forEach((child, index) => subjectOf(snapshot, child.action, child.then, `${path}.then[${index}]`));
+  const code = beatPropRefusal(snapshot, registry, action);
+  if (code !== null) {
+    throw refused(path, code);
+  }
+  (then ?? []).forEach((child, index) => subjectOf(snapshot, registry, child.action, child.then, `${path}.then[${index}]`));
   return subject;
 }
 
 // Each beat is checked as a `schedule_beat` would be, against the entities the scene made, and queued
 // with no cause: no event set it going, so a null is its root, as a process the initial state started.
-function queueBeats(snapshot: Snapshot, names: Readonly<Record<string, Id>>, beats: readonly unknown[]): Snapshot {
+function queueBeats(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  names: Readonly<Record<string, Id>>,
+  beats: readonly unknown[],
+): Snapshot {
   let next = snapshot;
   const taken = new Set<string>();
   beats.forEach((body, index) => {
@@ -88,7 +106,7 @@ function queueBeats(snapshot: Snapshot, names: Readonly<Record<string, Id>>, bea
     if (parsed.at_tick < 1) {
       throw refused(path, "beat_in_past");
     }
-    const subject = subjectOf(next, parsed.action, parsed.then, path);
+    const subject = subjectOf(next, registry, parsed.action, parsed.then, path);
     for (const id of editBeatIds(parsed)) {
       if (taken.has(id)) {
         throw refused(path, "duplicate_beat");
@@ -115,7 +133,13 @@ function queueBeats(snapshot: Snapshot, names: Readonly<Record<string, Id>>, bea
 
 // A pool beat is a beat body with no tick: checked as a beat is, and its id unique among the beats the scene
 // queued and the pool's own (`docs/beats.md`). It is kept for the director to play.
-function scenePool(snapshot: Snapshot, names: Readonly<Record<string, Id>>, bodies: readonly unknown[], taken: string[]): PoolBeat[] {
+function scenePool(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  names: Readonly<Record<string, Id>>,
+  bodies: readonly unknown[],
+  taken: string[],
+): PoolBeat[] {
   const used = new Set(taken);
   return bodies.map((body, index): PoolBeat => {
     const path = `run.pool[${index}]`;
@@ -128,7 +152,7 @@ function scenePool(snapshot: Snapshot, names: Readonly<Record<string, Id>>, bodi
     if (parsed === null) {
       throw refused(path, "invalid_beat");
     }
-    subjectOf(snapshot, parsed.action, parsed.then, path);
+    subjectOf(snapshot, registry, parsed.action, parsed.then, path);
     for (const id of editBeatIds(parsed)) {
       if (used.has(id)) {
         throw refused(path, "duplicate_beat");
@@ -164,7 +188,7 @@ function sceneOdds(snapshot: Snapshot, names: Readonly<Record<string, Id>>, odds
 
 // A run names a limit, its slots, a pool or odds: a positive tick limit, agents that are its slots, beats for
 // the director to play, and the odds it may steer. A run with none of these is no run to end or steer.
-function sceneRun(snapshot: Snapshot, names: Readonly<Record<string, Id>>, run: SceneRun): Snapshot {
+function sceneRun(snapshot: Snapshot, registry: TemplateRegistry, names: Readonly<Record<string, Id>>, run: SceneRun): Snapshot {
   if (run.tick_limit === undefined && run.slots === undefined && run.pool === undefined && run.odds === undefined) {
     throw refused("run", "empty_run");
   }
@@ -197,7 +221,8 @@ function sceneRun(snapshot: Snapshot, names: Readonly<Record<string, Id>>, run: 
     });
     slots.push(ids.length === 1 ? ids[0]! : ids);
   });
-  const pool = run.pool === undefined ? undefined : scenePool(snapshot, names, run.pool, pendingBeatIds(snapshot.schedule ?? []));
+  const pool =
+    run.pool === undefined ? undefined : scenePool(snapshot, registry, names, run.pool, pendingBeatIds(snapshot.schedule ?? []));
   const odds = run.odds === undefined ? undefined : sceneOdds(snapshot, names, run.odds);
   return {
     ...snapshot,
@@ -213,7 +238,12 @@ function sceneRun(snapshot: Snapshot, names: Readonly<Record<string, Id>>, run: 
 
 // The scene's beats and run, put on the snapshot its spawns made. A refusal names its path (`beats[2]`,
 // `beats[0].then[1]`, `run.slots[0]`) and its rule, and nothing is written: the world is created only after this.
-export function sceneSnapshot(snapshot: Snapshot, names: Readonly<Record<string, Id>>, scene: Scene): Snapshot {
-  const withBeats = scene.beats === undefined ? snapshot : queueBeats(snapshot, names, scene.beats);
-  return scene.run === undefined ? withBeats : sceneRun(withBeats, names, scene.run);
+export function sceneSnapshot(
+  snapshot: Snapshot,
+  registry: TemplateRegistry,
+  names: Readonly<Record<string, Id>>,
+  scene: Scene,
+): Snapshot {
+  const withBeats = scene.beats === undefined ? snapshot : queueBeats(snapshot, registry, names, scene.beats);
+  return scene.run === undefined ? withBeats : sceneRun(withBeats, registry, names, scene.run);
 }

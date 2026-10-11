@@ -302,6 +302,19 @@ export function conditionSubjects(condition: BeatCondition): Id[] {
   return singles.map((single) => ("room" in single ? single.room : single.entity));
 }
 
+// Every action a `schedule_beat` carries, its followers' included, in the order they are written.
+export function editActions(edit: ScheduleBeatEdit): BeatAction[] {
+  const found: BeatAction[] = [edit.action];
+  const visit = (children: BeatChild[] | undefined): void => {
+    for (const child of children ?? []) {
+      found.push(child.action);
+      visit(child.then);
+    }
+  };
+  visit(edit.then);
+  return found;
+}
+
 // Every condition a `schedule_beat` carries, its followers' included, in the order they are written.
 export function editConditions(edit: ScheduleBeatEdit): BeatCondition[] {
   const found: BeatCondition[] = edit.only_if === undefined ? [] : [edit.only_if];

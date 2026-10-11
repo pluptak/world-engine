@@ -4,7 +4,7 @@ import { propagateSupportLoss } from "../../resolvers/physical.js";
 import { PROP_FIELDS } from "../fields.js";
 import { effectivePos } from "../geometry.js";
 import { spawnUnder, type EntityOverrides } from "../spawn.js";
-import { derivedLocationOf, validateSnapshot } from "../validate.js";
+import { beatPropRefusal, derivedLocationOf, validateSnapshot } from "../validate.js";
 import {
   WORLD_AUTHOR,
   type AnchorPos,
@@ -28,6 +28,7 @@ import {
   MAX_BEATS,
   actionSubject,
   conditionSubjects,
+  editActions,
   editBeatIds,
   editConditions,
   isBeatId,
@@ -564,6 +565,14 @@ function scheduleBeatRefusal(context: CommandContext, edit: ScheduleBeatEdit): P
   const read = editConditions(edit).flatMap((condition) => ("all" in condition ? conditionSubjects(condition) : []));
   if (read.some((id) => own(context.snapshot.entities, id) === undefined)) {
     return invalid("no_such_entity");
+  }
+  // A prop a beat writes that its subject's template does not hold is skipped when due, and so never runs: it is
+  // refused now. A follower whose subject is not there yet is decided when it is due.
+  for (const action of editActions(edit)) {
+    const code = beatPropRefusal(context.snapshot, context.registry, action);
+    if (code !== null) {
+      return refused(code);
+    }
   }
   if (edit.at_tick <= context.snapshot.tick) {
     return refused("beat_in_past");
