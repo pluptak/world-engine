@@ -246,9 +246,10 @@ function targetLocationForPerception(
   return null;
 }
 
-// Whether a room is lit: it says so itself, or something burning in it gives light. A burning light
-// counts wherever it is in the room (on the floor, on a table, in a hand or a pocket) but not shut
-// away in a closed container, and not once destroyed. Nothing stores the answer.
+// Whether a room is lit: it says so itself, something burning in it gives light, or a lamp on
+// power does. A light counts wherever it is in the room (on the floor, on a table, in a hand or
+// a pocket) but not shut away in a closed container, and not once destroyed. Nothing stores
+// the answer.
 export function isLit(snapshot: Snapshot, roomId: Id): boolean {
   const room = snapshot.entities[roomId];
   if (room === undefined) {
@@ -261,9 +262,10 @@ export function isLit(snapshot: Snapshot, roomId: Id): boolean {
     (entity) =>
       entity.location === roomId &&
       entity.props.light_source === true &&
-      entity.props.burning === true &&
       entity.status !== "destroyed" &&
-      closedEnclosure(snapshot, entity.id) === null,
+      closedEnclosure(snapshot, entity.id) === null &&
+      (entity.props.burning === true ||
+        (typeof entity.props.powered_by === "string" && powered(snapshot, entity.id))),
   );
 }
 

@@ -29,12 +29,13 @@ the lock of a door whose cable is cut or switched off.
 
 **Rules** ([relations.md](relations.md) R8): a link naming no entity is `dangling_reference`, so a
 link cannot be removed; a walk that loops is `power_loop` or `control_loop`. A camera is a device
-too: it feeds its controller while its walk carries a command ([camera.md](camera.md)).
+too: it feeds its controller while its walk carries a command ([camera.md](camera.md)). A lamp
+(`templates/lamp.json`, a `light_source` with no fuel) lights its room while its walk has power.
 
 **An agent's own power** (`agentFault`, checked before any verb). One with a `controlled_by` is held
 to that walk and then to its controller's own fault ([manipulator.md](manipulator.md)); any other
 with a `powered_by` acts only while powered, else every command is refused `unpowered` `{ at:
 itself, cut }` and every sense is `false` / `unpowered`. Nothing is stored: power back, it acts and
 senses again. An agent with neither, a human, is untouched (`tests/agent-power.test.ts`).
-Not modelled: power for lights or humans, batteries or a slow failure, delays and partial failure,
+Not modelled: batteries or a slow failure, delays and partial failure,
 and who may use a controller beyond the walk. A subject at a panel is in [panel.md](panel.md).

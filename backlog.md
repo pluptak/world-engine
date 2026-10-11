@@ -18,17 +18,16 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Electric light: a powered lamp lights its room](#electric-light-a-powered-lamp-lights-its-room).
-2. [The lab's power cut cuts power](#the-labs-power-cut-cuts-power).
-3. [A beat that writes a definition prop is refused when scheduled](#a-beat-that-writes-a-definition-prop-is-refused-when-scheduled).
-4. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
-5. [A hand's carry limit](#a-hands-carry-limit).
-6. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
-7. [Submitting a move is cheap](#submitting-a-move-is-cheap).
-8. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-9. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-10. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-11. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [The lab's power cut cuts power](#the-labs-power-cut-cuts-power).
+2. [A beat that writes a definition prop is refused when scheduled](#a-beat-that-writes-a-definition-prop-is-refused-when-scheduled).
+3. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
+4. [A hand's carry limit](#a-hands-carry-limit).
+5. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
+6. [Submitting a move is cheap](#submitting-a-move-is-cheap).
+7. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
+8. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
+9. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+10. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -72,25 +71,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 _None: every item is shipped. Only the maintainer adds one, under Priorities._
-
-### Electric light: a powered lamp lights its room
-
-`isLit` (`src/engine/query.ts`) counts a room's own `lit` and a burning flame; nothing electric
-lights a room, so a power cut cannot darken one (`plans/power.md`).
-
-- **The rule** (`isLit`): a `light_source` with a `powered_by` lights its room while it is
-  `powered()` and not destroyed or shut in a container, as a flame does while burning. `burning`
-  stays a flame's prop; a room's own `lit` stays the architect's and is untouched by power.
-- **Template:** a new `templates/lamp.json` (a `light_source`, no fuel, no `burning`), with
-  `powered_by` written by the architect. The templates hash moves, as any new template does.
-- **Tests:** `tests/light.test.ts`: a lamp on a running generator lights an unlit room, and sight of
-  a stone there is true; the generator off (`on: false`, the first item) darkens it and sight is
-  `false` / `location_unlit`; on again lights it; a lamp switched off itself darkens the room; a
-  lamp with no `powered_by` lights nothing; a lit room's own `lit` ignores power.
-- **Docs:** `docs/perception.md` (what lights a room), `docs/power.md` (lamps), `docs/templates.md`
-  if it lists templates.
-- **Depends on:** the first item. **Not in it:** a lamp's light reaching other rooms, dimness,
-  a `darkened` event (open in `plans/power.md`).
 
 ### The lab's power cut cuts power
 

@@ -10,7 +10,9 @@ import { tempDir } from "./harness.js";
 
 // A room is lit when it says so or when something burning in it gives light, so darkness can fall
 // by itself: a lantern lit in a dark room lets those in it see, a carried one lights wherever its
-// carrier stands, and a light that burns out takes the room with it.
+// carrier stands, and a light that burns out takes the room with it. An electric lamp
+// (`templates/lamp.json`) lights its room while its `powered_by` walk has power; switching the lamp
+// or its source off darkens the room again.
 
 const registry = loadTemplates(fileURLToPath(new URL("../templates/", import.meta.url)));
 // A light source with no fuel to burn: it burns without end. Making a stone a light source is a
@@ -209,4 +211,66 @@ test("a candle is a lantern with less fuel that is used up where a lantern only 
   deepStrictEqual(burn("lantern")?.then, { set_prop: { prop: "burning", value: false } });
   deepStrictEqual(burn("candle")?.then, { spent: true });
   strictEqual(registry.candle?.props.light_source, true);
+});
+
+// A lamp on power: the hall below is dark (no `lit` prop), lit only while the generator runs.
+
+const lampScenario: Scenario = [
+  { id: "hall", template: "room", overrides: { name: "hall" } },
+  { id: "generator", template: "generator", overrides: { name: "generator", location: "hall", support: "hall", pos: { x: -200, y: 0 } } },
+  {
+    id: "lamp",
+    template: "lamp",
+    overrides: { name: "lamp", location: "hall", support: "hall", pos: { x: 0, y: 100 }, props: { powered_by: "generator" } },
+  },
+  { id: "stone", template: "stone", overrides: { name: "stone", location: "hall", support: "hall", pos: { x: 60, y: 0 } } },
+  { id: "ann", template: "human", overrides: { name: "ann", location: "hall", support: "hall", pos: { x: 0, y: 0 } } },
+];
+
+function lit(t: { after(callback: () => void): void }) {
+  const world = createWorld(join(tempDir(t), "lamp"), lampScenario);
+  const id = (name: string): Id => {
+    const found = world.id(name);
+    ok(found !== null, name);
+    return found;
+  };
+  return { world, id };
+}
+
+test("a lamp on a running generator lights an unlit room", (t) => {
+  const { world, id } = lit(t);
+  deepStrictEqual(sees(world, id("ann"), id("stone")), { value: "true", basis_code: "same_location_lit" });
+});
+
+test("the generator off darkens the room, and on again lights it", (t) => {
+  const { world, id } = lit(t);
+  const [ann, stone, generator] = [id("ann"), id("stone"), id("generator")];
+  strictEqual(world.edit({ kind: "update_props", target: generator, props: { on: false } }).status, "ok");
+  deepStrictEqual(sees(world, ann, stone), { value: "false", basis_code: "location_unlit" });
+  strictEqual(world.edit({ kind: "update_props", target: generator, props: { on: true } }).status, "ok");
+  deepStrictEqual(sees(world, ann, stone), { value: "true", basis_code: "same_location_lit" });
+});
+
+test("a lamp switched off itself darkens the room", (t) => {
+  const { world, id } = lit(t);
+  const [ann, stone] = [id("ann"), id("stone")];
+  strictEqual(run(world, ann, "switch_off", "lamp").status, "ok");
+  deepStrictEqual(sees(world, ann, stone), { value: "false", basis_code: "location_unlit" });
+  strictEqual(run(world, ann, "switch_on", "lamp").status, "ok");
+  deepStrictEqual(sees(world, ann, stone), { value: "true", basis_code: "same_location_lit" });
+});
+
+test("a lamp with no powered_by lights nothing", (t) => {
+  const { world, id } = lit(t);
+  const [ann, stone, lamp] = [id("ann"), id("stone"), id("lamp")];
+  strictEqual(world.edit({ kind: "set_props", target: lamp, props: { light_source: true } }).status, "ok");
+  deepStrictEqual(sees(world, ann, stone), { value: "false", basis_code: "location_unlit" });
+});
+
+test("a lit room's own lit ignores power", (t) => {
+  const { world, id } = lit(t);
+  const [ann, stone, hall, generator] = [id("ann"), id("stone"), id("hall"), id("generator")];
+  strictEqual(world.edit({ kind: "update_props", target: hall, props: { lit: true } }).status, "ok");
+  strictEqual(world.edit({ kind: "update_props", target: generator, props: { on: false } }).status, "ok");
+  deepStrictEqual(sees(world, ann, stone), { value: "true", basis_code: "same_location_lit" });
 });

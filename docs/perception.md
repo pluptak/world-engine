@@ -15,9 +15,10 @@ subject may name one part, `<entity>.<part>`: `status`, `integrity` and `attache
 read the stored entry or the template default and write nothing; any other field is `false` /
 `not_a_part_field`, and a part the template does not declare is `false` / `no_such_part`.
 
-Sight needs light. A room is lit by its `lit` prop, or by something in it with `light_source: true`
-and `burning: true` (`isLit` in `query.ts`), a hand or a pocket included, but not one shut in a
-closed container or destroyed; `light` and `douse` set `burning` ([verbs-sensing.md](verbs-sensing.md)),
+Sight needs light. A room is lit by its `lit` prop, by a flame in it (`light_source` with
+`burning: true`), or by a lamp on power (`light_source` with a `powered_by` while its walk has
+power), a hand or a pocket included, but not one shut in a closed container or destroyed
+(`isLit` in `query.ts`); `light` and `douse` set `burning` ([verbs-sensing.md](verbs-sensing.md)),
 and nothing stores the answer. Sight across an open door needs both rooms lit
 (`adjacent_open_door_lit`), an unlit room is `location_unlit`, and a camera lends its lit room, an
 intercom its sounds, to the agent it feeds ([camera.md](camera.md), [intercom.md](intercom.md)).
