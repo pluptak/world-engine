@@ -8,7 +8,7 @@ an agent's verb. A surface declares `surface`, sized by its footprint; a contain
 
 A verb that answers `invalid_args` until given some may declare `suggest`, a function from the command's
 context and the ids the actor can name to the arg sets worth trying, in a fixed order and from the snapshot
-alone, which `options` ([api.md](api.md)) dry-runs one by one. `free_args: true` says the verb also takes
+alone, which `options` ([api-options.md](api-options.md)) dry-runs one by one. `free_args: true` says the verb also takes
 args no list can hold (a position, a partial amount, a token, a tick count), so it stays named in
 `needs_args`. A verb that `aims_at_parts` (`attack`) has `options` try it at each part of a body in view
 that has not come off. `give` and `put` list every argument they take; `move` and `pour` list some and are free

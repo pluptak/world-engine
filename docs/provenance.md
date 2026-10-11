@@ -27,7 +27,7 @@ root.
 **What has no events.** A refused, invalid, unresolved or preempted command changes nothing and
 emits nothing, so `since` and `trace` never see it. It is still history: `attempts(version)` lists
 every submission decided at that version or later, ok or not, with its status, reason code and
-data, from a store world's `log.jsonl` or a memory world's own record ([api.md](api.md)).
+data, from a store world's `log.jsonl` or a memory world's own record ([api-options.md](api-options.md)).
 
 What it does not do: an event has one parent, never several (`causes: [...]` waits for a scenario
 that needs a conjunction), and nothing says which conditions were necessary or sufficient.

@@ -19,7 +19,10 @@ What is built, nothing aspirational, one concept per file:
 - [relations.md](relations.md): every relation, and the rule that holds it.
 - [relation-tests.md](relation-tests.md): the tests that pin each relation's rule.
 - [carrying.md](carrying.md): holding parts, grips and pockets, and what losing a part drops.
-- [api.md](api.md): the `World` API, edits, scenarios and names.
+- [api.md](api.md): the public surface and its self-describing schema.
+- [api-options.md](api-options.md): reads that change nothing: check, options, since, attempts.
+- [api-writes.md](api-writes.md): edits, names, anchors, and the prototype guard.
+- [fork.md](fork.md): a fork is a memory world from a snapshot, sharing nothing.
 - [space.md](space.md): anchors, offsets and the derived `near` relation.
 - [scenery.md](scenery.md): what is seen but no verb reaches.
 - [provenance.md](provenance.md): what `cause_id` records, how `trace` walks it, and its limits.
@@ -45,7 +48,10 @@ What is built, nothing aspirational, one concept per file:
 - [time.md](time.md): the clock, what each verb takes, and what falls due as it advances.
 - [walking.md](walking.md): where an agent may walk: room bounds, barriers, and the destination.
 - [occupancy.md](occupancy.md): footprints, what stops a push, and where a fall lands.
-- [persistence.md](persistence.md), [locking.md](locking.md): the CLI and world directory; writers' turns.
+- [persistence.md](persistence.md): the CLI adapter and the world directory.
+- [persistence-derived.md](persistence-derived.md): checkpoints and deltas, derived from the log.
+- [persistence-verify.md](persistence-verify.md): verifying a world, and upgrading its templates.
+- [locking.md](locking.md): writers' turns.
 - [perception.md](perception.md): queries, perception, and coverage.
 - [senses.md](senses.md): the sense table both queries and tests read.
 - [projection.md](projection.md), [actor-view.md](actor-view.md): observation; one actor's side.

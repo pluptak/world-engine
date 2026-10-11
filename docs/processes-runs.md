@@ -5,7 +5,7 @@
 a cause of `null`: the first `changed` of such a process is a root. A
 caller that builds a snapshot itself and opens it with `memoryWorld` calls
 `startProcesses(snapshot, registry)` first if it wants them running; otherwise a
-process starts the first time something touches its entity.
+process starts the first time something touches its entity. `startProcesses` is exported for this.
 
 **Perception.** `changed` is read like a hand act: seen by whoever sees the entity in a lit room,
 never heard, never smelt, felt only by the body it is on (`silent` in [senses.md](senses.md)).

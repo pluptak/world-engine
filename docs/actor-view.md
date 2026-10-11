@@ -3,7 +3,7 @@
 A `World` answers its trusted caller everything: the snapshot, every delta and event, who sensed
 what. A character's controller must learn only what its character could, so it is handed the view
 instead (`actorWorld(world, actor)`, `src/actor-world.ts`): `observe`, `inspect`, `options`
-([api.md](api.md)), `check` and `command`, all as that actor. An unknown actor is `no_such_entity`.
+([api-options.md](api-options.md)), `check` and `command`, all as that actor. An unknown actor is `no_such_entity`.
 
 A command's actor is the view's own and `perceivers`, the world's record of who sensed each event,
 is never sent. A result is the verdict and `observation` alone, with no `snapshot`, `deltas` or
