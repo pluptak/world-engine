@@ -19,9 +19,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-2. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-3. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-4. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+2. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+3. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -87,23 +86,6 @@ every accepted command's deltas (from `plans/candidates.md`).
 - **Record** `npm run bench` and `bench:scale` before and after in `docs/measurements.md`.
 - **Docs:** `docs/persistence.md`. The candidate leaves `plans/candidates.md` in the same commit.
 - **Depends on:** nothing. **Not in it:** compacting the log, a binary format.
-
-### A long-lived process bounds what it keeps of each world
-
-The parsed lines of `events.jsonl` and `deltas.jsonl` (`lineCaches` in `src/store/file-store.ts`)
-and the head of `initial.json` (`initialMeta`) are module-level maps with no eviction, so a process
-that opens many worlds, as a host does, keeps all their events until it ends (from
-`plans/candidates.md`).
-
-- **Rule:** each map keeps the worlds used most recently, at most 8 directories, and drops the
-  rest; a dropped world is read again from its files on its next use, as a fresh process would.
-  **Decision to confirm:** 8 worlds, counted by directory, not by records.
-- **Tests:** a test opens 10 worlds in turn, then reads the first again and gets the same answers;
-  the maps never hold more than 8 entries (read through a test-only count, not by exporting the
-  maps).
-- **Docs:** `docs/persistence.md` (one line). The candidate leaves `plans/candidates.md` in the same
-  commit.
-- **Depends on:** nothing. **Not in it:** a bound by memory, the checkpoints on disk.
 
 ### A run is played again from its world
 

@@ -179,16 +179,33 @@ function checkedSnapshot(value: unknown, path: string): Snapshot {
 // cost, so its two fields are kept against the file's size and modification time.
 const initialMeta = new Map<string, { stamp: string; version: number; templates_hash: string }>();
 
+// A process that opens many worlds, as a host does, keeps all their parsed lines until it ends
+// unless each cache is bounded: the maps below keep the worlds used most recently, at most this
+// many directories, and a dropped world is read again from its files on its next use, as a fresh
+// process would. Counted by directory, not by records.
+const CACHED_WORLDS = 8;
+
+// The least recently used key: insertion order is recency, since every touch deletes and sets again.
+function dropOldest(worlds: Map<string, unknown>): void {
+  while (worlds.size > CACHED_WORLDS) {
+    worlds.delete(worlds.keys().next().value!);
+  }
+}
+
 function readInitialMeta(path: string): { version: number; templates_hash: string } {
   const stat = statSync(path);
   const stamp = `${stat.size}:${stat.mtimeMs}`;
   const kept = initialMeta.get(path);
   if (kept !== undefined && kept.stamp === stamp) {
+    initialMeta.delete(path);
+    initialMeta.set(path, kept);
     return kept;
   }
   const { version, templates_hash } = readSnapshot(path);
   const meta = { stamp, version, templates_hash };
+  initialMeta.delete(path);
   initialMeta.set(path, meta);
+  dropOldest(initialMeta);
   return meta;
 }
 
@@ -440,7 +457,7 @@ interface LineCache {
   lines: number;
   records: unknown[];
 }
-const lineCaches = new Map<string, LineCache>();
+const lineCaches = new Map<string, { events?: LineCache; deltas?: LineCache }>();
 
 function parseLines<T>(text: string, firstLine: number, parse: (line: string, lineNumber: number) => T): T[] {
   const records: T[] = [];
@@ -458,16 +475,26 @@ function parseLines<T>(text: string, firstLine: number, parse: (line: string, li
 }
 
 function cachedEvents(dir: string): readonly WorldEvent[] {
-  return cachedLines(join(dir, snapshots.events), parseEventLine);
+  return cachedLines(dir, "events", parseEventLine);
 }
 
 function cachedDeltas(dir: string): readonly Delta[] {
-  return cachedLines(join(dir, snapshots.deltas), parseDeltaLine);
+  return cachedLines(dir, "deltas", parseDeltaLine);
 }
 
-function cachedLines<T>(path: string, parse: (line: string, lineNumber: number) => T): readonly T[] {
+function cachedLines<T>(
+  dir: string,
+  kind: "events" | "deltas",
+  parse: (line: string, lineNumber: number) => T,
+): readonly T[] {
+  const path = join(dir, snapshots[kind]);
+  const entry = lineCaches.get(dir);
+  if (entry !== undefined) {
+    lineCaches.delete(dir);
+    lineCaches.set(dir, entry);
+  }
+  const kept = entry?.[kind];
   const stat = statSync(path);
-  const kept = lineCaches.get(path);
   if (kept !== undefined && kept.size === stat.size && kept.mtimeMs === stat.mtimeMs) {
     return kept.records as T[];
   }
@@ -494,14 +521,21 @@ function cachedLines<T>(path: string, parse: (line: string, lineNumber: number) 
   const fresh = parseLines(whole.toString("utf8"), (base?.lines ?? 0) + 1, parse);
   const records = base === undefined ? fresh : [...(base.records as T[]), ...fresh];
   const seen = base === undefined ? whole : Buffer.concat([base.anchor, whole]);
-  lineCaches.set(path, {
+  lineCaches.set(dir, { ...entry, [kind]: {
     size: (base?.size ?? 0) + whole.length,
     mtimeMs: stat.mtimeMs,
     anchor: Buffer.from(seen.subarray(Math.max(0, seen.length - ANCHOR_BYTES))),
     lines: records.length,
     records,
-  });
+  } });
+  dropOldest(lineCaches);
   return records;
+}
+
+// Test-only: how many worlds the module-level caches hold, by directory. The maps themselves stay
+// private; the bound is on what the count reports.
+export function cachedWorldCounts(): { lineCaches: number; initialMeta: number } {
+  return { lineCaches: lineCaches.size, initialMeta: initialMeta.size };
 }
 
 function snapshotAtVersion(

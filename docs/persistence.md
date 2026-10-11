@@ -23,6 +23,8 @@ A world directory holds:
   detects a crash without reading the log; a head without the count is settled by `load`, as one
   without the deltas size is;
 - `lock`, there only while a process is writing: writers take turns ([locking.md](locking.md)).
+- A process keeps the parsed lines of at most 8 worlds' `events.jsonl` and `deltas.jsonl` and the
+  heads of at most 8 `initial.json` files, most recently used; a dropped world is read again.
 
 Replay folds accepted commands over the initial snapshot; it is the source of truth, and a mismatch
 with the head rebuilds the snapshot, events, deltas and head from the log. An
