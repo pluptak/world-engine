@@ -18,12 +18,13 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
-2. [Submitting a move is cheap](#submitting-a-move-is-cheap).
-3. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-4. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-5. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-6. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [The property tests generate switches](#the-property-tests-generate-switches).
+2. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
+3. [Submitting a move is cheap](#submitting-a-move-is-cheap).
+4. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
+5. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
+6. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+7. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -184,3 +185,19 @@ the CLI's JSON requests, players that answer late, and a record of what each sid
 - **Docs:** a new `docs/host.md` (what the host does and does not), its `docs/DESIGN.md` line.
 - **Depends on:** nothing; best after the cost items. **Not in it:** an LLM player (a later item
   plugs one in as a player function), a network server, any prose.
+
+### The property tests generate switches
+
+`switch_on` and `switch_off` have generators in `tests/property-gen.ts` (`switchable`) but no band
+in `SLOTS`, so no generated sequence ever switches. They were kept out because a band reshuffles
+every sequence and exposed a crash in the actor view, since fixed (`bd94cfd`).
+
+- **Generator:** the two verbs join a band of `SLOTS` (the openables' band, which they sit beside
+  in `verbs/index.ts`), and the generated world (`buildInitial`) holds what they act on: a
+  generator, a cable powered by it, and a lamp or a camera on the cable, so a switch has something
+  to cut.
+- **Then:** every property test file runs (`tests/property*.test.ts`, `options-property`,
+  `projection-property`); a failure the new sequences find is an engine bug, fixed in this item with
+  its own regression test that fails without the fix, never by choosing a seed that avoids it. A
+  test that pins a count or an outcome of the old sequences is updated, and the commit says which.
+- **Depends on:** nothing. **Not in it:** new properties.
