@@ -1,8 +1,9 @@
 import { effectivePos } from "./geometry.js";
 import { effectivePart } from "./parts.js";
-import { inReach } from "./verbs/address.js";
+import { doorJoins, inReach } from "./verbs/address.js";
 import { liquidCapacity } from "./verbs/pour.js";
 import { query } from "./query.js";
+import { isDoor } from "./resolve.js";
 import { own, type Entity, type Id, type PartState, type Pos, type Snapshot, type WorldEvent } from "../model.js";
 import type { TemplateRegistry } from "../templates.js";
 
@@ -36,6 +37,7 @@ export interface ObservedEntity {
 // An event names its entity when the observer sensed it by sight, smell or touch, which tell what it
 // was. One only heard says where the sound came from instead, `from`, and names nobody: a voice in the
 // dark carries no identity, and the source of a footstep is not told because it is in the world.
+// One heard alone from the next room also names the door it came through, `heard_from`.
 export type HeardFrom = "here" | "next_door" | "intercom";
 
 export interface ObservedEvent {
@@ -44,6 +46,7 @@ export interface ObservedEvent {
   type: string;
   entity?: Id;
   from?: HeardFrom;
+  heard_from?: Id;
   senses: string[];
   // A speech act's token and volume, present only when the observer heard it: one who only saw the
   // speaker has the event and the sense `sight`, and not what was said.
@@ -64,6 +67,31 @@ export function heardFrom(basis: string): HeardFrom {
     return "intercom";
   }
   throw new TypeError(`Hearing is true with basis ${basis}`);
+}
+
+// The door a sound heard from the next room came through: the first doorway joining the
+// observer's room to the event's room, in id order. Hearing crosses an open door or a shut one
+// alike (`docs/senses.md`), so either names it. Null in the observer's own room, for an event
+// whose entity is gone, or when no door joins the two rooms.
+export function hearingDoor(snapshot: Snapshot, observerId: Id, event: WorldEvent): Id | null {
+  const observer = own(snapshot.entities, observerId);
+  const subject = own(snapshot.entities, event.entity);
+  if (observer === undefined || subject === undefined) {
+    return null;
+  }
+  const target = typeof event.data.location === "string" ? event.data.location : subject.location;
+  const here = observer.location;
+  if (here === null || target === null || here === target) {
+    return null;
+  }
+  return (
+    Object.keys(snapshot.entities)
+      .sort()
+      .find((id) => {
+        const entity = snapshot.entities[id];
+        return entity !== undefined && isDoor(entity) && doorJoins(entity.props, here, target);
+      }) ?? null
+  );
 }
 
 export interface Projection {

@@ -85,8 +85,11 @@ test("row 3: every player idles; the director skips quiet rounds, which stop the
   // Three quiet rounds: the third is the one the alarm falls due in, and a subject in the dormitory hears it.
   deepStrictEqual(director.closeRounds({ max: 20 }), { status: "ok", rounds: 3, stopped: "heard" });
   strictEqual(world.snapshot().tick, alarm);
-  // A heard sound names no source to the listener: the event is there, with its type and no entity.
-  deepStrictEqual(handle("ann").observe({ since_tick: alarm - 1 }).events.map((event) => [event.type, event.entity ?? null]), [["sounded", null]]);
+  // A heard sound names no source to the listener, but tells which door it came through.
+  deepStrictEqual(
+    handle("ann").observe({ since_tick: alarm - 1 }).events.map((event) => [event.type, event.entity ?? null, event.heard_from ?? null]),
+    [["sounded", null, aliasOf(id("ann"), id("dormitory_door"))]],
+  );
   // With nothing due, the quiet rounds run to their bound.
   deepStrictEqual(director.closeRounds({ max: 2 }), { status: "ok", rounds: 2, stopped: "max" });
 });

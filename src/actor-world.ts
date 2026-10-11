@@ -258,6 +258,7 @@ export function actorWorld(world: World, actor: Id, key: Id = actor, senses: rea
       ...event,
       event_id: alias(event.event_id),
       ...(event.entity !== undefined && { entity: alias(event.entity) }),
+      ...(event.heard_from !== undefined && { heard_from: alias(event.heard_from) }),
     })),
   });
 

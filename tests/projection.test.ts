@@ -2,9 +2,12 @@ import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
+  actorWorld,
+  aliasOf,
   canonicalJson,
   createWorld,
   memoryWorld,
+  WORLD_AUTHOR,
   WorldError,
   type Coverage,
   type ObservedEntity,
@@ -221,6 +224,71 @@ test("footsteps heard in the dark name no walker; in the light the walker is nam
   }
 });
 
+test("a knock next door names the door it came through", (t) => {
+  for (const world of worlds(t)) {
+    const bob = idOf(world, "bob");
+    const door = idOf(world, "door");
+    const stone = idOf(world, "stone");
+    const table = idOf(world, "table");
+    const row = (event: { type: string; senses: string[]; entity?: string; from?: string; heard_from?: string }) => [
+      event.type,
+      event.senses,
+      "entity" in event ? event.entity : null,
+      "from" in event ? event.from : null,
+      "heard_from" in event ? event.heard_from : null,
+    ];
+    let seq = 0;
+    const knock = (id: string, at: string) => {
+      strictEqual(
+        world.edit({ kind: "schedule_beat", id, at_tick: world.snapshot().tick + 2, action: { kind: "sound", entity: at, loud: true } }).status,
+        "ok",
+      );
+    };
+    const advanceTo = () => {
+      seq += 1;
+      strictEqual(world.command({ command_id: `knock-adv-${seq}`, actor: WORLD_AUTHOR, verb: "advance", args: { ticks: 3 } }).status, "ok");
+    };
+
+    // Through the open door a loud knock in the cellar is heard next door, through that door.
+    let since = world.snapshot().version;
+    knock("knock-open", stone);
+    advanceTo();
+    deepStrictEqual(world.observe(bob, { since }).events.map(row), [["sounded", ["hearing"], null, "next_door", door]]);
+
+    // Shut, the same knock is still heard through it, and still names it.
+    strictEqual(world.command({ command_id: "shut", actor: idOf(world, "ann"), verb: "close", target: "door" }).status, "ok");
+    since = world.snapshot().version;
+    knock("knock-shut", stone);
+    advanceTo();
+    deepStrictEqual(world.observe(bob, { since }).events.map(row), [["sounded", ["hearing"], null, "next_door", door]]);
+
+    // In the observer's own room a loud knock is here, from nobody and through no door.
+    since = world.snapshot().version;
+    knock("knock-here", table);
+    advanceTo();
+    deepStrictEqual(world.observe(bob, { since }).events.map(row), [["sounded", ["hearing"], null, "here", null]]);
+
+    // What is seen names its entity and no door.
+    since = world.snapshot().version;
+    strictEqual(world.command({ command_id: "push-cup", actor: idOf(world, "ann"), verb: "push", target: "table", args: { distance_cm: 10 } }).status, "ok");
+    const seen = world.observe(bob, { since }).events;
+    ok(seen.length > 0);
+    for (const event of seen) {
+      strictEqual("heard_from" in event, false);
+    }
+    deepStrictEqual(seen.map(row).map(([type, senses, entity]) => [type, senses, entity]), seen.map((event) => [event.type, event.senses, event.entity]));
+
+    // The actor's view names the door by its alias.
+    const tick = world.snapshot().tick;
+    knock("knock-view", stone);
+    advanceTo();
+    deepStrictEqual(
+      actorWorld(world, bob).observe({ since_tick: tick }).events.map(row),
+      [["sounded", ["hearing"], null, "next_door", aliasOf(bob, door)]],
+    );
+  }
+});
+
 test("store and memory worlds project byte for byte alike, and the CLI contract accepts it", (t) => {
   const [store, memory] = worlds(t);
   ok(store !== undefined && memory !== undefined);
@@ -250,6 +318,7 @@ test("the CLI contract holds an observed event to naming its entity or saying wh
   strictEqual(view({ entity: "e2" }), true);
   strictEqual(view({ from: "here" }), true);
   strictEqual(view({ from: "next_door" }), true);
+  strictEqual(view({ from: "next_door", heard_from: "e3" }), true);
   strictEqual(view({}), false);
   strictEqual(view({ entity: "e2", from: "here" }), false);
   strictEqual(view({ from: "far_away" }), false);

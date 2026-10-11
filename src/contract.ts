@@ -545,6 +545,7 @@ export const ProjectionSchema = z.object({
     type: z.string(),
     entity: IdSchema.optional(),
     from: z.enum(["here", "next_door", "intercom"]).optional(),
+    heard_from: IdSchema.optional(),
     senses: z.array(z.string()),
     utterance: z.string().optional(),
     volume: z.string().optional(),

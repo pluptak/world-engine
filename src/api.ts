@@ -14,6 +14,7 @@ import {
 } from "./engine/command.js";
 import {
   heardFrom,
+  hearingDoor,
   inspectEntity,
   observeEntities,
   SENSES,
@@ -344,7 +345,7 @@ function observeThrough(
       : options.since === undefined
         ? []
         : world.since(options.since).events;
-  const events: ObservedEvent[] = candidates.flatMap((event) => {
+  const events: ObservedEvent[] = candidates.flatMap((event): ObservedEvent[] => {
     const senses: string[] = [];
     let hearing = "";
     for (const sense of covered) {
@@ -354,22 +355,40 @@ function observeThrough(
         hearing = sense === "hearing" ? answer.basis_code : hearing;
       }
     }
-    return senses.length === 0
-      ? []
-      : [
-          {
-            event_id: event.event_id,
-            tick: event.tick,
-            type: event.type,
-            ...(senses.length === 1 && senses[0] === "hearing"
-              ? { from: heardFrom(hearing) }
-              : { entity: event.entity }),
-            senses,
-            ...(event.type === "say" && senses.includes("hearing") && typeof event.data.utterance === "string"
-              ? { utterance: event.data.utterance, volume: String(event.data.volume) }
-              : {}),
-          },
-        ];
+    if (senses.length === 0) {
+      return [];
+    }
+    // One heard alone names where the sound came from and nobody; one heard alone from the next
+    // room names the door it came through too. Anything sensed besides names its entity instead.
+    if (senses.length === 1 && senses[0] === "hearing") {
+      const from = heardFrom(hearing);
+      const door = from === "next_door" ? hearingDoor(snapshot, observer, event) : null;
+      return [
+        {
+          event_id: event.event_id,
+          tick: event.tick,
+          type: event.type,
+          from,
+          ...(door !== null && { heard_from: door }),
+          senses,
+          ...(event.type === "say" && senses.includes("hearing") && typeof event.data.utterance === "string"
+            ? { utterance: event.data.utterance, volume: String(event.data.volume) }
+            : {}),
+        },
+      ];
+    }
+    return [
+      {
+        event_id: event.event_id,
+        tick: event.tick,
+        type: event.type,
+        entity: event.entity,
+        senses,
+        ...(event.type === "say" && senses.includes("hearing") && typeof event.data.utterance === "string"
+          ? { utterance: event.data.utterance, volume: String(event.data.volume) }
+          : {}),
+      },
+    ];
   });
   return {
     observer,

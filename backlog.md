@@ -18,14 +18,13 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
-2. [A hand's carry limit](#a-hands-carry-limit).
-3. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
-4. [Submitting a move is cheap](#submitting-a-move-is-cheap).
-5. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-6. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-7. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-8. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [A hand's carry limit](#a-hands-carry-limit).
+2. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
+3. [Submitting a move is cheap](#submitting-a-move-is-cheap).
+4. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
+5. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
+6. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+7. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -69,30 +68,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 _None: every item is shipped. Only the maintainer adds one, under Priorities._
-
-### A heard sound tells which way it came
-
-A listener in another room hears that something sounded, never from where (`docs/limits-lab.md`, "As
-a run", row 3): an event sensed by hearing alone names no entity (`src/engine/projection.ts`), which
-is right for the source, but a person can tell the direction.
-
-- **Rule** (`projection.ts`): an event the observer senses by hearing alone, from another room,
-  carries `heard_from`: the door between the observer's room and the event's room through which
-  hearing reached it (open or shut, as `docs/senses.md`'s `+` and `B` columns decide). An event in
-  the observer's own room, or one sensed by another sense, carries none. The door is named as
-  anything in a projection is: an id in the world's projection, the actor's alias in its view
-  (`src/actor-world.ts`), so a door the observer cannot name is still named by its alias, as a
-  `reason_data` entity the actor has in view is.
-- **Contract:** `heard_from` optional on the projection's event (`src/contract.ts`), and in the
-  actor projection.
-- **Tests:** `tests/projection.test.ts` (or the file that holds event projection): a knock in the
-  next room heard through a shut door names that door; through an open one, that one; a knock in
-  the observer's own room carries none; a seen event carries none; the actor view names the door by
-  its alias. Row 3 of `tests/acceptance-lab-run.test.ts` asserts the alarm's door.
-- **Docs:** `docs/perception.md` (one line), `docs/actor-view.md` if it lists event fields,
-  `docs/limits-lab.md` (the row 3 line goes).
-- **Depends on:** nothing. **Not in it:** the source's distance or loudness, a sound two doors away
-  (hearing reaches one door today).
 
 ### A hand's carry limit
 
