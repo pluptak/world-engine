@@ -261,10 +261,12 @@ export function actorWorld(world: World, actor: Id, key: Id = actor, senses: rea
     })),
   });
 
+  // The bodies of the view still in the world: one removed senses nothing, and a slot lives on in the others.
+  const present = (): Id[] => senses.filter((sense) => sense === actor || world.entity(sense) !== null);
   // What the senses of every body in the view sense, as one projection (`mergeProjections`).
   const observeAll = (sinceTick?: number): Projection =>
     mergeProjections(
-      senses.map((sense) => world.observe(sense, sinceTick === undefined ? {} : { since_tick: sinceTick })),
+      present().map((sense) => world.observe(sense, sinceTick === undefined ? {} : { since_tick: sinceTick })),
       key,
     );
   // What the bodies sense after a command, since the version it was applied to (`withObservation`): the actor's own
@@ -272,7 +274,7 @@ export function actorWorld(world: World, actor: Id, key: Id = actor, senses: rea
   const observedAfter = (result: Result): Projection => {
     const since = result.status === "ok" ? result.snapshot.version - 1 : world.snapshot().version;
     return mergeProjections(
-      senses.map((sense) => (sense === actor && result.observation !== undefined ? result.observation : world.observe(sense, { since }))),
+      present().map((sense) => (sense === actor && result.observation !== undefined ? result.observation : world.observe(sense, { since }))),
       key,
     );
   };
@@ -282,7 +284,7 @@ export function actorWorld(world: World, actor: Id, key: Id = actor, senses: rea
     observe: (options = {}) => toActor(observeAll(options.since_tick)),
     inspect: (entity) => {
       const id = unalias(entity);
-      for (const sense of senses) {
+      for (const sense of present()) {
         const inspection = world.inspect(sense, id);
         if (inspection !== null) {
           return inspectionOut(inspection);

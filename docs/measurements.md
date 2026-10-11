@@ -43,8 +43,9 @@ first then last thousand, against 4.2 then 4.5 without it, the spread between ru
 
 `npm run bench:rounds` (`scripts/bench.ts --rounds`, `scripts/bench-rounds.ts`): the scale world of
 500 entities in 20 rooms, eight of its agents registered as players of one run. Each of 1,000 rounds
-has one move per player, through its handle, then the director closes it; then 200 quiet rounds, each
-closed with every player idle. Per round, ms, on the machine in [measurements-commands.md](measurements-commands.md):
+has one move per player, through its handle, then the director closes it; then 200 quiet rounds,
+each closed with every player idle. Per round, ms, on the machine in
+[measurements-commands.md](measurements-commands.md):
 
 | | ms per round |
 |---|---|
@@ -57,9 +58,10 @@ closed with every player idle. Per round, ms, on the machine in [measurements-co
 | of which the director's observation of the bodies | 1538 |
 
 The phases add up to the round: submits, check and apply make the move round's close with its own
-check, and the closing tick is what a quiet round costs before its observation. The observation stops at
-the first body that senses what the round made, as `closeRounds` does, so a quiet round that every body
-hears costs more. Most of a quiet round is that observation, which reads events since the round began
-through the store; that is the cost to look at before any round work, and no optimisation is made here.
-The round's cost barely grows over the run (245 against 272 ms, within the spread between runs): the
-round number is read from the whole log each round, which is not yet what dominates.
+check, and the closing tick is what a quiet round costs before its observation. The observation
+stops at the first body that senses what the round made, as `closeRounds` does, so a quiet round
+that every body hears costs more. Most of a quiet round is that observation, which reads events
+since the round began through the store; that is the cost to look at before any round work, and no
+optimisation is made here. The round's cost barely grows over the run (245 against 272 ms, within
+the spread between runs): the round number is read from the whole log each round, which is not yet
+what dominates.

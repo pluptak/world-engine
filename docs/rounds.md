@@ -29,11 +29,11 @@ author's `advance`, are refused `round_only` ([run.md](run.md)); `check` and `op
 agent's command as a move, so they list what a round would take. A run that is ended refuses a
 round as it refuses anything; a round outside a run works on any world.
 
-**Submitting and closing.** A player's handle submits one move for the next round, held in the
-world as pending, one move per body it drives, not as state: no version and no log line until the round closes
-([roles.md](roles.md)). The director's `closeRound()` takes every pending move as one round, each
-under its player's role and the close under the director's; it clears them only when the round is
-taken. A round the world refuses keeps them for the next close. A store world keeps pending moves
+**Submitting and closing.** A player's handle submits one move for the next round, held in the world
+as pending, one move per body it drives, not as state: no version and no log line until the round
+closes ([roles.md](roles.md)). The director's `closeRound()` takes every pending move as one round,
+each under its player's role and the close under the director's; it clears them only when the round
+is taken. A round the world refuses keeps them for the next close. A store world keeps pending moves
 in `pending.json` beside its log, under its turn; a replay never reads it.
 
 **Not in it.** Contest rules for a conflict and a carried agent's move. Levers and quiet rounds are

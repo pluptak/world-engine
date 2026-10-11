@@ -71,10 +71,12 @@ export function playerWorld(world: World, handle: string): PlayerWorld {
     }
     return actorWorld(world, id, found.root, found.bodies);
   };
-  // The view that reads through every body of the slot.
+  // The view that reads through every body of the slot, as the first of them still in the world: a slot whose first
+  // body was removed reads through the rest.
   const slotView = (): ActorWorld => {
     const found = bound();
-    return actorWorld(world, found.bodies[0]!, found.root, found.bodies);
+    const first = found.bodies.find((body) => world.entity(body) !== null) ?? found.bodies[0]!;
+    return actorWorld(world, first, found.root, found.bodies);
   };
   const refusal = (reason_code: string): PlayerResult => ({ status: "refused", reason_code });
   return {

@@ -177,3 +177,15 @@ test("a successor of one body is driven in its place, under the slot's name for 
   deepStrictEqual(directorWorld(run).closeRound().results.map((result) => result.status), ["ok"]);
   deepStrictEqual(run.entity(heir!)?.pos, { x: 20, y: 0 });
 });
+
+test("a slot whose first body is removed reads through the rest: observe and inspect go on through the second body", (t) => {
+  const { world, alias, id } = started(t);
+  strictEqual(world.edit({ kind: "remove", target: id("ann") }).status, "ok");
+  strictEqual(world.snapshot().run?.state, "running", "ann2 still lives, so the slot does");
+  const dana = playerWorld(world, "dana");
+  const seen = dana.observe().entities.map((entity) => entity.id);
+  ok(seen.includes(alias("ann2")) && seen.includes(alias("stone")), "ann2's sight lists itself and the stone");
+  strictEqual(dana.inspect(alias("stone"))?.id, alias("stone"));
+  deepStrictEqual(dana.submit({ command_id: "a2-take", verb: "take", target: alias("stone"), body: alias("ann2") }), { status: "ok" });
+  deepStrictEqual(directorWorld(world).closeRound().results.map((result) => result.status), ["ok"]);
+});

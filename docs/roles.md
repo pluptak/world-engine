@@ -41,8 +41,9 @@ every body of the slot: its aliases are keyed by the slot's first body. A move n
 body is one move of the round, each logged under the handle. `options`, `check` and `withdraw` take
 the same `body`; `options` and `check` without one are `body_required` for a slot of several. A body
 the handle does not drive is refused `not_a_body`, and a submit without one `body_required`. A
-body's move that its successor takes over is that successor's (`liveBodyOf`).
+body's move that its successor takes over is that successor's (`liveBodyOf`). A body removed
+from the world senses nothing, and the view reads through the slot's other bodies.
 
-**Not in it.** Several slots per handle, a body joining or leaving a slot during a run, timeouts (the
-host's), the architect as a role (a scene is a file, made outside any world), a budget of pulls, odds
-other than a door's `jam_pct`, and a director that picks outcomes.
+**Not in it.** Several slots per handle, a body joining or leaving a slot during a run, timeouts
+(the host's), the architect as a role (a scene is a file, made outside any world), a budget of
+pulls, odds other than a door's `jam_pct`, and a director that picks outcomes.
