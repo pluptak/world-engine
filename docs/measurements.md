@@ -51,7 +51,11 @@ at what the round made. Per round, ms, on the machine in
 | | ms per round |
 |---|---|
 | a round of eight moves, first 100 / last 100 | 223 / 220 |
-| submits (eight, through the handles) | 114 |
+| submits (eight, through the handles), before / after | 129 | 73 |
+| one submit, before / after | 15.6 | 8.6 |
+| of which the handle's binding | 11.4 | 4.7 |
+| the view's decode | 2.6 | 2.3 |
+| the pending write | 1.5 | 1.5 |
 | the round's check (`planRound`, on its own) | 7 |
 | the moves' apply | 89 |
 | the closing tick (a round with no move) | 16 |
@@ -77,3 +81,12 @@ log, so it grew with the log and reached 2,912 ms. After, one replay answers the
 events (`replayUntilEvents`), and the answers are byte-identical: every agent's projection of
 the scale world and of the lab is pinned by `tests/observe-projection.test.ts`. Nothing is
 cached across calls or written to the world.
+
+One submit is split the same way: the handle's binding (derived: the submit less the other two),
+the view's decode and the pending write (each timed directly). Before, a submit loaded the
+snapshot for its binding, its run and body checks and its successor scan, and the decode loaded
+it again per alias or id-shaped word while scanning the entities per value. After, the submit
+loads it once, and the decode builds the view's alias table once per command (lazily, only for
+an alias-shaped value) on one snapshot. The move is still decoded as the view's `check` reads
+it, the file is still written under the lock and atomically, and a second `openWorld` still
+sees it (`tests/player.test.ts`).

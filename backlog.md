@@ -18,11 +18,10 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Submitting a move is cheap](#submitting-a-move-is-cheap).
-2. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-3. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-4. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-5. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
+2. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
+3. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+4. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -66,23 +65,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 _None: every item is shipped. Only the maintainer adds one, under Priorities._
-
-### Submitting a move is cheap
-
-Eight submits cost about 114 ms of a 220 ms round (`docs/measurements.md`). Each loads the snapshot,
-builds the actor view to read the move's aliases back, reads `pending.json`, and rewrites it under
-the world's lock (`storedPending` in `src/api.ts`).
-
-- **Measure first:** split one submit in `bench:rounds` (the handle's binding, the view's decode,
-  the pending write) and record it.
-- **Then the largest part,** keeping the rules: a move is still decoded as the view's `check` reads
-  it, the file is still written under the lock and atomically, and a second process still sees the
-  move. Likely cuts: the alias table built once per submit, not once per value; one snapshot load
-  per submit.
-- **Tests:** `tests/player.test.ts` and `tests/player-slots.test.ts` pass unchanged; a test that a
-  submit through one handle is seen by `pending()` through a handle of a second `openWorld`.
-- **Record** the before and after in `docs/measurements.md`.
-- **Depends on:** nothing. **Not in it:** batching submits, a pending store other than the file.
 
 ### A command writes the snapshot every so often, not every time
 

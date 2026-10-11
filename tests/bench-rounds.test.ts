@@ -19,6 +19,10 @@ test("the rounds workload runs with tiny counts: every move and quiet round is o
     Object.keys(report.observe).sort(),
     ["entities_ms_per_round", "events_half_ms_per_round", "events_ms_per_round", "ms_per_round", "snapshot_ms_per_round"],
   );
+  deepStrictEqual(
+    Object.keys(report.submit).sort(),
+    ["binding_ms_per_submit", "decode_ms_per_submit", "ms_per_submit", "write_ms_per_submit"],
+  );
   ok(report.ms_per_round.first_100 >= 0 && report.ms_per_round.last_100 >= 0);
 });
 

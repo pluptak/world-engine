@@ -128,36 +128,61 @@ export function actorWorld(world: World, actor: Id, key: Id = actor, senses: rea
   // One of this actor's aliases, back to the id it stands for. A raw world id, or an entity's part
   // address, names nothing in the actor's view; another actor's alias passes as it is and resolves
   // as text, as a name no one holds would.
-  const unalias = (text: string): string => {
+  const unalias = (text: string): string => unaliasIn(world.snapshot(), null, text);
+  // The view's aliases as a table: one pass hashing every entity id, instead of a scan per alias.
+  // Built lazily per command decoded, only when an alias-shaped value is actually decoded; a move
+  // of plain names never pays for it. A decode reads the world once and writes nothing, so one
+  // snapshot serves every value.
+  const unaliasIn = (snapshot: Snapshot, table: Map<string, Id> | null, text: string): string => {
     const match = ALIAS.exec(text);
     if (match === null) {
-      return isAddress(world.snapshot(), text) ? nothing() : text;
+      return isAddress(snapshot, text) ? nothing() : text;
     }
     const part = match[1] ?? "";
     const entity = text.slice(0, text.length - part.length);
-    const id = Object.keys(world.snapshot().entities).find((candidate) => alias(candidate) === entity);
+    const id =
+      table !== null
+        ? table.get(entity)
+        : Object.keys(snapshot.entities).find((candidate) => alias(candidate) === entity);
     return id === undefined ? text : `${id}${part}`;
+  };
+  const aliasTable = (snapshot: Snapshot): Map<string, Id> => {
+    const table = new Map<string, Id>();
+    for (const id of Object.keys(snapshot.entities)) {
+      table.set(alias(id), id);
+    }
+    return table;
   };
   // A `token` arg (what `say` says) is opaque text the engine stores and others are told, never a name:
   // it passes as it is, so neither an alias nor an id-shaped word is rewritten into it.
-  const unaliasArgs = (verb: string, args: Record<string, unknown>): Record<string, unknown> => {
+  const unaliasArgs = (decode: (text: string) => string, verb: string, args: Record<string, unknown>): Record<string, unknown> => {
     const declared = verbRegistry.get(verb)?.args;
     return Object.fromEntries(
       Object.entries(args).map(([key, value]) => [
         key,
-        typeof value === "string" && declared?.[key]?.kind !== "token" ? unalias(value) : value,
+        typeof value === "string" && declared?.[key]?.kind !== "token" ? decode(value) : value,
       ]),
     );
   };
 
   // Built field by field, so nothing a caller adds (an `actor`, `perceivers`) reaches the world.
-  const toCommand = (command: ActorCommand): Command => ({
-    command_id: command.command_id,
-    actor,
-    verb: command.verb,
-    ...(command.target !== undefined && { target: unalias(command.target) }),
-    ...(command.args !== undefined && { args: unaliasArgs(command.verb, command.args) }),
-  });
+  const toCommand = (command: ActorCommand): Command => {
+    const snapshot = world.snapshot();
+    let table: Map<string, Id> | null = null;
+    const decode = (text: string): string => {
+      if (table === null && ALIAS.exec(text) !== null) {
+        table = aliasTable(snapshot);
+      }
+      return unaliasIn(snapshot, table, text);
+    };
+    return {
+      command_id: command.command_id,
+      actor,
+      verb: command.verb,
+      ...(command.target !== undefined && { target: decode(command.target) }),
+      ...(command.args !== undefined && { args: unaliasArgs(decode, command.verb, command.args) }),
+    };
+  };
 
   const entityOut = <T extends ObservedEntity>(entity: T): T => {
     const facts = entity.facts;

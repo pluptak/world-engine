@@ -1,8 +1,10 @@
 import { createWorld, type Command, type Scene } from "../src/index.js";
+import { actorWorld } from "../src/actor-world.js";
 import { directorWorld } from "../src/director-world.js";
 import { planRound } from "../src/engine/round.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { observeEntities } from "../src/engine/projection.js";
+import { INTERNAL, VIEW_COMMANDS } from "../src/internal.js";
 import { playerWorld } from "../src/player-world.js";
 import { readEvents } from "../src/store/file-store.js";
 import { ROOMS, scaleRegistry, scaleScenario } from "./bench-world.js";
@@ -83,6 +85,13 @@ export function runRoundsWorkload(dir: string, options: RoundsOptions) {
   const observeSnapshot: number[] = [];
   const observeEvents: number[] = [];
   const observeEntitiesHalf: number[] = [];
+  // One submit (p0's) split into the view's decode and the pending write, timed directly, and the
+  // handle's binding (the rest of the submit, derived). The probes run after p0's own submit with
+  // its identical command, so the write probe rewrites the same entry and changes nothing; all are
+  // reads and one rewrite, outside the round's own total.
+  const submitP0: number[] = [];
+  const submitDecode: number[] = [];
+  const submitWrite: number[] = [];
   for (let round = 0; round < options.rounds; round += 1) {
     const tickBefore = world.snapshot().tick;
     let submitting = 0;
@@ -91,7 +100,18 @@ export function runRoundsWorkload(dir: string, options: RoundsOptions) {
       const move = { command_id: `r${round}-p${p}`, ...stepOf(round % CYCLE, p, Math.floor(round / CYCLE)) };
       const a = hr();
       const sent = playerWorld(world, `p${p}`).submit(move);
-      submitting += hr() - a;
+      const took = hr() - a;
+      submitting += took;
+      if (p === 0) {
+        submitP0.push(took);
+        const view = actorWorld(world, id(agents[0]!), id(agents[0]!), [id(agents[0]!)]);
+        const d0 = hr();
+        const decoded = VIEW_COMMANDS.get(view)!(move);
+        submitDecode.push(hr() - d0);
+        const w0 = hr();
+        world[INTERNAL].pending.set("p0", decoded);
+        submitWrite.push(hr() - w0);
+      }
       if (sent.status !== "ok") {
         throw new Error(`move ${move.command_id} was refused: ${sent.reason_code}`);
       }
@@ -161,6 +181,9 @@ export function runRoundsWorkload(dir: string, options: RoundsOptions) {
   const snap = mean(observeSnapshot);
   const evts = mean(observeEvents);
   const ents = mean(observeEntitiesHalf);
+  const submit1 = mean(submitP0);
+  const decode = mean(submitDecode);
+  const write = mean(submitWrite);
 
   return {
     entities: Object.keys(world.snapshot().entities).length,
@@ -189,6 +212,12 @@ export function runRoundsWorkload(dir: string, options: RoundsOptions) {
       events_ms_per_round: evts,
       entities_ms_per_round: ents,
       events_half_ms_per_round: Math.round((full - snap - evts - ents) * 100) / 100,
+    },
+    submit: {
+      ms_per_submit: submit1,
+      binding_ms_per_submit: Math.round((submit1 - decode - write) * 100) / 100,
+      decode_ms_per_submit: decode,
+      write_ms_per_submit: write,
     },
   };
 }

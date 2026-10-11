@@ -110,18 +110,23 @@ export function playerWorld(world: World, handle: string): PlayerWorld {
       return actorWorld(world, id, found.root, found.bodies).check(command);
     },
     submit: (move) => {
-      const found = boundOf(world, handle);
-      if (found === null) {
+      // One snapshot for the whole submit: the binding, the body's state and the successor scan
+      // all read the world as it stands, and nothing between them writes (pending moves live in
+      // their own file, outside the snapshot).
+      const snapshot = world.snapshot();
+      const player = snapshot.run?.players?.find((entry) => entry.handle === handle);
+      if (player === undefined) {
         return refusal("not_registered");
       }
-      if (world.snapshot().run?.state !== "running") {
+      if (snapshot.run?.state !== "running") {
         return refusal("run_not_running");
       }
+      const found: Bound = { root: player.slot, bodies: driverBodies(snapshot, player.slot) };
       const id = bodyNamed(found, move.body);
       if (id === null) {
         return refusal(move.body === undefined ? "body_required" : "not_a_body");
       }
-      if (bodyOut(world.snapshot(), id)) {
+      if (bodyOut(snapshot, id)) {
         return refusal("body_out");
       }
       // The move is the body's own, read back from the view's aliases as the view's own `check` reads it, so a
@@ -129,7 +134,6 @@ export function playerWorld(world: World, handle: string): PlayerWorld {
       const view = actorWorld(world, id, found.root, found.bodies);
       const command: Command = VIEW_COMMANDS.get(view)!(move);
       // A move this body held under the body it was before a successor took it over is replaced, not kept beside.
-      const snapshot = world.snapshot();
       for (const held of world[INTERNAL].pending.moves(handle)) {
         if (liveBodyOf(snapshot, held.actor) === id) {
           world[INTERNAL].pending.clear(handle, held.actor);
