@@ -21,7 +21,7 @@ the world author's own work, which nobody senses, though its consequences (`disp
 `broken`, a product's `spawned`) are sensed as any other event. `pour` is `pour`, `poured` and
 `spilled`; `broken` is a break whose entity held a liquid or residue; `event` is any other. The
 `entity-` rows are the entity form, where there is no event and so nothing is loud. `found` is read
-against the concealer it names, `revealed` against the thing revealed. `sounded` (an authored beat's knock or bang, [beats.md](beats.md)) is the `event` row for hearing and
+against the concealer it names, `revealed` against the thing revealed. `sounded` (an authored beat's knock or bang, [beats-actions.md](beats-actions.md)) is the `event` row for hearing and
 nothing else: never seen (`unseen`), never smelt, never touched, and heard next door only when its data says
 `loud`. `say` (speech, [speech.md](speech.md)) is the `event` row for sight and smell and is heard by volume: a `whisper`
 only within `NEAR_THRESHOLD_CM` of the speaker (`too_far` otherwise), `normal` throughout the room, a `shout`

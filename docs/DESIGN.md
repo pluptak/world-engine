@@ -34,7 +34,9 @@ What is built, nothing aspirational, one concept per file:
 - [processes-then.md](processes-then.md): what the run that reaches the bound does.
 - [processes-runs.md](processes-runs.md): first runs, reads, stored shape, rate, and chance.
 - [processes-shipped.md](processes-shipped.md): the lantern, the candle, and hungry bodies.
-- [beats.md](beats.md): the architect's scheduled interventions: a knock at tick 305, the lights failing at 310.
+- [beats.md](beats.md): authoring a scheduled intervention; its order, storage, and tests.
+- [beats-actions.md](beats-actions.md): what runs at the due tick: actions, conditions, failure.
+- [beats-chains.md](beats-chains.md): followers after a run, and repeats.
 - [beats-watch.md](beats-watch.md): a beat's `all` condition and watches, which keep watch until their action has run.
 - [measurements.md](measurements.md): timings and other measured results, with the command that makes each.
 - [speech.md](speech.md): saying an opaque token at a volume, and who hears it.
