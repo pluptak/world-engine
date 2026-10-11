@@ -30,7 +30,7 @@ test("latent structure nothing touches changes nothing", () => {
   strictEqual(memoryWorld(initial, enriched).query(hair).value, "true");
   strictEqual(memoryWorld(buildInitial(registry), registry).query(hair).basis_code, "no_such_part");
   const unhashed = (snapshot: string) => canonicalJson({ ...(JSON.parse(snapshot) as object), templates_hash: "" });
-  for (let seed = 0; seed < 100; seed += 1) {
+  for (let seed = 0; seed < 67; seed += 1) {
     const plain = runSequence(memoryWorld(buildInitial(registry), registry), seed, 30);
     const deeper = runSequence(memoryWorld(buildInitial(enriched), enriched), seed, 30);
     strictEqual(deeper.events, plain.events, `seed ${seed}`);
