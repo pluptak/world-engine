@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Quiet rounds decide who heard from the round's own events](#quiet-rounds-decide-who-heard-from-the-rounds-own-events).
-2. [A beat may merge props](#a-beat-may-merge-props).
-3. [A move for a body that is out is refused when submitted](#a-move-for-a-body-that-is-out-is-refused-when-submitted).
+1. [A beat may merge props](#a-beat-may-merge-props).
+2. [A move for a body that is out is refused when submitted](#a-move-for-a-body-that-is-out-is-refused-when-submitted).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -64,37 +63,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### Quiet rounds decide who heard from the round's own events
-
-A quiet round costs about 1.5 s on the scale world, almost all of it observation
-(`docs/measurements.md`, "Store: cost of a round"): `closeRounds` in `src/director-world.ts` asks
-`world.observe(body, { since })` of every live registered body after each round, and each call
-reads the store's events again. The engine already has the rule, one pass over a command's events:
-`sensedBy` in `src/engine/query.ts`, which `advance`'s `stop_on_perceived` uses.
-
-- **The stop:** `closeRounds` decides "heard" by `sensedBy(before, after, registry, events, fresh,
-  bodies)` over the round's own events (the close's, and any its schedule ran), with the snapshots
-  before and after the round, and the live registered bodies as the observers. It is the same rule
-  as now (a covered sense, true before or after), so every stop stays where it is. What the handle
-  needs from the world to do this (the round's events and both snapshots) goes through
-  `src/internal.ts`, never the package's exports.
-- **The round's number:** a round is numbered by counting every closed round in the whole log
-  (`roundNumber(readAttempts(dir, 0, ...))` in `src/api.ts`), once a round. The store keeps the
-  count of closed rounds in `head.json` beside `ok_entries`, rebuilt with it by `load`'s repair; a
-  memory world keeps its own count. A head written before it is rebuilt, as a head without the
-  deltas size is.
-- **Tests:** the quiet-round tests of `tests/director-levers.test.ts` and row 3 of
-  `tests/acceptance-lab-run.test.ts` pass unchanged; add one where a body hears the round's event
-  only after it (a door shut in the round, heard from the far side), which still stops "heard"; a
-  store world with a head from before the count opens, rebuilds it, and numbers its next round
-  right; `verify` passes.
-- **Record** the new quiet-round figure in `docs/measurements.md` beside the old one
-  (`npm run bench:rounds`).
-- **Docs:** `docs/roles-levers.md` (one line: how heard is decided), `docs/persistence.md` (the
-  head's count).
-- **Depends on:** nothing. **Not in it:** the cost of an ordinary `observe` on a store world (a
-  candidate if the next measure shows it), the submits' cost.
 
 ### A beat may merge props
 

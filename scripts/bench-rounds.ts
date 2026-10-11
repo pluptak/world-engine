@@ -104,32 +104,33 @@ export function runRoundsWorkload(dir: string, options: RoundsOptions) {
     roundTotal.push(submitting + close);
   }
 
-  // Quiet rounds: every player idles. Each round is the closing tick alone (`closeRound` with no move pending), then
-  // the observation the director makes after it (`closeRounds`): each registered body in turn, stopping at the first
-  // that senses something the round made. Both are timed on their own, so the two add up to a quiet round.
+  // Quiet rounds: every player idles. The closing tick alone is timed first (`closeRound` with no move pending), then
+  // a quiet round as the director closes it (`closeRounds`, one round), which adds the look at what the round made.
+  // The observation is the difference, so the two add up to a quiet round.
   for (let p = 0; p < players; p += 1) {
     playerWorld(world, `p${p}`).idle();
   }
   const closeOnly: number[] = [];
-  const observed: number[] = [];
   for (let q = 0; q < options.quiet; q += 1) {
-    const before = world.snapshot().version;
     const a = hr();
     const closed = director.closeRound();
     closeOnly.push(hr() - a);
     if (closed.status !== "ok") {
       throw new Error(`quiet round ${q} was ${closed.status}: ${closed.reason_code ?? ""}`);
     }
-    const o = hr();
-    for (const agent of agents) {
-      if (world.observe(id(agent), { since: before }).events.length > 0) {
-        break;
-      }
+  }
+  const quietRound: number[] = [];
+  for (let q = 0; q < options.quiet; q += 1) {
+    const a = hr();
+    const closed = director.closeRounds({ max: 1 });
+    quietRound.push(hr() - a);
+    if (closed.status !== "ok" || closed.rounds !== 1) {
+      throw new Error(`quiet round ${q} was ${closed.status}: ${closed.status === "ok" ? closed.stopped : closed.reason_code}`);
     }
-    observed.push(hr() - o);
   }
   // A round of moves is its check, then its apply and the closing tick it shares with a quiet round.
   const closeTick = mean(closeOnly);
+  const quietTotal = mean(quietRound);
   const applies = closes.map((close, round) => close - checks[round]! - closeTick);
 
   return {
@@ -149,8 +150,8 @@ export function runRoundsWorkload(dir: string, options: RoundsOptions) {
       close: closeTick,
     },
     quiet: {
-      ms_per_round: mean(closeOnly.map((close, q) => close + observed[q]!)),
-      observation_ms_per_round: mean(observed),
+      ms_per_round: quietTotal,
+      observation_ms_per_round: Math.round((quietTotal - closeTick) * 100) / 100,
       close_ms_per_round: closeTick,
     },
   };

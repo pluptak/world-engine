@@ -36,6 +36,8 @@ interface Head {
   deltas_bytes?: number;
   log_entries: number;
   ok_entries: number;
+  // The closed rounds the log holds. Absent from a head written before it existed: the head is then settled, not trusted.
+  rounds_closed?: number;
   templates_hash: string;
 }
 
@@ -130,8 +132,12 @@ function readHead(dir: string): Head | null {
     ) {
       return null;
     }
-    const { deltas_bytes: deltas, ...rest } = value;
-    return (typeof deltas === "number" ? { ...rest, deltas_bytes: deltas } : rest) as unknown as Head;
+    const { deltas_bytes: deltas, rounds_closed: rounds, ...rest } = value;
+    return {
+      ...rest,
+      ...(typeof deltas === "number" ? { deltas_bytes: deltas } : {}),
+      ...(typeof rounds === "number" ? { rounds_closed: rounds } : {}),
+    } as unknown as Head;
   } catch {
     return null;
   }
@@ -553,6 +559,7 @@ export function create(
     deltas_bytes: 0,
     log_entries: 0,
     ok_entries: 0,
+    rounds_closed: 0,
     templates_hash: templatesHash(templates),
   });
 }
@@ -613,6 +620,7 @@ function trustedSnapshot(dir: string, templates: TemplateRegistry): Snapshot | n
       statSync(join(dir, snapshots.log)).size === head.log_bytes &&
       statSync(join(dir, snapshots.events)).size === head.events_bytes &&
       statSync(join(dir, snapshots.deltas)).size === head.deltas_bytes &&
+      head.rounds_closed !== undefined &&
       snapshot.version === initial.version + head.ok_entries
     ) {
       return snapshot;
@@ -708,6 +716,7 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
       deltas_bytes: statSync(deltasPath).size,
       log_entries: entries.length,
       ok_entries: okEntries.length,
+      rounds_closed: entries.filter((entry) => entry.round?.close === true).length,
       templates_hash: frozenHash,
     });
   };
@@ -737,6 +746,11 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
 
 function deltaLines(deltas: readonly Delta[]): string {
   return deltas.map((delta) => `${canonicalJson(delta)}\n`).join("");
+}
+
+// The closed rounds the log holds, read off the head. Only after load, which settles a head that lacks the count.
+export function closedRounds(dir: string): number {
+  return readHead(dir)?.rounds_closed ?? 0;
 }
 
 // Log entries so far: every submission appends exactly one line, refused or not, so this count is
@@ -873,12 +887,14 @@ function submitLocked(
   const logEntries = head !== null ? head.log_entries + 1 : 1;
   const okEntries =
     head !== null ? (result.status === "ok" ? head.ok_entries + 1 : head.ok_entries) : result.status === "ok" ? 1 : 0;
+  const roundsClosed = (head?.rounds_closed ?? 0) + (round?.close === true ? 1 : 0);
   writeHead(dir, {
     log_bytes: logStat.size,
     events_bytes: eventsStat.size,
     deltas_bytes: deltasStat.size,
     log_entries: logEntries,
     ok_entries: okEntries,
+    rounds_closed: roundsClosed,
     templates_hash: templatesHash(templates),
   });
   // The cache is written last and may fail without costing the command anything.

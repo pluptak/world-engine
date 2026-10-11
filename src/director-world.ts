@@ -96,14 +96,14 @@ export function directorWorld(world: World): DirectorWorld {
         if (due !== null && world.snapshot().tick + 1 >= due) {
           return { status: "ok", rounds, stopped: "beat" };
         }
-        const before = world.snapshot().version;
+        const before = world.snapshot();
         const closed = world[INTERNAL].roundAs([]);
-        if (closed.status !== "ok") {
+        if (closed.status !== "ok" || closed.closing === undefined) {
           return { status: "refused", reason_code: closed.reason_code ?? closed.status, rounds };
         }
         rounds += 1;
         // A registered body that sensed anything the round made stops the quiet: no player sleeps through it.
-        if (liveBodies().some((body) => world.observe(body, { since: before }).events.length > 0)) {
+        if (world[INTERNAL].heard(before, closed.closing.snapshot, closed.closing.events, liveBodies())) {
           return { status: "ok", rounds, stopped: "heard" };
         }
       }

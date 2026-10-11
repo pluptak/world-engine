@@ -18,8 +18,10 @@ A world directory holds:
   the history of a field reads instead of replaying;
 - `checkpoints/`, a cache and never a source of truth, made by `submit` after the head: every 256
   accepted commands the snapshot just written as `<version>-<next_seq>.json`;
-- `head.json`, written last: the three JSONL files' sizes, all and accepted entry counts, and the
-  template hash, so opening a world detects a crash without reading the log;
+- `head.json`, written last: the three JSONL files' sizes, all and accepted entry counts, the closed
+  rounds the log holds (the next round's number), and the template hash, so opening a world
+  detects a crash without reading the log; a head without the count is settled by `load`, as one
+  without the deltas size is;
 - `lock`, there only while a process is writing: writers take turns ([locking.md](locking.md)).
 
 Replay folds accepted commands over the initial snapshot; it is the source of truth, and a mismatch

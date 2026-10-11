@@ -10,6 +10,7 @@ play; `not_steerable` and `out_of_range` for a steer. A handle may `idle()`: it 
 until it submits again. `closeRounds({ max, stop_before? })` closes empty rounds, each logged as a
 closed round by the director, while every live registered player is idle (`players_active`
 otherwise). It stops after `max`, at one tick before the beat `stop_before` names, or at the first
-round a registered body senses an event of, so no player sleeps through what reaches it.
+round a registered body senses an event the round made (before or after it, `sensedBy`), so no
+player sleeps through what reaches it.
 
 Tests: `tests/director-levers.test.ts`.

@@ -21,7 +21,7 @@ import {
   type ObservedEvent,
   type Projection,
 } from "./engine/projection.js";
-import { query as queryEngine, queryAtEvent, type Answer, type Query } from "./engine/query.js";
+import { query as queryEngine, queryAtEvent, sensedBy, type Answer, type Query } from "./engine/query.js";
 import { traceQuery, VALID_ENTITY_FIELDS, type TraceQuery } from "./engine/trace.js";
 import { scheduled, type ScheduleFilter } from "./engine/pending.js";
 import { isRoundMove, notAMove, planRound, type RoundPlan } from "./engine/round.js";
@@ -39,6 +39,7 @@ import { WorldError } from "./errors.js";
 import { defaultCoverage, own, type Coverage, type Delta, type Entity, type Id, type ReasonData, type ScheduledCause, type Snapshot, type Status, type WorldEvent } from "./model.js";
 import {
   attempts as readAttempts,
+  closedRounds,
   create,
   entryCount,
   replayFold,
@@ -261,11 +262,6 @@ function storedPending(dir: string): PendingStore {
         .map((entry) => entry.handle)
         .sort(),
   };
-}
-
-// A round's number is one more than the rounds the log already closes.
-function roundNumber(attempts: readonly Attempt[]): number {
-  return attempts.filter((attempt) => attempt.round?.close === true).length + 1;
 }
 
 // A command that carries the round flag, or a role, is not a caller's to send: the round sets the first and a
@@ -507,7 +503,7 @@ function storeWorld(
         return { status: plan.status, ...(plan.reason_code === undefined ? {} : { reason_code: plan.reason_code }), results: [] };
       }
       // The number is read under the turn, so two processes rounding at once name distinct rounds.
-      const number = roundNumber(readAttempts(dir, 0, active));
+      const number = closedRounds(dir) + 1;
       return playRound(
         moves,
         plan,
@@ -535,6 +531,7 @@ function storeWorld(
     [INTERNAL]: {
       pending: storedPending(dir),
       roundAs: (moves) => roundStored(moves, true),
+      heard: (before, after, events, observers) => sensedBy(before, after, active, events, events, observers),
     },
     edit: (edit, options) => {
       // The count of logged submissions names the next edit: every submission appends exactly one
@@ -720,6 +717,14 @@ export function memoryWorld(
   const applied: Array<{ base: number; deltas: Delta[]; events: WorldEvent[] }> = [];
   // Every submission, ok or not, as a store world's log would hold it.
   const tried: Attempt[] = [];
+  let closedRoundCount = 0;
+  // Keeps the record and, for a round's close, the count the next round is numbered from.
+  function record(attempt: Attempt): void {
+    tried.push(attempt);
+    if (attempt.round?.close === true) {
+      closedRoundCount += 1;
+    }
+  }
   // The version this world started from: anything older predates its records, however valid, so
   // asking below it is an error rather than an empty answer.
   const firstVersion = initial.version;
@@ -753,7 +758,7 @@ export function memoryWorld(
       basedOn,
       (version) => history.get(version) ?? null,
     );
-    tried.push(attemptOf(command, basedOn, base, result, round));
+    record(attemptOf(command, basedOn, base, result, round));
     if (result.status === "ok") {
       current = result.snapshot;
       events.push(...result.events);
@@ -810,14 +815,14 @@ export function memoryWorld(
     return playRound(
       moves,
       plan,
-      roundNumber(tried),
+      closedRoundCount + 1,
       start.version,
       (command, basedOn, round, decided) => {
         if (decided === undefined) {
           return submitMemory(command, basedOn ?? current.version, round);
         }
         submissions += 1;
-        tried.push(attemptOf(command, basedOn ?? current.version, current.version, decided, round));
+        record(attemptOf(command, basedOn ?? current.version, current.version, decided, round));
         return decided;
       },
       byAllowed ? { role: "director" } : undefined,
@@ -836,6 +841,7 @@ export function memoryWorld(
     [INTERNAL]: {
       pending: memoryPending,
       roundAs: (moves) => roundMemory(moves, true),
+      heard: (before, after, events, observers) => sensedBy(before, after, templates, events, events, observers),
     },
     edit: (edit, options) =>
       submitMemory(

@@ -1,5 +1,5 @@
 import type { Command } from "./engine/command.js";
-import type { Id } from "./model.js";
+import type { Id, Snapshot, WorldEvent } from "./model.js";
 import type { RoundResult } from "./api.js";
 import type { ActorCommand, ActorWorld } from "./actor-world.js";
 
@@ -35,4 +35,6 @@ export interface WorldInternals {
   pending: PendingStore;
   // A round whose moves may carry their roles: the director closes a round with the players' moves.
   roundAs(moves: readonly Command[]): RoundResult;
+  // Whether one of the observers sensed one of the events between the snapshots, as `sensedBy` decides (`docs/roles.md`).
+  heard(before: Snapshot, after: Snapshot, events: readonly WorldEvent[], observers: readonly Id[]): boolean;
 }

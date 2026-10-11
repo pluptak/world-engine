@@ -43,25 +43,24 @@ first then last thousand, against 4.2 then 4.5 without it, the spread between ru
 
 `npm run bench:rounds` (`scripts/bench.ts --rounds`, `scripts/bench-rounds.ts`): the scale world of
 500 entities in 20 rooms, eight of its agents registered as players of one run. Each of 1,000 rounds
-has one move per player, through its handle, then the director closes it; then 200 quiet rounds,
-each closed with every player idle. Per round, ms, on the machine in
+has one move per player, through its handle, then the director closes it; then 200 closing ticks
+with every player idle, then 200 quiet rounds closed by `closeRounds` (one round each), which look
+at what the round made. Per round, ms, on the machine in
 [measurements-commands.md](measurements-commands.md):
 
 | | ms per round |
 |---|---|
-| a round of eight moves, first 100 / last 100 | 245 / 272 |
-| submits (eight, through the handles) | 121 |
-| the round's check (`planRound`, on its own) | 8 |
+| a round of eight moves, first 100 / last 100 | 223 / 220 |
+| submits (eight, through the handles) | 114 |
+| the round's check (`planRound`, on its own) | 7 |
 | the moves' apply | 89 |
-| the closing tick (a round with no move) | 37 |
-| a quiet round, total | 1575 |
-| of which the director's observation of the bodies | 1538 |
+| the closing tick (a round with no move) | 16 |
+| a quiet round, total | 42 |
+| of which the observation (the look at what the round made) | 26 |
 
-The phases add up to the round: submits, check and apply make the move round's close with its own
-check, and the closing tick is what a quiet round costs before its observation. The observation
-stops at the first body that senses what the round made, as `closeRounds` does, so a quiet round
-that every body hears costs more. Most of a quiet round is that observation, which reads events
-since the round began through the store; that is the cost to look at before any round work, and no
-optimisation is made here. The round's cost barely grows over the run (245 against 272 ms, within
-the spread between runs): the round number is read from the whole log each round, which is not yet
-what dominates.
+Before, the same bench on the same machine gave a quiet round of 1,104 (observation 1,067): each
+registered body was asked `observe` since the round began, reading the events again every time. The
+round's number was read from the whole log each round; it is now read from the head's count. A round
+of moves barely changes over the run (223 against 220 ms); what is left of it is the submits. The
+earlier figure in this section (1,575 for a quiet round) timed a loop of `observe` calls in the
+bench itself, not `closeRounds`, so it is not comparable to these.
