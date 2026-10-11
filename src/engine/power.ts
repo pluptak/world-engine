@@ -20,7 +20,7 @@ function walk(snapshot: Snapshot, id: Id, prop: string): Id[] {
 }
 
 // Power reaches an entity when every link from it to a source, itself included, is not destroyed
-// and the walk ends at a `power_source`.
+// nor switched off and the walk ends at a `power_source`.
 export function powered(snapshot: Snapshot, id: Id): boolean {
   const path = walk(snapshot, id, "powered_by");
   const links = path.map((link) => own(snapshot.entities, link)!);
@@ -29,7 +29,7 @@ export function powered(snapshot: Snapshot, id: Id): boolean {
     last !== undefined &&
     last.props.power_source === true &&
     typeof last.props.powered_by !== "string" &&
-    links.every((link) => link.status !== "destroyed")
+    links.every((link) => link.status !== "destroyed" && link.props.on !== false)
   );
 }
 
@@ -47,11 +47,17 @@ export type RemoteFault =
   | { reason_code: "disconnected"; reason_data: { at: Id } }
   | { reason_code: "unpowered"; reason_data: { at: Id; cut: Id } };
 
-// Where power stops for a link with none: the first destroyed entity on its `powered_by` walk, else
-// the walk's last entity, which is no source (the link itself when it has no `powered_by`).
+// Where power stops for a link with none: the first destroyed or switched-off entity on its
+// `powered_by` walk, else the walk's last entity, which is no source (the link itself when it has
+// no `powered_by`).
 function cutOf(snapshot: Snapshot, link: Id): Id {
   const path = walk(snapshot, link, "powered_by");
-  return path.find((id) => own(snapshot.entities, id)!.status === "destroyed") ?? path.at(-1)!;
+  return (
+    path.find((id) => {
+      const entity = own(snapshot.entities, id)!;
+      return entity.status === "destroyed" || entity.props.on === false;
+    }) ?? path.at(-1)!
+  );
 }
 
 // The first of these links that cannot carry a command: a destroyed one, then one with no power.

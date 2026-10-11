@@ -64,6 +64,7 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   lit: { type: "boolean", tier: "state" },
   locked: { type: "boolean", tier: "state", requires: ["openable"] },
   nutrition: { type: "integer", tier: "definition" },
+  on: { type: "boolean", tier: "state" },
   open: { type: "boolean", tier: "state", requires: ["openable"] },
   openable: { type: "boolean", tier: "definition" },
   opens: { type: "id", tier: "state" },

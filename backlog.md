@@ -18,19 +18,18 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A link of a power walk may be switched off](#a-link-of-a-power-walk-may-be-switched-off).
-2. [Switching a link on and off: `switch_on`, `switch_off`](#switching-a-link-on-and-off-switch_on-switch_off).
-3. [Electric light: a powered lamp lights its room](#electric-light-a-powered-lamp-lights-its-room).
-4. [The lab's power cut cuts power](#the-labs-power-cut-cuts-power).
-5. [A beat that writes a definition prop is refused when scheduled](#a-beat-that-writes-a-definition-prop-is-refused-when-scheduled).
-6. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
-7. [A hand's carry limit](#a-hands-carry-limit).
-8. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
-9. [Submitting a move is cheap](#submitting-a-move-is-cheap).
-10. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-11. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-12. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-13. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [Switching a link on and off: `switch_on`, `switch_off`](#switching-a-link-on-and-off-switch_on-switch_off).
+2. [Electric light: a powered lamp lights its room](#electric-light-a-powered-lamp-lights-its-room).
+3. [The lab's power cut cuts power](#the-labs-power-cut-cuts-power).
+4. [A beat that writes a definition prop is refused when scheduled](#a-beat-that-writes-a-definition-prop-is-refused-when-scheduled).
+5. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
+6. [A hand's carry limit](#a-hands-carry-limit).
+7. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
+8. [Submitting a move is cheap](#submitting-a-move-is-cheap).
+9. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
+10. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
+11. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+12. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -74,31 +73,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 _None: every item is shipped. Only the maintainer adds one, under Priorities._
-
-### A link of a power walk may be switched off
-
-Power fails today only by destruction (`docs/power.md`): nothing switches a source off, so a
-generator cannot fail. `plans/power.md` decided one state prop on any link.
-
-- **The prop** (`src/engine/fields.ts`): `on`, state, boolean. Absent means on, so no stored world
-  and no template changes.
-- **The walk** (`powered()` and `cutOf` in `src/engine/power.ts`): power stops at the first link
-  that is destroyed or has `on: false`, the entity itself and the source included. `unpowered`'s
-  `cut` names that link, as it names a destroyed one now; `disconnected` stays for a destroyed link
-  on the control walk only. An agent with a `powered_by` that is off, or whose walk is, is refused
-  `unpowered` and senses nothing (`agentFault`, `query.ts`), as when its cable is cut. A camera on
-  a switched-off walk feeds nothing.
-- **Beats need nothing new:** `update_props { on: false }` on a generator is a power cut, and
-  `{ on: true }` restores it.
-- **Tests:** `tests/remote.test.ts` (or a new `tests/power-switch.test.ts`): a generator off leaves
-  a door's remote `unlock` refused `unpowered` with `cut` the generator, and its key still turns it
-  by hand; a cable off cuts what lies beyond it and nothing before it; `on: true` restores; a
-  terminal powered by the generator is refused `unpowered` and senses `false` / `unpowered`; a beat
-  `update_props { on: false }` on the generator cuts power at its tick, and its follower
-  restores it.
-- **Docs:** `docs/power.md` (the prop and the walk; "nothing switches a source off" goes),
-  `docs/fields.md` if it lists state props.
-- **Depends on:** nothing. **Not in it:** verbs that switch (next item), light.
 
 ### Switching a link on and off: `switch_on`, `switch_off`
 
