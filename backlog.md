@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A beat may merge props](#a-beat-may-merge-props).
-2. [A move for a body that is out is refused when submitted](#a-move-for-a-body-that-is-out-is-refused-when-submitted).
+1. [A move for a body that is out is refused when submitted](#a-move-for-a-body-that-is-out-is-refused-when-submitted).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,23 +62,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### A beat may merge props
-
-A beat's action is one of `spawn`, `remove`, `place`, `set_props`, `set_part` (`ACTION_EDITS` in
-`src/engine/beats.ts`); `set_props` replaces every prop, so the lab run's deadline restates the exit
-door's definitions and links to set `locked` (`docs/limits-lab.md`, "As a run").
-
-- **Action:** `update_props` joins the list, with the edit's own shape and rules (it merges, as the
-  edit of that name does, `src/engine/verbs/edit.ts`), checked when the beat is scheduled as the
-  others are, its subject the entity it names.
-- **The lab run:** `scenarios/lab-run.json`'s deadline becomes an `update_props` of `locked` alone,
-  and the limit's line goes from `docs/limits-lab.md`.
-- **Tests:** `tests/beat.test.ts`: an `update_props` beat
-  sets one prop and keeps the rest; a beat naming an undeclared prop is refused when scheduled, as
-  a `set_props` one is; one queued in a scene; `tests/acceptance-lab-run.test.ts` row 6 unchanged.
-- **Docs:** `docs/beats-actions.md` (the list), `docs/limits-lab.md`.
-- **Depends on:** nothing. **Not in it:** other edit kinds as actions.
 
 ### A move for a body that is out is refused when submitted
 

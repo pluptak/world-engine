@@ -777,3 +777,63 @@ test("the validator holds a stored all-condition and a stored watch to the same 
   deepStrictEqual(codes({ repeat: { every_ticks: 1, times: 3, until_ran: true } }), []);
   deepStrictEqual(codes({ repeat: { every_ticks: 1, times: 3, until_ran: false } }), ["invalid_beat"]);
 });
+
+test("a beat may merge props: an update_props beat sets one prop and keeps the rest", (t) => {
+  const h = inn(t);
+  const before = h.world.snapshot().entities[h.hall]!.props;
+  strictEqual(edit(h.world, { kind: "schedule_beat", id: "dim", at_tick: 3, action: { kind: "update_props", target: h.hall, props: { lit: false } } }).status, "ok");
+  const run = advance(h.world, 5);
+  strictEqual(run.status, "ok");
+  const edited = run.events.find((event) => event.type === "edited");
+  ok(edited !== undefined);
+  strictEqual(edited.tick, 3);
+  deepStrictEqual(h.world.snapshot().entities[h.hall]!.props, { ...before, lit: false });
+  ok(before.lit === true, "the room was lit before the beat");
+});
+
+test("an update_props beat naming an undeclared prop is scheduled as a set_props one is, and skipped when due as it is", (t) => {
+  const h = inn(t);
+  const both = [
+    { id: "bad-update", at_tick: 3, action: { kind: "update_props", target: h.hall, props: { no_such_prop: 1 } } },
+    { id: "bad-set", at_tick: 4, action: { kind: "set_props", target: h.hall, props: { no_such_prop: 1 } } },
+  ];
+  for (const wanted of both) {
+    strictEqual(edit(h.world, { kind: "schedule_beat", ...wanted } as WorldEdit).status, "ok");
+  }
+  const skipped = advance(h.world, 5).events.filter((event) => event.type === "beat_skipped");
+  deepStrictEqual(
+    skipped.map((event) => [event.tick, event.data]),
+    [[3, { id: "bad-update", reason: "failed", code: "undeclared_prop" }], [4, { id: "bad-set", reason: "failed", code: "undeclared_prop" }]],
+  );
+  strictEqual(h.world.snapshot().entities[h.hall]!.props.lit, true);
+});
+
+test("an update_props beat queued in a scene merges its prop when due", (t) => {
+  const world = createWorld(join(tempDir(t), "scene-dim"), {
+    entities: [{ id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } }],
+    beats: [{ id: "dim", at_tick: 2, action: { kind: "update_props", target: "hall", props: { lit: false } } }],
+  } as never, registry);
+  const hall = world.id("hall");
+  ok(hall !== null);
+  const before = world.snapshot().entities[hall]!.props;
+  deepStrictEqual(world.schedule({ kind: "beat" }).map((cause) => [cause.due_tick, cause.kind]), [[2, "beat"]]);
+  advance(world, 3);
+  deepStrictEqual(world.snapshot().entities[hall]!.props, { ...before, lit: false });
+});
+
+test("a follower beat may merge props too: the update runs after its parent's delay", (t) => {
+  const h = inn(t);
+  strictEqual(
+    edit(h.world, {
+      kind: "schedule_beat",
+      id: "knock",
+      at_tick: 2,
+      action: { kind: "sound", entity: h.door },
+      then: [{ id: "dim", delay_ticks: 2, action: { kind: "update_props", target: h.hall, props: { lit: false } } }],
+    }).status,
+    "ok",
+  );
+  const run = advance(h.world, 6);
+  deepStrictEqual(run.events.filter((event) => event.type === "edited").map((event) => event.tick), [4]);
+  strictEqual(h.world.snapshot().entities[h.hall]!.props.lit, false);
+});

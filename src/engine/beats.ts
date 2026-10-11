@@ -35,7 +35,7 @@ type BeatCause = Extract<ScheduledCause, { kind: "beat" }>;
 
 const BEAT_ID = /^[A-Za-z0-9_.:-]{1,64}$/;
 const OPS: readonly string[] = ["eq", "ne", "lt", "lte", "gt", "gte"];
-const ACTION_EDITS: readonly string[] = ["spawn", "remove", "place", "set_props", "set_part"];
+const ACTION_EDITS: readonly string[] = ["spawn", "remove", "place", "set_props", "update_props", "set_part"];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);

@@ -48,7 +48,5 @@ queued deadline, the door's odds steered within 10 to 50, a tick limit of 60), o
   [beats-actions.md](beats-actions.md) (row 6).
 - A heard sound names no source to its listener: a subject in the dormitory learns that something
   sounded, not where it came from (row 3).
-- A beat that sets a device's props replaces every one of them, so the deadline repeats the exit
-  door's definitions and its links with its new `locked` (row 6).
 - The odds show only as an earlier jam, and the AI learns of it only through the camera, never why:
   steered to 50, the first jam falls on the sixth remote command instead of the ninth (row 4).

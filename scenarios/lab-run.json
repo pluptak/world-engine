@@ -378,18 +378,10 @@
       "id": "deadline",
       "at_tick": 40,
       "action": {
-        "kind": "set_props",
+        "kind": "update_props",
         "target": "exit_door",
         "props": {
-          "open": false,
-          "openable": true,
-          "locked": true,
-          "from": "corridor",
-          "to": "outside",
-          "powered_by": "cable",
-          "controlled_by": "server_panel",
-          "shut_ticks": 2,
-          "jam_pct": 25
+          "locked": true
         }
       }
     }

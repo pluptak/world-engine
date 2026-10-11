@@ -5,8 +5,9 @@
 - `{ kind: "sound", entity, loud? }` emits `sounded` on the entity
   (a knock, a bang, a bell), with data `{ loud }`.
 - Any of the author's own edits, applied through the same edit transition at the due tick:
-  `spawn`, `remove`, `place`, `set_props`, `set_part`. A power failure is `set_props`
-  `lit: false` on a room, and every consequence of the edit is sensed as usual.
+  `spawn`, `remove`, `place`, `set_props`, `update_props`, `set_part`. A power failure is
+  `set_props` (or `update_props`, which keeps the room's other props) `lit: false` on a room, and
+  every consequence of the edit is sensed as usual.
   `set_seed` and the beat edits are not actions.
 
 The *subject* is the entity the action is about: a sound's `entity`, an edit's `target`, a spawn's
