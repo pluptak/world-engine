@@ -369,6 +369,7 @@ test("a real answer to every op parses with the schema the contract gives that o
     since: { op: "since", world, version: 0 },
     attempts: { op: "attempts", world, version: 0 },
     verify: { op: "verify", world },
+    restart: { op: "restart", world, to: `${world}-again` },
     trace: { op: "trace", world, query: { event_id: first.events[0]!.event_id } },
     beat: { op: "beat", world, commands: [{ ...waited, command_id: "b1" }] },
     query: { op: "query", world, query: { kind: "fact", subject: "e3", relation: "status" } },

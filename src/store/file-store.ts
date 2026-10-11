@@ -61,6 +61,12 @@ export const SCHEMA_VERSION = 5;
 // the log is the one it is bound to.
 const templatesDirectory = fileURLToPath(new URL("../../templates/", import.meta.url));
 
+// Whether a directory holds a world at all: the marker `create` writes first. A caller making a
+// world (`restartWorld`) refuses one that is already there rather than overwriting it.
+export function worldExists(dir: string): boolean {
+  return existsSync(join(dir, snapshots.format));
+}
+
 function assertWorldExists(dir: string): void {
   const missing = [
     snapshots.current,
@@ -151,7 +157,7 @@ function emptyHead(): Head {
   return { log_bytes: 0, events_bytes: 0, log_entries: 0, ok_entries: 0, templates_hash: "" };
 }
 
-function readSnapshot(path: string): Snapshot {
+export function readWorldSnapshot(path: string): Snapshot {
   return checkedSnapshot(JSON.parse(readFileSync(path, "utf8")), path);
 }
 
@@ -201,7 +207,7 @@ function readInitialMeta(path: string): { version: number; templates_hash: strin
     initialMeta.set(path, kept);
     return kept;
   }
-  const { version, templates_hash } = readSnapshot(path);
+  const { version, templates_hash } = readWorldSnapshot(path);
   const meta = { stamp, version, templates_hash };
   initialMeta.delete(path);
   initialMeta.set(path, meta);
@@ -386,7 +392,7 @@ interface ReplayStart {
 }
 
 function initialStart(dir: string, templates: TemplateRegistry): ReplayStart {
-  const snapshot = readSnapshot(join(dir, snapshots.initial));
+  const snapshot = readWorldSnapshot(join(dir, snapshots.initial));
   assertTemplates(snapshot, templates);
   return {
     snapshot,
@@ -641,7 +647,7 @@ export function withWorldLock<T>(dir: string, body: () => T): T {
 // make. Otherwise null, and the caller settles it under the turn. A writer mid-command always
 // disagrees (it appends the log before the head), so a read that overlaps one lands there and waits.
 function trustedSnapshot(dir: string, templates: TemplateRegistry): Snapshot | null {
-  const snapshot = readSnapshot(join(dir, snapshots.current));
+  const snapshot = readWorldSnapshot(join(dir, snapshots.current));
   const initial = readInitialMeta(join(dir, snapshots.initial));
   const head = readHead(dir);
   if (head === null || head.templates_hash !== templatesHash(templates)) {
@@ -685,7 +691,7 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
   if (trusted !== null) {
     return trusted;
   }
-  const snapshot = readSnapshot(join(dir, snapshots.current));
+  const snapshot = readWorldSnapshot(join(dir, snapshots.current));
   const initialPath = join(dir, snapshots.initial);
   const initial = readInitialMeta(initialPath);
 
@@ -722,7 +728,7 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
       throw new WorldError("templates_changed", "Template hash mismatch");
     }
     dropCheckpoints(dir);
-    atomicWrite(initialPath, canonicalJson({ ...readSnapshot(initialPath), templates_hash: frozenHash }));
+    atomicWrite(initialPath, canonicalJson({ ...readWorldSnapshot(initialPath), templates_hash: frozenHash }));
     atomicWrite(join(dir, snapshots.current), canonicalJson({ ...snapshot, templates_hash: frozenHash }));
     writeHead(dir, { ...head, templates_hash: frozenHash });
     return load(dir);
@@ -1000,8 +1006,8 @@ export interface Fold {
 export function writeWorldTemplates(dir: string, registry: TemplateRegistry): void {
   withWorldLock(dir, () => {
     const hash = templatesHash(registry);
-    const initial = readSnapshot(join(dir, snapshots.initial));
-    const snapshot = readSnapshot(join(dir, snapshots.current));
+    const initial = readWorldSnapshot(join(dir, snapshots.initial));
+    const snapshot = readWorldSnapshot(join(dir, snapshots.current));
     dropCheckpoints(dir);
     atomicWrite(join(dir, snapshots.templates), canonicalJson(registry));
     atomicWrite(join(dir, snapshots.initial), canonicalJson({ ...initial, templates_hash: hash }));
@@ -1015,7 +1021,7 @@ export function writeWorldTemplates(dir: string, registry: TemplateRegistry): vo
 // yet is a successor to the one they carry. A command the log accepted and this set refuses is a
 // WorldError rather than a TypeError, so a caller hears a code and not a crash.
 export function replayFold(dir: string, registry: TemplateRegistry): Fold {
-  let snapshot = readSnapshot(join(dir, snapshots.initial));
+  let snapshot = readWorldSnapshot(join(dir, snapshots.initial));
   const events: WorldEvent[] = [];
   const deltas: Delta[] = [];
 
@@ -1092,7 +1098,7 @@ export function verify(dir: string, registry?: TemplateRegistry): Verification {
 }
 
 function verifyLocked(dir: string, templates: TemplateRegistry): Verification {
-  const initial = readSnapshot(join(dir, snapshots.initial));
+  const initial = readWorldSnapshot(join(dir, snapshots.initial));
   assertTemplates(initial, templates);
   const log = storedLines(readFileSync(join(dir, snapshots.log), "utf8"));
   const diverges = (file: Divergence["file"], line: number, code: Divergence["code"]): Verification => ({
@@ -1200,7 +1206,7 @@ function verifyLocked(dir: string, templates: TemplateRegistry): Verification {
 
 export function replayWithEvents(dir: string, registry?: TemplateRegistry): Fold {
   const templates = activeRegistry(dir, registry);
-  assertTemplates(readSnapshot(join(dir, snapshots.initial)), templates);
+  assertTemplates(readWorldSnapshot(join(dir, snapshots.initial)), templates);
   return replayFold(dir, templates);
 }
 

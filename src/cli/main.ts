@@ -7,6 +7,7 @@ import {
   ENGINE_CAPABILITIES,
   createWorld,
   openWorld,
+  restartWorld,
   verbs,
   verifyWorld,
   WorldError,
@@ -183,6 +184,9 @@ function dispatch(request: Request): unknown {
     // The files are read before anything may settle them, so this one never opens the world.
     case "verify":
       return verifyWorld(request.world);
+    // A restart makes a world and answers its snapshot version (`docs/restart.md`).
+    case "restart":
+      return { snapshot_version: restartWorld(request.world, request.to).snapshot().version };
     case "catalog":
       return { catalog: request.world === undefined ? catalog() : openWorld(request.world).catalog() };
     case "command": {

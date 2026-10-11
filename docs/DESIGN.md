@@ -31,6 +31,7 @@ What is built, nothing aspirational, one concept per file:
 - [schedule-api.md](schedule-api.md): reading that schedule through `World.schedule`, filtered.
 - [scenario.md](scenario.md): a scene: the entities, the seed, the beats queued at creation and the run's limits.
 - [run.md](run.md): a run made from a scene: registering, running, ended, and the limit and the slots that end it.
+- [restart.md](restart.md): a run played again from its own world.
 - [roles.md](roles.md): the author, director and player roles.
 - [roles-levers.md](roles-levers.md): the pool, the odds, idling, and closing quiet rounds.
 - [rounds.md](rounds.md): a round: every move decided against one world, in an order no caller picks, one tick.

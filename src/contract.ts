@@ -284,6 +284,13 @@ export const RequestSchema = z.discriminatedUnion("op", [
     op: z.literal("verify"),
     world: z.string().min(1),
   }).strict(),
+  // A run played again from its own world: the new world at `to`, made from `from`'s `initial.json`
+  // and its frozen set (`docs/restart.md`). The old world is not touched.
+  z.object({
+    op: z.literal("restart"),
+    world: z.string().min(1),
+    to: z.string().min(1),
+  }).strict(),
   z.object({
     op: z.literal("trace"),
     world: z.string().min(1),
@@ -681,6 +688,10 @@ export const VerifyResponseSchema = z.union([
   }).strict(),
 ]);
 
+export const RestartResponseSchema = z.object({
+  snapshot_version: z.number().int().nonnegative(),
+}).strict();
+
 export const TraceResponseSchema = z.object({
   events: z.array(WorldEventSchema),
 }).strict();
@@ -796,6 +807,7 @@ export const RESPONSES = {
   since: SinceResponseSchema,
   attempts: AttemptsResponseSchema,
   verify: VerifyResponseSchema,
+  restart: RestartResponseSchema,
   trace: TraceResponseSchema,
   schedule: ScheduleResponseSchema,
   beat: BeatResponseSchema,

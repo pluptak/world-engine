@@ -19,8 +19,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-2. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-3. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+2. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -86,25 +85,6 @@ every accepted command's deltas (from `plans/candidates.md`).
 - **Record** `npm run bench` and `bench:scale` before and after in `docs/measurements.md`.
 - **Docs:** `docs/persistence.md`. The candidate leaves `plans/candidates.md` in the same commit.
 - **Depends on:** nothing. **Not in it:** compacting the log, a binary format.
-
-### A run is played again from its world
-
-A run that ended is a record; playing the scene again needs a new world. `init` builds one from the
-scene file (`src/cli/main.ts`), but the file or `templates/` may have changed since, so the new run
-would not be the same run.
-
-- **API** (`src/api.ts`): `restartWorld(from, to)` makes a world at `to` from the world at `from`:
-  its `initial.json` (the scene as it was built, the run registering, the beats queued, the seed)
-  and its frozen `templates.json`. Nothing of the old world's log, pending moves or checkpoints is
-  carried; the old world is not touched. Refused `world_exists` when `to` holds a world, and
-  `no_such_world` when `from` holds none.
-- **CLI:** `restart` op (`{ op, world, to }`), answering the new world's snapshot version.
-- **Tests:** `tests/restart.test.ts`: a run of the lab played to its end, restarted, registered and
-  played with the same moves gives the same log line for line; the old world still verifies; a
-  template file changed after the first world was made does not reach the restart; both refusals.
-- **Docs:** `docs/run.md` (playing again), `docs/api.md`.
-- **Depends on:** nothing. **Not in it:** a list of scenes, editing a scene between runs (the
-  architect edits the file), resuming a run mid-way.
 
 ### A reference host plays a run through the JSON ops
 

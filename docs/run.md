@@ -18,23 +18,21 @@ set the scene up. A running run takes an agent's command and the `advance` only 
 refused `run_ended`. Reads answer as ever. These refusals belong to the world, not a verb, as
 scenery's does.
 
-**The tick limit.** A running run's clock never passes `tick_limit`. While it runs, time passes only
-in rounds, one tick each, so the round whose close reaches the limit runs what falls due there and
-ends the run, with reason `tick_limit`. Nothing is left to run at the limit: a round after it is
-refused `run_ended`. The pipeline also cuts any timed command at the limit, which a running run's
-commands cannot reach by way of a round, since a move takes no time and `wait` is not a move.
+**The tick limit.** A running run's clock never passes `tick_limit`. Time passes only in rounds
+while it runs, one tick each, so the round whose close reaches the limit runs what falls due there
+and ends the run, with reason `tick_limit`; a round after it is refused `run_ended`. The pipeline
+also cuts any timed command at the limit, which a running run's commands cannot reach by way of a
+round, since a move takes no time and `wait` is not a move.
 
 **No live players.** A running run with `slots` ends, `no_live_players`, after any ok command or
 edit that leaves none of its slots' live bodies alive (`docs/templates.md`). A run with no slots,
 or one still registering, never ends this way.
 
-**Levers.** While the run is registering or running, the director may play a pool beat, steer a
-door's odds within the range its scene gave, and close quiet rounds while every player is idle
-([roles.md](roles.md)).
-
 **The end.** What is still scheduled is dropped with nothing recorded, since no time passes again;
 modifiers stay as they were. The end is in the snapshot's `run.ended`, and `validateSnapshot`
-refuses an ended run that still schedules anything.
+refuses an ended run that still schedules anything. A run that ended can be played again from its
+own world ([restart.md](restart.md)).
 
-**Not in it.** Rounds, roles and handles, who may start or end a run (the author, for now), and
-successors keeping a slot alive. Tests: `tests/run.test.ts`.
+**Not in it.** Rounds, roles and handles, the director's levers ([roles.md](roles.md)), who may
+start or end a run (the author, for now), and successors keeping a slot alive. Tests:
+`tests/run.test.ts`, `tests/restart.test.ts`.

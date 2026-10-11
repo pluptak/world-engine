@@ -48,6 +48,7 @@ import {
   readDeltas,
   readEvents,
   readWorldIds,
+  readWorldSnapshot,
   readWorldTemplates,
   replayUntilEvent,
   replayUntilEvents,
@@ -56,6 +57,7 @@ import {
   submit,
   trace as foldTrace,
   verify as verifyStore,
+  worldExists,
   type Verification,
   atomicWrite,
   withWorldLock,
@@ -722,6 +724,27 @@ export function createWorld(
 
 export function openWorld(dir: string): World {
   return storeWorld(dir, readWorldTemplates(dir), readWorldIds(dir));
+}
+
+// A run played again from its own world (`docs/restart.md`): a new world at `to` from the world at
+// `from`, made from its `initial.json` (the scene as it was built, the run still registering, the
+// beats queued, the seed) and its frozen `templates.json`, exactly as a fresh process would open
+// it and create the next one. Nothing of the old world's log, pending moves or checkpoints is
+// carried, and the old world is not touched. A `templates/` directory that has changed since the
+// first world was made cannot reach the restart, since the restart never reads the directory.
+export function restartWorld(from: string, to: string): World {
+  // A missing world is the same refusal a caller of `openWorld` hears, not a crash.
+  if (!worldExists(from)) {
+    throw new WorldError("no_such_world", `No world at ${from}`);
+  }
+  const initial = readWorldSnapshot(join(from, "initial.json"));
+  const templates = readWorldTemplates(from);
+  if (worldExists(to)) {
+    throw new WorldError("world_exists", `A world is already at ${to}`);
+  }
+  const ids = readWorldIds(from);
+  create(to, initial, templates, ids);
+  return openWorld(to);
 }
 
 // `World.verify()` for a world that is not open. Opening settles a world whose files disagree, which
