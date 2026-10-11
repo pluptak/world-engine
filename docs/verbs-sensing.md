@@ -10,7 +10,7 @@
   - Also `not_a_light`, `target_attached`, `container_closed`,
     `out_of_reach`.
   - Lit rooms are read from what burns ([perception.md](perception.md)).
-  - Burning is a template process ([processes.md](processes.md)):
+  - Burning is a template process ([processes-shipped.md](processes-shipped.md)):
     `lantern` burns 1 fuel a tick and snuffs at 0; `candle`
     burns less and is used up at 0.
 - `douse`: the same the other way, under `doused`.

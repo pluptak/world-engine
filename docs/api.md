@@ -49,7 +49,7 @@ directory, a changed hash, or a bad version is a `WorldError` with a code.
   `history_unavailable` for what predates it.
 - `perceivers: true` on a command or edit names who sensed each of its events.
 - `createWorld` starts the processes its templates declare (`startProcesses`, also exported, for a
-  caller that builds a snapshot itself and opens it with `memoryWorld`; [processes.md](processes.md)).
+  caller that builds a snapshot itself and opens it with `memoryWorld`; [processes-runs.md](processes-runs.md)).
 - `createWorld` and `memoryWorld` take an optional `coverage`, which the world's initial snapshot
   declares in place of `defaultCoverage()`; a category it leaves out answers `unknown`. They also take
   an optional `seed` for the world's dice, and without one anything that rolls is refused `no_seed`

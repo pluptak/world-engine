@@ -9,7 +9,7 @@ architect's catalogue ([catalog.md](catalog.md)); it is the template's own and i
 **What being used up leaves.** `spent_products` (`{ template, count }`, a count a whole number from 0) and
 `spent_residue` (material → amount) are to being used up what `break_products` and `break_residue` are to
 breaking: the last portion of a thing eaten (`consume`), or a process whose `then` is `{ spent: true }`, leaves them
-where the thing stood and removes it ([processes.md](processes.md)). Both default to empty, and a template that
+where the thing stood and removes it ([processes-then.md](processes-then.md)). Both default to empty, and a template that
 leaves nothing carries neither key, so it hashes as it did before they existed. A child's own list or record
 replaces its parent's, and one declared empty clears it. A product must name a template of the set, and not `room`, which nothing can be set on, and its count is a
 whole number from 0: a set that breaks any of these is refused when it is read (a directory, a world's

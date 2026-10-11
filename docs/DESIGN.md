@@ -28,7 +28,10 @@ What is built, nothing aspirational, one concept per file:
 - [run.md](run.md): a run made from a scene: registering, running, ended, and the limit and the slots that end it.
 - [roles.md](roles.md): the roles a handle carries: the author, the director, and what each may send.
 - [rounds.md](rounds.md): a round: every move decided against one world, in an order no caller picks, one tick.
-- [processes.md](processes.md): a template's prop that changes by itself while a condition holds: candles, moss.
+- [processes.md](processes.md): declaring a prop that changes by itself, and reconciling it.
+- [processes-then.md](processes-then.md): what the run that reaches the bound does.
+- [processes-runs.md](processes-runs.md): first runs, reads, stored shape, rate, and chance.
+- [processes-shipped.md](processes-shipped.md): the lantern, the candle, and hungry bodies.
 - [beats.md](beats.md): the architect's scheduled interventions: a knock at tick 305, the lights failing at 310.
 - [beats-watch.md](beats-watch.md): a beat's `all` condition and watches, which keep watch until their action has run.
 - [measurements.md](measurements.md): timings and other measured results, with the command that makes each.

@@ -25,7 +25,7 @@ whichever part of the command reached the roll, the verb itself or a process tha
 clock moved. A caller that wants chance gives the world a seed first.
 
 **First consumer.** A template process may declare `chance_pct`, a whole number from 1 to 99
-([processes.md](processes.md)): each run rolls once, and a roll at or above the chance is a miss. A
+([processes-runs.md](processes-runs.md)): each run rolls once, and a roll at or above the chance is a miss. A
 miss writes nothing and emits nothing, but the next run is scheduled as if the run had happened, so
 the process keeps trying. A hit is a run like any other. Attack hit chance is not built on this yet.
 

@@ -25,7 +25,7 @@ against the concealer it names, `revealed` against the thing revealed. `sounded`
 nothing else: never seen (`unseen`), never smelt, never touched, and heard next door only when its data says
 `loud`. `say` (speech, [speech.md](speech.md)) is the `event` row for sight and smell and is heard by volume: a `whisper`
 only within `NEAR_THRESHOLD_CM` of the speaker (`too_far` otherwise), `normal` throughout the room, a `shout`
-across a doorway as well (it counts as loud). A speaker hears their own. `silent` is `changed` (a template's process moving a prop, [processes.md](processes.md)), `light`, `douse`,
+across a doorway as well (it counts as loud). A speaker hears their own. `silent` is `changed` (a template's process moving a prop, [processes-runs.md](processes-runs.md)), `light`, `douse`,
 `lit` and `doused`, `consume` and `consumed`, `spent` (a thing used up; the products it spawns are `spawned`,
 heard like a break's), the hand acts
 (`take`, `give`, `put`, `search`, `found`, `revealed`), `wait`, `capability_changed`, and a `moved`

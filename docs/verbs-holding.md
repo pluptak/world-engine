@@ -34,4 +34,4 @@ Taking, setting down, passing and eating things. Grips, pockets and what losing 
   `liquid_nutrition`, a part), `container_closed`, `out_of_reach` (what is carried is in reach, a hand or
   a pocket), and `mouth_full` for a creature whose jaw holds anything but the thing eaten. It needs no
   capacity: a dog eats from the floor. `hunger` is rising by itself on `human_hungry`
-  ([processes.md](processes.md)).
+  ([processes-shipped.md](processes-shipped.md)).
