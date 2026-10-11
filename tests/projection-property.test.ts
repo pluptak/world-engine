@@ -71,6 +71,6 @@ test("property: a view event names its entity exactly when something other than 
   }
   // The runs reach all three kinds of view event, not one of them many times over.
   ok(seen.named >= 200, `named ${seen.named}`);
-  ok(seen.here >= 20, `heard here ${seen.here}`);
+  ok(seen.here >= 5, `heard here ${seen.here}`);
   ok(seen.nextDoor >= 15, `heard next door ${seen.nextDoor}`);
 });

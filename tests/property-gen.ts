@@ -182,6 +182,35 @@ export const SCENARIO: Scenario = [
   },
   { template: "mold", overrides: { name: "mold", location: "e1", support: "e1", pos: { x: 130, y: -20 } } },
   { template: "lichen", overrides: { name: "lichen", location: "e2", support: "e2", pos: { x: 60, y: -30 } } },
+  // What the switches act on: a source, a cable it powers, and a lamp on the cable, so a
+  // switch has something to cut. All three stand near the agents in room-a, within reach.
+  {
+    id: "generator",
+    template: "generator",
+    overrides: { name: "generator", location: "e1", support: "e1", pos: { x: -60, y: 20 } },
+  },
+  {
+    id: "cable",
+    template: "cable",
+    overrides: {
+      name: "cable",
+      location: "e1",
+      support: "e1",
+      pos: { x: -45, y: 20 },
+      props: { powered_by: "generator" },
+    },
+  },
+  {
+    id: "lamp",
+    template: "lamp",
+    overrides: {
+      name: "lamp",
+      location: "e1",
+      support: "e1",
+      pos: { x: -30, y: 20 },
+      props: { powered_by: "cable" },
+    },
+  },
 ];
 
 // Every property world rolls from the same seed; a seed edit may replace it mid-run.
@@ -365,8 +394,7 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
   close: (context) => openable(context, "close"),
   lock: (context) => openable(context, "lock"),
   unlock: (context) => openable(context, "unlock"),
-  // Entries but no band: a band would reshuffle every generated sequence, so random runs keep
-  // the paths they had and `catalog.test.ts` still finds one entry per registered verb.
+  // Beside the openables, as in `verbs/index.ts`: a switch is another device worked by hand.
   switch_on: (context) => switchable(context, "switch_on"),
   switch_off: (context) => switchable(context, "switch_off"),
   search: (context) => {
@@ -826,7 +854,7 @@ const SLOTS: readonly { below: number; verbs: readonly string[] }[] = [
   { below: 0.58, verbs: ["put"] },
   { below: 0.63, verbs: ["give"] },
   { below: 0.69, verbs: ["attack"] },
-  { below: 0.75, verbs: ["open", "close", "lock", "unlock"] },
+  { below: 0.75, verbs: ["open", "close", "lock", "unlock", "switch_on", "switch_off"] },
   { below: 0.81, verbs: ["pour", "consume"] },
   { below: 0.84, verbs: ["search", "light", "douse", "say"] },
   { below: 1, verbs: ["edit"] },
