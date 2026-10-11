@@ -3,6 +3,7 @@ import { dropVerb } from "./drop.js";
 import { editVerb } from "./edit.js";
 import { moveVerb } from "./move.js";
 import { closeVerb, lockVerb, openVerb, unlockVerb } from "./openable.js";
+import { switchOffVerb, switchOnVerb } from "./switch.js";
 import { pullVerb, pushVerb } from "./push.js";
 import { takeVerb } from "./take.js";
 import { attackVerb } from "./attack.js";
@@ -30,6 +31,8 @@ export const verbRegistry: VerbRegistry = new Map([
   ["close", closeVerb],
   ["lock", lockVerb],
   ["unlock", unlockVerb],
+  ["switch_on", switchOnVerb],
+  ["switch_off", switchOffVerb],
   ["push", pushVerb],
   ["pull", pullVerb],
   ["attack", attackVerb],

@@ -30,6 +30,8 @@ This is the index: one line per verb, its rules in the family file it links to.
 - `close`: shuts it ([verbs-openables.md](verbs-openables.md)).
 - `lock`: locks it with a carried key ([verbs-openables.md](verbs-openables.md)).
 - `unlock`: unlocks it with a carried key ([verbs-openables.md](verbs-openables.md)).
+- `switch_on`: switches a power link on ([verbs-power.md](verbs-power.md)).
+- `switch_off`: switches it off ([verbs-power.md](verbs-power.md)).
 - `attack`: strikes with the first mode the attacker can use ([verbs-combat.md](verbs-combat.md)).
 - `search`: looks under or behind a target ([verbs-sensing.md](verbs-sensing.md)).
 - `light`: sets a light source burning ([verbs-sensing.md](verbs-sensing.md)).

@@ -365,6 +365,10 @@ export const VERB_TABLE: Record<string, VerbEntry> = {
   close: (context) => openable(context, "close"),
   lock: (context) => openable(context, "lock"),
   unlock: (context) => openable(context, "unlock"),
+  // Entries but no band: a band would reshuffle every generated sequence, so random runs keep
+  // the paths they had and `catalog.test.ts` still finds one entry per registered verb.
+  switch_on: (context) => switchable(context, "switch_on"),
+  switch_off: (context) => switchable(context, "switch_off"),
   search: (context) => {
     // A concealer currently hides something; otherwise any entity, a search is still ok.
     const concealers = context.ids.filter((id) =>
@@ -783,6 +787,19 @@ function openable(context: GenContext, verb: "open" | "close" | "lock" | "unlock
     actor: context.actor,
     verb,
     target: context.openables.length > 0 ? pick(context.rand, context.openables) : context.target,
+  };
+}
+
+function switchable(context: GenContext, verb: "switch_on" | "switch_off"): Command {
+  const switchables = context.ids.filter((id) => {
+    const props = context.snapshot.entities[id]?.props ?? {};
+    return props.power_source === true || typeof props.powered_by === "string";
+  });
+  return {
+    command_id: context.commandId,
+    actor: context.actor,
+    verb,
+    target: switchables.length > 0 ? pick(context.rand, switchables) : context.target,
   };
 }
 

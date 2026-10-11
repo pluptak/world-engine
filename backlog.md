@@ -18,18 +18,17 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Switching a link on and off: `switch_on`, `switch_off`](#switching-a-link-on-and-off-switch_on-switch_off).
-2. [Electric light: a powered lamp lights its room](#electric-light-a-powered-lamp-lights-its-room).
-3. [The lab's power cut cuts power](#the-labs-power-cut-cuts-power).
-4. [A beat that writes a definition prop is refused when scheduled](#a-beat-that-writes-a-definition-prop-is-refused-when-scheduled).
-5. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
-6. [A hand's carry limit](#a-hands-carry-limit).
-7. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
-8. [Submitting a move is cheap](#submitting-a-move-is-cheap).
-9. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-10. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-11. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-12. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [Electric light: a powered lamp lights its room](#electric-light-a-powered-lamp-lights-its-room).
+2. [The lab's power cut cuts power](#the-labs-power-cut-cuts-power).
+3. [A beat that writes a definition prop is refused when scheduled](#a-beat-that-writes-a-definition-prop-is-refused-when-scheduled).
+4. [A heard sound tells which way it came](#a-heard-sound-tells-which-way-it-came).
+5. [A hand's carry limit](#a-hands-carry-limit).
+6. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
+7. [Submitting a move is cheap](#submitting-a-move-is-cheap).
+8. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
+9. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
+10. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+11. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -73,31 +72,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 _None: every item is shipped. Only the maintainer adds one, under Priorities._
-
-### Switching a link on and off: `switch_on`, `switch_off`
-
-The prop of the item above, set by an agent at the device or through its controller
-(`plans/power.md`).
-
-- **Verbs** (`src/engine/verbs/`, a new `switch.ts`, or beside `openable.ts`): `switch_on` and
-  `switch_off` on a target that is a `power_source` or has a `powered_by`, else refused
-  `not_switchable`; `already_on` / `already_off`. Each needs reach and `manipulation` (declared on
-  the verb, as `lock` does), takes one tick, and emits `switched { on }` on the target, sensed as
-  `opened` is (a row in `EVENT_SENSES`, `docs/senses.md`).
-- **Remote:** a target with a controller is worked by its controller or at its panel exactly as
-  `open` is in `openable.ts` (`remote`, `remoteFault`, `panelFor`): reach and hands skipped, the
-  control walk's `disconnected` / `unpowered` refusals. Reuse those functions; do not copy them.
-  An agent may switch off the walk that powers itself; it then cannot switch it back.
-- **Round move:** both are round moves (`isRoundMove`).
-- **Registration:** one line or entry each in `verbs/index.ts`, `src/errors.ts`, `src/contract.ts`,
-  the verb table of `tests/property-gen.ts`, the `docs/verbs.md` index; the rules in
-  `docs/verbs-openables.md` (or the family file that suits devices).
-- **Tests:** `tests/switch.test.ts`: a human at the generator switches it off and on, each refusal
-  once; out of reach and handless are refused; the event is seen in a lit room and not from the
-  next room; the AI switches a cable off through the panel and its own camera goes dark; a switch
-  on a target with no power link is `not_switchable`; `options` offers `switch_off` to someone at
-  a running generator.
-- **Depends on:** the item above. **Not in it:** a switch an agent wears, timers on a switch.
 
 ### Electric light: a powered lamp lights its room
 

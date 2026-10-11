@@ -9,6 +9,7 @@ What is built, nothing aspirational, one concept per file:
 - [verbs-moving.md](verbs-moving.md): `move`, `push`, `pull`.
 - [verbs-holding.md](verbs-holding.md): `take`, `drop`, `put`, `give`, `pour`, `consume`.
 - [verbs-openables.md](verbs-openables.md): `open`, `close`, `lock`, `unlock`.
+- [verbs-power.md](verbs-power.md): `switch_on`, `switch_off`.
 - [verbs-combat.md](verbs-combat.md): `attack`.
 - [verbs-sensing.md](verbs-sensing.md): `search`, `light`, `douse`, `say`.
 - [verbs-time.md](verbs-time.md): `wait`, `advance`.
