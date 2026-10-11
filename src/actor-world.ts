@@ -88,7 +88,7 @@ function mergeProjections(parts: readonly Projection[], observer: Id): Projectio
   const seq = (id: Id): number => Number(id.slice(2));
   return {
     observer,
-    version: Math.max(...parts.map((part) => part.version)),
+    version: parts.length === 0 ? 0 : Math.max(...parts.map((part) => part.version)),
     unknown_senses: parts[0]?.unknown_senses ?? [],
     entities: [...entities.values()],
     events: [...events.values()].sort((a, b) => seq(a.event_id) - seq(b.event_id)),
@@ -262,8 +262,9 @@ export function actorWorld(world: World, actor: Id, key: Id = actor, senses: rea
     })),
   });
 
-  // The bodies of the view still in the world: one removed senses nothing, and a slot lives on in the others.
-  const present = (): Id[] => senses.filter((sense) => sense === actor || world.entity(sense) !== null);
+  // The bodies of the view still in the world: one removed senses nothing, the actor included when its own command
+  // removed it, and a slot lives on in the others.
+  const present = (): Id[] => senses.filter((sense) => world.entity(sense) !== null);
   // What the senses of every body in the view sense, as one projection (`mergeProjections`).
   const observeAll = (sinceTick?: number): Projection =>
     mergeProjections(

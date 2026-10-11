@@ -1,10 +1,10 @@
 import type { Entity, Id } from "../../model.js";
 import type { CapacityRequirement, CommandContext, PreconditionResult, TargetAddress, TransitionContext, Verb } from "../command.js";
 import { capacityRefusal } from "../carry.js";
-import { reachedAsDoor, withinReach, reachData } from "./address.js";
+import { reachData } from "./address.js";
 import { pushOccupantsAside } from "./gate.js";
 import { cancel, schedule } from "../schedule.js";
-import { controller, panelFault, panelFor, remoteFault, type RemoteFault } from "../power.js";
+import { deviceInReach as inReach, remoteFaultFor, worksRemotely as remote } from "./remote.js";
 
 type Kind = "open" | "close" | "lock" | "unlock";
 
@@ -63,17 +63,6 @@ type Target =
   | { status: "resolved"; entity: Entity }
   | { status: "failed"; result: PreconditionResult };
 
-// A door is in reach from anywhere in either room it joins when it has no position of its own, or
-// when it stands in the other room (`reachedAsDoor`); anything else is reached the ordinary way.
-function inReach(context: CommandContext, entity: Entity): boolean {
-  if (reachedAsDoor(context.snapshot, context.actor.id, entity)) {
-    return true;
-  }
-  return entity.pos !== null
-    ? withinReach(context, entity.id)
-    : entity.location === context.actor.location;
-}
-
 function carriedKeyFor(context: CommandContext, targetId: Id): boolean {
   return Object.keys(context.snapshot.entities)
     .sort()
@@ -107,28 +96,6 @@ function openableTarget(context: CommandContext, address: TargetAddress | null):
     };
   }
   return { status: "resolved", entity };
-}
-
-// The panel an actor that cannot reach a device by hand works it through: it is not the device's
-// controller, and a panel on the device's walk, intact and in its reach, is the one (`panelFor`).
-function panelUsed(context: CommandContext, entity: Entity): Id | null {
-  if (controller(context.snapshot, entity.id) === context.actor.id || inReach(context, entity)) {
-    return null;
-  }
-  return panelFor(context.snapshot, entity.id, context.actor.id);
-}
-
-// A device whose control walk ends at the actor takes its command there, and so does one an actor
-// works through a panel on its walk: no reach, key or hands, only links that carry it (`docs/power.md`,
-// `docs/panel.md`).
-function remote(context: CommandContext, entity: Entity): boolean {
-  return controller(context.snapshot, entity.id) === context.actor.id || panelUsed(context, entity) !== null;
-}
-
-// What a remote command meets on the way: its controller's walk, or the walk as far as the panel it goes through.
-function remoteFaultFor(context: CommandContext, entity: Entity): RemoteFault | null {
-  const panel = panelUsed(context, entity);
-  return panel === null ? remoteFault(context.snapshot, entity.id) : panelFault(context.snapshot, entity.id, panel);
 }
 
 function preconditions(context: CommandContext, kind: Kind): PreconditionResult {

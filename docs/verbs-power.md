@@ -11,5 +11,7 @@ A link of a power walk is switched off and on again by hand or by its controller
   every command is refused `unpowered` until power returns.
 - From the target's controller, or from a subject at a panel on its walk ([panel.md](panel.md)),
   both skip reach and hands, and refuse `disconnected` or `unpowered` where a link fails, exactly
-  as `open` does ([verbs-openables.md](verbs-openables.md), [power.md](power.md)). Tests:
-  `tests/switch.test.ts`.
+  as `open` does ([verbs-openables.md](verbs-openables.md), [power.md](power.md)). A remote
+  `switch_on` judges the walk with the target on, so a controller turns back on what it turned
+  off; a link off upstream still refuses it. The reach and remote rules both families share are in
+  `src/engine/verbs/remote.ts`. Tests: `tests/switch.test.ts`.

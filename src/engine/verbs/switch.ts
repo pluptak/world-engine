@@ -1,8 +1,8 @@
-import type { Entity, Id } from "../../model.js";
+import type { Entity } from "../../model.js";
 import type { CapacityRequirement, CommandContext, PreconditionResult, TargetAddress, TransitionContext, Verb } from "../command.js";
 import { capacityRefusal } from "../carry.js";
-import { reachedAsDoor, withinReach, reachData } from "./address.js";
-import { controller, panelFault, panelFor, remoteFault, type RemoteFault } from "../power.js";
+import { reachData } from "./address.js";
+import { deviceInReach as inReach, remoteFaultFor, worksRemotely as remote } from "./remote.js";
 
 type Kind = "switch_on" | "switch_off";
 
@@ -27,39 +27,6 @@ const value: Record<Kind, boolean> = {
 type Target =
   | { status: "resolved"; entity: Entity }
   | { status: "failed"; result: PreconditionResult };
-
-// A switchable target is a power source or a link toward one. A door without a door position is
-// reached from either room it joins, as an openable is; anything else the ordinary way.
-function inReach(context: CommandContext, entity: Entity): boolean {
-  if (reachedAsDoor(context.snapshot, context.actor.id, entity)) {
-    return true;
-  }
-  return entity.pos !== null
-    ? withinReach(context, entity.id)
-    : entity.location === context.actor.location;
-}
-
-// The panel an actor that cannot reach a device by hand works it through: it is not the device's
-// controller, and a panel on the device's walk, intact and in its reach, is the one (`panelFor`).
-function panelUsed(context: CommandContext, entity: Entity): Id | null {
-  if (controller(context.snapshot, entity.id) === context.actor.id || inReach(context, entity)) {
-    return null;
-  }
-  return panelFor(context.snapshot, entity.id, context.actor.id);
-}
-
-// A device whose control walk ends at the actor takes its command there, and so does one an actor
-// works through a panel on its walk: no reach or hands, only links that carry it, exactly as `open`
-// does (`docs/power.md`, `docs/panel.md`; the walks themselves in `src/engine/power.ts`).
-function remote(context: CommandContext, entity: Entity): boolean {
-  return controller(context.snapshot, entity.id) === context.actor.id || panelUsed(context, entity) !== null;
-}
-
-// What a remote command meets on the way: its controller's walk, or the walk as far as the panel it goes through.
-function remoteFaultFor(context: CommandContext, entity: Entity): RemoteFault | null {
-  const panel = panelUsed(context, entity);
-  return panel === null ? remoteFault(context.snapshot, entity.id) : panelFault(context.snapshot, entity.id, panel);
-}
 
 function switchTarget(context: CommandContext, address: TargetAddress | null): Target {
   if (address === null) {
@@ -86,6 +53,13 @@ function switchTarget(context: CommandContext, address: TargetAddress | null): T
   return { status: "resolved", entity };
 }
 
+// A device's props with its switch on: `on` absent is on (`docs/power.md`).
+function withoutOn(props: Entity["props"]): Entity["props"] {
+  const { on: _on, ...rest } = props;
+  return rest;
+}
+
+// A switchable target is a power source or a link toward one, reached as any device is (`remote.ts`).
 function preconditions(context: CommandContext, kind: Kind): PreconditionResult {
   const target = switchTarget(context, context.target);
   if (target.status === "failed") {
@@ -101,7 +75,13 @@ function preconditions(context: CommandContext, kind: Kind): PreconditionResult 
     return { status: "refused", reason_code: "already_off" };
   }
   if (remote(context, entity)) {
-    const fault = remoteFaultFor(context, entity);
+    // A link switched off has no power of its own, so a walk through it would refuse the very command that switches it
+    // back on: `switch_on` judges the walk as it would carry the command, the link on.
+    const judged =
+      kind === "switch_on"
+        ? { ...context.snapshot, entities: { ...context.snapshot.entities, [entity.id]: { ...entity, props: withoutOn(entity.props) } } }
+        : context.snapshot;
+    const fault = remoteFaultFor(context, entity, judged);
     return fault === null ? { status: "ok" } : { status: "refused", ...fault };
   }
   const capacity = capacityRefusal(context);

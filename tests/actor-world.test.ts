@@ -294,3 +294,13 @@ test("what a view says is said as it is: an id-shaped word and the actor's own a
     }
   }
 });
+
+test("an actor removed during its own command, by a beat due in its tick, is told its verdict and senses nothing", (t) => {
+  for (const world of worlds(t, true)) {
+    strictEqual(world.edit({ kind: "schedule_beat", id: "gone", at_tick: world.snapshot().tick + 1, action: { kind: "remove", target: ANN } }).status, "ok");
+    const result = actorWorld(world, ANN).command({ command_id: "last-wait", verb: "wait", args: { ticks: 1 } });
+    strictEqual(result.status, "ok");
+    strictEqual(world.entity(ANN), null);
+    deepStrictEqual(result.observation.entities, []);
+  }
+});

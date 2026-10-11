@@ -141,3 +141,16 @@ test("options offers switch_off to someone at a running generator", (t) => {
   strictEqual(run(ann, "switch_off", "generator").status, "ok");
   ok(world.options(ann).ready.some((option) => option.verb === "switch_on" && option.target === generator));
 });
+
+test("the AI switches the cable back on through the panel, and its camera sees again", (t) => {
+  // The cable off has no power of its own, but the command that switches it on is judged with it on.
+  const { world, id, run } = open(t);
+  const [ai, cable, stone] = [id("ai"), id("cable"), id("stone")];
+  strictEqual(run(ai, "switch_off", "cable").status, "ok");
+  deepStrictEqual(verdict(run(ai, "switch_on", "cable")), ["ok", undefined, undefined]);
+  strictEqual(world.entity(cable)?.props.on, true);
+  deepStrictEqual(world.query({ kind: "perceive", observer: ai, entity: stone, sense: "sight" }), { value: "true", basis_code: "camera" });
+  // A link off upstream still refuses: the generator off leaves the cable with no power to carry the command.
+  strictEqual(world.edit({ kind: "update_props", target: id("generator"), props: { on: false } }).status, "ok");
+  deepStrictEqual(verdict(run(ai, "switch_off", "cable"))[0], "refused");
+});
