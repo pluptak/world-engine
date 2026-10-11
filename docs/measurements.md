@@ -57,6 +57,11 @@ at what the round made. Per round, ms, on the machine in
 | the closing tick (a round with no move) | 16 |
 | a quiet round, total | 42 |
 | of which the observation (the look at what the round made) | 26 |
+| one player's `observe` per round, before / after | 2,946 | 162 |
+| of which the snapshot's load | 2.5 | 2.5 |
+| the events' read | 1.3 | 1.3 |
+| the entity half of the projection | 30 | 28 |
+| the event half of the projection | 2,912 | 130 |
 
 Before, the same bench on the same machine gave a quiet round of 1,104 (observation 1,067): each
 registered body was asked `observe` since the round began, reading the events again every time. The
@@ -64,3 +69,11 @@ round's number was read from the whole log each round; it is now read from the h
 of moves barely changes over the run (223 against 220 ms); what is left of it is the submits. The
 earlier figure in this section (1,575 for a quiet round) timed a loop of `observe` calls in the
 bench itself, not `closeRounds`, so it is not comparable to these.
+
+One player's `observe` is split into the snapshot's load, the events' read, the entity half of
+the projection (timed directly) and the event half (the full observe less the other three).
+Before, the event half replayed the log once per event, each with its own validation hash of the
+log, so it grew with the log and reached 2,912 ms. After, one replay answers the whole call's
+events (`replayUntilEvents`), and the answers are byte-identical: every agent's projection of
+the scale world and of the lab is pinned by `tests/observe-projection.test.ts`. Nothing is
+cached across calls or written to the world.

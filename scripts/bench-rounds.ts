@@ -2,7 +2,9 @@ import { createWorld, type Command, type Scene } from "../src/index.js";
 import { directorWorld } from "../src/director-world.js";
 import { planRound } from "../src/engine/round.js";
 import { validateSnapshot } from "../src/engine/validate.js";
+import { observeEntities } from "../src/engine/projection.js";
 import { playerWorld } from "../src/player-world.js";
+import { readEvents } from "../src/store/file-store.js";
 import { ROOMS, scaleRegistry, scaleScenario } from "./bench-world.js";
 
 // The rounds benchmark's workload (`npm run bench:rounds`): the scale world, with the first players' agents
@@ -73,7 +75,16 @@ export function runRoundsWorkload(dir: string, options: RoundsOptions) {
   const submits: number[] = [];
   const checks: number[] = [];
   const closes: number[] = [];
+  // One player's observe per round, split into the snapshot's load, the events' read, the entity
+  // half of the projection (timed directly) and the event half (the full observe less the other
+  // three, so it carries the handle's own mapping too). The look is since the round's first tick,
+  // so both halves have something to do; it is a read, outside the round's own total.
+  const observeFull: number[] = [];
+  const observeSnapshot: number[] = [];
+  const observeEvents: number[] = [];
+  const observeEntitiesHalf: number[] = [];
   for (let round = 0; round < options.rounds; round += 1) {
+    const tickBefore = world.snapshot().tick;
     let submitting = 0;
     const moves: Command[] = [];
     for (let p = 0; p < players; p += 1) {
@@ -102,6 +113,20 @@ export function runRoundsWorkload(dir: string, options: RoundsOptions) {
     checks.push(check);
     closes.push(close);
     roundTotal.push(submitting + close);
+    const observer = id(agents[0]!);
+    const player = playerWorld(world, "p0");
+    const s0 = hr();
+    const snap = world.snapshot();
+    observeSnapshot.push(hr() - s0);
+    const e0 = hr();
+    readEvents(dir).filter((event) => event.tick >= tickBefore);
+    observeEvents.push(hr() - e0);
+    const h0 = hr();
+    observeEntities(snap, registry, [], observer);
+    observeEntitiesHalf.push(hr() - h0);
+    const f0 = hr();
+    player.observe({ since_tick: tickBefore });
+    observeFull.push(hr() - f0);
   }
 
   // Quiet rounds: every player idles. The closing tick alone is timed first (`closeRound` with no move pending), then
@@ -132,6 +157,10 @@ export function runRoundsWorkload(dir: string, options: RoundsOptions) {
   const closeTick = mean(closeOnly);
   const quietTotal = mean(quietRound);
   const applies = closes.map((close, round) => close - checks[round]! - closeTick);
+  const full = mean(observeFull);
+  const snap = mean(observeSnapshot);
+  const evts = mean(observeEvents);
+  const ents = mean(observeEntitiesHalf);
 
   return {
     entities: Object.keys(world.snapshot().entities).length,
@@ -153,6 +182,13 @@ export function runRoundsWorkload(dir: string, options: RoundsOptions) {
       ms_per_round: quietTotal,
       observation_ms_per_round: Math.round((quietTotal - closeTick) * 100) / 100,
       close_ms_per_round: closeTick,
+    },
+    observe: {
+      ms_per_round: full,
+      snapshot_ms_per_round: snap,
+      events_ms_per_round: evts,
+      entities_ms_per_round: ents,
+      events_half_ms_per_round: Math.round((full - snap - evts - ents) * 100) / 100,
     },
   };
 }

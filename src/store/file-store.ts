@@ -1211,6 +1211,64 @@ export function replayUntilEvent(
   return null;
 }
 
+// The snapshots before and after the commands that produced a set of events, from one replay:
+// what `replayUntilEvent` returns for each id, without replaying once per id. An observation asks
+// about every event of its round, so one pass answers them all. An id the replay never produces
+// is absent, as a single replay's null is.
+export function replayUntilEvents(
+  dir: string,
+  eventIds: readonly string[],
+  registry?: TemplateRegistry,
+): Map<string, { before: Snapshot; snapshot: Snapshot; events: WorldEvent[] }> {
+  const templates = activeRegistry(dir, registry);
+  const wanted = new Set(eventIds);
+  const found = new Map<string, { before: Snapshot; snapshot: Snapshot; events: WorldEvent[] }>();
+  if (wanted.size === 0) {
+    return found;
+  }
+  // The earliest checkpoint any of the ids can use: event ids number the same counter the
+  // snapshot's `next_seq` does (see `replayUntilEvent`), so the minimum's bound suits them all,
+  // and the replay is deterministic from any checkpoint the verify accepts.
+  const numbers = [...wanted]
+    .map((id) => /^ev(\d+)$/.exec(id))
+    .filter((match) => match !== null)
+    .map((match) => Number(match![1]));
+  const start =
+    numbers.length === 0
+      ? initialStart(dir, templates)
+      : replayStart(dir, templates, (_, next) => next <= Math.min(...numbers));
+  let snapshot = start.snapshot;
+  const events: WorldEvent[] = [];
+
+  for (const { entry, line } of start.entries) {
+    if (entry.status !== "ok") {
+      continue;
+    }
+    const before = snapshot;
+    const result = apply(snapshot, templates, entry.command);
+    if (result.status !== "ok") {
+      throw new TypeError(`Accepted command failed during replay at line ${line}`);
+    }
+    events.push(...result.events);
+    snapshot = result.snapshot;
+    for (const event of result.events) {
+      if (wanted.has(event.event_id) && !found.has(event.event_id)) {
+        // A copy: the single replay returns the events so far, and this array keeps growing.
+        found.set(event.event_id, {
+          before,
+          snapshot,
+          events: start.fromInitial ? [...events] : (eventsThrough(dir, event.event_id) ?? [...events]),
+        });
+      }
+    }
+    if (found.size === wanted.size) {
+      break;
+    }
+  }
+
+  return found;
+}
+
 // Every event up to the end of the command that wrote this one, from the events file: what a replay
 // from the start would have collected, without replaying. Null when the file does not hold it.
 function eventsThrough(dir: string, eventId: Id): WorldEvent[] | null {

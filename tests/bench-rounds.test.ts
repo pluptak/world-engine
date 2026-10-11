@@ -15,6 +15,10 @@ test("the rounds workload runs with tiny counts: every move and quiet round is o
   // Every phase is reported, and the split is for the rounds it timed.
   deepStrictEqual(Object.keys(report.phases_ms_per_round).sort(), ["apply", "check", "close", "submits"]);
   deepStrictEqual(Object.keys(report.quiet).sort(), ["close_ms_per_round", "ms_per_round", "observation_ms_per_round"]);
+  deepStrictEqual(
+    Object.keys(report.observe).sort(),
+    ["entities_ms_per_round", "events_half_ms_per_round", "events_ms_per_round", "ms_per_round", "snapshot_ms_per_round"],
+  );
   ok(report.ms_per_round.first_100 >= 0 && report.ms_per_round.last_100 >= 0);
 });
 

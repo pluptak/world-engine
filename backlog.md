@@ -18,12 +18,11 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A player's observe is cheap on a stored world](#a-players-observe-is-cheap-on-a-stored-world).
-2. [Submitting a move is cheap](#submitting-a-move-is-cheap).
-3. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-4. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
-5. [A run is played again from its world](#a-run-is-played-again-from-its-world).
-6. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [Submitting a move is cheap](#submitting-a-move-is-cheap).
+2. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
+3. [A long-lived process bounds what it keeps of each world](#a-long-lived-process-bounds-what-it-keeps-of-each-world).
+4. [A run is played again from its world](#a-run-is-played-again-from-its-world).
+5. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -67,23 +66,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 _None: every item is shipped. Only the maintainer adds one, under Priorities._
-
-### A player's observe is cheap on a stored world
-
-One `observe` on the scale world costs about 130 ms (`docs/measurements.md`: the quiet rounds'
-1,067 ms for eight). A host will have every player look every round.
-
-- **Measure first:** `npm run bench:rounds` gains a row: one player's `observe` per round, split
-  into the snapshot's load, the events' read, the entity half and the event half of the projection
-  (`src/engine/projection.ts`). The split goes in `docs/measurements.md` and the commit.
-- **Then the largest part:** make it cheaper without changing any answer: a projection is a pure
-  function of the snapshot, the templates and the events, so work done once per call for each
-  entity or sense (a room's light, the observer's room, a coverage lookup) is done once per call.
-  Nothing is cached across calls or written to the world.
-- **Tests:** a test compares every agent's projection of the scale world, and of the lab, before
-  and after, by `canonicalJson`, from a fixed list of commands; the suite passes unchanged.
-- **Record** the before and after in `docs/measurements.md`.
-- **Depends on:** nothing. **Not in it:** caches that outlive a call, `inspect`, `options`.
 
 ### Submitting a move is cheap
 

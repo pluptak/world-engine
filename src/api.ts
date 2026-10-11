@@ -50,6 +50,7 @@ import {
   readWorldIds,
   readWorldTemplates,
   replayUntilEvent,
+  replayUntilEvents,
   resolveSubmission,
   since as foldSince,
   submit,
@@ -319,12 +320,16 @@ function inspectThrough(
 // A projection read through a world's own methods, so a store world and a memory world project
 // alike: the entities from the current snapshot, each event through event-form perceive.
 // `fromTick` is the world's events at a tick or later, which each kind of world keeps its own way.
+// `atEvents` replays one call's events in one pass, so each event's before and after snapshots are
+// read once per call instead of once per sense's query; without it each event is queried one at a
+// time, as before.
 function observeThrough(
   world: Pick<World, "snapshot" | "since" | "query">,
   registry: TemplateRegistry,
   observer: Id,
   options: ObserveOptions,
   fromTick: (tick: number) => WorldEvent[],
+  atEvents?: (eventIds: readonly Id[]) => Map<Id, { before: Snapshot; snapshot: Snapshot; events: WorldEvent[] }>,
 ): Projection {
   const snapshot = world.snapshot();
   if (own(snapshot.entities, observer) === undefined) {
@@ -345,11 +350,26 @@ function observeThrough(
       : options.since === undefined
         ? []
         : world.since(options.since).events;
+  // One replay for the whole call's events. An id the replay never produced is absent, and answers
+  // through one query at a time, as without a batcher.
+  const replayed = atEvents?.(candidates.map((event) => event.event_id));
+  const perceive = (event: WorldEvent, sense: string): Answer => {
+    const atEvent = replayed?.get(event.event_id);
+    if (atEvent !== undefined) {
+      return queryAtEvent(atEvent.before, atEvent.snapshot, registry, atEvent.events, {
+        kind: "perceive",
+        observer,
+        event_id: event.event_id,
+        sense,
+      });
+    }
+    return world.query({ kind: "perceive", observer, event_id: event.event_id, sense });
+  };
   const events: ObservedEvent[] = candidates.flatMap((event): ObservedEvent[] => {
     const senses: string[] = [];
     let hearing = "";
     for (const sense of covered) {
-      const answer = world.query({ kind: "perceive", observer, event_id: event.event_id, sense });
+      const answer = perceive(event, sense);
       if (answer.value === "true") {
         senses.push(sense);
         hearing = sense === "hearing" ? answer.basis_code : hearing;
@@ -614,7 +634,14 @@ function storeWorld(
       return queryEngine(snapshot, active, readEvents(dir), request);
     },
     observe: (observer, options = {}) =>
-      observeThrough(world, active, observer, options, (tick) => readEvents(dir).filter((event) => event.tick >= tick)),
+      observeThrough(
+        world,
+        active,
+        observer,
+        options,
+        (tick) => readEvents(dir).filter((event) => event.tick >= tick),
+        (eventIds) => replayUntilEvents(dir, eventIds, active),
+      ),
     inspect: (observer, entity) => inspectThrough(world, active, observer, entity),
     snapshot: () => load(dir, active),
     schedule: (filter) => scheduled(load(dir, active), filter),
