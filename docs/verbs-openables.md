@@ -4,7 +4,11 @@ A target that declares `openable` (a door, a gate, a chest) is opened, shut, loc
 
 - `open`: sets `open` on an `openable` target under an `opened` event, and with `closes_after` a
   close is scheduled ([schedule.md](schedule.md)); an open target is refused `already_open` (after reach,
-  before `locked`), since it would change nothing, and `locked` is refused. A door joins two rooms
+  before `locked`), since it would change nothing, and `locked` is refused. A close by hand
+  withdraws the pending close; opening again starts a fresh count. An openable that is
+  open any other way (placed, spawned, edited, refined) is scheduled the same way, caused
+  by the `spawned` or `edited`, or by nothing, and that `closed` is a root. The verb's
+  own close is never doubled. A door joins two rooms
   through its `from` and `to` props. Without a position it is in reach from anywhere in either room; with
   one it keeps that position in the room it stands in, and from the room it leads to it is reached as an
   unpositioned door is, so from the dark yard one names, opens and shuts the gatehouse door.
