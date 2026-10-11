@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The lab played as a run](#the-lab-played-as-a-run).
-2. [Measure rounds](#measure-rounds).
+1. [Measure rounds](#measure-rounds).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -63,40 +62,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Every item is ready now and names anything it leans on; the order is under Priorities.
-
-### The lab played as a run
-
-The lab (`scenarios/lab.json`, `tests/scenario-lab.test.ts`) drove every engine change, but it runs
-command by command through the bare author. Played as a run it checks the whole stack at once:
-scene, registration, blind rounds, the director's levers, successors and replay.
-
-- **Scene** (`scenarios/lab-run.json`, beside the lab, which stays as it is): the lab's entities;
-  slots for the eight subjects (one body each) and the AI (`[terminal, arm]`); the deadline as a
-  queued beat; a pool of two (an alarm sounded in the corridor, the generator failing); the exit
-  door's `jam_pct` steerable between 10 and 50; a tick limit of 60.
-- **The script** (`tests/acceptance-lab-run.test.ts`): a scripted director registers every slot
-  and starts; scripted players submit through their handles only, and the director closes rounds
-  through its own. Each row is a test:
-  1. Two subjects reach for the key in one round: one takes it, the other's move is `preempted`,
-     and the same seed gives the same winner on replay.
-  2. The AI locks the exit door through the panel while a subject at the panel unlocks it, in one
-     round: the order decides, and both moves are in the log under their handles.
-  3. Every player idles; the director skips quiet rounds, which stop the round the alarm (played
-     from the pool) reaches a subject.
-  4. The director steers the exit door's odds to 50 and the AI's next remote command may jam; out
-     of range is refused.
-  5. The terminal and the arm each move in one round under the one AI handle, and its view names
-     the key alike from both.
-  6. The run ends on its tick limit, refusing every later move, and `verify` replays it exactly.
-  If a subject with a successor would serve a row, the builder adds a template for it in the test's
-  own registry, never in `templates/`.
-- **Findings:** whatever the run cannot say goes into `docs/limits-lab.md` under a short "As a run"
-  heading, one line per limit with its row, as the lab's other limits are written. Engine bugs the
-  script finds are fixed in the same item and named in the commit; a missing mechanic is a limit,
-  not a fix.
-- **Docs:** `docs/limits-lab.md`, `docs/scenario.md` (the lab run as the worked example).
-- **Depends on:** nothing now; the two items it named are built. **Not in it:** an LLM player, a host loop beyond the test's
-  script, timeouts.
 
 ### Measure rounds
 

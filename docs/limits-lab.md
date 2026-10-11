@@ -36,3 +36,19 @@ it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
 - The exit door shuts two ticks after its close: a runner gets through in that window, and an open
   stops the shut. Nothing is simultaneous: a window is only the ticks the door takes
   (G, window test).
+
+## As a run
+
+The lab played as a run (`scenarios/lab-run.json`: the same entities, nine slots, a pool of two, a
+queued deadline, the door's odds steered within 10 to 50, a tick limit of 60), one test per row of
+`tests/acceptance-lab-run.test.ts`. What the run could not say:
+
+- A generator cannot fail: nothing switches a source off, and `power_source` is a definition. The
+  pool's second beat darkens the server room (`lit: false`), a power failure only in the sense of
+  [beats-actions.md](beats-actions.md) (row 6).
+- A heard sound names no source to its listener: a subject in the dormitory learns that something
+  sounded, not where it came from (row 3).
+- A beat that sets a device's props replaces every one of them, so the deadline repeats the exit
+  door's definitions and its links with its new `locked` (row 6).
+- The odds show only as an earlier jam, and the AI learns of it only through the camera, never why:
+  steered to 50, the first jam falls on the sixth remote command instead of the ninth (row 4).

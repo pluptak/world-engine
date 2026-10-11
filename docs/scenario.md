@@ -30,6 +30,11 @@ way by `validateSnapshot`.
 **Versions.** A world without a scene stores nothing new: `run` is absent, and a beat with a null
 `cause_id` is only ever written by a scene. So `schema_version` stays 5.
 
+**The worked example.** `scenarios/lab-run.json` is the lab ([limits-lab.md](limits-lab.md)) as a run:
+its slots are the eight subjects and the AI's `[terminal, arm]`, a slot of two bodies, and its
+pool, odds and deadline are the levers of [roles-levers.md](roles-levers.md).
+`tests/acceptance-lab-run.test.ts` plays it through handles, one row a test.
+
 **Not in it.** The pool of beats and the odds a director steers
 ([roles-levers.md](roles-levers.md)), the run's states, and a list of scenes.
 Tests: `tests/scene.test.ts`.
