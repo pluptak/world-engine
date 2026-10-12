@@ -1,0 +1,1675 @@
+[
+  {
+    "text": ".x",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "ANN",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "ARM",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "BOB",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "CABLE",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "CAMERA",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "CID",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "CORRIDOR",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "DEE",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "DORMITORY",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "DORMITORY DOOR",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "EVE",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "EXIT DOOR",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "EXPERIMENT",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "FAY",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "GENERATOR",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "GUS",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "HAL",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "INTERCOM",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "KEY",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "LAB",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "LAB CAMERA",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "LAB DOOR",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "LAMP",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "OUTSIDE",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "SERVER DOOR",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "SERVER PANEL",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "SERVER ROOM",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "TERMINAL",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "a.b.c",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "ann",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "arm",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "bob",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "cable",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "camera",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "cid",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "corridor",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "dee",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "dormitory",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "dormitory door",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e1",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e1",
+        "part": null,
+        "address": "e1"
+      }
+    }
+  },
+  {
+    "text": "e1.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e10",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e10",
+        "part": null,
+        "address": "e10"
+      }
+    }
+  },
+  {
+    "text": "e10.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e11",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e11",
+        "part": null,
+        "address": "e11"
+      }
+    }
+  },
+  {
+    "text": "e11.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e12",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e12",
+        "part": null,
+        "address": "e12"
+      }
+    }
+  },
+  {
+    "text": "e12.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e13",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e13",
+        "part": null,
+        "address": "e13"
+      }
+    }
+  },
+  {
+    "text": "e13.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e14",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e14",
+        "part": null,
+        "address": "e14"
+      }
+    }
+  },
+  {
+    "text": "e14.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e15",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e15",
+        "part": null,
+        "address": "e15"
+      }
+    }
+  },
+  {
+    "text": "e15.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e16",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e16",
+        "part": null,
+        "address": "e16"
+      }
+    }
+  },
+  {
+    "text": "e16.base",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e16",
+        "part": "base",
+        "address": "e16.base"
+      }
+    }
+  },
+  {
+    "text": "e16.gripper",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e16",
+        "part": "gripper",
+        "address": "e16.gripper"
+      }
+    }
+  },
+  {
+    "text": "e16.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e17",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e17",
+        "part": null,
+        "address": "e17"
+      }
+    }
+  },
+  {
+    "text": "e17.core",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e17",
+        "part": "core",
+        "address": "e17.core"
+      }
+    }
+  },
+  {
+    "text": "e17.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e18",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e18",
+        "part": null,
+        "address": "e18"
+      }
+    }
+  },
+  {
+    "text": "e18.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e19",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e19",
+        "part": null,
+        "address": "e19"
+      }
+    }
+  },
+  {
+    "text": "e19.arm_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e19",
+        "part": "arm_l",
+        "address": "e19.arm_l"
+      }
+    }
+  },
+  {
+    "text": "e19.arm_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e19",
+        "part": "arm_r",
+        "address": "e19.arm_r"
+      }
+    }
+  },
+  {
+    "text": "e19.hand_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e19",
+        "part": "hand_l",
+        "address": "e19.hand_l"
+      }
+    }
+  },
+  {
+    "text": "e19.hand_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e19",
+        "part": "hand_r",
+        "address": "e19.hand_r"
+      }
+    }
+  },
+  {
+    "text": "e19.head",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e19",
+        "part": "head",
+        "address": "e19.head"
+      }
+    }
+  },
+  {
+    "text": "e19.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e19.pocket",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e19",
+        "part": "pocket",
+        "address": "e19.pocket"
+      }
+    }
+  },
+  {
+    "text": "e19.thumb_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e19",
+        "part": "thumb_l",
+        "address": "e19.thumb_l"
+      }
+    }
+  },
+  {
+    "text": "e19.thumb_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e19",
+        "part": "thumb_r",
+        "address": "e19.thumb_r"
+      }
+    }
+  },
+  {
+    "text": "e19.torso",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e19",
+        "part": "torso",
+        "address": "e19.torso"
+      }
+    }
+  },
+  {
+    "text": "e2",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e2",
+        "part": null,
+        "address": "e2"
+      }
+    }
+  },
+  {
+    "text": "e2.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e20",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e20",
+        "part": null,
+        "address": "e20"
+      }
+    }
+  },
+  {
+    "text": "e20.arm_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e20",
+        "part": "arm_l",
+        "address": "e20.arm_l"
+      }
+    }
+  },
+  {
+    "text": "e20.arm_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e20",
+        "part": "arm_r",
+        "address": "e20.arm_r"
+      }
+    }
+  },
+  {
+    "text": "e20.hand_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e20",
+        "part": "hand_l",
+        "address": "e20.hand_l"
+      }
+    }
+  },
+  {
+    "text": "e20.hand_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e20",
+        "part": "hand_r",
+        "address": "e20.hand_r"
+      }
+    }
+  },
+  {
+    "text": "e20.head",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e20",
+        "part": "head",
+        "address": "e20.head"
+      }
+    }
+  },
+  {
+    "text": "e20.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e20.pocket",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e20",
+        "part": "pocket",
+        "address": "e20.pocket"
+      }
+    }
+  },
+  {
+    "text": "e20.thumb_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e20",
+        "part": "thumb_l",
+        "address": "e20.thumb_l"
+      }
+    }
+  },
+  {
+    "text": "e20.thumb_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e20",
+        "part": "thumb_r",
+        "address": "e20.thumb_r"
+      }
+    }
+  },
+  {
+    "text": "e20.torso",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e20",
+        "part": "torso",
+        "address": "e20.torso"
+      }
+    }
+  },
+  {
+    "text": "e21",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e21",
+        "part": null,
+        "address": "e21"
+      }
+    }
+  },
+  {
+    "text": "e21.arm_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e21",
+        "part": "arm_l",
+        "address": "e21.arm_l"
+      }
+    }
+  },
+  {
+    "text": "e21.arm_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e21",
+        "part": "arm_r",
+        "address": "e21.arm_r"
+      }
+    }
+  },
+  {
+    "text": "e21.hand_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e21",
+        "part": "hand_l",
+        "address": "e21.hand_l"
+      }
+    }
+  },
+  {
+    "text": "e21.hand_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e21",
+        "part": "hand_r",
+        "address": "e21.hand_r"
+      }
+    }
+  },
+  {
+    "text": "e21.head",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e21",
+        "part": "head",
+        "address": "e21.head"
+      }
+    }
+  },
+  {
+    "text": "e21.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e21.pocket",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e21",
+        "part": "pocket",
+        "address": "e21.pocket"
+      }
+    }
+  },
+  {
+    "text": "e21.thumb_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e21",
+        "part": "thumb_l",
+        "address": "e21.thumb_l"
+      }
+    }
+  },
+  {
+    "text": "e21.thumb_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e21",
+        "part": "thumb_r",
+        "address": "e21.thumb_r"
+      }
+    }
+  },
+  {
+    "text": "e21.torso",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e21",
+        "part": "torso",
+        "address": "e21.torso"
+      }
+    }
+  },
+  {
+    "text": "e22",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e22",
+        "part": null,
+        "address": "e22"
+      }
+    }
+  },
+  {
+    "text": "e22.arm_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e22",
+        "part": "arm_l",
+        "address": "e22.arm_l"
+      }
+    }
+  },
+  {
+    "text": "e22.arm_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e22",
+        "part": "arm_r",
+        "address": "e22.arm_r"
+      }
+    }
+  },
+  {
+    "text": "e22.hand_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e22",
+        "part": "hand_l",
+        "address": "e22.hand_l"
+      }
+    }
+  },
+  {
+    "text": "e22.hand_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e22",
+        "part": "hand_r",
+        "address": "e22.hand_r"
+      }
+    }
+  },
+  {
+    "text": "e22.head",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e22",
+        "part": "head",
+        "address": "e22.head"
+      }
+    }
+  },
+  {
+    "text": "e22.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e22.pocket",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e22",
+        "part": "pocket",
+        "address": "e22.pocket"
+      }
+    }
+  },
+  {
+    "text": "e22.thumb_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e22",
+        "part": "thumb_l",
+        "address": "e22.thumb_l"
+      }
+    }
+  },
+  {
+    "text": "e22.thumb_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e22",
+        "part": "thumb_r",
+        "address": "e22.thumb_r"
+      }
+    }
+  },
+  {
+    "text": "e22.torso",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e22",
+        "part": "torso",
+        "address": "e22.torso"
+      }
+    }
+  },
+  {
+    "text": "e23",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e23",
+        "part": null,
+        "address": "e23"
+      }
+    }
+  },
+  {
+    "text": "e23.arm_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e23",
+        "part": "arm_l",
+        "address": "e23.arm_l"
+      }
+    }
+  },
+  {
+    "text": "e23.arm_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e23",
+        "part": "arm_r",
+        "address": "e23.arm_r"
+      }
+    }
+  },
+  {
+    "text": "e23.hand_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e23",
+        "part": "hand_l",
+        "address": "e23.hand_l"
+      }
+    }
+  },
+  {
+    "text": "e23.hand_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e23",
+        "part": "hand_r",
+        "address": "e23.hand_r"
+      }
+    }
+  },
+  {
+    "text": "e23.head",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e23",
+        "part": "head",
+        "address": "e23.head"
+      }
+    }
+  },
+  {
+    "text": "e23.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e23.pocket",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e23",
+        "part": "pocket",
+        "address": "e23.pocket"
+      }
+    }
+  },
+  {
+    "text": "e23.thumb_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e23",
+        "part": "thumb_l",
+        "address": "e23.thumb_l"
+      }
+    }
+  },
+  {
+    "text": "e23.thumb_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e23",
+        "part": "thumb_r",
+        "address": "e23.thumb_r"
+      }
+    }
+  },
+  {
+    "text": "e23.torso",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e23",
+        "part": "torso",
+        "address": "e23.torso"
+      }
+    }
+  },
+  {
+    "text": "e24",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e24",
+        "part": null,
+        "address": "e24"
+      }
+    }
+  },
+  {
+    "text": "e24.arm_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e24",
+        "part": "arm_l",
+        "address": "e24.arm_l"
+      }
+    }
+  },
+  {
+    "text": "e24.arm_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e24",
+        "part": "arm_r",
+        "address": "e24.arm_r"
+      }
+    }
+  },
+  {
+    "text": "e24.hand_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e24",
+        "part": "hand_l",
+        "address": "e24.hand_l"
+      }
+    }
+  },
+  {
+    "text": "e24.hand_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e24",
+        "part": "hand_r",
+        "address": "e24.hand_r"
+      }
+    }
+  },
+  {
+    "text": "e24.head",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e24",
+        "part": "head",
+        "address": "e24.head"
+      }
+    }
+  },
+  {
+    "text": "e24.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e24.pocket",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e24",
+        "part": "pocket",
+        "address": "e24.pocket"
+      }
+    }
+  },
+  {
+    "text": "e24.thumb_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e24",
+        "part": "thumb_l",
+        "address": "e24.thumb_l"
+      }
+    }
+  },
+  {
+    "text": "e24.thumb_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e24",
+        "part": "thumb_r",
+        "address": "e24.thumb_r"
+      }
+    }
+  },
+  {
+    "text": "e24.torso",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e24",
+        "part": "torso",
+        "address": "e24.torso"
+      }
+    }
+  },
+  {
+    "text": "e25",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e25",
+        "part": null,
+        "address": "e25"
+      }
+    }
+  },
+  {
+    "text": "e25.arm_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e25",
+        "part": "arm_l",
+        "address": "e25.arm_l"
+      }
+    }
+  },
+  {
+    "text": "e25.arm_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e25",
+        "part": "arm_r",
+        "address": "e25.arm_r"
+      }
+    }
+  },
+  {
+    "text": "e25.hand_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e25",
+        "part": "hand_l",
+        "address": "e25.hand_l"
+      }
+    }
+  },
+  {
+    "text": "e25.hand_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e25",
+        "part": "hand_r",
+        "address": "e25.hand_r"
+      }
+    }
+  },
+  {
+    "text": "e25.head",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e25",
+        "part": "head",
+        "address": "e25.head"
+      }
+    }
+  },
+  {
+    "text": "e25.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e25.pocket",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e25",
+        "part": "pocket",
+        "address": "e25.pocket"
+      }
+    }
+  },
+  {
+    "text": "e25.thumb_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e25",
+        "part": "thumb_l",
+        "address": "e25.thumb_l"
+      }
+    }
+  },
+  {
+    "text": "e25.thumb_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e25",
+        "part": "thumb_r",
+        "address": "e25.thumb_r"
+      }
+    }
+  },
+  {
+    "text": "e25.torso",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e25",
+        "part": "torso",
+        "address": "e25.torso"
+      }
+    }
+  },
+  {
+    "text": "e26",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e26",
+        "part": null,
+        "address": "e26"
+      }
+    }
+  },
+  {
+    "text": "e26.arm_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e26",
+        "part": "arm_l",
+        "address": "e26.arm_l"
+      }
+    }
+  },
+  {
+    "text": "e26.arm_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e26",
+        "part": "arm_r",
+        "address": "e26.arm_r"
+      }
+    }
+  },
+  {
+    "text": "e26.hand_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e26",
+        "part": "hand_l",
+        "address": "e26.hand_l"
+      }
+    }
+  },
+  {
+    "text": "e26.hand_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e26",
+        "part": "hand_r",
+        "address": "e26.hand_r"
+      }
+    }
+  },
+  {
+    "text": "e26.head",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e26",
+        "part": "head",
+        "address": "e26.head"
+      }
+    }
+  },
+  {
+    "text": "e26.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e26.pocket",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e26",
+        "part": "pocket",
+        "address": "e26.pocket"
+      }
+    }
+  },
+  {
+    "text": "e26.thumb_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e26",
+        "part": "thumb_l",
+        "address": "e26.thumb_l"
+      }
+    }
+  },
+  {
+    "text": "e26.thumb_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e26",
+        "part": "thumb_r",
+        "address": "e26.thumb_r"
+      }
+    }
+  },
+  {
+    "text": "e26.torso",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e26",
+        "part": "torso",
+        "address": "e26.torso"
+      }
+    }
+  },
+  {
+    "text": "e27",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e27",
+        "part": null,
+        "address": "e27"
+      }
+    }
+  },
+  {
+    "text": "e27.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e28",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e28",
+        "part": null,
+        "address": "e28"
+      }
+    }
+  },
+  {
+    "text": "e28.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e3",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e3",
+        "part": null,
+        "address": "e3"
+      }
+    }
+  },
+  {
+    "text": "e3.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e4",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": null,
+        "address": "e4"
+      }
+    }
+  },
+  {
+    "text": "e4.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e5",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e5",
+        "part": null,
+        "address": "e5"
+      }
+    }
+  },
+  {
+    "text": "e5.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e6",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e6",
+        "part": null,
+        "address": "e6"
+      }
+    }
+  },
+  {
+    "text": "e6.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e7",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e7",
+        "part": null,
+        "address": "e7"
+      }
+    }
+  },
+  {
+    "text": "e7.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e8",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e8",
+        "part": null,
+        "address": "e8"
+      }
+    }
+  },
+  {
+    "text": "e8.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e9",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e9",
+        "part": null,
+        "address": "e9"
+      }
+    }
+  },
+  {
+    "text": "e9.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "eve",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "exit door",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "experiment",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "fay",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "generator",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "gus",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "hal",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "intercom",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "key",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "lab",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "lab camera",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "lab door",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "lamp",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "nosuch.part",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "nothing",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "outside",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "server door",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "server panel",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "server room",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "terminal",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "world",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "x.",
+    "result": {
+      "status": "unresolved"
+    }
+  }
+]

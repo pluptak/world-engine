@@ -1,0 +1,282 @@
+[
+  {
+    "text": ".x",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "BOTTLE",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "DOORSTOP",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "PUSHER",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "ROOM",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "TABLE",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "a.b.c",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "bottle",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "doorstop",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e1",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e1",
+        "part": null,
+        "address": "e1"
+      }
+    }
+  },
+  {
+    "text": "e1.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e2",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e2",
+        "part": null,
+        "address": "e2"
+      }
+    }
+  },
+  {
+    "text": "e2.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e3",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e3",
+        "part": null,
+        "address": "e3"
+      }
+    }
+  },
+  {
+    "text": "e3.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e4",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": null,
+        "address": "e4"
+      }
+    }
+  },
+  {
+    "text": "e4.arm_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": "arm_l",
+        "address": "e4.arm_l"
+      }
+    }
+  },
+  {
+    "text": "e4.arm_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": "arm_r",
+        "address": "e4.arm_r"
+      }
+    }
+  },
+  {
+    "text": "e4.hand_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": "hand_l",
+        "address": "e4.hand_l"
+      }
+    }
+  },
+  {
+    "text": "e4.hand_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": "hand_r",
+        "address": "e4.hand_r"
+      }
+    }
+  },
+  {
+    "text": "e4.head",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": "head",
+        "address": "e4.head"
+      }
+    }
+  },
+  {
+    "text": "e4.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "e4.pocket",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": "pocket",
+        "address": "e4.pocket"
+      }
+    }
+  },
+  {
+    "text": "e4.thumb_l",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": "thumb_l",
+        "address": "e4.thumb_l"
+      }
+    }
+  },
+  {
+    "text": "e4.thumb_r",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": "thumb_r",
+        "address": "e4.thumb_r"
+      }
+    }
+  },
+  {
+    "text": "e4.torso",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e4",
+        "part": "torso",
+        "address": "e4.torso"
+      }
+    }
+  },
+  {
+    "text": "e5",
+    "result": {
+      "status": "resolved",
+      "target": {
+        "entity_id": "e5",
+        "part": null,
+        "address": "e5"
+      }
+    }
+  },
+  {
+    "text": "e5.nosuchpart",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "nosuch.part",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "nothing",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "pusher",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "room",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "table",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "world",
+    "result": {
+      "status": "unresolved"
+    }
+  },
+  {
+    "text": "x.",
+    "result": {
+      "status": "unresolved"
+    }
+  }
+]
