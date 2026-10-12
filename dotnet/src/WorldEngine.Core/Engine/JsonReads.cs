@@ -5,7 +5,7 @@ namespace WorldEngine.Core.Engine;
 
 // Reads of the JSON a scenario, scene or query is written in. The boundary checks the shape, so a value the port reads that is
 // missing or of another type comes back null.
-internal static class JsonReads
+public static class JsonReads
 {
     private const long MaxSafeInteger = 9007199254740991;
 
