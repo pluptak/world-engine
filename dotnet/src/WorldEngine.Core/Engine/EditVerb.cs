@@ -5,9 +5,9 @@ using WorldEngine.Core.Templates;
 
 namespace WorldEngine.Core.Engine;
 
-// The world author's `edit` (src/engine/verbs/edit.ts) for the edits ported so far: spawn, remove, place, set_props,
-// update_props, set_part and set_seed. The result is judged by the snapshot invariants, so an edit that would break one
-// is refused and nothing is written. The play_beat, run and role edits are not ported and are refused loudly.
+// The world author's `edit` (src/engine/verbs/edit.ts): spawn, remove, place, set_props, update_props, set_part, set_seed,
+// refine, the beat edits, and the run and role edits (start_run, end_run, register_player, play_beat, steer). The result is
+// judged by the snapshot invariants, so an edit that would break one is refused and nothing is written.
 public static class EditVerb
 {
     public static Pipeline.VerbDecl Edit { get; } = new(
@@ -36,12 +36,6 @@ public static class EditVerb
         "no_such_pool_beat", "not_steerable", "out_of_range",
     ];
 
-    // Kinds the parser knows but this port does not yet carry out.
-    private static readonly HashSet<string> UnportedKinds =
-    [
-        "register_player", "play_beat", "steer", "start_run", "end_run",
-    ];
-
     private static readonly HashSet<string> OverrideKeys =
     [
         "name", "aliases", "location", "support", "contained_in", "in_part", "concealed_by", "pos", "detached_from",
@@ -67,6 +61,13 @@ public static class EditVerb
     private sealed record ScheduleBeatEdit(JsonObject Beat) : WorldEdit;
     private sealed record CancelBeatEdit(string Id) : WorldEdit;
     private sealed record RetimeBeatEdit(string Id, long AtTick) : WorldEdit;
+    // The run and role edits (src/engine/verbs/edit.ts): a registration, a pool beat played at a tick, a door's odds steered,
+    // and the run started or ended by the author or a director.
+    private sealed record RegisterEdit(string Handle, string Slot) : WorldEdit;
+    private sealed record PlayBeatEdit(string Id, long AtTick) : WorldEdit;
+    private sealed record SteerEdit(string Entity, long Value) : WorldEdit;
+    private sealed record StartRunEdit : WorldEdit;
+    private sealed record EndRunEdit : WorldEdit;
     private sealed record PropsEdit(string Kind, string Target, IReadOnlyDictionary<string, JsonNode?> Props) : WorldEdit;
     private sealed record SetPartEdit(string Target, string Part, PartState State) : WorldEdit;
 
@@ -86,8 +87,7 @@ public static class EditVerb
         {
             return Invalid("invalid_args");
         }
-        // Only the author may make these edits (`roleMay`: the directors' edits are the beat and run ones).
-        if (command.By is { } by && by.Role != Role.Author)
+        if (command.By is { } by && !RoleMay(by, edit))
         {
             return Refused("role_forbidden");
         }
@@ -97,6 +97,16 @@ public static class EditVerb
                 return context.Target is not null ? Invalid("unexpected_target") : SpawnRefusal(context, spawn);
             case SetSeedEdit:
                 return context.Target is null ? null : Invalid("unexpected_target");
+            case StartRunEdit:
+                return context.Target is null ? RunEditRefusal(context.Snapshot, start: true) : Invalid("unexpected_target");
+            case EndRunEdit:
+                return context.Target is null ? RunEditRefusal(context.Snapshot, start: false) : Invalid("unexpected_target");
+            case RegisterEdit register:
+                return context.Target is null ? RegisterRefusal(context.Snapshot, register) : Invalid("unexpected_target");
+            case PlayBeatEdit play:
+                return context.Target is null ? PlayRefusal(context.Snapshot, play) : Invalid("unexpected_target");
+            case SteerEdit steer:
+                return context.Target is null ? SteerRefusal(context.Snapshot, steer) : Invalid("unexpected_target");
         }
         // The beats name no target of their own: they are scheduled, cancelled or moved as a whole.
         if (edit is ScheduleBeatEdit or CancelBeatEdit or RetimeBeatEdit)
@@ -314,6 +324,92 @@ public static class EditVerb
         return placement.Pos is not null ? Refused("pos_without_room_support") : null;
     }
 
+    // Whether the role a command was sent under may send this kind of edit (src/engine/verbs/edit.ts `roleMay`): the author
+    // may send any, and a director the run and beat ones (`docs/roles.md`).
+    private static bool RoleMay(By by, WorldEdit edit) =>
+        by.Role == Role.Author
+        || (by.Role == Role.Director
+            && edit is RegisterEdit or StartRunEdit or EndRunEdit or PlayBeatEdit or SteerEdit or CancelBeatEdit or RetimeBeatEdit);
+
+    // A run no scene made has nothing to start or end; a run starts once, from registering, and ends from running.
+    private static Pipeline.Refusal? RunEditRefusal(Snapshot snapshot, bool start)
+    {
+        var run = snapshot.Run;
+        if (run is null)
+        {
+            return Refused("no_run");
+        }
+        if (start)
+        {
+            return run.State == "registering" ? null : Refused("run_not_registering");
+        }
+        return run.State == "running" ? null : Refused("run_not_running");
+    }
+
+    // A registration binds a handle to one of a registering run's slots, named by its first body: one slot per handle, one
+    // handle per slot.
+    private static Pipeline.Refusal? RegisterRefusal(Snapshot snapshot, RegisterEdit edit)
+    {
+        var run = snapshot.Run;
+        if (run is null)
+        {
+            return Refused("no_run");
+        }
+        if (run.State != "registering")
+        {
+            return Refused("run_not_registering");
+        }
+        if (!Runs.SlotRoots(snapshot).Contains(edit.Slot))
+        {
+            return Refused("no_such_slot");
+        }
+        var players = run.Players ?? [];
+        if (players.Any(player => player.Slot == edit.Slot))
+        {
+            return Refused("slot_taken");
+        }
+        return players.Any(player => player.Handle == edit.Handle) ? Refused("handle_taken") : null;
+    }
+
+    // A pool beat is played once, at a tick ahead of the clock, under an id nothing pending already carries.
+    private static Pipeline.Refusal? PlayRefusal(Snapshot snapshot, PlayBeatEdit edit)
+    {
+        var run = snapshot.Run;
+        if (run is null)
+        {
+            return Refused("no_run");
+        }
+        if (!(run.Pool ?? []).Any(beat => PoolId(beat) == edit.Id))
+        {
+            return Refused("no_such_pool_beat");
+        }
+        if (edit.AtTick <= snapshot.Tick)
+        {
+            return Refused("beat_in_past");
+        }
+        return Beats.PendingBeatIds(Schedule.Pending(snapshot)).Contains(edit.Id) ? Refused("duplicate_beat") : null;
+    }
+
+    // A door's odds are steered only where the scene gave a range, and within it.
+    private static Pipeline.Refusal? SteerRefusal(Snapshot snapshot, SteerEdit edit)
+    {
+        var run = snapshot.Run;
+        if (run is null)
+        {
+            return Refused("no_run");
+        }
+        var odds = (run.Odds ?? []).FirstOrDefault(entry => entry.Entity == edit.Entity && entry.Prop == "jam_pct");
+        if (odds is null)
+        {
+            return Refused("not_steerable");
+        }
+        return edit.Value < odds.Min || edit.Value > odds.Max ? Refused("out_of_range") : null;
+    }
+
+    // The id a pool beat's body names, or null when it names none.
+    private static string? PoolId(JsonObject beat) =>
+        beat["id"] is JsonValue value && value.TryGetValue(out string? id) ? id : null;
+
     private static Pipeline.Refusal? BeatRefusal(Pipeline.CommandContext context, WorldEdit edit) => edit switch
     {
         ScheduleBeatEdit scheduled => ScheduleBeatRefusal(context, scheduled.Beat),
@@ -503,7 +599,60 @@ public static class EditVerb
             case RetimeBeatEdit moved:
                 TransitionRetime(working, moved);
                 return;
+            case StartRunEdit:
+                Runs.StartRun(working);
+                return;
+            case EndRunEdit:
+                Runs.EndRun(working, "director");
+                return;
+            case RegisterEdit register:
+                Runs.RegisterPlayer(working, register.Handle, register.Slot);
+                return;
+            case PlayBeatEdit play:
+                TransitionPlay(working, play, rootEventId);
+                return;
+            case SteerEdit steer:
+                TransitionSteer(working, steer);
+                return;
         }
+    }
+
+    // The pool beat leaves the pool and is queued at its tick, caused by this edit's event, as a `schedule_beat` is.
+    private static void TransitionPlay(Working working, PlayBeatEdit edit, string rootEventId)
+    {
+        var run = working.Snapshot.Run ?? throw new InvalidOperationException("Play without a run after validation");
+        var pool = run.Pool ?? [];
+        var beat = pool.FirstOrDefault(entry => PoolId(entry) == edit.Id)
+            ?? throw new InvalidOperationException("Play changed after validation");
+        working.SetRun(run with { Pool = pool.Where(entry => PoolId(entry) != edit.Id).ToList() });
+        var queued = new JsonObject
+        {
+            ["at_tick"] = JsonValue.Create(edit.AtTick),
+            ["id"] = beat["id"]!.DeepClone(),
+            ["action"] = beat["action"]!.DeepClone(),
+        };
+        if (beat["only_if"] is { } onlyIf)
+        {
+            queued["only_if"] = onlyIf.DeepClone();
+        }
+        if (beat["then"] is { } then)
+        {
+            queued["then"] = then.DeepClone();
+        }
+        if (beat["repeat"] is { } repeat)
+        {
+            queued["repeat"] = repeat.DeepClone();
+        }
+        Schedule.Add(working, Beats.CauseOf(queued, rootEventId));
+    }
+
+    // The steered value takes the place of any earlier one for the same device and prop, and is in force from now.
+    private static void TransitionSteer(Working working, SteerEdit edit)
+    {
+        var run = working.Snapshot.Run ?? throw new InvalidOperationException("Steer without a run after validation");
+        var steered = (run.Steered ?? []).Where(entry => !(entry.Entity == edit.Entity && entry.Prop == "jam_pct")).ToList();
+        steered.Add(new Steered(edit.Entity, "jam_pct", edit.Value));
+        working.SetRun(run with { Steered = steered });
     }
 
     // The template changes, and the props and parts take what the new preset keeps of the entity's state. The subject is the
@@ -623,10 +772,6 @@ public static class EditVerb
         {
             return null;
         }
-        if (UnportedKinds.Contains(kind))
-        {
-            throw new NotPortedException($"edit {kind}");
-        }
         switch (kind)
         {
             case "spawn":
@@ -669,6 +814,31 @@ public static class EditVerb
                     ? new RetimeBeatEdit(moved, tick)
                     : null;
             }
+            case "register_player":
+            {
+                return Only(obj, "kind", "handle", "slot") && Text(obj["handle"]) is { } handle && Beats.IsBeatId(handle)
+                    && Text(obj["slot"]) is { } slot
+                    ? new RegisterEdit(handle, slot)
+                    : null;
+            }
+            case "play_beat":
+            {
+                return Only(obj, "kind", "id", "at_tick") && Text(obj["id"]) is { } played && Beats.IsBeatId(played)
+                    && Int(obj["at_tick"]) is { } tick
+                    ? new PlayBeatEdit(played, tick)
+                    : null;
+            }
+            case "steer":
+            {
+                return Only(obj, "kind", "entity", "prop", "value") && Text(obj["entity"]) is { } entity
+                    && Text(obj["prop"]) == "jam_pct" && Int(obj["value"]) is { } value
+                    ? new SteerEdit(entity, value)
+                    : null;
+            }
+            case "start_run":
+                return Only(obj, "kind") ? new StartRunEdit() : null;
+            case "end_run":
+                return Only(obj, "kind") ? new EndRunEdit() : null;
             case "refine":
             {
                 if (!Only(obj, "kind", "target", "template") || Text(obj["target"]) is not { } target || Text(obj["template"]) is not { } template)

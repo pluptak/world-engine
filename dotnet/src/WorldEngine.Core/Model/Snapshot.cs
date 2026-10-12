@@ -86,4 +86,31 @@ public sealed record Snapshot(
     long? Rng,
     // What the world will do by itself, in run order; absent when nothing is pending (src/engine/pending.ts).
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<ScheduledCause>? Schedule = null);
+    IReadOnlyList<ScheduledCause>? Schedule = null,
+    // The run a scene made, absent when the world has none (src/model.ts `run`).
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Run? Run = null);
+
+// A run's state and what it holds (src/model.ts `Run`, docs/run.md). A slot is one body id, or a list of several, as the
+// snapshot stores it, so it is kept as JSON. A pool beat is a beat body with no tick, held as its JSON.
+public sealed record Run(
+    string State,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? TickLimit = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<JsonNode>? Slots = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<JsonObject>? Pool = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<Odds>? Odds = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<Player>? Players = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<Steered>? Steered = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] RunEnd? Ended = null);
+
+// The range a director may steer a device's odds within, as the scene gave it.
+public sealed record Odds(string Entity, string Prop, long Min, long Max);
+
+// A handle bound to one of a registering run's slots, by the slot's first body.
+public sealed record Player(string Handle, string Slot);
+
+// The value a director has steered a device's odds to.
+public sealed record Steered(string Entity, string Prop, long Value);
+
+// Why and when a run ended.
+public sealed record RunEnd(string Reason, long Tick);

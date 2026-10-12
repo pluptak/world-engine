@@ -199,5 +199,8 @@ public sealed class Working
     // Sets the dice's state (src/engine/verbs/edit.ts `set_seed`): the world's, not an entity's, so no delta.
     public void SetRng(long state) => Snapshot = Snapshot with { Rng = state };
 
+    // Sets the run (src/engine/run.ts): the run is the world's record, so the event that made the change is its whole account.
+    public void SetRun(Run run) => Snapshot = Snapshot with { Run = run };
+
     public void BumpVersion() => Snapshot = Snapshot with { Version = Snapshot.Version + 1 };
 }

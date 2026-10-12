@@ -124,6 +124,11 @@ public static class Pipeline
         {
             return Unchanged(snapshot, command, Status.Invalid, reasonCode: "not_an_agent");
         }
+        // A run's state takes some commands (`docs/run.md`). The world's, not a verb's, so no verb declares it.
+        if (Runs.RunRefusal(snapshot, command.Verb, authored, command.Round == true) is { } runCode)
+        {
+            return Unchanged(snapshot, command, Status.Refused, reasonCode: runCode);
+        }
 
         // An agent a controller runs acts only while its control walk carries the command, and one with a
         // `powered_by` only while it has power.
@@ -168,9 +173,9 @@ public static class Pipeline
         return null;
     }
 
-    // The whole transition of a command the front lets through, for the verbs ported so far. Preconditions decide
-    // first; then the root event, the verb's effects (none yet for `advance`), and the clock. Scheduled causes, runs,
-    // processes and per-event perceivers are not ported, so a command that needs them is refused loudly.
+    // The whole transition of a command the front lets through, for the verbs ported so far. The run gate decides with the
+    // front; preconditions decide next; then the root event, the verb's effects, the clock (cut at a run's limit), the run's
+    // finish. Rounds and per-event perceivers are not ported, so a command that needs them is refused loudly.
     public static Result Apply(
         Snapshot snapshot,
         IReadOnlyDictionary<string, Template> registry,
@@ -211,6 +216,10 @@ public static class Pipeline
         {
             return Unchanged(snapshot, command, Status.Invalid, reasonCode: "clock_overflow");
         }
+        // The clock never passes a running run's limit: a command that would is cut at it (`docs/run.md`).
+        var left = Runs.TicksLeft(snapshot);
+        var ticks = left is { } room && duration > room ? room : duration;
+        var cut = ticks != duration;
 
         var working = new Working(snapshot, command.CommandId);
         // The root event sits on the target when there is one, else on the actor, unless the verb names its own entity and data.
@@ -224,11 +233,13 @@ public static class Pipeline
         // A command that asked to be woken says how long it ran (src/engine/pipeline.ts).
         var wake = verb.WakeOn?.Invoke(command) ?? [];
         var stop = verb.StopBefore?.Invoke(command, snapshot);
-        var elapsed = Clock.Advance(working, registry, duration, wake, stop);
-        if (wake.Count > 0 || stop is not null)
+        var elapsed = Clock.Advance(working, registry, ticks, wake, stop);
+        // A command that asked to be woken, to stop before a beat, or was cut at a run's limit says how long it ran.
+        if (wake.Count > 0 || stop is not null || cut)
         {
             working.Events[0] = working.Events[0] with { Data = Reason(("advanced", elapsed)) };
         }
+        Runs.FinishRun(working);
         if (verb.ValidateResult?.Invoke(context with { Snapshot = working.Snapshot }) is { } validation)
         {
             return Unchanged(

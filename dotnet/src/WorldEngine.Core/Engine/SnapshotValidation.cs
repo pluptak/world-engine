@@ -9,8 +9,7 @@ namespace WorldEngine.Core.Engine;
 // A rule a snapshot breaks: its code, the path to the field, and a detail (src/engine/validate.ts `SnapshotIssue`).
 public sealed record SnapshotIssue(string Code, IReadOnlyList<string> Path, string Message);
 
-// The snapshot invariants (src/engine/validate.ts `validateSnapshot`), for the rules the .NET engine can reach: the
-// run and beat rules are not ported, and a snapshot that carries a run or a beat is not judged by them here.
+// The snapshot invariants (src/engine/validate.ts `validateSnapshot`), for the rules the .NET engine has ported.
 // Issues come in TypeScript's order, so the first one is the same code either side.
 public static class SnapshotValidation
 {
@@ -142,6 +141,7 @@ public static class SnapshotValidation
 
         issues.AddRange(HolderPackingIssues(snapshot, registry));
         issues.AddRange(ScheduleIssues(snapshot));
+        issues.AddRange(RunIssues(snapshot));
         if (snapshot.Rng is { } rng && !Rng.IsState(rng))
         {
             issues.Add(Issue("invalid_rng", ["rng"], rng.ToString()));
@@ -613,6 +613,97 @@ public static class SnapshotValidation
                     break;
                 }
             }
+        }
+        return issues;
+    }
+
+    // The run states and why one ends, as the snapshot stores them (src/engine/validate.ts).
+    private static readonly HashSet<string> RunStates = ["registering", "running", "ended"];
+    private static readonly HashSet<string> RunReasons = ["director", "tick_limit", "no_live_players"];
+
+    // A run as stored: a positive tick limit, or the agents that are its slots, each named once, or both, and its state. An
+    // ended run has its reason and its tick, and nothing still scheduled (`docs/run.md`).
+    private static List<SnapshotIssue> RunIssues(Snapshot snapshot)
+    {
+        var run = snapshot.Run;
+        if (run is null)
+        {
+            return [];
+        }
+        var issues = new List<SnapshotIssue>();
+        if (run.TickLimit is null && run.Slots is null && run.Pool is null && run.Odds is null)
+        {
+            issues.Add(Issue("invalid_run", ["run"], "neither tick_limit nor slots"));
+        }
+        if (run.TickLimit is { } limit && (Math.Abs(limit) > MaxSafeInteger || limit < 1))
+        {
+            issues.Add(Issue("invalid_run", ["run", "tick_limit"], limit.ToString(CultureInfo.InvariantCulture)));
+        }
+        if (run.Slots is { } slots)
+        {
+            if (slots.Count == 0)
+            {
+                issues.Add(Issue("invalid_run", ["run", "slots"], "empty"));
+            }
+            // Each body is named once across the slots; a slot of several is a list of them, never empty.
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            for (var index = 0; index < slots.Count; index++)
+            {
+                var entry = slots[index];
+                var members = Runs.SlotMembers(entry);
+                if (members.Count == 0)
+                {
+                    issues.Add(Issue("invalid_run", ["run", "slots", index.ToString(CultureInfo.InvariantCulture)], "empty"));
+                }
+                for (var member = 0; member < members.Count; member++)
+                {
+                    var slot = members[member];
+                    IReadOnlyList<string> path = entry is JsonArray
+                        ? ["run", "slots", index.ToString(CultureInfo.InvariantCulture), member.ToString(CultureInfo.InvariantCulture)]
+                        : ["run", "slots", index.ToString(CultureInfo.InvariantCulture)];
+                    // A slot may be gone, which ends the run as a destroyed one does; one still in the world is an agent's body.
+                    var body = snapshot.Entities.GetValueOrDefault(slot);
+                    var repeated = !seen.Add(slot);
+                    if ((body is not null && !PropValues.IsTrue(body.Props, "agent")) || repeated)
+                    {
+                        issues.Add(Issue("invalid_run", path, slot));
+                    }
+                }
+            }
+        }
+        // Each player is bound to one of the run's slots by its first body, once per handle and once per slot.
+        var roots = Runs.SlotRoots(snapshot);
+        var handles = new HashSet<string>(StringComparer.Ordinal);
+        var bound = new HashSet<string>(StringComparer.Ordinal);
+        for (var index = 0; index < (run.Players?.Count ?? 0); index++)
+        {
+            var player = run.Players![index];
+            var known = roots.Contains(player.Slot);
+            if (!known || handles.Contains(player.Handle) || bound.Contains(player.Slot))
+            {
+                issues.Add(Issue("invalid_run", ["run", "players", index.ToString(CultureInfo.InvariantCulture)], player.Handle));
+            }
+            handles.Add(player.Handle);
+            bound.Add(player.Slot);
+        }
+        if (!RunStates.Contains(run.State))
+        {
+            issues.Add(Issue("invalid_run", ["run", "state"], run.State));
+        }
+        if (run.State == "ended")
+        {
+            if (run.Ended is null || !RunReasons.Contains(run.Ended.Reason))
+            {
+                issues.Add(Issue("invalid_run", ["run", "ended"], "no reason"));
+            }
+            if (snapshot.Schedule is { Count: > 0 })
+            {
+                issues.Add(Issue("invalid_run", ["run", "ended"], "schedule after the end"));
+            }
+        }
+        else if (run.Ended is not null)
+        {
+            issues.Add(Issue("invalid_run", ["run", "ended"], "not ended"));
         }
         return issues;
     }
