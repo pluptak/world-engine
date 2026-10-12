@@ -43,18 +43,6 @@ public static class Spawn
         {
             throw new InvalidOperationException($"Entity id {id} already exists");
         }
-        if (Carry.HolderLayout(registry, templateId).Grips.Count > 0)
-        {
-            throw new NotPortedException("spawning a holder, which claims its grips");
-        }
-        // A spawn into a holder with grips and no part named fills the first free grip, which is not ported.
-        if (overrides.ContainedIn is { } holderId
-            && overrides.InPart is null
-            && snapshot.Entities.TryGetValue(holderId, out var holder)
-            && Carry.HolderLayout(registry, holder.Template).Grips.Count > 0)
-        {
-            throw new NotPortedException("spawning into a holder's grip, which fills the first free one");
-        }
         // An override's props merge onto the template's, so a spawn names only what it changes.
         var props = new Dictionary<string, JsonNode?>(template.Props, StringComparer.Ordinal);
         foreach (var (name, value) in overrides.Props ?? new Dictionary<string, JsonNode?>())
@@ -83,9 +71,35 @@ public static class Spawn
             Props: props,
             Traits: overrides.Traits is { Count: > 0 } traits ? new Dictionary<string, string>(traits, StringComparer.Ordinal) : null);
 
+        // A spawn into a holder with grips and no part named takes the first free grip (spawn.ts `spawn`).
+        if (entity.ContainedIn is { } holderId
+            && overrides.InPart is null
+            && snapshot.Entities.TryGetValue(holderId, out var holder)
+            && Carry.HolderLayout(registry, holder.Template).Grips.Count > 0
+            && Carry.ClaimGrip(snapshot, registry, holderId, entity) is GripFound found)
+        {
+            entity = entity with { InPart = found.Part };
+        }
         // spawn.ts gives an empty snapshot the default coverage; a snapshot a fall spawns into always has entities, so
         // its own coverage is kept as it is.
         var entities = new Dictionary<string, Entity>(snapshot.Entities, StringComparer.Ordinal) { [id] = entity };
+        // A holder completes forward containment: whoever named it before it existed takes the first free grip now, in
+        // entry order.
+        if (Carry.HolderLayout(registry, templateId).Grips.Count > 0)
+        {
+            foreach (var otherId in entities.Keys.Order(StringComparer.Ordinal).ToList())
+            {
+                var other = entities[otherId];
+                if (other.ContainedIn != id || other.InPart is not null)
+                {
+                    continue;
+                }
+                if (Carry.ClaimGrip(snapshot with { Entities = entities }, registry, id, other) is GripFound claimed)
+                {
+                    entities[otherId] = other with { InPart = claimed.Part };
+                }
+            }
+        }
         return (snapshot with { NextSeq = snapshot.NextSeq + 1, Entities = entities }, id);
     }
 }
