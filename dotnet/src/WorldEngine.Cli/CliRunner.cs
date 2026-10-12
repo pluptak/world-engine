@@ -96,6 +96,16 @@ public static class CliRunner
                 return Trace(StoreWorld.Open(Required(world)), request["query"] as JsonObject ?? throw new WorldError("invalid_query", "The request names no query"));
             case "catalog":
                 return new JsonObject { ["catalog"] = Node(StoreWorld.Open(Required(world)).CatalogEntries()) };
+            case "actor_observe":
+                return ActorOf(StoreWorld.Open(Required(world)), request).Observe(JsonReads.SafeInt(request["since_tick"]));
+            case "actor_inspect":
+                return new JsonObject { ["inspection"] = ActorOf(StoreWorld.Open(Required(world)), request).Inspect(Text(request, "entity")) };
+            case "actor_options":
+                return ActorOf(StoreWorld.Open(Required(world)), request).OptionsOf(Flag(request["refused"]));
+            case "actor_check":
+                return ActorOf(StoreWorld.Open(Required(world)), request).Check(ActorCommandOf(request));
+            case "actor_command":
+                return ActorOf(StoreWorld.Open(Required(world)), request).Apply(ActorCommandOf(request));
             default:
                 throw new WorldError("invalid_op", $"Unknown op {op}");
         }
@@ -231,6 +241,20 @@ public static class CliRunner
 
     private static Command CommandOf(JsonObject request) =>
         WorldJson.Read<Command>((request["command"] ?? throw new WorldError("invalid_command", "The request names no command")).ToJsonString());
+
+    // A controller's command as an actor sends it: its id, verb, target and args, never an actor or `perceivers` (`ActorCommand`).
+    private static ActorCommand ActorCommandOf(JsonObject request)
+    {
+        var command = request["command"] as JsonObject ?? throw new WorldError("invalid_command", "The request names no command");
+        return new ActorCommand(
+            Text(command, "command_id"),
+            Text(command, "verb"),
+            JsonReads.Text(command["target"]),
+            command["args"] is JsonObject args ? args.ToDictionary(pair => pair.Key, pair => pair.Value?.DeepClone(), StringComparer.Ordinal) : null);
+    }
+
+    // The view of the body the request names, as `actorWorld` builds it over the world.
+    private static ActorWorld ActorOf(StoreWorld world, JsonObject request) => new(world, Text(request, "actor"));
 
     private static string Text(JsonObject request, string name) =>
         JsonReads.Text(request[name]) ?? throw new WorldError("invalid_request", $"The request names no {name}");
