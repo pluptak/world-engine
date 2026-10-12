@@ -30,6 +30,16 @@ public static class TemplateValidation
         {
             throw new FormatException($"{source} declares both parts and part_overrides");
         }
+        if (decl.PartOverrides is not null)
+        {
+            foreach (var (name, over) in decl.PartOverrides)
+            {
+                if (over.Parent.ValueKind is not (JsonValueKind.Undefined or JsonValueKind.Null or JsonValueKind.String))
+                {
+                    throw new FormatException($"{source}.part_overrides.{name}.parent must be a string or null");
+                }
+            }
+        }
         if (decl.Parts is not null)
         {
             for (var index = 0; index < decl.Parts.Count; index += 1)

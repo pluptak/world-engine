@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace WorldEngine.Core.Templates;
@@ -234,7 +235,9 @@ public static class TemplateResolver
             var found = overrides.TryGetValue(part.Name, out var over);
             return new PartDecl(
                 Name: part.Name,
-                Parent: part.Parent,
+                Parent: found && over!.Parent.ValueKind is not JsonValueKind.Undefined
+                    ? over.Parent.ValueKind is JsonValueKind.String ? over.Parent.GetString() : null
+                    : part.Parent,
                 Contributes: found && over!.Contributes is not null
                     ? new Dictionary<string, long>(over.Contributes)
                     : new Dictionary<string, long>(part.Contributes),

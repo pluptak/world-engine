@@ -24,9 +24,12 @@ public sealed record PartDecl(
     long MaxIntegrity,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Holds? Holds = null);
 
-// What a child may change of an inherited part: any field but its name. `parent` is not accepted here yet,
-// so an override naming it is refused rather than applied wrongly.
+// What a child may change of an inherited part: any field but its name. A parent override is a
+// JsonElement so an absent parent inherits, an explicit null reparents to the root, and a string
+// renames it (System.Text.Json leaves a missing struct property default, whose ValueKind is
+// Undefined); anything else is refused where declarations are checked.
 public sealed record PartOverride(
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] JsonElement Parent = default,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? MaxIntegrity = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? Detachable = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyDictionary<string, long>? Contributes = null,
