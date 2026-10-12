@@ -10,6 +10,10 @@ public static class TestTemplates
 {
     public static IReadOnlyDictionary<string, Template> Registry { get; } = TemplateResolver.Resolve(Declarations());
 
+    // The shipped templates alone, as the TypeScript goldens read them (the test-templates folder is left out).
+    public static IReadOnlyDictionary<string, Template> RepoRegistry { get; } =
+        TemplateResolver.Resolve(TemplateDirectory.ReadDeclarations(Path.Combine(AppContext.BaseDirectory, "Fixtures", "templates")));
+
     private static IReadOnlyDictionary<string, TemplateDecl> Declarations()
     {
         var declared = new Dictionary<string, TemplateDecl>(StringComparer.Ordinal);

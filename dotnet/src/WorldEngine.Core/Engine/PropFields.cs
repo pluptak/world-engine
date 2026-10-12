@@ -123,6 +123,10 @@ public static class PropFields
             ? double.Parse(value!.ToJsonString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture)
             : null;
 
+    // A flag that is literally true, as `=== true` reads it; any other value, or none, is not.
+    public static bool IsTrue(JsonNode? value) =>
+        value is JsonValue flag && flag.TryGetValue(out bool set) && set;
+
     private static bool IsSafeInteger(double? number) =>
         number is { } n && Math.Floor(n) == n && Math.Abs(n) <= MaxSafeInteger;
 }

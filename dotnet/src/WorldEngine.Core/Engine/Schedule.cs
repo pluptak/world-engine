@@ -13,6 +13,15 @@ public static class Schedule
 
     public static IReadOnlyList<ScheduledCause> Pending(Snapshot snapshot) => snapshot.Schedule ?? [];
 
+    // What the world will do by itself that matches a filter, in run order: a read that changes nothing. `untilTick` keeps the
+    // causes due at or before that tick (src/engine/pending.ts `scheduled`).
+    public static List<ScheduledCause> Scheduled(Snapshot snapshot, string? kind = null, string? entity = null, long? untilTick = null) =>
+        Pending(snapshot)
+            .Where(cause => kind is null || cause.Kind == kind)
+            .Where(cause => entity is null || cause.Entity == entity)
+            .Where(cause => untilTick is null || cause.DueTick <= untilTick)
+            .ToList();
+
     // A new cause goes after every cause due at or before its tick, so two due together run in the order they were scheduled.
     public static void Add(Working working, ScheduledCause cause)
     {

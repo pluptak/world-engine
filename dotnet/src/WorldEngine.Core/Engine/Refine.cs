@@ -63,10 +63,6 @@ public static class Refine
     private static bool IsSafeInteger(double value) =>
         Math.Floor(value) == value && Math.Abs(value) <= 9007199254740991;
 
-    // A flag that is literally true; any other value, or none, is not.
-    private static bool IsTrue(JsonNode? node) =>
-        node is JsonValue value && value.TryGetValue(out bool flag) && flag;
-
     // Why an entity cannot become `next` here, or null for ok. Contents that no longer fit their holder or its parts are the
     // snapshot's own rules, held after the transition; what only a refinement can break is checked here: it is not a
     // refinement of what it is, a stored part is stronger than the new preset allows, it no longer fits the surface it stands
@@ -103,7 +99,7 @@ public static class Refine
 
         var support = subject.Support is null ? null : snapshot.Entities.GetValueOrDefault(subject.Support);
         var supportTemplate = support is null ? null : registry.GetValueOrDefault(support.Template);
-        if (supportTemplate is not null && IsTrue(support!.Props.GetValueOrDefault("surface")))
+        if (supportTemplate is not null && PropFields.IsTrue(support!.Props.GetValueOrDefault("surface")))
         {
             var data = Fit.Misfit(footprint, [supportTemplate.SizeCm.W, supportTemplate.SizeCm.D]);
             if (data is { } misfit)
@@ -113,7 +109,7 @@ public static class Refine
         }
 
         // What stands on a surface has to keep a surface to stand on, and fit it.
-        if (IsTrue(subject.Props.GetValueOrDefault("surface")))
+        if (PropFields.IsTrue(subject.Props.GetValueOrDefault("surface")))
         {
             foreach (var id in snapshot.Entities.Keys.Order(StringComparer.Ordinal))
             {
@@ -122,7 +118,7 @@ public static class Refine
                 {
                     continue;
                 }
-                if (!IsTrue(props.GetValueOrDefault("surface")))
+                if (!PropFields.IsTrue(props.GetValueOrDefault("surface")))
                 {
                     return new Pipeline.Refusal(Status.Refused, "not_a_surface");
                 }
