@@ -1,0 +1,778 @@
+[
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c1",
+      "actor": "e4",
+      "verb": "nosuch"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c1",
+      "resolved_target": null,
+      "reason_code": "unknown_verb"
+    }
+  },
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c2",
+      "actor": "nobody",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c2",
+      "resolved_target": null,
+      "reason_code": "no_such_actor"
+    }
+  },
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c3",
+      "actor": "e5",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c3",
+      "resolved_target": null,
+      "reason_code": "not_an_agent"
+    }
+  },
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c4",
+      "actor": "e4",
+      "verb": "take"
+    },
+    "result": {
+      "status": "unresolved",
+      "command_id": "c4",
+      "resolved_target": null
+    }
+  },
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c5",
+      "actor": "e4",
+      "verb": "take",
+      "target": "nosuch"
+    },
+    "result": {
+      "status": "unresolved",
+      "command_id": "c5",
+      "resolved_target": null
+    }
+  },
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c6",
+      "actor": "e4",
+      "verb": "take",
+      "target": "bottle"
+    },
+    "result": null
+  },
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c7",
+      "actor": "world",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c7",
+      "resolved_target": null,
+      "reason_code": "no_such_actor"
+    }
+  },
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c8",
+      "actor": "world",
+      "verb": "edit"
+    },
+    "result": null
+  },
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c9",
+      "actor": "e4",
+      "verb": "edit"
+    },
+    "result": null
+  },
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c10",
+      "actor": "e4",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": null
+  },
+  {
+    "snapshot": "rich-dark",
+    "command": {
+      "command_id": "c11",
+      "actor": "e4",
+      "verb": "take",
+      "target": "e3.nosuch"
+    },
+    "result": {
+      "status": "unresolved",
+      "command_id": "c11",
+      "resolved_target": null
+    }
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c1",
+      "actor": "e4",
+      "verb": "nosuch"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c1",
+      "resolved_target": null,
+      "reason_code": "unknown_verb"
+    }
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c2",
+      "actor": "nobody",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c2",
+      "resolved_target": null,
+      "reason_code": "no_such_actor"
+    }
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c3",
+      "actor": "e5",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c3",
+      "resolved_target": null,
+      "reason_code": "not_an_agent"
+    }
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c4",
+      "actor": "e4",
+      "verb": "take"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c4",
+      "resolved_target": null,
+      "reason_code": "asleep"
+    }
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c5",
+      "actor": "e4",
+      "verb": "take",
+      "target": "nosuch"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c5",
+      "resolved_target": null,
+      "reason_code": "asleep"
+    }
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c6",
+      "actor": "e4",
+      "verb": "take",
+      "target": "bottle"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c6",
+      "resolved_target": null,
+      "reason_code": "asleep"
+    }
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c7",
+      "actor": "world",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c7",
+      "resolved_target": null,
+      "reason_code": "no_such_actor"
+    }
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c8",
+      "actor": "world",
+      "verb": "edit"
+    },
+    "result": null
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c9",
+      "actor": "e4",
+      "verb": "edit"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c9",
+      "resolved_target": null,
+      "reason_code": "asleep"
+    }
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c10",
+      "actor": "e4",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c10",
+      "resolved_target": null,
+      "reason_code": "asleep"
+    }
+  },
+  {
+    "snapshot": "front-asleep",
+    "command": {
+      "command_id": "c11",
+      "actor": "e4",
+      "verb": "take",
+      "target": "e3.nosuch"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c11",
+      "resolved_target": null,
+      "reason_code": "asleep"
+    }
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c1",
+      "actor": "e4",
+      "verb": "nosuch"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c1",
+      "resolved_target": null,
+      "reason_code": "unknown_verb"
+    }
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c2",
+      "actor": "nobody",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c2",
+      "resolved_target": null,
+      "reason_code": "no_such_actor"
+    }
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c3",
+      "actor": "e5",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c3",
+      "resolved_target": null,
+      "reason_code": "not_an_agent"
+    }
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c4",
+      "actor": "e4",
+      "verb": "take"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c4",
+      "resolved_target": null,
+      "reason_code": "unconscious"
+    }
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c5",
+      "actor": "e4",
+      "verb": "take",
+      "target": "nosuch"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c5",
+      "resolved_target": null,
+      "reason_code": "unconscious"
+    }
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c6",
+      "actor": "e4",
+      "verb": "take",
+      "target": "bottle"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c6",
+      "resolved_target": null,
+      "reason_code": "unconscious"
+    }
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c7",
+      "actor": "world",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c7",
+      "resolved_target": null,
+      "reason_code": "no_such_actor"
+    }
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c8",
+      "actor": "world",
+      "verb": "edit"
+    },
+    "result": null
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c9",
+      "actor": "e4",
+      "verb": "edit"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c9",
+      "resolved_target": null,
+      "reason_code": "unconscious"
+    }
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c10",
+      "actor": "e4",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c10",
+      "resolved_target": null,
+      "reason_code": "unconscious"
+    }
+  },
+  {
+    "snapshot": "front-unconscious",
+    "command": {
+      "command_id": "c11",
+      "actor": "e4",
+      "verb": "take",
+      "target": "e3.nosuch"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c11",
+      "resolved_target": null,
+      "reason_code": "unconscious"
+    }
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c1",
+      "actor": "e4",
+      "verb": "nosuch"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c1",
+      "resolved_target": null,
+      "reason_code": "unknown_verb"
+    }
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c2",
+      "actor": "nobody",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c2",
+      "resolved_target": null,
+      "reason_code": "no_such_actor"
+    }
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c3",
+      "actor": "e5",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c3",
+      "resolved_target": null,
+      "reason_code": "not_an_agent"
+    }
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c4",
+      "actor": "e4",
+      "verb": "take"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c4",
+      "resolved_target": null,
+      "reason_code": "unpowered",
+      "reason_data": {
+        "at": "e4",
+        "cut": "e16"
+      }
+    }
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c5",
+      "actor": "e4",
+      "verb": "take",
+      "target": "nosuch"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c5",
+      "resolved_target": null,
+      "reason_code": "unpowered",
+      "reason_data": {
+        "at": "e4",
+        "cut": "e16"
+      }
+    }
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c6",
+      "actor": "e4",
+      "verb": "take",
+      "target": "bottle"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c6",
+      "resolved_target": null,
+      "reason_code": "unpowered",
+      "reason_data": {
+        "at": "e4",
+        "cut": "e16"
+      }
+    }
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c7",
+      "actor": "world",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c7",
+      "resolved_target": null,
+      "reason_code": "no_such_actor"
+    }
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c8",
+      "actor": "world",
+      "verb": "edit"
+    },
+    "result": null
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c9",
+      "actor": "e4",
+      "verb": "edit"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c9",
+      "resolved_target": null,
+      "reason_code": "unpowered",
+      "reason_data": {
+        "at": "e4",
+        "cut": "e16"
+      }
+    }
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c10",
+      "actor": "e4",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c10",
+      "resolved_target": null,
+      "reason_code": "unpowered",
+      "reason_data": {
+        "at": "e4",
+        "cut": "e16"
+      }
+    }
+  },
+  {
+    "snapshot": "front-unpowered",
+    "command": {
+      "command_id": "c11",
+      "actor": "e4",
+      "verb": "take",
+      "target": "e3.nosuch"
+    },
+    "result": {
+      "status": "refused",
+      "command_id": "c11",
+      "resolved_target": null,
+      "reason_code": "unpowered",
+      "reason_data": {
+        "at": "e4",
+        "cut": "e16"
+      }
+    }
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c1",
+      "actor": "e4",
+      "verb": "nosuch"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c1",
+      "resolved_target": null,
+      "reason_code": "unknown_verb"
+    }
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c2",
+      "actor": "nobody",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c2",
+      "resolved_target": null,
+      "reason_code": "no_such_actor"
+    }
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c3",
+      "actor": "e5",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c3",
+      "resolved_target": null,
+      "reason_code": "not_an_agent"
+    }
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c4",
+      "actor": "e4",
+      "verb": "take"
+    },
+    "result": {
+      "status": "unresolved",
+      "command_id": "c4",
+      "resolved_target": null
+    }
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c5",
+      "actor": "e4",
+      "verb": "take",
+      "target": "nosuch"
+    },
+    "result": {
+      "status": "unresolved",
+      "command_id": "c5",
+      "resolved_target": null
+    }
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c6",
+      "actor": "e4",
+      "verb": "take",
+      "target": "bottle"
+    },
+    "result": {
+      "status": "ambiguous",
+      "command_id": "c6",
+      "resolved_target": null,
+      "candidates": [
+        "e17",
+        "e3"
+      ]
+    }
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c7",
+      "actor": "world",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": {
+      "status": "invalid",
+      "command_id": "c7",
+      "resolved_target": null,
+      "reason_code": "no_such_actor"
+    }
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c8",
+      "actor": "world",
+      "verb": "edit"
+    },
+    "result": null
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c9",
+      "actor": "e4",
+      "verb": "edit"
+    },
+    "result": null
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c10",
+      "actor": "e4",
+      "verb": "take",
+      "target": "e3"
+    },
+    "result": null
+  },
+  {
+    "snapshot": "front-twin",
+    "command": {
+      "command_id": "c11",
+      "actor": "e4",
+      "verb": "take",
+      "target": "e3.nosuch"
+    },
+    "result": {
+      "status": "unresolved",
+      "command_id": "c11",
+      "resolved_target": null
+    }
+  }
+]

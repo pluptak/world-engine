@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -94,6 +95,29 @@ public static class Power
             })
             .ToList();
 
+    // Why an agent cannot act or sense now: a controlled one its own control walk's fault, else its controller's;
+    // any other its own power, when it has a `powered_by`. Null for an agent with neither.
+    public static RemoteFault? AgentFault(Snapshot snapshot, string agent)
+    {
+        if (!snapshot.Entities.TryGetValue(agent, out var entity))
+        {
+            return null;
+        }
+        if (PropValues.GetString(entity.Props, "controlled_by") is not null)
+        {
+            if (RemoteFaultOf(snapshot, agent) is { } fault)
+            {
+                return fault;
+            }
+            return Controller(snapshot, agent) is { } head ? AgentFault(snapshot, head) : null;
+        }
+        if (PropValues.GetString(entity.Props, "powered_by") is not null && !Powered(snapshot, agent))
+        {
+            return new Unpowered(agent, CutOf(snapshot, agent));
+        }
+        return null;
+    }
+
     private static RemoteFault? FaultOn(Snapshot snapshot, IEnumerable<string> links)
     {
         foreach (var link in links)
@@ -123,8 +147,25 @@ public static class Power
     }
 }
 
-public abstract record RemoteFault;
+public abstract record RemoteFault
+{
+    public abstract string ReasonCode { get; }
 
-public sealed record Disconnected(string At) : RemoteFault;
+    public abstract IReadOnlyDictionary<string, JsonNode?> ReasonData { get; }
+}
 
-public sealed record Unpowered(string At, string Cut) : RemoteFault;
+public sealed record Disconnected(string At) : RemoteFault
+{
+    public override string ReasonCode => "disconnected";
+
+    public override IReadOnlyDictionary<string, JsonNode?> ReasonData =>
+        new Dictionary<string, JsonNode?> { ["at"] = At };
+}
+
+public sealed record Unpowered(string At, string Cut) : RemoteFault
+{
+    public override string ReasonCode => "unpowered";
+
+    public override IReadOnlyDictionary<string, JsonNode?> ReasonData =>
+        new Dictionary<string, JsonNode?> { ["at"] = At, ["cut"] = Cut };
+}
