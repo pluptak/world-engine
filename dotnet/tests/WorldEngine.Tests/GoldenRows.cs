@@ -12,7 +12,7 @@ public static class GoldenRows
 {
     public static void Check(string fixture, IReadOnlyDictionary<string, Pipeline.VerbDecl> verbs)
     {
-        var rows = JsonNode.Parse(ReadFixture(fixture))!.AsArray();
+        var rows = ReadRows(fixture);
 
         foreach (var row in rows)
         {
@@ -42,6 +42,9 @@ public static class GoldenRows
             }
         }
     }
+
+    // The rows of a fixture, as the TypeScript generator wrote them.
+    public static JsonArray ReadRows(string fixture) => JsonNode.Parse(ReadFixture(fixture))!.AsArray();
 
     private static string ReadFixture(string name) =>
         File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", name));

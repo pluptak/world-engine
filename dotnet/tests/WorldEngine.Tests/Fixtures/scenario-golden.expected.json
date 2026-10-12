@@ -1,0 +1,638 @@
+[
+  {
+    "name": "resolve_plain",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "template": "table",
+          "overrides": {
+            "pos": {
+              "x": 1,
+              "y": 2
+            }
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "ok",
+      "scenario": [
+        {
+          "template": "table",
+          "overrides": {
+            "pos": {
+              "x": 1,
+              "y": 2
+            }
+          }
+        }
+      ],
+      "ids": {}
+    }
+  },
+  {
+    "name": "resolve_forward_name",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "a",
+          "template": "bottle",
+          "overrides": {
+            "location": "b"
+          }
+        },
+        {
+          "id": "b",
+          "template": "room"
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "ok",
+      "scenario": [
+        {
+          "id": "a",
+          "template": "bottle",
+          "overrides": {
+            "location": "e41"
+          }
+        },
+        {
+          "id": "b",
+          "template": "room"
+        }
+      ],
+      "ids": {
+        "a": "e40",
+        "b": "e41"
+      }
+    }
+  },
+  {
+    "name": "resolve_allocated_literal",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "template": "room"
+        },
+        {
+          "template": "bottle",
+          "overrides": {
+            "location": "e40"
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "ok",
+      "scenario": [
+        {
+          "template": "room"
+        },
+        {
+          "template": "bottle",
+          "overrides": {
+            "location": "e40"
+          }
+        }
+      ],
+      "ids": {}
+    }
+  },
+  {
+    "name": "resolve_unknown_name",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "template": "bottle",
+          "overrides": {
+            "location": "ghost"
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "error",
+      "code": "unknown_name",
+      "message": "Unknown name ghost at entry 0"
+    }
+  },
+  {
+    "name": "resolve_empty_name",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "",
+          "template": "room"
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "error",
+      "code": "invalid_name",
+      "message": "Invalid scenario name  at entry 0"
+    }
+  },
+  {
+    "name": "resolve_allocated_name",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "e41",
+          "template": "room"
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "error",
+      "code": "invalid_name",
+      "message": "Invalid scenario name e41 at entry 0"
+    }
+  },
+  {
+    "name": "resolve_duplicate_name",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "a",
+          "template": "room"
+        },
+        {
+          "id": "a",
+          "template": "room"
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "error",
+      "code": "duplicate_name",
+      "message": "Duplicate scenario name a at entry 1"
+    }
+  },
+  {
+    "name": "resolve_props_references",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "a",
+          "template": "door"
+        },
+        {
+          "id": "b",
+          "template": "room"
+        },
+        {
+          "template": "door",
+          "overrides": {
+            "props": {
+              "from": "b",
+              "to": "a",
+              "note": "a"
+            }
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "ok",
+      "scenario": [
+        {
+          "id": "a",
+          "template": "door"
+        },
+        {
+          "id": "b",
+          "template": "room"
+        },
+        {
+          "template": "door",
+          "overrides": {
+            "props": {
+              "from": "e41",
+              "to": "e40",
+              "note": "a"
+            }
+          }
+        }
+      ],
+      "ids": {
+        "a": "e40",
+        "b": "e41"
+      }
+    }
+  },
+  {
+    "name": "resolve_detached_from",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "a",
+          "template": "human"
+        },
+        {
+          "template": "hand",
+          "overrides": {
+            "detached_from": {
+              "entity": "a",
+              "part": "hand_l"
+            }
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "ok",
+      "scenario": [
+        {
+          "id": "a",
+          "template": "human"
+        },
+        {
+          "template": "hand",
+          "overrides": {
+            "detached_from": {
+              "entity": "e40",
+              "part": "hand_l"
+            }
+          }
+        }
+      ],
+      "ids": {
+        "a": "e40"
+      }
+    }
+  },
+  {
+    "name": "resolve_anchor",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "pt",
+          "template": "anchor",
+          "overrides": {
+            "support": "r",
+            "pos": {
+              "x": 5,
+              "y": 5
+            }
+          }
+        },
+        {
+          "id": "r",
+          "template": "room",
+          "overrides": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        },
+        {
+          "template": "cup",
+          "overrides": {
+            "pos": {
+              "anchor": "pt",
+              "dx": 2,
+              "dy": -1
+            }
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "ok",
+      "scenario": [
+        {
+          "id": "pt",
+          "template": "anchor",
+          "overrides": {
+            "support": "e41",
+            "pos": {
+              "x": 5,
+              "y": 5
+            }
+          }
+        },
+        {
+          "id": "r",
+          "template": "room",
+          "overrides": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        },
+        {
+          "template": "cup",
+          "overrides": {
+            "location": "e41",
+            "support": "e41",
+            "pos": {
+              "x": 7,
+              "y": 4
+            }
+          }
+        }
+      ],
+      "ids": {
+        "pt": "e40",
+        "r": "e41"
+      }
+    }
+  },
+  {
+    "name": "resolve_anchor_forward",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "template": "cup",
+          "overrides": {
+            "pos": {
+              "anchor": "pt",
+              "dx": 0,
+              "dy": 3
+            }
+          }
+        },
+        {
+          "id": "pt",
+          "template": "anchor",
+          "overrides": {
+            "support": "r",
+            "pos": {
+              "x": 5,
+              "y": 5
+            }
+          }
+        },
+        {
+          "id": "r",
+          "template": "room"
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "ok",
+      "scenario": [
+        {
+          "template": "cup",
+          "overrides": {
+            "location": "e42",
+            "support": "e42",
+            "pos": {
+              "x": 5,
+              "y": 8
+            }
+          }
+        },
+        {
+          "id": "pt",
+          "template": "anchor",
+          "overrides": {
+            "support": "e42",
+            "pos": {
+              "x": 5,
+              "y": 5
+            }
+          }
+        },
+        {
+          "id": "r",
+          "template": "room"
+        }
+      ],
+      "ids": {
+        "pt": "e41",
+        "r": "e42"
+      }
+    }
+  },
+  {
+    "name": "resolve_anchor_conflict",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "pt",
+          "template": "anchor",
+          "overrides": {
+            "support": "r",
+            "pos": {
+              "x": 5,
+              "y": 5
+            }
+          }
+        },
+        {
+          "id": "r",
+          "template": "room"
+        },
+        {
+          "template": "cup",
+          "overrides": {
+            "location": "r",
+            "pos": {
+              "anchor": "pt",
+              "dx": 0,
+              "dy": 0
+            }
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "error",
+      "code": "conflicting_placement",
+      "message": "Entry 2 names a holder and an anchor position"
+    }
+  },
+  {
+    "name": "resolve_anchor_unknown",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "template": "cup",
+          "overrides": {
+            "pos": {
+              "anchor": "nope",
+              "dx": 0,
+              "dy": 0
+            }
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "error",
+      "code": "unknown_anchor",
+      "message": "Unknown anchor nope at entry 0"
+    }
+  },
+  {
+    "name": "resolve_anchor_not_in_room",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "pt",
+          "template": "anchor",
+          "overrides": {
+            "support": "t",
+            "pos": {
+              "x": 5,
+              "y": 5
+            }
+          }
+        },
+        {
+          "id": "t",
+          "template": "table",
+          "overrides": {
+            "pos": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        },
+        {
+          "template": "cup",
+          "overrides": {
+            "pos": {
+              "anchor": "pt",
+              "dx": 0,
+              "dy": 0
+            }
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "error",
+      "code": "anchor_not_room_supported",
+      "message": "Anchor pt at entry 2 is not a fixed point in a room"
+    }
+  },
+  {
+    "name": "resolve_anchor_without_pos",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "pt",
+          "template": "anchor",
+          "overrides": {
+            "support": "r"
+          }
+        },
+        {
+          "id": "r",
+          "template": "room"
+        },
+        {
+          "template": "cup",
+          "overrides": {
+            "pos": {
+              "anchor": "pt",
+              "dx": 0,
+              "dy": 0
+            }
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "error",
+      "code": "anchor_not_room_supported",
+      "message": "Anchor pt at entry 2 is not a fixed point in a room"
+    }
+  },
+  {
+    "name": "resolve_partial_pos_dropped",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "template": "table",
+          "overrides": {
+            "pos": {
+              "x": 1
+            }
+          }
+        }
+      ],
+      "next_seq": 40
+    },
+    "result": {
+      "status": "ok",
+      "scenario": [
+        {
+          "template": "table",
+          "overrides": {}
+        }
+      ],
+      "ids": {}
+    }
+  },
+  {
+    "name": "resolve_next_seq",
+    "kind": "resolve",
+    "input": {
+      "scenario": [
+        {
+          "id": "a",
+          "template": "room"
+        },
+        {
+          "id": "b",
+          "template": "room"
+        }
+      ],
+      "next_seq": 7
+    },
+    "result": {
+      "status": "ok",
+      "scenario": [
+        {
+          "id": "a",
+          "template": "room"
+        },
+        {
+          "id": "b",
+          "template": "room"
+        }
+      ],
+      "ids": {
+        "a": "e7",
+        "b": "e8"
+      }
+    }
+  }
+]

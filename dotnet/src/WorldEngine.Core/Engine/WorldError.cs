@@ -1,0 +1,8 @@
+namespace WorldEngine.Core.Engine;
+
+// A refusal of the world's own inputs before anything is written (src/errors.ts `WorldError`): a scenario or scene that names
+// nothing it can, or a name that is taken. The code and the message are TypeScript's.
+public sealed class WorldError(string code, string message) : Exception(message)
+{
+    public string Code { get; } = code;
+}
