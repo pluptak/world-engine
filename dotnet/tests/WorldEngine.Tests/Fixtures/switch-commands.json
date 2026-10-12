@@ -1,0 +1,91 @@
+[
+  {
+    "command_id": "sw1",
+    "actor": "e4",
+    "verb": "switch_on",
+    "target": "e61"
+  },
+  {
+    "command_id": "sw2",
+    "actor": "e4",
+    "verb": "switch_on",
+    "target": "e62"
+  },
+  {
+    "command_id": "sw3",
+    "actor": "e4",
+    "verb": "switch_off",
+    "target": "e61"
+  },
+  {
+    "command_id": "sw4",
+    "actor": "e4",
+    "verb": "switch_off",
+    "target": "e62"
+  },
+  {
+    "command_id": "sw5",
+    "actor": "e4",
+    "verb": "switch_on",
+    "target": "e63"
+  },
+  {
+    "command_id": "sw6",
+    "actor": "e4",
+    "verb": "switch_off",
+    "target": "e63"
+  },
+  {
+    "command_id": "sw7",
+    "actor": "e4",
+    "verb": "switch_on",
+    "target": "e16"
+  },
+  {
+    "command_id": "sw8",
+    "actor": "e4",
+    "verb": "switch_on",
+    "target": "e5"
+  },
+  {
+    "command_id": "sw9",
+    "actor": "e4",
+    "verb": "switch_on",
+    "target": "e65"
+  },
+  {
+    "command_id": "sw10",
+    "actor": "e4",
+    "verb": "switch_on",
+    "target": "nobody"
+  },
+  {
+    "command_id": "sw11",
+    "actor": "e4",
+    "verb": "switch_off"
+  },
+  {
+    "command_id": "sw12",
+    "actor": "e4",
+    "verb": "switch_on",
+    "target": "e60"
+  },
+  {
+    "command_id": "sw13",
+    "actor": "e4",
+    "verb": "switch_off",
+    "target": "e60"
+  },
+  {
+    "command_id": "sw14",
+    "actor": "e4",
+    "verb": "switch_off",
+    "target": "e64"
+  },
+  {
+    "command_id": "sw15",
+    "actor": "e4",
+    "verb": "switch_on",
+    "target": "e4.hand_l"
+  }
+]

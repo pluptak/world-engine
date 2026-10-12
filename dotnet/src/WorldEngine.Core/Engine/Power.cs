@@ -61,6 +61,14 @@ public static class Power
         return FaultOn(snapshot, links.Take(links.Count - 1));
     }
 
+    // The same walk, cut at the panel a subject works the device through: the panel included, the rest of the walk to the
+    // controller not (`docs/panel.md`).
+    public static RemoteFault? PanelFault(Snapshot snapshot, string device, string panel)
+    {
+        var path = Walk(snapshot, device, "controlled_by");
+        return FaultOn(snapshot, path.Take(path.IndexOf(panel) + 1));
+    }
+
     // The panel an actor works a device through, for an actor that is not the device's controller and cannot reach
     // the device by hand: the nearest intact panel on the device's control walk, from the device, that the actor
     // can reach. Null when there is none or the walk ends at no agent.
