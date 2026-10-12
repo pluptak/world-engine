@@ -34,6 +34,9 @@ public class ContractValuesTests
         "ValidationIssueSchema" => ContractSchema.Of<ValidationIssue>(),
         "ValidationFailureSchema" => ContractSchema.Of<ValidationFailure>(),
         "CommandSchema" => ContractSchema.Of<ContractCommand>(),
+        "PerceiversSchema" => ContractSchema.Of<Perceivers>(),
+        "WorldEventSchema" => ContractSchema.Of<WorldEvent>(),
+        "DeltaSchema" => ContractSchema.Of<Delta>(),
         _ => throw new InvalidDataException($"No .NET schema for {name}"),
     };
 }

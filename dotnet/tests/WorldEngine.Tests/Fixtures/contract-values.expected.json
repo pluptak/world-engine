@@ -468,5 +468,303 @@
     "schema": "CommandSchema",
     "value": null,
     "valid": false
+  },
+  {
+    "schema": "PerceiversSchema",
+    "value": {
+      "sight": [
+        "e2"
+      ],
+      "hearing": [],
+      "smell": [],
+      "touch": [],
+      "unknown_senses": []
+    },
+    "valid": true
+  },
+  {
+    "schema": "PerceiversSchema",
+    "value": {
+      "sight": [],
+      "hearing": [
+        "e2"
+      ],
+      "smell": [],
+      "touch": [],
+      "unknown_senses": [
+        "taste"
+      ]
+    },
+    "valid": true
+  },
+  {
+    "schema": "PerceiversSchema",
+    "value": {
+      "sight": [],
+      "hearing": [],
+      "smell": [],
+      "unknown_senses": []
+    },
+    "valid": false
+  },
+  {
+    "schema": "PerceiversSchema",
+    "value": {
+      "sight": [
+        1
+      ],
+      "hearing": [],
+      "smell": [],
+      "touch": [],
+      "unknown_senses": []
+    },
+    "valid": false
+  },
+  {
+    "schema": "PerceiversSchema",
+    "value": {
+      "sight": [],
+      "hearing": [],
+      "smell": [],
+      "touch": [],
+      "unknown_senses": [],
+      "extra": 1
+    },
+    "valid": false
+  },
+  {
+    "schema": "PerceiversSchema",
+    "value": null,
+    "valid": false
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": {
+      "event_id": "ev1",
+      "cause_id": null,
+      "command_id": "c1",
+      "tick": 0,
+      "type": "take",
+      "entity": "e3",
+      "data": {}
+    },
+    "valid": true
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": {
+      "event_id": "ev2",
+      "cause_id": "ev1",
+      "command_id": "c1",
+      "tick": 1,
+      "type": "say",
+      "entity": "e2",
+      "data": {
+        "utterance": "hi"
+      }
+    },
+    "valid": true
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": {
+      "event_id": "ev2",
+      "cause_id": null,
+      "command_id": "c1",
+      "tick": 1,
+      "type": "say",
+      "entity": "e2",
+      "data": {},
+      "perceivers": {
+        "sight": [
+          "e2"
+        ],
+        "hearing": [],
+        "smell": [],
+        "touch": [],
+        "unknown_senses": []
+      }
+    },
+    "valid": true
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": {
+      "event_id": "ev1",
+      "command_id": "c1",
+      "tick": 0,
+      "type": "take",
+      "entity": "e3",
+      "data": {}
+    },
+    "valid": false
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": {
+      "event_id": "ev1",
+      "cause_id": 1,
+      "command_id": "c1",
+      "tick": 0,
+      "type": "take",
+      "entity": "e3",
+      "data": {}
+    },
+    "valid": false
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": {
+      "event_id": "ev1",
+      "cause_id": null,
+      "command_id": "c1",
+      "tick": 1.5,
+      "type": "take",
+      "entity": "e3",
+      "data": {}
+    },
+    "valid": false
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": {
+      "event_id": "ev1",
+      "cause_id": null,
+      "command_id": "c1",
+      "tick": 0,
+      "type": "take",
+      "entity": "e3",
+      "data": []
+    },
+    "valid": false
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": {
+      "event_id": "ev1",
+      "cause_id": null,
+      "command_id": "c1",
+      "tick": 0,
+      "type": "take",
+      "data": {}
+    },
+    "valid": false
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": {
+      "event_id": "ev1",
+      "cause_id": null,
+      "command_id": "c1",
+      "tick": 0,
+      "type": "take",
+      "entity": "e3",
+      "data": {},
+      "extra": 1
+    },
+    "valid": false
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": {
+      "event_id": "ev1",
+      "cause_id": null,
+      "command_id": "c1",
+      "tick": 0,
+      "type": "take",
+      "entity": "e3",
+      "data": {},
+      "perceivers": {
+        "sight": [],
+        "hearing": [],
+        "smell": [],
+        "unknown_senses": []
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "WorldEventSchema",
+    "value": null,
+    "valid": false
+  },
+  {
+    "schema": "DeltaSchema",
+    "value": {
+      "event_id": "ev1",
+      "entity": "e3",
+      "field": "contained_in",
+      "from": null,
+      "to": "e1"
+    },
+    "valid": true
+  },
+  {
+    "schema": "DeltaSchema",
+    "value": {
+      "event_id": "ev1",
+      "entity": "e3",
+      "field": "integrity",
+      "from": 100,
+      "to": 50
+    },
+    "valid": true
+  },
+  {
+    "schema": "DeltaSchema",
+    "value": {
+      "event_id": "ev1",
+      "entity": "e3",
+      "field": "contained_in",
+      "to": "e1"
+    },
+    "valid": false
+  },
+  {
+    "schema": "DeltaSchema",
+    "value": {
+      "event_id": "ev1",
+      "entity": "e3",
+      "field": "contained_in"
+    },
+    "valid": false
+  },
+  {
+    "schema": "DeltaSchema",
+    "value": {
+      "event_id": "ev1",
+      "entity": "e3",
+      "from": 1,
+      "to": 2
+    },
+    "valid": false
+  },
+  {
+    "schema": "DeltaSchema",
+    "value": {
+      "event_id": "ev1",
+      "entity": 3,
+      "field": "x",
+      "from": 1,
+      "to": 2
+    },
+    "valid": false
+  },
+  {
+    "schema": "DeltaSchema",
+    "value": {
+      "event_id": "ev1",
+      "entity": "e3",
+      "field": "x",
+      "from": 1,
+      "to": 2,
+      "extra": 1
+    },
+    "valid": false
+  },
+  {
+    "schema": "DeltaSchema",
+    "value": null,
+    "valid": false
   }
 ]
