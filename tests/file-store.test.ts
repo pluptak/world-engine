@@ -615,3 +615,18 @@ test("a world with no schema marker or another number is refused, never read", (
   rmSync(marker);
   throws(() => load(dir, registry), (error: unknown) => error instanceof WorldError && error.code === "unsupported_schema");
 });
+
+test("a snapshot a store hands out cannot be mutated, at any depth, and the next read sees the same state", (t) => {
+  const dir = join(tempDir(t), "w");
+  const world = bottleWorld();
+  create(dir, world.snapshot);
+  const first = load(dir, registry);
+  throws(() => {
+    (first as { tick: number }).tick = 99;
+  }, TypeError);
+  throws(() => {
+    const [id] = Object.keys(first.entities);
+    (first.entities[id!]!.props as Record<string, unknown>).mutated = true;
+  }, TypeError);
+  deepStrictEqual(canonicalJson(load(dir, registry)), canonicalJson(world.snapshot));
+});

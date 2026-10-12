@@ -35,7 +35,8 @@ that agrees with the log and names a `snapshot.json` behind it folds the command
 byte onto it; a snapshot that holds every accepted command is taken as current; anything else (a head
 written before the log's last line, a snapshot that is neither) rebuilds the snapshot, events, deltas and
 head from the log. A process keeps the current snapshot it last wrote or settled, keyed by the head and
-`snapshot.json`'s own size and time, so its own writes are not folded again; another writer's head, or a
+`snapshot.json`'s own size and time, so its own writes are not folded again. The snapshot it keeps is frozen
+(deep, so a caller that changes one throws), since every reader of the process shares it; another writer's head, or a
 hand edit, is read again and validated. Deltas are not folded: they record entity fields only, not `tick`,
 `next_seq`, `rng`, `run` or `schedule`. An
 accepted command whose result breaks an invariant is logged `invalid` and never written;

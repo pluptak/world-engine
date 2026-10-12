@@ -4,7 +4,8 @@ Numbers taken from this code, kept apart from the backlog (which holds only what
 from the docs that say how the engine behaves. Each is a baseline for the machine named, not a
 threshold; a new measurement is added with the command that produced it, and a change that moves
 one updates it. What a command costs is in [measurements-commands.md](measurements-commands.md);
-what writers' turns cost is in [measurements-writers.md](measurements-writers.md).
+what writers' turns cost is in [measurements-writers.md](measurements-writers.md); the cost of freezing the
+current snapshot is in [measurements-memo.md](measurements-memo.md).
 
 ## Store: cost of a read
 

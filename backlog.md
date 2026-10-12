@@ -19,11 +19,10 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
-2. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
-3. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
-4. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
-5. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
-6. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+2. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
+3. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
+4. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
+5. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -83,20 +82,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - **Done when:** the cause is named in `docs/locking.md` and fixed with a deterministic test. If it
   does not reproduce in 50 loop runs, the test writes each child's log to a file on failure, so the
   next occurrence can be read.
-- **Depends on:** nothing.
-
-### The memoised snapshot cannot be mutated
-
-- **What:** the per-process memo in `src/store/file-store.ts` (`currentMemo`) returns its snapshot
-  without a copy, because a copy costs about what the parse saved. A caller that changes a snapshot it
-  was given changes what the next read in that process sees.
-- Deep-freeze the memo entry when it is stored, so a mutation throws in the caller's code. Measure
-  it with `npm run bench:scale`, and keep it only if the rest phase moves by under 5%.
-- **Decision to confirm:** freeze always (recommended, if the number holds) or only under tests.
-- **Done when:** a test that mutates a snapshot from `openWorld` throws. The bench numbers are recorded
-  in `docs/measurements.md`.
-- **Tests:** `tests/file-store.test.ts`. **Docs:** `docs/persistence.md`, where "must not mutate"
-  becomes a guarantee.
 - **Depends on:** nothing.
 
 ### An event-form perceive finds its event without a scan

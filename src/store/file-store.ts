@@ -723,7 +723,19 @@ function memoKey(dir: string, head: Head): string {
   return `${canonicalJson(head)}|${stat.size}:${stat.mtimeMs}`;
 }
 
+// The memo hands the same object to every reader in this process, so it is frozen: a caller that changes a
+// snapshot it was given throws, rather than changing what the next read sees.
+function freezeDeep(value: unknown): void {
+  if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const child of Object.values(value)) {
+      freezeDeep(child);
+    }
+  }
+}
+
 function rememberCurrent(dir: string, head: Head, snapshot: Snapshot): void {
+  freezeDeep(snapshot);
   currentMemo.delete(dir);
   currentMemo.set(dir, { key: memoKey(dir, head), snapshot });
   dropOldest(currentMemo);
