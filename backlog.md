@@ -19,12 +19,11 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
-2. [A crash at every write of submit is tested](#a-crash-at-every-write-of-submit-is-tested).
-3. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
-4. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
-5. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
-6. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
-7. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+2. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
+3. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
+4. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
+5. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
+6. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -84,21 +83,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - **Done when:** the cause is named in `docs/locking.md` and fixed with a deterministic test. If it
   does not reproduce in 50 loop runs, the test writes each child's log to a file on failure, so the
   next occurrence can be read.
-- **Depends on:** nothing.
-
-### A crash at every write of submit is tested
-
-- **What:** `submit` writes, in order, the log line, the events, the deltas, the snapshot, the
-  checkpoint and `head.json`. Settle has a rule for each state a crash can leave
-  (`docs/locking-crash.md`, `docs/persistence.md`). Each case has its own test, but none stops one
-  submit at every step.
-- Build one: an injected failure after each write, or a truncation to each intermediate state, run
-  over seven commands with `snapshotEvery` 3, so the crash falls on and off a snapshot boundary and
-  on a checkpoint.
-- **Done when:** for each crash point, the next `openWorld` gives the state an uninterrupted run
-  gives, and `verify` passes. A point that does not is fixed, or recorded as a bug item.
-- **Files:** `src/store/file-store.ts` only if a seam is needed. **Tests:** new
-  `tests/submit-crash.test.ts`. **Docs:** `docs/locking-crash.md`.
 - **Depends on:** nothing.
 
 ### The memoised snapshot cannot be mutated
