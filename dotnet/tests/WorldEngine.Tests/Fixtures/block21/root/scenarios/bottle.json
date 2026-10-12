@@ -1,0 +1,42 @@
+[
+  { "id": "room", "template": "room", "overrides": { "name": "room" } },
+  {
+    "id": "table",
+    "template": "table",
+    "overrides": {
+      "name": "table",
+      "location": "room",
+      "support": "room",
+      "pos": { "x": 30, "y": 0 }
+    }
+  },
+  {
+    "id": "bottle",
+    "template": "bottle",
+    "overrides": {
+      "name": "bottle",
+      "location": "room",
+      "support": "table"
+    }
+  },
+  {
+    "id": "pusher",
+    "template": "human",
+    "overrides": {
+      "name": "pusher",
+      "location": "room",
+      "support": "room",
+      "pos": { "x": -50, "y": 0 }
+    }
+  },
+  {
+    "id": "doorstop",
+    "template": "stone",
+    "overrides": {
+      "name": "doorstop",
+      "location": "room",
+      "support": "room",
+      "pos": { "x": 129, "y": 0 }
+    }
+  }
+]
