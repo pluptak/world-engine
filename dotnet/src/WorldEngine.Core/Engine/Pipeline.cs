@@ -22,7 +22,10 @@ public static class Pipeline
         IReadOnlyList<Requirement>? Requires = null,
         Action<Working, CommandContext, string>? Transition = null,
         Func<CommandContext, (string Entity, IReadOnlyDictionary<string, JsonNode?> Data)>? RootEvent = null,
-        Func<Command, IReadOnlyList<string>>? WakeOn = null);
+        Func<Command, IReadOnlyList<string>>? WakeOn = null,
+        // Judges the snapshot the transition and the clock left (src/engine/pipeline.ts `validateResult`): a refusal
+        // returns the input snapshot unchanged. Null when the verb has no such check.
+        Func<CommandContext, Refusal?>? ValidateResult = null);
 
     // A capacity the actor must hold at least `AtLeast` of before the verb runs.
     public sealed record Requirement(string Capacity, long AtLeast);
@@ -218,6 +221,17 @@ public static class Pipeline
         if (wake.Count > 0)
         {
             working.Events[0] = working.Events[0] with { Data = Reason(("advanced", elapsed)) };
+        }
+        if (verb.ValidateResult?.Invoke(context with { Snapshot = working.Snapshot }) is { } validation)
+        {
+            return Unchanged(
+                snapshot,
+                command,
+                validation.Status,
+                resolvedTarget: target?.Address,
+                reasonCode: validation.ReasonCode,
+                reasonData: validation.ReasonData,
+                candidates: validation.Candidates);
         }
         working.BumpVersion();
         return new Result(

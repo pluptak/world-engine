@@ -178,5 +178,8 @@ public sealed class Working
     public void SetSchedule(IReadOnlyList<ScheduledCause> schedule) =>
         Snapshot = Snapshot with { Schedule = schedule.Count == 0 ? null : schedule };
 
+    // Sets the dice's state (src/engine/verbs/edit.ts `set_seed`): the world's, not an entity's, so no delta.
+    public void SetRng(long state) => Snapshot = Snapshot with { Rng = state };
+
     public void BumpVersion() => Snapshot = Snapshot with { Version = Snapshot.Version + 1 };
 }
