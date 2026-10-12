@@ -1,0 +1,9 @@
+{
+  "id": "fragile_crate",
+  "size_cm": { "w": 20, "d": 20, "h": 20 },
+  "mass_g": 2000,
+  "parts": [],
+  "props": { "container": true, "inner_w_cm": 30, "inner_d_cm": 30, "inner_h_cm": 30, "break_fall_cm": 50 },
+  "break_products": [{ "template": "glass_shard", "count": 2 }],
+  "break_residue": { "dust": 3 }
+}

@@ -6,18 +6,21 @@ namespace WorldEngine.Core.Engine;
 
 // What a fall does to the thing that falls (src/resolvers/physical.ts `resolveDropFall`, `breakOnFall`, `breakEntity`,
 // `spillVessel`): a fall past the thing's `break_fall_cm` breaks it into its template's break products, spreading its
-// residue and clearing its liquid; a shorter fall spills a vessel's liquid onto where it lands. A break that would
-// tumble the things it held onto a supported landing goes through the loss queue, which is not ported, so it throws
-// before anything is written.
+// residue and clearing its liquid; a shorter fall spills a vessel's liquid onto where it lands.
 //
 // `SpendEntity` (a thing used up: its `spent_products` where it stood, its `spent_residue` on the surface, then the
 // thing removed) and `RemoveEntity` (a removal: what it was hiding is uncovered, what sat on or in it is released) are
-// the removal path. A removal that would topple riders onto a landing needs the loss queue, which is not ported, so it
-// throws before anything is written.
+// the removal path. A removal topples what sat on the thing, and a break tumbles what it held, both through the loss
+// queue (`ProcessQueue`): each thing that loses its support is dropped to its landing, which may break it in turn.
 public static class Physical
 {
     // Where a fallen thing lands: the surface it rests on (null when none), the room it is in, and its position.
     public sealed record Landing(string? Support, string? Location, Pos? Pos);
+
+    // One thing to take off its support in the loss queue. A request from a break carries the landing and the fall; one
+    // from a removal (`Landing` null) finds its own landing from the support it stood on, and is `Displaced`, which
+    // names the `displaced` event that caused the drop.
+    public sealed record LossRequest(string Entity, string Cause, bool Displaced, Landing? Landing = null, double FallCm = 0);
 
     public static void ResolveDropFall(
         Working working,
@@ -28,7 +31,9 @@ public static class Physical
     {
         var entity = working.Snapshot.Entities[entityId];
         var landing = new Landing(entity.Support ?? entity.Location, entity.Location, entity.Pos);
-        BreakOnFall(working, registry, entityId, droppedEventId, fallCm, landing);
+        var queue = new Queue<LossRequest>();
+        BreakOnFall(working, registry, entityId, droppedEventId, fallCm, landing, queue);
+        ProcessQueue(working, registry, queue);
     }
 
     private static void BreakOnFall(
@@ -37,7 +42,8 @@ public static class Physical
         string entityId,
         string causeId,
         double fallCm,
-        Landing landing)
+        Landing landing,
+        Queue<LossRequest> queue)
     {
         var entity = working.Snapshot.Entities[entityId];
         var threshold = PropValues.GetNumber(entity.Props, "break_fall_cm");
@@ -46,7 +52,7 @@ public static class Physical
             SpillVessel(working, entityId, causeId, fallCm, landing);
             return;
         }
-        BreakEntity(working, registry, entityId, causeId, landing);
+        BreakEntity(working, registry, entityId, causeId, fallCm, landing, queue);
     }
 
     private static void BreakEntity(
@@ -54,7 +60,9 @@ public static class Physical
         IReadOnlyDictionary<string, Template> registry,
         string entityId,
         string causeId,
-        Landing landing)
+        double fallCm,
+        Landing landing,
+        Queue<LossRequest> queue)
     {
         var entity = working.Snapshot.Entities[entityId];
         if (!registry.TryGetValue(entity.Template, out var template))
@@ -65,10 +73,6 @@ public static class Physical
             .Order(StringComparer.Ordinal)
             .Where(id => working.Snapshot.Entities[id].ContainedIn == entityId)
             .ToList();
-        if (contents.Count > 0 && landing.Support is not null)
-        {
-            throw new NotPortedException("a break that tumbles what the thing held");
-        }
 
         var brokenEvent = working.Emit("broken", entityId, new Dictionary<string, JsonNode?>(), causeId);
         working.SetStatus(entityId, EntityStatus.Broken, brokenEvent);
@@ -119,6 +123,15 @@ public static class Physical
             }
             working.SetProps(entityId, props, brokenEvent);
         }
+
+        // What it held tumbles out onto the landing, when there is one to land on.
+        if (landing.Support is not null)
+        {
+            foreach (var contentId in contents)
+            {
+                queue.Enqueue(new LossRequest(contentId, brokenEvent, Displaced: false, landing, fallCm));
+            }
+        }
     }
 
     // A thing used up (src/resolvers/physical.ts `spendEntity`): a `spent` event on it, each `spent_products` spawned
@@ -166,8 +179,8 @@ public static class Physical
     }
 
     // A removal (src/engine/verbs/edit.ts `removeEntity`): a `removed` event on the thing, what it was hiding uncovered,
-    // what sat on or in it released to where it stood, then the thing gone. A room with someone in it is not removed.
-    // Returns whether it was removed.
+    // what sat on it toppled, what sat in or on it released to where it stood, then the thing gone. A room with someone
+    // in it is not removed. Returns whether it was removed.
     public static bool RemoveEntity(
         Working working,
         IReadOnlyDictionary<string, Template> registry,
@@ -188,21 +201,152 @@ public static class Physical
         working.RecordEntityRemoval(targetId, doomed, removedEvent);
         // What the removed thing was hiding is uncovered rather than orphaned: it stays where it was.
         Concealment.RevealConcealed(working, targetId, removedEvent);
-        PropagateSupportLoss(working, targetId);
+        PropagateSupportLoss(working, registry, targetId, removedEvent);
         ReleaseDependents(working, registry, targetId, removedEvent, doomed);
         working.DropEntity(targetId);
         return true;
     }
 
-    // What a removed support drops (src/resolvers/physical.ts `propagateSupportLoss`): the things it topples. A topple
-    // is the loss queue, which is not ported, so a support with one on it throws; with none, nothing is queued.
-    private static void PropagateSupportLoss(Working working, string supportId)
+    // What a removed support drops (src/resolvers/physical.ts `propagateSupportLoss`): each thing on it that topples is
+    // queued as displaced, in id order, and the queue is drained.
+    private static void PropagateSupportLoss(
+        Working working,
+        IReadOnlyDictionary<string, Template> registry,
+        string supportId,
+        string causeId)
     {
-        if (working.Snapshot.Entities.Values.Any(entity =>
-                entity.Support == supportId && PropValues.IsTrue(entity.Props, "topples")))
+        var queue = new Queue<LossRequest>(
+            working.Snapshot.Entities.Keys
+                .Order(StringComparer.Ordinal)
+                .Where(id => working.Snapshot.Entities[id].Support == supportId
+                    && PropValues.IsTrue(working.Snapshot.Entities[id].Props, "topples"))
+                .Select(id => new LossRequest(id, causeId, Displaced: true)));
+        ProcessQueue(working, registry, queue);
+    }
+
+    // Drains the loss queue in order (src/resolvers/physical.ts `processQueue`); a break inside it may queue more.
+    private static void ProcessQueue(Working working, IReadOnlyDictionary<string, Template> registry, Queue<LossRequest> queue)
+    {
+        while (queue.Count > 0)
         {
-            throw new NotPortedException("removing a support that topples what is on it");
+            ProcessLoss(working, registry, queue.Dequeue(), queue);
         }
+    }
+
+    // One thing leaving its support (src/resolvers/physical.ts `processLoss`): its landing is the request's, or else it
+    // is worked out from the support it stood on; a displaced thing's drop is caused by a `displaced` event; the drop
+    // moves it, reveals what it was hiding, and breaks or spills it as any fall does.
+    private static void ProcessLoss(
+        Working working,
+        IReadOnlyDictionary<string, Template> registry,
+        LossRequest request,
+        Queue<LossRequest> queue)
+    {
+        var entity = working.Snapshot.Entities[request.Entity];
+        Landing landing;
+        double fallCm;
+        if (request.Landing is { } given)
+        {
+            landing = given;
+            fallCm = request.FallCm;
+        }
+        else
+        {
+            if (entity.Support is null)
+            {
+                return;
+            }
+            (landing, fallCm) = LandingFromSupport(working, registry, entity.Id, entity.Support);
+        }
+
+        var dropCause = request.Cause;
+        if (request.Displaced)
+        {
+            dropCause = working.Emit("displaced", entity.Id, new Dictionary<string, JsonNode?>(), request.Cause);
+        }
+        var dropped = working.Emit("dropped", entity.Id, Pipeline.Reason(("fall_cm", fallCm)), dropCause);
+
+        if (working.Snapshot.Entities[entity.Id].ContainedIn is not null)
+        {
+            working.SetRelation(entity.Id, "contained_in", null, dropped);
+        }
+        working.SetRelation(entity.Id, "support", landing.Support, dropped);
+        working.SetRelation(entity.Id, "location", landing.Location, dropped);
+        working.SetPos(entity.Id, landing.Pos, dropped);
+        // A thing that falls or is knocked out from under whatever hid it uncovers it, and stops being hidden itself if
+        // it was under something else.
+        Concealment.RevealConcealed(working, entity.Id, dropped);
+        BreakOnFall(working, registry, entity.Id, dropped, fallCm, landing, queue);
+    }
+
+    // Where a thing that left its support lands and how far it falls (src/resolvers/physical.ts `landingFromSupport`):
+    // the tallest surface under its old support's point that it can rest on, else the floor of its room.
+    private static (Landing Landing, double FallCm) LandingFromSupport(
+        Working working,
+        IReadOnlyDictionary<string, Template> registry,
+        string entityId,
+        string oldSupportId)
+    {
+        var snapshot = working.Snapshot;
+        var entity = snapshot.Entities[entityId];
+        var oldSupport = snapshot.Entities[oldSupportId];
+        var oldElevation = Geometry.Elevation(snapshot, registry, entityId);
+        var pos = Geometry.EffectivePos(snapshot, oldSupportId);
+        string? supportId = oldSupport.Template == "room" ? oldSupport.Id : oldSupport.Support;
+        string? lastSupport = null;
+
+        // Climbs to the room, remembering the last thing on the way, which is where a fall from it lands if no room is named.
+        while (supportId is not null)
+        {
+            var support = snapshot.Entities[supportId];
+            if (support.Template == "room")
+            {
+                break;
+            }
+            lastSupport = supportId;
+            supportId = support.Support;
+        }
+
+        if (supportId is null)
+        {
+            var locationEntity = entity.Location is null ? null : snapshot.Entities.GetValueOrDefault(entity.Location);
+            supportId = locationEntity?.Template == "room" ? entity.Location : lastSupport;
+        }
+
+        long newElevation = 0;
+        Pos? landingPos = pos;
+        var floor = supportId is null ? null : snapshot.Entities.GetValueOrDefault(supportId);
+        var rest = floor?.Template == "room" && pos is not null
+            ? DropVerb.RestingPlace(snapshot, registry, floor.Id, pos, oldElevation, entityId, [oldSupportId])
+            : null;
+        if (rest is not null)
+        {
+            supportId = rest.Support;
+            newElevation = rest.HeightCm;
+            landingPos = null;
+        }
+        else if (supportId is not null)
+        {
+            var support = snapshot.Entities[supportId];
+            if (support.Template != "room")
+            {
+                newElevation = Geometry.Elevation(snapshot, registry, supportId) + registry[support.Template].SizeCm.H;
+            }
+        }
+
+        var landing = new Landing(supportId, LandingLocation(snapshot, supportId) ?? entity.Location, landingPos);
+        return (landing, oldElevation - newElevation);
+    }
+
+    // The room a landing is in: a room is its own location, a thing is where it stands.
+    private static string? LandingLocation(Snapshot snapshot, string? supportId)
+    {
+        if (supportId is null)
+        {
+            return null;
+        }
+        var support = snapshot.Entities[supportId];
+        return support.Template == "room" ? support.Id : support.Location;
     }
 
     // What sat in or on a removed thing takes its place (src/engine/verbs/edit.ts `releaseDependents`): contents go to

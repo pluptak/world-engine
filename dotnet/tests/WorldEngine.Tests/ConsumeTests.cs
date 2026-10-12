@@ -12,25 +12,11 @@ namespace WorldEngine.Tests;
 // the refusals of the amount and the item, bread eaten a portion at a time, and a bottle drunk from a table within
 // reach. The commands and worlds are the ones Fixtures/consume-golden.expected.json holds. A solid's last portion uses
 // it up (`Physical.SpendEntity`): Fixtures/consume-spent-golden.expected.json holds a stale bread eaten in the hand and
-// on a table, where the stone resting on it is released; its template is a test template, not one the repo ships.
+// on a table, where the stone resting on it is released; its template is a test template (Fixtures/test-templates), not
+// one the repo ships.
 public class ConsumeTests
 {
-    // The repo's templates, plus the test template a used-up thing needs (Fixtures/spent-templates), kept out of the
-    // frozen registry fixture.
-    private static IReadOnlyDictionary<string, Template> Registry { get; } = TemplateResolver.Resolve(MergedDeclarations());
-
-    private static IReadOnlyDictionary<string, TemplateDecl> MergedDeclarations()
-    {
-        var declared = new Dictionary<string, TemplateDecl>(StringComparer.Ordinal);
-        foreach (var folder in new[] { "templates", "spent-templates" })
-        {
-            foreach (var (id, decl) in TemplateDirectory.ReadDeclarations(Path.Combine(AppContext.BaseDirectory, "Fixtures", folder)).Decls)
-            {
-                declared[id] = decl;
-            }
-        }
-        return declared;
-    }
+    private static IReadOnlyDictionary<string, Template> Registry => TestTemplates.Registry;
 
     private static IReadOnlyDictionary<string, Pipeline.VerbDecl> Verbs { get; } = new Dictionary<string, Pipeline.VerbDecl>
     {
