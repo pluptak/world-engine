@@ -199,6 +199,19 @@ public sealed class Working
     // Sets the dice's state (src/engine/verbs/edit.ts `set_seed`): the world's, not an entity's, so no delta.
     public void SetRng(long state) => Snapshot = Snapshot with { Rng = state };
 
+    // One roll of the dice (src/engine/pipeline.ts `random`): a number in [0, 1), and the dice advanced. A world with no seed refuses
+    // it with NoSeedError.
+    public double Random()
+    {
+        if (Snapshot.Rng is not { } state)
+        {
+            throw new NoSeedError();
+        }
+        var (value, next) = Rng.Next((uint)state);
+        SetRng(next);
+        return value;
+    }
+
     // Sets the run (src/engine/run.ts): the run is the world's record, so the event that made the change is its whole account.
     public void SetRun(Run run) => Snapshot = Snapshot with { Run = run };
 

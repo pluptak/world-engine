@@ -137,9 +137,10 @@ public static class OpenVerbs
             throw new InvalidOperationException("Openable target changed after validation");
         }
         var target = entity!;
-        if (Remote.WorksRemotely(context, target) && PropValues.GetNumber(target.Props, "jam_pct") is > 0)
+        if (Jams(working, context, target))
         {
-            throw new NotPortedException("jam rolls");
+            working.Emit("jammed", target.Id, new Dictionary<string, JsonNode?> { ["verb"] = JsonValue.Create(KindName(kind)) }, rootEventId);
+            return;
         }
 
         // Opening stops a shut on its way, and a shut that has come clears the window; a shut with `shut_ticks` opens the
@@ -183,6 +184,27 @@ public static class OpenVerbs
             Schedule.Add(working, new ScheduledCause(closeTick, "close", target.Id, eventId));
         }
     }
+
+    // A remote command to a device with a `jam_pct` rolls once, and a roll under the chance jams it: the tick is spent and the device
+    // does nothing else. A hand never rolls. A director's steered odds (`docs/roles.md`) are in force over the template's value.
+    private static bool Jams(Working working, Pipeline.CommandContext context, Entity target)
+    {
+        var steered = working.Snapshot.Run?.Steered?.FirstOrDefault(entry => entry.Entity == target.Id && entry.Prop == "jam_pct");
+        var pct = steered is { } given ? given.Value : PropValues.GetNumber(target.Props, "jam_pct");
+        if (pct is null || pct <= 0 || !Remote.WorksRemotely(context, target))
+        {
+            return false;
+        }
+        return working.Random() * 100 < pct;
+    }
+
+    private static string KindName(Kind kind) => kind switch
+    {
+        Kind.Open => "open",
+        Kind.Close => "close",
+        Kind.Lock => "lock",
+        _ => "unlock",
+    };
 
     // The window a door with `shut_ticks` opens: a `closing` event, and the shut a scheduled close caused by it.
     private static void StartClosing(Working working, Entity target, long shutTicks, string rootEventId)

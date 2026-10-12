@@ -234,20 +234,29 @@ public static class Pipeline
         var (rootEntity, rootData) = verb.RootEvent?.Invoke(context)
             ?? (target?.EntityId ?? command.Actor, new Dictionary<string, JsonNode?>());
         var rootEventId = working.Emit(command.Verb, rootEntity, rootData, null);
-        verb.Transition?.Invoke(working, context, rootEventId);
-        // A process whose condition the verb just made true starts, and one it made false stops.
-        Processes.ReconcileSince(working, registry, 0);
-        Schedule.Prune(working);
-        // A command that asked to be woken says how long it ran (src/engine/pipeline.ts).
-        var wake = verb.WakeOn?.Invoke(command) ?? [];
-        var stop = verb.StopBefore?.Invoke(command, snapshot);
-        var elapsed = Clock.Advance(working, registry, ticks, wake, stop);
-        // A command that asked to be woken, to stop before a beat, or was cut at a run's limit says how long it ran.
-        if (wake.Count > 0 || stop is not null || cut)
+        try
         {
-            working.Events[0] = working.Events[0] with { Data = Reason(("advanced", elapsed)) };
+            verb.Transition?.Invoke(working, context, rootEventId);
+            // A process whose condition the verb just made true starts, and one it made false stops.
+            Processes.ReconcileSince(working, registry, 0);
+            Schedule.Prune(working);
+            // A command that asked to be woken says how long it ran (src/engine/pipeline.ts).
+            var wake = verb.WakeOn?.Invoke(command) ?? [];
+            var stop = verb.StopBefore?.Invoke(command, snapshot);
+            var elapsed = Clock.Advance(working, registry, ticks, wake, stop);
+            // A command that asked to be woken, to stop before a beat, or was cut at a run's limit says how long it ran.
+            if (wake.Count > 0 || stop is not null || cut)
+            {
+                working.Events[0] = working.Events[0] with { Data = Reason(("advanced", elapsed)) };
+            }
+            Runs.FinishRun(working);
         }
-        Runs.FinishRun(working);
+        catch (NoSeedError)
+        {
+            // A roll in a world with no seed, wherever in the command it fell: the whole command is refused and nothing is kept. The code
+            // belongs to the world, not to a verb, so no verb declares it.
+            return Unchanged(snapshot, command, Status.Refused, resolvedTarget: target?.Address, reasonCode: "no_seed");
+        }
         if (verb.ValidateResult?.Invoke(context with { Snapshot = working.Snapshot }) is { } validation)
         {
             AssertDeclared(command.Verb, validation);
