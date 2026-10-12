@@ -77,9 +77,10 @@ export function lostField(snapshot: Snapshot, registry: TemplateRegistry): LostF
 export function assertNoLostField(snapshot: Snapshot, registry: TemplateRegistry): void {
   const lost = lostField(snapshot, registry);
   if (lost !== null) {
-    throw new WorldError(
-      "templates_lost_field",
-      `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`,
-    );
+    throw lostFieldError(lost);
   }
+}
+
+export function lostFieldError(lost: LostField): WorldError {
+  return new WorldError("templates_lost_field", `Entity ${lost.entity} (${lost.template}) uses ${lost.field}`);
 }

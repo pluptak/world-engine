@@ -18,15 +18,14 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [An orphaned part is reported as a lost field again](#an-orphaned-part-is-reported-as-a-lost-field-again).
-2. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
-3. [restartWorld refuses any directory that holds a world](#restartworld-refuses-any-directory-that-holds-a-world).
-4. [A crash at every write of submit is tested](#a-crash-at-every-write-of-submit-is-tested).
-5. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
-6. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
-7. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
-8. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
-9. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+1. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
+2. [restartWorld refuses any directory that holds a world](#restartworld-refuses-any-directory-that-holds-a-world).
+3. [A crash at every write of submit is tested](#a-crash-at-every-write-of-submit-is-tested).
+4. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
+5. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
+6. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
+7. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
+8. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -68,20 +67,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - The limits in `docs/limits*.md`: none is worth a verb yet, except as listed in `plans/candidates.md`.
 
 ## Items
-
-### An orphaned part is reported as a lost field again
-
-- **What:** since `snapshot.json` can lag the log, `templates_lost_field` sees only the stored
-  snapshot. A set that orphans a part set by a command past it is refused `templates_changed`
-  (`tests/frozen-templates.test.ts`, orphan-part test). The refusal is right, but less exact.
-- The lost-field check should read the state at the head: the stored snapshot with the accepted
-  commands after it folded in, as `replayToVersion` and `foldLogFrom` already do.
-- **Done when:** the orphan-part test expects `templates_lost_field` and names the part. A set that
-  orphans nothing still passes. A change that is not a lost field keeps `templates_changed`.
-- **Files:** the moved-set branch of `settle` in `src/store/file-store.ts`, and `src/engine/upgrade.ts`
-  if the check lives there.
-- **Tests:** `tests/frozen-templates.test.ts`.
-- **Depends on:** nothing.
 
 ### The intermittent multi-process failure has a cause
 

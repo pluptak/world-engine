@@ -19,7 +19,7 @@ import { apply } from "../engine/pipeline.js";
 import { canonicalJson } from "../engine/canonical.js";
 import { traceQuery, type TraceQuery } from "../engine/trace.js";
 import { validateSnapshot } from "../engine/validate.js";
-import { assertNoLostField } from "../engine/upgrade.js";
+import { assertNoLostField, lostField, lostFieldError, type LostField } from "../engine/upgrade.js";
 import { attemptOf, type Attempt, type Command, type Result, type RoundMark } from "../engine/command.js";
 import { WorldError } from "../errors.js";
 import { own, type Delta, type Id, type Snapshot, type WorldEvent } from "../model.js";
@@ -832,8 +832,12 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
     try {
       folded = replayFold(dir, templates);
     } catch {
-      // The set cannot replay a command the log accepted, most likely one that set a part it dropped: the
-      // part is in the log, past snapshot.json, so the lost-field check above cannot name it.
+      // The set cannot replay a command the log accepted. One that sets a part the set drops is the lost field,
+      // in the log past snapshot.json, which the check above cannot see. Anything else is a changed set.
+      const lost = firstLostField(dir, templates);
+      if (lost !== null) {
+        throw lostFieldError(lost);
+      }
       throw new WorldError("templates_changed", "Template hash mismatch");
     }
     // The stored snapshot is judged at its own version, since it may lag the log: it must be the replay there.
@@ -1195,6 +1199,43 @@ export function writeWorldTemplates(dir: string, registry: TemplateRegistry): vo
 // replay path makes: this is what decides whether a set the snapshots have not been stamped with
 // yet is a successor to the one they carry. A command the log accepted and this set refuses is a
 // WorldError rather than a TypeError, so a caller hears a code and not a crash.
+// The lost field the set makes of the first accepted command it cannot replay: the state's own lost field, else a
+// set_part of a part the set no longer declares for its entity. Null when the failure is something else. Read only
+// after a replay has failed, so a world that folds pays nothing.
+function firstLostField(dir: string, registry: TemplateRegistry): LostField | null {
+  let snapshot = readWorldSnapshot(join(dir, snapshots.initial));
+  for (const entry of readLogEntries(dir)) {
+    if (entry.status !== "ok") {
+      continue;
+    }
+    let result: Result | null;
+    try {
+      result = apply(snapshot, registry, entry.command);
+    } catch {
+      result = null;
+    }
+    if (result !== null && result.status === "ok") {
+      snapshot = result.snapshot;
+      continue;
+    }
+    const before = lostField(snapshot, registry);
+    if (before !== null) {
+      return before;
+    }
+    const edit = entry.command.args?.edit as { kind?: unknown; target?: unknown; part?: unknown } | undefined;
+    if (entry.command.verb !== "edit" || edit?.kind !== "set_part" || typeof edit.target !== "string" || typeof edit.part !== "string") {
+      return null;
+    }
+    const entity = own(snapshot.entities, edit.target);
+    const template = entity === undefined ? undefined : own(registry, entity.template);
+    if (entity === undefined || template === undefined || template.parts.some((part) => part.name === edit.part)) {
+      return null;
+    }
+    return { entity: entity.id, template: entity.template, field: `parts.${edit.part}` };
+  }
+  return null;
+}
+
 export function replayFold(dir: string, registry: TemplateRegistry): Fold {
   let snapshot = readWorldSnapshot(join(dir, snapshots.initial));
   const events: WorldEvent[] = [];

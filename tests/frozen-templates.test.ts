@@ -336,11 +336,12 @@ test("a set that orphans a live entity is never adopted", (t) => {
   const orphaned = loadTemplates(copies);
   writeFileSync(join(dir, "templates.json"), canonicalJson(orphaned), "utf8");
 
-  // The damage is a command after snapshot.json was last written, so the lost-field check sees only the stored
-  // snapshot; the set cannot replay that command, and the refusal is templates_changed.
+  // The damage is a command after snapshot.json was last written: the set cannot replay it, and the refusal names
+  // the part that command set, which the set no longer declares.
   assertThrows(
     () => openWorld(dir).snapshot(),
-    (error: unknown) => error instanceof WorldError && error.code === "templates_changed",
+    (error: unknown) =>
+      error instanceof WorldError && error.code === "templates_lost_field" && error.message.includes("parts.hand_r"),
   );
   writeTemplate(copies, "human.json", JSON.parse(whole) as Record<string, unknown>);
   writeFileSync(join(dir, "templates.json"), canonicalJson(loadTemplates(copies)), "utf8");
