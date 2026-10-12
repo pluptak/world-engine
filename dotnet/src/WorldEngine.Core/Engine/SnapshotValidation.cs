@@ -523,7 +523,7 @@ public static class SnapshotValidation
 
     // The problems one prop of an entity would have with this value, against the engine's table or the template's own
     // `fields`, and each `requires` met by the template's own props.
-    private static List<SnapshotIssue> PropValueIssues(
+    internal static List<SnapshotIssue> PropValueIssues(
         Template? template,
         string name,
         JsonNode? value,

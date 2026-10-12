@@ -6,7 +6,7 @@ namespace WorldEngine.Core.Engine;
 
 // The verbs that are only time (src/engine/verbs/wait.ts). `advance` is the world author's: time with no one acting. Its
 // `stop_on_perceived` agents end the time early at the first tick one of them could sense something. Its `stop_before`
-// argument needs the pending beats, which are not ported.
+// beat ends it one tick short of that beat's tick, while the beat is pending there.
 public static class TimeVerbs
 {
     private const double MaxSafeInteger = 9007199254740991;
@@ -16,7 +16,20 @@ public static class TimeVerbs
         AuthorOnly: true,
         Preconditions: AdvancePreconditions,
         Duration: Ticks,
-        WakeOn: command => Listed(command) ?? []);
+        WakeOn: command => Listed(command) ?? [],
+        StopBefore: StopBeatOf);
+
+    // The beat `stop_before` names, as it is pending in the snapshot the command is decided against, or null.
+    private static Clock.StopBeat? StopBeatOf(Command command, Snapshot snapshot)
+    {
+        if (command.Args is null || !command.Args.TryGetValue("stop_before", out var node) || node is not JsonValue value
+            || !value.TryGetValue(out string? id))
+        {
+            return null;
+        }
+        var cause = Schedule.Pending(snapshot).FirstOrDefault(entry => entry.Kind == "beat" && entry.Id == id);
+        return cause is null ? null : new Clock.StopBeat(id, cause.DueTick);
+    }
 
     // The `ticks` arg as a positive safe integer, or null when it is not one (src/engine/clock.ts `commandDuration`).
     public static long? Ticks(Command command)
@@ -85,9 +98,22 @@ public static class TimeVerbs
                     watcher?.Status == EntityStatus.Destroyed ? "observer_destroyed" : "no_such_actor");
             }
         }
-        if (command.Args is not null && command.Args.ContainsKey("stop_before"))
+        if (command.Args is not null && command.Args.TryGetValue("stop_before", out var stop))
         {
-            throw new NotPortedException("advance's stop_before needs beats");
+            if (stop is not JsonValue value || !value.TryGetValue(out string? id) || !Beats.IsBeatId(id))
+            {
+                return new Pipeline.Refusal(Status.Invalid, "invalid_args");
+            }
+            var cause = Schedule.Pending(context.Snapshot).FirstOrDefault(entry => entry.Kind == "beat" && entry.Id == id);
+            if (cause is null)
+            {
+                return new Pipeline.Refusal(Status.Refused, "no_such_beat");
+            }
+            // The beat falls due at the very next tick: there is no time to run up to it, so nothing passes.
+            if (cause.DueTick <= context.Snapshot.Tick + 1)
+            {
+                return new Pipeline.Refusal(Status.Refused, "beat_not_ahead");
+            }
         }
         return null;
     }

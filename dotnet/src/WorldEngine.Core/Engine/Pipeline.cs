@@ -25,7 +25,10 @@ public static class Pipeline
         Func<Command, IReadOnlyList<string>>? WakeOn = null,
         // Judges the snapshot the transition and the clock left (src/engine/pipeline.ts `validateResult`): a refusal
         // returns the input snapshot unchanged. Null when the verb has no such check.
-        Func<CommandContext, Refusal?>? ValidateResult = null);
+        Func<CommandContext, Refusal?>? ValidateResult = null,
+        // Where the time a command passes stops short: the beat `stop_before` names, as pending when the command is decided
+        // (src/engine/command.ts `stop_before`). Null when the verb has none.
+        Func<Command, Snapshot, Clock.StopBeat?>? StopBefore = null);
 
     // A capacity the actor must hold at least `AtLeast` of before the verb runs.
     public sealed record Requirement(string Capacity, long AtLeast);
@@ -220,8 +223,9 @@ public static class Pipeline
         Schedule.Prune(working);
         // A command that asked to be woken says how long it ran (src/engine/pipeline.ts).
         var wake = verb.WakeOn?.Invoke(command) ?? [];
-        var elapsed = Clock.Advance(working, registry, duration, wake);
-        if (wake.Count > 0)
+        var stop = verb.StopBefore?.Invoke(command, snapshot);
+        var elapsed = Clock.Advance(working, registry, duration, wake, stop);
+        if (wake.Count > 0 || stop is not null)
         {
             working.Events[0] = working.Events[0] with { Data = Reason(("advanced", elapsed)) };
         }

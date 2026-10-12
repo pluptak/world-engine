@@ -7,24 +7,29 @@ namespace WorldEngine.Core.Engine;
 // Time passing (src/engine/clock.ts `advanceClock`, for modifiers alone): the clock steps from the command's tick
 // through every tick at which a modifier expires, then ends at tick + ticks. At each such tick the modifiers due
 // expire, in (entity, capacity, cause, order) order, each `capability_changed` naming the modifier's cause; then the
-// scheduled causes due run in schedule order (`Schedule`). Beats and `stop_before` are not ported; the caller refuses those
-// before the clock runs.
+// scheduled causes due run in schedule order (`Schedule`). A `stop` beat ends the time one tick short of its own tick
+// while it is still pending there (src/engine/clock.ts `stopLimit`).
 public static class Clock
 {
     private sealed record Expiring(string Entity, Modifier Modifier, int Order);
 
+    // The beat `advance` stops before: its id, and the tick it falls due at when the command is decided.
+    public sealed record StopBeat(string Id, long DueTick);
+
     // With `wake` (agent ids), the clock ends early at the first tick whose events one of them could sense, after everything
-    // due at that tick has run (src/engine/clock.ts `advanceClock`).
-    // Returns the ticks that passed.
+    // due at that tick has run (src/engine/clock.ts `advanceClock`). Returns the ticks that passed.
     public static long Advance(
         Working working,
         IReadOnlyDictionary<string, Template> registry,
         long ticks,
-        IReadOnlyList<string>? wake = null)
+        IReadOnlyList<string>? wake = null,
+        StopBeat? stop = null)
     {
         var startTick = working.Snapshot.Tick;
         var endTick = startTick + ticks;
-        for (var due = NextDue(working.Snapshot, endTick); due is not null; due = NextDue(working.Snapshot, endTick))
+        // The limit is read again each time: a cause that runs can schedule or cancel the stop beat.
+        long Limit() => Math.Min(endTick, StopLimit(working.Snapshot, stop));
+        for (var due = NextDue(working.Snapshot, Limit()); due is not null; due = NextDue(working.Snapshot, Limit()))
         {
             var before = working.Snapshot;
             var firstNew = working.Events.Count;
@@ -47,8 +52,21 @@ public static class Clock
                 return due.Value - startTick;
             }
         }
-        working.SetTick(endTick);
-        return ticks;
+        var reached = Limit();
+        working.SetTick(reached);
+        return reached - startTick;
+    }
+
+    // One tick short of the stop beat's tick while that same run is still pending there. Once it has run, or has been cancelled
+    // or pruned, nothing stops the clock; a repeat's later run is a different tick, so it does not.
+    private static long StopLimit(Snapshot snapshot, StopBeat? stop)
+    {
+        if (stop is null)
+        {
+            return long.MaxValue;
+        }
+        var waiting = Schedule.Pending(snapshot).Any(cause => cause.Kind == "beat" && cause.Id == stop.Id && cause.DueTick == stop.DueTick);
+        return waiting ? stop.DueTick - 1 : long.MaxValue;
     }
 
     // The first tick after `snapshot.Tick`, up to `until`, at which some modifier expires.

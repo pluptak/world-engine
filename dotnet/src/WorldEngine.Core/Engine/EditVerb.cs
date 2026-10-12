@@ -7,7 +7,7 @@ namespace WorldEngine.Core.Engine;
 
 // The world author's `edit` (src/engine/verbs/edit.ts) for the edits ported so far: spawn, remove, place, set_props,
 // update_props, set_part and set_seed. The result is judged by the snapshot invariants, so an edit that would break one
-// is refused and nothing is written. The beat, run and role edits are not ported and are refused loudly.
+// is refused and nothing is written. The play_beat, run and role edits are not ported and are refused loudly.
 public static class EditVerb
 {
     public static Pipeline.VerbDecl Edit { get; } = new(
@@ -39,7 +39,7 @@ public static class EditVerb
     // Kinds the parser knows but this port does not yet carry out.
     private static readonly HashSet<string> UnportedKinds =
     [
-        "schedule_beat", "cancel_beat", "retime_beat", "register_player", "play_beat", "steer", "start_run", "end_run",
+        "register_player", "play_beat", "steer", "start_run", "end_run",
     ];
 
     private static readonly HashSet<string> OverrideKeys =
@@ -62,6 +62,11 @@ public static class EditVerb
     private sealed record PlaceEdit(string Target, Given<string>? Support, Given<string>? ContainedIn, Given<string>? InPart, Given<string>? ConcealedBy, Given<Pos>? Pos, AnchorOffset? Anchor = null) : WorldEdit;
     private sealed record AnchorOffset(string Anchor, long Dx, long Dy);
     private sealed record RefineEdit(string Target, string Template) : WorldEdit;
+    // The author's beat edits (src/engine/verbs/edit.ts): a beat to schedule, held as the edit's own JSON; a beat to cancel; and
+    // a beat to move to another tick.
+    private sealed record ScheduleBeatEdit(JsonObject Beat) : WorldEdit;
+    private sealed record CancelBeatEdit(string Id) : WorldEdit;
+    private sealed record RetimeBeatEdit(string Id, long AtTick) : WorldEdit;
     private sealed record PropsEdit(string Kind, string Target, IReadOnlyDictionary<string, JsonNode?> Props) : WorldEdit;
     private sealed record SetPartEdit(string Target, string Part, PartState State) : WorldEdit;
 
@@ -92,6 +97,11 @@ public static class EditVerb
                 return context.Target is not null ? Invalid("unexpected_target") : SpawnRefusal(context, spawn);
             case SetSeedEdit:
                 return context.Target is null ? null : Invalid("unexpected_target");
+        }
+        // The beats name no target of their own: they are scheduled, cancelled or moved as a whole.
+        if (edit is ScheduleBeatEdit or CancelBeatEdit or RetimeBeatEdit)
+        {
+            return context.Target is not null ? Invalid("unexpected_target") : BeatRefusal(context, edit);
         }
         var targetId = TargetOf(edit);
         if (context.Target is null || context.Target.Part is not null || context.Target.EntityId != targetId)
@@ -304,6 +314,80 @@ public static class EditVerb
         return placement.Pos is not null ? Refused("pos_without_room_support") : null;
     }
 
+    private static Pipeline.Refusal? BeatRefusal(Pipeline.CommandContext context, WorldEdit edit) => edit switch
+    {
+        ScheduleBeatEdit scheduled => ScheduleBeatRefusal(context, scheduled.Beat),
+        CancelBeatEdit cancelled => Schedule.Pending(context.Snapshot).Any(cause => cause.Kind == "beat" && cause.Id == cancelled.Id)
+            ? null
+            : Refused("no_such_beat"),
+        RetimeBeatEdit moved => RetimeBeatRefusal(context, moved),
+        _ => throw new InvalidOperationException("Unknown beat edit"),
+    };
+
+    // Whether the beat may be scheduled now (src/engine/verbs/edit.ts scheduleBeatRefusal): its subject is there, every entity
+    // an `all` reads is there, nothing it writes is refused, it is not in the past, and its ids are new and within the bound.
+    private static Pipeline.Refusal? ScheduleBeatRefusal(Pipeline.CommandContext context, JsonObject beat)
+    {
+        var snapshot = context.Snapshot;
+        var subject = Beats.ActionSubject((JsonObject)beat["action"]!);
+        if (subject is null || !snapshot.Entities.ContainsKey(subject))
+        {
+            return Invalid("no_such_entity");
+        }
+        foreach (var condition in Beats.EditConditions(beat))
+        {
+            if (condition is JsonObject { } obj && obj.ContainsKey("all")
+                && Beats.ConditionSubjects(condition).Any(id => !snapshot.Entities.ContainsKey(id)))
+            {
+                return Invalid("no_such_entity");
+            }
+        }
+        foreach (var action in Beats.EditActions(beat))
+        {
+            if (Beats.PropRefusal(snapshot, context.Registry, action) is { } code)
+            {
+                return Refused(code);
+            }
+        }
+        if (Int(beat["at_tick"]) is not { } atTick)
+        {
+            return Invalid("invalid_args");
+        }
+        if (atTick <= snapshot.Tick)
+        {
+            return Refused("beat_in_past");
+        }
+        var ids = Beats.EditIds(beat);
+        var taken = Beats.PendingBeatIds(Schedule.Pending(snapshot));
+        if (ids.Distinct(StringComparer.Ordinal).Count() != ids.Count || ids.Any(id => taken.Contains(id)))
+        {
+            return Refused("duplicate_beat");
+        }
+        return ids.Count + taken.Count > Beats.MaxBeats ? Refused("too_many_beats") : null;
+    }
+
+    // Whether the beat may be moved now (src/engine/verbs/edit.ts retimeBeatRefusal): it is pending, nothing it would write is
+    // refused, and its new tick is not in the past.
+    private static Pipeline.Refusal? RetimeBeatRefusal(Pipeline.CommandContext context, RetimeBeatEdit edit)
+    {
+        var cause = Schedule.Pending(context.Snapshot).FirstOrDefault(entry => entry.Kind == "beat" && entry.Id == edit.Id);
+        if (cause is null)
+        {
+            return Refused("no_such_beat");
+        }
+        // A beat queued with a write to a definition is not moved to a tick where it would be skipped: the same refusal a
+        // schedule gives.
+        var beat = new JsonObject { ["action"] = cause.Action!.DeepClone(), ["then"] = cause.Then?.DeepClone() };
+        foreach (var action in Beats.EditActions(beat))
+        {
+            if (Beats.PropRefusal(context.Snapshot, context.Registry, action) is { } code)
+            {
+                return Refused(code);
+            }
+        }
+        return edit.AtTick <= context.Snapshot.Tick ? Refused("beat_in_past") : null;
+    }
+
     private static Pipeline.Refusal? PropsRefusal(Pipeline.CommandContext context, Entity subject, PropsEdit edit)
     {
         if (!context.Registry.TryGetValue(subject.Template, out var template))
@@ -328,7 +412,7 @@ public static class EditVerb
 
     // The definition prop a write changes, or null. An entity stores a copy of its template's props, so repeating a
     // definition is no change; writing a different one, or dropping one, is.
-    private static string? DefinitionWritten(Template template, IReadOnlyDictionary<string, JsonNode?> resulting)
+    internal static string? DefinitionWritten(Template template, IReadOnlyDictionary<string, JsonNode?> resulting)
     {
         bool IsDefinition(string name) =>
             PropFields.Table.TryGetValue(name, out var field) && field.Tier == Tier.Definition
@@ -406,11 +490,39 @@ public static class EditVerb
             case RefineEdit refine:
                 TransitionRefine(working, context, refine, rootEventId);
                 return;
+            case ScheduleBeatEdit scheduled:
+                // The beat is the `edit` event's to cause: what it does when due names that event.
+                Schedule.Add(working, Beats.CauseOf(scheduled.Beat, rootEventId));
+                return;
+            case CancelBeatEdit cancelled:
+                // Withdrawn at the source, recording nothing: the `edit` event is the record.
+                Schedule.Replace(
+                    working,
+                    Schedule.Pending(working.Snapshot).Where(cause => cause.Kind != "beat" || cause.Id != cancelled.Id).ToList());
+                return;
+            case RetimeBeatEdit moved:
+                TransitionRetime(working, moved);
+                return;
         }
     }
 
     // The template changes, and the props and parts take what the new preset keeps of the entity's state. The subject is the
     // entity before the edit, so both are read from it, as src/engine/verbs/edit.ts does.
+    // Taken off and put back at its new tick, so it runs after whatever is already due then, as if scheduled now.
+    private static void TransitionRetime(Working working, RetimeBeatEdit edit)
+    {
+        var list = Schedule.Pending(working.Snapshot).ToList();
+        var index = list.FindIndex(entry => entry.Kind == "beat" && entry.Id == edit.Id);
+        if (index < 0)
+        {
+            throw new InvalidOperationException("Edit changed after validation");
+        }
+        var cause = list[index];
+        list.RemoveAt(index);
+        Schedule.Replace(working, list);
+        Schedule.Add(working, cause with { DueTick = edit.AtTick });
+    }
+
     private static void TransitionRefine(Working working, Pipeline.CommandContext context, RefineEdit edit, string rootEventId)
     {
         var subject = context.Snapshot.Entities[edit.Target];
@@ -540,6 +652,22 @@ public static class EditVerb
                     return null;
                 }
                 return new SetSeedEdit(seed);
+            }
+            case "schedule_beat":
+            {
+                return Beats.ParseScheduleBeat(obj) ? new ScheduleBeatEdit((JsonObject)obj.DeepClone()) : null;
+            }
+            case "cancel_beat":
+            {
+                return Only(obj, "kind", "id") && Text(obj["id"]) is { } cancelled && Beats.IsBeatId(cancelled)
+                    ? new CancelBeatEdit(cancelled)
+                    : null;
+            }
+            case "retime_beat":
+            {
+                return Only(obj, "kind", "id", "at_tick") && Text(obj["id"]) is { } moved && Beats.IsBeatId(moved) && Int(obj["at_tick"]) is { } tick
+                    ? new RetimeBeatEdit(moved, tick)
+                    : null;
             }
             case "refine":
             {
