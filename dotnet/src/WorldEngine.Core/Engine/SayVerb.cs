@@ -14,6 +14,7 @@ public static class SayVerb
         AuthorOnly: false,
         Preconditions: Preconditions,
         Duration: _ => 1,
+        OneTick: true,
         Requires: [new Pipeline.Requirement("speech", 50)],
         RootEvent: RootEvent);
 

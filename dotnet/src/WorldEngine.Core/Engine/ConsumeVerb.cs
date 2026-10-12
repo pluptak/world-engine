@@ -15,6 +15,7 @@ public static class ConsumeVerb
         AuthorOnly: false,
         Preconditions: Preconditions,
         Duration: _ => 1,
+        OneTick: true,
         Transition: Transition);
 
     // What one consume takes. A solid has its nutrition and its portions left (null when it is eaten whole); a liquid

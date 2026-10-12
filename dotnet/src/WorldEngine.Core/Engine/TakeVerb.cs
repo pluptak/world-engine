@@ -12,6 +12,7 @@ public static class TakeVerb
         AuthorOnly: false,
         Preconditions: Preconditions,
         Duration: _ => 1,
+        OneTick: true,
         Transition: Transition);
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)

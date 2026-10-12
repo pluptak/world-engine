@@ -28,7 +28,10 @@ public static class Pipeline
         Func<CommandContext, Refusal?>? ValidateResult = null,
         // Where the time a command passes stops short: the beat `stop_before` names, as pending when the command is decided
         // (src/engine/command.ts `stop_before`). Null when the verb has none.
-        Func<Command, Snapshot, Clock.StopBeat?>? StopBefore = null);
+        Func<Command, Snapshot, Clock.StopBeat?>? StopBefore = null,
+        // Whether the verb takes exactly one tick whatever its args (src/engine/clock.ts `isOneTickVerb`): a round's move, which
+        // takes no time of its own (`docs/rounds.md`), is one of these.
+        bool OneTick = false);
 
     // A capacity the actor must hold at least `AtLeast` of before the verb runs.
     public sealed record Requirement(string Capacity, long AtLeast);
@@ -175,7 +178,7 @@ public static class Pipeline
 
     // The whole transition of a command the front lets through, for the verbs ported so far. The run gate decides with the
     // front; preconditions decide next; then the root event, the verb's effects, the clock (cut at a run's limit), the run's
-    // finish. Rounds and per-event perceivers are not ported, so a command that needs them is refused loudly.
+    // finish. A round's move is judged here as a command with the round flag, which the run gate and the clock read.
     public static Result Apply(
         Snapshot snapshot,
         IReadOnlyDictionary<string, Template> registry,
@@ -185,14 +188,6 @@ public static class Pipeline
         if (Screen(snapshot, registry, verbs, command) is { } screened)
         {
             return screened;
-        }
-        if (command.Perceivers == true)
-        {
-            throw new NotPortedException("per-event perceivers");
-        }
-        if (command.Round == true)
-        {
-            throw new NotPortedException("rounds");
         }
         var verb = verbs[command.Verb];
         var target = command.Target is null ? null : TargetOf(snapshot, registry, command);
@@ -210,8 +205,11 @@ public static class Pipeline
                 reasonData: refusal.ReasonData,
                 candidates: refusal.Candidates);
         }
-        var duration = verb.Duration?.Invoke(command)
-            ?? throw new InvalidOperationException($"Verb {command.Verb} accepted a command without a duration");
+        // A round's move takes no time of its own: the round's close is the tick the clock moves (`docs/rounds.md`).
+        var duration = command.Round == true && verb.OneTick
+            ? 0L
+            : verb.Duration?.Invoke(command)
+              ?? throw new InvalidOperationException($"Verb {command.Verb} accepted a command without a duration");
         if (!IsSafeInteger(snapshot.Tick + duration))
         {
             return Unchanged(snapshot, command, Status.Invalid, reasonCode: "clock_overflow");
@@ -252,6 +250,10 @@ public static class Pipeline
                 candidates: validation.Candidates);
         }
         working.BumpVersion();
+        // The batch form of perceive, asked for on the way in: every event of this command names who sensed it at either end.
+        var events = command.Perceivers == true
+            ? WithPerceivers(snapshot, working.Snapshot, registry, working.Events)
+            : working.Events;
         return new Result(
             Status.Ok,
             command.CommandId,
@@ -261,7 +263,21 @@ public static class Pipeline
             null,
             working.Snapshot,
             working.Deltas,
-            working.Events);
+            events);
+    }
+
+    // Each event with who sensed it, by sense, from either end of the command (src/engine/pipeline.ts `withPerceivers`).
+    private static List<WorldEvent> WithPerceivers(
+        Snapshot before,
+        Snapshot after,
+        IReadOnlyDictionary<string, Template> registry,
+        IReadOnlyList<WorldEvent> events)
+    {
+        var described = EventPerception.EventPerceivers(before, after, registry, events)
+            .ToDictionary(entry => entry.EventId, entry => entry.Perceivers, StringComparer.Ordinal);
+        return events
+            .Select(@event => described.TryGetValue(@event.EventId, out var perceivers) ? @event with { Perceivers = perceivers } : @event)
+            .ToList();
     }
 
     // The target a command names, once the front has accepted it: resolution cannot fail here, so only the address is

@@ -13,6 +13,7 @@ public static class MoveVerb
         AuthorOnly: false,
         Preconditions: Preconditions,
         Duration: _ => 1,
+        OneTick: true,
         Transition: Transition);
 
     // Where the command says to go. Exactly one of the three forms.

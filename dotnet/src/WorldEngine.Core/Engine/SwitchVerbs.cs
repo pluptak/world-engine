@@ -17,6 +17,7 @@ public static class SwitchVerbs
         AuthorOnly: false,
         Preconditions: context => Preconditions(context, on),
         Duration: _ => 1,
+        OneTick: true,
         Requires: [new Pipeline.Requirement("manipulation", 50)],
         Transition: (working, context, rootEventId) => Transition(working, context, rootEventId, on));
 

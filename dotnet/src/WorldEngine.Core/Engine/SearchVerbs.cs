@@ -12,6 +12,7 @@ public static class SearchVerbs
         AuthorOnly: false,
         Preconditions: Preconditions,
         Duration: _ => 1,
+        OneTick: true,
         Requires: [new Pipeline.Requirement("manipulation", 50)],
         Transition: Transition);
 

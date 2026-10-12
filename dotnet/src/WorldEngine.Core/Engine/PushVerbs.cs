@@ -21,6 +21,7 @@ public static class PushVerbs
         AuthorOnly: false,
         Preconditions: context => Preconditions(context, reverse),
         Duration: _ => 1,
+        OneTick: true,
         Transition: (working, context, rootEventId) => Transition(working, context, rootEventId, reverse));
 
     private sealed record Movement(long DistanceCm, string Direction);
