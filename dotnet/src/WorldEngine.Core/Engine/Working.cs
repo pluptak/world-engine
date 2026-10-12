@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
+using WorldEngine.Core.Templates;
 
 namespace WorldEngine.Core.Engine;
 
@@ -95,6 +96,54 @@ public sealed class Working
         var entities = new Dictionary<string, Entity>(Snapshot.Entities, StringComparer.Ordinal) { [entityId] = entity with { Pos = pos } };
         Snapshot = Snapshot with { Entities = entities };
     }
+
+    public void SetStatus(string entityId, EntityStatus status, string eventId) =>
+        Update(entityId, "status", status, eventId, entity => entity with { Status = status });
+
+    public void SetProps(string entityId, IReadOnlyDictionary<string, JsonNode?> props, string eventId) =>
+        Update(entityId, "props", props, eventId, entity => entity with { Props = props });
+
+    public void SetResidue(string entityId, IReadOnlyDictionary<string, long> residue, string eventId) =>
+        Update(entityId, "residue", residue, eventId, entity => entity with { Residue = residue });
+
+    // Adds a new entity (`spawn` in src/engine/spawn.ts) and records it as one delta on the field "entity" under the
+    // `spawned` event, which is caused by `causeEventId`. Returns the spawned event's id.
+    public string SpawnUnder(IReadOnlyDictionary<string, Template> registry, string templateId, Spawn.Overrides overrides, string causeEventId)
+    {
+        var created = Spawn.Create(Snapshot, registry, templateId, overrides);
+        Snapshot = created.Snapshot;
+        var spawnedEvent = Emit("spawned", created.Id, Pipeline.Reason(("template", templateId)), causeEventId);
+        Deltas.Add(new Delta(
+            spawnedEvent,
+            created.Id,
+            "entity",
+            null,
+            JsonSerializer.SerializeToNode(Snapshot.Entities[created.Id], WorldJson.Options)));
+        return spawnedEvent;
+    }
+
+    // Writes one field of an entity: a delta under `eventId` when its canonical value changes, nothing when it does not.
+    private void Update<T>(string entityId, string field, T value, string eventId, Func<Entity, Entity> apply)
+    {
+        var entity = Snapshot.Entities[entityId];
+        var from = JsonSerializer.SerializeToNode(FieldOf(entity, field), WorldJson.Options);
+        var to = JsonSerializer.SerializeToNode(value, WorldJson.Options);
+        if (CanonicalJson.Serialize(from) == CanonicalJson.Serialize(to))
+        {
+            return;
+        }
+        Deltas.Add(new Delta(eventId, entityId, field, from, to));
+        var entities = new Dictionary<string, Entity>(Snapshot.Entities, StringComparer.Ordinal) { [entityId] = apply(entity) };
+        Snapshot = Snapshot with { Entities = entities };
+    }
+
+    private static object? FieldOf(Entity entity, string field) => field switch
+    {
+        "status" => entity.Status,
+        "props" => entity.Props,
+        "residue" => entity.Residue,
+        _ => throw new ArgumentException($"Not a field this helper writes: {field}", nameof(field)),
+    };
 
     public void SetTick(long tick) => Snapshot = Snapshot with { Tick = tick };
 

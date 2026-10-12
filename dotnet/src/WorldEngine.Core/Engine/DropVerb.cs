@@ -5,8 +5,7 @@ namespace WorldEngine.Core.Engine;
 
 // The drop verb (src/engine/verbs/drop.ts): an actor lets go of a thing it holds in a grip, and it falls from the hand
 // onto whatever surface is under it, or to the floor. `DropCarriedItem` is the placement any verb uses to put a held
-// thing down. The fall's consequences (breaking, spilling) are not ported: a drop that would break or spill throws
-// `NotPortedException` before anything is written, so the port never lands a fall it does not model.
+// thing down, and the fall that follows (breaking or spilling) is `Physical.ResolveDropFall`.
 public static class DropVerb
 {
     public static Pipeline.VerbDecl Drop { get; } = new(
@@ -67,13 +66,12 @@ public static class DropVerb
             : null;
         var fallCm = handHeight - (rest?.HeightCm ?? 0);
 
-        RequireNoFallEffect(snapshot, registry, entity, fallCm);
-
         var dropped = working.Emit("dropped", entityId, Pipeline.Reason(("fall_cm", fallCm)), causeId);
         working.SetRelation(entityId, "contained_in", null, dropped);
         working.SetRelation(entityId, "in_part", null, dropped);
         working.SetRelation(entityId, "support", rest?.Support ?? holder.Location, dropped);
         working.SetPos(entityId, rest is null ? at : null, dropped);
+        Physical.ResolveDropFall(working, registry, entityId, dropped, fallCm);
         return dropped;
     }
 
@@ -122,24 +120,5 @@ public static class DropVerb
             }
         }
         return best;
-    }
-
-    // The fall's breaking and spilling (src/resolvers/physical.ts `breakOnFall`), checked and not performed: a fall
-    // that would break the thing, or spill liquid out of it, is not ported.
-    private static void RequireNoFallEffect(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, Entity entity, double fallCm)
-    {
-        var threshold = PropValues.GetNumber(entity.Props, "break_fall_cm");
-        var broken = entity.Status is EntityStatus.Broken or EntityStatus.Destroyed;
-        if (!broken && threshold is { } limit && fallCm >= limit)
-        {
-            throw new NotPortedException("a drop that breaks the thing");
-        }
-        var material = PropValues.GetString(entity.Props, "liquid_material");
-        var amount = PropValues.GetNumber(entity.Props, "liquid_amount");
-        var shut = PropValues.IsTrue(entity.Props, "openable") && !PropValues.IsTrue(entity.Props, "open");
-        if (fallCm > 0 && !string.IsNullOrEmpty(material) && amount is > 0 && !shut)
-        {
-            throw new NotPortedException("a drop that spills the thing's liquid");
-        }
     }
 }

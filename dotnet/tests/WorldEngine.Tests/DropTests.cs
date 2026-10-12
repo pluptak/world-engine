@@ -8,9 +8,9 @@ using WorldEngine.Store.Templates;
 namespace WorldEngine.Tests;
 
 // `apply` of the drop verb (src/engine/verbs/drop.ts through src/engine/pipeline.ts), whole results compared with
-// TypeScript: the front, the carried and pocket refusals, and a held rag falling to the floor. The commands and worlds
-// are the ones Fixtures/drop-golden.expected.json holds. A fall that breaks or spills is not ported, so the bottle drop
-// is asserted to throw rather than compared.
+// TypeScript: the carried and pocket refusals, a held rag falling to the floor, and a bottle falling past its break
+// threshold onto the floor (broken into shards) or spilling onto a table. The commands and worlds are the ones
+// Fixtures/drop-golden.expected.json holds.
 public class DropTests
 {
     private static IReadOnlyDictionary<string, Template> Registry { get; } =
@@ -45,16 +45,6 @@ public class DropTests
                 CanonicalJson.Serialize(row["result"]) == WorldJson.Write(Shape(result)),
                 $"{label}: the result differs from TypeScript's");
         }
-    }
-
-    // The bottle is held in a hand and falls 100 cm, past its 50 cm break threshold, so the drop would break it.
-    [Fact]
-    public void A_drop_that_breaks_the_bottle_is_not_ported()
-    {
-        var snapshot = WorldJson.Read<Snapshot>(ReadFixture("rich-lit-near-bottle.snapshot.json"));
-        var command = WorldJson.Read<Command>("""{ "command_id": "b1", "actor": "e4", "verb": "drop", "target": "e3" }""");
-
-        Assert.Throws<NotPortedException>(() => Pipeline.Apply(snapshot, Registry, Verbs, command));
     }
 
     private static Dictionary<string, object?> Shape(Pipeline.Result result)
