@@ -31,6 +31,8 @@ public class ContractValuesTests
         "PosSchema" => ContractSchema.Of<Pos>(),
         "AnchorPosSchema" => ContractSchema.Of<AnchorPos>(),
         "StatusSchema" => ContractSchema.Of<Status>(),
+        "ValidationIssueSchema" => ContractSchema.Of<ValidationIssue>(),
+        "ValidationFailureSchema" => ContractSchema.Of<ValidationFailure>(),
         _ => throw new InvalidDataException($"No .NET schema for {name}"),
     };
 }

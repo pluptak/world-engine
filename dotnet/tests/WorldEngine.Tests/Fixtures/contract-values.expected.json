@@ -170,5 +170,178 @@
     "schema": "StatusSchema",
     "value": null,
     "valid": false
+  },
+  {
+    "schema": "ValidationIssueSchema",
+    "value": {
+      "code": "unknown_op",
+      "path": [
+        "op"
+      ],
+      "message": "Unknown op"
+    },
+    "valid": true
+  },
+  {
+    "schema": "ValidationIssueSchema",
+    "value": {
+      "code": "x",
+      "path": [
+        "a",
+        1
+      ],
+      "message": "m",
+      "extra": true
+    },
+    "valid": true
+  },
+  {
+    "schema": "ValidationIssueSchema",
+    "value": {
+      "code": "x",
+      "path": [],
+      "message": ""
+    },
+    "valid": true
+  },
+  {
+    "schema": "ValidationIssueSchema",
+    "value": {
+      "code": "x",
+      "path": [
+        true
+      ],
+      "message": "m"
+    },
+    "valid": false
+  },
+  {
+    "schema": "ValidationIssueSchema",
+    "value": {
+      "code": "x",
+      "path": [
+        1.5
+      ],
+      "message": "m"
+    },
+    "valid": true
+  },
+  {
+    "schema": "ValidationIssueSchema",
+    "value": {
+      "code": "x",
+      "path": [
+        "a"
+      ]
+    },
+    "valid": false
+  },
+  {
+    "schema": "ValidationIssueSchema",
+    "value": {
+      "code": 1,
+      "path": [
+        "a"
+      ],
+      "message": "m"
+    },
+    "valid": false
+  },
+  {
+    "schema": "ValidationIssueSchema",
+    "value": {
+      "path": [
+        "a"
+      ],
+      "message": "m"
+    },
+    "valid": false
+  },
+  {
+    "schema": "ValidationIssueSchema",
+    "value": null,
+    "valid": false
+  },
+  {
+    "schema": "ValidationFailureSchema",
+    "value": {
+      "status": "invalid",
+      "issues": []
+    },
+    "valid": true
+  },
+  {
+    "schema": "ValidationFailureSchema",
+    "value": {
+      "status": "invalid",
+      "issues": [
+        {
+          "code": "x",
+          "path": [
+            "a"
+          ],
+          "message": "m"
+        }
+      ]
+    },
+    "valid": true
+  },
+  {
+    "schema": "ValidationFailureSchema",
+    "value": {
+      "status": "invalid",
+      "issues": [
+        {
+          "code": "x",
+          "path": [
+            true
+          ],
+          "message": "m"
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "schema": "ValidationFailureSchema",
+    "value": {
+      "status": "refused",
+      "issues": []
+    },
+    "valid": false
+  },
+  {
+    "schema": "ValidationFailureSchema",
+    "value": {
+      "status": "invalid",
+      "issues": [],
+      "extra": 1
+    },
+    "valid": false
+  },
+  {
+    "schema": "ValidationFailureSchema",
+    "value": {
+      "status": "invalid"
+    },
+    "valid": false
+  },
+  {
+    "schema": "ValidationFailureSchema",
+    "value": {
+      "status": "invalid",
+      "issues": [
+        {
+          "code": "x",
+          "message": "m"
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "schema": "ValidationFailureSchema",
+    "value": null,
+    "valid": false
   }
 ]
