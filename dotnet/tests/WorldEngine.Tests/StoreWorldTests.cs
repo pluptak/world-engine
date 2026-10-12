@@ -34,7 +34,7 @@ public class StoreWorldTests : IDisposable
         var world = StoreWorld.Open(dir, snapshotEvery: 2, checkpointEvery: 2);
         var commands = WorldJson.Read<List<Command>>(File.ReadAllText(Path.Combine(Fixtures, "store-write.commands.json")));
 
-        var statuses = commands.Select(command => world.Command(command).Status).ToList();
+        var statuses = commands.Select(command => world.Apply(command).Status).ToList();
 
         Assert.Equal(["ok", "refused", "ok", "unresolved", "ok", "ok"], statuses.Select(status => status.ToString().ToLowerInvariant()));
         AssertSameTree(Path.Combine(Fixtures, "store-write"), dir);
@@ -63,7 +63,7 @@ public class StoreWorldTests : IDisposable
         CopyTree(Path.Combine(Fixtures, "store-write"), dir);
         var world = StoreWorld.Open(dir);
 
-        Assert.Equal(4, world.Snapshot().Version);
+        Assert.Equal(4, world.CurrentSnapshot().Version);
         Assert.Equal("e2", world.Id("ann"));
         Assert.Null(world.Id("nobody"));
         Assert.True(world.Verify().Ok);

@@ -8,7 +8,7 @@ namespace WorldEngine.Core.Engine;
 // A world kept in memory (src/api.ts `memoryWorld`): its current snapshot, every snapshot it passed through for preemption, the
 // events and per-command records since it started, and the attempts it took. It keeps no log, so it cannot replay its history
 // before it started, and it has no roles or rounds yet. Its results are the same as a store world's (src/store/file-store.ts).
-public sealed class MemoryWorld : IWorld
+public sealed class MemoryWorld : IWorld, IWorldDriver
 {
     // The reserved author that signs edits and time (src/engine/command.ts `WORLD_AUTHOR`).
     public const string WorldAuthor = Resolve.WorldAuthor;
@@ -73,6 +73,8 @@ public sealed class MemoryWorld : IWorld
 
     // One command as the world takes it. A command that carries the round flag or a role is refused as invalid, since the round
     // sets the first and a handle the second. With `observe`, the actor's view after the command is attached.
+    Pipeline.Result IWorldDriver.Apply(Command command, long? basedOn) => Apply(command, basedOn, observe: false);
+
     public Pipeline.Result Apply(Command command, long? basedOn = null, bool observe = false)
     {
         if (IsFlagged(command))

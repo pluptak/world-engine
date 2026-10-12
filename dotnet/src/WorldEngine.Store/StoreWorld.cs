@@ -7,7 +7,7 @@ namespace WorldEngine.Store;
 
 // A stored world behind the facade's operations (src/api.ts `openWorld` and the methods of its World): the same calls the memory world
 // answers, over the files in one directory. The set is the world's own templates.json, read once when the world is opened.
-public sealed class StoreWorld
+public sealed class StoreWorld : IWorldDriver
 {
     private readonly string dir;
     private readonly IReadOnlyDictionary<string, Template> registry;
@@ -33,20 +33,20 @@ public sealed class StoreWorld
     }
 
     // The current snapshot, settled under the turn when the files do not agree (`load`).
-    public Snapshot Snapshot() => WorldSettle.Load(dir, registry);
+    public Snapshot CurrentSnapshot() => WorldSettle.Load(dir, registry);
 
     // A command, decided against the world and logged whatever it said (`command`).
-    public Pipeline.Result Command(Command command, long? basedOn = null) => WorldWriter.Submit(dir, registry, command, basedOn, snapshotEvery: snapshotEvery, checkpointEvery: checkpointEvery);
+    public Pipeline.Result Apply(Command command, long? basedOn = null) => WorldWriter.Submit(dir, registry, command, basedOn, snapshotEvery: snapshotEvery, checkpointEvery: checkpointEvery);
 
     // An author edit, with `edit-<n>` as its id unless one is given (`edit`).
-    public Pipeline.Result Edit(JsonObject edit, string? commandId = null, bool perceivers = false, By? by = null) =>
-        WorldEdits.Edit(dir, registry, edit, commandId, perceivers, by, snapshotEvery: snapshotEvery, checkpointEvery: checkpointEvery);
+    public Pipeline.Result Edit(JsonObject edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null) =>
+        WorldEdits.Edit(dir, registry, edit, commandId, perceivers, by, basedOn, snapshotEvery: snapshotEvery, checkpointEvery: checkpointEvery);
 
     // The deltas and events of every accepted command decided at `version` or later (`since`).
     public (List<Delta> Deltas, List<WorldEvent> Events) Since(long version) => WorldHistory.Since(dir, version, registry);
 
     // Every submission decided at `version` or later, ok or not (`attempts`).
-    public List<Attempt> Attempts(long version) => WorldHistory.Attempts(dir, version, registry);
+    public IReadOnlyList<Attempt> Attempts(long version) => WorldHistory.Attempts(dir, version, registry);
 
     // Whether the log replays to exactly what the files hold (`verify`).
     public WorldVerify.Verification Verify() => WorldVerify.Verify(dir, registry);
