@@ -19,8 +19,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
-2. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
-3. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+2. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -80,20 +79,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - **Done when:** the cause is named in `docs/locking.md` and fixed with a deterministic test. If it
   does not reproduce in 50 loop runs, the test writes each child's log to a file on failure, so the
   next occurrence can be read.
-- **Depends on:** nothing.
-
-### The lab's power cut goes through the generator's on prop
-
-- **What:** `plans/power.md`, item 4. The lab's server room should be lit by a lamp powered from the
-  generator, and the run's power cut should be `update_props { on: false }` on the generator, not
-  `lit: false` on the room. Today `scenarios/lab.json` gives `server_room` `lit: true` and no lamp, and
-  `docs/limits-lab.md` records the hand-made cut as a limit.
-- Add the lamp (a `light_source` with `powered_by` the generator's cable), make the cut a beat on the
-  generator, and remove the limit line. The `on` prop and powered light in `isLit` are already built.
-- **Done when:** the lab run's cut darkens the server room through `isLit`, not through a prop on the
-  room. The lab acceptance test's expected log is updated, each changed line explained in the commit.
-- **Files:** `scenarios/lab.json`, `docs/limits-lab.md`.
-- **Tests:** `tests/acceptance-lab-run.test.ts`, `tests/light.test.ts`, `tests/power-switch.test.ts`.
 - **Depends on:** nothing.
 
 ### The storage seam is an interface with no behaviour change

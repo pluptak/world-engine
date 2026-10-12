@@ -3,8 +3,8 @@
 Switching power on and off. A plan, not built; what is built is in
 [../docs/power.md](../docs/power.md). Today power is derived, never stored: a device is powered when
 every link of its `powered_by` walk is not destroyed and the walk ends at a `power_source`. So power
-fails only by destruction, and nothing switches a source off; the lab's power cut darkens a room by
-hand (`lit: false`, [../docs/limits-lab.md](../docs/limits-lab.md), "As a run").
+fails only by destruction, and nothing switches a source off; the lab's run cuts its generator's
+`on` prop at a tick, and the server room goes dark with its lamp (`scenarios/lab-run.json`).
 
 ## The idea
 
@@ -52,5 +52,3 @@ beyond reach and the control walk, and a sound or event for a room going dark.
 1. `on` on links and the walk (`power.ts`, `fields.ts`, `docs/power.md`), with the beat test.
 2. `switch_on` / `switch_off`, local and remote (`src/engine/verbs/`, the registration points).
 3. Electric light in `isLit` (`query.ts`, `docs/perception.md`).
-4. The lab: its server room lit by a lamp on the generator, and the pool's power cut as
-   `{ on: false }` on the generator, replacing `lit: false`; the limit line goes.
