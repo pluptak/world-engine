@@ -218,7 +218,9 @@ test("both scenarios copy, replay from initial state, and rerun deterministicall
     initWorld(original, scenario.path);
     const commands = commandsForScenario(scenario.name);
     runCommands(original, commands);
-    const expectedSnapshot = readFileSync(join(original, "snapshot.json"), "utf8");
+    // The current state, not snapshot.json's bytes: the file is written every 32 commands, so a short run
+    // leaves it at the initial snapshot.
+    const expectedSnapshot = snapshotFromCli(original);
     const expectedLog = readFileSync(join(original, "log.jsonl"), "utf8");
 
     const copy = join(rootDir, `${scenario.name}-copy`);
@@ -234,13 +236,13 @@ test("both scenarios copy, replay from initial state, and rerun deterministicall
       readFileSync(join(original, "initial.json"), "utf8"),
     );
     runCommands(replayed, acceptedCommands(original));
-    equal(readFileSync(join(replayed, "snapshot.json"), "utf8"), expectedSnapshot);
+    equal(snapshotFromCli(replayed), expectedSnapshot);
 
     const fresh = join(rootDir, `${scenario.name}-fresh`);
     initWorld(fresh, scenario.path);
     runCommands(fresh, commands);
     equal(readFileSync(join(fresh, "log.jsonl"), "utf8"), expectedLog);
-    equal(readFileSync(join(fresh, "snapshot.json"), "utf8"), expectedSnapshot);
+    equal(snapshotFromCli(fresh), expectedSnapshot);
   }
 });
 

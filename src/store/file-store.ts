@@ -38,6 +38,11 @@ interface Head {
   ok_entries: number;
   // The closed rounds the log holds. Absent from a head written before it existed: the head is then settled, not trusted.
   rounds_closed?: number;
+  // The version snapshot.json holds, and the byte of log.jsonl that version was reached at. Absent from
+  // a head written before snapshot.json was written less often than every command: the snapshot is then
+  // taken to be the current one, which settle checks against the log.
+  snapshot_version?: number;
+  snapshot_log_bytes?: number;
   templates_hash: string;
 }
 
@@ -301,6 +306,19 @@ export function readLogEntries(dir: string): LogEntry[] {
 // or before it and replays only the log after it, so its cost no longer grows with the world's age.
 // One that does not parse, is for another set, is ahead of the log, or whose bytes are not the log's
 // own prefix is ignored, and with none usable the read replays from `initial.json` as it always did.
+// How many accepted commands pass between writes of snapshot.json. The reader never assumes it: head.json
+// names the version and log byte the file holds, so a world written at any interval opens the same. A
+// per-world setting would change only the caller of `snapshotDue` and the option `submit` takes.
+export const SNAPSHOT_EVERY = 32;
+
+export interface SubmitOptions {
+  snapshotEvery?: number;
+}
+
+function snapshotDue(version: number, every: number): boolean {
+  return version % every === 0;
+}
+
 const CHECKPOINT_EVERY = 256;
 const checkpointsDirectory = "checkpoints";
 const CHECKPOINT_NAME = /^(\d+)-(\d+)\.json$/;
@@ -600,6 +618,8 @@ export function create(
     log_entries: 0,
     ok_entries: 0,
     rounds_closed: 0,
+    snapshot_version: initialSnapshot.version,
+    snapshot_log_bytes: 0,
     templates_hash: templatesHash(templates),
   });
 }
@@ -647,13 +667,11 @@ export function withWorldLock<T>(dir: string, body: () => T): T {
 // make. Otherwise null, and the caller settles it under the turn. A writer mid-command always
 // disagrees (it appends the log before the head), so a read that overlaps one lands there and waits.
 function trustedSnapshot(dir: string, templates: TemplateRegistry): Snapshot | null {
-  const snapshot = readWorldSnapshot(join(dir, snapshots.current));
   const initial = readInitialMeta(join(dir, snapshots.initial));
   const head = readHead(dir);
   if (head === null || head.templates_hash !== templatesHash(templates)) {
     return null;
   }
-  assertTemplates(snapshot, templates);
   assertTemplates(initial, templates);
   try {
     if (
@@ -661,14 +679,106 @@ function trustedSnapshot(dir: string, templates: TemplateRegistry): Snapshot | n
       statSync(join(dir, snapshots.events)).size === head.events_bytes &&
       statSync(join(dir, snapshots.deltas)).size === head.deltas_bytes &&
       head.rounds_closed !== undefined &&
-      snapshot.version === initial.version + head.ok_entries
+      head.snapshot_version !== undefined &&
+      head.snapshot_log_bytes !== undefined
     ) {
-      return snapshot;
+      const kept = currentMemo.get(dir);
+      if (kept !== undefined && kept.key === memoKey(dir, head)) {
+        currentMemo.delete(dir);
+        currentMemo.set(dir, kept);
+        return kept.snapshot;
+      }
+      const stored = readWorldSnapshot(join(dir, snapshots.current));
+      assertTemplates(stored, templates);
+      if (stored.version === head.snapshot_version) {
+        const current = foldLogFrom(dir, stored, head.snapshot_log_bytes, head.log_bytes, templates);
+        if (current.version === initial.version + head.ok_entries) {
+          rememberCurrent(dir, head, current);
+          return current;
+        }
+      }
     }
   } catch {
-    // Fall through to the full check
+    // Fall through to the full check, which settles the world or says why it cannot
   }
   return null;
+}
+
+// The current snapshot as of a head, kept for the worlds this process has settled or written: a process
+// that holds a world reads its own writes here rather than folding the commands since snapshot.json was
+// written. Keyed by the whole head and by snapshot.json's own size and modification time, so another
+// writer's head, or a hand edit to the snapshot, is a miss and is read again and validated. Bounded like
+// the other caches.
+const currentMemo = new Map<string, { key: string; snapshot: Snapshot }>();
+
+function memoKey(dir: string, head: Head): string {
+  const stat = statSync(join(dir, snapshots.current));
+  return `${canonicalJson(head)}|${stat.size}:${stat.mtimeMs}`;
+}
+
+function rememberCurrent(dir: string, head: Head, snapshot: Snapshot): void {
+  currentMemo.delete(dir);
+  currentMemo.set(dir, { key: memoKey(dir, head), snapshot });
+  dropOldest(currentMemo);
+}
+
+// The replay's snapshot at `version`, read from the initial snapshot whatever hash it carries: the set is
+// being judged, so the hash is not asserted here. Null when the replay never reaches that version, or a
+// command the log accepted no longer applies.
+function replayToVersion(dir: string, version: number, templates: TemplateRegistry): Snapshot | null {
+  let snapshot = readWorldSnapshot(join(dir, snapshots.initial));
+  try {
+    for (const entry of readLogEntries(dir)) {
+      if (snapshot.version >= version) {
+        break;
+      }
+      if (entry.status !== "ok") {
+        continue;
+      }
+      const result = apply(snapshot, templates, entry.command);
+      if (result.status !== "ok") {
+        return null;
+      }
+      snapshot = result.snapshot;
+    }
+  } catch {
+    return null;
+  }
+  return snapshot.version === version ? snapshot : null;
+}
+
+// `start` with every accepted command in the log from byte `from` to byte `to` applied, in order. An
+// accepted command applies to the snapshot it was accepted on, as a replay applies it, so none is judged
+// again. Deltas are not used: they record entity fields only, not tick, next_seq, rng, run or schedule, so
+// they cannot rebuild a snapshot.
+function foldLogFrom(dir: string, start: Snapshot, from: number, to: number, templates: TemplateRegistry): Snapshot {
+  const bytes = Buffer.alloc(to - from);
+  const fd = openSync(join(dir, snapshots.log), "r");
+  try {
+    // A read may return fewer bytes than asked; the range is whole lines the head names, so it must fill.
+    for (let filled = 0; filled < bytes.length; ) {
+      const count = readSync(fd, bytes, filled, bytes.length - filled, from + filled);
+      if (count === 0) {
+        throw new TypeError(`Log ends before byte ${to}`);
+      }
+      filled += count;
+    }
+  } finally {
+    closeSync(fd);
+  }
+  let snapshot = start;
+  for (const [index, line] of storedLines(bytes.toString("utf8")).lines.entries()) {
+    const entry = parseLogLine(line, index + 1);
+    if (entry.status !== "ok") {
+      continue;
+    }
+    const result = apply(snapshot, templates, entry.command);
+    if (result.status !== "ok") {
+      throw new TypeError(`Accepted command failed during replay after log byte ${from}`);
+    }
+    snapshot = result.snapshot;
+  }
+  return snapshot;
 }
 
 // `setIsTheWorlds` says the registry came from the world's own templates.json rather than from a
@@ -700,6 +810,7 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
   const eventsPath = join(dir, snapshots.events);
   const deltasPath = join(dir, snapshots.deltas);
   const frozenHash = templatesHash(templates);
+  const snapshotPath = join(dir, snapshots.current);
 
   // An upgrade stamps the snapshots before the head, so a head still naming the old hash means the
   // set moved and the write may have been interrupted somewhere in between. Only the set in the file
@@ -716,10 +827,20 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
       throw new WorldError("templates_changed", "Template hash mismatch");
     }
     assertNoLostField(snapshot, templates);
-    const folded = replayFold(dir, templates);
+    let folded: Fold;
+    try {
+      folded = replayFold(dir, templates);
+    } catch {
+      // The set cannot replay a command the log accepted, most likely one that set a part it dropped: the
+      // part is in the log, past snapshot.json, so the lost-field check above cannot name it.
+      throw new WorldError("templates_changed", "Template hash mismatch");
+    }
+    // The stored snapshot is judged at its own version, since it may lag the log: it must be the replay there.
+    const atStored = replayToVersion(dir, snapshot.version, templates);
     if (
-      canonicalJson({ ...folded.snapshot, templates_hash: frozenHash }) !==
-      canonicalJson({ ...snapshot, templates_hash: frozenHash }) ||
+      atStored === null ||
+      canonicalJson({ ...atStored, templates_hash: frozenHash }) !==
+        canonicalJson({ ...snapshot, templates_hash: frozenHash }) ||
       canonicalJson(folded.events) !== canonicalJson(readEvents(dir)) ||
       (head.deltas_bytes !== undefined &&
         existsSync(join(dir, snapshots.deltas)) &&
@@ -729,8 +850,14 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
     }
     dropCheckpoints(dir);
     atomicWrite(initialPath, canonicalJson({ ...readWorldSnapshot(initialPath), templates_hash: frozenHash }));
-    atomicWrite(join(dir, snapshots.current), canonicalJson({ ...snapshot, templates_hash: frozenHash }));
-    writeHead(dir, { ...head, templates_hash: frozenHash });
+    // The set moved, so the snapshot is written at the current version under the new hash.
+    atomicWrite(snapshotPath, canonicalJson({ ...folded.snapshot, templates_hash: frozenHash }));
+    writeHead(dir, {
+      ...head,
+      templates_hash: frozenHash,
+      snapshot_version: folded.snapshot.version,
+      snapshot_log_bytes: statSync(logPath).size,
+    });
     return load(dir);
   }
 
@@ -748,40 +875,66 @@ function settle(dir: string, templates: TemplateRegistry, setIsTheWorlds: boolea
   const entries = readLogEntries(dir);
   const okEntries = entries.filter((entry) => entry.status === "ok");
   const expectedVersion = initial.version + okEntries.length;
-  // The head as the files now stand, written by whichever branch rebuilt them.
-  const writeSettledHead = (): void => {
-    writeHead(dir, {
-      log_bytes: statSync(logPath).size,
+  const logSize = statSync(logPath).size;
+  // The head as the files now stand, naming the snapshot it holds.
+  const writeSettledHead = (snapshotVersion: number, snapshotLogBytes: number): Head => {
+    const settled: Head = {
+      log_bytes: logSize,
       events_bytes: statSync(eventsPath).size,
       deltas_bytes: statSync(deltasPath).size,
       log_entries: entries.length,
       ok_entries: okEntries.length,
       rounds_closed: entries.filter((entry) => entry.round?.close === true).length,
+      snapshot_version: snapshotVersion,
+      snapshot_log_bytes: snapshotLogBytes,
       templates_hash: frozenHash,
-    });
+    };
+    writeHead(dir, settled);
+    return settled;
   };
-  if (snapshot.version !== expectedVersion) {
-    const { snapshot: recovered, events, deltas } = replayWithEvents(dir, templates);
-    atomicWrite(eventsPath, events.map((event) => `${canonicalJson(event)}\n`).join(""));
-    atomicWrite(deltasPath, deltaLines(deltas));
-    atomicWrite(join(dir, snapshots.current), canonicalJson(recovered));
-    writeSettledHead();
-    return recovered;
-  }
   // The deltas are appended after the events and before the snapshot, so with the snapshot at the
   // log's version they are whole unless the file is missing, was never kept (a head with no size for
   // it: a world made before the file existed, or a lost head), or is shorter than the head says it
   // was, which no crash can do. Then they are rebuilt from the log.
-  if (
-    head === null ||
-    head.deltas_bytes === undefined ||
-    !existsSync(deltasPath) ||
-    statSync(deltasPath).size < head.deltas_bytes
-  ) {
-    atomicWrite(deltasPath, deltaLines(replayWithEvents(dir, templates).deltas));
+  const settleDeltas = (): void => {
+    if (
+      head === null ||
+      head.deltas_bytes === undefined ||
+      !existsSync(deltasPath) ||
+      statSync(deltasPath).size < head.deltas_bytes
+    ) {
+      atomicWrite(deltasPath, deltaLines(replayWithEvents(dir, templates).deltas));
+    }
+  };
+  // The snapshot holds every accepted command: it is the current one, whatever the head said, and the head
+  // now names it at the log's end.
+  if (snapshot.version === expectedVersion) {
+    settleDeltas();
+    rememberCurrent(dir, writeSettledHead(snapshot.version, logSize), snapshot);
+    return snapshot;
   }
-  writeSettledHead();
-  return snapshot;
+  // Behind the log, snapshot.json may still be right: the commands since its version are folded onto it, from
+  // the log byte the head names. That is only believed when the head was written after the log's last line,
+  // so the events and deltas it sizes are whole with it. Otherwise, or when the fold fails, the world is
+  // rebuilt from the log.
+  if (head !== null && head.log_bytes === logSize && head.snapshot_version === snapshot.version && head.snapshot_log_bytes !== undefined) {
+    try {
+      const current = foldLogFrom(dir, snapshot, head.snapshot_log_bytes, logSize, templates);
+      if (current.version === expectedVersion) {
+        settleDeltas();
+        rememberCurrent(dir, writeSettledHead(snapshot.version, head.snapshot_log_bytes), current);
+        return current;
+      }
+    } catch {
+      // A snapshot the log cannot be folded onto is rebuilt below, from the log alone.
+    }
+  }
+  const { snapshot: recovered, events, deltas } = replayWithEvents(dir, templates);
+  atomicWrite(eventsPath, events.map((event) => `${canonicalJson(event)}\n`).join(""));
+  atomicWrite(deltasPath, deltaLines(deltas));
+  atomicWrite(snapshotPath, canonicalJson(recovered));
+  rememberCurrent(dir, writeSettledHead(recovered.version, logSize), recovered);
+  return recovered;
 }
 
 function deltaLines(deltas: readonly Delta[]): string {
@@ -882,8 +1035,11 @@ export function submit(
   registry?: TemplateRegistry,
   round?: RoundMark,
   decided?: Result,
+  options: SubmitOptions = {},
 ): Result {
-  return withWorldLock(dir, () => submitLocked(dir, command, based_on_version, registry, round, decided));
+  return withWorldLock(dir, () =>
+    submitLocked(dir, command, based_on_version, registry, round, decided, options.snapshotEvery ?? SNAPSHOT_EVERY),
+  );
 }
 
 function submitLocked(
@@ -893,6 +1049,7 @@ function submitLocked(
   registry: TemplateRegistry | undefined,
   round: RoundMark | undefined,
   decided: Result | undefined,
+  snapshotEvery: number,
 ): Result {
   const templates = activeRegistry(dir, registry);
   const current = load(dir, templates);
@@ -916,10 +1073,6 @@ function submitLocked(
     appendFileSync(deltasPath, deltaLines(result.deltas), "utf8");
   }
 
-  if (result.status === "ok") {
-    atomicWrite(join(dir, snapshots.current), canonicalJson(result.snapshot));
-  }
-
   const logStat = statSync(logPath);
   const eventsStat = statSync(eventsPath);
   const deltasStat = statSync(deltasPath);
@@ -928,15 +1081,26 @@ function submitLocked(
   const okEntries =
     head !== null ? (result.status === "ok" ? head.ok_entries + 1 : head.ok_entries) : result.status === "ok" ? 1 : 0;
   const roundsClosed = (head?.rounds_closed ?? 0) + (round?.close === true ? 1 : 0);
-  writeHead(dir, {
+  // snapshot.json is written only on the interval; otherwise the head keeps naming the snapshot it held.
+  // The snapshot goes before the head, so a crash between them leaves a head that names the older one, and
+  // settle rebuilds from the log.
+  const writesSnapshot = result.status === "ok" && snapshotDue(result.snapshot.version, snapshotEvery);
+  if (writesSnapshot) {
+    atomicWrite(join(dir, snapshots.current), canonicalJson(result.snapshot));
+  }
+  const written: Head = {
     log_bytes: logStat.size,
     events_bytes: eventsStat.size,
     deltas_bytes: deltasStat.size,
     log_entries: logEntries,
     ok_entries: okEntries,
     rounds_closed: roundsClosed,
+    snapshot_version: writesSnapshot ? result.snapshot.version : (head?.snapshot_version ?? current.version),
+    snapshot_log_bytes: writesSnapshot ? logStat.size : (head?.snapshot_log_bytes ?? 0),
     templates_hash: templatesHash(templates),
-  });
+  };
+  writeHead(dir, written);
+  rememberCurrent(dir, written, result.status === "ok" ? result.snapshot : current);
   // The cache is written last and may fail without costing the command anything.
   if (result.status === "ok" && result.snapshot.version % CHECKPOINT_EVERY === 0) {
     try {
@@ -1138,6 +1302,15 @@ function verifyLocked(dir: string, templates: TemplateRegistry): Verification {
   const kept = new Map<number, Snapshot>();
   const events: string[] = [];
   const deltas: string[] = [];
+  // snapshot.json may lag the log, so it is judged against the replay at the version it holds.
+  const storedText = textOrNull(join(dir, snapshots.current));
+  let storedVersion: unknown = null;
+  try {
+    storedVersion = storedText === null ? null : (JSON.parse(storedText) as { version?: unknown }).version;
+  } catch {
+    // A snapshot that is not JSON matches no version, and is reported below.
+  }
+  let atStored: Snapshot | null = initial.version === storedVersion ? initial : null;
   let snapshot = initial;
   for (const [index, entry] of entries.entries()) {
     if (based.has(snapshot.version)) {
@@ -1158,6 +1331,9 @@ function verifyLocked(dir: string, templates: TemplateRegistry): Verification {
     if (result.status === "ok") {
       deltas.push(...result.deltas.map((delta) => canonicalJson(delta)));
       snapshot = result.snapshot;
+      if (snapshot.version === storedVersion) {
+        atStored = snapshot;
+      }
       if (wanted.has(snapshot.version)) {
         reached.set(snapshot.version, { snapshot, lines: index + 1 });
       }
@@ -1176,9 +1352,11 @@ function verifyLocked(dir: string, templates: TemplateRegistry): Verification {
       return { ok: false, divergence: found };
     }
   }
-  const stored = textOrNull(join(dir, snapshots.current));
-  if (stored !== canonicalJson(snapshot)) {
-    return diverges("snapshot.json", 0, stored === null ? "missing" : "differs");
+  if (storedText === null) {
+    return diverges("snapshot.json", 0, "missing");
+  }
+  if (atStored === null || storedText !== canonicalJson(atStored)) {
+    return diverges("snapshot.json", 0, "differs");
   }
 
   // Last, in version order: a checkpoint is a cache, but readers start from its snapshot and a stale

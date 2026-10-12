@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A command writes the snapshot every so often, not every time](#a-command-writes-the-snapshot-every-so-often-not-every-time).
-2. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+1. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -61,30 +60,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - The limits in `docs/limits*.md`: none is worth a verb yet, except as listed in `plans/candidates.md`.
 
 ## Items
-
-_None: every item is shipped. Only the maintainer adds one, under Priorities._
-
-### A command writes the snapshot every so often, not every time
-
-At 500 entities about 8 of the 10.6 ms per command is loading, serialising and writing the whole
-snapshot, against 1.2 ms in the pipeline (`docs/measurements.md`); `deltas.jsonl` already holds
-every accepted command's deltas (from `plans/candidates.md`).
-
-- **Rule** (`src/store/file-store.ts`): `submit` writes `snapshot.json` only every 32 accepted
-  commands, and the head records the version it holds (`snapshot_version`). `load`'s fast path
-  reads that snapshot and folds the deltas after it (`deltas.jsonl`, from the byte the head names),
-  and the snapshot is trusted as now otherwise. A process that holds the world keeps the snapshot it
-  wrote in memory, so a run of commands does not reread it. **Decision to confirm:** every 32.
-- **Kept:** `verify` replays from `initial.json` as now and also checks the stored snapshot against
-  the replay at its version; a crash between writes loses nothing, since the log and deltas are
-  written first; the head stays the last write. Checkpoints are unchanged.
-- **Tests:** a new `tests/snapshot-interval.test.ts`: 100 commands, then a fresh `openWorld` reads
-  the same snapshot as the writer, by `canonicalJson`; a crash simulated after the deltas and before
-  the head recovers; a world written before the field opens and gains it; `verify` names a corrupted
-  stored snapshot.
-- **Record** `npm run bench` and `bench:scale` before and after in `docs/measurements.md`.
-- **Docs:** `docs/persistence.md`. The candidate leaves `plans/candidates.md` in the same commit.
-- **Depends on:** nothing. **Not in it:** compacting the log, a binary format.
 
 ### A reference host plays a run through the JSON ops
 

@@ -153,8 +153,11 @@ test("a world after a mixed run verifies against its own log, past a checkpoint"
 test("it finds a byte the head still trusts: a snapshot changed to the same length", (t) => {
   const { dir } = copyOfBuilt(t);
   const tick = openWorld(dir).snapshot().tick;
-  strictEqual(String(tick + 1).length, String(tick).length);
-  write(dir, "snapshot.json", read(dir, "snapshot.json").replace(`"tick":${tick}`, `"tick":${tick + 1}`));
+  // snapshot.json holds the version of the last interval write, so the tick it names is the stored one, and
+  // the commands since are folded onto it: the edit moves the current tick by one as well.
+  const stored = (JSON.parse(read(dir, "snapshot.json")) as { tick: number }).tick;
+  strictEqual(String(stored + 1).length, String(stored).length);
+  write(dir, "snapshot.json", read(dir, "snapshot.json").replace(`"tick":${stored}`, `"tick":${stored + 1}`));
   // The files agree in size and version, so opening it believes the snapshot...
   strictEqual(openWorld(dir).snapshot().tick, tick + 1);
   // ...and the log does not.

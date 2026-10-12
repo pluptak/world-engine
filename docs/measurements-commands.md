@@ -31,3 +31,17 @@ file's stamp and the head, was tried and dropped: the copy that keeps a caller f
 the store's own object costs about what the parse saves (10.3 to 11.7 ms across runs,
 against 10.4). What is left is writing and serialising the whole snapshot on every command,
 which only a delta log would change.
+
+**Snapshot every 32 commands** (`SNAPSHOT_EVERY`, `src/store/file-store.ts`). Measured on the same
+machine, one run each, ms per command (first / last 1k). Before the change, the rows above:
+
+| | before | snapshot every 32 |
+|---|---|---|
+| four-entity workload (`npm run bench`) | 4.77 / 4.73 | 3.77 / 3.53 |
+| 500 entities (`npm run bench:scale`) | 12.30 / 12.19 | 7.49 / 7.81 |
+| of which the rest (load, serialise, write) | 8.91 | 4.80 |
+
+The rest falls because the snapshot is written on one command in 32 and the head names the version
+it holds; the commands since are folded from the log on open, and a process that holds the world keeps
+its current snapshot in memory, so its own commands fold nothing. The pipeline and validate phases are
+unchanged. The snapshot is 153 kB at 500 entities, as before.

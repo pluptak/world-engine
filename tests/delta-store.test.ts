@@ -278,9 +278,10 @@ test("a missing, short or never-kept deltas file is rebuilt from the log", (t) =
 
 test("a crash leaves the deltas whole or the snapshot behind, and either is settled from what is there", (t) => {
   const base = aged(t);
-  // After the snapshot, before the head: the deltas are all there, so nothing is replayed.
+  // After the log and deltas, before the head: the head is one command behind the log, which is not a
+  // state the snapshot can be folded from, so the log is replayed (snapshot.json is written every 32).
   const late = reopened(t, base, (copy) => writeFileSync(join(copy, "head.json"), base.before.head));
-  strictEqual(late.applied, 0);
+  ok(late.applied > 0);
   // After the deltas, before the snapshot: the snapshot is a command behind the log, so all of it is
   // rebuilt by replay.
   const early = reopened(t, base, (copy) => {

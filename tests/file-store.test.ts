@@ -127,7 +127,10 @@ test("replay reproduces the bottle and hand scenarios byte-for-byte", (t) => {
   const replayed = replay(dir);
   strictEqual(canonicalJson(current), canonicalJson(snapshot));
   strictEqual(canonicalJson(replayed), canonicalJson(current));
-  equal(readFileSync(join(dir, "snapshot.json"), "utf8"), canonicalJson(current));
+  // snapshot.json is written every 32 accepted commands, and this world has six: it still holds the
+  // initial snapshot, and head.json says so, while the current state is the fold of the log after it.
+  strictEqual(JSON.parse(readFileSync(join(dir, "snapshot.json"), "utf8")).version, 0);
+  strictEqual(JSON.parse(readFileSync(join(dir, "head.json"), "utf8")).snapshot_version, 0);
 });
 
 test("a stale take is preempted after the bottle is broken and moved out of reach", (t) => {
