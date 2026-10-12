@@ -28,7 +28,7 @@ public interface IWorld
 
     bool Heard(Snapshot before, Snapshot after, IReadOnlyList<WorldEvent> events, IReadOnlyList<string> observers);
 
-    IReadOnlyList<ScheduledCause> Scheduled();
+    IReadOnlyList<ScheduledCause> Scheduled(string? kind = null, string? entity = null, long? untilTick = null);
 
     // The fact half of a query, judged on the current snapshot.
     Perception.Answer QueryFact(string subject, string relation, string? obj);

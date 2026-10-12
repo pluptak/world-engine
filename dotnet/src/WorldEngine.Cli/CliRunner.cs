@@ -1,9 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
-using WorldEngine.Core.Model;
 using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
+using WorldEngine.Core.Templates;
 using WorldEngine.Store;
+using WorldEngine.Store.Templates;
 
 namespace WorldEngine.Cli;
 
@@ -89,13 +91,29 @@ public static class CliRunner
             case "observe":
                 return StoreWorld.Open(Required(world)).Observe(Text(request, "observer"), JsonReads.SafeInt(request["since"]), JsonReads.SafeInt(request["since_tick"]));
             case "schedule":
-                return new JsonObject { ["schedule"] = Node(StoreWorld.Open(Required(world)).Scheduled()) };
+            {
+                var filter = request["filter"] as JsonObject ?? new JsonObject();
+                return new JsonObject
+                {
+                    ["schedule"] = Node(StoreWorld.Open(Required(world)).Scheduled(
+                        JsonReads.Text(filter["kind"]),
+                        JsonReads.Text(filter["entity"]),
+                        JsonReads.SafeInt(filter["until_tick"]))),
+                };
+            }
             case "query":
                 return Query(StoreWorld.Open(Required(world)), request["query"] as JsonObject ?? throw new WorldError("invalid_query", "The request names no query"));
             case "trace":
                 return Trace(StoreWorld.Open(Required(world)), request["query"] as JsonObject ?? throw new WorldError("invalid_query", "The request names no query"));
             case "catalog":
-                return new JsonObject { ["catalog"] = Node(StoreWorld.Open(Required(world)).CatalogEntries()) };
+                return new JsonObject
+                {
+                    ["catalog"] = Node(world is null ? Catalog.Of(ShippedTemplates) : StoreWorld.Open(world).CatalogEntries()),
+                };
+            case "verbs":
+                return new JsonObject { ["verbs"] = VerbRegistry.Catalog() };
+            case "capabilities":
+                return CapabilitiesOf();
             case "actor_observe":
                 return ActorOf(StoreWorld.Open(Required(world)), request).Observe(JsonReads.SafeInt(request["since_tick"]));
             case "actor_inspect":
@@ -135,6 +153,20 @@ public static class CliRunner
                 throw new WorldError("invalid_op", $"Unknown op {op}");
         }
     }
+
+    // The shipped template set (templates/, copied beside the command line): what a world made without one is built from.
+    private static IReadOnlyDictionary<string, Template> ShippedTemplates =>
+        TemplateResolver.Resolve(TemplateDirectory.ReadDeclarations(Path.Combine(AppContext.BaseDirectory, "templates")));
+
+    // The engine's capabilities (src/engine/capabilities.ts `ENGINE_CAPABILITIES`).
+    private static JsonObject CapabilitiesOf() => new()
+    {
+        ["relations"] = Names(Capabilities.Relations),
+        ["senses"] = Names(Capabilities.Senses),
+        ["computed_properties"] = Names(Capabilities.ComputedProperties),
+    };
+
+    private static JsonArray Names(IEnumerable<string> names) => new(names.Select(name => (JsonNode?)JsonValue.Create(name)).ToArray());
 
     // The files as they are, judged by the log's replay (`verifyWorld`): the answer names the first place they differ.
     private static JsonObject Verified(string dir)

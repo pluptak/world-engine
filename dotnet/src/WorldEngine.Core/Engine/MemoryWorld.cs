@@ -63,7 +63,8 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
 
     public string? Id(string name) => names.GetValueOrDefault(name);
 
-    public IReadOnlyList<ScheduledCause> Scheduled() => Schedule.Scheduled(current);
+    public IReadOnlyList<ScheduledCause> Scheduled(string? kind = null, string? entity = null, long? untilTick = null) =>
+        Schedule.Scheduled(current, kind, entity, untilTick);
 
     public IReadOnlyList<Catalog.CatalogEntry> CatalogEntries() => Catalog.Of(registry);
 

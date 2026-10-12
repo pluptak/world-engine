@@ -144,7 +144,8 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
     public bool Heard(Snapshot before, Snapshot after, IReadOnlyList<WorldEvent> events, IReadOnlyList<string> observers) =>
         EventPerception.SensedBy(before, after, registry, events, events, observers);
 
-    public IReadOnlyList<ScheduledCause> Scheduled() => Schedule.Scheduled(CurrentSnapshot());
+    public IReadOnlyList<ScheduledCause> Scheduled(string? kind = null, string? entity = null, long? untilTick = null) =>
+        Schedule.Scheduled(CurrentSnapshot(), kind, entity, untilTick);
 
     // The chain of events behind one event, or behind the last change of an entity's field (`trace`).
     public List<WorldEvent> TraceOf(string? eventId, string? entity, string? field) => WorldHistory.TraceOf(dir, eventId, entity, field, registry);
