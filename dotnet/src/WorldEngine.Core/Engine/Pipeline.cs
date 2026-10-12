@@ -10,9 +10,17 @@ namespace WorldEngine.Core.Engine;
 // not ported yet, and `Screen` returns null for a command that would go on to them.
 public static class Pipeline
 {
-    // What a verb declares that the front reads: whether it needs a target, and whether only the world author may
-    // issue it. The full verb declaration is ported with the verbs.
-    public sealed record VerbDecl(bool RequiresTarget, bool AuthorOnly);
+    // What a verb declares: whether it needs a target, whether only the world author may issue it, its preconditions
+    // (null when it has none beyond the front), and its duration in ticks (null when it takes none). The verbs are
+    // ported one at a time; a verb without a transition here is not yet in the table.
+    public sealed record VerbDecl(
+        bool RequiresTarget,
+        bool AuthorOnly,
+        Func<Command, Refusal?>? Preconditions = null,
+        Func<Command, long?>? Duration = null);
+
+    // A verb's refusal of a command at its preconditions, before anything changes.
+    public sealed record Refusal(Status Status, string ReasonCode);
 
     public sealed record Result(
         Status Status,
@@ -100,4 +108,57 @@ public static class Pipeline
         }
         return null;
     }
+
+    // The whole transition of a command the front lets through, for the verbs ported so far. Preconditions decide
+    // first; then the root event, the verb's effects (none yet for `advance`), and the clock. Scheduled causes, runs,
+    // processes and per-event perceivers are not ported, so a command that needs them is refused loudly.
+    public static Result Apply(
+        Snapshot snapshot,
+        IReadOnlyDictionary<string, Template> registry,
+        IReadOnlyDictionary<string, VerbDecl> verbs,
+        Command command)
+    {
+        if (Screen(snapshot, registry, verbs, command) is { } screened)
+        {
+            return screened;
+        }
+        if (command.Perceivers == true)
+        {
+            throw new NotPortedException("per-event perceivers");
+        }
+        if (command.Round == true)
+        {
+            throw new NotPortedException("rounds");
+        }
+        var verb = verbs[command.Verb];
+        if (verb.Preconditions?.Invoke(command) is { } refusal)
+        {
+            return Unchanged(snapshot, command, refusal.Status, reasonCode: refusal.ReasonCode);
+        }
+        var duration = verb.Duration?.Invoke(command)
+            ?? throw new InvalidOperationException($"Verb {command.Verb} accepted a command without a duration");
+        if (!IsSafeInteger(snapshot.Tick + duration))
+        {
+            return Unchanged(snapshot, command, Status.Invalid, reasonCode: "clock_overflow");
+        }
+
+        var working = new Working(snapshot, command.CommandId);
+        working.Emit(command.Verb, command.Actor, new Dictionary<string, JsonNode?>(), null);
+        Clock.Advance(working, registry, duration);
+        working.BumpVersion();
+        return new Result(
+            Status.Ok,
+            command.CommandId,
+            null,
+            null,
+            null,
+            null,
+            working.Snapshot,
+            working.Deltas,
+            working.Events);
+    }
+
+    private const long MaxSafeInteger = 9007199254740991;
+
+    private static bool IsSafeInteger(long value) => Math.Abs(value) <= MaxSafeInteger;
 }

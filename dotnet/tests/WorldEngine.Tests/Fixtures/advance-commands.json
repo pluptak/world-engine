@@ -1,0 +1,8 @@
+[
+  { "command_id": "a1", "actor": "world", "verb": "advance", "args": { "ticks": 5 } },
+  { "command_id": "a2", "actor": "world", "verb": "advance", "args": { "ticks": 1 } },
+  { "command_id": "a3", "actor": "world", "verb": "advance", "args": { "ticks": 3 } },
+  { "command_id": "a4", "actor": "e4", "verb": "advance", "args": { "ticks": 2 } },
+  { "command_id": "a5", "actor": "world", "verb": "advance" },
+  { "command_id": "a6", "actor": "world", "verb": "advance", "args": { "ticks": 0 } }
+]
