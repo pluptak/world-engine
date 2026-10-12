@@ -1,0 +1,23 @@
+[
+  { "command_id": "c1", "actor": "e4", "verb": "consume", "target": "e3" },
+  { "command_id": "c2", "actor": "e4", "verb": "consume", "target": "e3", "args": { "amount": 100 } },
+  { "command_id": "c3", "actor": "e4", "verb": "consume", "target": "e3", "args": { "amount": 33 } },
+  { "command_id": "c4", "actor": "e4", "verb": "consume", "target": "e3", "args": { "amount": 800 } },
+  { "command_id": "c5", "actor": "e4", "verb": "consume", "target": "e3", "args": { "amount": 0 } },
+  { "command_id": "c6", "actor": "e4", "verb": "consume", "target": "e3", "args": { "amount": -5 } },
+  { "command_id": "c7", "actor": "e4", "verb": "consume", "target": "e3", "args": { "amount": 1.5 } },
+  { "command_id": "c8", "actor": "e4", "verb": "consume", "target": "e3", "args": { "amount": "5" } },
+  { "command_id": "c9", "actor": "e4", "verb": "consume", "target": "e3", "args": { "amount": null } },
+  { "command_id": "c10", "actor": "e4", "verb": "consume", "target": "e4.hand_l" },
+  { "command_id": "c11", "actor": "e4", "verb": "consume", "target": "e5" },
+  { "command_id": "c12", "actor": "e4", "verb": "consume", "target": "e5", "args": { "amount": 3 } },
+  { "command_id": "c13", "actor": "e4", "verb": "consume", "target": "e21" },
+  { "command_id": "c14", "actor": "e4", "verb": "consume", "target": "e21", "args": { "amount": 1 } },
+  { "command_id": "c15", "actor": "e4", "verb": "consume", "target": "e20" },
+  { "command_id": "c16", "actor": "e4", "verb": "consume", "target": "e22" },
+  { "command_id": "c17", "actor": "e4", "verb": "consume", "target": "e23" },
+  { "command_id": "c18", "actor": "e4", "verb": "consume", "target": "e24" },
+  { "command_id": "c19", "actor": "e4", "verb": "consume", "target": "e25" },
+  { "command_id": "c20", "actor": "e4", "verb": "consume" },
+  { "command_id": "c21", "actor": "e4", "verb": "consume", "target": "nobody" }
+]
