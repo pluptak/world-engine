@@ -10,6 +10,6 @@ Priorities there, then deleting it here in the same commit.
   needs, and whether that is ever done while a world runs or only between worlds (`upgradeTemplates`).
 - **Facing and a sight cone for bodies.** In a lit room every act is seen (`docs/limits.md`); the
   costliest of the limits, revisit when a concrete world needs what darkness, concealment and
-  staging cannot give. A camera's cone is in `backlog.md`; a body's would also need a facing that
+  staging cannot give. A camera's cone is built (`docs/camera.md`); a body's would also need a facing that
   changes as it moves or turns, and `turn` is out of scope. Open: who sets a body's facing, and
   whether hearing or touch ever reads it.

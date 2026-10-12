@@ -117,13 +117,14 @@ suffixes (NodeNext).
   destroyed ancestor that ancestor's status).
 - `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json`,
   `log.jsonl`, `events.jsonl`, `deltas.jsonl` and `head.json`. `submit` appends the log line (every command, including
-  refused and invalid ones, as an `Attempt` with the version it was decided at and its reason), the command's events and an accepted command's deltas, atomically writes the snapshot, and writes
-  `head.json` last: the three files' byte sizes, `log_entries` (all lines, used for default edit ids) and
-  `ok_entries`. `resolveSubmission` runs `validateSnapshot` on every accepted result and
+  refused and invalid ones, as an `Attempt` with the version it was decided at and its reason), the command's events and an accepted command's deltas, atomically writes the snapshot every
+  `SNAPSHOT_EVERY` (32) accepted commands, and writes `head.json` last: the three files' byte sizes,
+  `log_entries` (all lines, used for default edit ids), `ok_entries`, and the version and log byte the
+  snapshot holds (`snapshot_version`, `snapshot_log_bytes`). `resolveSubmission` runs `validateSnapshot` on every accepted result and
   downgrades a breaking one to `invalid` with the rule's code, so a verb bug is logged but never
-  written; no verb leans on it, which the property test holds (an `apply` that is ok must stay ok). `load` trusts the snapshot when the head matches the file sizes and `ok_entries`, without
-  reading the log; otherwise it counts `ok` entries, replays and rewrites the events, deltas and head if they
-  disagree (a missing or short `deltas.jsonl`, or a head with no size for it, is rebuilt, which is why a world made before it still opens at `schema_version` 5). Writers take turns (`src/store/lock.ts`, `docs/locking.md`): a `lock` file made with the exclusive flag, held by `submit`, by `edit` around its default id, by `upgradeTemplates` and by the repair in `load`, whose fast path takes none and which settles a world under the turn after looking again; a waiter past `WORLD_LOCK_TIMEOUT_MS` fails `store_busy`, and a lock of a dead process or over a minute old is taken over. Store queries read `events.jsonl`, and `trace` of a field `deltas.jsonl`, each parsed once per handle and extended by the lines appended since; `since` and event-time perceive replay only from the newest usable
+  written; no verb leans on it, which the property test holds (an `apply` that is ok must stay ok). `load` trusts the head when it matches the file sizes and `ok_entries`, and folds the accepted
+  commands after the snapshot's byte onto a snapshot that is behind (`docs/persistence.md`); otherwise it counts `ok` entries,
+  replays and rewrites the snapshot, events, deltas and head if they disagree (a missing or short `deltas.jsonl`, or a head with no size for it, is rebuilt, which is why a world made before it still opens at `schema_version` 5). Writers take turns (`src/store/lock.ts`, `docs/locking.md`): a `lock` file made with the exclusive flag, held by `submit`, by `edit` around its default id, by `upgradeTemplates` and by the repair in `load`, whose fast path takes none and which settles a world under the turn after looking again; a waiter past `WORLD_LOCK_TIMEOUT_MS` fails `store_busy`, and a lock of a dead process or over a minute old is taken over. Store queries read `events.jsonl`, and `trace` of a field `deltas.jsonl`, each parsed once per handle and extended by the lines appended since; `since` and event-time perceive replay only from the newest usable
 checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the log bytes, `initial.json` and template set;
 `docs/persistence.md`). A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
   fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes

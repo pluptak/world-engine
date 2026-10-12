@@ -19,6 +19,16 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
+2. [The snapshot interval is set per world](#the-snapshot-interval-is-set-per-world).
+3. [An orphaned part is reported as a lost field again](#an-orphaned-part-is-reported-as-a-lost-field-again).
+4. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
+5. [restartWorld refuses any directory that holds a world](#restartworld-refuses-any-directory-that-holds-a-world).
+6. [A crash at every write of submit is tested](#a-crash-at-every-write-of-submit-is-tested).
+7. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
+8. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
+9. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
+10. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
+11. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -85,3 +95,142 @@ the CLI's JSON requests, players that answer late, and a record of what each sid
 - **Docs:** a new `docs/host.md` (what the host does and does not), its `docs/DESIGN.md` line.
 - **Depends on:** nothing; best after the cost items. **Not in it:** an LLM player (a later item
   plugs one in as a player function), a network server, any prose.
+
+### The snapshot interval is set per world
+
+- **What:** `SNAPSHOT_EVERY` (32, `src/store/file-store.ts`) is a constant. `submit` takes
+  `snapshotEvery` in its options, but nothing above it passes one. Make the interval a setting a
+  caller gives when it opens a world, default 32, and give the checkpoint interval (256) the same way.
+- **Decision to confirm:** the setting is passed on each `openWorld`, not stored in the world.
+  Recommended: `format.json` is not changed, since it refuses any other `schema_version`. A stored
+  setting would need a new file or a version bump.
+- The reader assumes no interval: `head.json` names the version and byte the snapshot holds, so any
+  setting reads the same state.
+- **Done when:** a world opened with 1, 3 and 100 writes `snapshot.json` every command, every third
+  and every hundredth. Reopening with another setting gives the same state and `verify` passes. With
+  the default, `npm run bench` is unchanged.
+- **Files:** `src/store/file-store.ts`, the options of `openWorld` in `src/api.ts`.
+- **Tests:** extend `tests/snapshot-interval.test.ts`.
+- **Docs:** `docs/persistence.md`, `docs/api.md`, and the store paragraph of `CLAUDE.md`.
+- **Depends on:** nothing.
+
+### An orphaned part is reported as a lost field again
+
+- **What:** since `snapshot.json` can lag the log, `templates_lost_field` sees only the stored
+  snapshot. A set that orphans a part set by a command past it is refused `templates_changed`
+  (`tests/frozen-templates.test.ts`, orphan-part test). The refusal is right, but less exact.
+- The lost-field check should read the state at the head: the stored snapshot with the accepted
+  commands after it folded in, as `replayToVersion` and `foldLogFrom` already do.
+- **Done when:** the orphan-part test expects `templates_lost_field` and names the part. A set that
+  orphans nothing still passes. A change that is not a lost field keeps `templates_changed`.
+- **Files:** the moved-set branch of `settle` in `src/store/file-store.ts`, and `src/engine/upgrade.ts`
+  if the check lives there.
+- **Tests:** `tests/frozen-templates.test.ts`.
+- **Depends on:** nothing.
+
+### The intermittent multi-process failure has a cause
+
+- **What:** `tests/store-lock.test.ts`, "six processes writing one world take turns", failed once in
+  a full-suite run: several ok commands were logged at the same version. It passed in 14 later runs
+  (solo, parallel, and on the earlier HEAD), so the cause is unknown.
+- Reproduce under load: run the file in a loop with CPU stress in the background, logging each
+  child's version decisions. Candidates to check: the takeover in `src/store/lock.ts` (a lock of a
+  dead process, or one over a minute old), the repair in `load` that settles under the turn after
+  looking again, and the read loop in `foldLogFrom`.
+- **Done when:** the cause is named in `docs/locking.md` and fixed with a deterministic test. If it
+  does not reproduce in 50 loop runs, the test writes each child's log to a file on failure, so the
+  next occurrence can be read.
+- **Depends on:** nothing.
+
+### restartWorld refuses any directory that holds a world
+
+- **What:** `worldExists` (`src/store/file-store.ts`) checks only `format.json`. `restartWorld`
+  (`src/api.ts`) refuses `world_exists` on that test alone, so a target holding `initial.json` or
+  `log.jsonl` but no `format.json` is not refused.
+- Check first what `create` does with a directory that already holds files. Then refuse any
+  directory holding a world file.
+- **Done when:** restarting into such a directory refuses `world_exists` and leaves its files as
+  they were.
+- **Tests:** `tests/restart.test.ts`. **Docs:** `docs/restart.md`, if its `world_exists` sentence
+  needs the wider rule.
+- **Depends on:** nothing.
+
+### A crash at every write of submit is tested
+
+- **What:** `submit` writes, in order, the log line, the events, the deltas, the snapshot, the
+  checkpoint and `head.json`. Settle has a rule for each state a crash can leave
+  (`docs/locking-crash.md`, `docs/persistence.md`). Each case has its own test, but none stops one
+  submit at every step.
+- Build one: an injected failure after each write, or a truncation to each intermediate state, run
+  over seven commands with `snapshotEvery` 3, so the crash falls on and off a snapshot boundary and
+  on a checkpoint.
+- **Done when:** for each crash point, the next `openWorld` gives the state an uninterrupted run
+  gives, and `verify` passes. A point that does not is fixed, or recorded as a bug item.
+- **Files:** `src/store/file-store.ts` only if a seam is needed. **Tests:** new
+  `tests/submit-crash.test.ts`. **Docs:** `docs/locking-crash.md`.
+- **Depends on:** nothing.
+
+### The memoised snapshot cannot be mutated
+
+- **What:** the per-process memo in `src/store/file-store.ts` (`currentMemo`) returns its snapshot
+  without a copy, because a copy costs about what the parse saved. A caller that changes a snapshot it
+  was given changes what the next read in that process sees.
+- Deep-freeze the memo entry when it is stored, so a mutation throws in the caller's code. Measure
+  it with `npm run bench:scale`, and keep it only if the rest phase moves by under 5%.
+- **Decision to confirm:** freeze always (recommended, if the number holds) or only under tests.
+- **Done when:** a test that mutates a snapshot from `openWorld` throws. The bench numbers are recorded
+  in `docs/measurements.md`.
+- **Tests:** `tests/file-store.test.ts`. **Docs:** `docs/persistence.md`, where "must not mutate"
+  becomes a guarantee.
+- **Depends on:** nothing.
+
+### An event-form perceive finds its event without a scan
+
+- **What:** `eventsThrough` (`src/store/file-store.ts`) finds the event with `findIndex` over every
+  stored event, and `replayUntilEvent` calls it for each event a query names. In a world of 10k
+  commands each such query scans the whole events list.
+- Keep a map from `event_id` to its index in the cached events, extended by the lines appended since,
+  as `cachedEvents` already extends them.
+- **Done when:** `npm run bench:reads` shows the event-form perceive flat from 1k to 10k commands. The
+  before and after numbers go in `docs/measurements.md`.
+- **Tests:** the existing event-form perceive tests stay green, plus one that finds an event appended
+  after the map was first built.
+- **Depends on:** nothing.
+
+### A beat that writes a definition prop is refused when written
+
+- **What:** a beat that writes a definition prop is refused `field_not_editable` only when it is due,
+  not when it is written (`plans/power.md`, "Template-defined props in a beat"). The check is in
+  `src/engine/validate.ts` and `src/engine/verbs/edit.ts`.
+- Make `schedule_beat` and `retime_beat` (`src/engine/verbs/edit.ts`) refuse such a beat with the same
+  code, so the author learns when the beat is written.
+- **Done when:** scheduling such a beat is refused at once, and the beat tests cover it. A beat already
+  queued in a stored world keeps today's behaviour: refused when due.
+- **Docs:** `docs/beats.md`, one sentence. No new refusal code.
+- **Depends on:** nothing.
+
+### The lab's power cut goes through the generator's on prop
+
+- **What:** `plans/power.md`, item 4. The lab's server room should be lit by a lamp powered from the
+  generator, and the run's power cut should be `update_props { on: false }` on the generator, not
+  `lit: false` on the room. Today `scenarios/lab.json` gives `server_room` `lit: true` and no lamp, and
+  `docs/limits-lab.md` records the hand-made cut as a limit.
+- Add the lamp (a `light_source` with `powered_by` the generator's cable), make the cut a beat on the
+  generator, and remove the limit line. The `on` prop and powered light in `isLit` are already built.
+- **Done when:** the lab run's cut darkens the server room through `isLit`, not through a prop on the
+  room. The lab acceptance test's expected log is updated, each changed line explained in the commit.
+- **Files:** `scenarios/lab.json`, `docs/limits-lab.md`.
+- **Tests:** `tests/acceptance-lab-run.test.ts`, `tests/light.test.ts`, `tests/power-switch.test.ts`.
+- **Depends on:** nothing.
+
+### The storage seam is an interface with no behaviour change
+
+- **What:** `plans/storage-seam-design.md`, approach B. A `WorldStore` interface over primitives
+  (snapshot, log, events and deltas, checkpoints, templates, ids, and `runExclusive`). `FileWorldStore`
+  is today's file code, and `MemoryWorldStore` is extracted from `memoryWorld`. One driver in
+  `src/api.ts`, and the shared folds in `src/store/folds.ts`.
+- Zero behaviour change: the same bytes on disk and the same CLI output. The exports of
+  `src/store/file-store.ts` stay as wrappers, so tests keep their imports. No SQLite code.
+- **Done when:** `npm run check` passes with no test edit beyond imports, and one new seam test shows
+  the file and memory drivers fold a scripted log identically.
+- **Depends on:** nothing, but best after the snapshot interval item, which changes the same file.
