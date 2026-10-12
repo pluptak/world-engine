@@ -13,3 +13,15 @@ Priorities there, then deleting it here in the same commit.
   staging cannot give. A camera's cone is built (`docs/camera.md`); a body's would also need a facing that
   changes as it moves or turns, and `turn` is out of scope. Open: who sets a body's facing, and
   whether hearing or touch ever reads it.
+- **Conditions beyond asleep.** Bound, unconscious, blind and deaf would each take its own senses
+  and capacities, as `asleep` does (`docs/senses.md`). Each is an item when a scene needs it, and no
+  scene does yet. Open: which scene needs which.
+- **A room going dark.** With no event, an agent in a room whose light fails sees less at the next
+  look, but nothing says the light went out. Candidate: a derived `darkened` event on the room, emitted
+  when `isLit` turns false within a command. Open: whether a scene row needs it.
+- **`wait` outside a run.** Kept for tests and single-agent worlds, or removed now that rounds exist
+  (`docs/rounds.md`). Open: keep or remove.
+- **A successor's held items.** The successor's field names are settled (`docs/templates.md`). Open:
+  whether what a destroyed body held passes to its successor, or falls as it does now.
+- **`WORLD_AUTHOR`.** It keeps every permission at once, for tests and repair (`docs/roles.md`). Open:
+  when, if ever, the roles replace it.
