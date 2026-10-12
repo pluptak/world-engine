@@ -30,6 +30,18 @@ public interface IWorld
 
     IReadOnlyList<ScheduledCause> Scheduled();
 
+    // The fact half of a query, judged on the current snapshot.
+    Perception.Answer QueryFact(string subject, string relation, string? obj);
+
+    // A perceive, by entity (the present) or by an event (the world at either end of the event's command), by a sense.
+    Perception.Answer QueryPerceive(string observer, string sense, string? eventId = null, string? entity = null);
+
+    // The chain of events behind one event, or behind the last change of an entity's field.
+    List<WorldEvent> TraceOf(string? eventId, string? entity, string? field);
+
+    // The verbs and templates the world can name, as the catalog gives them.
+    IReadOnlyList<Catalog.CatalogEntry> CatalogEntries();
+
     // An edit sent under a role; the director's edit is the one that reaches this (`src/director-world.ts`).
     Pipeline.Result Edit(JsonObject edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null);
 }
