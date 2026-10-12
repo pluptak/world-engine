@@ -15,3 +15,13 @@ public sealed record ValidationFailure(IReadOnlyList<ValidationIssue> Issues)
 {
     public string Status => "invalid";
 }
+
+// A command a caller sends (src/contract.ts `CommandSchema`). The request names the actor itself; `round` and `by` belong to the log the
+// world keeps, so a request that names them is refused. It is named apart from the log's command, which carries those.
+public sealed record ContractCommand(
+    string CommandId,
+    string Actor,
+    string Verb,
+    string? Target = null,
+    IReadOnlyDictionary<string, JsonNode?>? Args = null,
+    bool? Perceivers = null);

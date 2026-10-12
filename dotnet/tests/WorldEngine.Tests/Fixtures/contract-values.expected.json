@@ -343,5 +343,130 @@
     "schema": "ValidationFailureSchema",
     "value": null,
     "valid": false
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "c1",
+      "actor": "e2",
+      "verb": "take"
+    },
+    "valid": true
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "c1",
+      "actor": "e2",
+      "verb": "say",
+      "target": "ann",
+      "args": {
+        "utterance": "hi",
+        "n": 1
+      },
+      "perceivers": true
+    },
+    "valid": true
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "",
+      "actor": "e2",
+      "verb": "take"
+    },
+    "valid": true
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "actor": "e2",
+      "verb": "take"
+    },
+    "valid": false
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "c1",
+      "verb": "take"
+    },
+    "valid": false
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "c1",
+      "actor": 2,
+      "verb": "take"
+    },
+    "valid": false
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "c1",
+      "actor": "e2"
+    },
+    "valid": false
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "c1",
+      "actor": "e2",
+      "verb": "take",
+      "args": "x"
+    },
+    "valid": false
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "c1",
+      "actor": "e2",
+      "verb": "take",
+      "args": []
+    },
+    "valid": false
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "c1",
+      "actor": "e2",
+      "verb": "take",
+      "perceivers": "yes"
+    },
+    "valid": false
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "c1",
+      "actor": "e2",
+      "verb": "take",
+      "round": {
+        "number": 1
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "CommandSchema",
+    "value": {
+      "command_id": "c1",
+      "actor": "e2",
+      "verb": "take",
+      "by": {
+        "role": "author"
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "CommandSchema",
+    "value": null,
+    "valid": false
   }
 ]
