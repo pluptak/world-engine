@@ -1,0 +1,1 @@
+[{"id":"r","template":"room"},{"id":"s","template":"stone","overrides":{"modifiers":[{"capacity":"x","delta":1,"expires_at_tick":null,"cause_id":"ev1"}]}}]

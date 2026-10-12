@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
@@ -22,9 +23,10 @@ public static class CliRunner
     {
         try
         {
-            if (args.Count > 0)
+            // `init` takes its arguments, and anything else reads its request from input, the arguments ignored (src/cli/main.ts `runCli`).
+            if (args.Count > 0 && args[0] == "init")
             {
-                return Invalid("not_ported");
+                return Init(args);
             }
             JsonNode? parsed;
             try
@@ -51,7 +53,87 @@ public static class CliRunner
         }
         catch (WorldError error)
         {
-            return Invalid(error.Code);
+            return Invalid(error);
+        }
+        catch (Exception)
+        {
+            // Anything else is the engine's own fault, which the TypeScript CLI answers the same way (`errorIssues`).
+            return Invalid("internal_error");
+        }
+    }
+
+    // `init <dir> <scenario> [coverage]` (src/cli/main.ts `initializeWorld`): a world made from a scenario file, answered with its version.
+    // Each way the files can be wrong gets its own code, as TypeScript's do.
+    private static CliOutput Init(IReadOnlyList<string> args)
+    {
+        if (args.Count != 3 && args.Count != 4)
+        {
+            return Invalid("invalid_init_args");
+        }
+        var scenarioText = ReadFile(args[2]);
+        if (scenarioText is null)
+        {
+            return Invalid("no_such_scenario");
+        }
+        if (!TryParse(scenarioText, out var scenario))
+        {
+            return Invalid("invalid_scenario_json");
+        }
+        if (!ContractDocument.IsScenario(scenario))
+        {
+            return Invalid("invalid_scenario");
+        }
+        Coverage? coverage = null;
+        if (args.Count == 4)
+        {
+            var coverageText = ReadFile(args[3]);
+            if (coverageText is null)
+            {
+                return Invalid("no_such_coverage");
+            }
+            if (!TryParse(coverageText, out var coverageJson))
+            {
+                return Invalid("invalid_coverage_json");
+            }
+            if (!ContractDocument.IsCoverage(coverageJson))
+            {
+                return Invalid("invalid_coverage");
+            }
+            coverage = WorldJson.Read<Coverage>(coverageJson!.ToJsonString());
+        }
+        var registry = ShippedTemplates;
+        var made = WorldBuilder.Snapshot(scenario!, registry, coverage);
+        WorldBuilder.Create(args[1], made.Snapshot, registry, made.Ids);
+        return new CliOutput(
+            Line(new JsonObject { ["status"] = "ok", ["world"] = args[1], ["snapshot_version"] = made.Snapshot.Version }),
+            0);
+    }
+
+    // A file's text as the file holds it (a byte order mark is kept, as TypeScript keeps it), or null when it cannot be read.
+    private static string? ReadFile(string path)
+    {
+        try
+        {
+            return new UTF8Encoding(encoderShouldEmitUTF8Identifier: false).GetString(File.ReadAllBytes(path));
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    // Whether the text is JSON at all; the value it holds may be null, which is still a parse.
+    private static bool TryParse(string text, out JsonNode? value)
+    {
+        try
+        {
+            value = JsonNode.Parse(text);
+            return true;
+        }
+        catch (JsonException)
+        {
+            value = null;
+            return false;
         }
     }
 
@@ -121,6 +203,13 @@ public static class CliRunner
                 {
                     ["catalog"] = Node(world is null ? Catalog.Of(ShippedTemplates) : StoreWorld.Open(world).CatalogEntries()),
                 };
+            // A run played again: the new world at `to` is made from `world`'s initial snapshot and set, and answered with its version.
+            case "restart":
+            {
+                var to = Text(request, "to");
+                WorldBuilder.Restart(Required(world), to);
+                return new JsonObject { ["snapshot_version"] = StoreWorld.Open(to).CurrentSnapshot().Version };
+            }
             case "verbs":
                 return new JsonObject { ["verbs"] = VerbRegistry.Catalog() };
             case "schema":
@@ -348,6 +437,22 @@ public static class CliRunner
     private static JsonNode? Node<T>(T value) => JsonNode.Parse(WorldJson.Write(value));
 
     private static string Line(JsonNode? answer) => CanonicalJson.Serialize(answer) + "\n";
+
+    // A refused world call: its code, then each rule it broke, as `errorIssues` writes them.
+    private static CliOutput Invalid(WorldError error)
+    {
+        var issues = new JsonArray(new JsonObject { ["code"] = error.Code, ["message"] = error.Code, ["path"] = new JsonArray() });
+        foreach (var rule in error.Issues)
+        {
+            issues.Add(new JsonObject
+            {
+                ["code"] = rule.Code,
+                ["message"] = rule.Message,
+                ["path"] = new JsonArray(rule.Path.Select(part => (JsonNode?)JsonValue.Create(part)).ToArray()),
+            });
+        }
+        return new CliOutput(Line(new JsonObject { ["status"] = "invalid", ["issues"] = issues }), 2);
+    }
 
     // A refused request: the status and the one issue its code names, as `invalidFromIssues` writes it.
     private static CliOutput Invalid(string code)

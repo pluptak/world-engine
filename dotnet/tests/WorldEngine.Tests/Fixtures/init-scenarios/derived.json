@@ -1,0 +1,1 @@
+[{"id":"r","template":"room"},{"id":"t","template":"stone","overrides":{"support":"r","location":"r","pos":{"x":0,"y":0}}},{"id":"s","template":"stone","overrides":{"support":"t"}}]

@@ -43,12 +43,12 @@ public static class EditVerb
     ];
 
     // A field the edit names: Value is what it names, null for an explicit null (a clear). An absent field is no Given.
-    private sealed record Given<T>(T? Value);
+    public sealed record Given<T>(T? Value);
 
-    private abstract record WorldEdit;
+    public abstract record WorldEdit;
     // A spawn: the template, whether the location was named (Given, so an explicit null is kept apart from none), the
     // overrides as the spawn takes them, and whether any modifier was named (which is never allowed at a spawn).
-    private sealed record SpawnEdit(string Template, Given<string>? Location, Spawn.Overrides Fields, bool HasModifiers) : WorldEdit;
+    public sealed record SpawnEdit(string Template, Given<string>? Location, Spawn.Overrides Fields, bool HasModifiers) : WorldEdit;
     private sealed record SetSeedEdit(long Seed) : WorldEdit;
     private sealed record RemoveEdit(string Target) : WorldEdit;
     // A place: each relation as the edit names it (Given, so an explicit null is kept apart from none), and the position as
@@ -914,7 +914,7 @@ public static class EditVerb
     // The overrides of a spawn, each field as TypeScript's isOverrides reads it: absent is the blank field, null where the
     // field takes null, and a value the field cannot hold makes the edit malformed (null). An explicit null in_part and a
     // trait that is not a token string are not ported and are refused loudly.
-    private static SpawnEdit? ParseOverrides(string template, JsonObject overrides)
+    public static SpawnEdit? ParseOverrides(string template, JsonObject overrides)
     {
         string? name = null;
         if (overrides.ContainsKey("name"))
