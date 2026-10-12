@@ -18,7 +18,7 @@ public static class SayVerb
         RootEvent: RootEvent);
 
     // `\z`, not `$`: a trailing newline is not part of a token.
-    private static readonly Regex Utterance = new(@"^[A-Za-z0-9_.:-]{1,64}\z", RegexOptions.CultureInvariant);
+    internal static readonly Regex Utterance = new(@"^[A-Za-z0-9_.:-]{1,64}\z", RegexOptions.CultureInvariant);
 
     private static readonly string[] Volumes = ["whisper", "normal", "shout"];
 
