@@ -194,6 +194,7 @@ public static class Pipeline
         var context = new CommandContext(snapshot, registry, command, target, verb.Requires ?? []);
         if (verb.Preconditions?.Invoke(context) is { } refusal)
         {
+            AssertDeclared(command.Verb, refusal);
             return Unchanged(
                 snapshot,
                 command,
@@ -240,6 +241,7 @@ public static class Pipeline
         Runs.FinishRun(working);
         if (verb.ValidateResult?.Invoke(context with { Snapshot = working.Snapshot }) is { } validation)
         {
+            AssertDeclared(command.Verb, validation);
             return Unchanged(
                 snapshot,
                 command,
@@ -278,6 +280,20 @@ public static class Pipeline
         return events
             .Select(@event => described.TryGetValue(@event.EventId, out var perceivers) ? @event with { Perceivers = perceivers } : @event)
             .ToList();
+    }
+
+    // A refusal a verb did not declare is a bug (src/engine/pipeline.ts): it throws, so a declaration that drifts from the
+    // verb's refusals fails loudly. Only a refusal is judged, not an invalid command.
+    private static void AssertDeclared(string verb, Refusal refusal)
+    {
+        if (refusal.Status != Status.Refused)
+        {
+            return;
+        }
+        if (!VerbSpecs.ByVerb.TryGetValue(verb, out var spec) || refusal.ReasonCode is null || !spec.Refuses.Contains(refusal.ReasonCode))
+        {
+            throw new InvalidOperationException($"Verb {verb} refused with undeclared code {refusal.ReasonCode}");
+        }
     }
 
     // The target a command names, once the front has accepted it: resolution cannot fail here, so only the address is
