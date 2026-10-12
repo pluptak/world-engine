@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -365,8 +366,29 @@ public static class Carry
         _ => "mouth_full",
     };
 
+    // The grip a take or give lands in. A `part` argument that is not a non-empty string is invalid; otherwise the
+    // claim decides, and a refusal is `hands_full` (with its data) or `unknown_part`.
+    public static GripPlacement PlaceInGrip(Pipeline.CommandContext context, string holderId, Entity item)
+    {
+        string? named = null;
+        if (context.Command.Args is { } args && args.TryGetValue("part", out var raw))
+        {
+            if (raw is null || raw.GetValueKind() != JsonValueKind.String || raw.GetValue<string>().Length == 0)
+            {
+                return new GripInvalid("invalid_args");
+            }
+            named = raw.GetValue<string>();
+        }
+        return ClaimGrip(context.Snapshot, context.Registry, holderId, item, named, item.Id) switch
+        {
+            GripFound found => new GripPlaced(found.Part),
+            GripRefused { ReasonCode: "hands_full" } full => new GripBlocked("hands_full", full.ReasonData),
+            _ => new GripBlocked("unknown_part", null),
+        };
+    }
+
     private static IReadOnlyDictionary<string, JsonNode?> Data(params (string Key, object Value)[] pairs) =>
-        pairs.ToDictionary(pair => pair.Key, pair => (JsonNode?)JsonValue.Create(pair.Value), StringComparer.Ordinal);
+        Pipeline.Reason(pairs);
 }
 
 // The verdict of `Carry.Check`: `Ok`, or the refusal code and its data.
@@ -376,3 +398,11 @@ public sealed record CarryVerdict(bool Ok, string? ReasonCode, IReadOnlyDictiona
 public abstract record GripClaim;
 public sealed record GripFound(string Part) : GripClaim;
 public sealed record GripRefused(string ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData) : GripClaim;
+
+// The grip a take or give lands in (src/engine/carry.ts `gripPlacement`): the `part` argument, or the lowest free grip,
+// once the capacity checks have run. The item itself is left out of the packing, so taking it from its own grip is
+// the same grip again.
+public abstract record GripPlacement;
+public sealed record GripPlaced(string Part) : GripPlacement;
+public sealed record GripBlocked(string ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData) : GripPlacement;
+public sealed record GripInvalid(string ReasonCode) : GripPlacement;

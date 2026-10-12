@@ -55,6 +55,47 @@ public sealed class Working
         Snapshot = Snapshot with { Entities = entities };
     }
 
+    // Sets one of the entity's id-valued relations (`set` in src/engine/pipeline.ts): a delta under `eventId` when the
+    // value changes, nothing when it does not.
+    public void SetRelation(string entityId, string field, string? value, string eventId)
+    {
+        var entity = Snapshot.Entities[entityId];
+        var (current, updated) = field switch
+        {
+            "contained_in" => (entity.ContainedIn, entity with { ContainedIn = value }),
+            "in_part" => (entity.InPart, entity with { InPart = value }),
+            "support" => (entity.Support, entity with { Support = value }),
+            "concealed_by" => (entity.ConcealedBy, entity with { ConcealedBy = value }),
+            "location" => (entity.Location, entity with { Location = value }),
+            _ => throw new ArgumentException($"Not a relation: {field}", nameof(field)),
+        };
+        if (current == value)
+        {
+            return;
+        }
+        Deltas.Add(new Delta(eventId, entityId, field, current is null ? null : JsonValue.Create(current), value is null ? null : JsonValue.Create(value)));
+        var entities = new Dictionary<string, Entity>(Snapshot.Entities, StringComparer.Ordinal) { [entityId] = updated };
+        Snapshot = Snapshot with { Entities = entities };
+    }
+
+    // Sets the entity's position (a `pos` delta when it changes, as `SetRelation` does).
+    public void SetPos(string entityId, Pos? pos, string eventId)
+    {
+        var entity = Snapshot.Entities[entityId];
+        if (entity.Pos == pos)
+        {
+            return;
+        }
+        Deltas.Add(new Delta(
+            eventId,
+            entityId,
+            "pos",
+            entity.Pos is null ? null : JsonSerializer.SerializeToNode(entity.Pos, WorldJson.Options),
+            pos is null ? null : JsonSerializer.SerializeToNode(pos, WorldJson.Options)));
+        var entities = new Dictionary<string, Entity>(Snapshot.Entities, StringComparer.Ordinal) { [entityId] = entity with { Pos = pos } };
+        Snapshot = Snapshot with { Entities = entities };
+    }
+
     public void SetTick(long tick) => Snapshot = Snapshot with { Tick = tick };
 
     public void BumpVersion() => Snapshot = Snapshot with { Version = Snapshot.Version + 1 };

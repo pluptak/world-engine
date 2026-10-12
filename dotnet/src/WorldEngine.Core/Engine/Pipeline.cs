@@ -37,6 +37,10 @@ public static class Pipeline
     // A verb's refusal of a command at its preconditions, before anything changes.
     public sealed record Refusal(Status Status, string ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData = null);
 
+    // The reason data of a refusal or event: named values, each a string, a number or a boolean.
+    public static IReadOnlyDictionary<string, JsonNode?> Reason(params (string Key, object Value)[] pairs) =>
+        pairs.ToDictionary(pair => pair.Key, pair => (JsonNode?)JsonValue.Create(pair.Value), StringComparer.Ordinal);
+
     // The refusal for an actor short of a required capacity (src/engine/carry.ts `capacityRefusal`): the code names the
     // verb's first requirement, and the data the first one unmet. Null when the actor meets them all.
     public static Refusal? RequirementRefusal(CommandContext context)

@@ -1,0 +1,15 @@
+[
+  { "command_id": "k1", "actor": "e4", "verb": "take", "target": "e5" },
+  { "command_id": "k2", "actor": "e4", "verb": "take", "target": "e5" },
+  { "command_id": "k3", "actor": "e4", "verb": "take", "target": "e4" },
+  { "command_id": "k4", "actor": "e4", "verb": "take", "target": "e4.hand_l" },
+  { "command_id": "k5", "actor": "e4", "verb": "take", "target": "e5", "args": { "part": "hand_l" } },
+  { "command_id": "k6", "actor": "e4", "verb": "take", "target": "e5", "args": { "part": "nope" } },
+  { "command_id": "k7", "actor": "e4", "verb": "take", "target": "e5", "args": { "part": 5 } },
+  { "command_id": "k8", "actor": "e4", "verb": "take", "target": "e15" },
+  { "command_id": "k9", "actor": "e4", "verb": "take", "target": "e5" },
+  { "command_id": "k10", "actor": "e4", "verb": "take", "target": "e5", "args": { "part": "hand_l" } },
+  { "command_id": "k11", "actor": "e4", "verb": "take", "target": "e5" },
+  { "command_id": "k12", "actor": "e4", "verb": "take", "target": "e14" },
+  { "command_id": "k13", "actor": "e4", "verb": "take", "target": "e15" }
+]

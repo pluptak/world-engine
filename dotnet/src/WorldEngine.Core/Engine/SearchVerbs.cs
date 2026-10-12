@@ -15,12 +15,6 @@ public static class SearchVerbs
         Requires: [new Pipeline.Requirement("manipulation", 50)],
         Transition: Transition);
 
-    // Everything the entity hides, in id order.
-    public static IReadOnlyList<string> HiddenBy(Snapshot snapshot, string concealerId) =>
-        snapshot.Entities.Keys.Order(StringComparer.Ordinal)
-            .Where(id => snapshot.Entities[id].ConcealedBy == concealerId)
-            .ToList();
-
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
     {
         var target = context.Target;
@@ -40,7 +34,7 @@ public static class SearchVerbs
         var enclosure = Reach.ClosedEnclosure(context.Snapshot, target.EntityId);
         if (enclosure is not null)
         {
-            return new Pipeline.Refusal(Status.Refused, "container_closed", Data(("enclosure", enclosure)));
+            return new Pipeline.Refusal(Status.Refused, "container_closed", Pipeline.Reason(("enclosure", enclosure)));
         }
         if (!Reach.InReach(context.Snapshot, context.Command.Actor, target.EntityId))
         {
@@ -48,7 +42,7 @@ public static class SearchVerbs
             return new Pipeline.Refusal(
                 Status.Refused,
                 "out_of_reach",
-                measure is null ? null : Data(("distance_cm", measure.DistanceCm), ("reach_cm", measure.ReachCm)));
+                measure is null ? null : Pipeline.Reason(("distance_cm", measure.DistanceCm), ("reach_cm", measure.ReachCm)));
         }
         return Pipeline.RequirementRefusal(context);
     }
@@ -56,12 +50,9 @@ public static class SearchVerbs
     private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId)
     {
         var concealer = context.Target!.EntityId;
-        foreach (var id in HiddenBy(working.Snapshot, concealer))
+        foreach (var id in Concealment.HiddenBy(working.Snapshot, concealer))
         {
-            working.Emit("found", id, Data(("concealer", concealer)), rootEventId);
+            working.Emit("found", id, Pipeline.Reason(("concealer", concealer)), rootEventId);
         }
     }
-
-    private static Dictionary<string, JsonNode?> Data(params (string Key, object Value)[] pairs) =>
-        pairs.ToDictionary(pair => pair.Key, pair => (JsonNode?)JsonValue.Create(pair.Value), StringComparer.Ordinal);
 }
