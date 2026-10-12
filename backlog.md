@@ -18,17 +18,16 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [A reference host plays a run through the JSON ops](#a-reference-host-plays-a-run-through-the-json-ops).
-2. [The snapshot interval is set per world](#the-snapshot-interval-is-set-per-world).
-3. [An orphaned part is reported as a lost field again](#an-orphaned-part-is-reported-as-a-lost-field-again).
-4. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
-5. [restartWorld refuses any directory that holds a world](#restartworld-refuses-any-directory-that-holds-a-world).
-6. [A crash at every write of submit is tested](#a-crash-at-every-write-of-submit-is-tested).
-7. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
-8. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
-9. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
-10. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
-11. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+1. [The snapshot interval is set per world](#the-snapshot-interval-is-set-per-world).
+2. [An orphaned part is reported as a lost field again](#an-orphaned-part-is-reported-as-a-lost-field-again).
+3. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
+4. [restartWorld refuses any directory that holds a world](#restartworld-refuses-any-directory-that-holds-a-world).
+5. [A crash at every write of submit is tested](#a-crash-at-every-write-of-submit-is-tested).
+6. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
+7. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
+8. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
+9. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
+10. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -70,31 +69,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - The limits in `docs/limits*.md`: none is worth a verb yet, except as listed in `plans/candidates.md`.
 
 ## Items
-
-### A reference host plays a run through the JSON ops
-
-Everything a run needs is in the engine, but nothing drives one the way a real host would: through
-the CLI's JSON requests, players that answer late, and a record of what each side saw.
-
-- **Script** (`scripts/host.ts`, `npm run host -- <scene.json> <plan.json> <dir>`): creates the
-  world (`init`), registers every slot the plan names (`director_edit`), starts it, and plays rounds
-  until the run ends or the plan's last round: each round every player `player_observe`s, its
-  scripted move is `player_submit`ted (or `idle`), then `director_close_round`. Every request goes
-  through `runCli` in process (`tests/cli-run.ts` shows how), so the host sees only JSON.
-- **The plan** (`plan.json`): per handle, the slot it takes and its moves by round, each a move as
-  `player_submit` takes it, `"idle"`, or `"late"` (the player answers after the round's timeout).
-- **Timeout:** a player is an async function; the host waits for each at most the plan's
-  `timeout_ms`, and one that answers late passes the round, its answer dropped. **Decision to
-  confirm:** a late answer is dropped, not kept for the next round.
-- **Transcript** (`<dir>/transcript.jsonl`): one line per request and its response, in order, so a
-  run can be read back as each side saw it.
-- **Tests:** `tests/host.test.ts`: the lab run with a short plan (two subjects race for the key, the
-  AI moves both bodies, one player is late) ends with the expected log; the late player's move is
-  not in it; every transcript line's response validates against its op's schema; the world
-  verifies.
-- **Docs:** a new `docs/host.md` (what the host does and does not), its `docs/DESIGN.md` line.
-- **Depends on:** nothing; best after the cost items. **Not in it:** an LLM player (a later item
-  plugs one in as a player function), a network server, any prose.
 
 ### The snapshot interval is set per world
 

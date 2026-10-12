@@ -35,6 +35,7 @@ What is built, nothing aspirational, one concept per file:
 - [roles.md](roles.md): the author, director and player roles.
 - [roles-levers.md](roles-levers.md): the pool, the odds, idling, and closing quiet rounds.
 - [rounds.md](rounds.md): a round: every move decided against one world, in an order no caller picks, one tick.
+- [host.md](host.md): a reference host that plays a run through the JSON ops, dropping late answers.
 - [processes.md](processes.md): declaring a prop that changes by itself, and reconciling it.
 - [processes-then.md](processes-then.md): what the run that reaches the bound does.
 - [processes-runs.md](processes-runs.md): first runs, reads, stored shape, rate, and chance.
