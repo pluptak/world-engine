@@ -127,7 +127,7 @@ public class ResolveTests
     private static Dictionary<string, object?> Choice(IEnumerable<string> candidates) =>
         new() { ["status"] = "ambiguous", ["candidates"] = candidates.ToList() };
 
-    private static Dictionary<string, object?> Shape(TargetResolution resolution) => resolution switch
+    internal static Dictionary<string, object?> Shape(TargetResolution resolution) => resolution switch
     {
         Resolved resolved => Found(resolved.Target.EntityId, resolved.Target.Part),
         Ambiguous ambiguous => Choice(ambiguous.Candidates),

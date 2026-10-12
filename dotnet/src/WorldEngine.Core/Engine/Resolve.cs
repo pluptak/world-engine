@@ -24,30 +24,32 @@ public static class Resolve
     public sealed record Ambiguous(IReadOnlyList<string> Candidates) : TargetResolution;
 
     // `Addressable(id)` is `addressable` in query.ts; `Controlled(id)` is true when the actor controls the entity
-    // or a panel it reaches serves it (`controller` and `panelFor` in power.ts).
+    // or a panel it reaches serves it (`controller` and `panelFor` in power.ts). A caller may pass its own (a stub
+    // in a test); by default the engine's checks are used.
     public sealed record Access(Func<string, bool> Addressable, Func<string, bool> Controlled);
 
-    private static readonly Access NoAccess = new(
-        _ => throw new InvalidOperationException("The author's names do not consult addressability"),
-        _ => throw new InvalidOperationException("The author's names do not consult control"));
+    private static Access EngineAccess(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, string actorId) =>
+        new(
+            id => Perception.Addressable(snapshot, registry, actorId, id),
+            id => Power.Controller(snapshot, id) == actorId || Power.PanelFor(snapshot, id, actorId) is not null);
 
     // A door is known by its shape: anything with string `from` and `to` props joins the rooms they name.
     public static bool IsDoor(Entity? entity) =>
         entity is not null
-        && IsString(entity.Props, "from")
-        && IsString(entity.Props, "to");
+        && PropValues.IsString(entity.Props, "from")
+        && PropValues.IsString(entity.Props, "to");
 
     // An abstract entity is a mark: nothing holds it, it holds nothing, and it is not addressable by an agent.
     public static bool IsAbstract(IReadOnlyDictionary<string, Template> registry, Entity? entity) =>
         entity is not null
         && registry.TryGetValue(entity.Template, out var template)
-        && IsTrue(template.Props, "abstract");
+        && PropValues.IsTrue(template.Props, "abstract");
 
     // Scenery is perceived and named like anything, and acted on by nothing.
     public static bool IsScenery(IReadOnlyDictionary<string, Template> registry, Entity? entity) =>
         entity is not null
         && registry.TryGetValue(entity.Template, out var template)
-        && IsTrue(template.Props, "scenery");
+        && PropValues.IsTrue(template.Props, "scenery");
 
     public static TargetResolution ResolveTarget(
         Snapshot snapshot,
@@ -56,7 +58,7 @@ public static class Resolve
         string text,
         Access? access = null)
     {
-        var reach = access ?? NoAccess;
+        var reach = access ?? EngineAccess(snapshot, registry, actorId);
         var skipAbstract = actorId != WorldAuthor;
         // The author names anything; an agent only what it could tell is there.
         bool Named(string id) =>
@@ -120,9 +122,9 @@ public static class Resolve
         {
             return true;
         }
-        return IsString(entity.Props, "from")
-            && IsString(entity.Props, "to")
-            && (GetString(entity.Props, "from") == location || GetString(entity.Props, "to") == location);
+        return PropValues.IsString(entity.Props, "from")
+            && PropValues.IsString(entity.Props, "to")
+            && (PropValues.GetString(entity.Props, "from") == location || PropValues.GetString(entity.Props, "to") == location);
     }
 
     private static TargetResolution Found(string entityId, string? part) =>
@@ -133,13 +135,4 @@ public static class Resolve
 
     private static Template? TemplateOf(IReadOnlyDictionary<string, Template> registry, Entity entity) =>
         registry.TryGetValue(entity.Template, out var template) ? template : null;
-
-    private static bool IsString(IReadOnlyDictionary<string, JsonNode?> props, string key) =>
-        props.TryGetValue(key, out var value) && value?.GetValueKind() == JsonValueKind.String;
-
-    private static bool IsTrue(IReadOnlyDictionary<string, JsonNode?> props, string key) =>
-        props.TryGetValue(key, out var value) && value?.GetValueKind() == JsonValueKind.True;
-
-    private static string? GetString(IReadOnlyDictionary<string, JsonNode?> props, string key) =>
-        props.TryGetValue(key, out var value) ? value?.GetValue<string>() : null;
 }
