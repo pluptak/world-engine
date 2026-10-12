@@ -22,5 +22,8 @@ internal static class WorldIO
         return reader.ReadToEnd();
     }
 
+    // A stream over a range of a file another process may be appending to, opened as the reads above are.
+    public static FileStream OpenRead(string path) => Open(path);
+
     private static FileStream Open(string path) => new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
 }

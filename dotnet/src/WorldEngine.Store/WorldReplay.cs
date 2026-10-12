@@ -143,7 +143,7 @@ public static class WorldReplay
     private static byte[] ReadRange(string path, long from, long to)
     {
         var bytes = new byte[to - from];
-        using var stream = File.OpenRead(path);
+        using var stream = WorldIO.OpenRead(path);
         stream.Seek(from, SeekOrigin.Begin);
         var filled = 0;
         while (filled < bytes.Length)

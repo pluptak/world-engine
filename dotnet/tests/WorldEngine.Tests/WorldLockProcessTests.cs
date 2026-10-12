@@ -44,7 +44,7 @@ public class WorldLockProcessTests : IDisposable
             Spawn("reads", dir, "h", 150),
         };
         var results = await Task.WhenAll(kids);
-        Assert.All(results, result => Assert.Equal(0, result.Code));
+        Assert.All(results, result => Assert.True(result.Code == 0, $"child exited {result.Code}: {result.Output}"));
 
         var registry = WorldFiles.ReadTemplates(dir);
         var log = WorldFiles.ReadLog(dir);
@@ -66,7 +66,7 @@ public class WorldLockProcessTests : IDisposable
         var dir = NewWorld();
         var kids = new[] { Spawn("edits", dir, "a", 10), Spawn("edits", dir, "b", 10), Spawn("edits", dir, "c", 10) };
         var results = await Task.WhenAll(kids);
-        Assert.All(results, result => Assert.Equal(0, result.Code));
+        Assert.All(results, result => Assert.True(result.Code == 0, $"child exited {result.Code}: {result.Output}"));
 
         var ids = WorldFiles.ReadLog(dir).Select(entry => entry.Command.CommandId).ToList();
         Assert.Equal(Enumerable.Range(1, 30).Select(index => $"edit-{index}"), ids);

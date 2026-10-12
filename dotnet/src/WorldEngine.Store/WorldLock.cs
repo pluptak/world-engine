@@ -137,7 +137,7 @@ public static class WorldLock
         {
             return true;
         }
-        catch (IOException)
+        catch (Exception error) when (Busy(error))
         {
             return false;
         }
@@ -147,7 +147,7 @@ public static class WorldLock
             {
                 File.Move(grave, path);
             }
-            catch (IOException)
+            catch (Exception error) when (Busy(error))
             {
                 // Taken again already; that holder's turn is the one at risk, and the repair on load covers it.
             }
@@ -187,11 +187,15 @@ public static class WorldLock
         {
             return Verdict.Gone;
         }
-        catch (IOException)
+        catch (Exception error) when (Busy(error))
         {
             return Verdict.Live;
         }
     }
+
+    // A file another process has open, or is deleting or making: Windows reports it as a sharing failure or as access denied, and both
+    // mean the same thing here, that the lock belongs to someone.
+    private static bool Busy(Exception error) => error is IOException or UnauthorizedAccessException;
 
     // The owner a lock names, or null when it is empty or cut short: its maker is between creating it and writing it, or died there.
     // Throws FileNotFoundException when the lock is gone.
@@ -206,7 +210,7 @@ public static class WorldLock
         {
             throw;
         }
-        catch (IOException)
+        catch (Exception error) when (Busy(error))
         {
             return null;
         }
