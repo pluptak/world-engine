@@ -21,7 +21,8 @@ log.jsonl -> events.jsonl                   (none: a fresh world)
 snapshot.json (ended)          snapshot.json (registering, v0)
 ```
 
-`world_exists` when `to` holds a world already, and `no_such_world` when `from` holds none.
+`world_exists` when `to` holds any world file, whole or not (`initial.json`, `log.jsonl`, ...), so no file a
+world keeps is written over; `no_such_world` when `from` holds none.
 
 **The CLI.** `restart` (`{ op, world, to }`) answers the new world's snapshot version.
 

@@ -1,5 +1,5 @@
 import { deepStrictEqual, strictEqual } from "node:assert";
-import { readFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -146,6 +146,30 @@ test("a restart refuses where it cannot write, and the old world is untouched", 
     readFileSync(fileURLToPath(new URL("../templates/chest.json", import.meta.url)), "utf8"),
   ) as { props?: Record<string, unknown> };
   strictEqual(shipped.props?.open, undefined);
+});
+
+test("a restart refuses a directory holding any world file, and leaves its files as they were", (t) => {
+  const root = tempDir(t);
+  const from = join(root, "one");
+  createWorld(from, scene(), registry);
+  for (const name of ["initial.json", "log.jsonl", "head.json", "templates.json"]) {
+    const to = join(root, `partial-${name}`);
+    mkdirSync(to);
+    writeFileSync(join(to, name), "kept", "utf8");
+    deepStrictEqual(
+      (() => {
+        try {
+          restartWorld(from, to);
+          return "ok";
+        } catch (error) {
+          return (error as { code?: string }).code;
+        }
+      })(),
+      "world_exists",
+    );
+    strictEqual(readFileSync(join(to, name), "utf8"), "kept");
+    deepStrictEqual(readdirSync(to), [name]);
+  }
 });
 
 test("the CLI restarts a world and answers its snapshot version", (t) => {

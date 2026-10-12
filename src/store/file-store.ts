@@ -72,6 +72,12 @@ export function worldExists(dir: string): boolean {
   return existsSync(join(dir, snapshots.format));
 }
 
+// Whether any file a world keeps is in the directory, whole or not: `create` writes over each of them, so a
+// directory holding any is not a place to make a world.
+export function holdsWorldFiles(dir: string): boolean {
+  return Object.values(snapshots).some((name) => existsSync(join(dir, name)));
+}
+
 function assertWorldExists(dir: string): void {
   const missing = [
     snapshots.current,

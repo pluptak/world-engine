@@ -58,6 +58,7 @@ import {
   type SubmitOptions,
   trace as foldTrace,
   verify as verifyStore,
+  holdsWorldFiles,
   worldExists,
   type Verification,
   atomicWrite,
@@ -767,7 +768,7 @@ export function restartWorld(from: string, to: string): World {
   }
   const initial = readWorldSnapshot(join(from, "initial.json"));
   const templates = readWorldTemplates(from);
-  if (worldExists(to)) {
+  if (holdsWorldFiles(to)) {
     throw new WorldError("world_exists", `A world is already at ${to}`);
   }
   const ids = readWorldIds(from);

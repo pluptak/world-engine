@@ -19,13 +19,12 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
-2. [restartWorld refuses any directory that holds a world](#restartworld-refuses-any-directory-that-holds-a-world).
-3. [A crash at every write of submit is tested](#a-crash-at-every-write-of-submit-is-tested).
-4. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
-5. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
-6. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
-7. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
-8. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+2. [A crash at every write of submit is tested](#a-crash-at-every-write-of-submit-is-tested).
+3. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
+4. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
+5. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
+6. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
+7. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -85,19 +84,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - **Done when:** the cause is named in `docs/locking.md` and fixed with a deterministic test. If it
   does not reproduce in 50 loop runs, the test writes each child's log to a file on failure, so the
   next occurrence can be read.
-- **Depends on:** nothing.
-
-### restartWorld refuses any directory that holds a world
-
-- **What:** `worldExists` (`src/store/file-store.ts`) checks only `format.json`. `restartWorld`
-  (`src/api.ts`) refuses `world_exists` on that test alone, so a target holding `initial.json` or
-  `log.jsonl` but no `format.json` is not refused.
-- Check first what `create` does with a directory that already holds files. Then refuse any
-  directory holding a world file.
-- **Done when:** restarting into such a directory refuses `world_exists` and leaves its files as
-  they were.
-- **Tests:** `tests/restart.test.ts`. **Docs:** `docs/restart.md`, if its `world_exists` sentence
-  needs the wider rule.
 - **Depends on:** nothing.
 
 ### A crash at every write of submit is tested
