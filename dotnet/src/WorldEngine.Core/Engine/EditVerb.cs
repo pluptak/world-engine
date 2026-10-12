@@ -43,12 +43,6 @@ public static class EditVerb
         "refine", "schedule_beat", "cancel_beat", "retime_beat", "register_player", "play_beat", "steer", "start_run", "end_run",
     ];
 
-    // Spawn override keys this port does not carry yet; a spawn that names one is refused loudly.
-    private static readonly HashSet<string> UnportedOverrides =
-    [
-        "aliases", "in_part", "concealed_by", "status", "residue", "modifiers", "props", "traits",
-    ];
-
     private static readonly HashSet<string> OverrideKeys =
     [
         "name", "aliases", "location", "support", "contained_in", "in_part", "concealed_by", "pos", "detached_from",
@@ -59,7 +53,9 @@ public static class EditVerb
     private sealed record Given<T>(T? Value);
 
     private abstract record WorldEdit;
-    private sealed record SpawnEdit(string Template, string? Name, Given<string>? Location, string? Support, string? ContainedIn, Pos? Pos, long? Integrity, DetachedFrom? DetachedFrom) : WorldEdit;
+    // A spawn: the template, whether the location was named (Given, so an explicit null is kept apart from none), the
+    // overrides as the spawn takes them, and whether any modifier was named (which is never allowed at a spawn).
+    private sealed record SpawnEdit(string Template, Given<string>? Location, Spawn.Overrides Fields, bool HasModifiers) : WorldEdit;
     private sealed record SetSeedEdit(long Seed) : WorldEdit;
     private sealed record RemoveEdit(string Target) : WorldEdit;
     private sealed record PlaceEdit(string Target, Given<string>? Support, Given<string>? ContainedIn, Given<string>? InPart, Given<string>? ConcealedBy, Given<Pos>? Pos) : WorldEdit;
@@ -122,15 +118,16 @@ public static class EditVerb
     private static Pipeline.Refusal? SpawnRefusal(Pipeline.CommandContext context, SpawnEdit edit)
     {
         var snapshot = context.Snapshot;
-        if (!context.Registry.ContainsKey(edit.Template))
+        var fields = edit.Fields;
+        if (!context.Registry.TryGetValue(edit.Template, out var template))
         {
             return Invalid("unknown_template");
         }
-        if (edit.Support is not null && edit.ContainedIn is not null)
+        if (fields.Support is not null && fields.ContainedIn is not null)
         {
             return Refused("conflicting_placement");
         }
-        if (Missing(snapshot, edit.Location?.Value) || Missing(snapshot, edit.Support) || Missing(snapshot, edit.ContainedIn))
+        if (Missing(snapshot, edit.Location?.Value) || Missing(snapshot, fields.Support) || Missing(snapshot, fields.ContainedIn))
         {
             return Invalid("no_such_entity");
         }
@@ -143,25 +140,40 @@ public static class EditVerb
         {
             return Invalid("invalid_location");
         }
-        // A location the chain does not give is a derived field written as something else.
+        // A location the chain does not give is a derived field written as something else; so is any modifier, since
+        // every modifier is caused by an event.
         if (edit.Location is { } given
-            && Placements.DerivedLocationOf(snapshot, edit.Support, edit.ContainedIn, out var derived)
+            && Placements.DerivedLocationOf(snapshot, fields.Support, fields.ContainedIn, out var derived)
             && derived != given.Value)
         {
             return Refused("derived_field");
         }
-        if (edit.Support is not null && snapshot.Entities.GetValueOrDefault(edit.Support)?.Template == "room")
+        if (edit.HasModifiers)
         {
-            if (edit.Pos is null)
+            return Refused("derived_field");
+        }
+        // The definitions the spawn would carry are the template's, with the override's props merged over them.
+        var carried = new Dictionary<string, JsonNode?>(template.Props, StringComparer.Ordinal);
+        foreach (var (name, value) in fields.Props ?? new Dictionary<string, JsonNode?>())
+        {
+            carried[name] = value;
+        }
+        if (DefinitionWritten(template, carried) is not null)
+        {
+            return Refused("field_not_editable");
+        }
+        if (fields.Support is not null && snapshot.Entities.GetValueOrDefault(fields.Support)?.Template == "room")
+        {
+            if (fields.Pos is null)
             {
                 return Refused("room_support_without_pos");
             }
         }
-        else if (edit.Pos is not null)
+        else if (fields.Pos is not null)
         {
             return Refused("pos_without_room_support");
         }
-        if (edit.DetachedFrom is { } origin)
+        if (fields.DetachedFrom is { } origin)
         {
             if (!snapshot.Entities.TryGetValue(origin.Entity, out var owner)
                 || !context.Registry.TryGetValue(owner.Template, out var ownerTemplate))
@@ -185,7 +197,7 @@ public static class EditVerb
         {
             return (true, given.Value);
         }
-        return Placements.DerivedLocationOf(snapshot, edit.Support, edit.ContainedIn, out var room)
+        return Placements.DerivedLocationOf(snapshot, edit.Fields.Support, edit.Fields.ContainedIn, out var room)
             ? (true, room)
             : (false, null);
     }
@@ -323,18 +335,7 @@ public static class EditVerb
         {
             case SpawnEdit spawn:
                 var (_, location) = SpawnLocation(working.Snapshot, spawn);
-                working.SpawnUnder(
-                    context.Registry,
-                    spawn.Template,
-                    new Spawn.Overrides(
-                        Location: location,
-                        Support: spawn.Support,
-                        Pos: spawn.Pos,
-                        ContainedIn: spawn.ContainedIn,
-                        Name: spawn.Name,
-                        Integrity: spawn.Integrity,
-                        DetachedFrom: spawn.DetachedFrom),
-                    rootEventId);
+                working.SpawnUnder(context.Registry, spawn.Template, spawn.Fields with { Location = location }, rootEventId);
                 return;
             case SetSeedEdit seed:
                 working.SetRng(seed.Seed);
@@ -443,38 +444,15 @@ public static class EditVerb
                 {
                     return null;
                 }
-                var overrides = obj["overrides"] is null ? new JsonObject() : obj["overrides"] as JsonObject;
-                if (overrides is null || !overrides.All(pair => OverrideKeys.Contains(pair.Key)))
+                if (obj["overrides"] is null)
+                {
+                    return new SpawnEdit(template, null, new Spawn.Overrides(), false);
+                }
+                if (obj["overrides"] is not JsonObject overrides || !overrides.All(pair => OverrideKeys.Contains(pair.Key)))
                 {
                     return null;
                 }
-                var unported = overrides.Select(pair => pair.Key).FirstOrDefault(UnportedOverrides.Contains);
-                if (unported is not null)
-                {
-                    throw new NotPortedException($"spawn override {unported}");
-                }
-                if (overrides.Where(pair => pair.Key == "name").Any(pair => Text(pair.Value, allowEmpty: true) is null))
-                {
-                    return null;
-                }
-                if (!Ref(overrides, "location", out var location)
-                    || !Ref(overrides, "support", out var support)
-                    || !Ref(overrides, "contained_in", out var containedIn)
-                    || !PosField(overrides, "pos", out var pos)
-                    || !Origin(overrides, out var origin)
-                    || !Integrity(overrides, out var integrity))
-                {
-                    return null;
-                }
-                return new SpawnEdit(
-                    template,
-                    overrides["name"] is null ? null : Text(overrides["name"], allowEmpty: true),
-                    location,
-                    support?.Value,
-                    containedIn?.Value,
-                    pos?.Value,
-                    integrity,
-                    origin);
+                return ParseOverrides(template, overrides);
             }
             case "set_seed":
             {
@@ -548,6 +526,206 @@ public static class EditVerb
             default:
                 return null;
         }
+    }
+
+    // The overrides of a spawn, each field as TypeScript's isOverrides reads it: absent is the blank field, null where the
+    // field takes null, and a value the field cannot hold makes the edit malformed (null). An explicit null in_part and a
+    // trait that is not a token string are not ported and are refused loudly.
+    private static SpawnEdit? ParseOverrides(string template, JsonObject overrides)
+    {
+        string? name = null;
+        if (overrides.ContainsKey("name"))
+        {
+            if (Text(overrides["name"], allowEmpty: true) is not { } given)
+            {
+                return null;
+            }
+            name = given;
+        }
+        if (!Ref(overrides, "location", out var location)
+            || !Ref(overrides, "support", out var support)
+            || !Ref(overrides, "contained_in", out var containedIn)
+            || !Ref(overrides, "concealed_by", out var concealedBy)
+            || !PosField(overrides, "pos", out var pos)
+            || !Origin(overrides, out var origin)
+            || !Integrity(overrides, out var integrity))
+        {
+            return null;
+        }
+        string? inPart = null;
+        if (overrides.ContainsKey("in_part"))
+        {
+            if (overrides["in_part"] is null)
+            {
+                throw new NotPortedException("spawn with an explicit null in_part");
+            }
+            if (Text(overrides["in_part"], allowEmpty: true) is not { } part)
+            {
+                return null;
+            }
+            inPart = part;
+        }
+        var props = Props(overrides);
+        if (overrides.ContainsKey("props") && props is null)
+        {
+            return null;
+        }
+        var aliases = Aliases(overrides);
+        if (overrides.ContainsKey("aliases") && aliases is null)
+        {
+            return null;
+        }
+        var traits = Traits(overrides);
+        if (overrides.ContainsKey("traits") && traits is null)
+        {
+            return null;
+        }
+        var residue = Residue(overrides);
+        if (overrides.ContainsKey("residue") && residue is null)
+        {
+            return null;
+        }
+        var status = StatusOf(overrides);
+        if (overrides.ContainsKey("status") && status is null)
+        {
+            return null;
+        }
+        if (overrides.ContainsKey("modifiers") && !Modifiers(overrides["modifiers"]))
+        {
+            return null;
+        }
+        return new SpawnEdit(
+            template,
+            location,
+            new Spawn.Overrides(
+                Name: name,
+                Support: support?.Value,
+                ContainedIn: containedIn?.Value,
+                Pos: pos?.Value,
+                Integrity: integrity,
+                DetachedFrom: origin,
+                Props: props,
+                Aliases: aliases,
+                Traits: traits,
+                ConcealedBy: concealedBy?.Value,
+                Residue: residue,
+                Status: status?.Value,
+                InPart: inPart),
+            overrides.ContainsKey("modifiers") && overrides["modifiers"] is JsonArray { Count: > 0 });
+    }
+
+    // A map of props, each a number, a string or a boolean; null when it is not one.
+    private static Dictionary<string, JsonNode?>? Props(JsonObject overrides)
+    {
+        if (!overrides.TryGetPropertyValue("props", out var node))
+        {
+            return null;
+        }
+        return node is JsonObject props && props.All(pair => IsPrimitive(pair.Value))
+            ? props.ToDictionary(pair => pair.Key, pair => pair.Value?.DeepClone(), StringComparer.Ordinal)
+            : null;
+    }
+
+    // A list of strings; null when it is not one.
+    private static List<string>? Aliases(JsonObject overrides)
+    {
+        if (!overrides.TryGetPropertyValue("aliases", out var node))
+        {
+            return null;
+        }
+        if (node is not JsonArray array)
+        {
+            return null;
+        }
+        var aliases = new List<string>(array.Count);
+        foreach (var element in array)
+        {
+            if (Text(element, allowEmpty: true) is not { } alias)
+            {
+                return null;
+            }
+            aliases.Add(alias);
+        }
+        return aliases;
+    }
+
+    // A map of trait keys to strings; null when it is not a map, and an exception for a value that is not a string, which
+    // TypeScript refuses only in validation (`invalid_trait`).
+    private static Dictionary<string, string>? Traits(JsonObject overrides)
+    {
+        if (!overrides.TryGetPropertyValue("traits", out var node))
+        {
+            return null;
+        }
+        if (node is not JsonObject traits)
+        {
+            return null;
+        }
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var (key, value) in traits)
+        {
+            if (Text(value, allowEmpty: true) is not { } token)
+            {
+                throw new NotPortedException("spawn trait that is not a string");
+            }
+            result[key] = token;
+        }
+        return result;
+    }
+
+    // A map of residue to whole amounts; null when it is not one.
+    private static Dictionary<string, long>? Residue(JsonObject overrides)
+    {
+        if (!overrides.TryGetPropertyValue("residue", out var node))
+        {
+            return null;
+        }
+        if (node is not JsonObject residue)
+        {
+            return null;
+        }
+        var result = new Dictionary<string, long>(StringComparer.Ordinal);
+        foreach (var (key, value) in residue)
+        {
+            if (Int(value) is not { } amount)
+            {
+                return null;
+            }
+            result[key] = amount;
+        }
+        return result;
+    }
+
+    // The state a spawn starts in: intact, broken or destroyed; null when it is none of those.
+    private static Given<EntityStatus>? StatusOf(JsonObject overrides)
+    {
+        if (!overrides.TryGetPropertyValue("status", out var node))
+        {
+            return null;
+        }
+        return Text(node) switch
+        {
+            "intact" => new Given<EntityStatus>(EntityStatus.Intact),
+            "broken" => new Given<EntityStatus>(EntityStatus.Broken),
+            "destroyed" => new Given<EntityStatus>(EntityStatus.Destroyed),
+            _ => null,
+        };
+    }
+
+    // Whether a spawn's modifiers are well formed: a list of records each with a capacity, a whole delta, an optional
+    // expiry and a cause. Any modifier at all is refused by the caller; this only says the list is well formed.
+    private static bool Modifiers(JsonNode? node)
+    {
+        if (node is not JsonArray array)
+        {
+            return false;
+        }
+        return array.All(modifier =>
+            modifier is JsonObject record
+            && Text(record["capacity"], allowEmpty: true) is not null
+            && Int(record["delta"]) is not null
+            && (record["expires_at_tick"] is null || Int(record["expires_at_tick"]) is not null)
+            && Text(record["cause_id"]) is not null);
     }
 
     private static bool Only(JsonObject obj, params string[] allowed) => obj.All(pair => allowed.Contains(pair.Key));

@@ -16,7 +16,17 @@ public static class Spawn
         string? ContainedIn = null,
         string? Name = null,
         long? Integrity = null,
-        DetachedFrom? DetachedFrom = null);
+        DetachedFrom? DetachedFrom = null,
+        // The rest of an override (src/engine/spawn.ts `copyOverrides`): props merge onto the template's, the others replace
+        // the blank field. Null is "not given", which is the blank field itself.
+        IReadOnlyDictionary<string, JsonNode?>? Props = null,
+        IReadOnlyList<string>? Aliases = null,
+        IReadOnlyDictionary<string, string>? Traits = null,
+        string? ConcealedBy = null,
+        IReadOnlyDictionary<string, long>? Residue = null,
+        EntityStatus? Status = null,
+        IReadOnlyList<Modifier>? Modifiers = null,
+        string? InPart = null);
 
     public static (Snapshot Snapshot, string Id) Create(
         Snapshot snapshot,
@@ -37,27 +47,41 @@ public static class Spawn
         {
             throw new NotPortedException("spawning a holder, which claims its grips");
         }
+        // A spawn into a holder with grips and no part named fills the first free grip, which is not ported.
+        if (overrides.ContainedIn is { } holderId
+            && overrides.InPart is null
+            && snapshot.Entities.TryGetValue(holderId, out var holder)
+            && Carry.HolderLayout(registry, holder.Template).Grips.Count > 0)
+        {
+            throw new NotPortedException("spawning into a holder's grip, which fills the first free one");
+        }
+        // An override's props merge onto the template's, so a spawn names only what it changes.
+        var props = new Dictionary<string, JsonNode?>(template.Props, StringComparer.Ordinal);
+        foreach (var (name, value) in overrides.Props ?? new Dictionary<string, JsonNode?>())
+        {
+            props[name] = value?.DeepClone();
+        }
 
         // Every field at its default (`blankFields` in spawn.ts), then the template's own.
         var entity = new Entity(
             Id: id,
             Template: templateId,
             Name: overrides.Name ?? templateId,
-            Aliases: [],
+            Aliases: overrides.Aliases ?? [],
             Location: overrides.Location,
             Support: overrides.Support,
             ContainedIn: overrides.ContainedIn,
-            InPart: null,
-            ConcealedBy: null,
+            InPart: overrides.InPart,
+            ConcealedBy: overrides.ConcealedBy,
             Pos: overrides.Pos,
             DetachedFrom: overrides.DetachedFrom,
             Integrity: overrides.Integrity ?? template.MaxIntegrity ?? 100,
-            Status: EntityStatus.Intact,
+            Status: overrides.Status ?? EntityStatus.Intact,
             Parts: new Dictionary<string, PartState>(),
-            Residue: new Dictionary<string, long>(),
-            Modifiers: [],
-            Props: new Dictionary<string, JsonNode?>(template.Props, StringComparer.Ordinal),
-            Traits: null);
+            Residue: new Dictionary<string, long>(overrides.Residue ?? new Dictionary<string, long>(), StringComparer.Ordinal),
+            Modifiers: overrides.Modifiers ?? [],
+            Props: props,
+            Traits: overrides.Traits is { Count: > 0 } traits ? new Dictionary<string, string>(traits, StringComparer.Ordinal) : null);
 
         // spawn.ts gives an empty snapshot the default coverage; a snapshot a fall spawns into always has entities, so
         // its own coverage is kept as it is.
