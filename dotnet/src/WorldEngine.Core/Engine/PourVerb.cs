@@ -186,7 +186,7 @@ public static class PourVerb
 
     // A vessel that declares `capacity_cm3` holds that much; otherwise a container's liquid capacity is its inner volume,
     // and a destination that declares neither is unbounded here.
-    private static long? LiquidCapacity(Entity destination)
+    internal static long? LiquidCapacity(Entity destination)
     {
         if (WholeNumber(destination.Props, "capacity_cm3") is { } declared && declared > 0)
         {

@@ -239,5 +239,5 @@ public static class Queries
             : number.ToString("R", CultureInfo.InvariantCulture);
 
     // The name a status takes in a snapshot (`intact`, `broken`, `destroyed`, or a part's `detached`).
-    private static string Name<TEnum>(TEnum value) where TEnum : struct, Enum => value.ToString().ToLowerInvariant();
+    internal static string Name<TEnum>(TEnum value) where TEnum : struct, Enum => value.ToString().ToLowerInvariant();
 }
