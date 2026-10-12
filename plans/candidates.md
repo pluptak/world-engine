@@ -43,6 +43,13 @@ Priorities there, then deleting it here in the same commit.
 - **A successor's held items.** The successor's field names are settled (`docs/templates.md`).
   Recommended: the held items fall where the body lay, as a spent thing's products already do. Passing
   them to the successor would move objects by a transfer nobody caused. Open: the maintainer's decision.
+- **Surgery.** A scene where a patient is cut open and mended. Today the engine has no unconscious, so the
+  patient feels and acts through it; the only cut is `attack`, which severs a part whole; and nothing
+  stops a wound or joins a detached part back on. Needs: unconscious (author-set, see Conditions), a cut
+  that opens a part without severing it, a treatment that stops a bleed, and reattachment. Open: whether
+  a cut is a verb with its own capacity needs (a tool with `cutting`, or `manipulation`), whether
+  treatment is a verb or a count (`bandage` is out of scope), and whether reattachment is a verb or an
+  author's `edit`.
 - **`WORLD_AUTHOR`.** It keeps every permission at once, for tests and repair (`docs/roles.md`).
   Recommended: keep it until every entry point checks the roles, since removing it now breaks tests and
   repair. Open: when, if ever, the roles replace it.
