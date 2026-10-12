@@ -366,6 +366,10 @@ public static class Carry
         _ => "mouth_full",
     };
 
+    // Whether the item is in a space part (a pocket, not a grip) of the holder.
+    public static bool InSpacePart(IReadOnlyDictionary<string, Template> registry, Entity holder, Entity item) =>
+        item.InPart is not null && HolderLayout(registry, holder.Template).Spaces.Any(space => space.Name == item.InPart);
+
     // The grip a take or give lands in. A `part` argument that is not a non-empty string is invalid; otherwise the
     // claim decides, and a refusal is `hands_full` (with its data) or `unknown_part`.
     public static GripPlacement PlaceInGrip(Pipeline.CommandContext context, string holderId, Entity item)
