@@ -13,7 +13,7 @@ public static class TimeVerbs
     public static Pipeline.VerbDecl Advance { get; } = new(
         RequiresTarget: false,
         AuthorOnly: true,
-        Preconditions: AdvancePreconditions,
+        Preconditions: context => AdvancePreconditions(context.Command),
         Duration: Ticks);
 
     // The `ticks` arg as a positive safe integer, or null when it is not one (src/engine/clock.ts `commandDuration`).

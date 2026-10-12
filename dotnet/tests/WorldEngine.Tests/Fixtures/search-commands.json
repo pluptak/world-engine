@@ -1,0 +1,12 @@
+[
+  { "command_id": "s1", "actor": "e4", "verb": "search", "target": "e5" },
+  { "command_id": "s2", "actor": "e4", "verb": "search", "target": "e4" },
+  { "command_id": "s3", "actor": "e4", "verb": "search", "target": "e15" },
+  { "command_id": "s4", "actor": "e4", "verb": "search", "target": "e14" },
+  { "command_id": "s5", "actor": "e4", "verb": "search", "target": "e4.hand_l" },
+  { "command_id": "s6", "actor": "e1", "verb": "search", "target": "e5" },
+  { "command_id": "s7", "actor": "e4", "verb": "search", "target": "nobody" },
+  { "command_id": "s8", "actor": "e4", "verb": "search" },
+  { "command_id": "s9", "actor": "e4", "verb": "search", "target": "e16" },
+  { "command_id": "s10", "actor": "e4", "verb": "search", "target": "e8" }
+]

@@ -11,16 +11,57 @@ namespace WorldEngine.Core.Engine;
 public static class Pipeline
 {
     // What a verb declares: whether it needs a target, whether only the world author may issue it, its preconditions
-    // (null when it has none beyond the front), and its duration in ticks (null when it takes none). The verbs are
-    // ported one at a time; a verb without a transition here is not yet in the table.
+    // (null when it has none beyond the front), its duration in ticks (null when it takes none), the capacities its
+    // actor must hold (`requires`), and its transition, run after the root event (null when it changes nothing). The
+    // verbs are ported one at a time; a verb without a declaration here is not yet in the table.
     public sealed record VerbDecl(
         bool RequiresTarget,
         bool AuthorOnly,
-        Func<Command, Refusal?>? Preconditions = null,
-        Func<Command, long?>? Duration = null);
+        Func<CommandContext, Refusal?>? Preconditions = null,
+        Func<Command, long?>? Duration = null,
+        IReadOnlyList<Requirement>? Requires = null,
+        Action<Working, CommandContext, string>? Transition = null);
+
+    // A capacity the actor must hold at least `AtLeast` of before the verb runs.
+    public sealed record Requirement(string Capacity, long AtLeast);
+
+    // What a verb's preconditions and transition read: the command, the world it runs in, the target the command
+    // resolved to (null when it names none), and the verb's requirements.
+    public sealed record CommandContext(
+        Snapshot Snapshot,
+        IReadOnlyDictionary<string, Template> Registry,
+        Command Command,
+        Resolve.TargetAddress? Target,
+        IReadOnlyList<Requirement> Requires);
 
     // A verb's refusal of a command at its preconditions, before anything changes.
-    public sealed record Refusal(Status Status, string ReasonCode);
+    public sealed record Refusal(Status Status, string ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData = null);
+
+    // The refusal for an actor short of a required capacity (src/engine/carry.ts `capacityRefusal`): the code names the
+    // verb's first requirement, and the data the first one unmet. Null when the actor meets them all.
+    public static Refusal? RequirementRefusal(CommandContext context)
+    {
+        if (context.Requires.Count == 0)
+        {
+            return null;
+        }
+        var caps = Capacities.All(context.Snapshot, context.Registry, context.Command.Actor);
+        static long Have(IReadOnlyDictionary<string, long>? caps, string capacity) =>
+            caps is not null && caps.TryGetValue(capacity, out var level) ? level : 0;
+
+        var unmet = context.Requires.FirstOrDefault(requirement => Have(caps, requirement.Capacity) < requirement.AtLeast);
+        if (unmet is null)
+        {
+            return null;
+        }
+        var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
+        {
+            ["capacity"] = JsonValue.Create(unmet.Capacity),
+            ["have"] = JsonValue.Create(Have(caps, unmet.Capacity)),
+            ["need"] = JsonValue.Create(unmet.AtLeast),
+        };
+        return new Refusal(Status.Refused, $"insufficient_{context.Requires[0].Capacity}", data);
+    }
 
     public sealed record Result(
         Status Status,
@@ -131,9 +172,17 @@ public static class Pipeline
             throw new NotPortedException("rounds");
         }
         var verb = verbs[command.Verb];
-        if (verb.Preconditions?.Invoke(command) is { } refusal)
+        var target = command.Target is null ? null : TargetOf(snapshot, registry, command);
+        var context = new CommandContext(snapshot, registry, command, target, verb.Requires ?? []);
+        if (verb.Preconditions?.Invoke(context) is { } refusal)
         {
-            return Unchanged(snapshot, command, refusal.Status, reasonCode: refusal.ReasonCode);
+            return Unchanged(
+                snapshot,
+                command,
+                refusal.Status,
+                resolvedTarget: target?.Address,
+                reasonCode: refusal.ReasonCode,
+                reasonData: refusal.ReasonData);
         }
         var duration = verb.Duration?.Invoke(command)
             ?? throw new InvalidOperationException($"Verb {command.Verb} accepted a command without a duration");
@@ -143,13 +192,15 @@ public static class Pipeline
         }
 
         var working = new Working(snapshot, command.CommandId);
-        working.Emit(command.Verb, command.Actor, new Dictionary<string, JsonNode?>(), null);
+        // The root event sits on the target when there is one, else on the actor (no verb overrides it yet).
+        var rootEventId = working.Emit(command.Verb, target?.EntityId ?? command.Actor, new Dictionary<string, JsonNode?>(), null);
+        verb.Transition?.Invoke(working, context, rootEventId);
         Clock.Advance(working, registry, duration);
         working.BumpVersion();
         return new Result(
             Status.Ok,
             command.CommandId,
-            null,
+            target?.Address,
             null,
             null,
             null,
@@ -157,6 +208,13 @@ public static class Pipeline
             working.Deltas,
             working.Events);
     }
+
+    // The target a command names, once the front has accepted it: resolution cannot fail here, so only the address is
+    // read out of a resolved name.
+    private static Resolve.TargetAddress? TargetOf(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, Command command) =>
+        Resolve.ResolveTarget(snapshot, registry, command.Actor, command.Target!) is Resolve.Resolved resolved
+            ? resolved.Target
+            : null;
 
     private const long MaxSafeInteger = 9007199254740991;
 
