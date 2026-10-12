@@ -12,9 +12,14 @@ namespace WorldEngine.Tests;
 public class MemoryGoldenTests
 {
     [Fact]
-    public void Memory_world_steps_match_TypeScript()
+    public void Memory_world_steps_match_TypeScript() => Replay("memory-golden.expected.json");
+
+    [Fact]
+    public void Memory_world_rounds_match_TypeScript() => Replay("memory-rounds-golden.expected.json");
+
+    private static void Replay(string fixture)
     {
-        var rows = GoldenRows.ReadRows("memory-golden.expected.json");
+        var rows = GoldenRows.ReadRows(fixture);
         var start = WorldJson.Read<Snapshot>(rows[0]!["args"]!["snapshot"]!.ToJsonString());
         var world = new MemoryWorld(start, TestTemplates.RepoRegistry, start.TemplatesHash);
 
@@ -56,8 +61,70 @@ public class MemoryGoldenTests
         "trace" => Trace(world, args),
         "catalog" => Json(world.CatalogEntries()),
         "fork" => Json(world.Fork().CurrentSnapshot()),
+        "round" => RoundNode(world.TakeRound(Commands(args["moves"]!))),
+        "round_as" => RoundNode(world.TakeRoundAs(Commands(args["moves"]!))),
+        "pending" => PendingNode(world, args),
+        "heard" => JsonValue.Create(world.Heard(
+            Read<Snapshot>(args["before"]!),
+            Read<Snapshot>(args["after"]!),
+            Read<List<WorldEvent>>(args["events"]!),
+            args["observers"]!.AsArray().Select(observer => observer!.GetValue<string>()).ToList())),
+        "verify" => Void(world.Verify),
         _ => throw new InvalidDataException($"unknown step {op}"),
     };
+
+    // A round as the golden writes it: its status, number when it was taken, every move's result, and the close.
+    private static JsonNode RoundNode(Round.Outcome outcome)
+    {
+        var shape = new JsonObject { ["status"] = outcome.Status.ToString().ToLowerInvariant() };
+        if (outcome.ReasonCode is not null)
+        {
+            shape["reason_code"] = outcome.ReasonCode;
+        }
+        if (outcome.Number is not null)
+        {
+            shape["round"] = JsonValue.Create(outcome.Number.Value);
+        }
+        shape["results"] = new JsonArray(outcome.Results.Select(result => (JsonNode?)Shape(result)).ToArray());
+        if (outcome.Closing is not null)
+        {
+            shape["closing"] = Shape(outcome.Closing);
+        }
+        return shape;
+    }
+
+    // The pending store after one call: the body's moves, and the handles and idle marks held.
+    private static JsonNode PendingNode(MemoryWorld world, JsonNode args)
+    {
+        var store = world.Pending;
+        var handle = args["handle"]!.GetValue<string>();
+        switch (args["action"]!.GetValue<string>())
+        {
+            case "set":
+                store.Set(handle, Read<Command>(args["command"]!));
+                break;
+            case "idle":
+                store.SetIdle(handle);
+                break;
+            case "clear":
+                store.Clear(handle, args["body"]?.GetValue<string>());
+                break;
+        }
+        return new JsonObject
+        {
+            ["moves"] = Json(store.Moves(handle)),
+            ["handles"] = Json(store.Handles()),
+            ["idlers"] = Json(store.Idlers()),
+        };
+    }
+
+    private static List<Command> Commands(JsonNode moves) => moves.AsArray().Select(move => Read<Command>(move!)).ToList();
+
+    private static JsonNode? Void(Action call)
+    {
+        call();
+        return null;
+    }
 
     private static JsonNode Since(MemoryWorld world, long version)
     {

@@ -41,12 +41,12 @@ public static class TimeVerbs
         {
             return null;
         }
-        var value = node.GetValue<double>();
-        if (value != Math.Floor(value) || value <= 0 || value > MaxSafeInteger)
+        var value = JsonReads.Number(node);
+        if (value is null || value != Math.Floor(value.Value) || value <= 0 || value > MaxSafeInteger)
         {
             return null;
         }
-        return (long)value;
+        return (long)value.Value;
     }
 
     // The agents `stop_on_perceived` names: none when the argument is absent, else a non-empty list of ids, or null when

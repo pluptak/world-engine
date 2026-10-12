@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -60,5 +61,52 @@ public static class Round
         // Sorted by actor before the stream shuffles them, so the order does not depend on how the caller listed them.
         var byActor = passing.OrderBy(index => actors[index], StringComparer.Ordinal).ToList();
         return new Plan(Status.Ok, null, early, Rng.RoundOrder((uint)(snapshot.Rng ?? 0), snapshot.Tick, byActor));
+    }
+
+    // One round as taken: its status and, when it was taken, its number, each move's result in the order the moves were given, and the
+    // closing tick. A round refused before it starts has no number and no results.
+    public sealed record Outcome(
+        Status Status,
+        string? ReasonCode,
+        long? Number,
+        IReadOnlyList<Pipeline.Result> Results,
+        Pipeline.Result? Closing);
+
+    // Decides or logs one command of a round: with no `decided` result it is submitted; with one (a move the plan refused where the
+    // round started) it is only logged.
+    public delegate Pipeline.Result Decide(Command command, long? basedOn, RoundMark mark, Pipeline.Result? decided);
+
+    // The round's moves in the order the plan gives, then its closing tick (src/api.ts `playRound`).
+    public static Outcome Play(
+        IReadOnlyList<Command> moves,
+        Plan plan,
+        long number,
+        long start,
+        Decide decide,
+        By? closingBy = null)
+    {
+        var results = new Pipeline.Result[moves.Count];
+        foreach (var (index, refused) in plan.Early)
+        {
+            results[index] = decide(moves[index] with { Round = true }, start, new RoundMark(number), refused);
+        }
+        for (var position = 0; position < plan.Order.Count; position++)
+        {
+            var index = plan.Order[position];
+            results[index] = decide(moves[index] with { Round = true }, start, new RoundMark(number, Place: position + 1), null);
+        }
+        var closing = decide(
+            new Command(
+                $"round-{number}-close",
+                Resolve.WorldAuthor,
+                "advance",
+                Args: new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["ticks"] = JsonValue.Create(1L) },
+                Round: true,
+                By: closingBy),
+            null,
+            new RoundMark(number, Close: true),
+            null);
+        // The round is taken when its tick is: a close refused (a run that has ended) refuses the round too.
+        return new Outcome(closing.Status, closing.ReasonCode, number, results, closing);
     }
 }

@@ -24,6 +24,10 @@ public sealed class MemoryWorld
     private readonly Dictionary<long, Snapshot> history = [];
     private readonly List<Applied> applied = [];
     private readonly List<Attempt> tried = [];
+    private long closedRoundCount;
+
+    // The players' pending moves, held by this world and no other (`src/internal.ts` `INTERNAL`'s `pending`).
+    public IPendingMoves Pending { get; } = new MemoryPendingMoves();
 
     // One accepted submission's record: the version it was based on, and what it changed and sensed.
     private sealed record Applied(long Base, IReadOnlyList<Delta> Deltas, IReadOnlyList<WorldEvent> Events);
@@ -227,7 +231,7 @@ public sealed class MemoryWorld
         submissions += 1;
         var baseVersion = current.Version;
         var result = Submission.ResolveSubmission(current, registry, VerbRegistry.All, command, basedOn, version => history.GetValueOrDefault(version));
-        tried.Add(AttemptOf(command, basedOn, baseVersion, result, round));
+        Record(AttemptOf(command, basedOn, baseVersion, result, round));
         if (result.Status == Status.Ok)
         {
             current = result.Snapshot;
@@ -237,6 +241,60 @@ public sealed class MemoryWorld
         }
         return result;
     }
+
+    // A round of this world's history (`docs/rounds.md`): roles are allowed only in the director's close.
+    public Round.Outcome TakeRound(IReadOnlyList<Command> moves) => RoundOf(moves, byAllowed: false);
+
+    // The same round with the players' roles on its moves, closed by the director (`src/internal.ts` `roundAs`).
+    public Round.Outcome TakeRoundAs(IReadOnlyList<Command> moves) => RoundOf(moves, byAllowed: true);
+
+    private Round.Outcome RoundOf(IReadOnlyList<Command> moves, bool byAllowed)
+    {
+        if (!byAllowed && !moves.All(move => move.By is null))
+        {
+            return new Round.Outcome(Status.Invalid, "invalid_args", null, [], null);
+        }
+        var start = current;
+        var plan = Round.PlanRound(start, registry, VerbRegistry.All, moves);
+        if (plan.Status != Status.Ok)
+        {
+            return new Round.Outcome(plan.Status, plan.ReasonCode, null, [], null);
+        }
+        return Round.Play(
+            moves,
+            plan,
+            closedRoundCount + 1,
+            start.Version,
+            (command, basedOn, mark, decided) => decided is null
+                ? Submit(command, basedOn ?? current.Version, mark)
+                : RecordDecided(command, basedOn ?? current.Version, decided, mark),
+            byAllowed ? new By(Role.Director) : null);
+    }
+
+    // A move the plan refused where its round started: logged as refused, with no part in the world.
+    private Pipeline.Result RecordDecided(Command command, long basedOn, Pipeline.Result decided, RoundMark mark)
+    {
+        submissions += 1;
+        Record(AttemptOf(command, basedOn, current.Version, decided, mark));
+        return decided;
+    }
+
+    // Keeps the attempt, and for a round's close, the count the next round is numbered from.
+    private void Record(Attempt attempt)
+    {
+        tried.Add(attempt);
+        if (attempt.Round?.Close == true)
+        {
+            closedRoundCount += 1;
+        }
+    }
+
+    // Whether one of the observers sensed one of the events between the snapshots (`src/internal.ts` `heard`, `docs/roles.md`).
+    public bool Heard(Snapshot before, Snapshot after, IReadOnlyList<WorldEvent> events, IReadOnlyList<string> observers) =>
+        EventPerception.SensedBy(before, after, registry, events, events, observers);
+
+    // A memory world keeps no log to replay, so it cannot verify one.
+    public void Verify() => throw new WorldError("history_unavailable", "A memory world keeps no log to replay");
 
     // The result with the actor's view attached when the caller asked for it. An ok command moved the world one version, so its own
     // events are exactly those after the version before it.

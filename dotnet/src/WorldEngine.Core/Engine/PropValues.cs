@@ -23,7 +23,7 @@ public static class PropValues
         IsString(props, key) ? props[key]!.GetValue<string>() : null;
 
     public static double? GetNumber(IReadOnlyDictionary<string, JsonNode?> props, string key) =>
-        IsNumber(props, key) ? props[key]!.GetValue<double>() : null;
+        IsNumber(props, key) ? JsonReads.Number(props[key]) : null;
 
     private static JsonValueKind? Kind(IReadOnlyDictionary<string, JsonNode?> props, string key) =>
         props.TryGetValue(key, out var value) ? value?.GetValueKind() : null;
