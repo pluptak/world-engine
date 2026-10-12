@@ -103,6 +103,9 @@ public sealed class Working
     public void SetParts(string entityId, IReadOnlyDictionary<string, PartState> parts, string eventId) =>
         Update(entityId, "parts", parts, eventId, entity => entity with { Parts = parts });
 
+    public void SetTemplate(string entityId, string template, string eventId) =>
+        Update(entityId, "template", template, eventId, entity => entity with { Template = template });
+
     public void SetStatus(string entityId, EntityStatus status, string eventId) =>
         Update(entityId, "status", status, eventId, entity => entity with { Status = status });
 
@@ -164,6 +167,7 @@ public sealed class Working
 
     private static object? FieldOf(Entity entity, string field) => field switch
     {
+        "template" => entity.Template,
         "status" => entity.Status,
         "integrity" => entity.Integrity,
         "parts" => entity.Parts,

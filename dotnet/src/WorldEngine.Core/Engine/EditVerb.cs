@@ -7,7 +7,7 @@ namespace WorldEngine.Core.Engine;
 
 // The world author's `edit` (src/engine/verbs/edit.ts) for the edits ported so far: spawn, remove, place, set_props,
 // update_props, set_part and set_seed. The result is judged by the snapshot invariants, so an edit that would break one
-// is refused and nothing is written. The beat, run, role and refine edits are not ported and are refused loudly.
+// is refused and nothing is written. The beat, run and role edits are not ported and are refused loudly.
 public static class EditVerb
 {
     public static Pipeline.VerbDecl Edit { get; } = new(
@@ -39,7 +39,7 @@ public static class EditVerb
     // Kinds the parser knows but this port does not yet carry out.
     private static readonly HashSet<string> UnportedKinds =
     [
-        "refine", "schedule_beat", "cancel_beat", "retime_beat", "register_player", "play_beat", "steer", "start_run", "end_run",
+        "schedule_beat", "cancel_beat", "retime_beat", "register_player", "play_beat", "steer", "start_run", "end_run",
     ];
 
     private static readonly HashSet<string> OverrideKeys =
@@ -61,6 +61,7 @@ public static class EditVerb
     // a plain position or as an offset from an anchor, which is resolved to a plain position before any rule reads it.
     private sealed record PlaceEdit(string Target, Given<string>? Support, Given<string>? ContainedIn, Given<string>? InPart, Given<string>? ConcealedBy, Given<Pos>? Pos, AnchorOffset? Anchor = null) : WorldEdit;
     private sealed record AnchorOffset(string Anchor, long Dx, long Dy);
+    private sealed record RefineEdit(string Target, string Template) : WorldEdit;
     private sealed record PropsEdit(string Kind, string Target, IReadOnlyDictionary<string, JsonNode?> Props) : WorldEdit;
     private sealed record SetPartEdit(string Target, string Part, PartState State) : WorldEdit;
 
@@ -104,6 +105,9 @@ public static class EditVerb
             PlaceEdit place => PlaceRefusal(context, place, subject),
             PropsEdit props => PropsRefusal(context, subject, props),
             SetPartEdit part => PartRefusal(context.Registry, subject, part.Part),
+            RefineEdit refine => context.Registry.TryGetValue(refine.Template, out var next)
+                ? Refine.RefineRefusal(context.Snapshot, context.Registry, subject, next)
+                : Invalid("unknown_template"),
             _ => throw new InvalidOperationException("Unknown edit"),
         };
     }
@@ -114,6 +118,7 @@ public static class EditVerb
         PlaceEdit place => place.Target,
         PropsEdit props => props.Target,
         SetPartEdit part => part.Target,
+        RefineEdit refine => refine.Target,
         _ => throw new InvalidOperationException("Edit has no target"),
     };
 
@@ -398,7 +403,29 @@ public static class EditVerb
             case SetPartEdit part:
                 TransitionPart(working, context, part, rootEventId);
                 return;
+            case RefineEdit refine:
+                TransitionRefine(working, context, refine, rootEventId);
+                return;
         }
+    }
+
+    // The template changes, and the props and parts take what the new preset keeps of the entity's state. The subject is the
+    // entity before the edit, so both are read from it, as src/engine/verbs/edit.ts does.
+    private static void TransitionRefine(Working working, Pipeline.CommandContext context, RefineEdit edit, string rootEventId)
+    {
+        var subject = context.Snapshot.Entities[edit.Target];
+        var next = context.Registry[edit.Template];
+        var edited = working.Emit(
+            "edited",
+            edit.Target,
+            Pipeline.Reason(("field", "template"), ("from", subject.Template), ("to", edit.Template)),
+            rootEventId);
+        working.SetTemplate(edit.Target, edit.Template, edited);
+        working.SetProps(edit.Target, Refine.RefinedProps(subject, next), edited);
+        working.SetParts(
+            edit.Target,
+            Refine.RefinedParts(subject, next) ?? throw new InvalidOperationException("Edit refinement changed after validation"),
+            edited);
     }
 
     private static void TransitionPlace(Working working, Pipeline.CommandContext context, PlaceEdit edit, string rootEventId)
@@ -509,6 +536,14 @@ public static class EditVerb
                     return null;
                 }
                 return new SetSeedEdit(seed);
+            }
+            case "refine":
+            {
+                if (!Only(obj, "kind", "target", "template") || Text(obj["target"]) is not { } target || Text(obj["template"]) is not { } template)
+                {
+                    return null;
+                }
+                return new RefineEdit(target, template);
             }
             case "remove":
             {
