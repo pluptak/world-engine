@@ -7,7 +7,8 @@ coverage file, so a world can declare the categories it answers from the first c
 
 A world directory holds:
 - `initial.json` and canonical `snapshot.json`. `snapshot.json` is written every 32 accepted commands
-  (`SNAPSHOT_EVERY`), so it may hold an earlier version than the log: `head.json` names the version
+  (`SNAPSHOT_EVERY`), or at the interval `openWorld` was given, so it may hold an earlier version than
+  the log: `head.json` names the version
   it holds and the byte of `log.jsonl` that version was reached at, and the accepted commands after
   it are folded onto it on open;
 - `templates.json`, the resolved template set the world was created with;

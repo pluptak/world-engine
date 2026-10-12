@@ -118,7 +118,8 @@ suffixes (NodeNext).
 - `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json`,
   `log.jsonl`, `events.jsonl`, `deltas.jsonl` and `head.json`. `submit` appends the log line (every command, including
   refused and invalid ones, as an `Attempt` with the version it was decided at and its reason), the command's events and an accepted command's deltas, atomically writes the snapshot every
-  `SNAPSHOT_EVERY` (32) accepted commands, and writes `head.json` last: the three files' byte sizes,
+  `SNAPSHOT_EVERY` (32) accepted commands (or the `snapshotEvery` `openWorld` was given), and writes
+  `head.json` last: the three files' byte sizes,
   `log_entries` (all lines, used for default edit ids), `ok_entries`, and the version and log byte the
   snapshot holds (`snapshot_version`, `snapshot_log_bytes`). `resolveSubmission` runs `validateSnapshot` on every accepted result and
   downgrades a breaking one to `invalid` with the rule's code, so a verb bug is logged but never

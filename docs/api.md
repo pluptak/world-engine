@@ -1,7 +1,7 @@
 # The library API
 
 `src/api.ts` is the whole public surface: `createWorld(dir, scenario)` (a list of
-entries, or a scene, [scenario.md](scenario.md)), `openWorld(dir)`, `restartWorld(from, to)`
+entries, or a scene, [scenario.md](scenario.md)), `openWorld(dir, options?)`, `restartWorld(from, to)`
 ([restart.md](restart.md)), and `memoryWorld(snapshot)`
 return a `World` with `command`, `edit`, `check`, `options`, `since`, `attempts`, `trace`,
 `schedule` ([schedule-api.md](schedule-api.md)), `beat`, `round` ([rounds.md](rounds.md)),
@@ -32,6 +32,8 @@ version is a `WorldError` with a code.
   declares in place of `defaultCoverage()`; a category it leaves out answers `unknown`.
   They also take an optional `seed` for the world's dice, and without one anything that rolls
   is refused `no_seed` ([rng.md](rng.md)).
+- `openWorld(dir, { snapshotEvery, checkpointEvery })` sets how often this handle writes `snapshot.json`
+  (default 32) and a checkpoint (default 256): whole numbers from 1, else a `TypeError`. Nothing stores it.
 - `restartWorld(from, to)` makes a world at `to` from `from`'s `initial.json` and frozen
   `templates.json` ([restart.md](restart.md)); `world_exists` when `to` holds one, `no_such_world`
   when `from` holds none.

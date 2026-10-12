@@ -18,16 +18,15 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The snapshot interval is set per world](#the-snapshot-interval-is-set-per-world).
-2. [An orphaned part is reported as a lost field again](#an-orphaned-part-is-reported-as-a-lost-field-again).
-3. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
-4. [restartWorld refuses any directory that holds a world](#restartworld-refuses-any-directory-that-holds-a-world).
-5. [A crash at every write of submit is tested](#a-crash-at-every-write-of-submit-is-tested).
-6. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
-7. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
-8. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
-9. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
-10. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+1. [An orphaned part is reported as a lost field again](#an-orphaned-part-is-reported-as-a-lost-field-again).
+2. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
+3. [restartWorld refuses any directory that holds a world](#restartworld-refuses-any-directory-that-holds-a-world).
+4. [A crash at every write of submit is tested](#a-crash-at-every-write-of-submit-is-tested).
+5. [The memoised snapshot cannot be mutated](#the-memoised-snapshot-cannot-be-mutated).
+6. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
+7. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
+8. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
+9. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -69,24 +68,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - The limits in `docs/limits*.md`: none is worth a verb yet, except as listed in `plans/candidates.md`.
 
 ## Items
-
-### The snapshot interval is set per world
-
-- **What:** `SNAPSHOT_EVERY` (32, `src/store/file-store.ts`) is a constant. `submit` takes
-  `snapshotEvery` in its options, but nothing above it passes one. Make the interval a setting a
-  caller gives when it opens a world, default 32, and give the checkpoint interval (256) the same way.
-- **Decision to confirm:** the setting is passed on each `openWorld`, not stored in the world.
-  Recommended: `format.json` is not changed, since it refuses any other `schema_version`. A stored
-  setting would need a new file or a version bump.
-- The reader assumes no interval: `head.json` names the version and byte the snapshot holds, so any
-  setting reads the same state.
-- **Done when:** a world opened with 1, 3 and 100 writes `snapshot.json` every command, every third
-  and every hundredth. Reopening with another setting gives the same state and `verify` passes. With
-  the default, `npm run bench` is unchanged.
-- **Files:** `src/store/file-store.ts`, the options of `openWorld` in `src/api.ts`.
-- **Tests:** extend `tests/snapshot-interval.test.ts`.
-- **Docs:** `docs/persistence.md`, `docs/api.md`, and the store paragraph of `CLAUDE.md`.
-- **Depends on:** nothing.
 
 ### An orphaned part is reported as a lost field again
 

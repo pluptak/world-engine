@@ -1,5 +1,5 @@
-import { deepStrictEqual, ok, strictEqual } from "node:assert";
-import { readFileSync, writeFileSync } from "node:fs";
+import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { canonicalJson, createWorld, openWorld, type Scenario, type World } from "../src/index.js";
@@ -118,4 +118,50 @@ test("verify names a stored snapshot that differs from the replay at its own ver
   if (!verdict.ok) {
     strictEqual(verdict.divergence.file, "snapshot.json");
   }
+});
+
+// The interval is the caller's, set when it opens the world: each handle writes at its own setting, and what it
+// writes reads the same at any other.
+function waitThrough(dir: string, count: number, options: { snapshotEvery?: number; checkpointEvery?: number }): World {
+  const handle = openWorld(dir, options);
+  const bob = handle.id("bob")!;
+  wait(handle, bob, count);
+  return handle;
+}
+
+test("a world opened with interval 1, 3 or 100 writes snapshot.json every command, every third and every hundredth", (t) => {
+  const { dir } = world(t);
+  waitThrough(dir, 1, { snapshotEvery: 1 });
+  strictEqual(stored(dir).version, 1);
+  waitThrough(dir, 5, { snapshotEvery: 3 });
+  strictEqual(stored(dir).version, 6);
+  const last = waitThrough(dir, 94, { snapshotEvery: 100 });
+  strictEqual(last.snapshot().version, 100);
+  strictEqual(stored(dir).version, 100);
+  strictEqual(head(dir).snapshot_version, 100);
+});
+
+test("reopening with another interval reads the same state and verifies", (t) => {
+  const { dir } = world(t);
+  const written = waitThrough(dir, 7, { snapshotEvery: 3 });
+  for (const options of [{ snapshotEvery: 1 }, { snapshotEvery: 100 }, {}]) {
+    const reopened = openWorld(dir, options);
+    strictEqual(canonicalJson(reopened.snapshot()), canonicalJson(written.snapshot()));
+    ok(reopened.verify().ok);
+  }
+});
+
+test("the checkpoint interval is the caller's too: a checkpoint is named for each version it is written at", (t) => {
+  const { dir } = world(t);
+  waitThrough(dir, 6, { checkpointEvery: 2 });
+  const versions = readdirSync(join(dir, "checkpoints"))
+    .map((name) => Number(name.split("-")[0]))
+    .sort((a, b) => a - b);
+  deepStrictEqual(versions, [2, 4, 6]);
+});
+
+test("an interval that is not a whole number from 1 is refused before the world is opened", (t) => {
+  const { dir } = world(t);
+  throws(() => openWorld(dir, { snapshotEvery: 0 }), TypeError);
+  throws(() => openWorld(dir, { checkpointEvery: 1.5 }), TypeError);
 });

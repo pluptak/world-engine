@@ -55,6 +55,7 @@ import {
   resolveSubmission,
   since as foldSince,
   submit,
+  type SubmitOptions,
   trace as foldTrace,
   verify as verifyStore,
   worldExists,
@@ -499,11 +500,27 @@ function initialSnapshot(registry: TemplateRegistry, coverage?: Coverage, seed?:
   };
 }
 
+// How often a store world writes its snapshot and its checkpoint, set by the caller that opens it. The
+// defaults are the store's own; a world written at one setting opens and reads the same at any other.
+export interface OpenOptions {
+  // Accepted commands between writes of snapshot.json, a whole number from 1.
+  snapshotEvery?: number;
+  // Accepted commands between checkpoints, a whole number from 1.
+  checkpointEvery?: number;
+}
+
+function assertInterval(name: string, value: number | undefined): void {
+  if (value !== undefined && (!Number.isSafeInteger(value) || value < 1)) {
+    throw new TypeError(`${name} must be a whole number from 1`);
+  }
+}
+
 // Every read goes to the store, so two handles on one directory see each other's commands.
 function storeWorld(
   dir: string,
   registry: TemplateRegistry,
   names: Readonly<Record<string, Id>> = {},
+  writes: SubmitOptions = {},
 ): World {
   // A world that opens is a world whose snapshot holds together. The set came from the world's own
   // file, which is what tells load() it may settle a moved set rather than refuse it.
@@ -550,7 +567,7 @@ function storeWorld(
         plan,
         number,
         start.version,
-        (command, basedOn, round, decided) => submit(dir, command, basedOn, active, round, decided),
+        (command, basedOn, round, decided) => submit(dir, command, basedOn, active, round, decided, writes),
         byAllowed ? { role: "director" } : undefined,
       );
     });
@@ -559,13 +576,13 @@ function storeWorld(
     command: (command, options) =>
       isFlagged(command)
         ? roundFlagged(load(dir, active), command)
-        : withObservation(world, active, command.actor, submit(dir, command, options?.basedOn, active), options),
+        : withObservation(world, active, command.actor, submit(dir, command, options?.basedOn, active, undefined, undefined, writes), options),
     // One shared base version for the whole beat, so later commands see earlier ones as stale;
     // one log line per command, each with its own status.
     beat: (commands, options) => {
       const base = options?.basedOn ?? load(dir, active).version;
       return commands.map((command) =>
-        isFlagged(command) ? roundFlagged(load(dir, active), command) : submit(dir, command, base, active),
+        isFlagged(command) ? roundFlagged(load(dir, active), command) : submit(dir, command, base, active, undefined, undefined, writes),
       );
     },
     round: (moves) => roundStored(moves, false),
@@ -585,6 +602,9 @@ function storeWorld(
           editCommand(edit, options?.command_id ?? `edit-${entryCount(dir) + 1}`, options?.perceivers, options?.by),
           options?.basedOn,
           active,
+          undefined,
+          undefined,
+          writes,
         ),
       );
     },
@@ -722,8 +742,16 @@ export function createWorld(
   return storeWorld(dir, templates, resolved.ids);
 }
 
-export function openWorld(dir: string): World {
-  return storeWorld(dir, readWorldTemplates(dir), readWorldIds(dir));
+// Opens a store world. The options set how often this handle writes its snapshot and checkpoint, and are
+// not stored: another handle on the same directory may write at its own interval.
+export function openWorld(dir: string, options: OpenOptions = {}): World {
+  assertInterval("snapshotEvery", options.snapshotEvery);
+  assertInterval("checkpointEvery", options.checkpointEvery);
+  const writes: SubmitOptions = {
+    ...(options.snapshotEvery !== undefined && { snapshotEvery: options.snapshotEvery }),
+    ...(options.checkpointEvery !== undefined && { checkpointEvery: options.checkpointEvery }),
+  };
+  return storeWorld(dir, readWorldTemplates(dir), readWorldIds(dir), writes);
 }
 
 // A run played again from its own world (`docs/restart.md`): a new world at `to` from the world at

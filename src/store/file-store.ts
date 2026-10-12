@@ -307,19 +307,20 @@ export function readLogEntries(dir: string): LogEntry[] {
 // One that does not parse, is for another set, is ahead of the log, or whose bytes are not the log's
 // own prefix is ignored, and with none usable the read replays from `initial.json` as it always did.
 // How many accepted commands pass between writes of snapshot.json. The reader never assumes it: head.json
-// names the version and log byte the file holds, so a world written at any interval opens the same. A
-// per-world setting would change only the caller of `snapshotDue` and the option `submit` takes.
+// names the version and log byte the file holds, so a world written at any interval opens the same. A caller
+// sets it per open (`openWorld`), and the default is this one.
 export const SNAPSHOT_EVERY = 32;
 
 export interface SubmitOptions {
   snapshotEvery?: number;
+  checkpointEvery?: number;
 }
 
 function snapshotDue(version: number, every: number): boolean {
   return version % every === 0;
 }
 
-const CHECKPOINT_EVERY = 256;
+export const CHECKPOINT_EVERY = 256;
 const checkpointsDirectory = "checkpoints";
 const CHECKPOINT_NAME = /^(\d+)-(\d+)\.json$/;
 
@@ -1038,7 +1039,16 @@ export function submit(
   options: SubmitOptions = {},
 ): Result {
   return withWorldLock(dir, () =>
-    submitLocked(dir, command, based_on_version, registry, round, decided, options.snapshotEvery ?? SNAPSHOT_EVERY),
+    submitLocked(
+      dir,
+      command,
+      based_on_version,
+      registry,
+      round,
+      decided,
+      options.snapshotEvery ?? SNAPSHOT_EVERY,
+      options.checkpointEvery ?? CHECKPOINT_EVERY,
+    ),
   );
 }
 
@@ -1050,6 +1060,7 @@ function submitLocked(
   round: RoundMark | undefined,
   decided: Result | undefined,
   snapshotEvery: number,
+  checkpointEvery: number,
 ): Result {
   const templates = activeRegistry(dir, registry);
   const current = load(dir, templates);
@@ -1102,7 +1113,7 @@ function submitLocked(
   writeHead(dir, written);
   rememberCurrent(dir, written, result.status === "ok" ? result.snapshot : current);
   // The cache is written last and may fail without costing the command anything.
-  if (result.status === "ok" && result.snapshot.version % CHECKPOINT_EVERY === 0) {
+  if (result.status === "ok" && result.snapshot.version % checkpointEvery === 0) {
     try {
       writeCheckpoint(dir, result.snapshot, logStat.size);
     } catch {
