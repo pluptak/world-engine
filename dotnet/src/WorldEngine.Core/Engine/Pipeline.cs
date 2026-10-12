@@ -20,7 +20,8 @@ public static class Pipeline
         Func<CommandContext, Refusal?>? Preconditions = null,
         Func<Command, long?>? Duration = null,
         IReadOnlyList<Requirement>? Requires = null,
-        Action<Working, CommandContext, string>? Transition = null);
+        Action<Working, CommandContext, string>? Transition = null,
+        Func<CommandContext, (string Entity, IReadOnlyDictionary<string, JsonNode?> Data)>? RootEvent = null);
 
     // A capacity the actor must hold at least `AtLeast` of before the verb runs.
     public sealed record Requirement(string Capacity, long AtLeast);
@@ -205,8 +206,10 @@ public static class Pipeline
         }
 
         var working = new Working(snapshot, command.CommandId);
-        // The root event sits on the target when there is one, else on the actor (no verb overrides it yet).
-        var rootEventId = working.Emit(command.Verb, target?.EntityId ?? command.Actor, new Dictionary<string, JsonNode?>(), null);
+        // The root event sits on the target when there is one, else on the actor, unless the verb names its own entity and data.
+        var (rootEntity, rootData) = verb.RootEvent?.Invoke(context)
+            ?? (target?.EntityId ?? command.Actor, new Dictionary<string, JsonNode?>());
+        var rootEventId = working.Emit(command.Verb, rootEntity, rootData, null);
         verb.Transition?.Invoke(working, context, rootEventId);
         Clock.Advance(working, registry, duration);
         working.BumpVersion();

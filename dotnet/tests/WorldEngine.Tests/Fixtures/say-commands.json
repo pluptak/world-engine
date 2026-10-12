@@ -1,0 +1,87 @@
+[
+  {
+    "command_id": "s1",
+    "actor": "e4",
+    "verb": "say",
+    "args": {
+      "utterance": "hello"
+    }
+  },
+  {
+    "command_id": "s2",
+    "actor": "e4",
+    "verb": "say",
+    "args": {
+      "utterance": "hi",
+      "volume": "shout"
+    }
+  },
+  {
+    "command_id": "s3",
+    "actor": "e4",
+    "verb": "say",
+    "target": "e2",
+    "args": {
+      "utterance": "hi"
+    }
+  },
+  {
+    "command_id": "s4",
+    "actor": "e4",
+    "verb": "say",
+    "args": {
+      "utterance": "hi",
+      "volume": "mumble"
+    }
+  },
+  {
+    "command_id": "s5",
+    "actor": "e4",
+    "verb": "say",
+    "args": {}
+  },
+  {
+    "command_id": "s6",
+    "actor": "e4",
+    "verb": "say",
+    "args": {
+      "utterance": "has space"
+    }
+  },
+  {
+    "command_id": "s7",
+    "actor": "e4",
+    "verb": "say",
+    "target": "nobody",
+    "args": {
+      "utterance": "hi"
+    }
+  },
+  {
+    "command_id": "s8",
+    "actor": "e55",
+    "verb": "say",
+    "args": {
+      "utterance": "woof"
+    }
+  },
+  {
+    "command_id": "s9",
+    "actor": "e4",
+    "verb": "say",
+    "args": {
+      "utterance": "psst",
+      "volume": "whisper"
+    }
+  },
+  {
+    "command_id": "s10",
+    "actor": "e4",
+    "verb": "say",
+    "target": "e5",
+    "args": {
+      "utterance": "hey",
+      "volume": "normal"
+    }
+  }
+]
