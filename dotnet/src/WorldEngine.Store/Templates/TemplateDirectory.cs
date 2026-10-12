@@ -5,12 +5,13 @@ using WorldEngine.Core.Templates;
 namespace WorldEngine.Store.Templates;
 
 // Reads a templates directory (src/templates.ts loadTemplates): every *.json file, in file-name order, one
-// template each. Resolution is the core's job; this only does the reading.
+// template each, named by its file in the messages. Resolution is the core's job; this only does the reading.
 public static class TemplateDirectory
 {
-    public static IReadOnlyDictionary<string, TemplateDecl> ReadDeclarations(string directory)
+    public static DeclaredSet ReadDeclarations(string directory)
     {
         var decls = new Dictionary<string, TemplateDecl>();
+        var sources = new Dictionary<string, string>();
         var files = Directory.GetFiles(directory, "*.json")
             .Select(Path.GetFileName)
             .OfType<string>()
@@ -23,7 +24,8 @@ public static class TemplateDirectory
                 throw new FormatException($"Duplicate template id {decl.Id}");
             }
             decls[decl.Id] = decl;
+            sources[decl.Id] = file;
         }
-        return decls;
+        return new DeclaredSet(decls, sources);
     }
 }

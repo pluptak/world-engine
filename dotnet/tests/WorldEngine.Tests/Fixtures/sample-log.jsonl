@@ -1,0 +1,7 @@
+{"based_on_version":0,"command":{"actor":"e4","command_id":"c1","target":"bottle","verb":"take"},"status":"ok","version":0}
+{"based_on_version":1,"command":{"actor":"e4","args":{"destination":"e5"},"command_id":"c2","target":"e4","verb":"move"},"reason_code":"invalid_args","status":"invalid","version":1}
+{"based_on_version":1,"command":{"actor":"e4","command_id":"c3","target":"bottle","verb":"drop"},"status":"ok","version":1}
+{"based_on_version":2,"command":{"actor":"e4","args":{"direction":"+x","distance":30},"command_id":"c4","target":"stone","verb":"push"},"status":"unresolved","version":2}
+{"based_on_version":2,"command":{"actor":"e4","command_id":"c5","target":"stone","verb":"take"},"status":"unresolved","version":2}
+{"based_on_version":2,"command":{"actor":"e4","args":{"ticks":3},"command_id":"c6","verb":"wait"},"status":"ok","version":2}
+{"based_on_version":3,"command":{"actor":"e4","command_id":"c7","target":"nonexistent","verb":"take"},"status":"unresolved","version":3}

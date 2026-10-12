@@ -99,10 +99,10 @@ public class TemplateResolverTests
             BreakProducts: [],
             BreakResidue: new Dictionary<string, long>());
 
-    private static IReadOnlyDictionary<string, Template> Resolve(IReadOnlyDictionary<string, TemplateDecl> decls) =>
-        TemplateResolver.Resolve(decls);
+    private static IReadOnlyDictionary<string, Template> Resolve(DeclaredSet declared) =>
+        TemplateResolver.Resolve(declared);
 
-    private static IReadOnlyDictionary<string, TemplateDecl> FixtureDeclarations() =>
+    private static DeclaredSet FixtureDeclarations() =>
         TemplateDirectory.ReadDeclarations(FixtureDirectory("templates"));
 
     private static string FixtureDirectory(string name) =>

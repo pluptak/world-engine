@@ -1,0 +1,293 @@
+{
+  "abstract": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "agent": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "asleep": {
+    "type": "boolean",
+    "tier": "state"
+  },
+  "attack_damage": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "barrier": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "bite_damage": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "bleed_damage": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "bleed_every_ticks": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "bleed_times": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "break_fall_cm": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "burning": {
+    "type": "boolean",
+    "tier": "state",
+    "requires": [
+      "light_source"
+    ]
+  },
+  "camera": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "capacity_cm3": {
+    "type": "integer",
+    "tier": "definition",
+    "min": 1
+  },
+  "carry_limit_g": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "closes_after": {
+    "type": "integer",
+    "tier": "definition",
+    "requires": [
+      "openable"
+    ]
+  },
+  "closing": {
+    "type": "boolean",
+    "tier": "state",
+    "requires": [
+      "openable"
+    ]
+  },
+  "cone_deg": {
+    "type": "integer",
+    "tier": "definition",
+    "min": 1,
+    "max": 360,
+    "requires": [
+      "camera"
+    ]
+  },
+  "container": {
+    "type": "boolean",
+    "tier": "definition",
+    "requires": [
+      "inner_w_cm",
+      "inner_d_cm",
+      "inner_h_cm"
+    ]
+  },
+  "controlled_by": {
+    "type": "id",
+    "tier": "state"
+  },
+  "default_hit_part": {
+    "type": "string",
+    "tier": "definition"
+  },
+  "facing_deg": {
+    "type": "integer",
+    "tier": "state",
+    "min": 0,
+    "max": 359,
+    "requires": [
+      "camera"
+    ]
+  },
+  "from": {
+    "type": "id",
+    "tier": "state",
+    "requires": [
+      "openable"
+    ]
+  },
+  "fuel": {
+    "type": "integer",
+    "tier": "state",
+    "requires": [
+      "light_source"
+    ]
+  },
+  "gap_cm": {
+    "type": "integer",
+    "tier": "definition",
+    "requires": [
+      "barrier"
+    ]
+  },
+  "gauge_pct": {
+    "type": "integer",
+    "tier": "definition",
+    "min": 1,
+    "max": 25,
+    "divides": 100
+  },
+  "hand_carry_limit_g": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "hand_height_cm": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "hands_required": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "hunger": {
+    "type": "integer",
+    "tier": "state"
+  },
+  "inner_d_cm": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "inner_h_cm": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "inner_w_cm": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "intercom": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "jam_pct": {
+    "type": "integer",
+    "tier": "definition",
+    "min": 0,
+    "max": 100,
+    "requires": [
+      "openable"
+    ]
+  },
+  "light_source": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "liquid_amount": {
+    "type": "integer",
+    "tier": "state"
+  },
+  "liquid_material": {
+    "type": "string",
+    "tier": "state"
+  },
+  "liquid_nutrition": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "lit": {
+    "type": "boolean",
+    "tier": "state"
+  },
+  "locked": {
+    "type": "boolean",
+    "tier": "state",
+    "requires": [
+      "openable"
+    ]
+  },
+  "nutrition": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "on": {
+    "type": "boolean",
+    "tier": "state"
+  },
+  "open": {
+    "type": "boolean",
+    "tier": "state",
+    "requires": [
+      "openable"
+    ]
+  },
+  "openable": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "opens": {
+    "type": "id",
+    "tier": "state"
+  },
+  "panel": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "successor": {
+    "type": "string",
+    "tier": "definition"
+  },
+  "succeeds": {
+    "type": "string",
+    "tier": "state"
+  },
+  "portions": {
+    "type": "integer",
+    "tier": "state"
+  },
+  "power_source": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "powered_by": {
+    "type": "id",
+    "tier": "state"
+  },
+  "reach_cm": {
+    "type": "integer",
+    "tier": "definition"
+  },
+  "rubble": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "scenery": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "shut_ticks": {
+    "type": "integer",
+    "tier": "definition",
+    "min": 1,
+    "requires": [
+      "openable"
+    ]
+  },
+  "surface": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "to": {
+    "type": "id",
+    "tier": "state",
+    "requires": [
+      "openable"
+    ]
+  },
+  "topples": {
+    "type": "boolean",
+    "tier": "definition"
+  },
+  "unconscious": {
+    "type": "boolean",
+    "tier": "state"
+  }
+}

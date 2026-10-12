@@ -1,0 +1,1 @@
+{"id":"x","size_cm":{"w":1,"d":1,"h":1},"mass_g":1,"parts":[{"name":"a","parent":"b","contributes":{},"detachable":false,"max_integrity":50},{"name":"b","parent":"a","contributes":{},"detachable":false,"max_integrity":50}],"props":{},"break_products":[],"break_residue":{}}

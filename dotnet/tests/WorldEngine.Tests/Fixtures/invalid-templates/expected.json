@@ -1,0 +1,17 @@
+{
+  "duplicate_part": "x.json has duplicate part a",
+  "missing_parent": "x.json part a has missing parent ghost",
+  "part_cycle": "x.json has a part cycle at a",
+  "undeclared_prop": "x.json props.nonsense is not a declared prop",
+  "wrong_type": "x.json props.capacity_cm3 must be an integer",
+  "below_minimum": "x.json props.capacity_cm3 must be at least 1",
+  "missing_requirement": "x.json props.burning requires light_source",
+  "scenery_with_agent": "x.json props.scenery cannot go with agent",
+  "max_integrity_with_parts": "x.json declares max_integrity and parts",
+  "unknown_break_product": "x.json break_products names unknown template ghost",
+  "room_as_break_product": "x.json break_products names room, which cannot be set on anything",
+  "successor_not_agent": "x names successor base, which is not an agent template",
+  "process_adjusts_non_integer": "x.json processes.p adjusts lit, which is not an integer prop",
+  "divides_zero": "x.json props.gauge_pct must be at least 1",
+  "divides_wrong": "x.json props.gauge_pct must divide 100"
+}

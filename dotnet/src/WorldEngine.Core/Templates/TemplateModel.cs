@@ -78,3 +78,8 @@ public sealed record Template(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? MaxIntegrity = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<ProcessDecl>? Processes = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyDictionary<string, FieldDecl>? Fields = null);
+
+// The declarations of one set, with where each came from (a file name, for the messages that name it).
+public sealed record DeclaredSet(
+    IReadOnlyDictionary<string, TemplateDecl> Decls,
+    IReadOnlyDictionary<string, string> Sources);

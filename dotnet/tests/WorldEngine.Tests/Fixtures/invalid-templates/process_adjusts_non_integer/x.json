@@ -1,0 +1,1 @@
+{"id":"x","size_cm":{"w":1,"d":1,"h":1},"mass_g":1,"parts":[],"props":{"lit":false},"break_products":[],"break_residue":{},"processes":[{"id":"p","every_ticks":1,"effect":{"adjust_prop":{"prop":"lit","by":1}}}]}

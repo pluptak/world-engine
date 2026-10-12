@@ -7,24 +7,38 @@ namespace WorldEngine.Core.Templates;
 // need to know a parent existed. Validation of parts, props and products is not ported yet.
 public static class TemplateResolver
 {
-    public static IReadOnlyDictionary<string, Template> Resolve(IReadOnlyDictionary<string, TemplateDecl> declared)
+    public static IReadOnlyDictionary<string, Template> Resolve(IReadOnlyDictionary<string, TemplateDecl> declared) =>
+        Resolve(new DeclaredSet(declared, new Dictionary<string, string>()));
+
+    public static IReadOnlyDictionary<string, Template> Resolve(DeclaredSet declared)
     {
-        var decls = new Dictionary<string, TemplateDecl>(declared);
+        var decls = new Dictionary<string, TemplateDecl>(declared.Decls);
+        var sources = new Dictionary<string, string>(declared.Sources);
+        foreach (var decl in decls.Values)
+        {
+            TemplateValidation.CheckDeclaration(decl, SourceOf(sources, decl.Id));
+        }
         for (;;)
         {
-            var registry = ResolveAll(decls);
+            var registry = ResolveAll(decls, sources);
             var inherited = InheritedCompanions(registry, decls);
             if (inherited.Count == 0)
             {
                 AssertNoMissingCompanions(registry);
+                TemplateValidation.AssertProducts(registry, sources);
+                TemplateValidation.AssertSuccessors(registry);
                 return registry;
             }
             foreach (var (id, parent) in inherited)
             {
                 decls[id] = new TemplateDecl(id, Extends: parent);
+                sources[id] = $"{parent} (inherited)";
             }
         }
     }
+
+    private static string SourceOf(IReadOnlyDictionary<string, string> sources, string id) =>
+        sources.GetValueOrDefault(id, id);
 
     // The companions a template needs for its detachable parts and does not have (`<id>.<part>`).
     public static IReadOnlyList<string> MissingCompanions(IReadOnlyDictionary<string, Template> registry)
@@ -81,17 +95,23 @@ public static class TemplateResolver
         return chain;
     }
 
-    private static Dictionary<string, Template> ResolveAll(IReadOnlyDictionary<string, TemplateDecl> decls)
+    private static Dictionary<string, Template> ResolveAll(
+        IReadOnlyDictionary<string, TemplateDecl> decls,
+        IReadOnlyDictionary<string, string> sources)
     {
         var registry = new Dictionary<string, Template>();
         foreach (var id in decls.Keys.OrderBy(key => key, StringComparer.Ordinal))
         {
             var chain = Ancestry(id, decls);
-            var template = RequireResolved(decls[chain[^1]]);
+            var template = RequireResolved(decls[chain[^1]], SourceOf(sources, chain[^1]));
             foreach (var chainId in Enumerable.Reverse(chain.Take(chain.Count - 1)))
             {
                 template = OverParent(template, decls[chainId]);
             }
+            var source = SourceOf(sources, id);
+            TemplateValidation.ValidateParts(template, source);
+            TemplateValidation.ValidateMaxIntegrity(template, source);
+            TemplateValidation.ValidateProps(template, source);
             registry[id] = template;
         }
         return registry;
@@ -124,11 +144,11 @@ public static class TemplateResolver
         return found;
     }
 
-    private static Template RequireResolved(TemplateDecl decl)
+    private static Template RequireResolved(TemplateDecl decl, string source)
     {
         if (decl.PartOverrides is not null)
         {
-            throw new FormatException($"{decl.Id} declares part_overrides and extends nothing");
+            throw new FormatException($"{source} declares part_overrides and extends nothing");
         }
         var missing = new List<string>();
         if (decl.SizeCm is null) missing.Add("size_cm");
@@ -139,7 +159,7 @@ public static class TemplateResolver
         if (decl.BreakResidue is null) missing.Add("break_residue");
         if (missing.Count > 0)
         {
-            throw new FormatException($"{decl.Id} declares no {string.Join(" or ", missing)} and extends nothing");
+            throw new FormatException($"{source} declares no {string.Join(" or ", missing)} and extends nothing");
         }
 
         return new Template(
