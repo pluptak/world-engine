@@ -207,9 +207,43 @@ public static class Physical
         return true;
     }
 
+    // A pushed thing that meets another strikes it with its mass times the distance it travelled (src/resolvers/physical.ts
+    // `resolveImpact`). Either party breaks when that is at least what its own fall to breaking would take, its mass times
+    // `break_fall_cm`; what declares no threshold takes no harm. The struck one is read first.
+    public static void ResolveImpact(
+        Working working,
+        IReadOnlyDictionary<string, Template> registry,
+        string moverId,
+        string obstacleId,
+        long distanceCm,
+        string collidedEventId)
+    {
+        var impact = MassOf(working.Snapshot, registry, moverId) * distanceCm;
+        var queue = new Queue<LossRequest>();
+        foreach (var id in new[] { obstacleId, moverId })
+        {
+            var entity = working.Snapshot.Entities[id];
+            var threshold = PropValues.GetNumber(entity.Props, "break_fall_cm");
+            if (entity.Status is EntityStatus.Broken or EntityStatus.Destroyed
+                || threshold is null
+                || impact < MassOf(working.Snapshot, registry, id) * threshold)
+            {
+                continue;
+            }
+            var landing = new Landing(entity.Support, entity.Location, Geometry.EffectivePos(working.Snapshot, id));
+            BreakEntity(working, registry, id, collidedEventId, 0, landing, queue);
+        }
+        ProcessQueue(working, registry, queue);
+    }
+
+    private static long MassOf(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, string entityId) =>
+        registry.TryGetValue(snapshot.Entities[entityId].Template, out var template)
+            ? template.MassG
+            : throw new InvalidOperationException($"Unknown template {snapshot.Entities[entityId].Template}");
+
     // What a removed support drops (src/resolvers/physical.ts `propagateSupportLoss`): each thing on it that topples is
     // queued as displaced, in id order, and the queue is drained.
-    private static void PropagateSupportLoss(
+    public static void PropagateSupportLoss(
         Working working,
         IReadOnlyDictionary<string, Template> registry,
         string supportId,
