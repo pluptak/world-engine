@@ -1,0 +1,314 @@
+{
+  "exists": true,
+  "holds": true,
+  "templates": [
+    "anchor",
+    "arm",
+    "bars",
+    "book",
+    "bottle",
+    "bread",
+    "cable",
+    "camera",
+    "candle",
+    "cat",
+    "cat.jaw",
+    "chair",
+    "chair.leg_bl",
+    "chair.leg_br",
+    "chair.leg_fl",
+    "chair.leg_fr",
+    "chest",
+    "crate",
+    "cup",
+    "dog",
+    "dog.jaw",
+    "door",
+    "experiment",
+    "gate",
+    "generator",
+    "glass_shard",
+    "horse",
+    "horse.jaw",
+    "human",
+    "human.arm_l",
+    "human.arm_l.hand_l",
+    "human.arm_r",
+    "human.arm_r.hand_r",
+    "human.hand_l",
+    "human.hand_r",
+    "human_hungry",
+    "human_hungry.arm_l",
+    "human_hungry.arm_l.hand_l",
+    "human_hungry.arm_r",
+    "human_hungry.arm_r.hand_r",
+    "human_hungry.hand_l",
+    "human_hungry.hand_r",
+    "intercom",
+    "jamming_door",
+    "key",
+    "lamp",
+    "lantern",
+    "locked_chest",
+    "narrow_camera",
+    "note",
+    "panel",
+    "quadruped",
+    "quadruped.jaw",
+    "room",
+    "shut_door",
+    "stone",
+    "table",
+    "terminal",
+    "wine_bottle"
+  ],
+  "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+  "snapshot": {
+    "coverage": {
+      "properties": [
+        "integrity",
+        "residue",
+        "pos",
+        "open"
+      ],
+      "relations": [
+        "support",
+        "contained_in",
+        "attached_to",
+        "status",
+        "location",
+        "near",
+        "reachable"
+      ],
+      "senses": [
+        "sight",
+        "hearing"
+      ]
+    },
+    "entities": {
+      "e1": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e1",
+        "in_part": null,
+        "integrity": 100,
+        "location": null,
+        "modifiers": [],
+        "name": "hall",
+        "parts": {},
+        "pos": null,
+        "props": {
+          "lit": true
+        },
+        "residue": {},
+        "status": "intact",
+        "support": null,
+        "template": "room"
+      },
+      "e2": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e2",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "ann",
+        "parts": {},
+        "pos": {
+          "x": 0,
+          "y": 0
+        },
+        "props": {
+          "agent": true,
+          "attack_damage": 40,
+          "bleed_damage": 5,
+          "bleed_every_ticks": 2,
+          "bleed_times": 3,
+          "default_hit_part": "torso",
+          "hand_carry_limit_g": 80000,
+          "hand_height_cm": 100,
+          "reach_cm": 100
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "human"
+      },
+      "e3": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e3",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "stone",
+        "parts": {},
+        "pos": {
+          "x": 30,
+          "y": 0
+        },
+        "props": {},
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "stone"
+      }
+    },
+    "next_seq": 4,
+    "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+    "tick": 0,
+    "version": 0
+  },
+  "head": {
+    "deltas_bytes": 307,
+    "events_bytes": 445,
+    "log_bytes": 572,
+    "log_entries": 4,
+    "ok_entries": 3,
+    "rounds_closed": 0,
+    "snapshot_log_bytes": 0,
+    "snapshot_version": 0,
+    "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f"
+  },
+  "log": [
+    {
+      "based_on_version": 0,
+      "command": {
+        "actor": "e2",
+        "command_id": "c1",
+        "target": "stone",
+        "verb": "take"
+      },
+      "status": "ok",
+      "version": 0
+    },
+    {
+      "based_on_version": 1,
+      "command": {
+        "actor": "e2",
+        "command_id": "c2",
+        "target": "stone",
+        "verb": "take"
+      },
+      "reason_code": "already_held",
+      "status": "refused",
+      "version": 1
+    },
+    {
+      "based_on_version": 1,
+      "command": {
+        "actor": "world",
+        "args": {
+          "edit": {
+            "kind": "set_seed",
+            "seed": 3
+          }
+        },
+        "command_id": "edit-3",
+        "verb": "edit"
+      },
+      "status": "ok",
+      "version": 1
+    },
+    {
+      "based_on_version": 2,
+      "command": {
+        "actor": "e2",
+        "args": {
+          "utterance": "hello"
+        },
+        "command_id": "c3",
+        "verb": "say"
+      },
+      "status": "ok",
+      "version": 2
+    }
+  ],
+  "events": [
+    {
+      "cause_id": null,
+      "command_id": "c1",
+      "data": {},
+      "entity": "e3",
+      "event_id": "ev4",
+      "tick": 0,
+      "type": "take"
+    },
+    {
+      "cause_id": "ev4",
+      "command_id": "c1",
+      "data": {},
+      "entity": "e3",
+      "event_id": "ev5",
+      "tick": 0,
+      "type": "moved"
+    },
+    {
+      "cause_id": null,
+      "command_id": "edit-3",
+      "data": {},
+      "entity": "world",
+      "event_id": "ev6",
+      "tick": 1,
+      "type": "edit"
+    },
+    {
+      "cause_id": null,
+      "command_id": "c3",
+      "data": {
+        "utterance": "hello",
+        "volume": "normal"
+      },
+      "entity": "e2",
+      "event_id": "ev7",
+      "tick": 1,
+      "type": "say"
+    }
+  ],
+  "deltas": [
+    {
+      "entity": "e3",
+      "event_id": "ev5",
+      "field": "contained_in",
+      "from": null,
+      "to": "e2"
+    },
+    {
+      "entity": "e3",
+      "event_id": "ev5",
+      "field": "in_part",
+      "from": null,
+      "to": "hand_l"
+    },
+    {
+      "entity": "e3",
+      "event_id": "ev5",
+      "field": "support",
+      "from": "e1",
+      "to": null
+    },
+    {
+      "entity": "e3",
+      "event_id": "ev5",
+      "field": "pos",
+      "from": {
+        "x": 30,
+        "y": 0
+      },
+      "to": null
+    }
+  ],
+  "ids": {
+    "ann": "e2",
+    "hall": "e1",
+    "stone": "e3"
+  }
+}

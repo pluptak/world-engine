@@ -1,0 +1,4 @@
+{"cause_id":null,"command_id":"c1","data":{},"entity":"e3","event_id":"ev4","tick":0,"type":"take"}
+{"cause_id":"ev4","command_id":"c1","data":{},"entity":"e3","event_id":"ev5","tick":0,"type":"moved"}
+{"cause_id":null,"command_id":"edit-3","data":{},"entity":"world","event_id":"ev6","tick":1,"type":"edit"}
+{"cause_id":null,"command_id":"c3","data":{"utterance":"hello","volume":"normal"},"entity":"e2","event_id":"ev7","tick":1,"type":"say"}

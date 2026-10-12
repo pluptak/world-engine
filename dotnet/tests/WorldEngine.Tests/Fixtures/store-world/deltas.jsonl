@@ -1,0 +1,4 @@
+{"entity":"e3","event_id":"ev5","field":"contained_in","from":null,"to":"e2"}
+{"entity":"e3","event_id":"ev5","field":"in_part","from":null,"to":"hand_l"}
+{"entity":"e3","event_id":"ev5","field":"support","from":"e1","to":null}
+{"entity":"e3","event_id":"ev5","field":"pos","from":{"x":30,"y":0},"to":null}

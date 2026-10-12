@@ -1,0 +1,4 @@
+{"based_on_version":0,"command":{"actor":"e2","command_id":"c1","target":"stone","verb":"take"},"status":"ok","version":0}
+{"based_on_version":1,"command":{"actor":"e2","command_id":"c2","target":"stone","verb":"take"},"reason_code":"already_held","status":"refused","version":1}
+{"based_on_version":1,"command":{"actor":"world","args":{"edit":{"kind":"set_seed","seed":3}},"command_id":"edit-3","verb":"edit"},"status":"ok","version":1}
+{"based_on_version":2,"command":{"actor":"e2","args":{"utterance":"hello"},"command_id":"c3","verb":"say"},"status":"ok","version":2}
