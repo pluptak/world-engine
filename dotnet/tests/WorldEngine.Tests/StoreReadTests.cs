@@ -135,6 +135,50 @@ public class StoreReadTests : IDisposable
         Assert.Equal(4, WorldFiles.ReadLog(scratch).Count);
     }
 
+    [Fact]
+    public void The_templates_hash_of_the_resolved_set_is_the_one_the_world_holds()
+    {
+        var registry = WorldFiles.ReadTemplates(Fixture);
+
+        Assert.Equal(Expected["templates_hash"]!.GetValue<string>(), WorldReplay.HashOf(registry));
+    }
+
+    [Fact]
+    public void Replaying_the_log_gives_the_snapshot_and_the_events_and_deltas_the_TypeScript_replay_gave()
+    {
+        var fold = WorldReplay.ReplayFold(Fixture, WorldFiles.ReadTemplates(Fixture));
+        var expected = Expected["fold"]!.AsObject();
+
+        Assert.Equal(CanonicalJson.Serialize(expected["snapshot"]), Canonical(fold.Snapshot));
+        Assert.Equal(CanonicalJson.Serialize(expected["events"]), Canonical(fold.Events));
+        Assert.Equal(CanonicalJson.Serialize(expected["deltas"]), Canonical(fold.Deltas));
+        Assert.Equal(CanonicalJson.Serialize(Expected["replay"]), Canonical(fold.Snapshot));
+    }
+
+    [Fact]
+    public void A_world_whose_files_agree_is_trusted_at_the_snapshot_the_TypeScript_load_gave()
+    {
+        var snapshot = WorldReplay.TrustedSnapshot(Fixture, WorldFiles.ReadTemplates(Fixture));
+
+        Assert.NotNull(snapshot);
+        Assert.Equal(CanonicalJson.Serialize(Expected["load"]), Canonical(snapshot));
+    }
+
+    [Fact]
+    public void A_world_whose_events_file_disagrees_with_its_head_is_not_trusted()
+    {
+        CopyWorld();
+        File.AppendAllText(Path.Combine(scratch, WorldFiles.Events), "\n");
+
+        Assert.Null(WorldReplay.TrustedSnapshot(scratch, WorldFiles.ReadTemplates(scratch)));
+    }
+
+    [Fact]
+    public void A_different_template_set_is_not_trusted_for_this_world()
+    {
+        Assert.Null(WorldReplay.TrustedSnapshot(Fixture, TestTemplates.Registry));
+    }
+
     private void CopyWorld()
     {
         Directory.CreateDirectory(scratch);

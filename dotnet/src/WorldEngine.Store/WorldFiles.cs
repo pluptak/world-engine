@@ -246,7 +246,7 @@ public static class WorldFiles
         return records;
     }
 
-    private static Attempt ParseLogLine(string line, int lineNumber)
+    public static Attempt ParseLogLine(string line, int lineNumber)
     {
         var value = JsonNode.Parse(line) as JsonObject;
         if (value is null
