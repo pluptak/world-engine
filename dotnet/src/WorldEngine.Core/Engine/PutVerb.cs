@@ -15,7 +15,29 @@ public static class PutVerb
         Duration: _ => 1,
         OneTick: true,
         Requires: [new Pipeline.Requirement("manipulation", 50)],
+        Suggest: Suggest,
         Transition: Transition);
+
+    // Where a held thing could go: on each surface and in each container the actor can name, then into each of its own pockets
+    // other than the one the item is in (src/engine/verbs/put.ts `suggest`).
+    private static IReadOnlyList<JsonObject> Suggest(Pipeline.CommandContext context, IReadOnlyList<string> nameable)
+    {
+        var actor = context.Snapshot.Entities[context.Command.Actor];
+        var item = context.Target is null ? null : context.Snapshot.Entities.GetValueOrDefault(context.Target.EntityId);
+        if (item is null || item.ContainedIn != actor.Id)
+        {
+            return [];
+        }
+        var others = nameable.Where(id => id != item.Id).ToList();
+        IEnumerable<JsonObject> Holding(string prop, string relation) =>
+            others
+                .Where(id => context.Snapshot.Entities.TryGetValue(id, out var entity) && PropValues.IsTrue(entity.Props, prop))
+                .Select(destination => new JsonObject { ["relation"] = relation, ["destination"] = destination });
+        var pockets = Carry.HolderLayout(context.Registry, actor.Template).Spaces
+            .Where(space => space.Name != item.InPart)
+            .Select(space => new JsonObject { ["relation"] = "in", ["destination"] = $"{actor.Id}.{space.Name}" });
+        return Holding("surface", "on").Concat(Holding("container", "in")).Concat(pockets).ToList();
+    }
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
     {

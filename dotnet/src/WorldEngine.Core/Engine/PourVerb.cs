@@ -15,7 +15,34 @@ public static class PourVerb
         Duration: _ => 1,
         OneTick: true,
         Requires: [new Pipeline.Requirement("manipulation", 50)],
+        Suggest: Suggest,
+        FreeArgs: true,
         Transition: Transition);
+
+    // Each vessel, surface or room the actor can name, for the whole of what it holds in its hand: no `amount`, which pours
+    // everything, so the offer never tells the figure (src/engine/verbs/pour.ts `suggest`).
+    private static IReadOnlyList<JsonObject> Suggest(Pipeline.CommandContext context, IReadOnlyList<string> nameable)
+    {
+        var actor = context.Snapshot.Entities[context.Command.Actor];
+        var source = context.Target is null ? null : context.Snapshot.Entities.GetValueOrDefault(context.Target.EntityId);
+        if (source is null
+            || source.ContainedIn != actor.Id
+            || Carry.InSpacePart(context.Registry, actor, source)
+            || JsonReads.Text(source.Props.GetValueOrDefault("liquid_material")) is not { Length: > 0 })
+        {
+            return [];
+        }
+        if (LiquidAmount(source) == 0)
+        {
+            return [];
+        }
+        return nameable
+            .Where(id => id != source.Id
+                && context.Snapshot.Entities.TryGetValue(id, out var entity)
+                && (PropValues.IsTrue(entity.Props, "container") || PropValues.IsTrue(entity.Props, "surface") || entity.Template == "room"))
+            .Select(destination => new JsonObject { ["destination"] = destination })
+            .ToList();
+    }
 
     private const long MaxSafeInteger = 9007199254740991;
 
@@ -181,7 +208,7 @@ public static class PourVerb
     }
 
     // What a container holds of its liquid: its amount, when that is a positive whole number, else nothing.
-    private static long LiquidAmount(Entity entity) =>
+    internal static long LiquidAmount(Entity entity) =>
         WholeNumber(entity.Props, "liquid_amount") is { } amount && amount > 0 ? amount : 0;
 
     // A vessel that declares `capacity_cm3` holds that much; otherwise a container's liquid capacity is its inner volume,

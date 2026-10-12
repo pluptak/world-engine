@@ -31,7 +31,14 @@ public static class Pipeline
         Func<Command, Snapshot, Clock.StopBeat?>? StopBefore = null,
         // Whether the verb takes exactly one tick whatever its args (src/engine/clock.ts `isOneTickVerb`): a round's move, which
         // takes no time of its own (`docs/rounds.md`), is one of these.
-        bool OneTick = false);
+        bool OneTick = false,
+        // The arg sets an option lists for a verb that needs args, given the actor's targets (src/engine/command.ts `suggest`).
+        // Null when the verb suggests none.
+        Func<CommandContext, IReadOnlyList<string>, IReadOnlyList<JsonObject>>? Suggest = null,
+        // Whether the verb takes args that no list holds, so it stays among the verbs that need args (`free_args`).
+        bool FreeArgs = false,
+        // Whether the verb is tried at each part of the body it names (`aims_at_parts`, used by `options`).
+        bool AimsAtParts = false);
 
     // A capacity the actor must hold at least `AtLeast` of before the verb runs.
     public sealed record Requirement(string Capacity, long AtLeast);

@@ -16,6 +16,7 @@ public static class AttackVerb
         Preconditions: Preconditions,
         Duration: _ => 1,
         OneTick: true,
+        AimsAtParts: true,
         Transition: Transition);
 
     // A fist needs hands, a bite a jaw; the damage of the mode used comes from the attacker's template.

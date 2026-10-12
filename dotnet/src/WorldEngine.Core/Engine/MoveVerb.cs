@@ -14,7 +14,49 @@ public static class MoveVerb
         Preconditions: Preconditions,
         Duration: _ => 1,
         OneTick: true,
+        Suggest: Suggest,
+        FreeArgs: true,
         Transition: Transition);
+
+    // The room on the far side of each doorway the actor can address, since reading the door gives both its ends, and its own
+    // room when it stands on something, to step down: on the floor, moving there changes nothing (src/engine/verbs/move.ts
+    // `suggest`). The position to walk to is free.
+    private static IReadOnlyList<JsonObject> Suggest(Pipeline.CommandContext context, IReadOnlyList<string> nameable)
+    {
+        var actor = context.Snapshot.Entities[context.Command.Actor];
+        var here = actor.Location;
+        var rooms = new SortedSet<string>(StringComparer.Ordinal);
+        if (here is not null)
+        {
+            rooms.Add(here);
+        }
+        foreach (var id in nameable)
+        {
+            if (!context.Snapshot.Entities.TryGetValue(id, out var door))
+            {
+                continue;
+            }
+            if (JsonReads.Text(door.Props.GetValueOrDefault("from")) is not { } from
+                || JsonReads.Text(door.Props.GetValueOrDefault("to")) is not { } to)
+            {
+                continue;
+            }
+            if (from == here)
+            {
+                rooms.Add(to);
+            }
+            else if (to == here)
+            {
+                rooms.Add(from);
+            }
+        }
+        return rooms
+            .Where(room => context.Snapshot.Entities.TryGetValue(room, out var entity)
+                && entity.Template == "room"
+                && !(room == here && OnFloor(actor)))
+            .Select(location => new JsonObject { ["location"] = location })
+            .ToList<JsonObject>();
+    }
 
     // Where the command says to go. Exactly one of the three forms.
     private abstract record Destination;
@@ -189,7 +231,7 @@ public static class MoveVerb
 
     // An agent standing on the floor walks; one standing on something else steps down, and like one arriving through a door
     // is checked only where it lands.
-    private static bool OnFloor(Entity actor) => actor.Support is not null && actor.Support == actor.Location;
+    internal static bool OnFloor(Entity actor) => actor.Support is not null && actor.Support == actor.Location;
 
     private static Geometry.WalkStop? Landing(Pipeline.CommandContext context, string room, Pos pos)
     {

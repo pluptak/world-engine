@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -13,7 +14,23 @@ public static class GiveVerb
         Preconditions: Preconditions,
         Duration: _ => 1,
         OneTick: true,
+        Suggest: Suggest,
         Transition: Transition);
+
+    // Each agent the actor can name, when the item is in its hand: all a give takes (src/engine/verbs/give.ts `suggest`).
+    private static IReadOnlyList<JsonObject> Suggest(Pipeline.CommandContext context, IReadOnlyList<string> nameable)
+    {
+        var actor = context.Snapshot.Entities[context.Command.Actor];
+        var item = context.Target is null ? null : context.Snapshot.Entities.GetValueOrDefault(context.Target.EntityId);
+        if (item is null || item.ContainedIn != actor.Id || Carry.InSpacePart(context.Registry, actor, item))
+        {
+            return [];
+        }
+        return nameable
+            .Where(id => id != item.Id && Reach.IsAgent(context.Snapshot, id))
+            .Select(destination => new JsonObject { ["destination"] = destination })
+            .ToList();
+    }
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
     {

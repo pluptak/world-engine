@@ -13,7 +13,8 @@ public static class WaitVerb
         AuthorOnly: false,
         Preconditions: Preconditions,
         Duration: TimeVerbs.Ticks,
-        WakeOn: command => Sensed(command) ? [command.Actor] : []);
+        WakeOn: command => Sensed(command) ? [command.Actor] : [],
+        FreeArgs: true);
 
     // Whether the wait ends at the first tick the waiter could sense something.
     private static bool Sensed(Command command) =>
