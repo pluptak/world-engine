@@ -1,0 +1,174 @@
+[
+  {
+    "schema": "PosSchema",
+    "value": {
+      "x": 1,
+      "y": 2
+    },
+    "valid": true
+  },
+  {
+    "schema": "PosSchema",
+    "value": {
+      "x": -3,
+      "y": 0
+    },
+    "valid": true
+  },
+  {
+    "schema": "PosSchema",
+    "value": {
+      "x": 1.5,
+      "y": 2
+    },
+    "valid": false
+  },
+  {
+    "schema": "PosSchema",
+    "value": {
+      "x": "1",
+      "y": 2
+    },
+    "valid": false
+  },
+  {
+    "schema": "PosSchema",
+    "value": {
+      "x": 1
+    },
+    "valid": false
+  },
+  {
+    "schema": "PosSchema",
+    "value": {
+      "x": 1,
+      "y": 2,
+      "z": 3
+    },
+    "valid": false
+  },
+  {
+    "schema": "PosSchema",
+    "value": {},
+    "valid": false
+  },
+  {
+    "schema": "PosSchema",
+    "value": [],
+    "valid": false
+  },
+  {
+    "schema": "PosSchema",
+    "value": null,
+    "valid": false
+  },
+  {
+    "schema": "AnchorPosSchema",
+    "value": {
+      "anchor": "hall",
+      "dx": 1,
+      "dy": -2
+    },
+    "valid": true
+  },
+  {
+    "schema": "AnchorPosSchema",
+    "value": {
+      "anchor": "hall",
+      "dx": 0,
+      "dy": 0
+    },
+    "valid": true
+  },
+  {
+    "schema": "AnchorPosSchema",
+    "value": {
+      "anchor": "",
+      "dx": 0,
+      "dy": 0
+    },
+    "valid": false
+  },
+  {
+    "schema": "AnchorPosSchema",
+    "value": {
+      "anchor": "hall",
+      "dx": 1.5,
+      "dy": 0
+    },
+    "valid": false
+  },
+  {
+    "schema": "AnchorPosSchema",
+    "value": {
+      "anchor": "hall",
+      "dx": 0,
+      "dy": 0,
+      "extra": 1
+    },
+    "valid": false
+  },
+  {
+    "schema": "AnchorPosSchema",
+    "value": {
+      "anchor": "hall",
+      "dx": 0
+    },
+    "valid": false
+  },
+  {
+    "schema": "AnchorPosSchema",
+    "value": null,
+    "valid": false
+  },
+  {
+    "schema": "StatusSchema",
+    "value": "ok",
+    "valid": true
+  },
+  {
+    "schema": "StatusSchema",
+    "value": "refused",
+    "valid": true
+  },
+  {
+    "schema": "StatusSchema",
+    "value": "ambiguous",
+    "valid": true
+  },
+  {
+    "schema": "StatusSchema",
+    "value": "unresolved",
+    "valid": true
+  },
+  {
+    "schema": "StatusSchema",
+    "value": "preempted",
+    "valid": true
+  },
+  {
+    "schema": "StatusSchema",
+    "value": "invalid",
+    "valid": true
+  },
+  {
+    "schema": "StatusSchema",
+    "value": "done",
+    "valid": false
+  },
+  {
+    "schema": "StatusSchema",
+    "value": "OK",
+    "valid": false
+  },
+  {
+    "schema": "StatusSchema",
+    "value": 1,
+    "valid": false
+  },
+  {
+    "schema": "StatusSchema",
+    "value": null,
+    "valid": false
+  }
+]
