@@ -142,6 +142,10 @@ Sizes are TypeScript lines, a rough guide. Each block lists the TypeScript it co
 
 ## 6. Decisions needed
 
+Decided (the user, when Phase D began): 1. replacement or interoperation: **interoperate**, reading and writing TypeScript's files byte for byte (every golden so far relies on it). 2. contract: **typed records with a generated JSON Schema**, replacing Zod. 3. goldens: **regenerated in the same change** as any TypeScript change that alters output.
+
+The questions as the plan first asked them:
+
 1. **Replacement or interoperation?** This plan assumes .NET must read and write TypeScript's files
    (Phase C), not just match its engine. If .NET is only an engine port, Phases C to E shrink to the
    memory store and the engine surface.

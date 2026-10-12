@@ -17,7 +17,9 @@ public static class WorldEdits
         string? commandId = null,
         bool perceivers = false,
         By? by = null,
-        long? basedOn = null)
+        long? basedOn = null,
+        int snapshotEvery = WorldWriter.SnapshotEvery,
+        int checkpointEvery = WorldWriter.CheckpointEvery)
     {
         if (!WorldFiles.Exists(dir))
         {
@@ -26,7 +28,7 @@ public static class WorldEdits
         return WorldLock.With(dir, () =>
         {
             var id = commandId ?? $"edit-{WorldFiles.ReadLog(dir).Count + 1}";
-            return WorldWriter.Submit(dir, registry, Submission.EditCommand(edit, id, perceivers, by), basedOn);
+            return WorldWriter.Submit(dir, registry, Submission.EditCommand(edit, id, perceivers, by), basedOn, snapshotEvery: snapshotEvery, checkpointEvery: checkpointEvery);
         });
     }
 }
