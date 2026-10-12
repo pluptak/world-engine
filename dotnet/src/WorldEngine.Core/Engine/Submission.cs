@@ -60,6 +60,17 @@ public static class Submission
         Pipeline.Unchanged(snapshot, command, Status.Invalid, reasonCode: reasonCode);
 
     // The log's record of a submission (`attemptOf`): the command, the version it was based on and decided at, and what it said.
+    // An edit as the command the reserved author sends (`editCommand`): logged and replayed like any command, with the edit as its argument.
+    public static Command EditCommand(JsonObject edit, string commandId, bool perceivers = false, By? by = null) =>
+        new(
+            commandId,
+            Resolve.WorldAuthor,
+            "edit",
+            Target: JsonReads.Text(edit["target"]),
+            Args: new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["edit"] = edit.DeepClone() },
+            Perceivers: perceivers ? true : null,
+            By: by);
+
     public static Attempt AttemptOf(Command command, long basedOn, long version, Pipeline.Result result, RoundMark? round) =>
         new(
             command,

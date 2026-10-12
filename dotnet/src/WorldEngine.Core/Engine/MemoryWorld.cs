@@ -86,14 +86,7 @@ public sealed class MemoryWorld : IWorld
     // An edit is a command by the reserved author, so it is logged and replayed like one. Its id is `edit-<n>` unless given.
     public Pipeline.Result Edit(JsonObject edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null)
     {
-        var command = new Command(
-            commandId ?? $"edit-{submissions + 1}",
-            WorldAuthor,
-            "edit",
-            Target: Text(edit["target"]),
-            Args: new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["edit"] = edit.DeepClone() },
-            Perceivers: perceivers ? true : null,
-            By: by);
+        var command = Submission.EditCommand(edit, commandId ?? $"edit-{submissions + 1}", perceivers, by);
         return Submit(command, basedOn ?? current.Version, null);
     }
 

@@ -1,0 +1,16 @@
+[
+  {
+    "edit": {
+      "kind": "set_seed",
+      "seed": 3
+    },
+    "command_id": null
+  },
+  {
+    "edit": {
+      "kind": "set_seed",
+      "seed": 5
+    },
+    "command_id": "tuned"
+  }
+]

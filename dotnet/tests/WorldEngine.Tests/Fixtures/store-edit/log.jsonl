@@ -1,0 +1,8 @@
+{"based_on_version":0,"command":{"actor":"e2","command_id":"c1","target":"stone","verb":"take"},"status":"ok","version":0}
+{"based_on_version":1,"command":{"actor":"e2","command_id":"c2","target":"stone","verb":"take"},"reason_code":"already_held","status":"refused","version":1}
+{"based_on_version":1,"command":{"actor":"e2","args":{"utterance":"hello"},"command_id":"c3","verb":"say"},"status":"ok","version":1}
+{"based_on_version":2,"command":{"actor":"e2","command_id":"c4","target":"nothing","verb":"take"},"status":"unresolved","version":2}
+{"based_on_version":2,"command":{"actor":"e2","command_id":"c5","target":"lamp","verb":"douse"},"status":"ok","version":2}
+{"based_on_version":3,"command":{"actor":"e2","command_id":"c6","target":"stone","verb":"drop"},"status":"ok","version":3}
+{"based_on_version":4,"command":{"actor":"world","args":{"edit":{"kind":"set_seed","seed":3}},"command_id":"edit-7","verb":"edit"},"status":"ok","version":4}
+{"based_on_version":5,"command":{"actor":"world","args":{"edit":{"kind":"set_seed","seed":5}},"command_id":"tuned","verb":"edit"},"status":"ok","version":5}
