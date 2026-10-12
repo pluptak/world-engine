@@ -71,11 +71,23 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
   child's version decisions. Candidates to check: the takeover in `src/store/lock.ts` (a lock of a
   dead process, or one over a minute old), the repair in `load` that settles under the turn after
   looking again, and the read loop in `foldLogFrom`.
-- **Findings so far (not the cause):** a light stress loop of the file passed every run. A heavy one (more busy
-  processes than the machine has cores) failed `store_busy` in a writer that the 5 s turn timeout had run out on. The
-  children now log each answer with its version, and the test keeps their logs when it fails. A candidate still
-  to rule out: `release` in `src/store/lock.ts` gives up after its patience when unlink is refused (Windows, a reader
-  holding the file), leaving the lock to a holder that no longer has it.
+- **Findings so far (not yet the cause):**
+  - A light stress loop of the file passed every run. Under heavy load (16 busy processes on 12 cores), 22 of
+    50 runs of `tests/store-lock.test.ts` failed: `store_busy` in some writers, `replay_diverges` in others.
+  - A runner outside the repo (six `commands` children and two `reads` children on a fresh world) reproduces
+    the worst case: two commands accepted at the same version, so two writers held the turn at once. One
+    such round left `lock.stale-<pid>` behind, a taker's grave: a lock that was still in use was taken over.
+  - Debug logging in `takeOver` showed the taker judged a lock stale while its owner was alive when logged,
+    and the lock was seconds old, so the age rule did not apply. Hypothesis, not confirmed: the owner releases
+    the lock and exits between the taker reading the lock and probing its pid; the next writer takes the new
+    lock, and the taker renames it away. `process.kill(pid, 0)` on a live process answered correctly in all
+    20,000 probes under load, so a false "dead" from the probe itself is not shown.
+  - The debug edits were removed; `src/store/lock.ts` is unchanged. The children still log each answer with
+    its version, and the test keeps their logs when it fails.
+  - Unchecked candidate: `release` in `src/store/lock.ts` gives up after its patience when unlink is refused.
+- **Next:** re-run the instrumented probe with the logs written where the children can reach them, to test the
+  hypothesis above; then fix `judge` and `takeOver` so a takeover only proceeds when the stale verdict and the
+  rename refer to the same lock.
 - **Done when:** the cause is named in `docs/locking.md` and fixed with a deterministic test. If it
   does not reproduce in 50 loop runs, the test writes each child's log to a file on failure, so the
   next occurrence can be read.
