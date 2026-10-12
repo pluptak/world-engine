@@ -11,11 +11,26 @@ namespace WorldEngine.Tests;
 // TypeScript: a liquid drunk by the amount or whole (with the hunger it lowers, or none where the actor declares none),
 // the refusals of the amount and the item, bread eaten a portion at a time, and a bottle drunk from a table within
 // reach. The commands and worlds are the ones Fixtures/consume-golden.expected.json holds. A solid's last portion uses
-// it up, which is not ported, so no row eats one.
+// it up (`Physical.SpendEntity`): Fixtures/consume-spent-golden.expected.json holds a stale bread eaten in the hand and
+// on a table, where the stone resting on it is released; its template is a test template, not one the repo ships.
 public class ConsumeTests
 {
-    private static IReadOnlyDictionary<string, Template> Registry { get; } =
-        TemplateResolver.Resolve(TemplateDirectory.ReadDeclarations(Path.Combine(AppContext.BaseDirectory, "Fixtures", "templates")));
+    // The repo's templates, plus the test template a used-up thing needs (Fixtures/spent-templates), kept out of the
+    // frozen registry fixture.
+    private static IReadOnlyDictionary<string, Template> Registry { get; } = TemplateResolver.Resolve(MergedDeclarations());
+
+    private static IReadOnlyDictionary<string, TemplateDecl> MergedDeclarations()
+    {
+        var declared = new Dictionary<string, TemplateDecl>(StringComparer.Ordinal);
+        foreach (var folder in new[] { "templates", "spent-templates" })
+        {
+            foreach (var (id, decl) in TemplateDirectory.ReadDeclarations(Path.Combine(AppContext.BaseDirectory, "Fixtures", folder)).Decls)
+            {
+                declared[id] = decl;
+            }
+        }
+        return declared;
+    }
 
     private static IReadOnlyDictionary<string, Pipeline.VerbDecl> Verbs { get; } = new Dictionary<string, Pipeline.VerbDecl>
     {
@@ -24,9 +39,14 @@ public class ConsumeTests
     };
 
     [Fact]
-    public void Consume_results_match_TypeScript()
+    public void Consume_results_match_TypeScript() => AssertMatchesTypeScript("consume-golden.expected.json");
+
+    [Fact]
+    public void Consume_of_the_last_portion_matches_TypeScript() => AssertMatchesTypeScript("consume-spent-golden.expected.json");
+
+    private static void AssertMatchesTypeScript(string golden)
     {
-        var rows = JsonNode.Parse(ReadFixture("consume-golden.expected.json"))!.AsArray();
+        var rows = JsonNode.Parse(ReadFixture(golden))!.AsArray();
         var snapshots = new Dictionary<string, Snapshot>(StringComparer.Ordinal);
 
         foreach (var row in rows)

@@ -1,0 +1,11 @@
+{
+  "id": "stale_bread",
+  "size_cm": { "w": 20, "d": 10, "h": 8 },
+  "mass_g": 400,
+  "parts": [],
+  "props": { "nutrition": 10, "portions": 1 },
+  "break_products": [],
+  "break_residue": {},
+  "spent_products": [{ "template": "glass_shard", "count": 2 }],
+  "spent_residue": { "crumb": 2 }
+}

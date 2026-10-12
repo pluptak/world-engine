@@ -122,6 +122,19 @@ public sealed class Working
         return spawnedEvent;
     }
 
+    // Records an entity's removal as one delta on the field "entity" under `eventId`, from the entity as it was to nothing.
+    // The entity stays in the snapshot until `DropEntity`, so what a removal does first can still read it.
+    public void RecordEntityRemoval(string entityId, Entity former, string eventId) =>
+        Deltas.Add(new Delta(eventId, entityId, "entity", JsonSerializer.SerializeToNode(former, WorldJson.Options), null));
+
+    // Takes an entity out of the snapshot (no delta: `RecordEntityRemoval` records it).
+    public void DropEntity(string entityId)
+    {
+        var entities = new Dictionary<string, Entity>(Snapshot.Entities, StringComparer.Ordinal);
+        entities.Remove(entityId);
+        Snapshot = Snapshot with { Entities = entities };
+    }
+
     // Writes one field of an entity: a delta under `eventId` when its canonical value changes, nothing when it does not.
     private void Update<T>(string entityId, string field, T value, string eventId, Func<Entity, Entity> apply)
     {

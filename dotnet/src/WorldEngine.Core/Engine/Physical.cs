@@ -9,6 +9,11 @@ namespace WorldEngine.Core.Engine;
 // residue and clearing its liquid; a shorter fall spills a vessel's liquid onto where it lands. A break that would
 // tumble the things it held onto a supported landing goes through the loss queue, which is not ported, so it throws
 // before anything is written.
+//
+// `SpendEntity` (a thing used up: its `spent_products` where it stood, its `spent_residue` on the surface, then the
+// thing removed) and `RemoveEntity` (a removal: what it was hiding is uncovered, what sat on or in it is released) are
+// the removal path. A removal that would topple riders onto a landing needs the loss queue, which is not ported, so it
+// throws before anything is written.
 public static class Physical
 {
     // Where a fallen thing lands: the surface it rests on (null when none), the room it is in, and its position.
@@ -113,6 +118,162 @@ public static class Physical
                 props["liquid_amount"] = JsonValue.Create(0L);
             }
             working.SetProps(entityId, props, brokenEvent);
+        }
+    }
+
+    // A thing used up (src/resolvers/physical.ts `spendEntity`): a `spent` event on it, each `spent_products` spawned
+    // where it stood, its `spent_residue` added to the surface it stood on, and last the thing removed under `spent`.
+    // A room is never used up. Returns whether it was removed.
+    public static bool SpendEntity(
+        Working working,
+        IReadOnlyDictionary<string, Template> registry,
+        string entityId,
+        string causeId)
+    {
+        var entity = working.Snapshot.Entities[entityId];
+        if (!registry.TryGetValue(entity.Template, out var template))
+        {
+            throw new InvalidOperationException($"Unknown template {entity.Template}");
+        }
+        if (entity.Template == "room")
+        {
+            return false;
+        }
+
+        var spentEvent = working.Emit("spent", entityId, new Dictionary<string, JsonNode?>(), causeId);
+        var at = Placements.PlacementOf(working.Snapshot, entity);
+        foreach (var product in template.SpentProducts ?? [])
+        {
+            for (var index = 0; index < product.Count; index++)
+            {
+                var lands = registry.TryGetValue(product.Template, out var productTemplate)
+                    ? Placements.Fitting(working.Snapshot, at, productTemplate.SizeCm)
+                    : at;
+                working.SpawnUnder(
+                    registry,
+                    product.Template,
+                    new Spawn.Overrides(lands.Location, lands.Support, lands.Pos, lands.ContainedIn),
+                    spentEvent);
+            }
+        }
+
+        var surface = at.Support ?? at.ContainedIn ?? at.Location;
+        if (surface is not null && template.SpentResidue is { Count: > 0 } residue)
+        {
+            Residue.Add(working, surface, residue, spentEvent);
+        }
+        return RemoveEntity(working, registry, entityId, spentEvent);
+    }
+
+    // A removal (src/engine/verbs/edit.ts `removeEntity`): a `removed` event on the thing, what it was hiding uncovered,
+    // what sat on or in it released to where it stood, then the thing gone. A room with someone in it is not removed.
+    // Returns whether it was removed.
+    public static bool RemoveEntity(
+        Working working,
+        IReadOnlyDictionary<string, Template> registry,
+        string targetId,
+        string causeId)
+    {
+        if (!working.Snapshot.Entities.TryGetValue(targetId, out var doomed))
+        {
+            return false;
+        }
+        if (doomed.Template == "room"
+            && working.Snapshot.Entities.Values.Any(entity => entity.Location == doomed.Id))
+        {
+            return false;
+        }
+
+        var removedEvent = working.Emit("removed", targetId, new Dictionary<string, JsonNode?>(), causeId);
+        working.RecordEntityRemoval(targetId, doomed, removedEvent);
+        // What the removed thing was hiding is uncovered rather than orphaned: it stays where it was.
+        Concealment.RevealConcealed(working, targetId, removedEvent);
+        PropagateSupportLoss(working, targetId);
+        ReleaseDependents(working, registry, targetId, removedEvent, doomed);
+        working.DropEntity(targetId);
+        return true;
+    }
+
+    // What a removed support drops (src/resolvers/physical.ts `propagateSupportLoss`): the things it topples. A topple
+    // is the loss queue, which is not ported, so a support with one on it throws; with none, nothing is queued.
+    private static void PropagateSupportLoss(Working working, string supportId)
+    {
+        if (working.Snapshot.Entities.Values.Any(entity =>
+                entity.Support == supportId && PropValues.IsTrue(entity.Props, "topples")))
+        {
+            throw new NotPortedException("removing a support that topples what is on it");
+        }
+    }
+
+    // What sat in or on a removed thing takes its place (src/engine/verbs/edit.ts `releaseDependents`): contents go to
+    // its holder, else to where it stood; riders on a surface that does not topple go to the surface's support. Every
+    // moved thing's location is then re-derived with its subtree.
+    private static void ReleaseDependents(
+        Working working,
+        IReadOnlyDictionary<string, Template> registry,
+        string targetId,
+        string eventId,
+        Entity former)
+    {
+        var carried = former.ContainedIn;
+        var moved = new List<string>();
+        foreach (var id in working.Snapshot.Entities.Keys.Order(StringComparer.Ordinal))
+        {
+            if (id == targetId)
+            {
+                continue;
+            }
+            var entity = working.Snapshot.Entities[id];
+            var wasContent = entity.ContainedIn == targetId;
+            var wasRider = entity.Support == targetId && !PropValues.IsTrue(entity.Props, "topples");
+            if (!wasContent && !wasRider)
+            {
+                continue;
+            }
+
+            if (carried is not null)
+            {
+                working.SetRelation(id, "contained_in", carried, eventId);
+                working.SetRelation(id, "in_part", KeepPart(entity, carried), eventId);
+                working.SetRelation(id, "support", null, eventId);
+                working.SetPos(id, null, eventId);
+            }
+            else if (wasContent)
+            {
+                working.SetRelation(id, "contained_in", null, eventId);
+                working.SetRelation(id, "in_part", null, eventId);
+                working.SetRelation(id, "support", former.Support, eventId);
+                working.SetPos(id, former.Pos, eventId);
+            }
+            else
+            {
+                working.SetRelation(id, "support", former.Support, eventId);
+                working.SetPos(id, former.Pos, eventId);
+            }
+            moved.Add(id);
+        }
+        foreach (var id in moved)
+        {
+            Placements.RefreshSubtreeLocations(working, id, eventId);
+        }
+
+        // A part name travels only onto a holder that declares it; what newly lands in a holder's grips takes the first
+        // free one, the way a spawn does. Otherwise it is cleared.
+        string? KeepPart(Entity entity, string holderId)
+        {
+            var holder = working.Snapshot.Entities.GetValueOrDefault(holderId);
+            if (entity.InPart is not null)
+            {
+                var declared = registry.GetValueOrDefault(holder?.Template ?? string.Empty);
+                return declared is not null && declared.Parts.Any(decl => decl.Name == entity.InPart && decl.Holds is not null)
+                    ? entity.InPart
+                    : null;
+            }
+            if (holder is null || Carry.HolderLayout(registry, holder.Template).Grips.Count == 0)
+            {
+                return null;
+            }
+            return Carry.ClaimGrip(working.Snapshot, registry, holderId, entity) is GripFound found ? found.Part : null;
         }
     }
 

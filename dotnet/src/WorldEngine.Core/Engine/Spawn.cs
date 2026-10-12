@@ -5,11 +5,11 @@ using WorldEngine.Core.Templates;
 namespace WorldEngine.Core.Engine;
 
 // Creating an entity (src/engine/spawn.ts `spawn`): a new id from `next_seq`, every field at its default, the template's
-// props, then the overrides. Only the placements a break or a fall writes (location, support, position) are taken;
-// spawning into a holder, or spawning a holder, needs grip claims and is not ported.
+// props, then the overrides. Only the placements a break, a fall or a used-up thing writes (location, support, position,
+// and the container it lands in) are taken; spawning a holder, which claims grips, is not ported.
 public static class Spawn
 {
-    public sealed record Overrides(string? Location = null, string? Support = null, Pos? Pos = null);
+    public sealed record Overrides(string? Location = null, string? Support = null, Pos? Pos = null, string? ContainedIn = null);
 
     public static (Snapshot Snapshot, string Id) Create(
         Snapshot snapshot,
@@ -39,7 +39,7 @@ public static class Spawn
             Aliases: [],
             Location: overrides.Location,
             Support: overrides.Support,
-            ContainedIn: null,
+            ContainedIn: overrides.ContainedIn,
             InPart: null,
             ConcealedBy: null,
             Pos: overrides.Pos,

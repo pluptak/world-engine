@@ -6,8 +6,8 @@ namespace WorldEngine.Core.Engine;
 
 // The consume verb (src/engine/verbs/consume.ts): an actor eats a solid thing (`nutrition`, one portion at a time) or
 // drinks an amount of a liquid (`liquid_nutrition` per 100 cm³ of what the vessel holds). Either lowers the actor's
-// `hunger`, when it declares one. A solid thing's last portion uses the thing up, which is spendEntity's removal and is
-// not ported, so it throws before anything is written.
+// `hunger`, when it declares one. A solid thing's last portion (or one eaten whole) uses the thing up: it leaves its
+// spent products and residue, and is removed (`Physical.SpendEntity`).
 public static class ConsumeVerb
 {
     public static Pipeline.VerbDecl Consume { get; } = new(
@@ -38,11 +38,6 @@ public static class ConsumeVerb
         {
             throw new InvalidOperationException("Consume target changed after validation");
         }
-        if (taken is SolidPlan { Portions: null or 1 })
-        {
-            throw new NotPortedException("eating the last portion of a thing, which uses it up");
-        }
-
         var eaten = working.Emit("consumed", item.Id, ConsumedData(taken), rootEventId);
 
         // Only a body that declares a hunger has one to lower.
@@ -57,13 +52,19 @@ public static class ConsumeVerb
             working.SetProps(actorId, actorProps, eaten);
         }
 
-        if (taken is SolidPlan { Portions: { } portions })
+        // A solid with a portion left goes on being there; its last portion, or one eaten whole, uses it up.
+        if (taken is SolidPlan { Portions: > 1 } portioned)
         {
             var props = new Dictionary<string, JsonNode?>(item.Props, StringComparer.Ordinal)
             {
-                ["portions"] = JsonValue.Create(portions - 1),
+                ["portions"] = JsonValue.Create(portioned.Portions!.Value - 1),
             };
             working.SetProps(item.Id, props, eaten);
+            return;
+        }
+        if (taken is SolidPlan)
+        {
+            Physical.SpendEntity(working, context.Registry, item.Id, eaten);
             return;
         }
 
@@ -83,11 +84,7 @@ public static class ConsumeVerb
 
     private static Dictionary<string, JsonNode?> ConsumedData(Plan taken) => taken switch
     {
-        SolidPlan solid => new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
-        {
-            ["nutrition"] = JsonValue.Create(solid.Nutrition),
-            ["portions_left"] = JsonValue.Create(solid.Portions!.Value - 1),
-        },
+        SolidPlan solid => SolidData(solid),
         LiquidPlan liquid => new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
         {
             ["nutrition"] = JsonValue.Create(liquid.Nutrition),
@@ -96,6 +93,20 @@ public static class ConsumeVerb
         },
         _ => throw new InvalidOperationException("Unknown consume plan"),
     };
+
+    // A solid's `consumed` event names the portions left, when it has portions at all.
+    private static Dictionary<string, JsonNode?> SolidData(SolidPlan solid)
+    {
+        var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
+        {
+            ["nutrition"] = JsonValue.Create(solid.Nutrition),
+        };
+        if (solid.Portions is { } portions)
+        {
+            data["portions_left"] = JsonValue.Create(portions - 1);
+        }
+        return data;
+    }
 
     private static Choice Planned(Pipeline.CommandContext context)
     {

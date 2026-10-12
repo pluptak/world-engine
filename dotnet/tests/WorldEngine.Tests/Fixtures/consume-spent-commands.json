@@ -1,0 +1,6 @@
+[
+  { "command_id": "s1", "actor": "e4", "verb": "consume", "target": "e27" },
+  { "command_id": "s2", "actor": "e4", "verb": "consume", "target": "e28" },
+  { "command_id": "s3", "actor": "e4", "verb": "consume", "target": "e27", "args": { "amount": 1 } },
+  { "command_id": "s4", "actor": "e4", "verb": "consume", "target": "e29" }
+]
