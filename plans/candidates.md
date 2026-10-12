@@ -24,11 +24,8 @@ Priorities there, then deleting it here in the same commit.
     speaker is told by a `garbled` line on its own hearing, so it knows others will hear or understand it
     poorly. The garble is a flag on the heard event, not scrambled words: hearers already get only a
     sound, and scrambling would make the engine produce text, which the no-prose rule forbids.
-  - **Unconscious** takes every sense and every capacity. An author sets it, as `asleep` is set, and an
-    edit ends it. A hit or bleed that causes it needs a threshold the engine does not have, so it waits.
-    Anaesthesia and other afflictions wait until a scene asks: each would be a second cause of the same
-    state, and the author-set condition covers them then. The lab scenario does not ask.
-  - Open for all: which scene needs which. Each is an item when a scene does.
+  - Open for all: which scene needs which. Each is an item when a scene does. Unconscious is promoted
+    (`backlog.md`), and needs no scene.
 - **A room going dark.** Decided: when a room goes dark, every sighted participant in it is blind until
   the light is back on. No per-participant condition: the unlit rule already makes sight false in a dark
   room, which is that blindness, and a condition would duplicate it and need upkeep as the light changes.

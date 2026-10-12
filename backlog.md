@@ -20,6 +20,7 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
 2. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+3. [An unconscious body senses and acts on nothing](#an-unconscious-body-senses-and-acts-on-nothing).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -92,3 +93,29 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - **Done when:** `npm run check` passes with no test edit beyond imports, and one new seam test shows
   the file and memory drivers fold a scripted log identically.
 - **Depends on:** nothing, but best after the snapshot interval item, which changes the same file.
+
+
+### An unconscious body senses and acts on nothing
+
+- **What:** the decided condition (`plans/candidates.md`, Conditions): an author sets it, an edit ends
+  it, and while it lasts the body takes every sense and every capacity. It follows the pattern `asleep`
+  already uses (`docs/senses.md`).
+- A state prop `unconscious` (boolean, absent means conscious) in `src/engine/fields.ts`. A scenario may
+  write it (`ARCHITECT_PROPS` in `src/engine/forms.ts`), and an edit sets it (`update_props`).
+- Its own commands are refused `unconscious` (`src/engine/pipeline.ts`, beside `asleep`).
+- Its senses (sight, hearing, smell, touch) each answer `false` / `unconscious` (`src/engine/query.ts`,
+  before the capacity check). `docs/senses.md` and `docs/senses-bases.md` record the basis.
+- Its capacities read zero (`src/engine/capacity.ts`), as a stun lowers them but to zero. Structural
+  capacities are unchanged, so what it holds is not dropped: a stunned victim keeps the rest
+  (`docs/verbs-combat.md`).
+- Others may still act on it: take, move, carry, hurt it.
+- **Done when:** a scenario entry or an edit sets it; its own `say`, `move` and `take` are refused
+  `unconscious`; its perceive answers `false` / `unconscious` for all four senses; `capacity` reads zero
+  for every capacity; what it holds stays held; an edit setting it back to false restores everything.
+- **Files:** `src/engine/fields.ts`, `src/engine/forms.ts`, `src/engine/pipeline.ts`,
+  `src/engine/capacity.ts`, `src/engine/query.ts`, `docs/senses.md`, `docs/senses-bases.md`.
+- **Tests:** a new `tests/unconscious.test.ts` that builds its own worlds inline, as `tests/sleep.test.ts`
+  does. No new scene file, and existing scenario tests stay as they are.
+- **Not in it:** what causes it (no hit, bleed or anaesthesia cause), ending it by time, a scene that
+  uses it, and any change to `scenarios/lab.json`.
+- **Depends on:** nothing; `asleep` is the pattern.
