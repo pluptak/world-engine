@@ -8,7 +8,7 @@ namespace WorldEngine.Core.Engine;
 // A world kept in memory (src/api.ts `memoryWorld`): its current snapshot, every snapshot it passed through for preemption, the
 // events and per-command records since it started, and the attempts it took. It keeps no log, so it cannot replay its history
 // before it started, and it has no roles or rounds yet. Its results are the same as a store world's (src/store/file-store.ts).
-public sealed class MemoryWorld
+public sealed class MemoryWorld : IWorld
 {
     // The reserved author that signs edits and time (src/engine/command.ts `WORLD_AUTHOR`).
     public const string WorldAuthor = Resolve.WorldAuthor;
