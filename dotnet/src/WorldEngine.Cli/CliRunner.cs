@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
+using WorldEngine.Contract;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -25,16 +26,26 @@ public static class CliRunner
             {
                 return Invalid("not_ported");
             }
-            JsonObject request;
+            JsonNode? parsed;
             try
             {
-                request = JsonNode.Parse(input) as JsonObject ?? throw new JsonException("The request is not an object");
+                parsed = JsonNode.Parse(input);
             }
             catch (JsonException)
             {
                 return Invalid("invalid_json");
             }
+            // A request the contract refuses is answered as invalid, and nothing is run for it (`RequestSchema`).
+            if (parsed is not JsonObject request || !ContractDocument.IsRequest(request))
+            {
+                return Invalid("invalid_request");
+            }
             var answer = Dispatch(request);
+            // An answer the contract does not accept is replaced by the failure `writeResponse` writes for it (`invalid_response`).
+            if (!ContractDocument.IsResponse(answer))
+            {
+                return Invalid("invalid_response");
+            }
             // An answer whose own status is invalid exits 2, whichever op gave it, as the TypeScript CLI does.
             return new CliOutput(Line(answer), answer["status"] is { } status && JsonReads.Text(status) == "invalid" ? 2 : 0);
         }
@@ -112,6 +123,8 @@ public static class CliRunner
                 };
             case "verbs":
                 return new JsonObject { ["verbs"] = VerbRegistry.Catalog() };
+            case "schema":
+                return ContractDocument.Describe();
             case "capabilities":
                 return CapabilitiesOf();
             case "actor_observe":
