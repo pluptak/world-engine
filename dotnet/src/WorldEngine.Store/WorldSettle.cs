@@ -53,7 +53,7 @@ public static class WorldSettle
 
         // With the turn held no append is under way, so a log that ends inside a line was cut off, and settling past it would let the next
         // append join onto the fragment.
-        var log = File.ReadAllBytes(logPath);
+        var log = WorldIO.ReadAllBytes(logPath);
         if (log.Length > 0 && log[^1] != (byte)'\n')
         {
             throw new FormatException($"Log ends inside line {log.Count(bytes => bytes == (byte)'\n') + 1}");

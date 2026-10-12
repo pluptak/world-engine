@@ -50,9 +50,9 @@ public static class WorldCheckpoints
             return FromInitial(dir);
         }
 
-        var log = File.ReadAllBytes(Path.Combine(dir, WorldFiles.Log));
+        var log = WorldIO.ReadAllBytes(Path.Combine(dir, WorldFiles.Log));
         var hash = WorldReplay.HashOf(registry);
-        var initialDigest = Digest(File.ReadAllBytes(Path.Combine(dir, WorldFiles.InitialSnapshot)));
+        var initialDigest = Digest(WorldIO.ReadAllBytes(Path.Combine(dir, WorldFiles.InitialSnapshot)));
         foreach (var candidate in candidates)
         {
             var checkpoint = ReadCheckpoint(Path.Combine(folder, candidate.Name), candidate.Version, candidate.Next, hash, log, initialDigest);
@@ -84,7 +84,7 @@ public static class WorldCheckpoints
     {
         try
         {
-            if (JsonNode.Parse(File.ReadAllText(path)) is not JsonObject value
+            if (JsonNode.Parse(WorldIO.ReadAllText(path)) is not JsonObject value
                 || JsonReads.SafeInt(value["version"]) != version
                 || JsonReads.Text(value["templates_hash"]) != hash
                 || JsonReads.SafeInt(value["log_bytes"]) is not { } bytes

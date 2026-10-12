@@ -18,7 +18,7 @@ public static class TemplateDirectory
             .OrderBy(name => name, StringComparer.Ordinal);
         foreach (var file in files)
         {
-            var decl = WorldJson.Read<TemplateDecl>(File.ReadAllText(Path.Combine(directory, file)));
+            var decl = WorldJson.Read<TemplateDecl>(WorldIO.ReadAllText(Path.Combine(directory, file)));
             if (decls.ContainsKey(decl.Id))
             {
                 throw new FormatException($"Duplicate template id {decl.Id}");

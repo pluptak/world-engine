@@ -200,7 +200,7 @@ public static class WorldLock
         string text;
         try
         {
-            text = File.ReadAllText(path);
+            text = WorldIO.ReadAllText(path);
         }
         catch (FileNotFoundException)
         {

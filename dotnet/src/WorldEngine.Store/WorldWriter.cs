@@ -137,10 +137,10 @@ public static class WorldWriter
     // The checkpoint of the snapshot, bound to the log bytes that made it and to `initial.json` (`writeCheckpoint`, `checkpointText`).
     private static void WriteCheckpoint(string dir, Snapshot snapshot, long logBytes)
     {
-        var log = File.ReadAllBytes(Path.Combine(dir, WorldFiles.Log))[..(int)logBytes];
+        var log = WorldIO.ReadAllBytes(Path.Combine(dir, WorldFiles.Log))[..(int)logBytes];
         var folder = Path.Combine(dir, WorldCheckpoints.Folder);
         Directory.CreateDirectory(folder);
-        var initial = File.ReadAllBytes(Path.Combine(dir, WorldFiles.InitialSnapshot));
+        var initial = WorldIO.ReadAllBytes(Path.Combine(dir, WorldFiles.InitialSnapshot));
         AtomicWrite(Path.Combine(folder, $"{snapshot.Version}-{snapshot.NextSeq}.json"), CheckpointText(snapshot, log, initial));
     }
 

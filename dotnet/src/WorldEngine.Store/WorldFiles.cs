@@ -57,7 +57,7 @@ public static class WorldFiles
         var path = Path.Combine(dir, Templates);
         try
         {
-            var declared = ParseRegistry(JsonNode.Parse(File.ReadAllText(path)), Templates);
+            var declared = ParseRegistry(JsonNode.Parse(WorldIO.ReadAllText(path)), Templates);
             return TemplateResolver.Resolve(declared);
         }
         catch (Exception error)
@@ -67,7 +67,7 @@ public static class WorldFiles
     }
 
     // A snapshot file, checked for the fields `load` relies on before it is taken as a snapshot (`readWorldSnapshot`).
-    public static Snapshot ReadSnapshot(string path) => Checked(JsonNode.Parse(File.ReadAllText(path)), path);
+    public static Snapshot ReadSnapshot(string path) => Checked(JsonNode.Parse(WorldIO.ReadAllText(path)), path);
 
     // head.json, or null when it is missing or does not carry what a head must (`readHead`).
     public static HeadFile? ReadHead(string dir)
@@ -79,7 +79,7 @@ public static class WorldFiles
         }
         try
         {
-            if (JsonNode.Parse(File.ReadAllText(path)) is not JsonObject value
+            if (JsonNode.Parse(WorldIO.ReadAllText(path)) is not JsonObject value
                 || !Number(value, "log_bytes", out var logBytes)
                 || !Number(value, "events_bytes", out var eventsBytes)
                 || !Number(value, "log_entries", out var logEntries)
@@ -108,18 +108,18 @@ public static class WorldFiles
     // Every log line as the attempt it is, refused and invalid ones too, in file order (`readLogEntries`). A last line without its
     // newline is a write under way and is left for the next read.
     public static List<Attempt> ReadLog(string dir) =>
-        ParseLines(WholeLines(File.ReadAllBytes(Path.Combine(dir, Log))), 1, ParseLogLine);
+        ParseLines(WholeLines(WorldIO.ReadAllBytes(Path.Combine(dir, Log))), 1, ParseLogLine);
 
     public static List<WorldEvent> ReadEvents(string dir)
     {
         AssertWorldExists(dir);
-        return ParseLines(WholeLines(File.ReadAllBytes(Path.Combine(dir, Events))), 1, ParseEventLine);
+        return ParseLines(WholeLines(WorldIO.ReadAllBytes(Path.Combine(dir, Events))), 1, ParseEventLine);
     }
 
     public static List<Delta> ReadDeltas(string dir)
     {
         AssertWorldExists(dir);
-        return ParseLines(WholeLines(File.ReadAllBytes(Path.Combine(dir, Deltas))), 1, ParseDeltaLine);
+        return ParseLines(WholeLines(WorldIO.ReadAllBytes(Path.Combine(dir, Deltas))), 1, ParseDeltaLine);
     }
 
     // The names a scenario gave its entities, or an empty map when the world has none (`readWorldIds`).
@@ -132,7 +132,7 @@ public static class WorldFiles
         }
         try
         {
-            if (JsonNode.Parse(File.ReadAllText(path)) is not JsonObject value
+            if (JsonNode.Parse(WorldIO.ReadAllText(path)) is not JsonObject value
                 || value.Any(pair => JsonReads.Text(pair.Value) is null))
             {
                 throw new FormatException("ids.json is not a map of names to ids");
@@ -164,7 +164,7 @@ public static class WorldFiles
         JsonNode? found = null;
         try
         {
-            found = (JsonNode.Parse(File.ReadAllText(Path.Combine(dir, Format))) as JsonObject)?["schema_version"];
+            found = (JsonNode.Parse(WorldIO.ReadAllText(Path.Combine(dir, Format))) as JsonObject)?["schema_version"];
         }
         catch (Exception error) when (error is IOException or JsonException)
         {

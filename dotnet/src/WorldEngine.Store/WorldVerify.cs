@@ -145,7 +145,7 @@ public static class WorldVerify
 
         // Last, in version order: a checkpoint is a cache, but readers start from its snapshot. Each must be exactly what this replay
         // would have written when it reached that version.
-        var initialBytes = File.ReadAllBytes(Path.Combine(dir, WorldFiles.InitialSnapshot));
+        var initialBytes = WorldIO.ReadAllBytes(Path.Combine(dir, WorldFiles.InitialSnapshot));
         foreach (var (version, name) in wanted.OrderBy(pair => pair.Key))
         {
             var file = $"{WorldCheckpoints.Folder}/{name}";
@@ -228,7 +228,7 @@ public static class WorldVerify
         }
     }
 
-    private static string? TextOrNull(string path) => File.Exists(path) ? File.ReadAllText(path, Encoding.UTF8) : null;
+    private static string? TextOrNull(string path) => File.Exists(path) ? WorldIO.ReadAllText(path) : null;
 
     private static string Canonical<T>(T value) => WorldJson.Canonicalize(WorldJson.Write(value));
 
