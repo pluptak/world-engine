@@ -141,19 +141,21 @@ public static class WorldWriter
         var folder = Path.Combine(dir, WorldCheckpoints.Folder);
         Directory.CreateDirectory(folder);
         var initial = File.ReadAllBytes(Path.Combine(dir, WorldFiles.InitialSnapshot));
-        AtomicWrite(
-            Path.Combine(folder, $"{snapshot.Version}-{snapshot.NextSeq}.json"),
-            Canonical(new JsonObject
-            {
-                ["version"] = snapshot.Version,
-                ["templates_hash"] = snapshot.TemplatesHash,
-                ["log_bytes"] = log.Length,
-                ["log_lines"] = log.Count(bytes => bytes == (byte)'\n'),
-                ["log_sha256"] = WorldCheckpoints.Digest(log),
-                ["initial_sha256"] = WorldCheckpoints.Digest(initial),
-                ["snapshot"] = JsonNode.Parse(WorldJson.Write(snapshot)),
-            }));
+        AtomicWrite(Path.Combine(folder, $"{snapshot.Version}-{snapshot.NextSeq}.json"), CheckpointText(snapshot, log, initial));
     }
+
+    // The bytes of a checkpoint: the snapshot, bound to the log prefix that made it and to `initial.json`. `verify` builds the same text.
+    internal static string CheckpointText(Snapshot snapshot, byte[] log, byte[] initial) =>
+        Canonical(new JsonObject
+        {
+            ["version"] = snapshot.Version,
+            ["templates_hash"] = snapshot.TemplatesHash,
+            ["log_bytes"] = log.Length,
+            ["log_lines"] = log.Count(bytes => bytes == (byte)'\n'),
+            ["log_sha256"] = WorldCheckpoints.Digest(log),
+            ["initial_sha256"] = WorldCheckpoints.Digest(initial),
+            ["snapshot"] = JsonNode.Parse(WorldJson.Write(snapshot)),
+        });
 
     // Replaces `path` with `text` through a temporary file (`atomicWrite`). Windows will not replace a file another process has open at
     // that instant, so the replacement is asked for again for a moment.

@@ -1,0 +1,70 @@
+{
+  "cases": [
+    {
+      "name": "clean"
+    },
+    {
+      "name": "events_last_line_dropped",
+      "file": "events.jsonl",
+      "op": "drop_last_line"
+    },
+    {
+      "name": "log_reason_edited",
+      "file": "log.jsonl",
+      "op": "replace",
+      "from": "\"reason_code\":\"already_held\"",
+      "to": "\"reason_code\":\"elsewhere\""
+    },
+    {
+      "name": "snapshot_appended_space",
+      "file": "snapshot.json",
+      "op": "append",
+      "text": " "
+    },
+    {
+      "name": "checkpoint_appended_space",
+      "file": "checkpoints/4-12.json",
+      "op": "append",
+      "text": " "
+    }
+  ],
+  "expected": {
+    "clean": {
+      "ok": true,
+      "entries": 6,
+      "version": 4
+    },
+    "events_last_line_dropped": {
+      "ok": false,
+      "divergence": {
+        "file": "events.jsonl",
+        "line": 7,
+        "code": "missing"
+      }
+    },
+    "log_reason_edited": {
+      "ok": false,
+      "divergence": {
+        "file": "log.jsonl",
+        "line": 2,
+        "code": "status_differs"
+      }
+    },
+    "snapshot_appended_space": {
+      "ok": false,
+      "divergence": {
+        "file": "snapshot.json",
+        "line": 0,
+        "code": "differs"
+      }
+    },
+    "checkpoint_appended_space": {
+      "ok": false,
+      "divergence": {
+        "file": "checkpoints/4-12.json",
+        "line": 0,
+        "code": "differs"
+      }
+    }
+  }
+}
