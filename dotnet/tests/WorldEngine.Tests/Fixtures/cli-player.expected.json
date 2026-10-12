@@ -1,0 +1,272 @@
+[
+  {
+    "request": {
+      "op": "player_observe",
+      "handle": "alice",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"entities\":[{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":50,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"x7deffeebf116\",\"name\":\"bob\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xcf33243f98cd\",\"name\":\"ann\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":20,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xf8f49b382896\",\"name\":\"stone\",\"senses\":[\"sight\"],\"template\":\"stone\"}],\"events\":[],\"observer\":\"xcf33243f98cd\",\"tick\":0,\"unknown_senses\":[\"smell\",\"touch\"]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_observe",
+      "handle": "alice",
+      "since_tick": 0,
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"entities\":[{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":50,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"x7deffeebf116\",\"name\":\"bob\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xcf33243f98cd\",\"name\":\"ann\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":20,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xf8f49b382896\",\"name\":\"stone\",\"senses\":[\"sight\"],\"template\":\"stone\"}],\"events\":[],\"observer\":\"xcf33243f98cd\",\"tick\":0,\"unknown_senses\":[\"smell\",\"touch\"]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_inspect",
+      "handle": "alice",
+      "entity": "xf8f49b382896",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"inspection\":{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":20,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"holds\":[],\"id\":\"xf8f49b382896\",\"name\":\"stone\",\"props\":{},\"reachable\":true,\"senses\":[\"sight\"],\"size_cm\":{\"d\":20,\"h\":20,\"w\":20},\"template\":\"stone\"}}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_options",
+      "handle": "alice",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"actor\":\"xcf33243f98cd\",\"needs_args\":[\"move\",\"pour\",\"say\"],\"ready\":[{\"target\":\"x7deffeebf116\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.arm_l\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.arm_r\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.hand_l\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.hand_r\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.head\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.pocket\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.thumb_l\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.thumb_r\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.torso\",\"verb\":\"attack\"},{\"target\":\"xf8f49b382896\",\"verb\":\"attack\"},{\"target\":\"xf8f49b382896\",\"verb\":\"pull\"},{\"target\":\"xf8f49b382896\",\"verb\":\"push\"},{\"target\":\"x7deffeebf116\",\"verb\":\"search\"},{\"target\":\"xf8f49b382896\",\"verb\":\"search\"},{\"target\":\"x7deffeebf116\",\"verb\":\"take\"},{\"target\":\"xf8f49b382896\",\"verb\":\"take\"}]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_options",
+      "handle": "alice",
+      "refused": true,
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"actor\":\"xcf33243f98cd\",\"blocked\":[{\"reason_code\":\"out_of_reach\",\"target\":\"x0f05b403eb4e\",\"verb\":\"attack\"},{\"reason_code\":\"not_openable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"close\"},{\"reason_code\":\"not_openable\",\"target\":\"x7deffeebf116\",\"verb\":\"close\"},{\"reason_code\":\"not_openable\",\"target\":\"xf8f49b382896\",\"verb\":\"close\"},{\"reason_code\":\"not_consumable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"consume\"},{\"reason_code\":\"not_consumable\",\"target\":\"x7deffeebf116\",\"verb\":\"consume\"},{\"reason_code\":\"not_consumable\",\"target\":\"xf8f49b382896\",\"verb\":\"consume\"},{\"reason_code\":\"not_a_light\",\"target\":\"x0f05b403eb4e\",\"verb\":\"douse\"},{\"reason_code\":\"not_a_light\",\"target\":\"x7deffeebf116\",\"verb\":\"douse\"},{\"reason_code\":\"not_a_light\",\"target\":\"xf8f49b382896\",\"verb\":\"douse\"},{\"reason_code\":\"not_carried\",\"target\":\"x0f05b403eb4e\",\"verb\":\"drop\"},{\"reason_code\":\"not_carried\",\"target\":\"x7deffeebf116\",\"verb\":\"drop\"},{\"reason_code\":\"not_carried\",\"target\":\"xf8f49b382896\",\"verb\":\"drop\"},{\"reason_code\":\"not_a_light\",\"target\":\"x0f05b403eb4e\",\"verb\":\"light\"},{\"reason_code\":\"not_a_light\",\"target\":\"x7deffeebf116\",\"verb\":\"light\"},{\"reason_code\":\"not_a_light\",\"target\":\"xf8f49b382896\",\"verb\":\"light\"},{\"reason_code\":\"not_openable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"lock\"},{\"reason_code\":\"not_openable\",\"target\":\"x7deffeebf116\",\"verb\":\"lock\"},{\"reason_code\":\"not_openable\",\"target\":\"xf8f49b382896\",\"verb\":\"lock\"},{\"reason_code\":\"not_openable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"open\"},{\"reason_code\":\"not_openable\",\"target\":\"x7deffeebf116\",\"verb\":\"open\"},{\"reason_code\":\"not_openable\",\"target\":\"xf8f49b382896\",\"verb\":\"open\"},{\"reason_code\":\"out_of_reach\",\"target\":\"x0f05b403eb4e\",\"verb\":\"pull\"},{\"reason_code\":\"too_heavy\",\"target\":\"x7deffeebf116\",\"verb\":\"pull\"},{\"reason_code\":\"out_of_reach\",\"target\":\"x0f05b403eb4e\",\"verb\":\"push\"},{\"reason_code\":\"too_heavy\",\"target\":\"x7deffeebf116\",\"verb\":\"push\"},{\"reason_code\":\"out_of_reach\",\"target\":\"x0f05b403eb4e\",\"verb\":\"search\"},{\"reason_code\":\"not_switchable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"switch_off\"},{\"reason_code\":\"not_switchable\",\"target\":\"x7deffeebf116\",\"verb\":\"switch_off\"},{\"reason_code\":\"not_switchable\",\"target\":\"xf8f49b382896\",\"verb\":\"switch_off\"},{\"reason_code\":\"not_switchable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"switch_on\"},{\"reason_code\":\"not_switchable\",\"target\":\"x7deffeebf116\",\"verb\":\"switch_on\"},{\"reason_code\":\"not_switchable\",\"target\":\"xf8f49b382896\",\"verb\":\"switch_on\"},{\"reason_code\":\"circular_placement\",\"target\":\"x0f05b403eb4e\",\"verb\":\"take\"},{\"reason_code\":\"not_openable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"unlock\"},{\"reason_code\":\"not_openable\",\"target\":\"x7deffeebf116\",\"verb\":\"unlock\"},{\"reason_code\":\"not_openable\",\"target\":\"xf8f49b382896\",\"verb\":\"unlock\"},{\"reason_code\":\"not_a_round_move\",\"verb\":\"wait\"}],\"needs_args\":[\"move\",\"pour\",\"say\"],\"ready\":[{\"target\":\"x7deffeebf116\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.arm_l\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.arm_r\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.hand_l\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.hand_r\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.head\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.pocket\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.thumb_l\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.thumb_r\",\"verb\":\"attack\"},{\"target\":\"x7deffeebf116.torso\",\"verb\":\"attack\"},{\"target\":\"xf8f49b382896\",\"verb\":\"attack\"},{\"target\":\"xf8f49b382896\",\"verb\":\"pull\"},{\"target\":\"xf8f49b382896\",\"verb\":\"push\"},{\"target\":\"x7deffeebf116\",\"verb\":\"search\"},{\"target\":\"xf8f49b382896\",\"verb\":\"search\"},{\"target\":\"x7deffeebf116\",\"verb\":\"take\"},{\"target\":\"xf8f49b382896\",\"verb\":\"take\"}]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_check",
+      "handle": "alice",
+      "move": {
+        "command_id": "p0",
+        "verb": "say",
+        "args": {
+          "utterance": "hi"
+        }
+      },
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"command_id\":\"p0\",\"resolved_target\":null,\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_submit",
+      "handle": "alice",
+      "move": {
+        "command_id": "p1",
+        "verb": "say",
+        "args": {
+          "utterance": "hi"
+        }
+      },
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_submit",
+      "handle": "bob",
+      "move": {
+        "command_id": "p2",
+        "verb": "take",
+        "target": "xfdebb0c7cc9a"
+      },
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_submit",
+      "handle": "alice",
+      "move": {
+        "command_id": "p3",
+        "verb": "say",
+        "args": {
+          "utterance": "again"
+        }
+      },
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_submit",
+      "handle": "alice",
+      "move": {
+        "command_id": "p4",
+        "verb": "say",
+        "args": {
+          "utterance": "x"
+        },
+        "body": "zz"
+      },
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"reason_code\":\"not_a_body\",\"status\":\"refused\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_submit",
+      "handle": "carol",
+      "move": {
+        "command_id": "p5",
+        "verb": "say",
+        "args": {
+          "utterance": "x"
+        }
+      },
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"reason_code\":\"not_registered\",\"status\":\"refused\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_pending",
+      "handle": "alice",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"moves\":[{\"args\":{\"utterance\":\"again\"},\"command_id\":\"p3\",\"verb\":\"say\"}]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_withdraw",
+      "handle": "bob",
+      "body": "xdf61ef9ef9df",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_pending",
+      "handle": "bob",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"moves\":[]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "director_submitted",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"handles\":[\"alice\"]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "director_close_round",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"closing\":{\"command_id\":\"round-1-close\",\"deltas\":[],\"events\":[{\"cause_id\":null,\"command_id\":\"round-1-close\",\"data\":{},\"entity\":\"world\",\"event_id\":\"ev9\",\"tick\":0,\"type\":\"advance\"}],\"resolved_target\":null,\"snapshot_version\":5,\"status\":\"ok\"},\"results\":[{\"command_id\":\"p3\",\"deltas\":[],\"events\":[{\"cause_id\":null,\"command_id\":\"p3\",\"data\":{\"utterance\":\"again\",\"volume\":\"normal\"},\"entity\":\"e2\",\"event_id\":\"ev8\",\"tick\":0,\"type\":\"say\"}],\"resolved_target\":null,\"snapshot_version\":4,\"status\":\"ok\"}],\"round\":1,\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "director_submitted",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"handles\":[]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_pending",
+      "handle": "alice",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"moves\":[]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_submit",
+      "handle": "alice",
+      "move": {
+        "command_id": "p7",
+        "verb": "say",
+        "args": {
+          "utterance": "tmp"
+        }
+      },
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_withdraw",
+      "handle": "alice",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_pending",
+      "handle": "alice",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"moves\":[]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "player_submit",
+      "handle": "alice",
+      "move": {
+        "command_id": "p6",
+        "verb": "say",
+        "args": {
+          "utterance": "last"
+        }
+      },
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "director_edit",
+      "command_id": "forbid",
+      "edit": {
+        "kind": "set_props",
+        "target": "e4",
+        "props": {
+          "lit": false
+        }
+      },
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"command_id\":\"forbid\",\"deltas\":[],\"events\":[],\"reason_code\":\"role_forbidden\",\"resolved_target\":\"e4\",\"snapshot_version\":5,\"status\":\"refused\"}\n",
+    "status": 0
+  }
+]

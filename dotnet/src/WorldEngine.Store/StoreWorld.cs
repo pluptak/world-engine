@@ -15,8 +15,8 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
     private readonly int snapshotEvery;
     private readonly int checkpointEvery;
 
-    // The players' pending moves, held by this handle (`src/internal.ts` `INTERNAL`'s `pending`), as a memory world holds its own.
-    public IPendingMoves Pending { get; } = new MemoryPendingMoves();
+    // The players' pending moves, kept in the world's `pending.json` (`src/internal.ts` `INTERNAL`'s `pending`).
+    public IPendingMoves Pending { get; }
 
     private StoreWorld(string dir, IReadOnlyDictionary<string, Template> registry, int snapshotEvery, int checkpointEvery)
     {
@@ -24,6 +24,7 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
         this.registry = registry;
         this.snapshotEvery = snapshotEvery;
         this.checkpointEvery = checkpointEvery;
+        Pending = new StoredPending(dir);
     }
 
     // `snapshotEvery` and `checkpointEvery` are the intervals the world writes its snapshot and checkpoint at (`openWorld`'s options).

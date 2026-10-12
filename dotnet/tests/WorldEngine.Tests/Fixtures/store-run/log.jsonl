@@ -1,0 +1,3 @@
+{"based_on_version":0,"by":{"role":"director"},"command":{"actor":"world","args":{"edit":{"handle":"alice","kind":"register_player","slot":"e2"}},"by":{"role":"director"},"command_id":"reg-alice","verb":"edit"},"status":"ok","version":0}
+{"based_on_version":1,"by":{"role":"director"},"command":{"actor":"world","args":{"edit":{"handle":"bob","kind":"register_player","slot":"e3"}},"by":{"role":"director"},"command_id":"reg-bob","verb":"edit"},"status":"ok","version":1}
+{"based_on_version":2,"by":{"role":"director"},"command":{"actor":"world","args":{"edit":{"kind":"start_run"}},"by":{"role":"director"},"command_id":"start","verb":"edit"},"status":"ok","version":2}

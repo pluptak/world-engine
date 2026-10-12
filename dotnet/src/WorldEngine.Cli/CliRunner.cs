@@ -106,6 +106,31 @@ public static class CliRunner
                 return ActorOf(StoreWorld.Open(Required(world)), request).Check(ActorCommandOf(request));
             case "actor_command":
                 return ActorOf(StoreWorld.Open(Required(world)), request).Apply(ActorCommandOf(request));
+            case "player_observe":
+                return PlayerOf(StoreWorld.Open(Required(world)), request).Observe(JsonReads.SafeInt(request["since_tick"]));
+            case "player_inspect":
+                return new JsonObject { ["inspection"] = PlayerOf(StoreWorld.Open(Required(world)), request).Inspect(Text(request, "entity")) };
+            case "player_options":
+                return PlayerOf(StoreWorld.Open(Required(world)), request).Options(JsonReads.Text(request["body"]), Flag(request["refused"]));
+            case "player_check":
+                return PlayerOf(StoreWorld.Open(Required(world)), request).Check(MoveOf(request), MoveBody(request));
+            case "player_submit":
+                return PlayerOf(StoreWorld.Open(Required(world)), request).Submit(MoveOf(request), MoveBody(request));
+            case "player_withdraw":
+                return PlayerOf(StoreWorld.Open(Required(world)), request).Withdraw(JsonReads.Text(request["body"]));
+            case "player_pending":
+                return new JsonObject { ["moves"] = PlayerOf(StoreWorld.Open(Required(world)), request).Pending() };
+            case "director_submitted":
+                return new JsonObject { ["handles"] = Node(new DirectorWorld(StoreWorld.Open(Required(world))).Submitted()) };
+            case "director_close_round":
+                return Round(new DirectorWorld(StoreWorld.Open(Required(world))).CloseRound());
+            case "director_edit":
+                return Answer(
+                    new DirectorWorld(StoreWorld.Open(Required(world))).Edit(
+                        request["edit"] as JsonObject ?? throw new WorldError("invalid_edit", "The request names no edit"),
+                        JsonReads.Text(request["command_id"]),
+                        Flag(request["perceivers"])),
+                    Flag(request["include_snapshot"]));
             default:
                 throw new WorldError("invalid_op", $"Unknown op {op}");
         }
@@ -243,9 +268,17 @@ public static class CliRunner
         WorldJson.Read<Command>((request["command"] ?? throw new WorldError("invalid_command", "The request names no command")).ToJsonString());
 
     // A controller's command as an actor sends it: its id, verb, target and args, never an actor or `perceivers` (`ActorCommand`).
-    private static ActorCommand ActorCommandOf(JsonObject request)
+    private static ActorCommand ActorCommandOf(JsonObject request) =>
+        ActorCommandFrom(request["command"] as JsonObject ?? throw new WorldError("invalid_command", "The request names no command"));
+
+    // A player's move: a command the view writes, with the body it is for when the slot holds several (`PlayerMove`).
+    private static ActorCommand MoveOf(JsonObject request) =>
+        ActorCommandFrom(request["move"] as JsonObject ?? throw new WorldError("invalid_move", "The request names no move"));
+
+    private static string? MoveBody(JsonObject request) => JsonReads.Text((request["move"] as JsonObject)?["body"]);
+
+    private static ActorCommand ActorCommandFrom(JsonObject command)
     {
-        var command = request["command"] as JsonObject ?? throw new WorldError("invalid_command", "The request names no command");
         return new ActorCommand(
             Text(command, "command_id"),
             Text(command, "verb"),
@@ -255,6 +288,9 @@ public static class CliRunner
 
     // The view of the body the request names, as `actorWorld` builds it over the world.
     private static ActorWorld ActorOf(StoreWorld world, JsonObject request) => new(world, Text(request, "actor"));
+
+    // The handle of a player, over the world, as `playerWorld` builds it for the handle the request names.
+    private static PlayerWorld PlayerOf(StoreWorld world, JsonObject request) => new(world, Text(request, "handle"));
 
     private static string Text(JsonObject request, string name) =>
         JsonReads.Text(request[name]) ?? throw new WorldError("invalid_request", $"The request names no {name}");
