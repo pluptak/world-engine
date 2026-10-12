@@ -1,4 +1,5 @@
-{"entity":"e3","event_id":"ev5","field":"contained_in","from":null,"to":"e2"}
-{"entity":"e3","event_id":"ev5","field":"in_part","from":null,"to":"hand_l"}
-{"entity":"e3","event_id":"ev5","field":"support","from":"e1","to":null}
-{"entity":"e3","event_id":"ev5","field":"pos","from":{"x":30,"y":0},"to":null}
+{"entity":"e3","event_id":"ev6","field":"contained_in","from":null,"to":"e2"}
+{"entity":"e3","event_id":"ev6","field":"in_part","from":null,"to":"hand_l"}
+{"entity":"e3","event_id":"ev6","field":"support","from":"e1","to":null}
+{"entity":"e3","event_id":"ev6","field":"pos","from":{"x":30,"y":0},"to":null}
+{"entity":"e4","event_id":"ev10","field":"props","from":{"burning":true,"light_source":true},"to":{"burning":false,"light_source":true}}

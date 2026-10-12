@@ -100,7 +100,7 @@
         "parts": {},
         "pos": null,
         "props": {
-          "lit": true
+          "lit": false
         },
         "residue": {},
         "status": "intact",
@@ -160,19 +160,44 @@
         "status": "intact",
         "support": "e1",
         "template": "stone"
+      },
+      "e4": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e4",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "lamp",
+        "parts": {},
+        "pos": {
+          "x": -30,
+          "y": 0
+        },
+        "props": {
+          "burning": true,
+          "light_source": true
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "lamp"
       }
     },
-    "next_seq": 4,
+    "next_seq": 5,
     "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
     "tick": 0,
     "version": 0
   },
   "head": {
-    "deltas_bytes": 307,
-    "events_bytes": 445,
-    "log_bytes": 572,
-    "log_entries": 4,
-    "ok_entries": 3,
+    "deltas_bytes": 444,
+    "events_bytes": 650,
+    "log_bytes": 695,
+    "log_entries": 5,
+    "ok_entries": 4,
     "rounds_closed": 0,
     "snapshot_log_bytes": 0,
     "snapshot_version": 0,
@@ -230,6 +255,17 @@
       },
       "status": "ok",
       "version": 2
+    },
+    {
+      "based_on_version": 3,
+      "command": {
+        "actor": "e2",
+        "command_id": "c4",
+        "target": "lamp",
+        "verb": "douse"
+      },
+      "status": "ok",
+      "version": 3
     }
   ],
   "events": [
@@ -238,16 +274,16 @@
       "command_id": "c1",
       "data": {},
       "entity": "e3",
-      "event_id": "ev4",
+      "event_id": "ev5",
       "tick": 0,
       "type": "take"
     },
     {
-      "cause_id": "ev4",
+      "cause_id": "ev5",
       "command_id": "c1",
       "data": {},
       "entity": "e3",
-      "event_id": "ev5",
+      "event_id": "ev6",
       "tick": 0,
       "type": "moved"
     },
@@ -256,7 +292,7 @@
       "command_id": "edit-3",
       "data": {},
       "entity": "world",
-      "event_id": "ev6",
+      "event_id": "ev7",
       "tick": 1,
       "type": "edit"
     },
@@ -268,47 +304,79 @@
         "volume": "normal"
       },
       "entity": "e2",
-      "event_id": "ev7",
+      "event_id": "ev8",
       "tick": 1,
       "type": "say"
+    },
+    {
+      "cause_id": null,
+      "command_id": "c4",
+      "data": {},
+      "entity": "e4",
+      "event_id": "ev9",
+      "tick": 2,
+      "type": "douse"
+    },
+    {
+      "cause_id": "ev9",
+      "command_id": "c4",
+      "data": {},
+      "entity": "e4",
+      "event_id": "ev10",
+      "tick": 2,
+      "type": "doused"
     }
   ],
   "deltas": [
     {
       "entity": "e3",
-      "event_id": "ev5",
+      "event_id": "ev6",
       "field": "contained_in",
       "from": null,
       "to": "e2"
     },
     {
       "entity": "e3",
-      "event_id": "ev5",
+      "event_id": "ev6",
       "field": "in_part",
       "from": null,
       "to": "hand_l"
     },
     {
       "entity": "e3",
-      "event_id": "ev5",
+      "event_id": "ev6",
       "field": "support",
       "from": "e1",
       "to": null
     },
     {
       "entity": "e3",
-      "event_id": "ev5",
+      "event_id": "ev6",
       "field": "pos",
       "from": {
         "x": 30,
         "y": 0
       },
       "to": null
+    },
+    {
+      "entity": "e4",
+      "event_id": "ev10",
+      "field": "props",
+      "from": {
+        "burning": true,
+        "light_source": true
+      },
+      "to": {
+        "burning": false,
+        "light_source": true
+      }
     }
   ],
   "ids": {
     "ann": "e2",
     "hall": "e1",
+    "lamp": "e4",
     "stone": "e3"
   },
   "fold": {
@@ -349,7 +417,7 @@
           "parts": {},
           "pos": null,
           "props": {
-            "lit": true
+            "lit": false
           },
           "residue": {},
           "status": "intact",
@@ -406,13 +474,38 @@
           "status": "intact",
           "support": null,
           "template": "stone"
+        },
+        "e4": {
+          "aliases": [],
+          "concealed_by": null,
+          "contained_in": null,
+          "detached_from": null,
+          "id": "e4",
+          "in_part": null,
+          "integrity": 100,
+          "location": "e1",
+          "modifiers": [],
+          "name": "lamp",
+          "parts": {},
+          "pos": {
+            "x": -30,
+            "y": 0
+          },
+          "props": {
+            "burning": false,
+            "light_source": true
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "lamp"
         }
       },
-      "next_seq": 8,
+      "next_seq": 11,
       "rng": 3,
       "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
-      "tick": 2,
-      "version": 3
+      "tick": 3,
+      "version": 4
     },
     "events": [
       {
@@ -420,16 +513,16 @@
         "command_id": "c1",
         "data": {},
         "entity": "e3",
-        "event_id": "ev4",
+        "event_id": "ev5",
         "tick": 0,
         "type": "take"
       },
       {
-        "cause_id": "ev4",
+        "cause_id": "ev5",
         "command_id": "c1",
         "data": {},
         "entity": "e3",
-        "event_id": "ev5",
+        "event_id": "ev6",
         "tick": 0,
         "type": "moved"
       },
@@ -438,7 +531,7 @@
         "command_id": "edit-3",
         "data": {},
         "entity": "world",
-        "event_id": "ev6",
+        "event_id": "ev7",
         "tick": 1,
         "type": "edit"
       },
@@ -450,42 +543,73 @@
           "volume": "normal"
         },
         "entity": "e2",
-        "event_id": "ev7",
+        "event_id": "ev8",
         "tick": 1,
         "type": "say"
+      },
+      {
+        "cause_id": null,
+        "command_id": "c4",
+        "data": {},
+        "entity": "e4",
+        "event_id": "ev9",
+        "tick": 2,
+        "type": "douse"
+      },
+      {
+        "cause_id": "ev9",
+        "command_id": "c4",
+        "data": {},
+        "entity": "e4",
+        "event_id": "ev10",
+        "tick": 2,
+        "type": "doused"
       }
     ],
     "deltas": [
       {
         "entity": "e3",
-        "event_id": "ev5",
+        "event_id": "ev6",
         "field": "contained_in",
         "from": null,
         "to": "e2"
       },
       {
         "entity": "e3",
-        "event_id": "ev5",
+        "event_id": "ev6",
         "field": "in_part",
         "from": null,
         "to": "hand_l"
       },
       {
         "entity": "e3",
-        "event_id": "ev5",
+        "event_id": "ev6",
         "field": "support",
         "from": "e1",
         "to": null
       },
       {
         "entity": "e3",
-        "event_id": "ev5",
+        "event_id": "ev6",
         "field": "pos",
         "from": {
           "x": 30,
           "y": 0
         },
         "to": null
+      },
+      {
+        "entity": "e4",
+        "event_id": "ev10",
+        "field": "props",
+        "from": {
+          "burning": true,
+          "light_source": true
+        },
+        "to": {
+          "burning": false,
+          "light_source": true
+        }
       }
     ]
   },
@@ -526,7 +650,7 @@
         "parts": {},
         "pos": null,
         "props": {
-          "lit": true
+          "lit": false
         },
         "residue": {},
         "status": "intact",
@@ -583,13 +707,38 @@
         "status": "intact",
         "support": null,
         "template": "stone"
+      },
+      "e4": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e4",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "lamp",
+        "parts": {},
+        "pos": {
+          "x": -30,
+          "y": 0
+        },
+        "props": {
+          "burning": false,
+          "light_source": true
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "lamp"
       }
     },
-    "next_seq": 8,
+    "next_seq": 11,
     "rng": 3,
     "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
-    "tick": 2,
-    "version": 3
+    "tick": 3,
+    "version": 4
   },
   "load": {
     "coverage": {
@@ -628,7 +777,7 @@
         "parts": {},
         "pos": null,
         "props": {
-          "lit": true
+          "lit": false
         },
         "residue": {},
         "status": "intact",
@@ -685,47 +834,85 @@
         "status": "intact",
         "support": null,
         "template": "stone"
+      },
+      "e4": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e4",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "lamp",
+        "parts": {},
+        "pos": {
+          "x": -30,
+          "y": 0
+        },
+        "props": {
+          "burning": false,
+          "light_source": true
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "lamp"
       }
     },
-    "next_seq": 8,
+    "next_seq": 11,
     "rng": 3,
     "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
-    "tick": 2,
-    "version": 3
+    "tick": 3,
+    "version": 4
   },
   "since": {
     "0": {
       "deltas": [
         {
           "entity": "e3",
-          "event_id": "ev5",
+          "event_id": "ev6",
           "field": "contained_in",
           "from": null,
           "to": "e2"
         },
         {
           "entity": "e3",
-          "event_id": "ev5",
+          "event_id": "ev6",
           "field": "in_part",
           "from": null,
           "to": "hand_l"
         },
         {
           "entity": "e3",
-          "event_id": "ev5",
+          "event_id": "ev6",
           "field": "support",
           "from": "e1",
           "to": null
         },
         {
           "entity": "e3",
-          "event_id": "ev5",
+          "event_id": "ev6",
           "field": "pos",
           "from": {
             "x": 30,
             "y": 0
           },
           "to": null
+        },
+        {
+          "entity": "e4",
+          "event_id": "ev10",
+          "field": "props",
+          "from": {
+            "burning": true,
+            "light_source": true
+          },
+          "to": {
+            "burning": false,
+            "light_source": true
+          }
         }
       ],
       "events": [
@@ -734,16 +921,16 @@
           "command_id": "c1",
           "data": {},
           "entity": "e3",
-          "event_id": "ev4",
+          "event_id": "ev5",
           "tick": 0,
           "type": "take"
         },
         {
-          "cause_id": "ev4",
+          "cause_id": "ev5",
           "command_id": "c1",
           "data": {},
           "entity": "e3",
-          "event_id": "ev5",
+          "event_id": "ev6",
           "tick": 0,
           "type": "moved"
         },
@@ -752,7 +939,7 @@
           "command_id": "edit-3",
           "data": {},
           "entity": "world",
-          "event_id": "ev6",
+          "event_id": "ev7",
           "tick": 1,
           "type": "edit"
         },
@@ -764,21 +951,53 @@
             "volume": "normal"
           },
           "entity": "e2",
-          "event_id": "ev7",
+          "event_id": "ev8",
           "tick": 1,
           "type": "say"
+        },
+        {
+          "cause_id": null,
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev9",
+          "tick": 2,
+          "type": "douse"
+        },
+        {
+          "cause_id": "ev9",
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev10",
+          "tick": 2,
+          "type": "doused"
         }
       ]
     },
     "1": {
-      "deltas": [],
+      "deltas": [
+        {
+          "entity": "e4",
+          "event_id": "ev10",
+          "field": "props",
+          "from": {
+            "burning": true,
+            "light_source": true
+          },
+          "to": {
+            "burning": false,
+            "light_source": true
+          }
+        }
+      ],
       "events": [
         {
           "cause_id": null,
           "command_id": "edit-3",
           "data": {},
           "entity": "world",
-          "event_id": "ev6",
+          "event_id": "ev7",
           "tick": 1,
           "type": "edit"
         },
@@ -790,14 +1009,46 @@
             "volume": "normal"
           },
           "entity": "e2",
-          "event_id": "ev7",
+          "event_id": "ev8",
           "tick": 1,
           "type": "say"
+        },
+        {
+          "cause_id": null,
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev9",
+          "tick": 2,
+          "type": "douse"
+        },
+        {
+          "cause_id": "ev9",
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev10",
+          "tick": 2,
+          "type": "doused"
         }
       ]
     },
     "2": {
-      "deltas": [],
+      "deltas": [
+        {
+          "entity": "e4",
+          "event_id": "ev10",
+          "field": "props",
+          "from": {
+            "burning": true,
+            "light_source": true
+          },
+          "to": {
+            "burning": false,
+            "light_source": true
+          }
+        }
+      ],
       "events": [
         {
           "cause_id": null,
@@ -807,15 +1058,66 @@
             "volume": "normal"
           },
           "entity": "e2",
-          "event_id": "ev7",
+          "event_id": "ev8",
           "tick": 1,
           "type": "say"
+        },
+        {
+          "cause_id": null,
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev9",
+          "tick": 2,
+          "type": "douse"
+        },
+        {
+          "cause_id": "ev9",
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev10",
+          "tick": 2,
+          "type": "doused"
         }
       ]
     },
     "3": {
-      "deltas": [],
-      "events": []
+      "deltas": [
+        {
+          "entity": "e4",
+          "event_id": "ev10",
+          "field": "props",
+          "from": {
+            "burning": true,
+            "light_source": true
+          },
+          "to": {
+            "burning": false,
+            "light_source": true
+          }
+        }
+      ],
+      "events": [
+        {
+          "cause_id": null,
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev9",
+          "tick": 2,
+          "type": "douse"
+        },
+        {
+          "cause_id": "ev9",
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev10",
+          "tick": 2,
+          "type": "doused"
+        }
+      ]
     }
   },
   "attempts": {
@@ -871,6 +1173,17 @@
         },
         "status": "ok",
         "version": 2
+      },
+      {
+        "based_on_version": 3,
+        "command": {
+          "actor": "e2",
+          "command_id": "c4",
+          "target": "lamp",
+          "verb": "douse"
+        },
+        "status": "ok",
+        "version": 3
       }
     ],
     "1": [
@@ -914,6 +1227,17 @@
         },
         "status": "ok",
         "version": 2
+      },
+      {
+        "based_on_version": 3,
+        "command": {
+          "actor": "e2",
+          "command_id": "c4",
+          "target": "lamp",
+          "verb": "douse"
+        },
+        "status": "ok",
+        "version": 3
       }
     ],
     "2": [
@@ -929,9 +1253,32 @@
         },
         "status": "ok",
         "version": 2
+      },
+      {
+        "based_on_version": 3,
+        "command": {
+          "actor": "e2",
+          "command_id": "c4",
+          "target": "lamp",
+          "verb": "douse"
+        },
+        "status": "ok",
+        "version": 3
       }
     ],
-    "3": []
+    "3": [
+      {
+        "based_on_version": 3,
+        "command": {
+          "actor": "e2",
+          "command_id": "c4",
+          "target": "lamp",
+          "verb": "douse"
+        },
+        "status": "ok",
+        "version": 3
+      }
+    ]
   },
   "errors": {
     "since_future": "future_version",
@@ -943,15 +1290,21 @@
     "event": [
       {
         "cause_id": null,
-        "command_id": "c3",
-        "data": {
-          "utterance": "hello",
-          "volume": "normal"
-        },
-        "entity": "e2",
-        "event_id": "ev7",
-        "tick": 1,
-        "type": "say"
+        "command_id": "c4",
+        "data": {},
+        "entity": "e4",
+        "event_id": "ev9",
+        "tick": 2,
+        "type": "douse"
+      },
+      {
+        "cause_id": "ev9",
+        "command_id": "c4",
+        "data": {},
+        "entity": "e4",
+        "event_id": "ev10",
+        "tick": 2,
+        "type": "doused"
       }
     ],
     "stone_contained_in": [
@@ -960,16 +1313,16 @@
         "command_id": "c1",
         "data": {},
         "entity": "e3",
-        "event_id": "ev4",
+        "event_id": "ev5",
         "tick": 0,
         "type": "take"
       },
       {
-        "cause_id": "ev4",
+        "cause_id": "ev5",
         "command_id": "c1",
         "data": {},
         "entity": "e3",
-        "event_id": "ev5",
+        "event_id": "ev6",
         "tick": 0,
         "type": "moved"
       }
@@ -981,5 +1334,127 @@
     "event": "no_such_event",
     "entity": "no_such_entity",
     "field": "no_such_field"
-  }
+  },
+  "query": [
+    {
+      "event_id": "ev5",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev5",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "quiet",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev6",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev6",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "quiet",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev7",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "authored",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev7",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "authored",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev8",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev8",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "same_location",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev9",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev9",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "quiet",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev10",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev10",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "quiet",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev999",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "no_such_event",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev999",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "no_such_event",
+        "value": "false"
+      }
+    },
+    {
+      "entity": "e3",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "location_unlit",
+        "value": "false"
+      }
+    }
+  ]
 }

@@ -94,5 +94,60 @@ public static class WorldHistory
         WorldReplay.TrustedSnapshot(dir, registry)
         ?? throw new WorldError("store_unsettled", "The world's files disagree with its head; settling them is not ported yet");
 
+    // The snapshots before and after the command that produced an event, and the events through that command (`replayUntilEvent`).
+    // Replayed from initial.json; the TypeScript store may start from a checkpoint, with the same answer.
+    public static (Snapshot Before, Snapshot After, List<WorldEvent> Events)? ReplayUntilEvent(
+        string dir,
+        string eventId,
+        IReadOnlyDictionary<string, Template> registry)
+    {
+        var snapshot = WorldFiles.ReadSnapshot(Path.Combine(dir, WorldFiles.InitialSnapshot));
+        var events = new List<WorldEvent>();
+        var entries = WorldFiles.ReadLog(dir);
+        for (var index = 0; index < entries.Count; index++)
+        {
+            var entry = entries[index];
+            if (entry.Status != Status.Ok)
+            {
+                continue;
+            }
+            var before = snapshot;
+            var result = Pipeline.Apply(snapshot, registry, VerbRegistry.All, entry.Command);
+            if (result.Status != Status.Ok)
+            {
+                throw new FormatException($"Accepted command failed during replay at line {index + 1}");
+            }
+            events.AddRange(result.Events);
+            snapshot = result.Snapshot;
+            if (result.Events.Any(@event => @event.EventId == eventId))
+            {
+                return (before, snapshot, events);
+            }
+        }
+        return null;
+    }
+
+    // A perceive query on the stored world (`storeWorld` `query`): the entity form reads the present; the event form reads the world at
+    // either end of the event's command, and an event the log does not hold is answered from the present with its stored events.
+    public static Perception.Answer QueryPerceive(
+        string dir,
+        string observer,
+        string sense,
+        IReadOnlyDictionary<string, Template> registry,
+        string? eventId = null,
+        string? entity = null)
+    {
+        var current = Current(dir, registry);
+        if (eventId is null)
+        {
+            return Perception.Perceive(current, registry, observer, entity!, sense);
+        }
+        if (ReplayUntilEvent(dir, eventId, registry) is { } atEvent)
+        {
+            return Queries.AtEvent(atEvent.Before, atEvent.After, registry, atEvent.Events, observer, eventId, sense);
+        }
+        return EventPerception.Perceive(current, registry, WorldFiles.ReadEvents(dir), observer, eventId, sense);
+    }
+
     private const long MaxSafeInteger = 9007199254740991;
 }
