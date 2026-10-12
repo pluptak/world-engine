@@ -56,13 +56,43 @@ public static class WorldHistory
         {
             throw new WorldError("invalid_version", $"Invalid version {version}");
         }
-        var current = WorldReplay.TrustedSnapshot(dir, registry)
-            ?? throw new WorldError("store_unsettled", "The world's files disagree with its head; settling them is not ported yet");
+        var current = Current(dir, registry);
         if (version > current.Version)
         {
             throw new WorldError("future_version", $"Version {version} is ahead of {current.Version}");
         }
     }
+
+    // The chain of events behind one event, or behind the last change of an entity's field (`trace`, `docs/provenance.md`). An
+    // entity the world has never had is refused before its field is looked at.
+    public static List<WorldEvent> TraceOf(
+        string dir,
+        string? eventId,
+        string? entity,
+        string? field,
+        IReadOnlyDictionary<string, Template> registry)
+    {
+        var current = Current(dir, registry);
+        var events = WorldFiles.ReadEvents(dir);
+        if (eventId is not null)
+        {
+            return WorldEngine.Core.Engine.Trace.TraceEvent(events, eventId);
+        }
+        var deltas = WorldFiles.ReadDeltas(dir);
+        var known = current.Entities.ContainsKey(entity!)
+            || deltas.Any(delta => delta.Entity == entity)
+            || events.Any(@event => @event.Entity == entity);
+        if (!known)
+        {
+            throw new WorldError("no_such_entity", $"No such entity {entity}");
+        }
+        return WorldEngine.Core.Engine.Trace.TraceField(events, deltas, entity!, field!);
+    }
+
+    // The current snapshot, from the files as they agree; a world whose files disagree is not settled here yet.
+    private static Snapshot Current(string dir, IReadOnlyDictionary<string, Template> registry) =>
+        WorldReplay.TrustedSnapshot(dir, registry)
+        ?? throw new WorldError("store_unsettled", "The world's files disagree with its head; settling them is not ported yet");
 
     private const long MaxSafeInteger = 9007199254740991;
 }

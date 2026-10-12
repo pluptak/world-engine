@@ -217,6 +217,38 @@ public class StoreReadTests : IDisposable
         Assert.Equal(errors["attempts_negative"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.Attempts(Fixture, -1, registry)).Code);
     }
 
+    [Fact]
+    public void Trace_gives_the_chains_the_TypeScript_store_gave()
+    {
+        var registry = WorldFiles.ReadTemplates(Fixture);
+        var traces = Expected["trace"]!.AsObject();
+        var eventId = traces["event"]!.AsArray().Last()!["event_id"]!.GetValue<string>();
+        var ids = Expected["ids"]!.AsObject();
+
+        Assert.Equal(CanonicalJson.Serialize(traces["event"]), Canonical(WorldHistory.TraceOf(Fixture, eventId, null, null, registry)));
+        Assert.Equal(
+            CanonicalJson.Serialize(traces["stone_contained_in"]),
+            Canonical(WorldHistory.TraceOf(Fixture, null, ids["stone"]!.GetValue<string>(), "contained_in", registry)));
+        Assert.Equal(
+            CanonicalJson.Serialize(traces["ann_spawn"]),
+            Canonical(WorldHistory.TraceOf(Fixture, null, ids["ann"]!.GetValue<string>(), "entity", registry)));
+        Assert.Equal(
+            CanonicalJson.Serialize(traces["hall_props"]),
+            Canonical(WorldHistory.TraceOf(Fixture, null, ids["hall"]!.GetValue<string>(), "props", registry)));
+    }
+
+    [Fact]
+    public void Trace_refuses_an_unknown_event_entity_or_field_as_the_store_refuses_it()
+    {
+        var registry = WorldFiles.ReadTemplates(Fixture);
+        var errors = Expected["trace_errors"]!.AsObject();
+        var stone = Expected["ids"]!["stone"]!.GetValue<string>();
+
+        Assert.Equal(errors["event"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.TraceOf(Fixture, "ev999", null, null, registry)).Code);
+        Assert.Equal(errors["entity"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.TraceOf(Fixture, null, "nobody", "props", registry)).Code);
+        Assert.Equal(errors["field"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.TraceOf(Fixture, null, stone, "bogus", registry)).Code);
+    }
+
     private void CopyWorld()
     {
         Directory.CreateDirectory(scratch);
