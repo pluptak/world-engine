@@ -1,0 +1,9 @@
+{
+  "id": "panel",
+  "size_cm": { "w": 30, "d": 10, "h": 40 },
+  "mass_g": 3000,
+  "parts": [],
+  "props": { "panel": true },
+  "break_products": [],
+  "break_residue": {}
+}

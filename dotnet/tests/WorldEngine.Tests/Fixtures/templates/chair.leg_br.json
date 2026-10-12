@@ -1,0 +1,9 @@
+{
+  "id": "chair.leg_br",
+  "size_cm": { "w": 5, "d": 5, "h": 70 },
+  "mass_g": 1000,
+  "parts": [],
+  "props": {},
+  "break_products": [],
+  "break_residue": {}
+}

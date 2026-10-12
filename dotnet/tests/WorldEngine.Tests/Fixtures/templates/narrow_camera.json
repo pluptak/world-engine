@@ -1,0 +1,5 @@
+{
+  "id": "narrow_camera",
+  "extends": "camera",
+  "props": { "cone_deg": 60, "facing_deg": 0 }
+}

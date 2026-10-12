@@ -1,0 +1,7 @@
+{
+  "id": "dog",
+  "extends": "quadruped",
+  "size_cm": { "w": 60, "d": 25, "h": 60 },
+  "mass_g": 25000,
+  "props": { "reach_cm": 60, "carry_limit_g": 5000, "bite_damage": 15 }
+}
