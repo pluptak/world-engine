@@ -2,7 +2,7 @@ import { deepStrictEqual, ok, strictEqual } from "node:assert";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { createWorld, WORLD_AUTHOR, type Id, type Result, type WorldEdit, type World } from "../src/index.js";
+import { createWorld, memoryWorld, WORLD_AUTHOR, type Id, type Result, type WorldEdit, type World } from "../src/index.js";
 import { validateSnapshot } from "../src/engine/validate.js";
 import { loadTemplates } from "../src/templates.js";
 import { tempDir } from "./harness.js";
@@ -133,4 +133,26 @@ test("a retime is recorded by its own edit, which nobody senses", (t) => {
   strictEqual(since.deltas.length, 0);
   strictEqual(since.events.length, 1);
   strictEqual(world.query({ kind: "perceive", observer: ann, sense: "hearing", event_id: since.events[0]!.event_id }).value, "false");
+});
+
+test("a queued beat that writes a definition prop is refused a retime, as it would be refused a schedule, and stays where it was", (t) => {
+  const { world, door } = inn(t);
+  strictEqual(
+    edit(world, { kind: "schedule_beat", id: "knock", at_tick: 3, action: { kind: "update_props", target: door, props: { open: true } } }).status,
+    "ok",
+  );
+  // A beat queued before the rule held writes a definition, which no schedule can now give: planted in the snapshot.
+  const snapshot = structuredClone(world.snapshot());
+  const cause = (snapshot.schedule ?? []).find((entry) => entry.kind === "beat" && entry.id === "knock");
+  ok(cause?.kind === "beat");
+  cause.action = { kind: "update_props", target: door, props: { openable: false } };
+  const planted = memoryWorld(snapshot, registry);
+  deepStrictEqual(
+    (() => {
+      const result = planted.edit({ kind: "retime_beat", id: "knock", at_tick: 5 }, { command_id: "retime-planted" });
+      return [result.status, result.reason_code];
+    })(),
+    ["refused", "field_not_editable"],
+  );
+  strictEqual(planted.schedule({ kind: "beat" }).find((entry) => entry.kind === "beat" && entry.id === "knock")?.due_tick, 3);
 });

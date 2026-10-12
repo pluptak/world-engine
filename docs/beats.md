@@ -23,7 +23,8 @@ the engine knows ticks only.
 - `retime_beat { id, at_tick }` brings a pending beat forward or puts it back, keeping its action,
   condition, followers and cause; it runs after whatever is due at `at_tick`, as if scheduled then.
   `at_tick` must be ahead of the clock (`beat_in_past`), and an id nothing pending carries is
-  `no_such_beat`. A repeating beat's next run moves; later runs keep `every_ticks` from there.
+  `no_such_beat`. A repeating beat's next run moves; later runs keep `every_ticks` from there. A beat that
+  writes a definition prop is refused what a schedule is refused (`field_not_editable`), at the same time.
 
 **Order.** The cause kind is `beat`: `{ due_tick, kind, entity, cause_id, id,
 `action, only_if?, then? }`, where `cause_id` is the event the `schedule_beat` edit

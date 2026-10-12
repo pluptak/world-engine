@@ -19,9 +19,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
-2. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
-3. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
-4. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+2. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
+3. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -81,18 +80,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - **Done when:** the cause is named in `docs/locking.md` and fixed with a deterministic test. If it
   does not reproduce in 50 loop runs, the test writes each child's log to a file on failure, so the
   next occurrence can be read.
-- **Depends on:** nothing.
-
-### A beat that writes a definition prop is refused when written
-
-- **What:** a beat that writes a definition prop is refused `field_not_editable` only when it is due,
-  not when it is written (`plans/power.md`, "Template-defined props in a beat"). The check is in
-  `src/engine/validate.ts` and `src/engine/verbs/edit.ts`.
-- Make `schedule_beat` and `retime_beat` (`src/engine/verbs/edit.ts`) refuse such a beat with the same
-  code, so the author learns when the beat is written.
-- **Done when:** scheduling such a beat is refused at once, and the beat tests cover it. A beat already
-  queued in a stored world keeps today's behaviour: refused when due.
-- **Docs:** `docs/beats.md`, one sentence. No new refusal code.
 - **Depends on:** nothing.
 
 ### The lab's power cut goes through the generator's on prop

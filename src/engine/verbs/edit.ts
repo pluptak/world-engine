@@ -708,9 +708,18 @@ function runEditRefusal(snapshot: Snapshot, kind: "start_run" | "end_run"): Prec
 }
 
 function retimeBeatRefusal(context: CommandContext, edit: RetimeBeatEdit): PreconditionResult {
-  const waiting = pending(context.snapshot).some((cause) => cause.kind === "beat" && cause.id === edit.id);
-  if (!waiting) {
+  const cause = pending(context.snapshot).find((entry) => entry.kind === "beat" && entry.id === edit.id);
+  if (cause?.kind !== "beat") {
     return refused("no_such_beat");
+  }
+  // A beat queued with a write to a definition (none can be scheduled now, see scheduleBeatRefusal) is not moved
+  // to a tick where it would be skipped: the same refusal a schedule gives.
+  const beat = { kind: "schedule_beat" as const, id: cause.id, at_tick: cause.due_tick, action: cause.action, then: cause.then };
+  for (const action of editActions(beat)) {
+    const code = beatPropRefusal(context.snapshot, context.registry, action);
+    if (code !== null) {
+      return refused(code);
+    }
   }
   return edit.at_tick <= context.snapshot.tick ? refused("beat_in_past") : { status: "ok" };
 }

@@ -46,9 +46,6 @@ beyond reach and the control walk, and a sound or event for a room going dark.
 - **A room going dark:** with no event, an agent in a room whose light fails sees less from the
   next look, but nothing says the light went out. If a lab row needs it, a derived `darkened` event
   on the room (emitted when `isLit` turns false within a command) is the candidate.
-- **Template-defined props in a beat:** a beat writing a definition prop is still skipped when due
-  (`field_not_editable`), not refused when scheduled. With `on` as state, power no longer needs it;
-  it stays a small candidate.
 
 ## Items, in order
 
