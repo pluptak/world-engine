@@ -190,8 +190,9 @@ public static class Pipeline
                 snapshot,
                 command,
                 refusal.Status,
-                // A destination that did not resolve names no target the verb could act on.
-                resolvedTarget: refusal.Status is Status.Unresolved or Status.Ambiguous ? null : target?.Address,
+                // A destination that did not resolve names no target the verb could act on; an ambiguous one still
+                // names the command's target (src/engine/pipeline.ts, the precondition's unresolved check).
+                resolvedTarget: refusal.Status is Status.Unresolved ? null : target?.Address,
                 reasonCode: refusal.ReasonCode,
                 reasonData: refusal.ReasonData,
                 candidates: refusal.Candidates);
