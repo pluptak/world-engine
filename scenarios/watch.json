@@ -21,6 +21,6 @@
   { "id": "note", "template": "note", "overrides": { "name": "note", "location": "gatehouse", "support": "table" } },
   { "id": "ann", "template": "human", "overrides": { "name": "ann", "location": "gatehouse", "support": "gatehouse", "pos": { "x": 0, "y": 0 } } },
   { "id": "cal", "template": "human", "overrides": { "name": "cal", "location": "gatehouse", "support": "gatehouse", "pos": { "x": 40, "y": 0 } } },
-  { "id": "dee", "template": "human", "overrides": { "name": "dee", "location": "gatehouse", "support": "gatehouse", "pos": { "x": 300, "y": 0 } } },
+  { "id": "dee", "template": "human", "overrides": { "name": "dee", "location": "gatehouse", "support": "gatehouse", "pos": { "x": 300, "y": 0 }, "props": { "asleep": true } } },
   { "id": "bob", "template": "human", "overrides": { "name": "bob", "location": "yard", "support": "yard", "pos": { "x": 0, "y": 0 } } }
 ]

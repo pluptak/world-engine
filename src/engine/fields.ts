@@ -23,6 +23,8 @@ export interface PropField {
 export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   abstract: { type: "boolean", tier: "definition" },
   agent: { type: "boolean", tier: "definition" },
+  // A sleeping body acts on nothing and senses only by touch and smell (`docs/senses.md`); an author sets it.
+  asleep: { type: "boolean", tier: "state" },
   attack_damage: { type: "integer", tier: "definition" },
   barrier: { type: "boolean", tier: "definition" },
   bite_damage: { type: "integer", tier: "definition" },

@@ -581,6 +581,10 @@ function perceive(
   if (typeof observer.props.powered_by === "string" && !powered(snapshot, observer.id)) {
     return answer("false", "unpowered");
   }
+  // A sleeping body sees and hears nothing; touch and smell are unchanged (`docs/limits-watch.md`).
+  if (observer.props.asleep === true && (query.sense === "sight" || query.sense === "hearing")) {
+    return answer("false", "asleep");
+  }
   if ((capacity(snapshot, registry, observer.id, query.sense) ?? 0) === 0) {
     return answer("false", "no_sense_capacity");
   }

@@ -34,4 +34,8 @@ a break's), the hand acts (`take`, `give`, `put`, `search`, `found`, `revealed`)
 `capability_changed`, and a `moved` whose cause chain starts at `take`, `give` or `put`; its hearing
 is `quiet`. A `moved` under `move`, `push` or `pull` is footsteps or scraping, and stays `event`.
 
+A sleeping body (`asleep`, a state prop an author sets, `scenarios/watch.json`) is `false` / `asleep` for sight
+and hearing, so it hears no knock and no speech; touch and smell read as they do for anyone. Its own commands
+are refused `asleep`, and the world author may still act on it.
+
 What `perceive` answers with, the basis codes, is [senses-bases.md](senses-bases.md).

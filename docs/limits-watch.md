@@ -13,4 +13,3 @@ step that shows it: `S` is `tests/scenario-watch.test.ts`. Nothing here is a pro
 - Volume is a distance, not an intent: a whisper reaches within `NEAR_THRESHOLD_CM` of the speaker whoever
   the addressee is, so the one it is whispered to (`to`) hears it only by standing close, and a bystander
   who happens to stand as close hears it too (S step B).
-- Sleep is not modelled: the one who is meant to be asleep hears the knock as anyone does (S step A).

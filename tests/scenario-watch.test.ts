@@ -110,7 +110,8 @@ test("a knock stops the guard's wait, a shout crosses the door, and a lit lanter
   strictEqual(wait.events[0]?.data.advanced, 5);
   const knock = wait.events.find((event) => event.type === "sounded");
   ok(knock !== undefined);
-  deepStrictEqual([w.ann, w.cal, w.dee, w.bob].map((who) => heard(w.world, who, knock.event_id)), [true, true, true, true]);
+  // dee is asleep (scenarios/watch.json): the knock wakes nobody, and the others hear it as before.
+  deepStrictEqual([w.ann, w.cal, w.dee, w.bob].map((who) => heard(w.world, who, knock.event_id)), [true, true, false, true]);
   strictEqual(w.world.query({ kind: "perceive", observer: w.ann, event_id: knock.event_id, sense: "sight" }).basis_code, "unseen");
   strictEqual(w.world.snapshot().tick, 5);
   // A knock is never seen, so no hearer is told the door it came from, whether the room is theirs or the

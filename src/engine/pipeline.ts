@@ -86,6 +86,10 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
   if (fault !== null) {
     return unchangedResult(snapshot, command, "refused", null, fault.reason_code, undefined, fault.reason_data);
   }
+  // A sleeping body makes no command of its own; the world author may still act on it.
+  if (!authored && actor.props.asleep === true) {
+    return unchangedResult(snapshot, command, "refused", null, "asleep");
+  }
 
   let target = null;
   if (command.target !== undefined) {
