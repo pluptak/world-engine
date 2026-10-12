@@ -32,7 +32,9 @@ public static class CliRunner
             {
                 return Invalid("invalid_json");
             }
-            return new CliOutput(Line(Dispatch(request)), 0);
+            var answer = Dispatch(request);
+            // An answer whose own status is invalid exits 2, whichever op gave it, as the TypeScript CLI does.
+            return new CliOutput(Line(answer), answer["status"] is { } status && JsonReads.Text(status) == "invalid" ? 2 : 0);
         }
         catch (WorldError error)
         {
@@ -57,6 +59,19 @@ public static class CliRunner
                 return new JsonObject { ["attempts"] = Node(StoreWorld.Open(Required(world)).Attempts(Version(request))) };
             case "verify":
                 return Verified(Required(world));
+            case "command":
+                return Answer(
+                    StoreWorld.Open(Required(world)).Apply(CommandOf(request), JsonReads.SafeInt(request["based_on_version"]), Flag(request["observe"])),
+                    Flag(request["include_snapshot"]));
+            case "edit":
+                return Answer(
+                    StoreWorld.Open(Required(world)).Edit(
+                        request["edit"] as JsonObject ?? throw new WorldError("invalid_edit", "The request names no edit"),
+                        JsonReads.Text(request["command_id"]),
+                        Flag(request["perceivers"]),
+                        null,
+                        JsonReads.SafeInt(request["based_on_version"])),
+                    Flag(request["include_snapshot"]));
             case "check":
                 return Verdict(StoreWorld.Open(Required(world)).Check(CommandOf(request)));
             case "options":
@@ -116,6 +131,54 @@ public static class CliRunner
         }
         return verdict;
     }
+
+    // One write's answer (`commandResponse`): its verdict, the version after it, its deltas and events, and the snapshot or the actor's
+    // observation when asked for. A spawn's delta is followed by one delta for each relation field the new entity came with.
+    private static JsonObject Answer(Pipeline.Result result, bool includeSnapshot)
+    {
+        var answer = Verdict(result);
+        answer["snapshot_version"] = result.Snapshot.Version;
+        answer["deltas"] = ResponseDeltas(result.Deltas);
+        answer["events"] = Node(result.Events);
+        if (includeSnapshot)
+        {
+            answer["snapshot"] = Node(result.Snapshot);
+        }
+        if (result.Observation is { } observation)
+        {
+            answer["observation"] = observation.DeepClone();
+        }
+        return answer;
+    }
+
+    private static JsonArray ResponseDeltas(IReadOnlyList<Delta> deltas)
+    {
+        var response = new JsonArray();
+        foreach (var delta in deltas)
+        {
+            response.Add(Node(delta));
+            if (delta.Field == "entity" && delta.To is JsonObject entity)
+            {
+                foreach (var field in new[] { "support", "contained_in", "location", "detached_from", "pos" })
+                {
+                    if (entity.ContainsKey(field))
+                    {
+                        response.Add(new JsonObject
+                        {
+                            ["event_id"] = delta.EventId,
+                            ["entity"] = delta.Entity,
+                            ["field"] = field,
+                            ["from"] = null,
+                            ["to"] = entity[field]?.DeepClone(),
+                        });
+                    }
+                }
+            }
+        }
+        return response;
+    }
+
+    private static bool Flag(JsonNode? node) => node is JsonValue value && value.TryGetValue(out bool flag) && flag;
 
     private static JsonObject Query(StoreWorld world, JsonObject query) => Text(query, "kind") switch
     {
