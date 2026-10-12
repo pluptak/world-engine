@@ -159,7 +159,7 @@ public static class WorldWriter
 
     // Replaces `path` with `text` through a temporary file (`atomicWrite`). Windows will not replace a file another process has open at
     // that instant, so the replacement is asked for again for a moment.
-    private static void AtomicWrite(string path, string text)
+    internal static void AtomicWrite(string path, string text)
     {
         var temporary = $"{path}.{Environment.ProcessId}.tmp";
         File.WriteAllText(temporary, text, Utf8);
@@ -178,7 +178,7 @@ public static class WorldWriter
     }
 
     // One record as the store writes it: canonical JSON and a newline.
-    private static string Line<T>(T value) => Canonical(value) + "\n";
+    internal static string Line<T>(T value) => Canonical(value) + "\n";
 
-    private static string Canonical<T>(T value) => WorldJson.Canonicalize(WorldJson.Write(value));
+    internal static string Canonical<T>(T value) => WorldJson.Canonicalize(WorldJson.Write(value));
 }
