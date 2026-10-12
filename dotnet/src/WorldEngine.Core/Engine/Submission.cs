@@ -1,0 +1,62 @@
+using WorldEngine.Core.Model;
+using WorldEngine.Core.Templates;
+
+namespace WorldEngine.Core.Engine;
+
+// The version rule and the last gate of a submission (src/store/file-store.ts `resolveSubmission`), with no disk of its own. A
+// command against a version the world has already left is `preempted` when it would have succeeded there, so a caller that raced
+// sees why it lost. An accepted command whose result breaks a snapshot invariant is `invalid` with the rule's code, so a verb bug
+// is never believed.
+public static class Submission
+{
+    public static Pipeline.Result ResolveSubmission(
+        Snapshot current,
+        IReadOnlyDictionary<string, Template> registry,
+        IReadOnlyDictionary<string, Pipeline.VerbDecl> verbs,
+        Command command,
+        long basedOn,
+        Func<long, Snapshot?> snapshotAt)
+    {
+        if (basedOn < 0 || basedOn > MaxSafeInteger)
+        {
+            return InvalidResult(current, command, "invalid_version");
+        }
+        if (basedOn > current.Version)
+        {
+            return InvalidResult(current, command, "future_version");
+        }
+
+        var result = AcceptedResult(current, registry, command, Pipeline.Apply(current, registry, verbs, command));
+        if (basedOn >= current.Version || result.Status is Status.Ok or Status.Invalid)
+        {
+            return result;
+        }
+
+        var basedSnapshot = snapshotAt(basedOn);
+        var basedResult = basedSnapshot is null
+            ? null
+            : AcceptedResult(basedSnapshot, registry, command, Pipeline.Apply(basedSnapshot, registry, verbs, command));
+        return basedResult?.Status == Status.Ok ? result with { Status = Status.Preempted } : result;
+    }
+
+    // The result an accepted command gives, unless the snapshot it leaves breaks an invariant.
+    private static Pipeline.Result AcceptedResult(
+        Snapshot current,
+        IReadOnlyDictionary<string, Template> registry,
+        Command command,
+        Pipeline.Result applied)
+    {
+        if (applied.Status != Status.Ok)
+        {
+            return applied;
+        }
+        var first = SnapshotValidation.Validate(applied.Snapshot, registry).FirstOrDefault();
+        return first is null ? applied : InvalidResult(current, command, first.Code);
+    }
+
+    // The result of a command the world refuses to take at all: nothing changed, and the rule it broke is its reason.
+    public static Pipeline.Result InvalidResult(Snapshot snapshot, Command command, string reasonCode) =>
+        Pipeline.Unchanged(snapshot, command, Status.Invalid, reasonCode: reasonCode);
+
+    private const long MaxSafeInteger = 9007199254740991;
+}

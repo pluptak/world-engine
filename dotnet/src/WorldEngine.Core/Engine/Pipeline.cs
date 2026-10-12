@@ -100,7 +100,9 @@ public static class Pipeline
         IReadOnlyDictionary<string, JsonNode?>? ReasonData,
         Snapshot Snapshot,
         IReadOnlyList<Delta> Deltas,
-        IReadOnlyList<WorldEvent> Events);
+        IReadOnlyList<WorldEvent> Events,
+        // With `observe`: what the actor could sense afterwards (the projection, as JSON).
+        JsonObject? Observation = null);
 
     // The result of a command the front refuses, which leaves the snapshot as it was.
     public static Result Unchanged(
