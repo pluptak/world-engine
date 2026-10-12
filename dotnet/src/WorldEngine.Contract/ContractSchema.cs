@@ -26,6 +26,17 @@ public static class ContractSchema
         {
             schema["properties"]!["anchor"]!["minLength"] = 1;
         }
+        else if (typeof(T) == typeof(Entity))
+        {
+            var properties = schema["properties"]!;
+            // An entity's integrity is a percentage, and each prop is a number, a string or a boolean.
+            properties["integrity"]!["minimum"] = 0;
+            properties["integrity"]!["maximum"] = 100;
+            properties["props"]!["additionalProperties"] = JsonNode.Parse("""{"anyOf":[{"type":"number"},{"type":"string"},{"type":"boolean"}]}""");
+            // Zod's traits is optional; the record names it without a default, so it is taken off the required list here.
+            schema["required"] = JsonSerializer.SerializeToNode(
+                schema["required"]!.AsArray().Select(name => name!.GetValue<string>()).Where(name => name != "traits").ToArray());
+        }
         else if (typeof(T) == typeof(PartState))
         {
             // A part's integrity is a percentage of its maximum.

@@ -40,6 +40,7 @@ public class ContractValuesTests
         "CoverageSchema" => ContractSchema.Of<Coverage>(),
         "PartStateSchema" => ContractSchema.Of<PartState>(),
         "ModifierSchema" => ContractSchema.Of<Modifier>(),
+        "EntitySchema" => ContractSchema.Of<Entity>(),
         _ => throw new InvalidDataException($"No .NET schema for {name}"),
     };
 }

@@ -470,6 +470,636 @@
     "valid": false
   },
   {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": true
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      },
+      "traits": {
+        "colour": "grey"
+      }
+    },
+    "valid": true
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": null,
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": true
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": {
+        "entity": "e2",
+        "part": "hand_l"
+      },
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": true
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {
+        "hand_l": {
+          "integrity": 50,
+          "status": "damaged"
+        }
+      },
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": true
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {}
+    },
+    "valid": true
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 101,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": -1,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "damaged",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "x": [
+          1
+        ]
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "x": null
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {
+        "water": 1.5
+      },
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [
+        {
+          "capacity": "grip"
+        }
+      ],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {
+        "hand_l": {
+          "integrity": 50,
+          "status": "broken"
+        }
+      },
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      },
+      "traits": {
+        "colour": 1
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": {
+        "entity": "e2",
+        "part": "hand_l",
+        "extra": 1
+      },
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      }
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": {
+      "id": "e3",
+      "template": "stone",
+      "name": "stone",
+      "aliases": [
+        "rock"
+      ],
+      "location": "e1",
+      "support": "e1",
+      "contained_in": null,
+      "in_part": null,
+      "concealed_by": null,
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "detached_from": null,
+      "integrity": 100,
+      "status": "intact",
+      "parts": {},
+      "residue": {},
+      "modifiers": [],
+      "props": {
+        "mass_g": 2000,
+        "hard": true,
+        "label": "x"
+      },
+      "extra": 1
+    },
+    "valid": false
+  },
+  {
+    "schema": "EntitySchema",
+    "value": null,
+    "valid": false
+  },
+  {
     "schema": "CoverageSchema",
     "value": {
       "relations": [],
