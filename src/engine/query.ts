@@ -585,6 +585,10 @@ function perceive(
   if (observer.props.asleep === true && (query.sense === "sight" || query.sense === "hearing")) {
     return answer("false", "asleep");
   }
+  // An unconscious body takes every sense.
+  if (observer.props.unconscious === true) {
+    return answer("false", "unconscious");
+  }
   if ((capacity(snapshot, registry, observer.id, query.sense) ?? 0) === 0) {
     return answer("false", "no_sense_capacity");
   }

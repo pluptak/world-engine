@@ -38,4 +38,8 @@ A sleeping body (`asleep`, a state prop an author sets, `scenarios/watch.json`) 
 and hearing, so it hears no knock and no speech; touch and smell read as they do for anyone. Its own commands
 are refused `asleep`, and the world author may still act on it.
 
+An unconscious body (`unconscious`, a state prop an author sets, and an edit ends) is `false` / `unconscious` for every
+sense, and its capacities read zero (`capacity`); what it holds stays held, since structural capacities are unchanged.
+Its own commands are refused `unconscious`.
+
 What `perceive` answers with, the basis codes, is [senses-bases.md](senses-bases.md).

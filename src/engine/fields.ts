@@ -87,6 +87,8 @@ export const PROP_FIELDS: Readonly<Record<string, PropField>> = {
   surface: { type: "boolean", tier: "definition" },
   to: { type: "id", tier: "state", requires: ["openable"] },
   topples: { type: "boolean", tier: "definition" },
+  // An unconscious body takes every sense and capacity until an author's edit ends it (`docs/senses.md`).
+  unconscious: { type: "boolean", tier: "state" },
 };
 
 // Every field of an entity besides `props`, by who may write it. Placement is state; the location

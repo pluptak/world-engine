@@ -90,6 +90,9 @@ export function apply(snapshot: Snapshot, registry: TemplateRegistry, command: C
   if (!authored && actor.props.asleep === true) {
     return unchangedResult(snapshot, command, "refused", null, "asleep");
   }
+  if (!authored && actor.props.unconscious === true) {
+    return unchangedResult(snapshot, command, "refused", null, "unconscious");
+  }
 
   let target = null;
   if (command.target !== undefined) {

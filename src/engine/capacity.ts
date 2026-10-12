@@ -92,6 +92,10 @@ export function capacity(
     return null;
   }
   const { entity } = entityAndTemplate(snapshot, registry, entityId);
+  // An unconscious body has no capacity; the structural sums above are unchanged, so what it holds stays held.
+  if (entity.props.unconscious === true) {
+    return 0;
+  }
 
   let total = structural;
   for (const modifier of entity.modifiers) {
