@@ -37,6 +37,9 @@ public class ContractValuesTests
         "PerceiversSchema" => ContractSchema.Of<Perceivers>(),
         "WorldEventSchema" => ContractSchema.Of<WorldEvent>(),
         "DeltaSchema" => ContractSchema.Of<Delta>(),
+        "CoverageSchema" => ContractSchema.Of<Coverage>(),
+        "PartStateSchema" => ContractSchema.Of<PartState>(),
+        "ModifierSchema" => ContractSchema.Of<Modifier>(),
         _ => throw new InvalidDataException($"No .NET schema for {name}"),
     };
 }

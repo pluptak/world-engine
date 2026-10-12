@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Contract;
 
@@ -24,6 +25,12 @@ public static class ContractSchema
         if (typeof(T) == typeof(AnchorPos))
         {
             schema["properties"]!["anchor"]!["minLength"] = 1;
+        }
+        else if (typeof(T) == typeof(PartState))
+        {
+            // A part's integrity is a percentage of its maximum.
+            schema["properties"]!["integrity"]!["minimum"] = 0;
+            schema["properties"]!["integrity"]!["maximum"] = 100;
         }
         else if (typeof(T) == typeof(ValidationIssue))
         {

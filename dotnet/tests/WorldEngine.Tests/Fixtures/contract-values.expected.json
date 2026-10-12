@@ -470,6 +470,200 @@
     "valid": false
   },
   {
+    "schema": "CoverageSchema",
+    "value": {
+      "relations": [],
+      "senses": [
+        "sight"
+      ],
+      "properties": []
+    },
+    "valid": true
+  },
+  {
+    "schema": "CoverageSchema",
+    "value": {
+      "relations": [
+        "location"
+      ],
+      "senses": [],
+      "properties": [
+        "integrity"
+      ]
+    },
+    "valid": true
+  },
+  {
+    "schema": "CoverageSchema",
+    "value": {
+      "relations": [],
+      "senses": [
+        "sight"
+      ]
+    },
+    "valid": false
+  },
+  {
+    "schema": "CoverageSchema",
+    "value": {
+      "relations": [],
+      "senses": [
+        1
+      ],
+      "properties": []
+    },
+    "valid": false
+  },
+  {
+    "schema": "CoverageSchema",
+    "value": {
+      "relations": [],
+      "senses": [],
+      "properties": [],
+      "extra": 1
+    },
+    "valid": false
+  },
+  {
+    "schema": "CoverageSchema",
+    "value": null,
+    "valid": false
+  },
+  {
+    "schema": "PartStateSchema",
+    "value": {
+      "integrity": 0,
+      "status": "intact"
+    },
+    "valid": true
+  },
+  {
+    "schema": "PartStateSchema",
+    "value": {
+      "integrity": 100,
+      "status": "destroyed"
+    },
+    "valid": true
+  },
+  {
+    "schema": "PartStateSchema",
+    "value": {
+      "integrity": 101,
+      "status": "intact"
+    },
+    "valid": false
+  },
+  {
+    "schema": "PartStateSchema",
+    "value": {
+      "integrity": -1,
+      "status": "intact"
+    },
+    "valid": false
+  },
+  {
+    "schema": "PartStateSchema",
+    "value": {
+      "integrity": 1.5,
+      "status": "intact"
+    },
+    "valid": false
+  },
+  {
+    "schema": "PartStateSchema",
+    "value": {
+      "integrity": 50,
+      "status": "broken"
+    },
+    "valid": false
+  },
+  {
+    "schema": "PartStateSchema",
+    "value": {
+      "integrity": 50
+    },
+    "valid": false
+  },
+  {
+    "schema": "PartStateSchema",
+    "value": {
+      "integrity": 50,
+      "status": "damaged",
+      "extra": 1
+    },
+    "valid": false
+  },
+  {
+    "schema": "PartStateSchema",
+    "value": null,
+    "valid": false
+  },
+  {
+    "schema": "ModifierSchema",
+    "value": {
+      "capacity": "grip",
+      "delta": -2,
+      "expires_at_tick": null,
+      "cause_id": "ev1"
+    },
+    "valid": true
+  },
+  {
+    "schema": "ModifierSchema",
+    "value": {
+      "capacity": "grip",
+      "delta": -2,
+      "expires_at_tick": 5,
+      "cause_id": "ev1"
+    },
+    "valid": true
+  },
+  {
+    "schema": "ModifierSchema",
+    "value": {
+      "capacity": "grip",
+      "delta": -2,
+      "cause_id": "ev1"
+    },
+    "valid": false
+  },
+  {
+    "schema": "ModifierSchema",
+    "value": {
+      "capacity": "grip",
+      "delta": 1.5,
+      "expires_at_tick": null,
+      "cause_id": "ev1"
+    },
+    "valid": false
+  },
+  {
+    "schema": "ModifierSchema",
+    "value": {
+      "capacity": "grip",
+      "delta": -2,
+      "expires_at_tick": null,
+      "cause_id": null
+    },
+    "valid": false
+  },
+  {
+    "schema": "ModifierSchema",
+    "value": {
+      "capacity": "grip",
+      "delta": -2,
+      "expires_at_tick": null,
+      "cause_id": "ev1",
+      "extra": 1
+    },
+    "valid": false
+  },
+  {
+    "schema": "ModifierSchema",
+    "value": null,
+    "valid": false
+  },
+  {
     "schema": "PerceiversSchema",
     "value": {
       "sight": [
