@@ -19,10 +19,12 @@ Priorities there, then deleting it here in the same commit.
   - **Bound** is a hierarchy. Bound with no limb named takes movement and manipulation. Bound on a
     named part takes only what that part provides: bound legs take movement only. Open: which parts
     provide which capacity (a template question), and whether a bound body can still speak.
-  - **Gagged** blocks speech down to sound: a gagged body's speech is heard as a sound, and no message
-    gets through. Open: whether a gagged body's `say` is refused or becomes a sound event with no words.
-  - **Unconscious** is not decided. Open: which senses and capacities it takes, whether an author sets
-    it or a hit or bleed does, and how it ends.
+  - **Gagged** blocks speech down to sound: no message gets through. A gagged `say` is not refused. The
+    speaker is told by a `garbled` line on its own hearing, so it knows others will hear or understand it
+    poorly. Open: how garbled speech is shaped (the speaker's words scrambled, or only a flag).
+  - **Unconscious** takes every sense and every capacity. Open: whether an author sets it or a hit or
+    bleed does, how it ends, and whether anaesthesia or other afflictions in other scenarios should extend
+    it. The lab scenario is the only one that asks, and it does not.
   - Open for all: which scene needs which. Each is an item when a scene does.
 - **A room going dark.** Decided by the maintainer: when a room goes dark, every sighted participant
   in it is blind until the light is back on. Open: this overlaps with the unlit rule, which already
