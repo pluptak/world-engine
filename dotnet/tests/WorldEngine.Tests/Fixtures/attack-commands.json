@@ -1,0 +1,67 @@
+[
+  {
+    "command_id": "a1",
+    "actor": "e4",
+    "verb": "attack",
+    "target": "e20"
+  },
+  {
+    "command_id": "a2",
+    "actor": "e4",
+    "verb": "attack",
+    "target": "e20.hand_l"
+  },
+  {
+    "command_id": "a3",
+    "actor": "e4",
+    "verb": "attack",
+    "target": "e20.nowhere"
+  },
+  {
+    "command_id": "a4",
+    "actor": "e4",
+    "verb": "attack",
+    "target": "e5"
+  },
+  {
+    "command_id": "a5",
+    "actor": "e4",
+    "verb": "attack",
+    "target": "e21"
+  },
+  {
+    "command_id": "a6",
+    "actor": "e4",
+    "verb": "attack",
+    "target": "nobody"
+  },
+  {
+    "command_id": "a7",
+    "actor": "e4",
+    "verb": "attack"
+  },
+  {
+    "command_id": "a8",
+    "actor": "e55",
+    "verb": "attack",
+    "target": "e5"
+  },
+  {
+    "command_id": "a9",
+    "actor": "e4",
+    "verb": "attack",
+    "target": "e4"
+  },
+  {
+    "command_id": "a10",
+    "actor": "e4",
+    "verb": "attack",
+    "target": "e20.hand_r"
+  },
+  {
+    "command_id": "a11",
+    "actor": "e4",
+    "verb": "attack",
+    "target": "e20.hand_l"
+  }
+]

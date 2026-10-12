@@ -100,6 +100,9 @@ public sealed class Working
     public void SetIntegrity(string entityId, long integrity, string eventId) =>
         Update(entityId, "integrity", integrity, eventId, entity => entity with { Integrity = integrity });
 
+    public void SetParts(string entityId, IReadOnlyDictionary<string, PartState> parts, string eventId) =>
+        Update(entityId, "parts", parts, eventId, entity => entity with { Parts = parts });
+
     public void SetStatus(string entityId, EntityStatus status, string eventId) =>
         Update(entityId, "status", status, eventId, entity => entity with { Status = status });
 
@@ -111,18 +114,24 @@ public sealed class Working
 
     // Adds a new entity (`spawn` in src/engine/spawn.ts) and records it as one delta on the field "entity" under the
     // `spawned` event, which is caused by `causeEventId`. Returns the spawned event's id.
-    public string SpawnUnder(IReadOnlyDictionary<string, Template> registry, string templateId, Spawn.Overrides overrides, string causeEventId)
+    // Spawns an entity under a cause; its delta is recorded under `deltaEventId` when one is given, else the spawn event.
+    public (string Id, string EventId) SpawnUnder(
+        IReadOnlyDictionary<string, Template> registry,
+        string templateId,
+        Spawn.Overrides overrides,
+        string causeEventId,
+        string? deltaEventId = null)
     {
         var created = Spawn.Create(Snapshot, registry, templateId, overrides);
         Snapshot = created.Snapshot;
         var spawnedEvent = Emit("spawned", created.Id, Pipeline.Reason(("template", templateId)), causeEventId);
         Deltas.Add(new Delta(
-            spawnedEvent,
+            deltaEventId ?? spawnedEvent,
             created.Id,
             "entity",
             null,
             JsonSerializer.SerializeToNode(Snapshot.Entities[created.Id], WorldJson.Options)));
-        return spawnedEvent;
+        return (created.Id, spawnedEvent);
     }
 
     // Records an entity's removal as one delta on the field "entity" under `eventId`, from the entity as it was to nothing.
@@ -157,6 +166,7 @@ public sealed class Working
     {
         "status" => entity.Status,
         "integrity" => entity.Integrity,
+        "parts" => entity.Parts,
         "props" => entity.Props,
         "residue" => entity.Residue,
         _ => throw new ArgumentException($"Not a field this helper writes: {field}", nameof(field)),

@@ -96,6 +96,17 @@ public static class Schedule
         }
     }
 
+    // A lost part starts a wound of its own: the first bleed falls due `bleed_every_ticks` after the `detached` that opened
+    // it, and two wounds bleed side by side (src/engine/schedule.ts `startBleeding`).
+    public static void StartBleeding(Working working, string entityId, string detachedEvent)
+    {
+        var entity = working.Snapshot.Entities[entityId];
+        if (Bleeding(entity.Props) is { } rule)
+        {
+            ScheduleBleed(working, entityId, detachedEvent, rule.Times);
+        }
+    }
+
     // The next bleed of a wound, due `bleed_every_ticks` on, while bleeds remain.
     private static void ScheduleBleed(Working working, string entityId, string causeId, long remaining)
     {

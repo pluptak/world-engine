@@ -9,7 +9,14 @@ namespace WorldEngine.Core.Engine;
 // and the container it lands in) are taken; spawning a holder, which claims grips, is not ported.
 public static class Spawn
 {
-    public sealed record Overrides(string? Location = null, string? Support = null, Pos? Pos = null, string? ContainedIn = null);
+    public sealed record Overrides(
+        string? Location = null,
+        string? Support = null,
+        Pos? Pos = null,
+        string? ContainedIn = null,
+        string? Name = null,
+        long? Integrity = null,
+        DetachedFrom? DetachedFrom = null);
 
     public static (Snapshot Snapshot, string Id) Create(
         Snapshot snapshot,
@@ -35,7 +42,7 @@ public static class Spawn
         var entity = new Entity(
             Id: id,
             Template: templateId,
-            Name: templateId,
+            Name: overrides.Name ?? templateId,
             Aliases: [],
             Location: overrides.Location,
             Support: overrides.Support,
@@ -43,8 +50,8 @@ public static class Spawn
             InPart: null,
             ConcealedBy: null,
             Pos: overrides.Pos,
-            DetachedFrom: null,
-            Integrity: template.MaxIntegrity ?? 100,
+            DetachedFrom: overrides.DetachedFrom,
+            Integrity: overrides.Integrity ?? template.MaxIntegrity ?? 100,
             Status: EntityStatus.Intact,
             Parts: new Dictionary<string, PartState>(),
             Residue: new Dictionary<string, long>(),
