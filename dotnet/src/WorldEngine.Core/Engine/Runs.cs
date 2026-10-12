@@ -96,6 +96,15 @@ public static class Runs
     public static List<string> SlotRoots(Snapshot snapshot) =>
         (snapshot.Run?.Slots ?? []).Select(SlotMembers).Where(members => members.Count > 0).Select(members => members[0]).ToList();
 
+    // The bodies a handle drives under a slot, in the order the scene named them, each as the body it is now (a successor where one
+    // took over), without repeats: one body for a slot of one (src/engine/run.ts `driverBodies`).
+    public static List<string> DriverBodies(Snapshot snapshot, string root)
+    {
+        var entry = (snapshot.Run?.Slots ?? []).FirstOrDefault(slot => SlotMembers(slot) is { Count: > 0 } members && members[0] == root);
+        var members = entry is null ? [root] : SlotMembers(entry);
+        return members.Select(member => LiveBodyOf(snapshot, member)).Distinct(StringComparer.Ordinal).ToList();
+    }
+
     // After an ok command or edit: a running run that has reached its limit ends for that reason, and one whose slots are
     // all destroyed or gone ends for no live players. A run with no slots never ends the second way. A registering run
     // never ends by itself: the author may still be fixing its scene.

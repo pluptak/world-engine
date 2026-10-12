@@ -1,0 +1,3649 @@
+[
+  {
+    "name": "base",
+    "op": "base",
+    "args": {
+      "snapshot": {
+        "version": 0,
+        "tick": 0,
+        "next_seq": 40,
+        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "coverage": {
+          "relations": [
+            "support",
+            "contained_in",
+            "location",
+            "attached_to",
+            "status",
+            "near",
+            "reachable"
+          ],
+          "senses": [
+            "sight",
+            "hearing",
+            "touch"
+          ],
+          "properties": [
+            "integrity",
+            "residue",
+            "pos",
+            "open",
+            "liquid_amount"
+          ]
+        },
+        "entities": {
+          "e1": {
+            "id": "e1",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "lit": true
+            }
+          },
+          "e2": {
+            "id": "e2",
+            "template": "table",
+            "name": "e2",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "surface": true
+            }
+          },
+          "e3": {
+            "id": "e3",
+            "template": "bottle",
+            "name": "e3",
+            "aliases": [],
+            "location": "e1",
+            "support": null,
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e4": {
+            "id": "e4",
+            "template": "human",
+            "name": "e4",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3
+            }
+          },
+          "e8": {
+            "id": "e8",
+            "template": "door",
+            "name": "e8",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true,
+              "open": false,
+              "from": "e1",
+              "to": "e9"
+            }
+          },
+          "e9": {
+            "id": "e9",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e31": {
+            "id": "e31",
+            "template": "chest",
+            "name": "e31",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true
+            }
+          },
+          "e5": {
+            "id": "e5",
+            "template": "human",
+            "name": "e5",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -20,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3
+            }
+          }
+        },
+        "run": {
+          "state": "running",
+          "tick_limit": 30,
+          "slots": [
+            "e4",
+            "e5"
+          ],
+          "players": [
+            {
+              "handle": "alice",
+              "slot": "e4"
+            },
+            {
+              "handle": "bob",
+              "slot": "e5"
+            }
+          ]
+        }
+      }
+    },
+    "result": null
+  },
+  {
+    "name": "snapshot_start",
+    "op": "snapshot",
+    "args": {},
+    "result": {
+      "version": 0,
+      "tick": 0,
+      "next_seq": 40,
+      "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "attached_to",
+          "status",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing",
+          "touch"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos",
+          "open",
+          "liquid_amount"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        },
+        "e5": {
+          "id": "e5",
+          "template": "human",
+          "name": "e5",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -20,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3
+          }
+        }
+      },
+      "run": {
+        "state": "running",
+        "tick_limit": 30,
+        "slots": [
+          "e4",
+          "e5"
+        ],
+        "players": [
+          {
+            "handle": "alice",
+            "slot": "e4"
+          },
+          {
+            "handle": "bob",
+            "slot": "e5"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "edit_set_seed",
+    "op": "edit",
+    "args": {
+      "edit": {
+        "kind": "set_seed",
+        "seed": 7
+      }
+    },
+    "result": {
+      "status": "ok",
+      "command_id": "edit-1",
+      "resolved_target": null,
+      "snapshot": {
+        "version": 1,
+        "tick": 0,
+        "next_seq": 41,
+        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "coverage": {
+          "relations": [
+            "support",
+            "contained_in",
+            "location",
+            "attached_to",
+            "status",
+            "near",
+            "reachable"
+          ],
+          "senses": [
+            "sight",
+            "hearing",
+            "touch"
+          ],
+          "properties": [
+            "integrity",
+            "residue",
+            "pos",
+            "open",
+            "liquid_amount"
+          ]
+        },
+        "entities": {
+          "e1": {
+            "id": "e1",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "lit": true
+            }
+          },
+          "e2": {
+            "id": "e2",
+            "template": "table",
+            "name": "e2",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "surface": true
+            }
+          },
+          "e3": {
+            "id": "e3",
+            "template": "bottle",
+            "name": "e3",
+            "aliases": [],
+            "location": "e1",
+            "support": null,
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e4": {
+            "id": "e4",
+            "template": "human",
+            "name": "e4",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3
+            }
+          },
+          "e8": {
+            "id": "e8",
+            "template": "door",
+            "name": "e8",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true,
+              "open": false,
+              "from": "e1",
+              "to": "e9"
+            }
+          },
+          "e9": {
+            "id": "e9",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e31": {
+            "id": "e31",
+            "template": "chest",
+            "name": "e31",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true
+            }
+          },
+          "e5": {
+            "id": "e5",
+            "template": "human",
+            "name": "e5",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -20,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3
+            }
+          }
+        },
+        "run": {
+          "state": "running",
+          "tick_limit": 30,
+          "slots": [
+            "e4",
+            "e5"
+          ],
+          "players": [
+            {
+              "handle": "alice",
+              "slot": "e4"
+            },
+            {
+              "handle": "bob",
+              "slot": "e5"
+            }
+          ]
+        },
+        "rng": 7
+      },
+      "deltas": [],
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "edit-1",
+          "tick": 0,
+          "type": "edit",
+          "entity": "world",
+          "data": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "alice_observe",
+    "op": "observe",
+    "args": {
+      "handle": "alice"
+    },
+    "result": {
+      "observer": "x4867edd8484a",
+      "tick": 0,
+      "unknown_senses": [
+        "smell"
+      ],
+      "entities": [
+        {
+          "id": "x3d5b6bec720d",
+          "template": "chest",
+          "name": "e31",
+          "senses": [
+            "sight"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": "x574ce08fc018",
+            "contained_in": null,
+            "in_part": null,
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": 90,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "x4867edd8484a",
+          "template": "human",
+          "name": "e4",
+          "senses": [
+            "sight",
+            "touch"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": "x574ce08fc018",
+            "contained_in": null,
+            "in_part": null,
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": -50,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "x8ea789cc1f2c",
+          "template": "table",
+          "name": "e2",
+          "senses": [
+            "sight"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": "x574ce08fc018",
+            "contained_in": null,
+            "in_part": null,
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": 30,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "x9c430c60b291",
+          "template": "human",
+          "name": "e5",
+          "senses": [
+            "sight"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": "x574ce08fc018",
+            "contained_in": null,
+            "in_part": null,
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": -20,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "xa91157f9c462",
+          "template": "door",
+          "name": "e8",
+          "senses": [
+            "sight"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": "x574ce08fc018",
+            "contained_in": null,
+            "in_part": null,
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "xe7d06abfe371",
+          "template": "bottle",
+          "name": "e3",
+          "senses": [
+            "sight",
+            "touch"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": null,
+            "contained_in": "x4867edd8484a",
+            "in_part": "hand_l",
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": -50,
+              "y": 0
+            }
+          }
+        }
+      ],
+      "events": []
+    }
+  },
+  {
+    "name": "alice_observe_tick_0",
+    "op": "observe",
+    "args": {
+      "handle": "alice",
+      "since_tick": 0
+    },
+    "result": {
+      "observer": "x4867edd8484a",
+      "tick": 0,
+      "unknown_senses": [
+        "smell"
+      ],
+      "entities": [
+        {
+          "id": "x3d5b6bec720d",
+          "template": "chest",
+          "name": "e31",
+          "senses": [
+            "sight"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": "x574ce08fc018",
+            "contained_in": null,
+            "in_part": null,
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": 90,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "x4867edd8484a",
+          "template": "human",
+          "name": "e4",
+          "senses": [
+            "sight",
+            "touch"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": "x574ce08fc018",
+            "contained_in": null,
+            "in_part": null,
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": -50,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "x8ea789cc1f2c",
+          "template": "table",
+          "name": "e2",
+          "senses": [
+            "sight"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": "x574ce08fc018",
+            "contained_in": null,
+            "in_part": null,
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": 30,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "x9c430c60b291",
+          "template": "human",
+          "name": "e5",
+          "senses": [
+            "sight"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": "x574ce08fc018",
+            "contained_in": null,
+            "in_part": null,
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": -20,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "xa91157f9c462",
+          "template": "door",
+          "name": "e8",
+          "senses": [
+            "sight"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": "x574ce08fc018",
+            "contained_in": null,
+            "in_part": null,
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        },
+        {
+          "id": "xe7d06abfe371",
+          "template": "bottle",
+          "name": "e3",
+          "senses": [
+            "sight",
+            "touch"
+          ],
+          "facts": {
+            "location": "x574ce08fc018",
+            "support": null,
+            "contained_in": "x4867edd8484a",
+            "in_part": "hand_l",
+            "status": "intact",
+            "integrity": 100,
+            "residue": {},
+            "pos": {
+              "x": -50,
+              "y": 0
+            }
+          }
+        }
+      ],
+      "events": []
+    }
+  },
+  {
+    "name": "alice_inspect_alias",
+    "op": "inspect",
+    "args": {
+      "handle": "alice",
+      "entity": "xf663ff86224e"
+    },
+    "result": null
+  },
+  {
+    "name": "alice_options",
+    "op": "options",
+    "args": {
+      "handle": "alice"
+    },
+    "result": {
+      "actor": "x4867edd8484a",
+      "ready": [
+        {
+          "verb": "attack",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "attack",
+          "target": "xe7d06abfe371"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.arm_l"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.arm_r"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.hand_l"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.hand_r"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.head"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.pocket"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.thumb_l"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.thumb_r"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.torso"
+        },
+        {
+          "verb": "attack",
+          "target": "xa91157f9c462"
+        },
+        {
+          "verb": "drop",
+          "target": "xe7d06abfe371"
+        },
+        {
+          "verb": "give",
+          "target": "xe7d06abfe371",
+          "args": {
+            "destination": "x9c430c60b291"
+          }
+        },
+        {
+          "verb": "open",
+          "target": "xa91157f9c462"
+        },
+        {
+          "verb": "pull",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "push",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "put",
+          "target": "xe7d06abfe371",
+          "args": {
+            "relation": "on",
+            "destination": "x8ea789cc1f2c"
+          }
+        },
+        {
+          "verb": "search",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "search",
+          "target": "xe7d06abfe371"
+        },
+        {
+          "verb": "search",
+          "target": "x9c430c60b291"
+        },
+        {
+          "verb": "search",
+          "target": "xa91157f9c462"
+        },
+        {
+          "verb": "take",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "take",
+          "target": "x9c430c60b291"
+        },
+        {
+          "verb": "take",
+          "target": "xa91157f9c462"
+        }
+      ],
+      "needs_args": [
+        "move",
+        "pour",
+        "say"
+      ]
+    }
+  },
+  {
+    "name": "alice_options_refused",
+    "op": "options",
+    "args": {
+      "handle": "alice",
+      "refused": true
+    },
+    "result": {
+      "actor": "x4867edd8484a",
+      "ready": [
+        {
+          "verb": "attack",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "attack",
+          "target": "xe7d06abfe371"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.arm_l"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.arm_r"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.hand_l"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.hand_r"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.head"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.pocket"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.thumb_l"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.thumb_r"
+        },
+        {
+          "verb": "attack",
+          "target": "x9c430c60b291.torso"
+        },
+        {
+          "verb": "attack",
+          "target": "xa91157f9c462"
+        },
+        {
+          "verb": "drop",
+          "target": "xe7d06abfe371"
+        },
+        {
+          "verb": "give",
+          "target": "xe7d06abfe371",
+          "args": {
+            "destination": "x9c430c60b291"
+          }
+        },
+        {
+          "verb": "open",
+          "target": "xa91157f9c462"
+        },
+        {
+          "verb": "pull",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "push",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "put",
+          "target": "xe7d06abfe371",
+          "args": {
+            "relation": "on",
+            "destination": "x8ea789cc1f2c"
+          }
+        },
+        {
+          "verb": "search",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "search",
+          "target": "xe7d06abfe371"
+        },
+        {
+          "verb": "search",
+          "target": "x9c430c60b291"
+        },
+        {
+          "verb": "search",
+          "target": "xa91157f9c462"
+        },
+        {
+          "verb": "take",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "take",
+          "target": "x9c430c60b291"
+        },
+        {
+          "verb": "take",
+          "target": "xa91157f9c462"
+        }
+      ],
+      "needs_args": [
+        "move",
+        "pour",
+        "say"
+      ],
+      "blocked": [
+        {
+          "verb": "attack",
+          "target": "x574ce08fc018",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "attack",
+          "target": "x3d5b6bec720d",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "close",
+          "target": "x574ce08fc018",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "close",
+          "target": "x8ea789cc1f2c",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "close",
+          "target": "xe7d06abfe371",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "close",
+          "target": "x3d5b6bec720d",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "close",
+          "target": "x9c430c60b291",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "close",
+          "target": "xa91157f9c462",
+          "reason_code": "already_closed"
+        },
+        {
+          "verb": "consume",
+          "target": "x574ce08fc018",
+          "reason_code": "not_consumable"
+        },
+        {
+          "verb": "consume",
+          "target": "x8ea789cc1f2c",
+          "reason_code": "not_consumable"
+        },
+        {
+          "verb": "consume",
+          "target": "xe7d06abfe371",
+          "reason_code": "not_consumable"
+        },
+        {
+          "verb": "consume",
+          "target": "x3d5b6bec720d",
+          "reason_code": "not_consumable"
+        },
+        {
+          "verb": "consume",
+          "target": "x9c430c60b291",
+          "reason_code": "not_consumable"
+        },
+        {
+          "verb": "consume",
+          "target": "xa91157f9c462",
+          "reason_code": "not_consumable"
+        },
+        {
+          "verb": "douse",
+          "target": "x574ce08fc018",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "douse",
+          "target": "x8ea789cc1f2c",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "douse",
+          "target": "xe7d06abfe371",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "douse",
+          "target": "x3d5b6bec720d",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "douse",
+          "target": "x9c430c60b291",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "douse",
+          "target": "xa91157f9c462",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "drop",
+          "target": "x574ce08fc018",
+          "reason_code": "not_carried"
+        },
+        {
+          "verb": "drop",
+          "target": "x8ea789cc1f2c",
+          "reason_code": "not_carried"
+        },
+        {
+          "verb": "drop",
+          "target": "x3d5b6bec720d",
+          "reason_code": "not_carried"
+        },
+        {
+          "verb": "drop",
+          "target": "x9c430c60b291",
+          "reason_code": "not_carried"
+        },
+        {
+          "verb": "drop",
+          "target": "xa91157f9c462",
+          "reason_code": "not_carried"
+        },
+        {
+          "verb": "light",
+          "target": "x574ce08fc018",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "light",
+          "target": "x8ea789cc1f2c",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "light",
+          "target": "xe7d06abfe371",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "light",
+          "target": "x3d5b6bec720d",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "light",
+          "target": "x9c430c60b291",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "light",
+          "target": "xa91157f9c462",
+          "reason_code": "not_a_light"
+        },
+        {
+          "verb": "lock",
+          "target": "x574ce08fc018",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "lock",
+          "target": "x8ea789cc1f2c",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "lock",
+          "target": "xe7d06abfe371",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "lock",
+          "target": "x3d5b6bec720d",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "lock",
+          "target": "x9c430c60b291",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "lock",
+          "target": "xa91157f9c462",
+          "reason_code": "no_key"
+        },
+        {
+          "verb": "move",
+          "args": {
+            "location": "x32e9e1e42de1"
+          },
+          "reason_code": "no_open_door"
+        },
+        {
+          "verb": "open",
+          "target": "x574ce08fc018",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "open",
+          "target": "x8ea789cc1f2c",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "open",
+          "target": "xe7d06abfe371",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "open",
+          "target": "x3d5b6bec720d",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "open",
+          "target": "x9c430c60b291",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "pull",
+          "target": "x574ce08fc018",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "pull",
+          "target": "xe7d06abfe371",
+          "reason_code": "target_carried"
+        },
+        {
+          "verb": "pull",
+          "target": "x3d5b6bec720d",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "pull",
+          "target": "x9c430c60b291",
+          "reason_code": "too_heavy"
+        },
+        {
+          "verb": "pull",
+          "target": "xa91157f9c462",
+          "reason_code": "too_heavy"
+        },
+        {
+          "verb": "push",
+          "target": "x574ce08fc018",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "push",
+          "target": "xe7d06abfe371",
+          "reason_code": "target_carried"
+        },
+        {
+          "verb": "push",
+          "target": "x3d5b6bec720d",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "push",
+          "target": "x9c430c60b291",
+          "reason_code": "too_heavy"
+        },
+        {
+          "verb": "push",
+          "target": "xa91157f9c462",
+          "reason_code": "too_heavy"
+        },
+        {
+          "verb": "put",
+          "target": "xe7d06abfe371",
+          "args": {
+            "relation": "in",
+            "destination": "x4867edd8484a.pocket"
+          },
+          "reason_code": "too_large"
+        },
+        {
+          "verb": "search",
+          "target": "x574ce08fc018",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "search",
+          "target": "x3d5b6bec720d",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "switch_off",
+          "target": "x574ce08fc018",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_off",
+          "target": "x8ea789cc1f2c",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_off",
+          "target": "xe7d06abfe371",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_off",
+          "target": "x3d5b6bec720d",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_off",
+          "target": "x9c430c60b291",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_off",
+          "target": "xa91157f9c462",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_on",
+          "target": "x574ce08fc018",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_on",
+          "target": "x8ea789cc1f2c",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_on",
+          "target": "xe7d06abfe371",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_on",
+          "target": "x3d5b6bec720d",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_on",
+          "target": "x9c430c60b291",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "switch_on",
+          "target": "xa91157f9c462",
+          "reason_code": "not_switchable"
+        },
+        {
+          "verb": "take",
+          "target": "x574ce08fc018",
+          "reason_code": "circular_placement"
+        },
+        {
+          "verb": "take",
+          "target": "xe7d06abfe371",
+          "reason_code": "already_held"
+        },
+        {
+          "verb": "take",
+          "target": "x3d5b6bec720d",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "unlock",
+          "target": "x574ce08fc018",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "unlock",
+          "target": "x8ea789cc1f2c",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "unlock",
+          "target": "xe7d06abfe371",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "unlock",
+          "target": "x3d5b6bec720d",
+          "reason_code": "out_of_reach"
+        },
+        {
+          "verb": "unlock",
+          "target": "x9c430c60b291",
+          "reason_code": "not_openable"
+        },
+        {
+          "verb": "unlock",
+          "target": "xa91157f9c462",
+          "reason_code": "already_unlocked"
+        },
+        {
+          "verb": "wait",
+          "reason_code": "not_a_round_move"
+        }
+      ]
+    }
+  },
+  {
+    "name": "alice_options_unknown_body",
+    "op": "options",
+    "args": {
+      "handle": "alice",
+      "body": "zz"
+    },
+    "result": {
+      "status": "error",
+      "code": "not_a_body",
+      "message": "No body zz is driven by alice"
+    }
+  },
+  {
+    "name": "carol_observe",
+    "op": "observe",
+    "args": {
+      "handle": "carol"
+    },
+    "result": {
+      "status": "error",
+      "code": "not_registered",
+      "message": "No player is registered as carol"
+    }
+  },
+  {
+    "name": "alice_check_say",
+    "op": "check",
+    "args": {
+      "handle": "alice",
+      "command": {
+        "command_id": "k1",
+        "verb": "say",
+        "args": {
+          "utterance": "hi"
+        }
+      }
+    },
+    "result": {
+      "status": "ok",
+      "command_id": "k1",
+      "resolved_target": null
+    }
+  },
+  {
+    "name": "alice_submit_say",
+    "op": "submit",
+    "args": {
+      "handle": "alice",
+      "move": {
+        "command_id": "m1",
+        "verb": "say",
+        "args": {
+          "utterance": "hi"
+        }
+      }
+    },
+    "result": {
+      "status": "ok"
+    }
+  },
+  {
+    "name": "bob_submit_open",
+    "op": "submit",
+    "args": {
+      "handle": "bob",
+      "move": {
+        "command_id": "m2",
+        "verb": "open",
+        "target": "xf663ff86224e"
+      }
+    },
+    "result": {
+      "status": "ok"
+    }
+  },
+  {
+    "name": "alice_submit_again",
+    "op": "submit",
+    "args": {
+      "handle": "alice",
+      "move": {
+        "command_id": "m3",
+        "verb": "say",
+        "args": {
+          "utterance": "again"
+        }
+      }
+    },
+    "result": {
+      "status": "ok"
+    }
+  },
+  {
+    "name": "carol_submit",
+    "op": "submit",
+    "args": {
+      "handle": "carol",
+      "move": {
+        "command_id": "m4",
+        "verb": "say",
+        "args": {
+          "utterance": "x"
+        }
+      }
+    },
+    "result": {
+      "status": "refused",
+      "reason_code": "not_registered"
+    }
+  },
+  {
+    "name": "alice_submit_unknown_body",
+    "op": "submit",
+    "args": {
+      "handle": "alice",
+      "move": {
+        "command_id": "m5",
+        "verb": "say",
+        "args": {
+          "utterance": "x"
+        }
+      },
+      "body": "zz"
+    },
+    "result": {
+      "status": "refused",
+      "reason_code": "not_a_body"
+    }
+  },
+  {
+    "name": "alice_pending",
+    "op": "pending",
+    "args": {
+      "handle": "alice"
+    },
+    "result": [
+      {
+        "command_id": "m3",
+        "verb": "say",
+        "args": {
+          "utterance": "again"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bob_pending",
+    "op": "pending",
+    "args": {
+      "handle": "bob"
+    },
+    "result": [
+      {
+        "command_id": "m2",
+        "verb": "open",
+        "target": "xf663ff86224e"
+      }
+    ]
+  },
+  {
+    "name": "alice_withdraw_unknown_body",
+    "op": "withdraw",
+    "args": {
+      "handle": "alice",
+      "body": "zz"
+    },
+    "result": {
+      "status": "refused",
+      "reason_code": "not_a_body"
+    }
+  },
+  {
+    "name": "alice_withdraw_e4",
+    "op": "withdraw",
+    "args": {
+      "handle": "alice",
+      "body": "x4867edd8484a"
+    },
+    "result": {
+      "status": "ok"
+    }
+  },
+  {
+    "name": "alice_pending_after_withdraw",
+    "op": "pending",
+    "args": {
+      "handle": "alice"
+    },
+    "result": []
+  },
+  {
+    "name": "alice_resubmit",
+    "op": "submit",
+    "args": {
+      "handle": "alice",
+      "move": {
+        "command_id": "m6",
+        "verb": "say",
+        "args": {
+          "utterance": "back"
+        }
+      }
+    },
+    "result": {
+      "status": "ok"
+    }
+  },
+  {
+    "name": "director_submitted",
+    "op": "submitted",
+    "args": {},
+    "result": [
+      "alice",
+      "bob"
+    ]
+  },
+  {
+    "name": "director_close_round",
+    "op": "close_round",
+    "args": {},
+    "result": {
+      "status": "ok",
+      "round": 1,
+      "results": [
+        {
+          "status": "ok",
+          "command_id": "m6",
+          "resolved_target": null,
+          "snapshot": {
+            "version": 2,
+            "tick": 0,
+            "next_seq": 42,
+            "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+            "coverage": {
+              "relations": [
+                "support",
+                "contained_in",
+                "location",
+                "attached_to",
+                "status",
+                "near",
+                "reachable"
+              ],
+              "senses": [
+                "sight",
+                "hearing",
+                "touch"
+              ],
+              "properties": [
+                "integrity",
+                "residue",
+                "pos",
+                "open",
+                "liquid_amount"
+              ]
+            },
+            "entities": {
+              "e1": {
+                "id": "e1",
+                "template": "room",
+                "name": "room",
+                "aliases": [],
+                "location": null,
+                "support": null,
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": null,
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "lit": true
+                }
+              },
+              "e2": {
+                "id": "e2",
+                "template": "table",
+                "name": "e2",
+                "aliases": [],
+                "location": "e1",
+                "support": "e1",
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": {
+                  "x": 30,
+                  "y": 0
+                },
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "surface": true
+                }
+              },
+              "e3": {
+                "id": "e3",
+                "template": "bottle",
+                "name": "e3",
+                "aliases": [],
+                "location": "e1",
+                "support": null,
+                "contained_in": "e4",
+                "in_part": "hand_l",
+                "concealed_by": null,
+                "pos": null,
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {}
+              },
+              "e4": {
+                "id": "e4",
+                "template": "human",
+                "name": "e4",
+                "aliases": [],
+                "location": "e1",
+                "support": "e1",
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": {
+                  "x": -50,
+                  "y": 0
+                },
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "agent": true,
+                  "reach_cm": 100,
+                  "hand_height_cm": 100,
+                  "hand_carry_limit_g": 80000,
+                  "attack_damage": 40,
+                  "default_hit_part": "torso",
+                  "bleed_damage": 5,
+                  "bleed_every_ticks": 2,
+                  "bleed_times": 3
+                }
+              },
+              "e8": {
+                "id": "e8",
+                "template": "door",
+                "name": "e8",
+                "aliases": [],
+                "location": "e1",
+                "support": "e1",
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": {
+                  "x": 0,
+                  "y": 0
+                },
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "openable": true,
+                  "open": false,
+                  "from": "e1",
+                  "to": "e9"
+                }
+              },
+              "e9": {
+                "id": "e9",
+                "template": "room",
+                "name": "room",
+                "aliases": [],
+                "location": null,
+                "support": null,
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": null,
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {}
+              },
+              "e31": {
+                "id": "e31",
+                "template": "chest",
+                "name": "e31",
+                "aliases": [],
+                "location": "e1",
+                "support": "e1",
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": {
+                  "x": 90,
+                  "y": 0
+                },
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "openable": true
+                }
+              },
+              "e5": {
+                "id": "e5",
+                "template": "human",
+                "name": "e5",
+                "aliases": [],
+                "location": "e1",
+                "support": "e1",
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": {
+                  "x": -20,
+                  "y": 0
+                },
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "agent": true,
+                  "reach_cm": 100,
+                  "hand_height_cm": 100,
+                  "hand_carry_limit_g": 80000,
+                  "attack_damage": 40,
+                  "default_hit_part": "torso",
+                  "bleed_damage": 5,
+                  "bleed_every_ticks": 2,
+                  "bleed_times": 3
+                }
+              }
+            },
+            "run": {
+              "state": "running",
+              "tick_limit": 30,
+              "slots": [
+                "e4",
+                "e5"
+              ],
+              "players": [
+                {
+                  "handle": "alice",
+                  "slot": "e4"
+                },
+                {
+                  "handle": "bob",
+                  "slot": "e5"
+                }
+              ]
+            },
+            "rng": 7
+          },
+          "deltas": [],
+          "events": [
+            {
+              "event_id": "ev41",
+              "cause_id": null,
+              "command_id": "m6",
+              "tick": 0,
+              "type": "say",
+              "entity": "e4",
+              "data": {
+                "utterance": "back",
+                "volume": "normal"
+              }
+            }
+          ]
+        },
+        {
+          "status": "ok",
+          "command_id": "m2",
+          "resolved_target": "e8",
+          "snapshot": {
+            "version": 3,
+            "tick": 0,
+            "next_seq": 44,
+            "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+            "coverage": {
+              "relations": [
+                "support",
+                "contained_in",
+                "location",
+                "attached_to",
+                "status",
+                "near",
+                "reachable"
+              ],
+              "senses": [
+                "sight",
+                "hearing",
+                "touch"
+              ],
+              "properties": [
+                "integrity",
+                "residue",
+                "pos",
+                "open",
+                "liquid_amount"
+              ]
+            },
+            "entities": {
+              "e1": {
+                "id": "e1",
+                "template": "room",
+                "name": "room",
+                "aliases": [],
+                "location": null,
+                "support": null,
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": null,
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "lit": true
+                }
+              },
+              "e2": {
+                "id": "e2",
+                "template": "table",
+                "name": "e2",
+                "aliases": [],
+                "location": "e1",
+                "support": "e1",
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": {
+                  "x": 30,
+                  "y": 0
+                },
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "surface": true
+                }
+              },
+              "e3": {
+                "id": "e3",
+                "template": "bottle",
+                "name": "e3",
+                "aliases": [],
+                "location": "e1",
+                "support": null,
+                "contained_in": "e4",
+                "in_part": "hand_l",
+                "concealed_by": null,
+                "pos": null,
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {}
+              },
+              "e4": {
+                "id": "e4",
+                "template": "human",
+                "name": "e4",
+                "aliases": [],
+                "location": "e1",
+                "support": "e1",
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": {
+                  "x": -50,
+                  "y": 0
+                },
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "agent": true,
+                  "reach_cm": 100,
+                  "hand_height_cm": 100,
+                  "hand_carry_limit_g": 80000,
+                  "attack_damage": 40,
+                  "default_hit_part": "torso",
+                  "bleed_damage": 5,
+                  "bleed_every_ticks": 2,
+                  "bleed_times": 3
+                }
+              },
+              "e8": {
+                "id": "e8",
+                "template": "door",
+                "name": "e8",
+                "aliases": [],
+                "location": "e1",
+                "support": "e1",
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": {
+                  "x": 0,
+                  "y": 0
+                },
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "openable": true,
+                  "open": true,
+                  "from": "e1",
+                  "to": "e9"
+                }
+              },
+              "e9": {
+                "id": "e9",
+                "template": "room",
+                "name": "room",
+                "aliases": [],
+                "location": null,
+                "support": null,
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": null,
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {}
+              },
+              "e31": {
+                "id": "e31",
+                "template": "chest",
+                "name": "e31",
+                "aliases": [],
+                "location": "e1",
+                "support": "e1",
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": {
+                  "x": 90,
+                  "y": 0
+                },
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "openable": true
+                }
+              },
+              "e5": {
+                "id": "e5",
+                "template": "human",
+                "name": "e5",
+                "aliases": [],
+                "location": "e1",
+                "support": "e1",
+                "contained_in": null,
+                "in_part": null,
+                "concealed_by": null,
+                "pos": {
+                  "x": -20,
+                  "y": 0
+                },
+                "detached_from": null,
+                "integrity": 100,
+                "status": "intact",
+                "parts": {},
+                "residue": {},
+                "modifiers": [],
+                "props": {
+                  "agent": true,
+                  "reach_cm": 100,
+                  "hand_height_cm": 100,
+                  "hand_carry_limit_g": 80000,
+                  "attack_damage": 40,
+                  "default_hit_part": "torso",
+                  "bleed_damage": 5,
+                  "bleed_every_ticks": 2,
+                  "bleed_times": 3
+                }
+              }
+            },
+            "run": {
+              "state": "running",
+              "tick_limit": 30,
+              "slots": [
+                "e4",
+                "e5"
+              ],
+              "players": [
+                {
+                  "handle": "alice",
+                  "slot": "e4"
+                },
+                {
+                  "handle": "bob",
+                  "slot": "e5"
+                }
+              ]
+            },
+            "rng": 7
+          },
+          "deltas": [
+            {
+              "event_id": "ev43",
+              "entity": "e8",
+              "field": "props",
+              "from": {
+                "openable": true,
+                "open": false,
+                "from": "e1",
+                "to": "e9"
+              },
+              "to": {
+                "openable": true,
+                "open": true,
+                "from": "e1",
+                "to": "e9"
+              }
+            }
+          ],
+          "events": [
+            {
+              "event_id": "ev42",
+              "cause_id": null,
+              "command_id": "m2",
+              "tick": 0,
+              "type": "open",
+              "entity": "e8",
+              "data": {}
+            },
+            {
+              "event_id": "ev43",
+              "cause_id": "ev42",
+              "command_id": "m2",
+              "tick": 0,
+              "type": "opened",
+              "entity": "e8",
+              "data": {}
+            }
+          ]
+        }
+      ],
+      "closing": {
+        "status": "ok",
+        "command_id": "round-1-close",
+        "resolved_target": null,
+        "snapshot": {
+          "version": 4,
+          "tick": 1,
+          "next_seq": 45,
+          "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+          "coverage": {
+            "relations": [
+              "support",
+              "contained_in",
+              "location",
+              "attached_to",
+              "status",
+              "near",
+              "reachable"
+            ],
+            "senses": [
+              "sight",
+              "hearing",
+              "touch"
+            ],
+            "properties": [
+              "integrity",
+              "residue",
+              "pos",
+              "open",
+              "liquid_amount"
+            ]
+          },
+          "entities": {
+            "e1": {
+              "id": "e1",
+              "template": "room",
+              "name": "room",
+              "aliases": [],
+              "location": null,
+              "support": null,
+              "contained_in": null,
+              "in_part": null,
+              "concealed_by": null,
+              "pos": null,
+              "detached_from": null,
+              "integrity": 100,
+              "status": "intact",
+              "parts": {},
+              "residue": {},
+              "modifiers": [],
+              "props": {
+                "lit": true
+              }
+            },
+            "e2": {
+              "id": "e2",
+              "template": "table",
+              "name": "e2",
+              "aliases": [],
+              "location": "e1",
+              "support": "e1",
+              "contained_in": null,
+              "in_part": null,
+              "concealed_by": null,
+              "pos": {
+                "x": 30,
+                "y": 0
+              },
+              "detached_from": null,
+              "integrity": 100,
+              "status": "intact",
+              "parts": {},
+              "residue": {},
+              "modifiers": [],
+              "props": {
+                "surface": true
+              }
+            },
+            "e3": {
+              "id": "e3",
+              "template": "bottle",
+              "name": "e3",
+              "aliases": [],
+              "location": "e1",
+              "support": null,
+              "contained_in": "e4",
+              "in_part": "hand_l",
+              "concealed_by": null,
+              "pos": null,
+              "detached_from": null,
+              "integrity": 100,
+              "status": "intact",
+              "parts": {},
+              "residue": {},
+              "modifiers": [],
+              "props": {}
+            },
+            "e4": {
+              "id": "e4",
+              "template": "human",
+              "name": "e4",
+              "aliases": [],
+              "location": "e1",
+              "support": "e1",
+              "contained_in": null,
+              "in_part": null,
+              "concealed_by": null,
+              "pos": {
+                "x": -50,
+                "y": 0
+              },
+              "detached_from": null,
+              "integrity": 100,
+              "status": "intact",
+              "parts": {},
+              "residue": {},
+              "modifiers": [],
+              "props": {
+                "agent": true,
+                "reach_cm": 100,
+                "hand_height_cm": 100,
+                "hand_carry_limit_g": 80000,
+                "attack_damage": 40,
+                "default_hit_part": "torso",
+                "bleed_damage": 5,
+                "bleed_every_ticks": 2,
+                "bleed_times": 3
+              }
+            },
+            "e8": {
+              "id": "e8",
+              "template": "door",
+              "name": "e8",
+              "aliases": [],
+              "location": "e1",
+              "support": "e1",
+              "contained_in": null,
+              "in_part": null,
+              "concealed_by": null,
+              "pos": {
+                "x": 0,
+                "y": 0
+              },
+              "detached_from": null,
+              "integrity": 100,
+              "status": "intact",
+              "parts": {},
+              "residue": {},
+              "modifiers": [],
+              "props": {
+                "openable": true,
+                "open": true,
+                "from": "e1",
+                "to": "e9"
+              }
+            },
+            "e9": {
+              "id": "e9",
+              "template": "room",
+              "name": "room",
+              "aliases": [],
+              "location": null,
+              "support": null,
+              "contained_in": null,
+              "in_part": null,
+              "concealed_by": null,
+              "pos": null,
+              "detached_from": null,
+              "integrity": 100,
+              "status": "intact",
+              "parts": {},
+              "residue": {},
+              "modifiers": [],
+              "props": {}
+            },
+            "e31": {
+              "id": "e31",
+              "template": "chest",
+              "name": "e31",
+              "aliases": [],
+              "location": "e1",
+              "support": "e1",
+              "contained_in": null,
+              "in_part": null,
+              "concealed_by": null,
+              "pos": {
+                "x": 90,
+                "y": 0
+              },
+              "detached_from": null,
+              "integrity": 100,
+              "status": "intact",
+              "parts": {},
+              "residue": {},
+              "modifiers": [],
+              "props": {
+                "openable": true
+              }
+            },
+            "e5": {
+              "id": "e5",
+              "template": "human",
+              "name": "e5",
+              "aliases": [],
+              "location": "e1",
+              "support": "e1",
+              "contained_in": null,
+              "in_part": null,
+              "concealed_by": null,
+              "pos": {
+                "x": -20,
+                "y": 0
+              },
+              "detached_from": null,
+              "integrity": 100,
+              "status": "intact",
+              "parts": {},
+              "residue": {},
+              "modifiers": [],
+              "props": {
+                "agent": true,
+                "reach_cm": 100,
+                "hand_height_cm": 100,
+                "hand_carry_limit_g": 80000,
+                "attack_damage": 40,
+                "default_hit_part": "torso",
+                "bleed_damage": 5,
+                "bleed_every_ticks": 2,
+                "bleed_times": 3
+              }
+            }
+          },
+          "run": {
+            "state": "running",
+            "tick_limit": 30,
+            "slots": [
+              "e4",
+              "e5"
+            ],
+            "players": [
+              {
+                "handle": "alice",
+                "slot": "e4"
+              },
+              {
+                "handle": "bob",
+                "slot": "e5"
+              }
+            ]
+          },
+          "rng": 7
+        },
+        "deltas": [],
+        "events": [
+          {
+            "event_id": "ev44",
+            "cause_id": null,
+            "command_id": "round-1-close",
+            "tick": 0,
+            "type": "advance",
+            "entity": "world",
+            "data": {}
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "director_submitted_after_close",
+    "op": "submitted",
+    "args": {},
+    "result": []
+  },
+  {
+    "name": "director_close_rounds_active",
+    "op": "close_rounds",
+    "args": {
+      "max": 5
+    },
+    "result": {
+      "status": "refused",
+      "reason_code": "players_active",
+      "rounds": 0
+    }
+  },
+  {
+    "name": "alice_idle",
+    "op": "idle",
+    "args": {
+      "handle": "alice"
+    },
+    "result": {
+      "status": "ok"
+    }
+  },
+  {
+    "name": "bob_idle",
+    "op": "idle",
+    "args": {
+      "handle": "bob"
+    },
+    "result": {
+      "status": "ok"
+    }
+  },
+  {
+    "name": "director_close_rounds_max",
+    "op": "close_rounds",
+    "args": {
+      "max": 2
+    },
+    "result": {
+      "status": "ok",
+      "rounds": 2,
+      "stopped": "max"
+    }
+  },
+  {
+    "name": "director_schedule_beat",
+    "op": "edit",
+    "args": {
+      "edit": {
+        "kind": "schedule_beat",
+        "id": "b1",
+        "at_tick": 6,
+        "action": {
+          "kind": "sound",
+          "entity": "e4"
+        }
+      }
+    },
+    "result": {
+      "status": "ok",
+      "command_id": "edit-7",
+      "resolved_target": null,
+      "snapshot": {
+        "version": 7,
+        "tick": 3,
+        "next_seq": 48,
+        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "coverage": {
+          "relations": [
+            "support",
+            "contained_in",
+            "location",
+            "attached_to",
+            "status",
+            "near",
+            "reachable"
+          ],
+          "senses": [
+            "sight",
+            "hearing",
+            "touch"
+          ],
+          "properties": [
+            "integrity",
+            "residue",
+            "pos",
+            "open",
+            "liquid_amount"
+          ]
+        },
+        "entities": {
+          "e1": {
+            "id": "e1",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "lit": true
+            }
+          },
+          "e2": {
+            "id": "e2",
+            "template": "table",
+            "name": "e2",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "surface": true
+            }
+          },
+          "e3": {
+            "id": "e3",
+            "template": "bottle",
+            "name": "e3",
+            "aliases": [],
+            "location": "e1",
+            "support": null,
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e4": {
+            "id": "e4",
+            "template": "human",
+            "name": "e4",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3
+            }
+          },
+          "e8": {
+            "id": "e8",
+            "template": "door",
+            "name": "e8",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true,
+              "open": true,
+              "from": "e1",
+              "to": "e9"
+            }
+          },
+          "e9": {
+            "id": "e9",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e31": {
+            "id": "e31",
+            "template": "chest",
+            "name": "e31",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true
+            }
+          },
+          "e5": {
+            "id": "e5",
+            "template": "human",
+            "name": "e5",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -20,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3
+            }
+          }
+        },
+        "run": {
+          "state": "running",
+          "tick_limit": 30,
+          "slots": [
+            "e4",
+            "e5"
+          ],
+          "players": [
+            {
+              "handle": "alice",
+              "slot": "e4"
+            },
+            {
+              "handle": "bob",
+              "slot": "e5"
+            }
+          ]
+        },
+        "rng": 7,
+        "schedule": [
+          {
+            "id": "b1",
+            "action": {
+              "kind": "sound",
+              "entity": "e4"
+            },
+            "due_tick": 6,
+            "kind": "beat",
+            "entity": "e4",
+            "cause_id": "ev47"
+          }
+        ]
+      },
+      "deltas": [],
+      "events": [
+        {
+          "event_id": "ev47",
+          "cause_id": null,
+          "command_id": "edit-7",
+          "tick": 3,
+          "type": "edit",
+          "entity": "world",
+          "data": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "director_close_rounds_beat",
+    "op": "close_rounds",
+    "args": {
+      "max": 10,
+      "stop_before": "b1"
+    },
+    "result": {
+      "status": "ok",
+      "rounds": 2,
+      "stopped": "beat"
+    }
+  },
+  {
+    "name": "director_close_rounds_no_beat",
+    "op": "close_rounds",
+    "args": {
+      "max": 10,
+      "stop_before": "nobeat"
+    },
+    "result": {
+      "status": "refused",
+      "reason_code": "no_such_beat",
+      "rounds": 0
+    }
+  },
+  {
+    "name": "alice_pending_idle",
+    "op": "pending",
+    "args": {
+      "handle": "alice"
+    },
+    "result": []
+  },
+  {
+    "name": "attempts_0",
+    "op": "attempts",
+    "args": {
+      "version": 0
+    },
+    "result": [
+      {
+        "command": {
+          "command_id": "edit-1",
+          "actor": "world",
+          "verb": "edit",
+          "args": {
+            "edit": {
+              "kind": "set_seed",
+              "seed": 7
+            }
+          }
+        },
+        "based_on_version": 0,
+        "version": 0,
+        "status": "ok"
+      },
+      {
+        "command": {
+          "command_id": "m6",
+          "actor": "e4",
+          "verb": "say",
+          "args": {
+            "utterance": "back"
+          },
+          "by": {
+            "role": "player",
+            "handle": "alice"
+          },
+          "round": true
+        },
+        "based_on_version": 1,
+        "version": 1,
+        "status": "ok",
+        "round": {
+          "number": 1,
+          "place": 1
+        },
+        "by": {
+          "role": "player",
+          "handle": "alice"
+        }
+      },
+      {
+        "command": {
+          "command_id": "m2",
+          "actor": "e5",
+          "verb": "open",
+          "target": "e8",
+          "by": {
+            "role": "player",
+            "handle": "bob"
+          },
+          "round": true
+        },
+        "based_on_version": 1,
+        "version": 2,
+        "status": "ok",
+        "round": {
+          "number": 1,
+          "place": 2
+        },
+        "by": {
+          "role": "player",
+          "handle": "bob"
+        }
+      },
+      {
+        "command": {
+          "command_id": "round-1-close",
+          "actor": "world",
+          "verb": "advance",
+          "args": {
+            "ticks": 1
+          },
+          "round": true,
+          "by": {
+            "role": "director"
+          }
+        },
+        "based_on_version": 3,
+        "version": 3,
+        "status": "ok",
+        "round": {
+          "number": 1,
+          "close": true
+        },
+        "by": {
+          "role": "director"
+        }
+      },
+      {
+        "command": {
+          "command_id": "round-2-close",
+          "actor": "world",
+          "verb": "advance",
+          "args": {
+            "ticks": 1
+          },
+          "round": true,
+          "by": {
+            "role": "director"
+          }
+        },
+        "based_on_version": 4,
+        "version": 4,
+        "status": "ok",
+        "round": {
+          "number": 2,
+          "close": true
+        },
+        "by": {
+          "role": "director"
+        }
+      },
+      {
+        "command": {
+          "command_id": "round-3-close",
+          "actor": "world",
+          "verb": "advance",
+          "args": {
+            "ticks": 1
+          },
+          "round": true,
+          "by": {
+            "role": "director"
+          }
+        },
+        "based_on_version": 5,
+        "version": 5,
+        "status": "ok",
+        "round": {
+          "number": 3,
+          "close": true
+        },
+        "by": {
+          "role": "director"
+        }
+      },
+      {
+        "command": {
+          "command_id": "edit-7",
+          "actor": "world",
+          "verb": "edit",
+          "args": {
+            "edit": {
+              "kind": "schedule_beat",
+              "id": "b1",
+              "at_tick": 6,
+              "action": {
+                "kind": "sound",
+                "entity": "e4"
+              }
+            }
+          }
+        },
+        "based_on_version": 6,
+        "version": 6,
+        "status": "ok"
+      },
+      {
+        "command": {
+          "command_id": "round-4-close",
+          "actor": "world",
+          "verb": "advance",
+          "args": {
+            "ticks": 1
+          },
+          "round": true,
+          "by": {
+            "role": "director"
+          }
+        },
+        "based_on_version": 7,
+        "version": 7,
+        "status": "ok",
+        "round": {
+          "number": 4,
+          "close": true
+        },
+        "by": {
+          "role": "director"
+        }
+      },
+      {
+        "command": {
+          "command_id": "round-5-close",
+          "actor": "world",
+          "verb": "advance",
+          "args": {
+            "ticks": 1
+          },
+          "round": true,
+          "by": {
+            "role": "director"
+          }
+        },
+        "based_on_version": 8,
+        "version": 8,
+        "status": "ok",
+        "round": {
+          "number": 5,
+          "close": true
+        },
+        "by": {
+          "role": "director"
+        }
+      }
+    ]
+  },
+  {
+    "name": "snapshot_end",
+    "op": "snapshot",
+    "args": {},
+    "result": {
+      "version": 9,
+      "tick": 5,
+      "next_seq": 50,
+      "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "attached_to",
+          "status",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing",
+          "touch"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos",
+          "open",
+          "liquid_amount"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": true,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        },
+        "e5": {
+          "id": "e5",
+          "template": "human",
+          "name": "e5",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -20,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3
+          }
+        }
+      },
+      "run": {
+        "state": "running",
+        "tick_limit": 30,
+        "slots": [
+          "e4",
+          "e5"
+        ],
+        "players": [
+          {
+            "handle": "alice",
+            "slot": "e4"
+          },
+          {
+            "handle": "bob",
+            "slot": "e5"
+          }
+        ]
+      },
+      "rng": 7,
+      "schedule": [
+        {
+          "id": "b1",
+          "action": {
+            "kind": "sound",
+            "entity": "e4"
+          },
+          "due_tick": 6,
+          "kind": "beat",
+          "entity": "e4",
+          "cause_id": "ev47"
+        }
+      ]
+    }
+  }
+]
