@@ -4,10 +4,9 @@ using WorldEngine.Core.Templates;
 
 namespace WorldEngine.Store;
 
-// The reads over a world's history (src/store/file-store.ts `since` and `attempts`): what every accepted command after a version did,
-// and every submission decided at or after it, ok or not. Both read the log and the current version, and neither writes. Replays start
-// from initial.json; the TypeScript store starts from its newest checkpoint instead, which gives the same answer, only sooner, and
-// checkpoints come with the write path.
+// The reads over a world's history (src/store/file-store.ts `since`, `attempts`, `trace`, `replayUntilEvent`, and the stored perceive).
+// They read the log and the files it keeps, and write nothing. A replay starts from the newest usable checkpoint (WorldCheckpoints), or
+// from initial.json; the answer is the same either way.
 public static class WorldHistory
 {
     // The deltas and events of every accepted command decided at `version` or later, in command order.
@@ -15,13 +14,12 @@ public static class WorldHistory
     {
         CheckVersion(dir, version, registry);
 
-        var snapshot = WorldFiles.ReadSnapshot(Path.Combine(dir, WorldFiles.InitialSnapshot));
+        var start = WorldCheckpoints.ReplayStart(dir, registry, (candidate, _) => candidate <= version);
+        var snapshot = start.Snapshot;
         var deltas = new List<Delta>();
         var events = new List<WorldEvent>();
-        var entries = WorldFiles.ReadLog(dir);
-        for (var index = 0; index < entries.Count; index++)
+        foreach (var (entry, line) in start.Entries)
         {
-            var entry = entries[index];
             if (entry.Status != Status.Ok)
             {
                 continue;
@@ -29,7 +27,7 @@ public static class WorldHistory
             var result = Pipeline.Apply(snapshot, registry, VerbRegistry.All, entry.Command);
             if (result.Status != Status.Ok)
             {
-                throw new WorldError("replay_diverges", $"Accepted command failed during replay at line {index + 1}");
+                throw new WorldError("replay_diverges", $"Accepted command failed during replay at line {line}");
             }
             // Collected by the version the command was applied to, as the TypeScript store does.
             if (snapshot.Version >= version)
@@ -47,20 +45,6 @@ public static class WorldHistory
     {
         CheckVersion(dir, version, registry);
         return WorldFiles.ReadLog(dir).Where(entry => entry.Version >= version).ToList();
-    }
-
-    // The version must be a safe, non-negative integer and no later than the world's current one.
-    private static void CheckVersion(string dir, long version, IReadOnlyDictionary<string, Template> registry)
-    {
-        if (version < 0 || version > MaxSafeInteger)
-        {
-            throw new WorldError("invalid_version", $"Invalid version {version}");
-        }
-        var current = Current(dir, registry);
-        if (version > current.Version)
-        {
-            throw new WorldError("future_version", $"Version {version} is ahead of {current.Version}");
-        }
     }
 
     // The chain of events behind one event, or behind the last change of an entity's field (`trace`, `docs/provenance.md`). An
@@ -89,24 +73,23 @@ public static class WorldHistory
         return WorldEngine.Core.Engine.Trace.TraceField(events, deltas, entity!, field!);
     }
 
-    // The current snapshot, from the files as they agree; a world whose files disagree is not settled here yet.
-    private static Snapshot Current(string dir, IReadOnlyDictionary<string, Template> registry) =>
-        WorldReplay.TrustedSnapshot(dir, registry)
-        ?? throw new WorldError("store_unsettled", "The world's files disagree with its head; settling them is not ported yet");
-
     // The snapshots before and after the command that produced an event, and the events through that command (`replayUntilEvent`).
-    // Replayed from initial.json; the TypeScript store may start from a checkpoint, with the same answer.
+    // Event ids number the same counter as `next_seq`, so a checkpoint made before the command that wrote the event is usable; an id
+    // that is not of that form starts from initial.json.
     public static (Snapshot Before, Snapshot After, List<WorldEvent> Events)? ReplayUntilEvent(
         string dir,
         string eventId,
         IReadOnlyDictionary<string, Template> registry)
     {
-        var snapshot = WorldFiles.ReadSnapshot(Path.Combine(dir, WorldFiles.InitialSnapshot));
-        var events = new List<WorldEvent>();
-        var entries = WorldFiles.ReadLog(dir);
-        for (var index = 0; index < entries.Count; index++)
+        var number = System.Text.RegularExpressions.Regex.Match(eventId, @"^ev(\d+)$");
+        var start = WorldCheckpoints.ReplayStart(
+            dir,
+            registry,
+            (_, next) => number.Success && next <= long.Parse(number.Groups[1].Value));
+        var snapshot = start.Snapshot;
+        var collected = new List<WorldEvent>();
+        foreach (var (entry, line) in start.Entries)
         {
-            var entry = entries[index];
             if (entry.Status != Status.Ok)
             {
                 continue;
@@ -115,13 +98,15 @@ public static class WorldHistory
             var result = Pipeline.Apply(snapshot, registry, VerbRegistry.All, entry.Command);
             if (result.Status != Status.Ok)
             {
-                throw new FormatException($"Accepted command failed during replay at line {index + 1}");
+                throw new FormatException($"Accepted command failed during replay at line {line}");
             }
-            events.AddRange(result.Events);
+            collected.AddRange(result.Events);
             snapshot = result.Snapshot;
             if (result.Events.Any(@event => @event.EventId == eventId))
             {
-                return (before, snapshot, events);
+                // From initial.json the collected events are every event through the command; from a checkpoint they are read from the
+                // events file, which holds the ones before the checkpoint as well.
+                return (before, snapshot, start.FromInitial ? collected : ThroughFromFile(dir, eventId) ?? collected);
             }
         }
         return null;
@@ -147,6 +132,43 @@ public static class WorldHistory
             return Queries.AtEvent(atEvent.Before, atEvent.After, registry, atEvent.Events, observer, eventId, sense);
         }
         return EventPerception.Perceive(current, registry, WorldFiles.ReadEvents(dir), observer, eventId, sense);
+    }
+
+    // The version must be a safe, non-negative integer and no later than the world's current one.
+    private static void CheckVersion(string dir, long version, IReadOnlyDictionary<string, Template> registry)
+    {
+        if (version < 0 || version > MaxSafeInteger)
+        {
+            throw new WorldError("invalid_version", $"Invalid version {version}");
+        }
+        var current = Current(dir, registry);
+        if (version > current.Version)
+        {
+            throw new WorldError("future_version", $"Version {version} is ahead of {current.Version}");
+        }
+    }
+
+    // The current snapshot, from the files as they agree; a world whose files disagree is not settled here yet.
+    private static Snapshot Current(string dir, IReadOnlyDictionary<string, Template> registry) =>
+        WorldReplay.TrustedSnapshot(dir, registry)
+        ?? throw new WorldError("store_unsettled", "The world's files disagree with its head; settling them is not ported yet");
+
+    // Every event up to the end of the command that wrote the event, from the events file (`eventsThrough`). Null when the file does not
+    // hold the event.
+    private static List<WorldEvent>? ThroughFromFile(string dir, string eventId)
+    {
+        var stored = WorldFiles.ReadEvents(dir);
+        var at = stored.FindIndex(@event => @event.EventId == eventId);
+        if (at < 0)
+        {
+            return null;
+        }
+        var end = at;
+        while (end + 1 < stored.Count && stored[end + 1].CommandId == stored[at].CommandId)
+        {
+            end += 1;
+        }
+        return stored.GetRange(0, end + 1);
     }
 
     private const long MaxSafeInteger = 9007199254740991;

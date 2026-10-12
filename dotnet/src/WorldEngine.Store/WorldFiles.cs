@@ -200,7 +200,7 @@ public static class WorldFiles
         return new DeclaredSet(decls, sources);
     }
 
-    private static Snapshot Checked(JsonNode? value, string path)
+    public static Snapshot Checked(JsonNode? value, string path)
     {
         if (value is not JsonObject snapshot
             || Text(snapshot, "templates_hash") is null

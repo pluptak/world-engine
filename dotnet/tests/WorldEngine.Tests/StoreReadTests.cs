@@ -265,6 +265,88 @@ public class StoreReadTests : IDisposable
         }
     }
 
+    private static readonly string Checkpointed = Path.Combine(AppContext.BaseDirectory, "Fixtures", "store-checkpoint");
+
+    [Fact]
+    public void A_world_written_with_a_checkpoint_per_command_has_the_same_log_and_checkpoints_for_each_one()
+    {
+        Assert.Equal(4, Directory.GetFiles(Path.Combine(Checkpointed, "checkpoints")).Length);
+        foreach (var name in new[] { WorldFiles.Log, WorldFiles.Events, WorldFiles.Deltas })
+        {
+            Assert.Equal(File.ReadAllBytes(Path.Combine(Fixture, name)), File.ReadAllBytes(Path.Combine(Checkpointed, name)));
+        }
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void Since_from_a_checkpoint_gives_the_same_answer_as_from_initial(long version)
+    {
+        var (deltas, events) = WorldHistory.Since(Checkpointed, version, WorldFiles.ReadTemplates(Checkpointed));
+        var expected = Expected["since"]![version.ToString()]!.AsObject();
+
+        Assert.Equal(CanonicalJson.Serialize(expected["deltas"]), Canonical(deltas));
+        Assert.Equal(CanonicalJson.Serialize(expected["events"]), Canonical(events));
+    }
+
+    [Fact]
+    public void A_replay_for_a_later_version_starts_from_the_newest_usable_checkpoint()
+    {
+        var start = WorldCheckpoints.ReplayStart(Checkpointed, WorldFiles.ReadTemplates(Checkpointed), (version, _) => version <= 3);
+
+        Assert.False(start.FromInitial);
+        Assert.Equal(3, start.Snapshot.Version);
+        Assert.Equal(new long[] { 5 }, start.Entries.Select(entry => (long)entry.Line).ToArray());
+    }
+
+    [Fact]
+    public void Perceive_from_a_checkpoint_gives_the_same_answers_as_from_initial()
+    {
+        var registry = WorldFiles.ReadTemplates(Checkpointed);
+        foreach (var row in Expected["query"]!.AsArray().Select(row => row!.AsObject()))
+        {
+            var sense = row["sense"]!.GetValue<string>();
+            var answer = row["event_id"] is { } eventId
+                ? WorldHistory.QueryPerceive(Checkpointed, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, eventId: eventId.GetValue<string>())
+                : WorldHistory.QueryPerceive(Checkpointed, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, entity: row["entity"]!.GetValue<string>());
+            var actual = new JsonObject { ["value"] = answer.Value, ["basis_code"] = answer.BasisCode };
+
+            Assert.Equal(CanonicalJson.Serialize(row["answer"]), CanonicalJson.Serialize(actual));
+        }
+    }
+
+    [Fact]
+    public void A_corrupt_checkpoint_is_ignored_and_the_answers_do_not_change()
+    {
+        Directory.CreateDirectory(scratch);
+        CopyDirectory(Checkpointed, scratch);
+        // The newest checkpoint is replaced with something that is not one; the answer must still be the one from initial.json.
+        File.WriteAllText(Path.Combine(scratch, "checkpoints", "4-11.json"), "{}");
+        File.WriteAllText(Path.Combine(scratch, "checkpoints", "3-9.json"), "{\"version\":3}");
+        var registry = WorldFiles.ReadTemplates(scratch);
+
+        var (deltas, events) = WorldHistory.Since(scratch, 3, registry);
+
+        Assert.Equal(CanonicalJson.Serialize(Expected["since"]!["3"]!["events"]), Canonical(events));
+        Assert.Equal(CanonicalJson.Serialize(Expected["since"]!["3"]!["deltas"]), Canonical(deltas));
+    }
+
+    private static void CopyDirectory(string from, string to)
+    {
+        foreach (var file in Directory.GetFiles(from))
+        {
+            File.Copy(file, Path.Combine(to, Path.GetFileName(file)));
+        }
+        foreach (var folder in Directory.GetDirectories(from))
+        {
+            var target = Path.Combine(to, Path.GetFileName(folder));
+            Directory.CreateDirectory(target);
+            CopyDirectory(folder, target);
+        }
+    }
+
     private void CopyWorld()
     {
         Directory.CreateDirectory(scratch);
