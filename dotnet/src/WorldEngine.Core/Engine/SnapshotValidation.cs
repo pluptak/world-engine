@@ -636,7 +636,7 @@ public static class SnapshotValidation
         {
             var cause = snapshot.Schedule[index];
             var path = new[] { "schedule", index.ToString() };
-            if (cause.Kind is not ("close" or "bleed" or "process"))
+            if (cause.Kind is not ("close" or "bleed" or "process" or "beat"))
             {
                 issues.Add(Issue("unknown_cause_kind", path, cause.Kind));
             }
@@ -670,6 +670,24 @@ public static class SnapshotValidation
             {
                 issues.Add(Issue("invalid_process", path, cause.Process ?? "undefined"));
             }
+            if (cause.Kind == "beat" && Beats.Invalid(cause) is { } broken)
+            {
+                issues.Add(Issue("invalid_beat", path, broken));
+            }
+        }
+        // Beats share one namespace of ids, their followers' included, and a bounded number of them.
+        var ids = Beats.PendingBeatIds(snapshot.Schedule);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var id in ids)
+        {
+            if (!seen.Add(id))
+            {
+                issues.Add(Issue("duplicate_beat", ["schedule"], id));
+            }
+        }
+        if (ids.Count > Beats.MaxBeats)
+        {
+            issues.Add(Issue("too_many_beats", ["schedule"], ids.Count.ToString()));
         }
         return issues;
     }

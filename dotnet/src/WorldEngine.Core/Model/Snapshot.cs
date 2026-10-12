@@ -18,7 +18,13 @@ public sealed record ScheduledCause(
     string? CauseId,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Remaining = null,
     // The process a `process` cause runs; absent on every other kind.
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Process = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Process = null,
+    // A `beat` cause's id, action, condition, followers and repeat, as the snapshot writes them; absent on every other kind.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Id = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonNode? Action = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonNode? OnlyIf = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonNode? Then = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonNode? Repeat = null);
 
 public enum PartStatus
 {

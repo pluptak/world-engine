@@ -501,6 +501,10 @@ public static class EditVerb
 
     // Reads the `edit` argument (src/engine/verbs/edit.ts `parseEdit`): null when it is not a well-formed edit, and an
     // exception for a kind or field this port does not carry.
+    // Whether a JSON object reads as an edit, the action of a beat (src/engine/beats.ts parseAction).
+    internal static bool ParsesAsEdit(JsonObject action) =>
+        Parse(new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["edit"] = action.DeepClone() }) is not null;
+
     private static WorldEdit? Parse(IReadOnlyDictionary<string, JsonNode?>? args)
     {
         if (args is null || !args.TryGetValue("edit", out var node) || node is not JsonObject obj || Text(obj["kind"]) is not { } kind)

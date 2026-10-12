@@ -26,13 +26,6 @@ public static class Processes
 
     private static bool IsSafeInteger(long value) => Math.Abs(value) <= MaxSafeInteger;
 
-    // Strict equality of two props (`===` in TypeScript): an absent prop equals nothing, and two values are the same when they
-    // read the same.
-    private static bool SameValue(JsonNode? left, JsonNode? right) =>
-        left is null || right is null
-            ? left is null && right is null
-            : CanonicalJson.Serialize(left) == CanonicalJson.Serialize(right);
-
     // The condition under which a process runs, read from the entity's props as they are now. `eq` and `ne` compare any
     // primitive strictly; the ordering ops need numbers on both sides, and an absent or non-numeric prop satisfies none.
     private static bool WhileHolds(ProcessSpec spec, IReadOnlyDictionary<string, JsonNode?> props)
@@ -44,11 +37,11 @@ public static class Processes
         var actual = props.GetValueOrDefault(condition.Prop);
         if (condition.Op == "eq")
         {
-            return SameValue(actual, condition.Value);
+            return PropFields.SameValue(actual, condition.Value);
         }
         if (condition.Op == "ne")
         {
-            return !SameValue(actual, condition.Value);
+            return !PropFields.SameValue(actual, condition.Value);
         }
         if (condition.Op is not ("lt" or "lte" or "gt" or "gte"))
         {
@@ -239,7 +232,7 @@ public static class Processes
         if (then.SetProp is { } set)
         {
             var current = entity.Props.GetValueOrDefault(set.Prop);
-            if (!SameValue(current, set.Value))
+            if (!PropFields.SameValue(current, set.Value))
             {
                 var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
                 {

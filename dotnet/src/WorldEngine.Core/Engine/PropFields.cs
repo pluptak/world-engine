@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using WorldEngine.Core.Json;
 
 namespace WorldEngine.Core.Engine;
 
@@ -122,6 +123,13 @@ public static class PropFields
         (value as JsonValue)?.GetValueKind() is System.Text.Json.JsonValueKind.Number
             ? double.Parse(value!.ToJsonString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture)
             : null;
+
+    // Strict equality of two props (`===` in TypeScript): an absent prop equals nothing, and two values are the same when they
+    // read the same.
+    public static bool SameValue(JsonNode? left, JsonNode? right) =>
+        left is null || right is null
+            ? left is null && right is null
+            : CanonicalJson.Serialize(left) == CanonicalJson.Serialize(right);
 
     // A flag that is literally true, as `=== true` reads it; any other value, or none, is not.
     public static bool IsTrue(JsonNode? value) =>

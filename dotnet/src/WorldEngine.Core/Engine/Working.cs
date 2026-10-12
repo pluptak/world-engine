@@ -18,7 +18,21 @@ public sealed class Working
         this.commandId = commandId;
     }
 
+    public string CommandId => commandId;
+
     public Snapshot Snapshot { get; private set; }
+
+    // What a failed attempt puts back: the snapshot, and how many events and deltas were written before it (src/engine/beats.ts).
+    public readonly record struct Checkpoint(Snapshot Snapshot, int Events, int Deltas);
+
+    public Checkpoint Mark() => new(Snapshot, Events.Count, Deltas.Count);
+
+    public void Rollback(Checkpoint mark)
+    {
+        Snapshot = mark.Snapshot;
+        Events.RemoveRange(mark.Events, Events.Count - mark.Events);
+        Deltas.RemoveRange(mark.Deltas, Deltas.Count - mark.Deltas);
+    }
 
     public List<WorldEvent> Events { get; } = [];
 

@@ -71,6 +71,9 @@ public static class Schedule
             case "process":
                 Processes.RunProcess(working, registry, cause);
                 return;
+            case "beat":
+                Beats.Run(working, registry, cause);
+                return;
             default:
                 throw new NotPortedException($"scheduled {cause.Kind} causes");
         }
