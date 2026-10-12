@@ -19,10 +19,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
-2. [An event-form perceive finds its event without a scan](#an-event-form-perceive-finds-its-event-without-a-scan).
-3. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
-4. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
-5. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+2. [A beat that writes a definition prop is refused when written](#a-beat-that-writes-a-definition-prop-is-refused-when-written).
+3. [The lab's power cut goes through the generator's on prop](#the-labs-power-cut-goes-through-the-generators-on-prop).
+4. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -82,19 +81,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - **Done when:** the cause is named in `docs/locking.md` and fixed with a deterministic test. If it
   does not reproduce in 50 loop runs, the test writes each child's log to a file on failure, so the
   next occurrence can be read.
-- **Depends on:** nothing.
-
-### An event-form perceive finds its event without a scan
-
-- **What:** `eventsThrough` (`src/store/file-store.ts`) finds the event with `findIndex` over every
-  stored event, and `replayUntilEvent` calls it for each event a query names. In a world of 10k
-  commands each such query scans the whole events list.
-- Keep a map from `event_id` to its index in the cached events, extended by the lines appended since,
-  as `cachedEvents` already extends them.
-- **Done when:** `npm run bench:reads` shows the event-form perceive flat from 1k to 10k commands. The
-  before and after numbers go in `docs/measurements.md`.
-- **Tests:** the existing event-form perceive tests stay green, plus one that finds an event appended
-  after the map was first built.
 - **Depends on:** nothing.
 
 ### A beat that writes a definition prop is refused when written

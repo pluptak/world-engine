@@ -1,9 +1,9 @@
-import { deepStrictEqual, strictEqual, throws } from "node:assert";
+import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { appendFileSync, readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { createWorld, openWorld, WorldError, type Scenario } from "../src/index.js";
-import { replayWithEvents } from "../src/store/file-store.js";
+import { replayUntilEvent, replayWithEvents } from "../src/store/file-store.js";
 import { readEvents } from "../src/store/file-store.js";
 import { canonicalJson } from "../src/index.js";
 import { tempDir } from "./harness.js";
@@ -81,4 +81,25 @@ test("version-skew recovery rewrites a short event file", (t) => {
   const recovered = openWorld(dir).snapshot();
   strictEqual(recovered.version, 3);
   deepStrictEqual(canonicalJson(readEvents(dir)), canonicalJson(replayWithEvents(dir).events));
+});
+
+test("an event appended after the event index was first built is found by its id, from a checkpoint", (t) => {
+  const dir = join(tempDir(t), "w");
+  createWorld(dir, bottleScenario);
+  const handle = openWorld(dir, { checkpointEvery: 2 });
+  const actor = Object.values(handle.snapshot().entities).find((entity) => entity.name === "actor")!.id;
+  // The first events are looked up, which builds the index over the events stored so far.
+  for (let index = 0; index < 4; index += 1) {
+    strictEqual(handle.command({ command_id: `w${index}`, actor, verb: "wait", args: { ticks: 1 } }).status, "ok");
+  }
+  const early = readEvents(dir)[0]!.event_id;
+  ok(replayUntilEvent(dir, early) !== null);
+  // Events appended after that lookup are found through the same index, which is extended rather than rebuilt.
+  for (let index = 4; index < 7; index += 1) {
+    strictEqual(handle.command({ command_id: `w${index}`, actor, verb: "wait", args: { ticks: 1 } }).status, "ok");
+  }
+  const stored = readEvents(dir);
+  const last = stored[stored.length - 1]!.event_id;
+  const found = replayUntilEvent(dir, last);
+  deepStrictEqual(found?.events, stored);
 });

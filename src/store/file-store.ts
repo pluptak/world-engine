@@ -487,6 +487,8 @@ interface LineCache {
   anchor: Buffer;
   lines: number;
   records: unknown[];
+  // Events only: the position of each event id's first stored event, extended with the lines appended.
+  positions?: Map<string, number>;
 }
 const lineCaches = new Map<string, { events?: LineCache; deltas?: LineCache }>();
 
@@ -511,6 +513,19 @@ function cachedEvents(dir: string): readonly WorldEvent[] {
 
 function cachedDeltas(dir: string): readonly Delta[] {
   return cachedLines(dir, "deltas", parseDeltaLine);
+}
+
+// Each event id's first position in the stored events. A map that grows with the cache: the lines past the base's
+// are indexed, and the base's map, which no cache holds once this one replaces it, is extended rather than rebuilt.
+function eventPositions(events: readonly WorldEvent[], base: LineCache | undefined): Map<string, number> {
+  const positions = base?.positions ?? new Map<string, number>();
+  for (let index = base?.lines ?? 0; index < events.length; index += 1) {
+    const id = events[index]!.event_id;
+    if (!positions.has(id)) {
+      positions.set(id, index);
+    }
+  }
+  return positions;
 }
 
 function cachedLines<T>(
@@ -558,6 +573,7 @@ function cachedLines<T>(
     anchor: Buffer.from(seen.subarray(Math.max(0, seen.length - ANCHOR_BYTES))),
     lines: records.length,
     records,
+    ...(kind === "events" && { positions: eventPositions(records as unknown as WorldEvent[], base) }),
   } });
   dropOldest(lineCaches);
   return records;
@@ -1561,7 +1577,8 @@ export function replayUntilEvents(
 // from the start would have collected, without replaying. Null when the file does not hold it.
 function eventsThrough(dir: string, eventId: Id): WorldEvent[] | null {
   const stored = cachedEvents(dir);
-  const at = stored.findIndex((event) => event.event_id === eventId);
+  // The cache was brought up to date by the read above, so its map names the event as the list holds it.
+  const at = lineCaches.get(dir)?.events?.positions?.get(eventId) ?? -1;
   if (at < 0) {
     return null;
   }

@@ -91,3 +91,16 @@ loads it once, and the decode builds the view's alias table once per command (la
 an alias-shaped value) on one snapshot. The move is still decoded as the view's `check` reads
 it, the file is still written under the lock and atomically, and a second `openWorld` still
 sees it (`tests/player.test.ts`).
+
+## Store: event-form perceive, with and without the event index
+
+`npm run bench:reads`, the `perceive_event_ms` column, ms, one run each on the same machine. The
+event index (`positions` in the events cache, `eventsThrough` in `src/store/file-store.ts`) replaces
+a scan of the stored events for the id; at these sizes that scan is far cheaper than the replay from
+the newest checkpoint, which is the cost a query pays. The two columns agree within the run-to-run
+noise of this machine, so the index is kept for its shape, not for a measured gain.
+
+| log (accepted commands) | 1000 | 5000 | 10000 |
+|---|---|---|---|
+| event-form `perceive`, before the index | 4.4 | 10.1 | 7.0 |
+| event-form `perceive`, with the index | 4.7 | 16.6 | 6.7 |
