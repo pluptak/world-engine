@@ -42,6 +42,36 @@ public static class Carry
         PropValues.GetNumber(item.Props, "hands_required") == 2 ? 2 : 1;
 
     // The holder parts a template declares, in declaration order.
+    // Whether an item fits a pocket (src/engine/carry.ts `spaceRefusal`): null when it does. An unknown part or item, or
+    // one with no size, is refused without data, as TypeScript's is.
+    public static Pipeline.Refusal? SpaceRefusal(
+        Snapshot snapshot,
+        IReadOnlyDictionary<string, Template> registry,
+        string holderId,
+        string part,
+        Entity item)
+    {
+        var holder = snapshot.Entities.GetValueOrDefault(holderId);
+        if (holder is null || !registry.TryGetValue(holder.Template, out var template))
+        {
+            return new Pipeline.Refusal(Status.Refused, "unknown_part");
+        }
+        var space = HolderLayout(registry, template.Id).Spaces.FirstOrDefault(candidate => candidate.Name == part);
+        if (space.Name is null)
+        {
+            return new Pipeline.Refusal(Status.Refused, "unknown_part");
+        }
+        if (!registry.TryGetValue(item.Template, out var itemTemplate))
+        {
+            return new Pipeline.Refusal(Status.Refused, "too_large");
+        }
+        var size = itemTemplate.SizeCm;
+        var fit = Fit.Misfit([size.W, size.D, size.H], space.Inner.Select(value => (double)value).ToList());
+        return fit is null
+            ? null
+            : new Pipeline.Refusal(Status.Refused, "too_large", Pipeline.Reason(("item_cm", fit.Value.ItemCm), ("space_cm", fit.Value.SpaceCm)));
+    }
+
     public static Layout HolderLayout(IReadOnlyDictionary<string, Template> registry, string templateId)
     {
         var grips = new List<string>();

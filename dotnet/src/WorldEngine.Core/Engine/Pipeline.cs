@@ -35,7 +35,13 @@ public static class Pipeline
         IReadOnlyList<Requirement> Requires);
 
     // A verb's refusal of a command at its preconditions, before anything changes.
-    public sealed record Refusal(Status Status, string ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData = null);
+    // A refusal with a reason code, or an unresolved or ambiguous destination, which has none; an ambiguous one names its
+    // candidates.
+    public sealed record Refusal(
+        Status Status,
+        string? ReasonCode,
+        IReadOnlyDictionary<string, JsonNode?>? ReasonData = null,
+        IReadOnlyList<string>? Candidates = null);
 
     // The reason data of a refusal or event: named values, each a string, a number or a boolean.
     public static IReadOnlyDictionary<string, JsonNode?> Reason(params (string Key, object Value)[] pairs) =>
@@ -184,9 +190,11 @@ public static class Pipeline
                 snapshot,
                 command,
                 refusal.Status,
-                resolvedTarget: target?.Address,
+                // A destination that did not resolve names no target the verb could act on.
+                resolvedTarget: refusal.Status is Status.Unresolved or Status.Ambiguous ? null : target?.Address,
                 reasonCode: refusal.ReasonCode,
-                reasonData: refusal.ReasonData);
+                reasonData: refusal.ReasonData,
+                candidates: refusal.Candidates);
         }
         var duration = verb.Duration?.Invoke(command)
             ?? throw new InvalidOperationException($"Verb {command.Verb} accepted a command without a duration");

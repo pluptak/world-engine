@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -13,6 +14,40 @@ public sealed record ReachMeasure(long DistanceCm, double ReachCm);
 // test itself are in `Reach`; the gap refusal is `Geometry.GapStopFor`.
 public static class Address
 {
+    // The text a verb's address argument names (src/engine/verbs/address.ts `addressText`): a non-empty string, else null.
+    public static string? AddressText(Pipeline.CommandContext context, string name)
+    {
+        var args = context.Command.Args;
+        return args is not null && args.TryGetValue(name, out var value) && value is JsonValue json
+            && json.TryGetValue(out string? text) && !string.IsNullOrEmpty(text)
+            ? text
+            : null;
+    }
+
+    // What an address names: the entity it resolves to, or the refusal that stopped it (src/engine/verbs/address.ts
+    // `addressEntity`). A part is never such an entity; it is refused with `partReasonCode`.
+    public sealed record Addressed(Entity? Entity, Pipeline.Refusal? Failure);
+
+    public static Addressed AddressEntity(Pipeline.CommandContext context, string text, string partReasonCode)
+    {
+        var resolution = Resolve.ResolveTarget(context.Snapshot, context.Registry, context.Command.Actor, text);
+        switch (resolution)
+        {
+            case Resolve.Unresolved:
+                return new Addressed(null, new Pipeline.Refusal(Status.Unresolved, null));
+            case Resolve.Ambiguous ambiguous:
+                return new Addressed(null, new Pipeline.Refusal(Status.Ambiguous, null, Candidates: ambiguous.Candidates));
+            case Resolve.Resolved resolved when resolved.Target.Part is not null:
+                return new Addressed(null, new Pipeline.Refusal(Status.Refused, partReasonCode));
+            case Resolve.Resolved resolved:
+                return context.Snapshot.Entities.TryGetValue(resolved.Target.EntityId, out var entity)
+                    ? new Addressed(entity, null)
+                    : new Addressed(null, new Pipeline.Refusal(Status.Invalid, "no_such_entity"));
+            default:
+                throw new InvalidOperationException("Unknown resolution");
+        }
+    }
+
     public static ReachMeasure? ReachData(Snapshot snapshot, string actorId, string targetId)
     {
         if (!snapshot.Entities.TryGetValue(actorId, out var actor) || !snapshot.Entities.TryGetValue(targetId, out var target))
