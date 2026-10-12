@@ -72,6 +72,14 @@ public static class CliRunner
                         null,
                         JsonReads.SafeInt(request["based_on_version"])),
                     Flag(request["include_snapshot"]));
+            case "beat":
+            {
+                var results = StoreWorld.Open(Required(world)).Beat(Commands(request["commands"]), JsonReads.SafeInt(request["based_on_version"]));
+                var includeSnapshot = Flag(request["include_snapshot"]);
+                return new JsonObject { ["results"] = new JsonArray(results.Select(result => (JsonNode?)Answer(result, includeSnapshot)).ToArray()) };
+            }
+            case "round":
+                return Round(StoreWorld.Open(Required(world)).TakeRound(Commands(request["moves"])));
             case "check":
                 return Verdict(StoreWorld.Open(Required(world)).Check(CommandOf(request)));
             case "options":
@@ -177,6 +185,31 @@ public static class CliRunner
         }
         return response;
     }
+
+    // A round's answer (`roundResponse`): its status, its reason when refused, its number when taken, each move's answer, and the close.
+    private static JsonObject Round(Round.Outcome outcome)
+    {
+        var answer = new JsonObject { ["status"] = Node(outcome.Status) };
+        if (outcome.ReasonCode is { } reason)
+        {
+            answer["reason_code"] = reason;
+        }
+        if (outcome.Number is { } number)
+        {
+            answer["round"] = number;
+        }
+        answer["results"] = new JsonArray(outcome.Results.Select(result => (JsonNode?)Answer(result, false)).ToArray());
+        if (outcome.Closing is { } closing)
+        {
+            answer["closing"] = Answer(closing, false);
+        }
+        return answer;
+    }
+
+    private static List<Command> Commands(JsonNode? node) =>
+        (node as JsonArray ?? throw new WorldError("invalid_request", "The request names no commands"))
+            .Select(item => WorldJson.Read<Command>(item!.ToJsonString()))
+            .ToList();
 
     private static bool Flag(JsonNode? node) => node is JsonValue value && value.TryGetValue(out bool flag) && flag;
 

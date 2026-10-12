@@ -88,8 +88,17 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
 
     // A round of this world, closed by the director: its moves are decided against the same world, and each refusal the plan makes is logged
     // with no part in the world (`docs/rounds.md`, `roundAs`).
-    public Round.Outcome TakeRoundAs(IReadOnlyList<Command> moves)
+    public Round.Outcome TakeRoundAs(IReadOnlyList<Command> moves) => RoundOf(moves, byAllowed: true);
+
+    // A round of plain moves, with no role on them (`round`): a move that carries one is refused as invalid_args.
+    public Round.Outcome TakeRound(IReadOnlyList<Command> moves) => RoundOf(moves, byAllowed: false);
+
+    private Round.Outcome RoundOf(IReadOnlyList<Command> moves, bool byAllowed)
     {
+        if (!byAllowed && !moves.All(move => move.By is null))
+        {
+            return new Round.Outcome(Status.Invalid, "invalid_args", null, [], null);
+        }
         var start = CurrentSnapshot();
         var plan = Round.PlanRound(start, registry, VerbRegistry.All, moves);
         if (plan.Status != Status.Ok)
@@ -111,7 +120,23 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
                 decided,
                 snapshotEvery,
                 checkpointEvery),
-            new By(Role.Director));
+            byAllowed ? new By(Role.Director) : null);
+    }
+
+    // The commands of a beat, each judged against one shared base version, so a later command sees an earlier one as stale; a flagged one is
+    // refused as invalid (`beat`).
+    public IReadOnlyList<Pipeline.Result> Beat(IReadOnlyList<Command> commands, long? basedOn = null)
+    {
+        var baseVersion = basedOn ?? CurrentSnapshot().Version;
+        var results = new List<Pipeline.Result>();
+        foreach (var command in commands)
+        {
+            results.Add(
+                WorldReads.IsFlagged(command)
+                    ? WorldReads.RoundFlagged(CurrentSnapshot(), command)
+                    : WorldWriter.Submit(dir, registry, command, baseVersion, snapshotEvery: snapshotEvery, checkpointEvery: checkpointEvery));
+        }
+        return results;
     }
 
     // Whether one of the observers sensed one of the events between the snapshots (`heard`, `docs/roles.md`).
