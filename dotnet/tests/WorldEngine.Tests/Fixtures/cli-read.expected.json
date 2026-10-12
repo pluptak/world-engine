@@ -1,0 +1,67 @@
+[
+  {
+    "request": {
+      "op": "snapshot",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"coverage\":{\"properties\":[\"integrity\",\"residue\",\"pos\",\"open\"],\"relations\":[\"support\",\"contained_in\",\"attached_to\",\"status\",\"location\",\"near\",\"reachable\"],\"senses\":[\"sight\",\"hearing\"]},\"entities\":{\"e1\":{\"aliases\":[],\"concealed_by\":null,\"contained_in\":null,\"detached_from\":null,\"id\":\"e1\",\"in_part\":null,\"integrity\":100,\"location\":null,\"modifiers\":[],\"name\":\"hall\",\"parts\":{},\"pos\":null,\"props\":{\"lit\":false},\"residue\":{},\"status\":\"intact\",\"support\":null,\"template\":\"room\"},\"e2\":{\"aliases\":[],\"concealed_by\":null,\"contained_in\":null,\"detached_from\":null,\"id\":\"e2\",\"in_part\":null,\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"ann\",\"parts\":{},\"pos\":{\"x\":0,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e3\":{\"aliases\":[],\"concealed_by\":null,\"contained_in\":null,\"detached_from\":null,\"id\":\"e3\",\"in_part\":null,\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"stone\",\"parts\":{},\"pos\":{\"x\":0,\"y\":0},\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"stone\"},\"e4\":{\"aliases\":[],\"concealed_by\":null,\"contained_in\":null,\"detached_from\":null,\"id\":\"e4\",\"in_part\":null,\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"lamp\",\"parts\":{},\"pos\":{\"x\":-30,\"y\":0},\"props\":{\"burning\":false,\"light_source\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"lamp\"}},\"next_seq\":12,\"templates_hash\":\"4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f\",\"tick\":4,\"version\":4}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "since",
+      "world": "{WORLD}",
+      "version": 0
+    },
+    "stdout": "{\"deltas\":[{\"entity\":\"e3\",\"event_id\":\"ev6\",\"field\":\"contained_in\",\"from\":null,\"to\":\"e2\"},{\"entity\":\"e3\",\"event_id\":\"ev6\",\"field\":\"in_part\",\"from\":null,\"to\":\"hand_l\"},{\"entity\":\"e3\",\"event_id\":\"ev6\",\"field\":\"support\",\"from\":\"e1\",\"to\":null},{\"entity\":\"e3\",\"event_id\":\"ev6\",\"field\":\"pos\",\"from\":{\"x\":30,\"y\":0},\"to\":null},{\"entity\":\"e4\",\"event_id\":\"ev9\",\"field\":\"props\",\"from\":{\"burning\":true,\"light_source\":true},\"to\":{\"burning\":false,\"light_source\":true}},{\"entity\":\"e3\",\"event_id\":\"ev11\",\"field\":\"contained_in\",\"from\":\"e2\",\"to\":null},{\"entity\":\"e3\",\"event_id\":\"ev11\",\"field\":\"in_part\",\"from\":\"hand_l\",\"to\":null},{\"entity\":\"e3\",\"event_id\":\"ev11\",\"field\":\"support\",\"from\":null,\"to\":\"e1\"},{\"entity\":\"e3\",\"event_id\":\"ev11\",\"field\":\"pos\",\"from\":null,\"to\":{\"x\":0,\"y\":0}}],\"events\":[{\"cause_id\":null,\"command_id\":\"c1\",\"data\":{},\"entity\":\"e3\",\"event_id\":\"ev5\",\"tick\":0,\"type\":\"take\"},{\"cause_id\":\"ev5\",\"command_id\":\"c1\",\"data\":{},\"entity\":\"e3\",\"event_id\":\"ev6\",\"tick\":0,\"type\":\"moved\"},{\"cause_id\":null,\"command_id\":\"c3\",\"data\":{\"utterance\":\"hello\",\"volume\":\"normal\"},\"entity\":\"e2\",\"event_id\":\"ev7\",\"tick\":1,\"type\":\"say\"},{\"cause_id\":null,\"command_id\":\"c5\",\"data\":{},\"entity\":\"e4\",\"event_id\":\"ev8\",\"tick\":2,\"type\":\"douse\"},{\"cause_id\":\"ev8\",\"command_id\":\"c5\",\"data\":{},\"entity\":\"e4\",\"event_id\":\"ev9\",\"tick\":2,\"type\":\"doused\"},{\"cause_id\":null,\"command_id\":\"c6\",\"data\":{},\"entity\":\"e3\",\"event_id\":\"ev10\",\"tick\":3,\"type\":\"drop\"},{\"cause_id\":\"ev10\",\"command_id\":\"c6\",\"data\":{\"fall_cm\":100},\"entity\":\"e3\",\"event_id\":\"ev11\",\"tick\":3,\"type\":\"dropped\"}]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "since",
+      "world": "{WORLD}",
+      "version": 4
+    },
+    "stdout": "{\"deltas\":[],\"events\":[]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "attempts",
+      "world": "{WORLD}",
+      "version": 0
+    },
+    "stdout": "{\"attempts\":[{\"based_on_version\":0,\"command\":{\"actor\":\"e2\",\"command_id\":\"c1\",\"target\":\"stone\",\"verb\":\"take\"},\"status\":\"ok\",\"version\":0},{\"based_on_version\":1,\"command\":{\"actor\":\"e2\",\"command_id\":\"c2\",\"target\":\"stone\",\"verb\":\"take\"},\"reason_code\":\"already_held\",\"status\":\"refused\",\"version\":1},{\"based_on_version\":1,\"command\":{\"actor\":\"e2\",\"args\":{\"utterance\":\"hello\"},\"command_id\":\"c3\",\"verb\":\"say\"},\"status\":\"ok\",\"version\":1},{\"based_on_version\":2,\"command\":{\"actor\":\"e2\",\"command_id\":\"c4\",\"target\":\"nothing\",\"verb\":\"take\"},\"status\":\"unresolved\",\"version\":2},{\"based_on_version\":2,\"command\":{\"actor\":\"e2\",\"command_id\":\"c5\",\"target\":\"lamp\",\"verb\":\"douse\"},\"status\":\"ok\",\"version\":2},{\"based_on_version\":3,\"command\":{\"actor\":\"e2\",\"command_id\":\"c6\",\"target\":\"stone\",\"verb\":\"drop\"},\"status\":\"ok\",\"version\":3}]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "attempts",
+      "world": "{WORLD}",
+      "version": 3
+    },
+    "stdout": "{\"attempts\":[{\"based_on_version\":3,\"command\":{\"actor\":\"e2\",\"command_id\":\"c6\",\"target\":\"stone\",\"verb\":\"drop\"},\"status\":\"ok\",\"version\":3}]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "verify",
+      "world": "{WORLD}"
+    },
+    "stdout": "{\"entries\":6,\"ok\":true,\"version\":4}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "snapshot",
+      "world": "{MISSING}"
+    },
+    "stdout": "{\"issues\":[{\"code\":\"no_such_world\",\"message\":\"no_such_world\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2
+  },
+  {
+    "request": "not json",
+    "stdout": "{\"issues\":[{\"code\":\"invalid_json\",\"message\":\"invalid_json\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2
+  }
+]
