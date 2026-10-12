@@ -231,7 +231,7 @@ public sealed class MemoryWorld : IWorld
         submissions += 1;
         var baseVersion = current.Version;
         var result = Submission.ResolveSubmission(current, registry, VerbRegistry.All, command, basedOn, version => history.GetValueOrDefault(version));
-        Record(AttemptOf(command, basedOn, baseVersion, result, round));
+        Record(Submission.AttemptOf(command, basedOn, baseVersion, result, round));
         if (result.Status == Status.Ok)
         {
             current = result.Snapshot;
@@ -275,7 +275,7 @@ public sealed class MemoryWorld : IWorld
     private Pipeline.Result RecordDecided(Command command, long basedOn, Pipeline.Result decided, RoundMark mark)
     {
         submissions += 1;
-        Record(AttemptOf(command, basedOn, current.Version, decided, mark));
+        Record(Submission.AttemptOf(command, basedOn, current.Version, decided, mark));
         return decided;
     }
 
@@ -429,18 +429,6 @@ public sealed class MemoryWorld : IWorld
 
     private static Pipeline.Result RoundFlagged(Snapshot snapshot, Command command) =>
         Pipeline.Unchanged(snapshot, command, Status.Invalid, reasonCode: "invalid_args");
-
-    private static Attempt AttemptOf(Command command, long basedOn, long version, Pipeline.Result result, RoundMark? round) =>
-        new(
-            command,
-            basedOn,
-            version,
-            result.Status,
-            result.ReasonCode,
-            result.ReasonData is null ? null : new Dictionary<string, JsonNode?>(result.ReasonData, StringComparer.Ordinal),
-            result.Candidates,
-            round,
-            command.By);
 
     // What a view says of a volume: the text of it, as a string written in a log reads (`String(value)` of an absent one is "undefined").
     private static string VolumeText(JsonNode? volume) => volume switch

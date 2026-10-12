@@ -114,5 +114,5 @@ public static class WorldCheckpoints
     // The bytes through the last newline: what a read of a log being appended to takes as whole lines.
     private static byte[] WholeLines(byte[] bytes) => bytes[..(Array.LastIndexOf(bytes, (byte)'\n') + 1)];
 
-    private static string Digest(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+    internal static string Digest(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 }

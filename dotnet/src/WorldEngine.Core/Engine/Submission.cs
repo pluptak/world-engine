@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -57,6 +58,19 @@ public static class Submission
     // The result of a command the world refuses to take at all: nothing changed, and the rule it broke is its reason.
     public static Pipeline.Result InvalidResult(Snapshot snapshot, Command command, string reasonCode) =>
         Pipeline.Unchanged(snapshot, command, Status.Invalid, reasonCode: reasonCode);
+
+    // The log's record of a submission (`attemptOf`): the command, the version it was based on and decided at, and what it said.
+    public static Attempt AttemptOf(Command command, long basedOn, long version, Pipeline.Result result, RoundMark? round) =>
+        new(
+            command,
+            basedOn,
+            version,
+            result.Status,
+            result.ReasonCode,
+            result.ReasonData is null ? null : new Dictionary<string, JsonNode?>(result.ReasonData, StringComparer.Ordinal),
+            result.Candidates,
+            round,
+            command.By);
 
     private const long MaxSafeInteger = 9007199254740991;
 }

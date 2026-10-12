@@ -149,7 +149,7 @@ public static class WorldHistory
     }
 
     // The current snapshot, from the files as they agree; a world whose files disagree is not settled here yet.
-    private static Snapshot Current(string dir, IReadOnlyDictionary<string, Template> registry) =>
+    internal static Snapshot Current(string dir, IReadOnlyDictionary<string, Template> registry) =>
         WorldReplay.TrustedSnapshot(dir, registry)
         ?? throw new WorldError("store_unsettled", "The world's files disagree with its head; settling them is not ported yet");
 
