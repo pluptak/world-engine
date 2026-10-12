@@ -39,16 +39,16 @@ public class SnapshotGoldenTests
         Assert.ThrowsAny<System.Text.Json.JsonException>(() => WorldJson.Read<Snapshot>(withField));
     }
 
-    // A bleed cause carries a `remaining` count that is not ported, so reading it is refused rather than dropping it.
+    // A process cause carries a `process` name that is not ported, so reading it is refused rather than dropping it.
     [Fact]
     public void Unported_schedule_cause_is_refused_not_dropped()
     {
         var golden = ReadFixture("bottle.snapshot.json");
-        var withBleed = golden.Replace(
+        var withProcess = golden.Replace(
             "\"tick\":",
-            "\"schedule\":[{\"due_tick\":1,\"kind\":\"bleed\",\"entity\":\"e1\",\"cause_id\":\"ev1\",\"remaining\":2}],\"tick\":");
+            "\"schedule\":[{\"due_tick\":1,\"kind\":\"process\",\"entity\":\"e1\",\"cause_id\":null,\"process\":\"burn\"}],\"tick\":");
 
-        Assert.ThrowsAny<System.Text.Json.JsonException>(() => WorldJson.Read<Snapshot>(withBleed));
+        Assert.ThrowsAny<System.Text.Json.JsonException>(() => WorldJson.Read<Snapshot>(withProcess));
     }
 
     private static string ReadFixture(string name) =>

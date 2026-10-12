@@ -8,9 +8,15 @@ namespace WorldEngine.Core.Model;
 
 public sealed record Pos(long X, long Y);
 
-// A cause the world will run by itself at `DueTick` (src/model.ts `ScheduledCause`). Only the `close` kind is ported;
-// the other kinds carry fields this record does not read, so a stored one is refused when the snapshot is read.
-public sealed record ScheduledCause(long DueTick, string Kind, string Entity, string? CauseId);
+// A cause the world will run by itself at `DueTick` (src/model.ts `ScheduledCause`). The `close` and `bleed` kinds are
+// ported; `bleed` names how many bleeds are still to come. The other kinds carry fields this record does not read, so a
+// stored one is refused when the snapshot is read.
+public sealed record ScheduledCause(
+    long DueTick,
+    string Kind,
+    string Entity,
+    string? CauseId,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Remaining = null);
 
 public enum PartStatus
 {

@@ -97,6 +97,9 @@ public sealed class Working
         Snapshot = Snapshot with { Entities = entities };
     }
 
+    public void SetIntegrity(string entityId, long integrity, string eventId) =>
+        Update(entityId, "integrity", integrity, eventId, entity => entity with { Integrity = integrity });
+
     public void SetStatus(string entityId, EntityStatus status, string eventId) =>
         Update(entityId, "status", status, eventId, entity => entity with { Status = status });
 
@@ -153,6 +156,7 @@ public sealed class Working
     private static object? FieldOf(Entity entity, string field) => field switch
     {
         "status" => entity.Status,
+        "integrity" => entity.Integrity,
         "props" => entity.Props,
         "residue" => entity.Residue,
         _ => throw new ArgumentException($"Not a field this helper writes: {field}", nameof(field)),
