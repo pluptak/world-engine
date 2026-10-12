@@ -21,7 +21,8 @@ public static class Pipeline
         Func<Command, long?>? Duration = null,
         IReadOnlyList<Requirement>? Requires = null,
         Action<Working, CommandContext, string>? Transition = null,
-        Func<CommandContext, (string Entity, IReadOnlyDictionary<string, JsonNode?> Data)>? RootEvent = null);
+        Func<CommandContext, (string Entity, IReadOnlyDictionary<string, JsonNode?> Data)>? RootEvent = null,
+        Func<Command, IReadOnlyList<string>>? WakeOn = null);
 
     // A capacity the actor must hold at least `AtLeast` of before the verb runs.
     public sealed record Requirement(string Capacity, long AtLeast);
@@ -211,7 +212,13 @@ public static class Pipeline
             ?? (target?.EntityId ?? command.Actor, new Dictionary<string, JsonNode?>());
         var rootEventId = working.Emit(command.Verb, rootEntity, rootData, null);
         verb.Transition?.Invoke(working, context, rootEventId);
-        Clock.Advance(working, registry, duration);
+        // A command that asked to be woken says how long it ran (src/engine/pipeline.ts).
+        var wake = verb.WakeOn?.Invoke(command) ?? [];
+        var elapsed = Clock.Advance(working, registry, duration, wake);
+        if (wake.Count > 0)
+        {
+            working.Events[0] = working.Events[0] with { Data = Reason(("advanced", elapsed)) };
+        }
         working.BumpVersion();
         return new Result(
             Status.Ok,

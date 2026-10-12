@@ -12,7 +12,12 @@ public static class WaitVerb
         RequiresTarget: false,
         AuthorOnly: false,
         Preconditions: Preconditions,
-        Duration: TimeVerbs.Ticks);
+        Duration: TimeVerbs.Ticks,
+        WakeOn: command => Sensed(command) ? [command.Actor] : []);
+
+    // Whether the wait ends at the first tick the waiter could sense something.
+    private static bool Sensed(Command command) =>
+        command.Args is not null && command.Args.TryGetValue("until", out var until) && until is JsonValue json && json.TryGetValue(out string? text) && text == "sensed";
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
     {
@@ -23,7 +28,6 @@ public static class WaitVerb
             {
                 return new Pipeline.Refusal(Status.Invalid, "invalid_args");
             }
-            throw new NotPortedException("wait until sensed needs event perception");
         }
         return TimeVerbs.Ticks(context.Command) is null
             ? new Pipeline.Refusal(Status.Invalid, "invalid_args")

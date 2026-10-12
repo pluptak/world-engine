@@ -1,0 +1,56 @@
+[
+  {
+    "command_id": "h1",
+    "actor": "e4",
+    "verb": "say",
+    "args": {
+      "utterance": "hello"
+    }
+  },
+  {
+    "command_id": "h2",
+    "actor": "e4",
+    "verb": "say",
+    "args": {
+      "utterance": "psst",
+      "volume": "whisper"
+    }
+  },
+  {
+    "command_id": "h3",
+    "actor": "e4",
+    "verb": "say",
+    "args": {
+      "utterance": "hey",
+      "volume": "shout"
+    }
+  },
+  {
+    "command_id": "h4",
+    "actor": "e20",
+    "verb": "say",
+    "args": {
+      "utterance": "hi"
+    }
+  },
+  {
+    "command_id": "h5",
+    "actor": "e4",
+    "verb": "attack",
+    "target": "e5"
+  },
+  {
+    "command_id": "h6",
+    "actor": "e55",
+    "verb": "attack",
+    "target": "e20.hand_l"
+  },
+  {
+    "command_id": "h7",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 2
+    }
+  }
+]

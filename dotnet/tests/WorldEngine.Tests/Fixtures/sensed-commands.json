@@ -1,0 +1,38 @@
+[
+  {
+    "command_id": "q1",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 5,
+      "until": "sensed"
+    }
+  },
+  {
+    "command_id": "q2",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 3,
+      "until": "sensed"
+    }
+  },
+  {
+    "command_id": "q3",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 6,
+      "until": "sensed"
+    }
+  },
+  {
+    "command_id": "q4",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 2,
+      "until": "later"
+    }
+  }
+]

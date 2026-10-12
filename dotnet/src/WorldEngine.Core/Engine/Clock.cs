@@ -7,17 +7,27 @@ namespace WorldEngine.Core.Engine;
 // Time passing (src/engine/clock.ts `advanceClock`, for modifiers alone): the clock steps from the command's tick
 // through every tick at which a modifier expires, then ends at tick + ticks. At each such tick the modifiers due
 // expire, in (entity, capacity, cause, order) order, each `capability_changed` naming the modifier's cause; then the
-// scheduled causes due run in schedule order (`Schedule`). Beats, `wake_on` and `stop_before` are not ported; the caller
-// refuses those before the clock runs.
+// scheduled causes due run in schedule order (`Schedule`). Beats and `stop_before` are not ported; the caller refuses those
+// before the clock runs.
 public static class Clock
 {
     private sealed record Expiring(string Entity, Modifier Modifier, int Order);
 
-    public static void Advance(Working working, IReadOnlyDictionary<string, Template> registry, long ticks)
+    // With `wake` (agent ids), the clock ends early at the first tick whose events one of them could sense, after everything
+    // due at that tick has run (src/engine/clock.ts `advanceClock`).
+    // Returns the ticks that passed.
+    public static long Advance(
+        Working working,
+        IReadOnlyDictionary<string, Template> registry,
+        long ticks,
+        IReadOnlyList<string>? wake = null)
     {
-        var endTick = working.Snapshot.Tick + ticks;
+        var startTick = working.Snapshot.Tick;
+        var endTick = startTick + ticks;
         for (var due = NextDue(working.Snapshot, endTick); due is not null; due = NextDue(working.Snapshot, endTick))
         {
+            var before = working.Snapshot;
+            var firstNew = working.Events.Count;
             working.SetTick(due.Value);
             ExpireAt(working, registry, due.Value);
             // A cause due at this tick runs after the modifiers that expire here, each taken off the schedule first.
@@ -29,8 +39,14 @@ public static class Clock
                 Schedule.Run(working, registry, cause);
                 Schedule.Prune(working);
             }
+            if (wake is { Count: > 0 } && working.Events.Count > firstNew
+                && EventPerception.SensedBy(before, working.Snapshot, registry, working.Events, working.Events.Skip(firstNew).ToList(), wake))
+            {
+                return due.Value - startTick;
+            }
         }
         working.SetTick(endTick);
+        return ticks;
     }
 
     // The first tick after `snapshot.Tick`, up to `until`, at which some modifier expires.
