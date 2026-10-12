@@ -9,20 +9,20 @@ namespace WorldEngine.Store;
 // Opening a world (src/store/file-store.ts `load`, `settle`): the snapshot the files agree on when they agree, else the repair under the
 // turn. The repair rebuilds what a crash between the log, event, delta and snapshot appends left behind, from the log: the events and
 // deltas when the snapshot is at the log's version, the log folded forward from the head's byte when the snapshot is behind it, or the
-// whole replay otherwise. A log that ends inside a line was cut off, and is not settled past it. Not ported: the template upgrade (a head
-// that names another set is refused as `templates_changed`, which is what `load` does by default).
+// whole replay otherwise. A log that ends inside a line was cut off, and is not settled past it. A head that names another set is taken
+// over only when the set is the world's own (`setIsTheWorlds`, as `openWorld` asks); a registry handed in is refused as `templates_changed`.
 public static class WorldSettle
 {
-    public static Snapshot Load(string dir, IReadOnlyDictionary<string, Template> registry)
+    public static Snapshot Load(string dir, IReadOnlyDictionary<string, Template> registry, bool setIsTheWorlds = false)
     {
         if (!WorldFiles.Exists(dir))
         {
             throw new WorldError("no_such_world", $"No world at {dir}");
         }
-        return WorldReplay.TrustedSnapshot(dir, registry) ?? WorldLock.With(dir, () => Settle(dir, registry));
+        return WorldReplay.TrustedSnapshot(dir, registry) ?? WorldLock.With(dir, () => Settle(dir, registry, setIsTheWorlds));
     }
 
-    private static Snapshot Settle(string dir, IReadOnlyDictionary<string, Template> registry)
+    private static Snapshot Settle(string dir, IReadOnlyDictionary<string, Template> registry, bool setIsTheWorlds)
     {
         if (WorldReplay.TrustedSnapshot(dir, registry) is { } trusted)
         {
@@ -39,7 +39,12 @@ public static class WorldSettle
         var head = WorldFiles.ReadHead(dir);
         if (head is not null && head.TemplatesHash != frozen)
         {
-            throw new WorldError("templates_changed", "Template hash mismatch");
+            // Only the set in the world's own file may take the world over; a registry handed in is a claim about the set, refused when it fails.
+            if (!setIsTheWorlds)
+            {
+                throw new WorldError("templates_changed", "Template hash mismatch");
+            }
+            return WorldUpgrade.Takeover(dir, registry, snapshot, initial, head);
         }
         if (snapshot.TemplatesHash != frozen || initial.TemplatesHash != frozen)
         {

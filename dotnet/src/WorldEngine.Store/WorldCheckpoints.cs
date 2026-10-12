@@ -114,5 +114,15 @@ public static class WorldCheckpoints
     // The bytes through the last newline: what a read of a log being appended to takes as whole lines.
     private static byte[] WholeLines(byte[] bytes) => bytes[..(Array.LastIndexOf(bytes, (byte)'\n') + 1)];
 
+    // Removes every checkpoint, which a change of set or of the log makes stale (`dropCheckpoints`).
+    internal static void Drop(string dir)
+    {
+        var folder = Path.Combine(dir, Folder);
+        if (Directory.Exists(folder))
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
     internal static string Digest(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 }
