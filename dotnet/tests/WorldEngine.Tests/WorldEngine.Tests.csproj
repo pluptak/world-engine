@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\src\WorldEngine.Store\WorldEngine.Store.csproj" />
     <ProjectReference Include="..\..\src\WorldEngine.Contract\WorldEngine.Contract.csproj" />
     <ProjectReference Include="..\..\src\WorldEngine.Cli\WorldEngine.Cli.csproj" />
+    <ProjectReference Include="..\WorldEngine.LockChild\WorldEngine.LockChild.csproj" />
   </ItemGroup>
 
 </Project>
