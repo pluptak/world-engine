@@ -1,0 +1,243 @@
+using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
+using WorldEngine.Core.Templates;
+
+namespace WorldEngine.Core.Engine;
+
+// The fact half of a query (src/engine/query.ts `fact`, `partFact`) and the event form of perceive across a command
+// (`queryAtEvent`). A fact answers true, false or unknown with the basis that decided it, from the snapshot alone; nothing is
+// written. The entity and event forms of perceive are in Perception and EventPerception.
+public static class Queries
+{
+    // The one declared threshold for `near`: two positions in the same room this far apart or closer are near. Squared, so the
+    // arithmetic stays integer.
+    public const long NearThresholdCm = 100;
+
+    // What the snapshot says of a subject: an entity, or a part addressed `<entity>.<part>`. The object is optional.
+    public static Perception.Answer Fact(
+        Snapshot snapshot,
+        IReadOnlyDictionary<string, Template> registry,
+        string subject,
+        string relation,
+        string? obj)
+    {
+        if (!snapshot.Entities.TryGetValue(subject, out var entity))
+        {
+            return PartFact(snapshot, registry, subject, relation, obj);
+        }
+        if (snapshot.Coverage.Relations.Contains(relation))
+        {
+            if (relation == "near")
+            {
+                // Existence is modelled, so a bad object is false rather than unknown, and only the basis says which way it failed.
+                if (obj is null)
+                {
+                    return new Perception.Answer("false", "no_object");
+                }
+                if (!snapshot.Entities.TryGetValue(obj, out var other))
+                {
+                    return new Perception.Answer("false", "no_such_entity");
+                }
+                return new Perception.Answer(NearValue(snapshot, entity, other) ? "true" : "false", "derived_near");
+            }
+            // Whether the subject could lay a hand on the object now, by the rule every verb that reaches applies.
+            if (relation == "reachable")
+            {
+                if (obj is null)
+                {
+                    return new Perception.Answer("false", "no_object");
+                }
+                if (!snapshot.Entities.ContainsKey(obj))
+                {
+                    return new Perception.Answer("false", "no_such_entity");
+                }
+                return new Perception.Answer(Reach.InReach(snapshot, entity.Id, obj) ? "true" : "false", "derived_reach");
+            }
+            return new Perception.Answer(RelationValue(registry, entity, relation, obj) ? "true" : "false", "relation_state");
+        }
+        if (snapshot.Coverage.Properties.Contains(relation))
+        {
+            var (defined, value) = PropertyValue(entity, relation);
+            return new Perception.Answer(PropertyMatches(defined, value, obj, relation) ? "true" : "false", "property_state");
+        }
+        return new Perception.Answer("unknown", "uncovered_category");
+    }
+
+    // Whether an observer senses an event at either end of its command: true before or after, else the answer after
+    // (src/engine/query.ts `queryAtEvent`).
+    public static Perception.Answer AtEvent(
+        Snapshot before,
+        Snapshot after,
+        IReadOnlyDictionary<string, Template> registry,
+        IReadOnlyList<WorldEvent> events,
+        string observerId,
+        string eventId,
+        string sense)
+    {
+        var afterAnswer = EventPerception.Perceive(after, registry, events, observerId, eventId, sense);
+        if (afterAnswer.Value == "true")
+        {
+            return afterAnswer;
+        }
+        var beforeAnswer = EventPerception.Perceive(before, registry, events, observerId, eventId, sense);
+        return beforeAnswer.Value == "true" ? beforeAnswer : afterAnswer;
+    }
+
+    // Whether the entity holds the relation to the object (or any object, when none is named) as the snapshot stores it.
+    private static bool RelationValue(IReadOnlyDictionary<string, Template> registry, Entity entity, string relation, string? obj)
+    {
+        switch (relation)
+        {
+            case "support":
+                return obj is null ? entity.Support is not null : entity.Support == obj;
+            case "contained_in":
+                return obj is null ? entity.ContainedIn is not null : entity.ContainedIn == obj;
+            case "location":
+                return obj is null ? entity.Location is not null : entity.Location == obj;
+            case "status":
+                return obj is null || Name(entity.Status) == obj;
+            case "attached_to":
+            {
+                registry.TryGetValue(entity.Template, out var template);
+                if (obj is null)
+                {
+                    return (template?.Parts ?? []).Any(decl => Attached(PartStates.Effective(template, entity, decl.Name)));
+                }
+                if (entity.DetachedFrom is { } from && obj == from.Entity)
+                {
+                    return false;
+                }
+                // A part named as `<this entity>.<part>` is the part; a bare name is the part of this entity.
+                var partName = obj.StartsWith(entity.Id + ".", StringComparison.Ordinal) ? obj[(entity.Id.Length + 1)..] : obj;
+                return Attached(PartStates.Effective(template, entity, partName));
+            }
+            default:
+                return false;
+        }
+    }
+
+    // A fact about one part: its status, its integrity, and whether it is still attached to its entity. A part is not an
+    // entity, so every other field is false with `not_a_part_field`.
+    private static Perception.Answer PartFact(
+        Snapshot snapshot,
+        IReadOnlyDictionary<string, Template> registry,
+        string subject,
+        string relation,
+        string? obj)
+    {
+        var separator = subject.LastIndexOf('.');
+        if (separator <= 0 || !snapshot.Entities.TryGetValue(subject[..separator], out var entity))
+        {
+            return new Perception.Answer("false", "no_such_entity");
+        }
+        registry.TryGetValue(entity.Template, out var template);
+        var state = PartStates.Effective(template, entity, subject[(separator + 1)..]);
+        if (state is null)
+        {
+            return new Perception.Answer("false", "no_such_part");
+        }
+        var isRelation = snapshot.Coverage.Relations.Contains(relation);
+        if (!isRelation && !snapshot.Coverage.Properties.Contains(relation))
+        {
+            return new Perception.Answer("unknown", "uncovered_category");
+        }
+        // A part is not an entity: of the relations only its status and what it is attached to mean anything, and of the
+        // properties only its integrity is read.
+        if (!isRelation)
+        {
+            return relation == "integrity"
+                ? new Perception.Answer(PropertyMatches(true, JsonValue.Create(state.Integrity), obj, "integrity") ? "true" : "false", "part_state")
+                : new Perception.Answer("false", "not_a_part_field");
+        }
+        var attached = Attached(state);
+        return relation switch
+        {
+            "status" => new Perception.Answer(obj is null || Name(state.Status) == obj ? "true" : "false", "part_state"),
+            "attached_to" => new Perception.Answer(attached && (obj is null || obj == entity.Id) ? "true" : "false", "part_state"),
+            _ => new Perception.Answer("false", "not_a_part_field"),
+        };
+    }
+
+    // A part is attached while it is neither detached nor destroyed.
+    private static bool Attached(PartState? state) => state is not null && state.Status is not (PartStatus.Detached or PartStatus.Destroyed);
+
+    // `near` is read off two positions every time it is asked: both need a position through their support or containment chain,
+    // in the same room.
+    private static bool NearValue(Snapshot snapshot, Entity entity, Entity other)
+    {
+        if (entity.Location is null || entity.Location != other.Location)
+        {
+            return false;
+        }
+        var here = Geometry.EffectivePos(snapshot, entity.Id);
+        var there = Geometry.EffectivePos(snapshot, other.Id);
+        return here is not null && there is not null && WithinThreshold(here, there);
+    }
+
+    private static bool WithinThreshold(Pos here, Pos there)
+    {
+        var dx = here.X - there.X;
+        var dy = here.Y - there.Y;
+        return dx * dx + dy * dy <= NearThresholdCm * NearThresholdCm;
+    }
+
+    // A property as the entity holds it, with `Defined` false when the entity has no such property at all. An absent position or
+    // a null prop is defined, and reads as null.
+    private static (bool Defined, JsonNode? Value) PropertyValue(Entity entity, string property) => property switch
+    {
+        "integrity" => (true, JsonValue.Create(entity.Integrity)),
+        "residue" => (true, new JsonObject(entity.Residue.Select(pair => KeyValuePair.Create(pair.Key, (JsonNode?)JsonValue.Create(pair.Value))))),
+        "pos" => (true, entity.Pos is { } pos ? new JsonObject { ["x"] = JsonValue.Create(pos.X), ["y"] = JsonValue.Create(pos.Y) } : null),
+        _ => entity.Props.TryGetValue(property, out var value) ? (true, value) : (false, null),
+    };
+
+    // Whether a defined value matches the object: a plain match, a number or boolean written as its text, an object written as
+    // its canonical JSON, or, for residue, a positive amount of the named material.
+    private static bool PropertyMatches(bool defined, JsonNode? value, string? obj, string property)
+    {
+        if (!defined)
+        {
+            return false;
+        }
+        if (obj is null)
+        {
+            return true;
+        }
+        if (property == "residue" && value is JsonObject residue)
+        {
+            return residue.TryGetPropertyValue(obj, out var amount)
+                && amount is JsonValue count
+                && JsonReads.Number(count) is { } quantity
+                && quantity > 0;
+        }
+        if (value is null)
+        {
+            return CanonicalJson.Serialize(null) == obj;
+        }
+        if (value is JsonValue scalar)
+        {
+            if (scalar.TryGetValue(out string? text))
+            {
+                return text == obj;
+            }
+            if (JsonReads.Number(scalar) is { } number)
+            {
+                return NumberText(number) == obj;
+            }
+            return scalar.TryGetValue(out bool flag) && (flag ? "true" : "false") == obj;
+        }
+        return CanonicalJson.Serialize(value) == obj;
+    }
+
+    // A number as JavaScript writes it in a string: a whole number without a fraction.
+    private static string NumberText(double number) =>
+        Math.Floor(number) == number && Math.Abs(number) < 1e21
+            ? ((long)number).ToString(CultureInfo.InvariantCulture)
+            : number.ToString("R", CultureInfo.InvariantCulture);
+
+    // The name a status takes in a snapshot (`intact`, `broken`, `destroyed`, or a part's `detached`).
+    private static string Name<TEnum>(TEnum value) where TEnum : struct, Enum => value.ToString().ToLowerInvariant();
+}

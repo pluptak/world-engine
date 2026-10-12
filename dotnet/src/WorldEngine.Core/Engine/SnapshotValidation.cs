@@ -173,7 +173,7 @@ public static class SnapshotValidation
         {
             return text.Length > 0;
         }
-        return value.TryGetValue(out double number) && number != 0;
+        return JsonReads.Number(value) is { } number && number != 0;
     }
 
     // The ids that close a loop along the relation the caller names, or null: a dangling reference cannot close one.
