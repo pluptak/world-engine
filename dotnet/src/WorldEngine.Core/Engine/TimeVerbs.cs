@@ -4,8 +4,9 @@ using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
 
-// The verbs that are only time (src/engine/verbs/wait.ts). `advance` is the world author's: time with no one acting.
-// Its `stop_on_perceived` and `stop_before` arguments need the pending schedule, which is not ported.
+// The verbs that are only time (src/engine/verbs/wait.ts). `advance` is the world author's: time with no one acting. Its
+// `stop_on_perceived` agents end the time early at the first tick one of them could sense something. Its `stop_before`
+// argument needs the pending beats, which are not ported.
 public static class TimeVerbs
 {
     private const double MaxSafeInteger = 9007199254740991;
@@ -13,8 +14,9 @@ public static class TimeVerbs
     public static Pipeline.VerbDecl Advance { get; } = new(
         RequiresTarget: false,
         AuthorOnly: true,
-        Preconditions: context => AdvancePreconditions(context.Command),
-        Duration: Ticks);
+        Preconditions: AdvancePreconditions,
+        Duration: Ticks,
+        WakeOn: command => Listed(command) ?? []);
 
     // The `ticks` arg as a positive safe integer, or null when it is not one (src/engine/clock.ts `commandDuration`).
     public static long? Ticks(Command command)
@@ -34,8 +36,33 @@ public static class TimeVerbs
         return (long)value;
     }
 
-    private static Pipeline.Refusal? AdvancePreconditions(Command command)
+    // The agents `stop_on_perceived` names: none when the argument is absent, else a non-empty list of ids, or null when
+    // the argument is malformed.
+    private static IReadOnlyList<string>? Listed(Command command)
     {
+        if (command.Args is null || !command.Args.TryGetValue("stop_on_perceived", out var node))
+        {
+            return [];
+        }
+        if (node is not JsonArray array || array.Count == 0)
+        {
+            return null;
+        }
+        var ids = new List<string>(array.Count);
+        foreach (var element in array)
+        {
+            if (element is not JsonValue value || !value.TryGetValue(out string? id) || id.Length == 0)
+            {
+                return null;
+            }
+            ids.Add(id);
+        }
+        return ids;
+    }
+
+    private static Pipeline.Refusal? AdvancePreconditions(Pipeline.CommandContext context)
+    {
+        var command = context.Command;
         if (command.Actor != Resolve.WorldAuthor)
         {
             return new Pipeline.Refusal(Status.Invalid, "invalid_author");
@@ -44,9 +71,23 @@ public static class TimeVerbs
         {
             return new Pipeline.Refusal(Status.Invalid, "invalid_args");
         }
-        if (command.Args is not null && (command.Args.ContainsKey("stop_on_perceived") || command.Args.ContainsKey("stop_before")))
+        if (Listed(command) is not { } ids)
         {
-            throw new NotPortedException("advance's stop arguments need the pending schedule");
+            return new Pipeline.Refusal(Status.Invalid, "invalid_args");
+        }
+        foreach (var id in ids)
+        {
+            // A body destroyed is still there, but no longer an agent: the code says which.
+            if (!context.Snapshot.Entities.TryGetValue(id, out var watcher) || !Reach.IsAgent(context.Snapshot, id))
+            {
+                return new Pipeline.Refusal(
+                    Status.Invalid,
+                    watcher?.Status == EntityStatus.Destroyed ? "observer_destroyed" : "no_such_actor");
+            }
+        }
+        if (command.Args is not null && command.Args.ContainsKey("stop_before"))
+        {
+            throw new NotPortedException("advance's stop_before needs beats");
         }
         return null;
     }
