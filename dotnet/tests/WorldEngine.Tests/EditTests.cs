@@ -32,27 +32,9 @@ public class EditTests
             var result = Pipeline.Apply(snapshot, Registry, Verbs, command);
 
             Assert.True(
-                CanonicalJson.Serialize(row["result"]) == WorldJson.Write(Shape(result)),
+                CanonicalJson.Serialize(row["result"]) == WorldJson.Write(PipelineShape.Of(result)),
                 $"{name}: the result differs from TypeScript's");
         }
-    }
-
-    private static Dictionary<string, object?> Shape(Pipeline.Result result)
-    {
-        var shape = new Dictionary<string, object?>
-        {
-            ["status"] = result.Status.ToString().ToLowerInvariant(),
-            ["command_id"] = result.CommandId,
-            ["resolved_target"] = result.ResolvedTarget,
-            ["snapshot"] = result.Snapshot,
-            ["deltas"] = result.Deltas,
-            ["events"] = result.Events,
-        };
-        if (result.ReasonCode is not null)
-        {
-            shape["reason_code"] = result.ReasonCode;
-        }
-        return shape;
     }
 
     private static string ReadFixture(string name) =>

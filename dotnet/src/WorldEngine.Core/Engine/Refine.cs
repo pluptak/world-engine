@@ -77,11 +77,6 @@ public static class Refine
         {
             return new Pipeline.Refusal(Status.Refused, "not_a_refinement");
         }
-        // A preset with processes queues their causes (src/engine/process.ts), which this port does not yet do.
-        if (next.Processes is { Count: > 0 })
-        {
-            throw new NotPortedException("refine into a preset with processes");
-        }
         if (RefinedParts(subject, next) is null)
         {
             return new Pipeline.Refusal(Status.Refused, "unknown_part");

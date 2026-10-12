@@ -68,6 +68,9 @@ public static class Schedule
             case "bleed":
                 RunBleed(working, registry, cause);
                 return;
+            case "process":
+                Processes.RunProcess(working, registry, cause);
+                return;
             default:
                 throw new NotPortedException($"scheduled {cause.Kind} causes");
         }

@@ -215,6 +215,9 @@ public static class Pipeline
             ?? (target?.EntityId ?? command.Actor, new Dictionary<string, JsonNode?>());
         var rootEventId = working.Emit(command.Verb, rootEntity, rootData, null);
         verb.Transition?.Invoke(working, context, rootEventId);
+        // A process whose condition the verb just made true starts, and one it made false stops.
+        Processes.ReconcileSince(working, registry, 0);
+        Schedule.Prune(working);
         // A command that asked to be woken says how long it ran (src/engine/pipeline.ts).
         var wake = verb.WakeOn?.Invoke(command) ?? [];
         var elapsed = Clock.Advance(working, registry, duration, wake);

@@ -36,7 +36,9 @@ public static class Clock
                 cause = Schedule.Pending(working.Snapshot).FirstOrDefault())
             {
                 Schedule.Replace(working, Schedule.Pending(working.Snapshot).Skip(1).ToList());
+                var mark = working.Deltas.Count;
                 Schedule.Run(working, registry, cause);
+                Processes.ReconcileSince(working, registry, mark);
                 Schedule.Prune(working);
             }
             if (wake is { Count: > 0 } && working.Events.Count > firstNew

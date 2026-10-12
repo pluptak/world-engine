@@ -39,16 +39,19 @@ public class SnapshotGoldenTests
         Assert.ThrowsAny<System.Text.Json.JsonException>(() => WorldJson.Read<Snapshot>(withField));
     }
 
-    // A process cause carries a `process` name that is not ported, so reading it is refused rather than dropping it.
+    // A process cause names the process it runs, and that name is kept on the way in and out.
     [Fact]
-    public void Unported_schedule_cause_is_refused_not_dropped()
+    public void Process_schedule_cause_keeps_its_process_name()
     {
         var golden = ReadFixture("bottle.snapshot.json");
         var withProcess = golden.Replace(
             "\"tick\":",
             "\"schedule\":[{\"due_tick\":1,\"kind\":\"process\",\"entity\":\"e1\",\"cause_id\":null,\"process\":\"burn\"}],\"tick\":");
 
-        Assert.ThrowsAny<System.Text.Json.JsonException>(() => WorldJson.Read<Snapshot>(withProcess));
+        var snapshot = WorldJson.Read<Snapshot>(withProcess);
+
+        Assert.Equal("burn", snapshot.Schedule![0].Process);
+        Assert.Contains("\"process\":\"burn\"", WorldJson.Write(snapshot));
     }
 
     private static string ReadFixture(string name) =>

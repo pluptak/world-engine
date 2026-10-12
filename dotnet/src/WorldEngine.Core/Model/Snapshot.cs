@@ -16,7 +16,9 @@ public sealed record ScheduledCause(
     string Kind,
     string Entity,
     string? CauseId,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Remaining = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Remaining = null,
+    // The process a `process` cause runs; absent on every other kind.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Process = null);
 
 public enum PartStatus
 {

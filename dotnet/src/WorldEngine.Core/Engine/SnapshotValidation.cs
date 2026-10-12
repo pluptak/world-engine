@@ -631,11 +631,12 @@ public static class SnapshotValidation
         }
         var issues = new List<SnapshotIssue>();
         var previous = long.MinValue;
+        var running = new HashSet<string>(StringComparer.Ordinal);
         for (var index = 0; index < snapshot.Schedule.Count; index++)
         {
             var cause = snapshot.Schedule[index];
             var path = new[] { "schedule", index.ToString() };
-            if (cause.Kind is not ("close" or "bleed"))
+            if (cause.Kind is not ("close" or "bleed" or "process"))
             {
                 issues.Add(Issue("unknown_cause_kind", path, cause.Kind));
             }
@@ -652,9 +653,22 @@ public static class SnapshotValidation
             {
                 issues.Add(Issue("schedule_dangling", path, cause.Entity));
             }
+            // A process runs at most once at a time on an entity: reconcile never schedules a second.
+            if (cause.Kind == "process")
+            {
+                var key = $"{cause.Entity}/{cause.Process ?? "undefined"}";
+                if (!running.Add(key))
+                {
+                    issues.Add(Issue("duplicate_process", path, key));
+                }
+            }
             if (cause.Kind == "bleed" && !(cause.Remaining is { } remaining && remaining > 0))
             {
                 issues.Add(Issue("bleed_not_remaining", path, $"remaining {cause.Remaining?.ToString() ?? "null"}"));
+            }
+            if (cause.Kind == "process" && string.IsNullOrEmpty(cause.Process))
+            {
+                issues.Add(Issue("invalid_process", path, cause.Process ?? "undefined"));
             }
         }
         return issues;
