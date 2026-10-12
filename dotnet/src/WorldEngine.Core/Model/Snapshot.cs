@@ -8,6 +8,10 @@ namespace WorldEngine.Core.Model;
 
 public sealed record Pos(long X, long Y);
 
+// A cause the world will run by itself at `DueTick` (src/model.ts `ScheduledCause`). Only the `close` kind is ported;
+// the other kinds carry fields this record does not read, so a stored one is refused when the snapshot is read.
+public sealed record ScheduledCause(long DueTick, string Kind, string Entity, string? CauseId);
+
 public enum PartStatus
 {
     [JsonStringEnumMemberName("intact")] Intact,
@@ -65,4 +69,7 @@ public sealed record Snapshot(
     IReadOnlyDictionary<string, Entity> Entities,
     // The dice's 32-bit state; absent in a world never given a seed.
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    long? Rng);
+    long? Rng,
+    // What the world will do by itself, in run order; absent when nothing is pending (src/engine/pending.ts).
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<ScheduledCause>? Schedule = null);

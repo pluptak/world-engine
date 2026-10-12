@@ -34,9 +34,21 @@ public class SnapshotGoldenTests
     public void Unknown_snapshot_field_is_refused_not_dropped()
     {
         var golden = ReadFixture("bottle.snapshot.json");
-        var withSchedule = golden.Replace("\"tick\":", "\"schedule\":[],\"tick\":");
+        var withField = golden.Replace("\"tick\":", "\"not_a_field\":[],\"tick\":");
 
-        Assert.ThrowsAny<System.Text.Json.JsonException>(() => WorldJson.Read<Snapshot>(withSchedule));
+        Assert.ThrowsAny<System.Text.Json.JsonException>(() => WorldJson.Read<Snapshot>(withField));
+    }
+
+    // A bleed cause carries a `remaining` count that is not ported, so reading it is refused rather than dropping it.
+    [Fact]
+    public void Unported_schedule_cause_is_refused_not_dropped()
+    {
+        var golden = ReadFixture("bottle.snapshot.json");
+        var withBleed = golden.Replace(
+            "\"tick\":",
+            "\"schedule\":[{\"due_tick\":1,\"kind\":\"bleed\",\"entity\":\"e1\",\"cause_id\":\"ev1\",\"remaining\":2}],\"tick\":");
+
+        Assert.ThrowsAny<System.Text.Json.JsonException>(() => WorldJson.Read<Snapshot>(withBleed));
     }
 
     private static string ReadFixture(string name) =>

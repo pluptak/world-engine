@@ -1,0 +1,511 @@
+{
+  "coverage": {
+    "properties": [
+      "integrity",
+      "residue",
+      "pos",
+      "open"
+    ],
+    "relations": [
+      "support",
+      "contained_in",
+      "attached_to",
+      "status",
+      "location",
+      "near",
+      "reachable"
+    ],
+    "senses": [
+      "sight",
+      "hearing",
+      "smell",
+      "touch"
+    ]
+  },
+  "entities": {
+    "e1": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e1",
+      "in_part": null,
+      "integrity": 100,
+      "location": null,
+      "modifiers": [],
+      "name": "room",
+      "parts": {},
+      "pos": null,
+      "props": {
+        "lit": true
+      },
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "room"
+    },
+    "e2": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e2",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "table",
+      "parts": {},
+      "pos": {
+        "x": 30,
+        "y": 0
+      },
+      "props": {
+        "surface": true
+      },
+      "residue": {},
+      "status": "intact",
+      "support": "e1",
+      "template": "table"
+    },
+    "e3": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": "e4",
+      "detached_from": null,
+      "id": "e3",
+      "in_part": "hand_l",
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "bottle",
+      "parts": {},
+      "pos": null,
+      "props": {
+        "break_fall_cm": 50,
+        "capacity_cm3": 750,
+        "liquid_amount": 750,
+        "liquid_material": "wine",
+        "liquid_nutrition": 10,
+        "topples": true
+      },
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "bottle"
+    },
+    "e4": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e4",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "pusher",
+      "parts": {},
+      "pos": {
+        "x": -50,
+        "y": 0
+      },
+      "props": {
+        "agent": true,
+        "attack_damage": 40,
+        "bleed_damage": 5,
+        "bleed_every_ticks": 2,
+        "bleed_times": 3,
+        "default_hit_part": "torso",
+        "hand_carry_limit_g": 80000,
+        "hand_height_cm": 100,
+        "reach_cm": 100
+      },
+      "residue": {},
+      "status": "intact",
+      "support": "e1",
+      "template": "human"
+    },
+    "e5": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e5",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "doorstop",
+      "parts": {},
+      "pos": {
+        "x": -40,
+        "y": 0
+      },
+      "props": {},
+      "residue": {},
+      "status": "intact",
+      "support": "e1",
+      "template": "stone"
+    },
+    "e8": {
+      "aliases": [
+        "hatch"
+      ],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e8",
+      "in_part": null,
+      "integrity": 100,
+      "location": null,
+      "modifiers": [],
+      "name": "door",
+      "parts": {},
+      "pos": null,
+      "props": {
+        "open": true,
+        "openable": true,
+        "from": "e1",
+        "to": "e9",
+        "shut_ticks": 2
+      },
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "door"
+    },
+    "e9": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e9",
+      "in_part": null,
+      "integrity": 100,
+      "location": null,
+      "modifiers": [],
+      "name": "hall",
+      "parts": {},
+      "pos": null,
+      "props": {},
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "room"
+    },
+    "e10": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e10",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "lens",
+      "parts": {},
+      "pos": {
+        "x": 100,
+        "y": 100
+      },
+      "props": {
+        "camera": true,
+        "controlled_by": "e4",
+        "cone_deg": 90,
+        "facing_deg": 0,
+        "powered_by": "e16"
+      },
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "camera"
+    },
+    "e11": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e11",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e9",
+      "modifiers": [],
+      "name": "lamp",
+      "parts": {},
+      "pos": {
+        "x": 50,
+        "y": 50
+      },
+      "props": {
+        "light_source": true,
+        "burning": true
+      },
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "lamp"
+    },
+    "e12": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e12",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e9",
+      "modifiers": [],
+      "name": "intercom",
+      "parts": {},
+      "pos": {
+        "x": 0,
+        "y": 0
+      },
+      "props": {
+        "intercom": true,
+        "controlled_by": "e4",
+        "powered_by": "e16"
+      },
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "intercom"
+    },
+    "e13": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e13",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e9",
+      "modifiers": [],
+      "name": "crate",
+      "parts": {},
+      "pos": {
+        "x": 200,
+        "y": 200
+      },
+      "props": {
+        "openable": true,
+        "open": false
+      },
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "crate"
+    },
+    "e14": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": "e13",
+      "detached_from": null,
+      "id": "e14",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e9",
+      "modifiers": [],
+      "name": "bead",
+      "parts": {},
+      "pos": null,
+      "props": {},
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "stone"
+    },
+    "e15": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e15",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "rag",
+      "parts": {},
+      "pos": {
+        "x": 0,
+        "y": 0
+      },
+      "props": {},
+      "residue": {},
+      "status": "intact",
+      "support": "e1",
+      "template": "stone"
+    },
+    "e16": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e16",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "generator",
+      "parts": {},
+      "pos": {
+        "x": 0,
+        "y": 150
+      },
+      "props": {
+        "power_source": true
+      },
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "generator"
+    },
+    "e30": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e30",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "chest",
+      "parts": {},
+      "pos": {
+        "x": -40,
+        "y": 20
+      },
+      "props": {
+        "container": true,
+        "inner_w_cm": 55,
+        "inner_d_cm": 35,
+        "inner_h_cm": 35,
+        "topples": true
+      },
+      "residue": {},
+      "status": "intact",
+      "support": "e1",
+      "template": "chest"
+    },
+    "e31": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e31",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "chest",
+      "parts": {},
+      "pos": {
+        "x": -60,
+        "y": -20
+      },
+      "props": {
+        "container": true,
+        "inner_w_cm": 55,
+        "inner_d_cm": 35,
+        "inner_h_cm": 35,
+        "topples": true,
+        "openable": true,
+        "open": true
+      },
+      "residue": {},
+      "status": "intact",
+      "support": "e1",
+      "template": "chest"
+    },
+    "e32": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e32",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "chest",
+      "parts": {},
+      "pos": {
+        "x": 300,
+        "y": 0
+      },
+      "props": {
+        "container": true,
+        "inner_w_cm": 55,
+        "inner_d_cm": 35,
+        "inner_h_cm": 35,
+        "topples": true
+      },
+      "residue": {},
+      "status": "intact",
+      "support": "e1",
+      "template": "chest"
+    },
+    "e72": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": "e4",
+      "detached_from": null,
+      "id": "e72",
+      "in_part": "hand_r",
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "stone",
+      "parts": {},
+      "pos": null,
+      "props": {
+        "opens": "e8"
+      },
+      "residue": {},
+      "status": "intact",
+      "support": null,
+      "template": "stone"
+    },
+    "e74": {
+      "aliases": [],
+      "concealed_by": null,
+      "contained_in": null,
+      "detached_from": null,
+      "id": "e74",
+      "in_part": null,
+      "integrity": 100,
+      "location": "e1",
+      "modifiers": [],
+      "name": "chest",
+      "parts": {},
+      "pos": {
+        "x": 300,
+        "y": -40
+      },
+      "props": {
+        "openable": true,
+        "open": false
+      },
+      "residue": {},
+      "status": "intact",
+      "support": "e1",
+      "template": "chest"
+    }
+  },
+  "next_seq": 80,
+  "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+  "tick": 0,
+  "version": 0,
+  "schedule": [
+    {
+      "due_tick": 1,
+      "kind": "close",
+      "entity": "e31",
+      "cause_id": null
+    }
+  ]
+}

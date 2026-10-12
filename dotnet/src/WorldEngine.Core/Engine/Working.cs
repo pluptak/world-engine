@@ -160,5 +160,9 @@ public sealed class Working
 
     public void SetTick(long tick) => Snapshot = Snapshot with { Tick = tick };
 
+    // The pending causes, stored as no field at all when there are none (src/engine/pending.ts `withSchedule`).
+    public void SetSchedule(IReadOnlyList<ScheduledCause> schedule) =>
+        Snapshot = Snapshot with { Schedule = schedule.Count == 0 ? null : schedule };
+
     public void BumpVersion() => Snapshot = Snapshot with { Version = Snapshot.Version + 1 };
 }

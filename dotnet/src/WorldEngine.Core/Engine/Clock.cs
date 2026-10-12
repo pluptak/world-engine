@@ -6,8 +6,9 @@ namespace WorldEngine.Core.Engine;
 
 // Time passing (src/engine/clock.ts `advanceClock`, for modifiers alone): the clock steps from the command's tick
 // through every tick at which a modifier expires, then ends at tick + ticks. At each such tick the modifiers due
-// expire, in (entity, capacity, cause, order) order, each `capability_changed` naming the modifier's cause. Scheduled
-// causes, beats, `wake_on` and `stop_before` are not ported; the caller refuses those before the clock runs.
+// expire, in (entity, capacity, cause, order) order, each `capability_changed` naming the modifier's cause; then the
+// scheduled causes due run in schedule order (`Schedule`). Beats, `wake_on` and `stop_before` are not ported; the caller
+// refuses those before the clock runs.
 public static class Clock
 {
     private sealed record Expiring(string Entity, Modifier Modifier, int Order);
@@ -19,6 +20,15 @@ public static class Clock
         {
             working.SetTick(due.Value);
             ExpireAt(working, registry, due.Value);
+            // A cause due at this tick runs after the modifiers that expire here, each taken off the schedule first.
+            for (var cause = Schedule.Pending(working.Snapshot).FirstOrDefault();
+                cause is not null && cause.DueTick == due.Value;
+                cause = Schedule.Pending(working.Snapshot).FirstOrDefault())
+            {
+                Schedule.Replace(working, Schedule.Pending(working.Snapshot).Skip(1).ToList());
+                Schedule.Run(working, registry, cause);
+                Schedule.Prune(working);
+            }
         }
         working.SetTick(endTick);
     }
@@ -36,6 +46,11 @@ public static class Clock
                     next = tick;
                 }
             }
+        }
+        var first = Schedule.Pending(snapshot).FirstOrDefault();
+        if (first is not null && first.DueTick > snapshot.Tick && first.DueTick <= until && (next is null || first.DueTick < next))
+        {
+            next = first.DueTick;
         }
         return next;
     }
