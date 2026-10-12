@@ -692,5 +692,251 @@
     "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
     "tick": 2,
     "version": 3
+  },
+  "since": {
+    "0": {
+      "deltas": [
+        {
+          "entity": "e3",
+          "event_id": "ev5",
+          "field": "contained_in",
+          "from": null,
+          "to": "e2"
+        },
+        {
+          "entity": "e3",
+          "event_id": "ev5",
+          "field": "in_part",
+          "from": null,
+          "to": "hand_l"
+        },
+        {
+          "entity": "e3",
+          "event_id": "ev5",
+          "field": "support",
+          "from": "e1",
+          "to": null
+        },
+        {
+          "entity": "e3",
+          "event_id": "ev5",
+          "field": "pos",
+          "from": {
+            "x": 30,
+            "y": 0
+          },
+          "to": null
+        }
+      ],
+      "events": [
+        {
+          "cause_id": null,
+          "command_id": "c1",
+          "data": {},
+          "entity": "e3",
+          "event_id": "ev4",
+          "tick": 0,
+          "type": "take"
+        },
+        {
+          "cause_id": "ev4",
+          "command_id": "c1",
+          "data": {},
+          "entity": "e3",
+          "event_id": "ev5",
+          "tick": 0,
+          "type": "moved"
+        },
+        {
+          "cause_id": null,
+          "command_id": "edit-3",
+          "data": {},
+          "entity": "world",
+          "event_id": "ev6",
+          "tick": 1,
+          "type": "edit"
+        },
+        {
+          "cause_id": null,
+          "command_id": "c3",
+          "data": {
+            "utterance": "hello",
+            "volume": "normal"
+          },
+          "entity": "e2",
+          "event_id": "ev7",
+          "tick": 1,
+          "type": "say"
+        }
+      ]
+    },
+    "1": {
+      "deltas": [],
+      "events": [
+        {
+          "cause_id": null,
+          "command_id": "edit-3",
+          "data": {},
+          "entity": "world",
+          "event_id": "ev6",
+          "tick": 1,
+          "type": "edit"
+        },
+        {
+          "cause_id": null,
+          "command_id": "c3",
+          "data": {
+            "utterance": "hello",
+            "volume": "normal"
+          },
+          "entity": "e2",
+          "event_id": "ev7",
+          "tick": 1,
+          "type": "say"
+        }
+      ]
+    },
+    "2": {
+      "deltas": [],
+      "events": [
+        {
+          "cause_id": null,
+          "command_id": "c3",
+          "data": {
+            "utterance": "hello",
+            "volume": "normal"
+          },
+          "entity": "e2",
+          "event_id": "ev7",
+          "tick": 1,
+          "type": "say"
+        }
+      ]
+    },
+    "3": {
+      "deltas": [],
+      "events": []
+    }
+  },
+  "attempts": {
+    "0": [
+      {
+        "based_on_version": 0,
+        "command": {
+          "actor": "e2",
+          "command_id": "c1",
+          "target": "stone",
+          "verb": "take"
+        },
+        "status": "ok",
+        "version": 0
+      },
+      {
+        "based_on_version": 1,
+        "command": {
+          "actor": "e2",
+          "command_id": "c2",
+          "target": "stone",
+          "verb": "take"
+        },
+        "reason_code": "already_held",
+        "status": "refused",
+        "version": 1
+      },
+      {
+        "based_on_version": 1,
+        "command": {
+          "actor": "world",
+          "args": {
+            "edit": {
+              "kind": "set_seed",
+              "seed": 3
+            }
+          },
+          "command_id": "edit-3",
+          "verb": "edit"
+        },
+        "status": "ok",
+        "version": 1
+      },
+      {
+        "based_on_version": 2,
+        "command": {
+          "actor": "e2",
+          "args": {
+            "utterance": "hello"
+          },
+          "command_id": "c3",
+          "verb": "say"
+        },
+        "status": "ok",
+        "version": 2
+      }
+    ],
+    "1": [
+      {
+        "based_on_version": 1,
+        "command": {
+          "actor": "e2",
+          "command_id": "c2",
+          "target": "stone",
+          "verb": "take"
+        },
+        "reason_code": "already_held",
+        "status": "refused",
+        "version": 1
+      },
+      {
+        "based_on_version": 1,
+        "command": {
+          "actor": "world",
+          "args": {
+            "edit": {
+              "kind": "set_seed",
+              "seed": 3
+            }
+          },
+          "command_id": "edit-3",
+          "verb": "edit"
+        },
+        "status": "ok",
+        "version": 1
+      },
+      {
+        "based_on_version": 2,
+        "command": {
+          "actor": "e2",
+          "args": {
+            "utterance": "hello"
+          },
+          "command_id": "c3",
+          "verb": "say"
+        },
+        "status": "ok",
+        "version": 2
+      }
+    ],
+    "2": [
+      {
+        "based_on_version": 2,
+        "command": {
+          "actor": "e2",
+          "args": {
+            "utterance": "hello"
+          },
+          "command_id": "c3",
+          "verb": "say"
+        },
+        "status": "ok",
+        "version": 2
+      }
+    ],
+    "3": []
+  },
+  "errors": {
+    "since_future": "future_version",
+    "attempts_future": "future_version",
+    "since_negative": "invalid_version",
+    "attempts_negative": "invalid_version"
   }
 }

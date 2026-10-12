@@ -179,6 +179,44 @@ public class StoreReadTests : IDisposable
         Assert.Null(WorldReplay.TrustedSnapshot(Fixture, TestTemplates.Registry));
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void Since_gives_the_deltas_and_events_the_TypeScript_store_gave(long version)
+    {
+        var (deltas, events) = WorldHistory.Since(Fixture, version, WorldFiles.ReadTemplates(Fixture));
+        var expected = Expected["since"]![version.ToString()]!.AsObject();
+
+        Assert.Equal(CanonicalJson.Serialize(expected["deltas"]), Canonical(deltas));
+        Assert.Equal(CanonicalJson.Serialize(expected["events"]), Canonical(events));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void Attempts_gives_every_submission_from_the_version_the_TypeScript_store_gave(long version)
+    {
+        var attempts = WorldHistory.Attempts(Fixture, version, WorldFiles.ReadTemplates(Fixture));
+
+        Assert.Equal(CanonicalJson.Serialize(Expected["attempts"]![version.ToString()]), Canonical(attempts));
+    }
+
+    [Fact]
+    public void A_version_ahead_of_the_world_or_below_zero_is_refused_as_the_store_refuses_it()
+    {
+        var registry = WorldFiles.ReadTemplates(Fixture);
+        var errors = Expected["errors"]!.AsObject();
+
+        Assert.Equal(errors["since_future"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.Since(Fixture, 4, registry)).Code);
+        Assert.Equal(errors["attempts_future"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.Attempts(Fixture, 4, registry)).Code);
+        Assert.Equal(errors["since_negative"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.Since(Fixture, -1, registry)).Code);
+        Assert.Equal(errors["attempts_negative"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.Attempts(Fixture, -1, registry)).Code);
+    }
+
     private void CopyWorld()
     {
         Directory.CreateDirectory(scratch);
