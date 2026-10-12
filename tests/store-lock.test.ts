@@ -2,6 +2,7 @@ import { deepStrictEqual, ok, strictEqual, throws } from "node:assert";
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { canonicalJson, createWorld, openWorld, WorldError, type Scenario } from "../src/index.js";
@@ -35,15 +36,21 @@ function newWorld(t: Cleanup): string {
 interface Child {
   exit: Promise<number>;
   output(): string;
+  errors(): string;
   said(text: string): Promise<void>;
 }
 
 function child(...args: string[]): Child {
   const process_ = spawn(process.execPath, ["--import", "tsx", childPath, ...args], {
     cwd: root,
-    stdio: ["ignore", "pipe", "inherit"],
+    stdio: ["ignore", "pipe", "pipe"],
   });
   let out = "";
+  let err = "";
+  process_.stderr.setEncoding("utf8");
+  process_.stderr.on("data", (chunk: string) => {
+    err += chunk;
+  });
   const waiting: Array<{ text: string; resolve: () => void }> = [];
   process_.stdout.setEncoding("utf8");
   process_.stdout.on("data", (chunk: string) => {
@@ -60,6 +67,7 @@ function child(...args: string[]): Child {
     // "close", not "exit": by then everything the child wrote has been read.
     exit: new Promise((resolve) => process_.on("close", (code) => resolve(code ?? -1))),
     output: () => out,
+    errors: () => err,
     said: (text) => (out.includes(text) ? Promise.resolve() : new Promise((resolve) => waiting.push({ text, resolve }))),
   };
 }
@@ -103,24 +111,51 @@ function takeStone(dir: string, id: string, ann: string) {
   return openWorld(dir).command({ command_id: id, actor: ann, verb: "take", target: "stone" });
 }
 
+// The output of each child of a failed run, kept in the system temp directory where the test can name it: what each
+// writer was answered and at which version, and what it wrote to stderr.
+function keepChildLogs(kids: Record<string, Child>, t: Cleanup & { diagnostic(message: string): void }): void {
+  const paths = Object.entries(kids).map(([who, kid]) => {
+    const path = join(tmpdir(), `store-lock-${process.pid}-${who}.log`);
+    writeFileSync(path, `${kid.output()}
+--- stderr ---
+${kid.errors()}`, "utf8");
+    return path;
+  });
+  t.diagnostic(`child logs kept at ${paths.join(", ")}`);
+}
+
 test("six processes writing one world take turns: every command is logged once, at the version before it", async (t) => {
   const dir = newWorld(t);
   // Two more only read, which takes no turn, and must not break the writers' replacements.
-  const writers = ["a", "b", "c", "d", "e", "f"].map((who) => child("commands", dir, who, "20"));
-  const readers = ["g", "h"].map((who) => child("reads", dir, who, "150"));
-  deepStrictEqual(await Promise.all([...writers, ...readers].map((kid) => kid.exit)), [0, 0, 0, 0, 0, 0, 0, 0]);
+  const kids: Record<string, Child> = {
+    a: child("commands", dir, "a", "20"),
+    b: child("commands", dir, "b", "20"),
+    c: child("commands", dir, "c", "20"),
+    d: child("commands", dir, "d", "20"),
+    e: child("commands", dir, "e", "20"),
+    f: child("commands", dir, "f", "20"),
+    g: child("reads", dir, "g", "150"),
+    h: child("reads", dir, "h", "150"),
+  };
+  const codes = await Promise.all(Object.values(kids).map((kid) => kid.exit));
+  try {
+    deepStrictEqual(codes, [0, 0, 0, 0, 0, 0, 0, 0]);
 
-  const log = logOf(dir);
-  strictEqual(log.length, 120);
-  // Conflicting commands are refused, so not all are ok; the ones that are each follow the last.
-  const accepted = log.filter((entry) => entry.status === "ok").map((entry) => entry.version);
-  deepStrictEqual(accepted, accepted.map((_, index) => index));
+    const log = logOf(dir);
+    strictEqual(log.length, 120);
+    // Conflicting commands are refused, so not all are ok; the ones that are each follow the last.
+    const accepted = log.filter((entry) => entry.status === "ok").map((entry) => entry.version);
+    deepStrictEqual(accepted, accepted.map((_, index) => index));
 
-  const world = openWorld(dir);
-  strictEqual(world.snapshot().version, accepted.length);
-  strictEqual(canonicalJson(world.snapshot()), canonicalJson(replay(dir)));
-  deepStrictEqual(readEvents(dir), world.since(0).events);
-  deepStrictEqual(leftovers(dir), []);
+    const world = openWorld(dir);
+    strictEqual(world.snapshot().version, accepted.length);
+    strictEqual(canonicalJson(world.snapshot()), canonicalJson(replay(dir)));
+    deepStrictEqual(readEvents(dir), world.since(0).events);
+    deepStrictEqual(leftovers(dir), []);
+  } catch (error) {
+    keepChildLogs(kids, t);
+    throw error;
+  }
 });
 
 test("three processes editing at once name distinct next edits", async (t) => {

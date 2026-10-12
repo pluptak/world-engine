@@ -6,7 +6,8 @@ import { withWorldLock } from "../src/store/file-store.js";
 // The other process in tests/store-lock.test.ts. It is not a test itself: the runner only globs
 // *.test.ts.
 //
-//   commands <dir> <who> <n>   n alternating take and drop of the world's stone, as ann
+//   commands <dir> <who> <n>   n alternating take and drop of the world's stone, as ann; each line says what
+//                              the command was answered with and the version after it
 //   edits <dir> <who> <n>      n author edits with default ids
 //   reads <dir> <who> <n>      n fresh opens and snapshots, holding no turn
 //   hold <dir> <ms> [repair]   take the turn, say so, keep it for ms, say whether the head was
@@ -30,7 +31,8 @@ if (mode === "reads") {
   const stone = world.id("stone")!;
   for (let i = 0; i < Number(fourth); i += 1) {
     if (mode === "commands") {
-      world.command({ command_id: `${third}-${i}`, actor: ann, verb: i % 2 === 0 ? "take" : "drop", target: "stone" });
+      const result = world.command({ command_id: `${third}-${i}`, actor: ann, verb: i % 2 === 0 ? "take" : "drop", target: "stone" });
+      say(`${result.command_id} ${result.status} ${result.snapshot.version}`);
     } else {
       world.edit({ kind: "set_props", target: stone, props: { ...world.entity(stone)!.props, mark: `${third}-${i}` } });
     }

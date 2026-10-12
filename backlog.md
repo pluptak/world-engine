@@ -77,6 +77,11 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
   child's version decisions. Candidates to check: the takeover in `src/store/lock.ts` (a lock of a
   dead process, or one over a minute old), the repair in `load` that settles under the turn after
   looking again, and the read loop in `foldLogFrom`.
+- **Findings so far (not the cause):** a light stress loop of the file passed every run. A heavy one (more busy
+  processes than the machine has cores) failed `store_busy` in a writer that the 5 s turn timeout had run out on. The
+  children now log each answer with its version, and the test keeps their logs when it fails. A candidate still
+  to rule out: `release` in `src/store/lock.ts` gives up after its patience when unlink is refused (Windows, a reader
+  holding the file), leaving the lock to a holder that no longer has it.
 - **Done when:** the cause is named in `docs/locking.md` and fixed with a deterministic test. If it
   does not reproduce in 50 loop runs, the test writes each child's log to a file on failure, so the
   next occurrence can be read.
