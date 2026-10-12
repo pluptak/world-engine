@@ -7,8 +7,7 @@ namespace WorldEngine.Core.Engine;
 
 // The world author's `edit` (src/engine/verbs/edit.ts) for the edits ported so far: spawn, remove, place, set_props,
 // update_props, set_part and set_seed. The result is judged by the snapshot invariants, so an edit that would break one
-// is refused and nothing is written. The beat, run, role and refine edits, and placements at an anchor, are not ported
-// and are refused loudly.
+// is refused and nothing is written. The beat, run, role and refine edits are not ported and are refused loudly.
 public static class EditVerb
 {
     public static Pipeline.VerbDecl Edit { get; } = new(
@@ -58,7 +57,10 @@ public static class EditVerb
     private sealed record SpawnEdit(string Template, Given<string>? Location, Spawn.Overrides Fields, bool HasModifiers) : WorldEdit;
     private sealed record SetSeedEdit(long Seed) : WorldEdit;
     private sealed record RemoveEdit(string Target) : WorldEdit;
-    private sealed record PlaceEdit(string Target, Given<string>? Support, Given<string>? ContainedIn, Given<string>? InPart, Given<string>? ConcealedBy, Given<Pos>? Pos) : WorldEdit;
+    // A place: each relation as the edit names it (Given, so an explicit null is kept apart from none), and the position as
+    // a plain position or as an offset from an anchor, which is resolved to a plain position before any rule reads it.
+    private sealed record PlaceEdit(string Target, Given<string>? Support, Given<string>? ContainedIn, Given<string>? InPart, Given<string>? ConcealedBy, Given<Pos>? Pos, AnchorOffset? Anchor = null) : WorldEdit;
+    private sealed record AnchorOffset(string Anchor, long Dx, long Dy);
     private sealed record PropsEdit(string Kind, string Target, IReadOnlyDictionary<string, JsonNode?> Props) : WorldEdit;
     private sealed record SetPartEdit(string Target, string Part, PartState State) : WorldEdit;
 
@@ -231,8 +233,49 @@ public static class EditVerb
         return (support, contained, edit.Pos is { } pos ? pos.Value : subject.Pos);
     }
 
+    // An anchor resolves to a plain position before any placement rule reads one: the offset against the anchor's own
+    // position, and the anchor's room as the support. Nothing records the anchor, so the entity is simply there afterwards.
+    // An anchor that is not standing in a room has no position to offset from, and is refused rather than guessed at.
+    private static PlaceEdit ResolveAnchor(Snapshot snapshot, PlaceEdit edit, out Pipeline.Refusal? refusal)
+    {
+        refusal = null;
+        if (edit.Anchor is not { } offset)
+        {
+            return edit;
+        }
+        // An anchor says where the entity is, so it cannot sit beside a holder the author also named.
+        if (edit.Support?.Value is not null || edit.ContainedIn?.Value is not null)
+        {
+            refusal = Refused("conflicting_placement");
+            return edit;
+        }
+        if (!snapshot.Entities.TryGetValue(offset.Anchor, out var anchor))
+        {
+            refusal = Invalid("no_such_entity");
+            return edit;
+        }
+        var room = anchor.Support is null ? null : snapshot.Entities.GetValueOrDefault(anchor.Support);
+        var at = room?.Template == "room" ? Geometry.EffectivePos(snapshot, anchor.Id) : null;
+        if (at is not { } basePos)
+        {
+            refusal = Refused("anchor_not_room_supported");
+            return edit;
+        }
+        return edit with
+        {
+            Support = new Given<string>(anchor.Support),
+            ContainedIn = new Given<string>(null),
+            Pos = new Given<Pos>(new Pos(basePos.X + offset.Dx, basePos.Y + offset.Dy)),
+        };
+    }
+
     private static Pipeline.Refusal? PlaceRefusal(Pipeline.CommandContext context, PlaceEdit edit, Entity subject)
     {
+        edit = ResolveAnchor(context.Snapshot, edit, out var anchorRefusal);
+        if (anchorRefusal is not null)
+        {
+            return anchorRefusal;
+        }
         if (NormalizedPlacement(subject, edit) is not { } placement)
         {
             return Refused("conflicting_placement");
@@ -361,6 +404,11 @@ public static class EditVerb
     private static void TransitionPlace(Working working, Pipeline.CommandContext context, PlaceEdit edit, string rootEventId)
     {
         var subject = context.Snapshot.Entities[edit.Target];
+        edit = ResolveAnchor(context.Snapshot, edit, out var anchorRefusal);
+        if (anchorRefusal is not null)
+        {
+            throw new InvalidOperationException("Edit placement changed after validation");
+        }
         var placement = NormalizedPlacement(subject, edit) ?? throw new InvalidOperationException("Edit placement changed after validation");
         var placed = working.Emit("placed", edit.Target, new Dictionary<string, JsonNode?>(), rootEventId);
         if (subject.Support is not null && placement.Support is null && placement.Contained is null)
@@ -477,23 +525,21 @@ public static class EditVerb
                 {
                     return null;
                 }
-                if (obj.ContainsKey("pos") && obj["pos"] is JsonObject anchor && !IsPlainPos(anchor))
+                AnchorOffset? anchor = null;
+                if (obj["pos"] is JsonObject offset && !IsPlainPos(offset) && IsAnchor(offset))
                 {
-                    // An anchored position is resolved against the anchor before any rule reads it, which is not ported.
-                    if (IsAnchor(anchor))
-                    {
-                        throw new NotPortedException("place at an anchor");
-                    }
+                    anchor = new AnchorOffset(Text(offset["anchor"])!, Int(offset["dx"])!.Value, Int(offset["dy"])!.Value);
                 }
+                Given<Pos>? pos = null;
                 if (!Ref(obj, "support", out var support)
                     || !Ref(obj, "contained_in", out var containedIn)
                     || !Ref(obj, "in_part", out var inPart)
                     || !Ref(obj, "concealed_by", out var concealedBy)
-                    || !PosField(obj, "pos", out var pos))
+                    || (anchor is null && !PosField(obj, "pos", out pos)))
                 {
                     return null;
                 }
-                return new PlaceEdit(target, support, containedIn, inPart, concealedBy, pos);
+                return new PlaceEdit(target, support, containedIn, inPart, concealedBy, pos, anchor);
             }
             case "set_props":
             case "update_props":
