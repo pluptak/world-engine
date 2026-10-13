@@ -85,4 +85,19 @@ Found in the repo (2026-10-13):
   consumers, if any, live outside this repository.
 - **Single-author history:** all 393 commits are by one author, so no other contributor's workflow depends on the npm tooling.
 
-Open, needs the maintainer: questions 1 (external consumers), 2 (old worlds), 3 (freeze) and 4 (schema clients) above.
+Decided by the maintainer (2026-10-13):
+
+1. **External consumers: none.** The .NET CLI is the one entry point. No NuGet package, no in-process migration path; Phase 3's
+   publish step only needs a runnable CLI.
+2. **Old worlds need not keep opening.** Byte compatibility with TypeScript is therefore not a goal after the cutover, but it is
+   still what makes the Phase 1 soak and the goldens work. Keep canonical JSON and `schema_version` 5 as they are until Phase 5,
+   and decide afterwards whether to simplify (a possible Phase 6, not planned).
+3. **Freeze: now.** No TypeScript feature work from 2026-10-13. A TS change is allowed only to fix a bug the soak finds that the
+   .NET side must match, and then the golden is regenerated in the same change. `backlog.md` Priorities are to be re-pointed at
+   .NET (see Phase 2 below).
+4. **Schema clients: none.** The generated schema must match behaviour, not stay byte-identical to the Zod output; the golden
+   comparison of `schema` can be loosened to a semantic check when convenient.
+
+Consequences for the phases: Phase 1 starts now; the freeze already holds, so Phase 2's "freeze window" item is done and what
+remains of it is the golden generators and the .NET-native regeneration. Backlog items 1 and 2 (the multi-process failure and the
+storage seam) name TypeScript files and need re-pointing or closing before any work on them.
