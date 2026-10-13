@@ -143,3 +143,7 @@ Places where .NET differs on purpose, found by the Phase 1 replays. Each has a t
 - A beat condition whose `value` is a fraction: TypeScript queues it and stores the fraction in the snapshot, against the
   integers-only rule (and .NET's canonical writer cannot print it); .NET refuses it as malformed (`invalid_args`).
   `BeatShapesGoldenTests.A_fractional_condition_value_is_a_malformed_beat`.
+- A stored snapshot with an unknown field (e.g. an entity key `reridue` for `residue`, from a damaged `initial.json`): TypeScript's
+  reader ignores it, so `verify` goes on and names `snapshot.json` as differing; .NET's reader refuses the file (`verify` answers an
+  error, the CLI an invalid response). Both flag the corruption; the .NET failure is earlier and plainer. Left out of
+  `tamper-golden` on purpose (the generator skips that flip).
