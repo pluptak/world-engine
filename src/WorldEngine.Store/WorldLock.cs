@@ -10,7 +10,9 @@ namespace WorldEngine.Store;
 
 // Writers take turns (src/store/lock.ts, docs/locking.md). A world directory has no server and the CLI is one process per request, so
 // two callers at once are two writers on the same files. The turn is a file named `lock`, made with the exclusive flag (atomic across
-// processes) and holding who made it and when. That clock reading only judges a lock's age, never reaches the world.
+// processes) and holding who made it, when, and a nonce unique to each acquisition. That clock reading only judges a lock's age,
+// never reaches the world. A takeover and a release proceed only for the lock their bytes name: anything another writer made in
+// between is put back or left alone, never deleted.
 //
 // Whoever finds the file waits and tries again, up to a timeout, then fails `store_busy`. A lock whose process is gone, or that is older
 // than a minute, was left by a crash and is taken over: the log is the truth, and what a crashed submit left half done is settled by the
@@ -28,12 +30,15 @@ public static class WorldLock
     private static readonly Regex Temporary = new(@"\.(\d+)\.tmp$", RegexOptions.CultureInvariant);
     private static readonly Regex Grave = new(@"^lock\.stale-(\d+)$", RegexOptions.CultureInvariant);
 
-    // The worlds this thread holds. A call made while holding one (`submit` calls `load`) is already inside, so it does not wait for
-    // its own turn.
+    // The worlds this thread holds, with the exact lock text each acquisition wrote. A call made while holding one (`submit` calls
+    // `load`) is already inside, so it does not wait for its own turn. The text binds the release to the same lock the acquisition
+    // made: a lock another writer made in between is left alone.
     [ThreadStatic]
-    private static HashSet<string>? held;
+    private static Dictionary<string, string>? held;
 
-    private sealed record Owner(int Pid, long SinceMs);
+    private static long _seq;
+
+    private sealed record Owner(int Pid, long SinceMs, string Nonce);
 
     private enum Verdict
     {
@@ -47,14 +52,14 @@ public static class WorldLock
     public static T With<T>(string dir, Func<T> body, long? timeoutMs = null)
     {
         var key = Path.GetFullPath(dir);
-        held ??= new HashSet<string>(StringComparer.Ordinal);
-        if (held.Contains(key))
+        held ??= new Dictionary<string, string>(StringComparer.Ordinal);
+        if (held.ContainsKey(key))
         {
             return body();
         }
         var path = Path.Combine(dir, LockFile);
-        Acquire(path, dir, timeoutMs ?? TimeoutFromEnvironment());
-        held.Add(key);
+        var mine = Acquire(path, dir, timeoutMs ?? TimeoutFromEnvironment());
+        held.Add(key, mine);
         try
         {
             return body();
@@ -62,7 +67,7 @@ public static class WorldLock
         finally
         {
             held.Remove(key);
-            Release(path, 55);
+            Release(path, 55, mine);
         }
     }
 
@@ -74,14 +79,15 @@ public static class WorldLock
             : DefaultTimeoutMs;
     }
 
-    private static void Acquire(string path, string dir, long timeoutMs)
+    private static string Acquire(string path, string dir, long timeoutMs)
     {
         var deadline = NowMs() + timeoutMs;
         for (var wait = 1; ; wait = Math.Min(wait * 2, LongestPauseMs))
         {
-            if (Create(path) || (TakeOver(path) && Create(path)))
+            var mine = Create(path) ?? (TakeOver(path) ? Create(path) : null);
+            if (mine is not null)
             {
-                return;
+                return mine;
             }
             if (NowMs() >= deadline)
             {
@@ -91,8 +97,9 @@ public static class WorldLock
         }
     }
 
-    // Makes the turn. False when it is held, including a lock just given back that a waiter still has open.
-    private static bool Create(string path)
+    // Makes the turn, answering the exact text written, or null when it is held (including a lock just given back that a waiter
+    // still has open). The nonce tells each acquisition apart, so a takeover and a release can refer to the same lock by its bytes.
+    private static string? Create(string path)
     {
         FileStream stream;
         try
@@ -101,13 +108,18 @@ public static class WorldLock
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
-            return false;
+            return null;
         }
+        var text = CanonicalJson.Serialize(new JsonObject
+        {
+            ["pid"] = Environment.ProcessId,
+            ["since_ms"] = NowMs(),
+            ["nonce"] = $"{Environment.ProcessId}-{Interlocked.Increment(ref _seq)}",
+        });
         try
         {
-            var owner = new JsonObject { ["pid"] = Environment.ProcessId, ["since_ms"] = NowMs() };
             using var writer = new StreamWriter(stream);
-            writer.Write(CanonicalJson.Serialize(owner));
+            writer.Write(text);
         }
         catch
         {
@@ -116,18 +128,37 @@ public static class WorldLock
             throw;
         }
         stream.Dispose();
-        return true;
+        return text;
     }
 
-    // True when the lock is gone and the turn can be tried for again. The file is renamed away, not deleted: of two waiters that judge the
-    // same lock stale only one rename finds it. A rename that caught a lock another waiter made in between is put back.
+    // True when the lock is gone and the turn can be tried for again. The verdict below must refer to the same lock the rename
+    // moves: the judged bytes are compared with what arrived in the grave, and anything else is put back.
     private static bool TakeOver(string path)
     {
-        var verdict = Judge(path);
-        if (verdict != Verdict.Stale)
+        string judged;
+        try
         {
-            return verdict == Verdict.Gone;
+            judged = WorldIO.ReadAllText(path);
         }
+        catch (FileNotFoundException)
+        {
+            return true;
+        }
+        catch (Exception error) when (Busy(error))
+        {
+            return false;
+        }
+        if (JudgeText(path, judged) != Verdict.Stale)
+        {
+            return Judge(path) == Verdict.Gone;
+        }
+        return TakeOverJudged(path, judged);
+    }
+
+    // Renames a lock judged stale away, proceeding only when the grave holds the judged bytes. A lock another writer made after
+    // the verdict is put back when the turn is still free, never deleted.
+    internal static bool TakeOverJudged(string path, string judged)
+    {
         var grave = $"{path}.stale-{Environment.ProcessId}";
         try
         {
@@ -141,31 +172,29 @@ public static class WorldLock
         {
             return false;
         }
-        if (Judge(grave) == Verdict.Live)
+        string moved;
+        try
+        {
+            moved = WorldIO.ReadAllText(grave);
+        }
+        catch (Exception error) when (Busy(error) || error is FileNotFoundException)
+        {
+            return false;
+        }
+        if (!string.Equals(moved, judged, StringComparison.Ordinal))
         {
             try
             {
                 File.Move(grave, path);
             }
-            catch (Exception error) when (Busy(error))
+            catch (Exception error) when (Busy(error) || error is FileNotFoundException)
             {
-                // Taken again already; that holder's turn is the one at risk, and the repair on load covers it.
+                // The turn is taken again already, or the grave is gone: either way it is not this taker's to delete.
             }
             return false;
         }
-        int? evicted = null;
-        try
-        {
-            evicted = ReadOwner(grave)?.Pid;
-        }
-        catch (FileNotFoundException)
-        {
-            // Already gone.
-        }
-        // Another waiter's judging may still have the grave open, which Windows reports as a failed removal. Nobody else renames to this
-        // name, so it is asked for patiently; what still stands is swept below.
-        Release(grave, GravePatienceMs);
-        SweepLeftovers(Path.GetDirectoryName(path)!, evicted);
+        Release(grave, GravePatienceMs, judged);
+        SweepLeftovers(Path.GetDirectoryName(path)!, ParseOwner(judged)?.Pid);
         return true;
     }
 
@@ -178,10 +207,7 @@ public static class WorldLock
         }
         try
         {
-            var owner = ReadOwner(path);
-            var since = owner?.SinceMs ?? new DateTimeOffset(File.GetLastWriteTimeUtc(path)).ToUnixTimeMilliseconds();
-            var left = (owner is not null && !Alive(owner.Pid)) || NowMs() - since > StaleAfterMs;
-            return left ? Verdict.Stale : Verdict.Live;
+            return JudgeText(path, WorldIO.ReadAllText(path));
         }
         catch (FileNotFoundException)
         {
@@ -193,33 +219,29 @@ public static class WorldLock
         }
     }
 
+    private static Verdict JudgeText(string path, string text)
+    {
+        var owner = ParseOwner(text);
+        var since = owner?.SinceMs ?? new DateTimeOffset(File.GetLastWriteTimeUtc(path)).ToUnixTimeMilliseconds();
+        var left = (owner is not null && !Alive(owner.Pid)) || NowMs() - since > StaleAfterMs;
+        return left ? Verdict.Stale : Verdict.Live;
+    }
+
     // A file another process has open, or is deleting or making: Windows reports it as a sharing failure or as access denied, and both
     // mean the same thing here, that the lock belongs to someone.
     private static bool Busy(Exception error) => error is IOException or UnauthorizedAccessException;
 
-    // The owner a lock names, or null when it is empty or cut short: its maker is between creating it and writing it, or died there.
-    // Throws FileNotFoundException when the lock is gone.
-    private static Owner? ReadOwner(string path)
+    // The owner a lock's bytes name, or null when they are empty or cut short: the maker is between creating and writing, or died
+    // there. A lock written before nonces names none, and judges like one with an empty nonce.
+    private static Owner? ParseOwner(string text)
     {
-        string text;
-        try
-        {
-            text = WorldIO.ReadAllText(path);
-        }
-        catch (FileNotFoundException)
-        {
-            throw;
-        }
-        catch (Exception error) when (Busy(error))
-        {
-            return null;
-        }
         try
         {
             var value = JsonNode.Parse(text)?.AsObject();
             var pid = value?["pid"] is JsonNode pidNode ? JsonReads.SafeInt(pidNode) : null;
             var since = value?["since_ms"] is JsonNode sinceNode ? JsonReads.Number(sinceNode) : null;
-            return pid is not null && since is not null ? new Owner((int)pid.Value, (long)since.Value) : null;
+            var nonce = value?["nonce"] is JsonNode nonceNode ? JsonReads.Text(nonceNode) : null;
+            return pid is not null && since is not null ? new Owner((int)pid.Value, (long)since.Value, nonce ?? "") : null;
         }
         catch (JsonException)
         {
@@ -291,12 +313,35 @@ public static class WorldLock
         }
     }
 
-    // Removes the lock, asking for a while first: Windows holds a file a reader has open until it lets go.
-    private static void Release(string path, long patienceMs)
+    // Removes the lock held as `expected`, asking for a while first: Windows holds a file a reader has open until it lets go. A lock
+    // another writer made in between is left alone.
+    private static void Release(string path, long patienceMs, string expected)
     {
         var deadline = NowMs() + patienceMs;
         for (var attempt = 1; ; attempt += 1)
         {
+            string current;
+            try
+            {
+                current = WorldIO.ReadAllText(path);
+            }
+            catch (FileNotFoundException)
+            {
+                return;
+            }
+            catch (Exception error) when (Busy(error))
+            {
+                if (NowMs() >= deadline)
+                {
+                    return;
+                }
+                Thread.Sleep(Math.Min(attempt, 10));
+                continue;
+            }
+            if (!string.Equals(current, expected, StringComparison.Ordinal))
+            {
+                return;
+            }
             try
             {
                 File.Delete(path);

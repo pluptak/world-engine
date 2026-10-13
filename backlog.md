@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The intermittent multi-process failure has a cause](#the-intermittent-multi-process-failure-has-a-cause).
-2. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+1. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -61,25 +60,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - The limits in `docs/limits*.md`: none is worth a verb yet, except as listed in `plans/candidates.md`.
 
 ## Items
-
-### The intermittent multi-process failure has a cause
-
-- **What:** the TypeScript `tests/store-lock.test.ts`, "six processes writing one world take turns", failed once in a full-suite run:
-  several ok commands were logged at the same version. `WorldLock.cs` is a port of the same takeover, so the hazard is in .NET too, and a
-  full .NET run has failed once on a test not identified (it passed on two reruns): `WorldLockProcessTests` and `WorldLock.cs` are the
-  first suspects.
-- Reproduce under load: run `WorldLockProcessTests` in a loop with CPU stress in the background, logging each child's version decisions.
-  Candidates: the takeover in `WorldLock.cs` (a lock of a dead process, or one over a minute old), the repair in `WorldSettle` that settles
-  under the turn after looking again, and the process-local snapshot and head memory in `WorldReplay`/`WorldFiles` (keyed on file sizes
-  and write times, so a second process's write within the clock's resolution is the case to rule out).
-- **Findings so far (from TypeScript, not yet the cause):** under heavy load (16 busy processes on 12 cores) 22 of 50 runs failed:
-  `store_busy` in some writers, `replay_diverges` in others. Two commands were accepted at the same version, so two writers held the turn
-  at once, and one round left `lock.stale-<pid>` behind: a lock still in use was taken over. Hypothesis, not confirmed: the owner releases
-  the lock and exits between the taker reading it and probing its pid; the next writer takes the new lock and the taker renames it away.
-- **Next:** reproduce on .NET; then make a takeover proceed only when the stale verdict and the rename refer to the same lock.
-- **Done when:** the cause is named in `docs/locking.md` and fixed with a deterministic test. If it does not reproduce in 50 loop runs,
-  the test writes each child's log to a file on failure, so the next occurrence can be read.
-- **Depends on:** nothing.
 
 ### The storage seam is an interface with no behaviour change
 

@@ -3,9 +3,10 @@
 A world directory has no server and the CLI is one process per request, so two requests at once are
 two writers on the same files, each deciding against a version the other has left.
 
-**The turn** is a file `lock` in the world (`src/store/lock.ts`), made with the exclusive flag,
-which is atomic across processes, and holding `{ pid, since_ms }`. That clock reading only judges
-the lock's age and never reaches the world. It is held by `submit` around the whole decision and its
+**The turn** is a file `lock` in the world (`src/WorldEngine.Store/WorldLock.cs`), made with the
+exclusive flag, which is atomic across processes, and holding `{ pid, since_ms, nonce }`, the nonce
+telling each acquisition apart. That clock reading only judges the lock's age and never reaches the
+world. It is held by `submit` around the whole decision and its
 writes, by `edit` around its default id (the count of logged submissions) and its submission, by
 `upgradeTemplates` around its proof and its write, by `verify` around its whole replay, and by the
 repair in `load`. Within a process it is re-entrant, since `submit` calls `load`. A memory world has
@@ -27,5 +28,10 @@ nothing.
 [locking-crash.md](locking-crash.md).
 
 **Limits.** It serialises processes on one machine over a local file system. A holder stalled for
-over a minute loses its turn. A taker of a stale lock can race another taker doing the same, which
-is the one window left. What it costs is in [measurements-writers.md](measurements-writers.md).
+over a minute loses its turn. The window that took two writers at once was the takeover judging
+one lock and renaming another: the owner released it and exited between the taker's read and its
+pid probe, a next writer took the freed turn, and the taker renamed that fresh lock away, so both
+wrote at once and a `lock.stale-<pid>` was left behind. A takeover now proceeds only when the
+moved bytes equal the judged ones (each acquisition writes a nonce, compared byte for byte, and
+anything else is put back), and a release deletes only the lock its own bytes name. What it costs
+is in [measurements-writers.md](measurements-writers.md).

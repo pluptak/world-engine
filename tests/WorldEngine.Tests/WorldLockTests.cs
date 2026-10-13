@@ -122,4 +122,42 @@ public class WorldLockTests : IDisposable
         Assert.False(File.Exists(Path.Combine(dir, "old.tmp")));
         Assert.True(File.Exists(Path.Combine(dir, $"world.json.{livePid}.tmp")));
     }
+
+    [Fact]
+    public void Acquired_locks_carry_a_nonce_unique_to_each_acquisition()
+    {
+        string first = "", second = "";
+        WorldLock.With(dir, () => { first = File.ReadAllText(LockPath); return 0; }, timeoutMs: 500);
+        WorldLock.With(dir, () => { second = File.ReadAllText(LockPath); return 0; }, timeoutMs: 500);
+
+        Assert.Contains("nonce", first);
+        Assert.Contains("nonce", second);
+        Assert.NotEqual(first, second);
+    }
+
+    [Fact]
+    public void Release_leaves_a_lock_it_does_not_own_alone()
+    {
+        const string intruder = "{\"pid\":1,\"since_ms\":1,\"nonce\":\"not-mine\"}";
+        WorldLock.With(dir, () =>
+        {
+            File.WriteAllText(LockPath, intruder);
+            return 0;
+        }, timeoutMs: 500);
+
+        Assert.True(File.Exists(LockPath), "release deleted a lock it does not own");
+        Assert.Equal(intruder, File.ReadAllText(LockPath));
+    }
+
+    [Fact]
+    public void Takeover_puts_back_a_lock_that_changed_since_the_verdict()
+    {
+        var live = $"{{\"pid\":{Environment.ProcessId},\"since_ms\":{NowMs()},\"nonce\":\"live-1\"}}";
+        var judged = $"{{\"pid\":{DeadPid},\"since_ms\":{NowMs()},\"nonce\":\"stale-1\"}}";
+        File.WriteAllText(LockPath, live);
+
+        Assert.False(WorldLock.TakeOverJudged(LockPath, judged));
+        Assert.Equal(live, File.ReadAllText(LockPath));
+        Assert.Empty(Directory.EnumerateFiles(dir, "lock.stale-*"));
+    }
 }
