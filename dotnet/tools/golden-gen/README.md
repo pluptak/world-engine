@@ -7,7 +7,9 @@ on purpose, and the change to the fixture is part of the same commit and is read
 
 ## Generators in this folder (they need Node and the TypeScript tree)
 
-Run from the repository root with `node --import tsx dotnet/tools/golden-gen/<file>.ts`.
+The TypeScript tree is removed from the main branch; it lives at the tag `ts-final`. To run a generator, check that tag out into a separate
+worktree (`git worktree add ../world-engine-ts ts-final`, then `npm ci` there) and run `node --import tsx dotnet/tools/golden-gen/<file>.ts`
+from it, with this folder's generators copied in.
 
 | Generator | Fixture(s) | .NET test |
 |---|---|---|
