@@ -45,9 +45,7 @@ public class MemoryGoldenTests
             args["basedOn"]?.GetValue<long>(),
             args["observe"]?.GetValue<bool>() ?? false)),
         "edit" => Shape(world.Edit(args["edit"]!.AsObject(), args["command_id"]?.GetValue<string>())),
-        "beat" => new JsonArray(world.Beat(args["commands"]!.AsArray().Select(command => Read<Command>(command!)).ToList())
-            .Select(result => (JsonNode?)Shape(result))
-            .ToArray()),
+        "beat" => new JsonArray([.. world.Beat([.. args["commands"]!.AsArray().Select(command => Read<Command>(command!))]).Select(result => (JsonNode?)Shape(result))]),
         "observe" => world.Observe(
             args["observer"]!.GetValue<string>(),
             args["since"]?.GetValue<long>(),
@@ -68,7 +66,7 @@ public class MemoryGoldenTests
             Read<Snapshot>(args["before"]!),
             Read<Snapshot>(args["after"]!),
             Read<List<WorldEvent>>(args["events"]!),
-            args["observers"]!.AsArray().Select(observer => observer!.GetValue<string>()).ToList())),
+            [.. args["observers"]!.AsArray().Select(observer => observer!.GetValue<string>())])),
         "verify" => Void(world.Verify),
         _ => throw new InvalidDataException($"unknown step {op}"),
     };
@@ -85,7 +83,7 @@ public class MemoryGoldenTests
         {
             shape["round"] = JsonValue.Create(outcome.Number.Value);
         }
-        shape["results"] = new JsonArray(outcome.Results.Select(result => (JsonNode?)Shape(result)).ToArray());
+        shape["results"] = new JsonArray([.. outcome.Results.Select(result => (JsonNode?)Shape(result))]);
         if (outcome.Closing is not null)
         {
             shape["closing"] = Shape(outcome.Closing);
@@ -118,7 +116,7 @@ public class MemoryGoldenTests
         };
     }
 
-    private static List<Command> Commands(JsonNode moves) => moves.AsArray().Select(move => Read<Command>(move!)).ToList();
+    private static List<Command> Commands(JsonNode moves) => [.. moves.AsArray().Select(move => Read<Command>(move!))];
 
     private static JsonNode? Void(Action call)
     {

@@ -413,7 +413,7 @@ public static class Geometry
             : Less(right.T, left.T) ? 1
             : string.CompareOrdinal(left.Id, right.Id) < 0 ? -1
             : 1);
-        return met.Select(entry => entry.Id).ToList();
+        return [.. met.Select(entry => entry.Id)];
     }
 
     private static bool Less(Fraction a, Fraction b) => a.Num * b.Den < b.Num * a.Den;

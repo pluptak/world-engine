@@ -51,12 +51,11 @@ public static class MoveVerb
                 rooms.Add(from);
             }
         }
-        return rooms
+        return [.. rooms
             .Where(room => context.Snapshot.Entities.TryGetValue(room, out var entity)
                 && entity.Template == TemplateIds.Room
                 && !(room == here && OnFloor(actor)))
-            .Select(location => new JsonObject { ["location"] = location })
-            .ToList<JsonObject>();
+            .Select(location => new JsonObject { ["location"] = location })];
     }
 
     // Where the command says to go. Exactly one of the three forms.

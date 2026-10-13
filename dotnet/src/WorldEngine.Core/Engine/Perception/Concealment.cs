@@ -10,9 +10,7 @@ public static class Concealment
 {
     // Everything the entity hides, in id order.
     public static IReadOnlyList<string> HiddenBy(Snapshot snapshot, string concealerId) =>
-        snapshot.Entities.Keys.Order(StringComparer.Ordinal)
-            .Where(id => snapshot.Entities[id].ConcealedBy == concealerId)
-            .ToList();
+        [.. snapshot.Entities.Keys.Order(StringComparer.Ordinal).Where(id => snapshot.Entities[id].ConcealedBy == concealerId)];
 
     public static void RevealConcealed(Working working, string moverId, string causeEventId)
     {

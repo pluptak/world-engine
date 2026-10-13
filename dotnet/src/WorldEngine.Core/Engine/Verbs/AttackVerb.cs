@@ -148,7 +148,7 @@ public static class AttackVerb
             }
             return false;
         }
-        return parts.Select(part => part.Name).Where(name => name == rootName || IsInSubtree(name)).Order(StringComparer.Ordinal).ToList();
+        return [.. parts.Select(part => part.Name).Where(name => name == rootName || IsInSubtree(name)).Order(StringComparer.Ordinal)];
     }
 
     // The room under a thing, or the room a support chain ends in (src/engine/verbs/attack.ts `floorSupport`).

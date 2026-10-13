@@ -207,7 +207,7 @@ public static class TemplateResolver
                 : parent.BreakResidue,
             SpentProducts: NonEmptyProducts(decl.SpentProducts ?? parent.SpentProducts),
             SpentResidue: NonEmptyResidue(decl.SpentResidue ?? parent.SpentResidue),
-            Lineage: new[] { parent.Id }.Concat(parent.Lineage ?? Array.Empty<string>()).ToList(),
+            Lineage: [parent.Id, .. parent.Lineage ?? Array.Empty<string>()],
             Catalog: decl.Catalog == false ? false : null,
             MaxIntegrity: decl.MaxIntegrity ?? parent.MaxIntegrity,
             Processes: NonEmptyProcesses(MergeProcesses(parent.Processes ?? [], decl.Processes ?? [])),
@@ -230,7 +230,7 @@ public static class TemplateResolver
                 throw new FormatException($"{decl.Id} part_overrides names {name}, which it inherits no part of");
             }
         }
-        return parts.Select(part =>
+        return [.. parts.Select(part =>
         {
             var found = overrides.TryGetValue(part.Name, out var over);
             return new PartDecl(
@@ -244,7 +244,7 @@ public static class TemplateResolver
                 Detachable: found && over!.Detachable is { } detachable ? detachable : part.Detachable,
                 MaxIntegrity: found && over!.MaxIntegrity is { } maxIntegrity ? maxIntegrity : part.MaxIntegrity,
                 Holds: found && over!.Holds is not null ? over.Holds : part.Holds);
-        }).ToList();
+        })];
     }
 
     // Processes merge by id like props: the parent's list, each replaced by a child's of the same id, then the
@@ -263,15 +263,15 @@ public static class TemplateResolver
     }
 
     private static List<PartDecl> CopyParts(IReadOnlyList<PartDecl> parts) =>
-        parts.Select(part => part with
+        [.. parts.Select(part => part with
         {
             Contributes = new Dictionary<string, long>(part.Contributes),
-        }).ToList();
+        })];
 
     private static Dictionary<string, JsonNode?> CopyProps(IReadOnlyDictionary<string, JsonNode?> props) =>
         props.ToDictionary(pair => pair.Key, pair => pair.Value?.DeepClone());
 
-    private static List<Product> CopyProducts(IReadOnlyList<Product> products) => products.ToList();
+    private static List<Product> CopyProducts(IReadOnlyList<Product> products) => [.. products];
 
     private static List<Product>? NonEmptyProducts(IReadOnlyList<Product>? products) =>
         products is { Count: > 0 } ? CopyProducts(products) : null;
@@ -280,7 +280,7 @@ public static class TemplateResolver
         residue is { Count: > 0 } ? new Dictionary<string, long>(residue) : null;
 
     private static List<ProcessDecl>? NonEmptyProcesses(IReadOnlyList<ProcessDecl>? processes) =>
-        processes is { Count: > 0 } ? processes.ToList() : null;
+        processes is { Count: > 0 } ? [.. processes] : null;
 
     private static Dictionary<string, FieldDecl>? NonEmptyFields(IReadOnlyDictionary<string, FieldDecl>? fields) =>
         fields is { Count: > 0 } ? new Dictionary<string, FieldDecl>(fields) : null;

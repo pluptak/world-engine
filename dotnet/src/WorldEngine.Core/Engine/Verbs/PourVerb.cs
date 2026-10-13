@@ -37,12 +37,11 @@ public static class PourVerb
         {
             return [];
         }
-        return nameable
+        return [.. nameable
             .Where(id => id != source.Id
                 && context.Snapshot.Entities.TryGetValue(id, out var entity)
                 && (PropValues.IsTrue(entity.Props, "container") || PropValues.IsTrue(entity.Props, "surface") || entity.Template == TemplateIds.Room))
-            .Select(destination => new JsonObject { ["destination"] = destination })
-            .ToList();
+            .Select(destination => new JsonObject { ["destination"] = destination })];
     }
 
     private sealed record Pouring(

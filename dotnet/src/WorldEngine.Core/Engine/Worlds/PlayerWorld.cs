@@ -146,7 +146,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
                 : value?.DeepClone();
         }
 
-        return new JsonArray(world.Pending.Moves(handle).Select(held =>
+        return new JsonArray([.. world.Pending.Moves(handle).Select(held =>
         {
             var body = Runs.LiveBodyOf(snapshot, held.Actor);
             var written = new JsonObject();
@@ -170,7 +170,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
                 written["args"] = args;
             }
             return (JsonNode?)written;
-        }).ToArray());
+        })]);
     }
 
     // The view that reads through every body of the slot, as the first of them still in the world.

@@ -103,7 +103,7 @@ public static class WorldReads
             ["observer"] = observer,
             ["version"] = current.Version,
             ["unknown_senses"] = Strings(Capabilities.Senses.Where(sense => !covered.Contains(sense))),
-            ["entities"] = new JsonArray(Projection.ObserveEntities(current, registry, [], observer).Select(entity => (JsonNode?)entity).ToArray()),
+            ["entities"] = new JsonArray([.. Projection.ObserveEntities(current, registry, [], observer).Select(entity => (JsonNode?)entity)]),
             ["events"] = eventsSeen,
         };
     }
@@ -117,7 +117,7 @@ public static class WorldReads
     };
 
     private static JsonArray Strings(IEnumerable<string> values) =>
-        new(values.Select(value => (JsonNode?)JsonValue.Create(value)).ToArray());
+        new([.. values.Select(value => (JsonNode?)JsonValue.Create(value))]);
 
 
     // One entity in detail, as the observer could sense it now; null when nothing of it is sensed.

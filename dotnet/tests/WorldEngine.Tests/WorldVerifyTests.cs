@@ -77,10 +77,9 @@ public class WorldVerifyTests : IDisposable
     }
 
     private static List<string> Files(string root) =>
-        Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+        [.. Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
-            .Order(StringComparer.Ordinal)
-            .ToList();
+            .Order(StringComparer.Ordinal)];
 
     private static void CopyTree(string from, string to)
     {

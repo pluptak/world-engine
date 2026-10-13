@@ -41,10 +41,9 @@ public static class Catalog
     public static IReadOnlyList<CatalogEntry> Of(IReadOnlyDictionary<string, Template> registry)
     {
         var hidden = Companions(registry);
-        return registry.Keys.Order(StringComparer.Ordinal)
+        return [.. registry.Keys.Order(StringComparer.Ordinal)
             .Where(id => !hidden.Contains(id) && registry[id].Catalog != false)
-            .Select(id => EntryOf(registry[id]))
-            .ToList();
+            .Select(id => EntryOf(registry[id]))];
     }
 
     // A detachable part's own template is `<template>.<part>`: it exists to be spawned when the part comes off, and the
@@ -135,9 +134,9 @@ public static class Catalog
             PropFields.IsTrue(template.Props.GetValueOrDefault("light_source")),
             PropFields.IsTrue(template.Props.GetValueOrDefault("agent")),
             IntegerProp(template, "capacity_cm3"),
-            template.Parts.Select(part => part.Name).ToList(),
+            [.. template.Parts.Select(part => part.Name)],
             capacities,
-            template.BreakProducts.Where(product => product.Count > 0).Select(product => product.Template).Distinct(StringComparer.Ordinal).ToList(),
+            [.. template.BreakProducts.Where(product => product.Count > 0).Select(product => product.Template).Distinct(StringComparer.Ordinal)],
             FormsOf(template));
     }
 }

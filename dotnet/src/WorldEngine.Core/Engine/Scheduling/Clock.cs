@@ -40,14 +40,14 @@ public static class Clock
                 cause is not null && cause.DueTick == due.Value;
                 cause = Schedule.Pending(working.Snapshot).FirstOrDefault())
             {
-                Schedule.Replace(working, Schedule.Pending(working.Snapshot).Skip(1).ToList());
+                Schedule.Replace(working, [.. Schedule.Pending(working.Snapshot).Skip(1)]);
                 var mark = working.Deltas.Count;
                 Schedule.Run(working, registry, cause);
                 Processes.ReconcileSince(working, registry, mark);
                 Schedule.Prune(working);
             }
             if (wake is { Count: > 0 } && working.Events.Count > firstNew
-                && EventPerception.SensedBy(before, working.Snapshot, registry, working.Events, working.Events.Skip(firstNew).ToList(), wake))
+                && EventPerception.SensedBy(before, working.Snapshot, registry, working.Events, [.. working.Events.Skip(firstNew)], wake))
             {
                 return due.Value - startTick;
             }
@@ -109,12 +109,11 @@ public static class Clock
         {
             return;
         }
-        expiring = expiring
+        expiring = [.. expiring
             .OrderBy(entry => entry.Entity, StringComparer.Ordinal)
             .ThenBy(entry => entry.Modifier.Capacity, StringComparer.Ordinal)
             .ThenBy(entry => entry.Modifier.CauseId, StringComparer.Ordinal)
-            .ThenBy(entry => entry.Order)
-            .ToList();
+            .ThenBy(entry => entry.Order)];
         var affected = expiring.Select(entry => entry.Entity).Distinct().Order(StringComparer.Ordinal).ToList();
 
         // A modifier counts while its expiry is still ahead, so the tick before reads it in force.

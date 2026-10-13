@@ -63,8 +63,8 @@ public sealed class MemoryPendingMoves : IPendingMoves
     }
 
     public IReadOnlyList<string> Handles() =>
-        held.Where(pair => pair.Value.Moves.Count > 0).Select(pair => pair.Key).Order(StringComparer.Ordinal).ToList();
+        [.. held.Where(pair => pair.Value.Moves.Count > 0).Select(pair => pair.Key).Order(StringComparer.Ordinal)];
 
     public IReadOnlyList<string> Idlers() =>
-        held.Where(pair => pair.Value.Idle).Select(pair => pair.Key).Order(StringComparer.Ordinal).ToList();
+        [.. held.Where(pair => pair.Value.Idle).Select(pair => pair.Key).Order(StringComparer.Ordinal)];
 }

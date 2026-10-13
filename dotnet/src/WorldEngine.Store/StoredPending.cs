@@ -35,10 +35,10 @@ public sealed class StoredPending(string dir) : IPendingMoves
         });
 
     public IReadOnlyList<string> Handles() =>
-        Read().Where(entry => MovesOf(entry).Count > 0).Select(Handle).Order(StringComparer.Ordinal).ToList();
+        [.. Read().Where(entry => MovesOf(entry).Count > 0).Select(Handle).Order(StringComparer.Ordinal)];
 
     public IReadOnlyList<string> Idlers() =>
-        Read().Where(entry => entry["idle"] is JsonValue idle && idle.GetValue<bool>()).Select(Handle).Order(StringComparer.Ordinal).ToList();
+        [.. Read().Where(entry => entry["idle"] is JsonValue idle && idle.GetValue<bool>()).Select(Handle).Order(StringComparer.Ordinal)];
 
     private static string Handle(JsonObject entry) => entry["handle"]!.GetValue<string>();
 
@@ -48,12 +48,12 @@ public sealed class StoredPending(string dir) : IPendingMoves
             : [];
 
     private static JsonArray Written(IEnumerable<Command> moves) =>
-        new(moves.Select(move => (JsonNode?)JsonNode.Parse(WorldJson.Write(move))).ToArray());
+        new([.. moves.Select(move => (JsonNode?)JsonNode.Parse(WorldJson.Write(move)))]);
 
     // A list, not an object: a handle is any token, `__proto__` included.
     private List<JsonObject> Read() =>
         File.Exists(path) && JsonNode.Parse(WorldIO.ReadAllText(path)) is JsonArray entries
-            ? entries.Select(entry => entry!.AsObject()).ToList()
+            ? [.. entries.Select(entry => entry!.AsObject())]
             : [];
 
     // Rewrites one handle's entry under the world's turn: `change` sees the entry as it is then, and returns the one to keep, or null to
@@ -66,7 +66,7 @@ public sealed class StoredPending(string dir) : IPendingMoves
             var next = change(all.FirstOrDefault(entry => Handle(entry) == handle));
             var rest = all.Where(other => Handle(other) != handle).Cast<JsonNode>();
             var kept = next is null ? rest : rest.Append(next);
-            WorldWriter.AtomicWrite(path, WorldWriter.Canonical(new JsonArray(kept.Select(node => node?.DeepClone()).ToArray())));
+            WorldWriter.AtomicWrite(path, WorldWriter.Canonical(new JsonArray([.. kept.Select(node => node?.DeepClone())])));
             return true;
         });
     }

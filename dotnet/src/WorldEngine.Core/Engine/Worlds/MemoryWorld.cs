@@ -117,7 +117,7 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
     public IReadOnlyList<Attempt> Attempts(long version)
     {
         CheckVersion(version);
-        return tried.Where(attempt => attempt.Version >= version).ToList();
+        return [.. tried.Where(attempt => attempt.Version >= version)];
     }
 
     // The deltas and events of every accepted command since a version.
@@ -165,7 +165,7 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
             {
                 throw new WorldError("history_unavailable", $"No records at tick {tick} or before {initial.Tick}");
             }
-            return events.Where(@event => @event.Tick >= tick).ToList();
+            return [.. events.Where(@event => @event.Tick >= tick)];
         });
 
     // One entity in detail, as the observer could sense it now; null when nothing of it is sensed.

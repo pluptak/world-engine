@@ -36,7 +36,7 @@ public static class PutVerb
         var pockets = Carry.HolderLayout(context.Registry, actor.Template).Spaces
             .Where(space => space.Name != item.InPart)
             .Select(space => new JsonObject { ["relation"] = "in", ["destination"] = $"{actor.Id}.{space.Name}" });
-        return Holding("surface", "on").Concat(Holding("container", "in")).Concat(pockets).ToList();
+        return [.. Holding("surface", "on"), .. Holding("container", "in"), .. pockets];
     }
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)

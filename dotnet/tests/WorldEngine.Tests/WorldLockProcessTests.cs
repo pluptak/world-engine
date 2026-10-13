@@ -113,11 +113,10 @@ public class WorldLockProcessTests : IDisposable
 
     // Files a finished writer must not leave: the turn, a temporary, or a taken-over lock's grave.
     private static List<string> Leftovers(string dir) =>
-        Directory.EnumerateFiles(dir)
+        [.. Directory.EnumerateFiles(dir)
             .Select(Path.GetFileName)
             .OfType<string>()
-            .Where(name => name == "lock" || name.Contains(".tmp") || name.Contains(".stale-"))
-            .ToList();
+            .Where(name => name == "lock" || name.Contains(".tmp") || name.Contains(".stale-"))];
 
     private static string Canonical<T>(T value) => CanonicalJson.Serialize(JsonNode.Parse(WorldJson.Write(value)));
 }

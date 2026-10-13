@@ -72,7 +72,7 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
 
     // One observer's projection; with `since` or `sinceTick`, the events it sensed after that version or at that tick (`observe`).
     public JsonObject Observe(string observer, long? since = null, long? sinceTick = null) =>
-        WorldReads.Observe(this, observer, since, sinceTick, tick => WorldFiles.ReadEvents(dir).Where(@event => @event.Tick >= tick).ToList());
+        WorldReads.Observe(this, observer, since, sinceTick, tick => [.. WorldFiles.ReadEvents(dir).Where(@event => @event.Tick >= tick)]);
 
     public JsonObject? Inspect(string observer, string entity) => WorldReads.Inspect(this, observer, entity);
 

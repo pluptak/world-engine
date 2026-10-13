@@ -68,7 +68,7 @@ public class UpgradeGoldenTests
     }
 
     private static IReadOnlyDictionary<string, Template> WithoutPart(IReadOnlyDictionary<string, Template> registry, string id, string part) =>
-        Changed(registry, id, template => template with { Parts = template.Parts.Where(decl => decl.Name != part).ToList() });
+        Changed(registry, id, template => template with { Parts = [.. template.Parts.Where(decl => decl.Name != part)] });
 
     private static IReadOnlyDictionary<string, Template> Without(IReadOnlyDictionary<string, Template> registry, string id)
     {

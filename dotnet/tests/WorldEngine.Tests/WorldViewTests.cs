@@ -82,10 +82,9 @@ public class WorldViewTests : IDisposable
     private static string Text<T>(T value) => CanonicalJson.Serialize(JsonNode.Parse(WorldJson.Write(value)));
 
     private static List<string> Files(string root) =>
-        Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+        [.. Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'))
-            .Order(StringComparer.Ordinal)
-            .ToList();
+            .Order(StringComparer.Ordinal)];
 
     private static void CopyTree(string from, string to)
     {

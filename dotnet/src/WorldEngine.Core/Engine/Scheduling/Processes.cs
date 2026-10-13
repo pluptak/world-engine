@@ -16,7 +16,7 @@ public static class Processes
         {
             return [];
         }
-        return template.Processes.Select(ProcessSpec.From).ToList();
+        return [.. template.Processes.Select(ProcessSpec.From)];
     }
 
     // Number.isSafeInteger over a number read from a prop, null when the prop is no number.
@@ -109,7 +109,7 @@ public static class Processes
             {
                 Schedule.Replace(
                     working,
-                    Schedule.Pending(working.Snapshot).Where(cause => !IsPendingFor(cause, entityId, spec.Id)).ToList());
+                    [.. Schedule.Pending(working.Snapshot).Where(cause => !IsPendingFor(cause, entityId, spec.Id))]);
             }
         }
     }

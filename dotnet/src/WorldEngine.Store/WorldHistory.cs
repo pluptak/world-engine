@@ -45,7 +45,7 @@ public static class WorldHistory
     public static List<Attempt> Attempts(string dir, long version, IReadOnlyDictionary<string, Template> registry)
     {
         CheckVersion(dir, version, registry);
-        return WorldFiles.ReadLog(dir).Where(entry => entry.Version >= version).ToList();
+        return [.. WorldFiles.ReadLog(dir).Where(entry => entry.Version >= version)];
     }
 
     // The chain of events behind one event, or behind the last change of an entity's field (`trace`, `docs/provenance.md`). An

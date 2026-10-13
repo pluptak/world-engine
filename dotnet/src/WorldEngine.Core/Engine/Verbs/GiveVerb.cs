@@ -26,10 +26,9 @@ public static class GiveVerb
         {
             return [];
         }
-        return nameable
+        return [.. nameable
             .Where(id => id != item.Id && Reach.IsAgent(context.Snapshot, id))
-            .Select(destination => new JsonObject { ["destination"] = destination })
-            .ToList();
+            .Select(destination => new JsonObject { ["destination"] = destination })];
     }
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)

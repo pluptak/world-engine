@@ -36,13 +36,12 @@ public class ProjectionGoldenTests
     }
 
     private static JsonNode Observe(JsonNode input) => new JsonArray(
-        Projection.ObserveEntities(
+        [.. Projection.ObserveEntities(
                 WorldJson.Read<Snapshot>(input["snapshot"]!.ToJsonString()),
                 Registry,
                 [],
                 input["observer"]!.GetValue<string>())
-            .Select(entity => (JsonNode?)entity)
-            .ToArray());
+            .Select(entity => (JsonNode?)entity)]);
 
     private static JsonNode? Inspect(JsonNode input) => Projection.InspectEntity(
         WorldJson.Read<Snapshot>(input["snapshot"]!.ToJsonString()),

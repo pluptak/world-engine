@@ -280,7 +280,7 @@ public static class SceneBuilder
             var entry = slotsNode[index];
             var path = $"run.slots[{index}]";
             var group = entry is JsonArray;
-            List<string?> members = entry is JsonArray list ? list.Select(Text).ToList() : [Text(entry)];
+            List<string?> members = entry is JsonArray list ? [.. list.Select(Text)] : [Text(entry)];
             if (members.Count == 0)
             {
                 throw Refused(path, "invalid_run");
@@ -304,7 +304,7 @@ public static class SceneBuilder
             }
             slots.Add(ids.Count == 1
                 ? (JsonNode)JsonValue.Create(ids[0])!
-                : new JsonArray(ids.Select(id => (JsonNode?)JsonValue.Create(id)).ToArray()));
+                : new JsonArray([.. ids.Select(id => (JsonNode?)JsonValue.Create(id))]));
         }
 
         var pool = poolNode is null

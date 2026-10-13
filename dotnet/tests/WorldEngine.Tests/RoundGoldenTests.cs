@@ -52,11 +52,10 @@ public class RoundGoldenTests
         {
             result["reason_code"] = plan.ReasonCode;
         }
-        result["early"] = new JsonArray(plan.Early
+        result["early"] = new JsonArray([.. plan.Early
             .OrderBy(entry => entry.Key)
-            .Select(entry => (JsonNode?)new JsonObject { ["index"] = JsonValue.Create(entry.Key), ["result"] = Shape(entry.Value) })
-            .ToArray());
-        result["order"] = new JsonArray(plan.Order.Select(index => (JsonNode?)JsonValue.Create(index)).ToArray());
+            .Select(entry => (JsonNode?)new JsonObject { ["index"] = JsonValue.Create(entry.Key), ["result"] = Shape(entry.Value) })]);
+        result["order"] = new JsonArray([.. plan.Order.Select(index => (JsonNode?)JsonValue.Create(index))]);
         return result;
     }
 

@@ -46,7 +46,7 @@ public static partial class EditVerb
                 // Withdrawn at the source, recording nothing: the `edit` event is the record.
                 Schedule.Replace(
                     working,
-                    Schedule.Pending(working.Snapshot).Where(cause => cause.Kind != "beat" || cause.Id != cancelled.Id).ToList());
+                    [.. Schedule.Pending(working.Snapshot).Where(cause => cause.Kind != "beat" || cause.Id != cancelled.Id)]);
                 return;
             case RetimeBeatEdit moved:
                 TransitionRetime(working, moved);
@@ -76,7 +76,7 @@ public static partial class EditVerb
         var pool = run.Pool ?? [];
         var beat = pool.FirstOrDefault(entry => PoolId(entry) == edit.Id)
             ?? throw new InvalidOperationException("Play changed after validation");
-        working.SetRun(run with { Pool = pool.Where(entry => PoolId(entry) != edit.Id).ToList() });
+        working.SetRun(run with { Pool = [.. pool.Where(entry => PoolId(entry) != edit.Id)] });
         var queued = new JsonObject
         {
             ["at_tick"] = JsonValue.Create(edit.AtTick),

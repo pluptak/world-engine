@@ -88,7 +88,7 @@ public static class Placements
             }
             frontier = next;
         }
-        return members.Order(StringComparer.Ordinal).ToList();
+        return [.. members.Order(StringComparer.Ordinal)];
     }
 
     // Brings the location of a moved subtree up to date with where its members now are.

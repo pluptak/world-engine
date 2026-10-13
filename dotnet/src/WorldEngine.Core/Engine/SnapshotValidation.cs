@@ -186,7 +186,7 @@ public static class SnapshotValidation
         {
             if (visited.TryGetValue(current, out var seenAt))
             {
-                return path.Skip(seenAt).ToList();
+                return [.. path.Skip(seenAt)];
             }
             visited[current] = path.Count;
             path.Add(current);
@@ -605,7 +605,7 @@ public static class SnapshotValidation
                     {
                         var template = registry.GetValueOrDefault(snapshot.Entities[item.Id].Template);
                         return template is not null
-                            && Fit.Misfit([template.SizeCm.W, template.SizeCm.D, template.SizeCm.H], inner.Select(v => (double)v).ToArray()) is not null;
+                            && Fit.Misfit([template.SizeCm.W, template.SizeCm.D, template.SizeCm.H], [.. inner.Select(v => (double)v)]) is not null;
                     });
                 if (oversized is not null)
                 {

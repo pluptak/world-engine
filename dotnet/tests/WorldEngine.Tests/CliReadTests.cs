@@ -13,10 +13,9 @@ public class CliReadTests : IDisposable
     private static readonly string Golden = Path.Combine(Fixtures, "store-write");
     // The read ops and the facade reads, each answer from its own golden file.
     private static readonly JsonArray Rows = new JsonArray(
-        new[] { "cli-read.expected.json", "cli-facade.expected.json" }
+        [.. new[] { "cli-read.expected.json", "cli-facade.expected.json" }
             .SelectMany(name => (JsonArray)JsonNode.Parse(File.ReadAllText(Path.Combine(Fixtures, name)))!)
-            .Select(row => (JsonNode?)row.DeepClone())
-            .ToArray());
+            .Select(row => (JsonNode?)row.DeepClone())]);
 
     private readonly string scratch = Path.Combine(Path.GetTempPath(), "cliread-" + Guid.NewGuid().ToString("N"));
 
@@ -95,10 +94,9 @@ public class CliReadTests : IDisposable
     }
 
     private static List<string> Files(string root) =>
-        Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+        [.. Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'))
-            .Order(StringComparer.Ordinal)
-            .ToList();
+            .Order(StringComparer.Ordinal)];
 
     private static void CopyTree(string from, string to)
     {

@@ -146,10 +146,10 @@ public static class CliRunner
             case "snapshot":
                 return Node(StoreWorld.Open(Required(world)).CurrentSnapshot());
             case "since":
-            {
-                var (deltas, events) = StoreWorld.Open(Required(world)).Since(Version(request));
-                return new JsonObject { ["deltas"] = Node(deltas), ["events"] = Node(events) };
-            }
+                {
+                    var (deltas, events) = StoreWorld.Open(Required(world)).Since(Version(request));
+                    return new JsonObject { ["deltas"] = Node(deltas), ["events"] = Node(events) };
+                }
             case "attempts":
                 return new JsonObject { ["attempts"] = Node(StoreWorld.Open(Required(world)).Attempts(Version(request))) };
             case "verify":
@@ -168,11 +168,11 @@ public static class CliRunner
                         JsonReads.SafeInt(request["based_on_version"])),
                     Flag(request["include_snapshot"]));
             case "beat":
-            {
-                var results = StoreWorld.Open(Required(world)).Beat(Commands(request["commands"]), JsonReads.SafeInt(request["based_on_version"]));
-                var includeSnapshot = Flag(request["include_snapshot"]);
-                return new JsonObject { ["results"] = new JsonArray(results.Select(result => (JsonNode?)Answer(result, includeSnapshot)).ToArray()) };
-            }
+                {
+                    var results = StoreWorld.Open(Required(world)).Beat(Commands(request["commands"]), JsonReads.SafeInt(request["based_on_version"]));
+                    var includeSnapshot = Flag(request["include_snapshot"]);
+                    return new JsonObject { ["results"] = new JsonArray([.. results.Select(result => (JsonNode?)Answer(result, includeSnapshot))]) };
+                }
             case "round":
                 return Round(StoreWorld.Open(Required(world)).TakeRound(Commands(request["moves"])));
             case "check":
@@ -184,16 +184,16 @@ public static class CliRunner
             case "observe":
                 return StoreWorld.Open(Required(world)).Observe(Text(request, "observer"), JsonReads.SafeInt(request["since"]), JsonReads.SafeInt(request["since_tick"]));
             case "schedule":
-            {
-                var filter = request["filter"] as JsonObject ?? new JsonObject();
-                return new JsonObject
                 {
-                    ["schedule"] = Node(StoreWorld.Open(Required(world)).Scheduled(
-                        JsonReads.Text(filter["kind"]),
-                        JsonReads.Text(filter["entity"]),
-                        JsonReads.SafeInt(filter["until_tick"]))),
-                };
-            }
+                    var filter = request["filter"] as JsonObject ?? new JsonObject();
+                    return new JsonObject
+                    {
+                        ["schedule"] = Node(StoreWorld.Open(Required(world)).Scheduled(
+                            JsonReads.Text(filter["kind"]),
+                            JsonReads.Text(filter["entity"]),
+                            JsonReads.SafeInt(filter["until_tick"]))),
+                    };
+                }
             case "query":
                 return Query(StoreWorld.Open(Required(world)), request["query"] as JsonObject ?? throw new WorldError("invalid_query", "The request names no query"));
             case "trace":
@@ -205,11 +205,11 @@ public static class CliRunner
                 };
             // A run played again: the new world at `to` is made from `world`'s initial snapshot and set, and answered with its version.
             case "restart":
-            {
-                var to = Text(request, "to");
-                WorldBuilder.Restart(Required(world), to);
-                return new JsonObject { ["snapshot_version"] = StoreWorld.Open(to).CurrentSnapshot().Version };
-            }
+                {
+                    var to = Text(request, "to");
+                    WorldBuilder.Restart(Required(world), to);
+                    return new JsonObject { ["snapshot_version"] = StoreWorld.Open(to).CurrentSnapshot().Version };
+                }
             case "verbs":
                 return new JsonObject { ["verbs"] = VerbRegistry.Catalog() };
             case "schema":
@@ -268,7 +268,7 @@ public static class CliRunner
         ["computed_properties"] = Names(Capabilities.ComputedProperties),
     };
 
-    private static JsonArray Names(IEnumerable<string> names) => new(names.Select(name => (JsonNode?)JsonValue.Create(name)).ToArray());
+    private static JsonArray Names(IEnumerable<string> names) => new([.. names.Select(name => (JsonNode?)JsonValue.Create(name))]);
 
     // The files as they are, judged by the log's replay (`verifyWorld`): the answer names the first place they differ.
     private static JsonObject Verified(string dir)
@@ -367,7 +367,7 @@ public static class CliRunner
         {
             answer["round"] = number;
         }
-        answer["results"] = new JsonArray(outcome.Results.Select(result => (JsonNode?)Answer(result, false)).ToArray());
+        answer["results"] = new JsonArray([.. outcome.Results.Select(result => (JsonNode?)Answer(result, false))]);
         if (outcome.Closing is { } closing)
         {
             answer["closing"] = Answer(closing, false);
@@ -376,9 +376,7 @@ public static class CliRunner
     }
 
     private static List<Command> Commands(JsonNode? node) =>
-        (node as JsonArray ?? throw new WorldError("invalid_request", "The request names no commands"))
-            .Select(item => WorldJson.Read<Command>(item!.ToJsonString()))
-            .ToList();
+        [.. (node as JsonArray ?? throw new WorldError("invalid_request", "The request names no commands")).Select(item => WorldJson.Read<Command>(item!.ToJsonString()))];
 
     private static bool Flag(JsonNode? node) => node is JsonValue value && value.TryGetValue(out bool flag) && flag;
 
@@ -448,7 +446,7 @@ public static class CliRunner
             {
                 ["code"] = rule.Code,
                 ["message"] = rule.Message,
-                ["path"] = new JsonArray(rule.Path.Select(part => (JsonNode?)JsonValue.Create(part)).ToArray()),
+                ["path"] = new JsonArray([.. rule.Path.Select(part => (JsonNode?)JsonValue.Create(part))]),
             });
         }
         return new CliOutput(Line(new JsonObject { ["status"] = "invalid", ["issues"] = issues }), 2);

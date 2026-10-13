@@ -92,8 +92,8 @@ public class StoreReadTests : IDisposable
         var events = WorldFiles.ReadEvents(Fixture);
         var deltas = WorldFiles.ReadDeltas(Fixture);
 
-        Assert.Equal(CanonicalJson.Serialize(Expected["events"]), CanonicalJson.Serialize(new JsonArray(events.Select(e => (JsonNode?)JsonNode.Parse(WorldJson.Write(e))).ToArray())));
-        Assert.Equal(CanonicalJson.Serialize(Expected["deltas"]), CanonicalJson.Serialize(new JsonArray(deltas.Select(d => (JsonNode?)JsonNode.Parse(WorldJson.Write(d))).ToArray())));
+        Assert.Equal(CanonicalJson.Serialize(Expected["events"]), CanonicalJson.Serialize(new JsonArray([.. events.Select(e => (JsonNode?)JsonNode.Parse(WorldJson.Write(e)))])));
+        Assert.Equal(CanonicalJson.Serialize(Expected["deltas"]), CanonicalJson.Serialize(new JsonArray([.. deltas.Select(d => (JsonNode?)JsonNode.Parse(WorldJson.Write(d)))])));
     }
 
     [Fact]

@@ -65,7 +65,7 @@ public class HandlesGoldenTests
         {
             shape["round"] = JsonValue.Create(outcome.Number.Value);
         }
-        shape["results"] = new JsonArray(outcome.Results.Select(result => (JsonNode?)Shape(result)).ToArray());
+        shape["results"] = new JsonArray([.. outcome.Results.Select(result => (JsonNode?)Shape(result))]);
         if (outcome.Closing is not null)
         {
             shape["closing"] = Shape(outcome.Closing);

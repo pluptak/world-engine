@@ -23,7 +23,7 @@ public class SnapshotValidationTests
             var snapshot = WorldJson.Read<Snapshot>(row["snapshot"]!.ToJsonString());
 
             var expected = row["issues"]!.AsArray()
-                .Select(issue => Describe(issue!["code"]!.GetValue<string>(), issue["path"]!.AsArray().Select(part => part!.GetValue<string>()).ToList()))
+                .Select(issue => Describe(issue!["code"]!.GetValue<string>(), [.. issue["path"]!.AsArray().Select(part => part!.GetValue<string>())]))
                 .ToList();
             var actual = SnapshotValidation.Validate(snapshot, Registry)
                 .Select(issue => Describe(issue.Code, issue.Path))

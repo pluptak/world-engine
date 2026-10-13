@@ -91,7 +91,7 @@ public static class Power
     // The devices of one kind (`camera` or `intercom`) whose feed reaches the observer now: each one not destroyed,
     // its control walk ending at the observer and carrying a command, in id order.
     public static List<string> Feeds(Snapshot snapshot, string observer, string kind) =>
-        snapshot.Entities.Keys
+        [.. snapshot.Entities.Keys
             .Order(StringComparer.Ordinal)
             .Where(id =>
             {
@@ -100,8 +100,7 @@ public static class Power
                     && device.Status != EntityStatus.Destroyed
                     && Controller(snapshot, id) == observer
                     && RemoteFaultOf(snapshot, id) is null;
-            })
-            .ToList();
+            })];
 
     // Why an agent cannot act or sense now: a controlled one its own control walk's fault, else its controller's;
     // any other its own power, when it has a `powered_by`. Null for an agent with neither.

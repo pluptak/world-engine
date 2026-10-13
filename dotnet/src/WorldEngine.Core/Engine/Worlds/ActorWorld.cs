@@ -96,12 +96,12 @@ public sealed class ActorWorld
         var output = new JsonObject
         {
             ["actor"] = ActorAlias.Of(key, options["actor"]!.GetValue<string>()),
-            ["ready"] = new JsonArray(options["ready"]!.AsArray().Select(option => (JsonNode?)OptionOut(option!.AsObject(), snapshot)).ToArray()),
+            ["ready"] = new JsonArray([.. options["ready"]!.AsArray().Select(option => (JsonNode?)OptionOut(option!.AsObject(), snapshot))]),
             ["needs_args"] = options["needs_args"]!.DeepClone(),
         };
         if (options["blocked"] is JsonArray blocked)
         {
-            output["blocked"] = new JsonArray(blocked.Select(option => (JsonNode?)OptionOut(option!.AsObject(), snapshot)).ToArray());
+            output["blocked"] = new JsonArray([.. blocked.Select(option => (JsonNode?)OptionOut(option!.AsObject(), snapshot))]);
         }
         return output;
     }
@@ -237,15 +237,15 @@ public sealed class ActorWorld
             ["observer"] = observer,
             ["version"] = JsonValue.Create(parts.Count == 0 ? 0L : parts.Max(part => part["version"]!.GetValue<long>())),
             ["unknown_senses"] = parts.Count == 0 ? new JsonArray() : parts[0]["unknown_senses"]!.DeepClone(),
-            ["entities"] = new JsonArray(entities.Select(entity => (JsonNode?)entity.DeepClone()).ToArray()),
-            ["events"] = new JsonArray(ordered.Select(@event => (JsonNode?)@event.DeepClone()).ToArray()),
+            ["entities"] = new JsonArray([.. entities.Select(entity => (JsonNode?)entity.DeepClone())]),
+            ["events"] = new JsonArray([.. ordered.Select(@event => (JsonNode?)@event.DeepClone())]),
         };
     }
 
-    private List<string> Present() => senses.Where(sense => world.EntityOf(sense) is not null).ToList();
+    private List<string> Present() => [.. senses.Where(sense => world.EntityOf(sense) is not null)];
 
     private JsonObject ObserveAll(long? sinceTick = null) =>
-        Merge(Present().Select(sense => world.Observe(sense, sinceTick: sinceTick)).ToList(), key);
+        Merge([.. Present().Select(sense => world.Observe(sense, sinceTick: sinceTick))], key);
 
     // What the bodies sense after a command, since the version it was applied to: the actor's own observation for its own body, and
     // each other body's since the same version.
@@ -253,9 +253,9 @@ public sealed class ActorWorld
     {
         var since = result.Status == Status.Ok ? result.Snapshot.Version - 1 : world.CurrentSnapshot().Version;
         return Merge(
-            Present().Select(sense => sense == actor && result.Observation is not null
+            [.. Present().Select(sense => sense == actor && result.Observation is not null
                 ? result.Observation
-                : world.Observe(sense, since: since)).ToList(),
+                : world.Observe(sense, since: since))],
             key);
     }
 
@@ -294,7 +294,7 @@ public sealed class ActorWorld
         if (copy["holds"] is JsonArray holds)
         {
             var aliased = holds.Select(holder => Alias(JsonReads.Text(holder)!)).Order(StringComparer.Ordinal);
-            copy["holds"] = new JsonArray(aliased.Select(text => (JsonNode?)JsonValue.Create(text)).ToArray());
+            copy["holds"] = new JsonArray([.. aliased.Select(text => (JsonNode?)JsonValue.Create(text))]);
         }
         return copy;
     }
@@ -362,7 +362,7 @@ public sealed class ActorWorld
         };
         if (result.Candidates is not null)
         {
-            output["candidates"] = new JsonArray(result.Candidates.Select(candidate => (JsonNode?)Alias(candidate)).ToArray());
+            output["candidates"] = new JsonArray([.. result.Candidates.Select(candidate => (JsonNode?)Alias(candidate))]);
         }
         if (result.ReasonCode is not null)
         {

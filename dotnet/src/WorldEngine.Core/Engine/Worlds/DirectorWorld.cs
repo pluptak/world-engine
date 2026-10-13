@@ -94,15 +94,13 @@ public sealed class DirectorWorld(IWorld world)
 
     // The bodies of a slot that are in the world and not destroyed.
     private static List<string> LiveOf(Snapshot snapshot, string slot) =>
-        Runs.DriverBodies(snapshot, slot)
-            .Where(body => snapshot.Entities.TryGetValue(body, out var entity) && entity.Status != EntityStatus.Destroyed)
-            .ToList();
+        [.. Runs.DriverBodies(snapshot, slot).Where(body => snapshot.Entities.TryGetValue(body, out var entity) && entity.Status != EntityStatus.Destroyed)];
 
     // The live bodies of every registered player.
     private List<string> LiveBodies()
     {
         var snapshot = world.CurrentSnapshot();
-        return (snapshot.Run?.Players ?? []).SelectMany(player => LiveOf(snapshot, player.Slot)).ToList();
+        return [.. (snapshot.Run?.Players ?? []).SelectMany(player => LiveOf(snapshot, player.Slot))];
     }
 
     private long? PendingDue(string id)

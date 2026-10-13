@@ -96,10 +96,9 @@ public static partial class Beats
 
     // The entities an `all` reads: each single condition's room, or its entity.
     public static List<string> ConditionSubjects(JsonNode condition) =>
-        ((JsonArray)((JsonObject)condition)["all"]!)
+        [.. ((JsonArray)((JsonObject)condition)["all"]!)
             .Select(single => (JsonObject)single!)
-            .Select(single => TextOf(single.ContainsKey("room") ? single["room"] : single["entity"])!)
-            .ToList();
+            .Select(single => TextOf(single.ContainsKey("room") ? single["room"] : single["entity"])!)];
 
     // The code of the first prop a set_props or update_props action would write that its subject's template refuses, or null
     // (src/engine/validate.ts beatPropRefusal). A missing subject is judged where the beat is scheduled, not here.

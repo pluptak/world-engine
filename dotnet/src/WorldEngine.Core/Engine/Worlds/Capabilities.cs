@@ -27,6 +27,6 @@ public static class Capabilities
         var senses = coverage.Senses.Order(StringComparer.Ordinal)
             .Where(name => !ComputesSense(name))
             .Select(name => new UncomputableName("senses", name));
-        return relations.Concat(senses).ToList();
+        return [.. relations, .. senses];
     }
 }

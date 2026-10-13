@@ -260,11 +260,10 @@ public static class Projection
         {
             inspection["parts"] = parts;
         }
-        inspection["holds"] = new JsonArray(observed
+        inspection["holds"] = new JsonArray([.. observed
             .Where(other => other["facts"] is JsonObject facts
                 && (facts["contained_in"]?.GetValue<string>() == entityId || facts["support"]?.GetValue<string>() == entityId))
-            .Select(other => (JsonNode?)JsonValue.Create(other["id"]!.GetValue<string>()))
-            .ToArray());
+            .Select(other => (JsonNode?)JsonValue.Create(other["id"]!.GetValue<string>()))]);
         return inspection;
     }
 
@@ -309,5 +308,5 @@ public static class Projection
         : new JsonObject { ["x"] = JsonValue.Create(pos.X), ["y"] = JsonValue.Create(pos.Y) };
 
     private static JsonArray Strings(IEnumerable<string> values) =>
-        new(values.Select(value => (JsonNode?)JsonValue.Create(value)).ToArray());
+        new([.. values.Select(value => (JsonNode?)JsonValue.Create(value))]);
 }

@@ -34,10 +34,9 @@ public static class VerbRegistry
     };
 
     // The catalog: every verb's declared shape, sorted by name, as the JSON the catalog returns.
-    public static JsonArray Catalog() => new(All.Keys
+    public static JsonArray Catalog() => new([.. All.Keys
         .Order(StringComparer.Ordinal)
-        .Select(name => (JsonNode?)Entry(name, All[name]))
-        .ToArray());
+        .Select(name => (JsonNode?)Entry(name, All[name]))]);
 
     private static JsonObject Entry(string name, Pipeline.VerbDecl decl)
     {
@@ -48,16 +47,15 @@ public static class VerbRegistry
             ["requires_target"] = decl.RequiresTarget,
             ["args"] = JsonNode.Parse(spec.Args),
             ["duration"] = JsonNode.Parse(spec.Duration),
-            ["requires"] = new JsonArray((decl.Requires ?? [])
+            ["requires"] = new JsonArray([.. (decl.Requires ?? [])
                 .Select(requirement => (JsonNode?)new JsonObject
                 {
                     ["capacity"] = requirement.Capacity,
                     ["at_least"] = requirement.AtLeast,
-                })
-                .ToArray()),
+                })]),
             ["carry_alternatives"] = JsonNode.Parse(spec.CarryAlternatives),
             ["attack_modes"] = JsonNode.Parse(spec.AttackModes),
-            ["refuses"] = new JsonArray(spec.Refuses.Select(code => (JsonNode?)code).ToArray()),
+            ["refuses"] = new JsonArray([.. spec.Refuses.Select(code => (JsonNode?)code)]),
         };
     }
 }

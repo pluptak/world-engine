@@ -66,7 +66,7 @@ public static class Carry
             return Pipeline.Refused("too_large");
         }
         var size = itemTemplate.SizeCm;
-        var fit = Fit.Misfit([size.W, size.D, size.H], space.Inner.Select(value => (double)value).ToList());
+        var fit = Fit.Misfit([size.W, size.D, size.H], [.. space.Inner.Select(value => (double)value)]);
         return fit is null
             ? null
             : Pipeline.Refused("too_large", Pipeline.Reason(("item_cm", fit.Value.ItemCm), ("space_cm", fit.Value.SpaceCm)));
@@ -120,11 +120,10 @@ public static class Carry
 
     // Everything the holder carries that names one of its parts, in id order.
     public static IReadOnlyList<HeldItem> HeldInParts(Snapshot snapshot, string holderId) =>
-        snapshot.Entities.Keys.Order(StringComparer.Ordinal)
+        [.. snapshot.Entities.Keys.Order(StringComparer.Ordinal)
             .Select(id => snapshot.Entities[id])
             .Where(entity => entity.ContainedIn == holderId && entity.InPart is not null)
-            .Select(entity => new HeldItem(entity.Id, entity.InPart!, HandsOf(entity)))
-            .ToList();
+            .Select(entity => new HeldItem(entity.Id, entity.InPart!, HandsOf(entity)))];
 
     // A two-handed item's other grip: the first grip that is not its primary, in template order.
     public static string? GripSecondary(IReadOnlyList<string> grips, string primary) =>
@@ -177,7 +176,7 @@ public static class Carry
             .ToList();
         var packed = PackGrips(
             grips,
-            HeldInParts(snapshot, holderId).Where(held => held.Id != exclude && grips.Contains(held.InPart)).ToList());
+            [.. HeldInParts(snapshot, holderId).Where(held => held.Id != exclude && grips.Contains(held.InPart))]);
         // An unpackable holder is refused, never written through: every grip reads full.
         var full = packed ?? grips.ToHashSet(StringComparer.Ordinal);
         var hands = HandsOf(item);
