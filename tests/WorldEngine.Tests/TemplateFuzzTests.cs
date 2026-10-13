@@ -34,36 +34,50 @@ public class TemplateFuzzTests : IDisposable
         {
             golden = (JsonObject)JsonNode.Parse(zip)!;
         }
-        Directory.CreateDirectory(dir);
         var source = Path.Combine(AppContext.BaseDirectory, "Fixtures", "templates");
-        foreach (var path in Directory.EnumerateFiles(source))
-        {
-            File.Copy(path, Path.Combine(dir, Path.GetFileName(path)));
-        }
-
-        var differing = new List<string>();
         var cases = (JsonArray)golden["cases"]!;
         Assert.NotEmpty(cases);
-        foreach (var row in cases.Cast<JsonArray>())
+        var rows = cases.Cast<JsonArray>().ToList();
+
+        // The cases are independent, so they run in parallel, each worker on its own copy of the set; differences are reported in case order.
+        var answers = new string[rows.Count];
+        var workers = 0;
+        Parallel.For(0, rows.Count, () =>
         {
-            var template = row[0]!.GetValue<string>();
-            var file = Path.Combine(dir, $"{template}.json");
+            var copy = Path.Combine(dir, $"w{Interlocked.Increment(ref workers)}");
+            Directory.CreateDirectory(copy);
+            foreach (var path in Directory.EnumerateFiles(source))
+            {
+                File.Copy(path, Path.Combine(copy, Path.GetFileName(path)));
+            }
+            return copy;
+        }, (index, _, copy) =>
+        {
+            var row = rows[index];
+            var file = Path.Combine(copy, $"{row[0]!.GetValue<string>()}.json");
             var original = File.ReadAllText(file);
             var mutated = JsonNode.Parse(original)!;
             Mutate(mutated, [.. row[1]!.AsArray().Select(key => key!.GetValue<string>())], (JsonObject)row[2]!);
             File.WriteAllText(file, mutated.ToJsonString());
-            var actual = Answer();
+            answers[index] = Answer(copy);
             File.WriteAllText(file, original);
+            return copy;
+        }, _ => { });
+
+        var differing = new List<string>();
+        for (var index = 0; index < rows.Count; index++)
+        {
+            var row = rows[index];
+            var actual = answers[index];
             if (GoldenUpdate.Enabled)
             {
                 row[3] = actual;
                 continue;
             }
             var expected = row[3]!.GetValue<string>();
-            var sameVerdict = actual == expected;
-            if (!sameVerdict)
+            if (actual != expected)
             {
-                differing.Add($"{template} {row[1]!.ToJsonString()} {row[2]!.ToJsonString()}: {actual} | TypeScript's {expected}");
+                differing.Add($"{row[0]} {row[1]!.ToJsonString()} {row[2]!.ToJsonString()}: {actual} | TypeScript's {expected}");
             }
         }
         if (GoldenUpdate.Enabled)
@@ -74,7 +88,7 @@ public class TemplateFuzzTests : IDisposable
         Assert.True(differing.Count == 0, $"{differing.Count} of {cases.Count} differ, first: {string.Join(" || ", differing.Take(6))}");
     }
 
-    private string Answer()
+    private static string Answer(string dir)
     {
         try
         {

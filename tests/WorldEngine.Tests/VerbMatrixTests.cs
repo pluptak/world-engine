@@ -26,26 +26,32 @@ public class VerbMatrixTests
             golden = (JsonObject)JsonNode.Parse(zip)!;
         }
 
-        var differing = new List<string>();
-        var total = 0;
-        foreach (var (name, rows) in (JsonObject)golden["snapshots"]!)
-        {
-            var snapshot = WorldJson.Read<Snapshot>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", name)));
-            foreach (var row in (JsonArray)rows!)
+        // Every row is one command against a fixed snapshot, so the rows run in parallel; differences are reported in row order.
+        var cases = ((JsonObject)golden["snapshots"]!)
+            .SelectMany(pair =>
             {
-                total += 1;
-                var command = WorldJson.Read<Command>(row![0]!.ToJsonString());
-                var expected = row[1]!.GetValue<string>();
-                var actual = Answer(snapshot, command);
-                if (GoldenUpdate.Enabled)
-                {
-                    row[1] = actual;
-                    continue;
-                }
-                if (actual != expected && !(expected.StartsWith("throw|") && actual.StartsWith("throw|")))
-                {
-                    differing.Add($"{name} {row[0]!.ToJsonString()}: {actual}, TypeScript's {expected}");
-                }
+                var snapshot = WorldJson.Read<Snapshot>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", pair.Key)));
+                return ((JsonArray)pair.Value!).Select(row => (Name: pair.Key, Snapshot: snapshot, Row: (JsonArray)row!));
+            })
+            .ToList();
+        var total = cases.Count;
+        var answers = new string[total];
+        Parallel.For(0, total, index => answers[index] = Answer(cases[index].Snapshot, WorldJson.Read<Command>(cases[index].Row[0])));
+
+        var differing = new List<string>();
+        for (var index = 0; index < total; index++)
+        {
+            var (name, _, row) = cases[index];
+            var actual = answers[index];
+            if (GoldenUpdate.Enabled)
+            {
+                row[1] = actual;
+                continue;
+            }
+            var expected = row[1]!.GetValue<string>();
+            if (actual != expected && !(expected.StartsWith("throw|") && actual.StartsWith("throw|")))
+            {
+                differing.Add($"{name} {row[0]!.ToJsonString()}: {actual}, TypeScript's {expected}");
             }
         }
         if (GoldenUpdate.Enabled)
@@ -68,7 +74,7 @@ public class VerbMatrixTests
         {
             return $"throw|{error.Message}";
         }
-        var reasonData = result.ReasonData is null ? "null" : CanonicalJson.Serialize(JsonNode.Parse(WorldJson.Write(result.ReasonData)));
+        var reasonData = result.ReasonData is null ? "null" : WorldJson.Write(result.ReasonData);
         var line = string.Join('|', result.Status.ToString().ToLowerInvariant(), result.ReasonCode ?? "", result.ResolvedTarget ?? "", reasonData);
         return result.Status == Status.Ok
             ? $"{line}|{Hash8(result.Snapshot)}|{Hash8(result.Events)}|{Hash8(result.Deltas)}"

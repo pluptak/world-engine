@@ -24,16 +24,17 @@ public class PropertyTraceTests
     {
         var registry = Registry();
         var initial = Initial();
-        var failures = new List<string>();
-        var seeds = 0;
-        var records = new List<JsonObject>();
-        foreach (var record in Records())
+        // The seeds are independent worlds, so they replay in parallel; failures are reported in seed order.
+        var records = Records().ToList();
+        var failed = new string?[records.Count];
+        Parallel.For(0, records.Count, index =>
         {
-            seeds += 1;
-            records.Add(record);
-            var world = new MemoryWorld(initial, registry, initial.TemplatesHash);
-            Replay(world, record, failures);
-        }
+            var failures = new List<string>();
+            Replay(new MemoryWorld(initial, registry, initial.TemplatesHash), records[index], failures);
+            failed[index] = failures.FirstOrDefault();
+        });
+        var seeds = records.Count;
+        var failures = failed.OfType<string>().ToList();
         if (GoldenUpdate.Enabled)
         {
             WriteTrace(records);
@@ -53,9 +54,12 @@ public class PropertyTraceTests
         var scratch = Path.Combine(Path.GetTempPath(), "property-store-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var failures = new List<string>();
-            foreach (var record in Records().Take(60))
+            var records = Records().Take(60).ToList();
+            var failed = new List<string>[records.Count];
+            Parallel.For(0, records.Count, index =>
             {
+                var record = records[index];
+                var failures = failed[index] = [];
                 var dir = Path.Combine(scratch, $"seed-{record["seed"]}");
                 WorldBuilder.Create(dir, initial, registry, new Dictionary<string, string>());
                 var world = StoreWorld.Open(dir);
@@ -66,11 +70,12 @@ public class PropertyTraceTests
                     failures.Add($"seed {record["seed"]}: verify names {verdict.Divergence}");
                 }
                 var reopened = StoreWorld.Open(dir).CurrentSnapshot();
-                if (Hash(JsonNode.Parse(WorldJson.Write(reopened))) != Hash(JsonNode.Parse(WorldJson.Write(world.CurrentSnapshot()))))
+                if (WorldJson.Write(reopened) != WorldJson.Write(world.CurrentSnapshot()))
                 {
                     failures.Add($"seed {record["seed"]}: a fresh open reads another snapshot");
                 }
-            }
+            });
+            var failures = failed.SelectMany(list => list).ToList();
             Assert.True(failures.Count == 0, $"{failures.Count} problems, first: {string.Join("; ", failures.Take(5))}");
         }
         finally
@@ -101,7 +106,7 @@ public class PropertyTraceTests
             if (GoldenUpdate.Enabled)
             {
                 recorded["result"] = Hash(MemoryGoldenTests.Shape(result));
-                recorded["snapshot"] = Hash(JsonNode.Parse(WorldJson.Write(world.CurrentSnapshot())));
+                recorded["snapshot"] = SnapshotHash(world);
                 continue;
             }
             if (Hash(MemoryGoldenTests.Shape(result)) != recorded["result"]!.GetValue<string>())
@@ -109,7 +114,7 @@ public class PropertyTraceTests
                 failures.Add($"seed {seed} step {index}: the answer differs ({step.ToJsonString()})");
                 return;
             }
-            if (Hash(JsonNode.Parse(WorldJson.Write(world.CurrentSnapshot()))) != recorded["snapshot"]!.GetValue<string>())
+            if (SnapshotHash(world) != recorded["snapshot"]!.GetValue<string>())
             {
                 failures.Add($"seed {seed} step {index}: the snapshot differs ({step.ToJsonString()})");
                 return;
@@ -158,6 +163,10 @@ public class PropertyTraceTests
         return TemplateResolver.Resolve(declared);
     }
 
-    private static string Hash(JsonNode? value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(CanonicalJson.Serialize(value)))).ToLowerInvariant();
+    private static string Hash(JsonNode? value) => HashText(CanonicalJson.Serialize(value));
+
+    // WorldJson.Write is canonical already, so the snapshot's text is hashed as written.
+    private static string SnapshotHash(IWorld world) => HashText(WorldJson.Write(world.CurrentSnapshot()));
+
+    private static string HashText(string text) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant();
 }

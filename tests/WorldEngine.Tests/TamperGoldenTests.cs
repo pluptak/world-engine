@@ -49,20 +49,23 @@ public class TamperGoldenTests : IDisposable
 
         var cases = (JsonArray)golden["cases"]!;
         Assert.NotEmpty(cases);
-        var number = 0;
-        foreach (var node in cases)
+        // Each case damages its own copy, so they run in parallel; problems are reported in case order.
+        var found = new List<string>[cases.Count];
+        Parallel.For(0, cases.Count, index =>
         {
-            number += 1;
-            var dir = Path.Combine(scratch, $"c{number}");
+            var node = cases[index]!;
+            var dir = Path.Combine(scratch, $"c{index + 1}");
             MixedWorld.CopyDirectory(pristine, dir);
-            Tamper(dir, node!["file"]!.GetValue<string>(), (JsonObject)node["op"]!);
+            Tamper(dir, node["file"]!.GetValue<string>(), (JsonObject)node["op"]!);
+            found[index] = [];
             if (GoldenUpdate.Enabled)
             {
                 node["observed"] = MixedWorld.Observe(dir);
-                continue;
+                return;
             }
-            MixedWorld.Compare(node["name"]!.GetValue<string>(), MixedWorld.Observe(dir), node["observed"]!, problems);
-        }
+            MixedWorld.Compare(node["name"]!.GetValue<string>(), MixedWorld.Observe(dir), node["observed"]!, found[index]);
+        });
+        problems.AddRange(found.SelectMany(list => list));
         if (GoldenUpdate.Enabled)
         {
             GoldenUpdate.Write("tamper-golden.expected.json", golden);

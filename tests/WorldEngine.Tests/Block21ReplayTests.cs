@@ -41,38 +41,18 @@ public class Block21ReplayTests : IDisposable
         Assert.Equal(rows.Count, trace.Count);
 
         var replay = new Replay(Path.Combine(scratch, "replay"), Path.Combine(Fixtures, "root"));
-        var mismatches = new List<string>();
-        for (var index = 0; index < trace.Count; index++)
+        // Each request touches one world (the first folder under {TMP}), and no request reads another world, so the worlds replay in
+        // parallel, each in its recorded order. Mismatches are reported in request order.
+        var found = new string?[trace.Count];
+        var worlds = Enumerable.Range(0, trace.Count).GroupBy(index => WorldOf(trace[index])).ToList();
+        Parallel.ForEach(worlds, world =>
         {
-            var line = trace[index];
-            var kind = line["kind"]!.GetValue<string>();
-            CliOutput output;
-            if (kind == "init")
+            foreach (var index in world)
             {
-                var args = new List<string> { "init", replay.Into(line["dir"]!.GetValue<string>()), replay.Scene(index, line["scene"]!) };
-                if (line["coverage"] is JsonNode coverage)
-                {
-                    args.Add(replay.Coverage(index, coverage));
-                }
-                output = CliRunner.Run(args, "");
+                found[index] = Answer(replay, trace[index], index, rows[index]!);
             }
-            else if (kind == "cli")
-            {
-                var args = line["args"]!.AsArray().Select(arg => replay.Into(arg!.GetValue<string>())).ToList();
-                var input = line["input"] is JsonNode text ? replay.IntoJson(text.GetValue<string>()) : "";
-                output = CliRunner.Run(args, input);
-            }
-            else
-            {
-                throw new InvalidDataException($"unknown trace line {kind}");
-            }
-
-            var expected = rows[index]!;
-            if (expected["stdout"]!.GetValue<string>() != replay.OutOf(output.Stdout) || expected["status"]!.GetValue<int>() != output.Status)
-            {
-                mismatches.Add($"request {index} ({kind}): the answer differs from TypeScript's: expected {Snip(expected["stdout"]!.GetValue<string>())} {expected["status"]}, got {Snip(replay.OutOf(output.Stdout))} {output.Status}");
-            }
-        }
+        });
+        var mismatches = found.OfType<string>().ToList();
 
         foreach (var (placeholder, files) in manifest)
         {
@@ -84,6 +64,41 @@ public class Block21ReplayTests : IDisposable
         }
         Assert.True(mismatches.Count == 0, $"{mismatches.Count} mismatches, first: {string.Join("; ", mismatches.Take(10))}");
     }
+
+    // One recorded request through the command line: null when it answers as TypeScript's did, else what differs.
+    private static string? Answer(Replay replay, JsonObject line, int index, JsonNode expected)
+    {
+        var kind = line["kind"]!.GetValue<string>();
+        CliOutput output;
+        if (kind == "init")
+        {
+            var args = new List<string> { "init", replay.Into(line["dir"]!.GetValue<string>()), replay.Scene(index, line["scene"]!) };
+            if (line["coverage"] is JsonNode coverage)
+            {
+                args.Add(replay.Coverage(index, coverage));
+            }
+            output = CliRunner.Run(args, "");
+        }
+        else if (kind == "cli")
+        {
+            var args = line["args"]!.AsArray().Select(arg => replay.Into(arg!.GetValue<string>())).ToList();
+            var input = line["input"] is JsonNode text ? replay.IntoJson(text.GetValue<string>()) : "";
+            output = CliRunner.Run(args, input);
+        }
+        else
+        {
+            throw new InvalidDataException($"unknown trace line {kind}");
+        }
+        return expected["stdout"]!.GetValue<string>() != replay.OutOf(output.Stdout) || expected["status"]!.GetValue<int>() != output.Status
+            ? $"request {index} ({kind}): the answer differs from TypeScript's: expected {Snip(expected["stdout"]!.GetValue<string>())} {expected["status"]}, got {Snip(replay.OutOf(output.Stdout))} {output.Status}"
+            : null;
+    }
+
+    // The world a request touches: the first folder after {TMP} in its recorded text.
+    private static string WorldOf(JsonObject line) =>
+        Regex.Match(line.ToJsonString(), @"\{TMP\}[\\/]+([^\\/""]+)") is { Success: true } match
+            ? match.Groups[1].Value
+            : throw new InvalidDataException($"a request names no world: {Snip(line.ToJsonString())}");
 
     private static string Snip(string text) => text.Length > 240 ? text[..240] + "..." : text;
 
