@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 using WorldEngine.Cli;
 
@@ -67,15 +68,22 @@ public static class HostRun
             {
                 break;
             }
+            var clock = Stopwatch.StartNew();
             var pending = handles.Select(h =>
             {
                 var observation = Call(new JsonObject { ["op"] = "player_observe", ["world"] = dir, ["handle"] = h.Handle });
-                return (h.Handle, Answer: Safely(players[h.Handle], new Turn(round, observation)));
+                return (h.Handle, Answer: Stamped(Safely(players[h.Handle], new Turn(round, observation)), clock));
             }).ToList();
-            // One deadline for the whole round: an answer that comes after it is dropped, not submitted later.
+            // One deadline for the whole round: an answer that comes after it is dropped, not submitted later. Each answer is stamped
+            // when it arrives and the stamp is what counts, so a host that stalls past the deadline still takes the answers that came
+            // before it, and one that came after is late however soon the host looks.
+            var deadlineAt = clock.Elapsed + TimeSpan.FromMilliseconds(timeoutMs);
             var deadline = Task.Delay(timeoutMs);
-            // The deadline is listed first, so when a stalled host sees both finished it still counts the answer as late.
-            var settled = await Task.WhenAll(pending.Select(async p => (p.Handle, p.Answer, OnTime: await Task.WhenAny(deadline, p.Answer) == p.Answer)));
+            var settled = await Task.WhenAll(pending.Select(async p =>
+            {
+                await Task.WhenAny(deadline, p.Answer);
+                return (p.Handle, p.Answer, OnTime: p.Answer.IsCompletedSuccessfully && p.Answer.Result.At <= deadlineAt);
+            }));
             foreach (var (handle, answer, onTime) in settled)
             {
                 if (!onTime)
@@ -83,7 +91,7 @@ public static class HostRun
                     dropped.Add(new Dropped(round, handle));
                     continue;
                 }
-                var value = answer.Result;
+                var value = answer.Result.Value;
                 var moves = value is JsonArray list ? list.Select(m => m!).ToList() : value is JsonObject ? [value] : new List<JsonNode>();
                 foreach (var move in moves)
                 {
@@ -100,6 +108,13 @@ public static class HostRun
         }
         var last = SnapshotOf();
         return new HostResult(round, last["run"]?["ended"]?["reason"]?.GetValue<string>(), dropped);
+    }
+
+    // An answer with the time it arrived. An answer ready at once is stamped at once, before the deadline is set.
+    private static async Task<(JsonNode Value, TimeSpan At)> Stamped(Task<JsonNode> answer, Stopwatch clock)
+    {
+        var value = await answer;
+        return (value, clock.Elapsed);
     }
 
     // A player that throws passes.

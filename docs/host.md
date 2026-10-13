@@ -11,7 +11,8 @@ each answer as `player_submit`, then `director_close_round`.
 **Players.** A player is an async function of a `Turn` (`Round`, `Observation`). It answers a move, an array
 of moves (one per body), or `"idle"`. The host waits for each player at most `timeout_ms` per
 round, one deadline for the whole round. A player that is still answering at the deadline has
-its answer dropped, not submitted later; a player that throws passes.
+its answer dropped, not submitted later; a player that throws passes. Lateness is judged by when
+the answer arrived, not by when the host looks, so a host that stalls drops nothing on time.
 
 **The plan.** `{ timeout_ms, handles: { <handle>: { slot, moves } } }`. `slot` is the scene's
 entity name (unique in the world). `moves[n]` is the answer for round `n`, one of the forms
