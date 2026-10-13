@@ -146,6 +146,13 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   snapshots; all answers, refusals and effect hashes equal TypeScript's, first run) and `template-fuzz` (2,506 mutated template sets:
   accept or refuse, and the message word for word). The fuzz found that .NET read a half-written template with defaults (a missing
   `size_cm`, `every_ticks: null`, a `then: {}` ...) where TypeScript refuses it; `TemplateShape` now checks the JSON as `parseDecl` does.
+- **Phase 1 status (2026-10-13):** exit criteria met, with two items left as judgement calls. The .NET suite is green (5,808 tests, no
+  known failures), and the corpus comparison has no unexplained difference: 15,000 generated steps on memory worlds and 1,800 on store
+  worlds, 31,859 verb commands, 130 damaged and 17 re-set stored worlds, 2,506 mutated template sets, 147 beat shapes, the refine
+  cases, plus the earlier goldens. Line coverage is 92.6% and branch coverage 85.3%; what is left is mostly guards that throw on
+  states no input reaches. Left: `WorldLock` (39 lines, the cross-process takeover cases `store-lock.test.ts` spawns processes for;
+  `WorldLockProcessTests` covers turn-taking) and `PlayerWorld` (27 lines, the `body_out` and `not_registered` refusals). Neither is a
+  reason to hold Phase 2.
 
 ## Deliberate deviations from TypeScript
 
