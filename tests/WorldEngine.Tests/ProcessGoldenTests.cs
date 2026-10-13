@@ -21,6 +21,7 @@ public class ProcessGoldenTests
     public void Process_rows_match_TypeScript()
     {
         var rows = JsonNode.Parse(ReadFixture("process-golden.expected.json"))!.AsArray();
+        Assert.NotEmpty(rows);
 
         foreach (var row in rows)
         {

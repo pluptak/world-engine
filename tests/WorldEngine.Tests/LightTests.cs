@@ -24,6 +24,7 @@ public class LightTests
     public void Light_and_douse_results_match_TypeScript()
     {
         var rows = JsonNode.Parse(ReadFixture("light-golden.expected.json"))!.AsArray();
+        Assert.NotEmpty(rows);
         var snapshots = new Dictionary<string, Snapshot>(StringComparer.Ordinal);
 
         foreach (var row in rows)

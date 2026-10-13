@@ -25,6 +25,7 @@ public class PipelineScreenTests
     public void The_front_screens_each_command_as_TypeScript_does()
     {
         var rows = JsonNode.Parse(ReadFixture("pipeline-screen.expected.json"))!.AsArray();
+        Assert.NotEmpty(rows);
         var snapshots = new Dictionary<string, Snapshot>(StringComparer.Ordinal);
 
         foreach (var row in rows)

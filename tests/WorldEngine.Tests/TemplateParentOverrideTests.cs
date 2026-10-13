@@ -1,3 +1,4 @@
+using System.Text.Json;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Templates;
 
@@ -13,6 +14,7 @@ public class TemplateParentOverrideTests
             """{"id":"c","extends":"r","part_overrides":{"arm":{"parent":null}}}""");
 
         Assert.True(decl.PartOverrides!.ContainsKey("arm"));
+        Assert.Equal(JsonValueKind.Null, decl.PartOverrides["arm"].Parent.ValueKind);
     }
 
     [Fact]

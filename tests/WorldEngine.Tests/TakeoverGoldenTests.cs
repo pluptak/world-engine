@@ -44,6 +44,7 @@ public class TakeoverGoldenTests : IDisposable
         }
 
         var number = 0;
+        Assert.NotEmpty((JsonArray)golden["cases"]!);
         foreach (var node in (JsonArray)golden["cases"]!)
         {
             number += 1;

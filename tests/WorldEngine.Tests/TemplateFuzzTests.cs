@@ -43,6 +43,7 @@ public class TemplateFuzzTests : IDisposable
 
         var differing = new List<string>();
         var cases = (JsonArray)golden["cases"]!;
+        Assert.NotEmpty(cases);
         foreach (var row in cases.Cast<JsonArray>())
         {
             var template = row[0]!.GetValue<string>();

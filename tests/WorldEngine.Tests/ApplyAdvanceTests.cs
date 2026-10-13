@@ -24,6 +24,7 @@ public class ApplyAdvanceTests
     public void Advance_results_match_TypeScript()
     {
         var rows = JsonNode.Parse(ReadFixture("advance-golden.expected.json"))!.AsArray();
+        Assert.NotEmpty(rows);
         var snapshots = new Dictionary<string, Snapshot>(StringComparer.Ordinal);
 
         foreach (var row in rows)

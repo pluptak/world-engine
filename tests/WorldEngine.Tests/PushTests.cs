@@ -25,6 +25,7 @@ public class PushTests
     public void Push_and_pull_results_match_TypeScript()
     {
         var rows = JsonNode.Parse(ReadFixture("push-golden.expected.json"))!.AsArray();
+        Assert.NotEmpty(rows);
         var snapshots = new Dictionary<string, Snapshot>(StringComparer.Ordinal);
 
         foreach (var row in rows)

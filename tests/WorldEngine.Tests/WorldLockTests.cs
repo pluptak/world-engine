@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Store;
 
@@ -132,7 +133,15 @@ public class WorldLockTests : IDisposable
 
         Assert.Contains("nonce", first);
         Assert.Contains("nonce", second);
-        Assert.NotEqual(first, second);
+        Assert.NotEqual(NonceOf(first), NonceOf(second));
+    }
+
+    // The nonce the lock names, failing when the lock names none: comparing whole files would pass on differing timestamps alone.
+    private static string NonceOf(string lockText)
+    {
+        var nonce = ((JsonObject)JsonNode.Parse(lockText)!)["nonce"]?.GetValue<string>();
+        Assert.NotNull(nonce);
+        return nonce!;
     }
 
     [Fact]

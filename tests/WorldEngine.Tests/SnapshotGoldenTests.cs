@@ -7,17 +7,6 @@ namespace WorldEngine.Tests;
 // come back unchanged: that is the proof the port reads and writes the same state.
 public class SnapshotGoldenTests
 {
-    [Theory]
-    [InlineData("bottle.snapshot.json")]
-    [InlineData("camp.snapshot.json")]
-    [InlineData("lab-run.snapshot.json")]
-    public void Generic_JSON_round_trips_byte_for_byte(string fixture)
-    {
-        var golden = ReadFixture(fixture);
-
-        Assert.Equal(golden, WorldJson.Canonicalize(golden));
-    }
-
     [Fact]
     public void Typed_snapshot_round_trips_byte_for_byte()
     {

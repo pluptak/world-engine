@@ -18,6 +18,13 @@ public class FormsGoldenTests
 
     public static IEnumerable<object[]> ArchitectRows() => Enumerable.Range(0, ((JsonArray)Golden["architect"]!).Count).Select(index => new object[] { index });
 
+    [Fact]
+    public void Form_fixtures_hold_rows()
+    {
+        Assert.NotEmpty((JsonArray)Golden["forms"]!);
+        Assert.NotEmpty((JsonArray)Golden["architect"]!);
+    }
+
     [Theory]
     [MemberData(nameof(FormRows))]
     public void A_form_converts_as_TypeScript_converts_it(int index)

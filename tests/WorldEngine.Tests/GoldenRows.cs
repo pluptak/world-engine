@@ -62,8 +62,13 @@ public static class GoldenRows
         }
     }
 
-    // The rows of a fixture, as the TypeScript generator wrote them.
-    public static JsonArray ReadRows(string fixture) => JsonNode.Parse(ReadFixture(fixture))!.AsArray();
+    // The rows of a fixture, as the TypeScript generator wrote them: never empty, or the golden test looping them proves nothing.
+    public static JsonArray ReadRows(string fixture)
+    {
+        var rows = JsonNode.Parse(ReadFixture(fixture))!.AsArray();
+        Assert.NotEmpty(rows);
+        return rows;
+    }
 
     private static string ReadFixture(string name) =>
         File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", name));

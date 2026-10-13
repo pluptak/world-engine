@@ -24,6 +24,7 @@ public class BleedTests
     public void Bleed_results_match_TypeScript()
     {
         var rows = JsonNode.Parse(ReadFixture("bleed-golden.expected.json"))!.AsArray();
+        Assert.NotEmpty(rows);
         var snapshots = new Dictionary<string, Snapshot>(StringComparer.Ordinal);
 
         foreach (var row in rows)

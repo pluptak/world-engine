@@ -17,6 +17,7 @@ public class SnapshotValidationTests
     public void Variants_report_the_issues_TypeScript_reports()
     {
         var rows = JsonNode.Parse(ReadFixture("validate-golden.expected.json"))!.AsArray();
+        Assert.NotEmpty(rows);
         foreach (var row in rows)
         {
             var name = row!["name"]!.GetValue<string>();

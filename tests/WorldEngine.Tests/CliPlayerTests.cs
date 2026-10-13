@@ -30,6 +30,7 @@ public class CliPlayerTests : IDisposable
     [Fact]
     public void The_player_and_director_ops_answer_as_the_TypeScript_CLI_does_in_order()
     {
+        Assert.NotEmpty(Rows);
         var dir = Path.Combine(scratch, "world");
         CopyTree(Golden, dir);
 

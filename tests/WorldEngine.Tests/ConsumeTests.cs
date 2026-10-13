@@ -33,6 +33,7 @@ public class ConsumeTests
     private static void AssertMatchesTypeScript(string golden)
     {
         var rows = JsonNode.Parse(ReadFixture(golden))!.AsArray();
+        Assert.NotEmpty(rows);
         var snapshots = new Dictionary<string, Snapshot>(StringComparer.Ordinal);
 
         foreach (var row in rows)

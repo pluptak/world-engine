@@ -26,6 +26,7 @@ public class DropTests
     public void Drop_results_match_TypeScript()
     {
         var rows = JsonNode.Parse(ReadFixture("drop-golden.expected.json"))!.AsArray();
+        Assert.NotEmpty(rows);
         var snapshots = new Dictionary<string, Snapshot>(StringComparer.Ordinal);
 
         foreach (var row in rows)

@@ -48,6 +48,7 @@ public class TamperGoldenTests : IDisposable
         }
 
         var cases = (JsonArray)golden["cases"]!;
+        Assert.NotEmpty(cases);
         var number = 0;
         foreach (var node in cases)
         {

@@ -10,7 +10,9 @@ public class LogRecordsTests
     [Fact]
     public void Log_lines_round_trip_as_attempts()
     {
-        foreach (var line in Lines("sample-log.jsonl"))
+        var log = Lines("sample-log.jsonl").ToList();
+        Assert.NotEmpty(log);
+        foreach (var line in log)
         {
             var attempt = WorldJson.Read<Attempt>(line);
 
@@ -21,7 +23,9 @@ public class LogRecordsTests
     [Fact]
     public void Event_lines_round_trip_as_world_events()
     {
-        foreach (var line in Lines("sample-events.jsonl"))
+        var events = Lines("sample-events.jsonl").ToList();
+        Assert.NotEmpty(events);
+        foreach (var line in events)
         {
             var worldEvent = WorldJson.Read<WorldEvent>(line);
 
@@ -32,7 +36,9 @@ public class LogRecordsTests
     [Fact]
     public void Delta_lines_round_trip_as_deltas()
     {
-        foreach (var line in Lines("sample-deltas.jsonl"))
+        var deltas = Lines("sample-deltas.jsonl").ToList();
+        Assert.NotEmpty(deltas);
+        foreach (var line in deltas)
         {
             var delta = WorldJson.Read<Delta>(line);
 

@@ -59,7 +59,9 @@ public class HostRunTests : IDisposable
     [Fact]
     public async Task A_late_answer_is_dropped_so_its_move_is_not_in_the_log_or_the_transcript()
     {
-        var (dir, _) = await Play();
+        var (dir, result) = await Play();
+        Assert.Equal(2, result.Rounds);
+        Assert.Contains("ann-key", Attempts(dir).Keys);
         Assert.DoesNotContain("dee-close", Attempts(dir).Keys);
         Assert.DoesNotContain("dee-close", File.ReadAllText(Path.Combine(dir, "transcript.jsonl")));
     }

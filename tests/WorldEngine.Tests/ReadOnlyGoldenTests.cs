@@ -35,6 +35,7 @@ public class ReadOnlyGoldenTests
             }),
             "the engine's capabilities differ from TypeScript's");
 
+        Assert.NotEmpty(capabilities["uncomputable"]!.AsArray());
         foreach (var row in capabilities["uncomputable"]!.AsArray())
         {
             var coverage = WorldJson.Read<Coverage>(row!["coverage"]!.ToJsonString());
@@ -47,6 +48,7 @@ public class ReadOnlyGoldenTests
     [Fact]
     public void Order_ops_match_TypeScript()
     {
+        Assert.NotEmpty(Golden["compare"]!.AsArray());
         foreach (var row in Golden["compare"]!.AsArray())
         {
             var holds = OrderOps.Holds(
@@ -64,6 +66,7 @@ public class ReadOnlyGoldenTests
         var schedule = Golden["schedule"]!;
         var snapshot = WorldJson.Read<Snapshot>(schedule["snapshot"]!.ToJsonString());
 
+        Assert.NotEmpty(schedule["scheduled"]!.AsArray());
         foreach (var row in schedule["scheduled"]!.AsArray())
         {
             var filter = row!["filter"]!;

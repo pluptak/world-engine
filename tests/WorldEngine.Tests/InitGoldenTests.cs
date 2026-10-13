@@ -29,7 +29,9 @@ public class InitGoldenTests : IDisposable
     [Fact]
     public void The_init_op_answers_and_makes_the_worlds_as_TypeScript_does()
     {
-        foreach (var row in Rows.Where(row => row!["argv"] is not null).Select(row => row!))
+        var init = Rows.Where(row => row!["argv"] is not null).Select(row => row!).ToList();
+        Assert.NotEmpty(init);
+        foreach (var row in init)
         {
             var name = row["name"]?.GetValue<string>();
             var dir = Path.Combine(scratch, name ?? "unnamed");
@@ -62,7 +64,9 @@ public class InitGoldenTests : IDisposable
         var missing = Path.Combine(scratch, "none");
         CopyTree(Path.Combine(Fixtures, "init", "lab-run"), source);
 
-        foreach (var row in Rows.Where(row => row!["request"] is not null).Select(row => row!))
+        var restart = Rows.Where(row => row!["request"] is not null).Select(row => row!).ToList();
+        Assert.NotEmpty(restart);
+        foreach (var row in restart)
         {
             var request = (JsonObject)row["request"]!.DeepClone();
             request["world"] = request["world"]!.GetValue<string>() switch

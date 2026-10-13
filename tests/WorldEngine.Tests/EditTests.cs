@@ -22,6 +22,7 @@ public class EditTests
     public void Edit_results_match_TypeScript()
     {
         var rows = JsonNode.Parse(ReadFixture("edit-golden.expected.json"))!.AsArray();
+        Assert.NotEmpty(rows);
         var snapshot = WorldJson.Read<Snapshot>(ReadFixture("edit-base.snapshot.json"));
 
         foreach (var row in rows)

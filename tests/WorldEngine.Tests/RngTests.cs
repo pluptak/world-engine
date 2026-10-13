@@ -12,6 +12,7 @@ public class RngTests
     [Fact]
     public void Each_seed_gives_the_TypeScript_sequence_of_values_and_states()
     {
+        Assert.NotEmpty(Golden["steps"]!.AsArray());
         foreach (var seed in Golden["steps"]!.AsArray())
         {
             var state = (uint)seed!["seed"]!.GetValue<long>();
@@ -29,6 +30,7 @@ public class RngTests
     [Fact]
     public void Round_order_is_the_TypeScript_permutation_for_each_state_and_tick()
     {
+        Assert.NotEmpty(Golden["order"]!.AsArray());
         foreach (var case_ in Golden["order"]!.AsArray())
         {
             var state = (uint)case_!["state"]!.GetValue<long>();
@@ -44,9 +46,11 @@ public class RngTests
     {
         var items = Enumerable.Range(0, 8).ToList();
 
-        var order = Rng.RoundOrder(42u, 7, items);
+        var first = Rng.RoundOrder(42u, 7, items);
+        var second = Rng.RoundOrder(42u, 7, items);
 
-        Assert.Equal(items, order.OrderBy(item => item).ToList());
+        Assert.Equal(items, first.OrderBy(item => item).ToList());
+        Assert.Equal(first, second);
     }
 
     [Theory]

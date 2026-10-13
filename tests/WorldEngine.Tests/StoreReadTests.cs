@@ -272,6 +272,7 @@ public class StoreReadTests : IDisposable
     public void Perceive_answers_on_the_stored_world_as_the_TypeScript_store_does()
     {
         var registry = WorldFiles.ReadTemplates(Fixture);
+        Assert.NotEmpty(Expected["query"]!.AsArray());
         foreach (var row in Expected["query"]!.AsArray().Select(row => row!.AsObject()))
         {
             var sense = row["sense"]!.GetValue<string>();
@@ -324,6 +325,7 @@ public class StoreReadTests : IDisposable
     public void Perceive_from_a_checkpoint_gives_the_same_answers_as_from_initial()
     {
         var registry = WorldFiles.ReadTemplates(Checkpointed);
+        Assert.NotEmpty(Expected["query"]!.AsArray());
         foreach (var row in Expected["query"]!.AsArray().Select(row => row!.AsObject()))
         {
             var sense = row["sense"]!.GetValue<string>();

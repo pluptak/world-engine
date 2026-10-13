@@ -24,6 +24,7 @@ public class PerceiveTests
     public void Event_perceivers_match_TypeScript()
     {
         var rows = JsonNode.Parse(ReadFixture("perceive-golden.expected.json"))!.AsArray();
+        Assert.NotEmpty(rows);
         var snapshots = new Dictionary<string, Snapshot>(StringComparer.Ordinal);
 
         foreach (var row in rows)
