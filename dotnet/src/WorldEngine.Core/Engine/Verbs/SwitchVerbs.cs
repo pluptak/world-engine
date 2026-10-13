@@ -26,16 +26,16 @@ public static class SwitchVerbs
         var target = context.Target;
         if (target is null)
         {
-            return new Pipeline.Refusal(Status.Invalid, "missing_target");
+            return Pipeline.Invalid("missing_target");
         }
         var snapshot = context.Snapshot;
         if (!snapshot.Entities.TryGetValue(target.EntityId, out var entity))
         {
-            return new Pipeline.Refusal(Status.Invalid, "no_such_entity");
+            return Pipeline.Invalid("no_such_entity");
         }
         if (!PropValues.IsTrue(entity.Props, "power_source") && PropValues.GetString(entity.Props, "powered_by") is null)
         {
-            return new Pipeline.Refusal(Status.Refused, "not_switchable");
+            return Pipeline.Refused("not_switchable");
         }
 
         var remote = Remote.WorksRemotely(context, entity);
@@ -51,11 +51,11 @@ public static class SwitchVerbs
         // Flipping a switch already that way would change nothing but the clock. A switch with no `on` is on.
         if (on && !PropValues.IsFalse(entity.Props, "on"))
         {
-            return new Pipeline.Refusal(Status.Refused, "already_on");
+            return Pipeline.Refused("already_on");
         }
         if (!on && PropValues.IsFalse(entity.Props, "on"))
         {
-            return new Pipeline.Refusal(Status.Refused, "already_off");
+            return Pipeline.Refused("already_off");
         }
 
         if (remote)

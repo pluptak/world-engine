@@ -42,7 +42,7 @@ public static class Address
             case Resolve.Resolved resolved:
                 return context.Snapshot.Entities.TryGetValue(resolved.Target.EntityId, out var entity)
                     ? new Addressed(entity, null)
-                    : new Addressed(null, new Pipeline.Refusal(Status.Invalid, "no_such_entity"));
+                    : new Addressed(null, Pipeline.Invalid("no_such_entity"));
             default:
                 throw new InvalidOperationException("Unknown resolution");
         }

@@ -132,16 +132,16 @@ public static class MoveVerb
         var to = door is null ? null : PropValues.GetString(door.Props, "to");
         if (door is null || here is null || from is null || to is null || (from != here && to != here))
         {
-            return (null, new Pipeline.Refusal(Status.Invalid, "invalid_location"));
+            return (null, Pipeline.Invalid("invalid_location"));
         }
         var far = from == here ? to : from;
         if (snapshot.Entities.GetValueOrDefault(far)?.Template != "room")
         {
-            return (null, new Pipeline.Refusal(Status.Invalid, "invalid_location"));
+            return (null, Pipeline.Invalid("invalid_location"));
         }
         return PropValues.IsTrue(door.Props, "open")
             ? (far, null)
-            : (null, new Pipeline.Refusal(Status.Refused, "no_open_door"));
+            : (null, Pipeline.Refused("no_open_door"));
     }
 
     // The destination with any door resolved away: through a door is a move to the room beyond it (`via`).
@@ -187,7 +187,7 @@ public static class MoveVerb
         var asked = DestinationOf(context.Command.Args);
         if (asked is null)
         {
-            return new Pipeline.Refusal(Status.Invalid, "invalid_args");
+            return Pipeline.Invalid("invalid_args");
         }
         var snapshot = context.Snapshot;
         var actor = snapshot.Entities[context.Command.Actor];
@@ -218,12 +218,12 @@ public static class MoveVerb
             var location = snapshot.Entities.GetValueOrDefault(room.Id);
             if (location is null || location.Template != "room" || !NameableRoom(context, room.Id))
             {
-                return new Pipeline.Refusal(Status.Invalid, "invalid_location");
+                return Pipeline.Invalid("invalid_location");
             }
             // Through a door, the door named is the one that was judged open; by room, any open door will do.
             if (!walk.Via && room.Id != actor.Location && !HasOpenDoor(context, room.Id))
             {
-                return new Pipeline.Refusal(Status.Refused, "no_open_door");
+                return Pipeline.Refused("no_open_door");
             }
         }
         return RefusedBy(StopFor(context, walk.To!));
@@ -265,8 +265,8 @@ public static class MoveVerb
     private static Pipeline.Refusal? RefusedBy(Geometry.WalkStop? stop) => stop switch
     {
         null => null,
-        Geometry.Blocked blocked => new Pipeline.Refusal(Status.Refused, "blocked", Pipeline.Reason(("with", blocked.With))),
-        _ => new Pipeline.Refusal(Status.Refused, "out_of_bounds"),
+        Geometry.Blocked blocked => Pipeline.Refused("blocked", Pipeline.Reason(("with", blocked.With))),
+        _ => Pipeline.Refused("out_of_bounds"),
     };
 
     private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)

@@ -61,6 +61,12 @@ public static class Pipeline
         IReadOnlyDictionary<string, JsonNode?>? ReasonData = null,
         IReadOnlyList<string>? Candidates = null);
 
+    // A refusal of a command that is well formed but cannot be done now, with its reason code (and data, when it has some).
+    public static Refusal Refused(string code, IReadOnlyDictionary<string, JsonNode?>? data = null) => new(Status.Refused, code, data);
+
+    // A refusal of a command that names something the world does not hold or is malformed, with its reason code.
+    public static Refusal Invalid(string code) => new(Status.Invalid, code);
+
     // The reason data of a refusal or event: named values, each a string, a number or a boolean.
     public static IReadOnlyDictionary<string, JsonNode?> Reason(params (string Key, object Value)[] pairs) =>
         pairs.ToDictionary(pair => pair.Key, pair => (JsonNode?)JsonValue.Create(pair.Value), StringComparer.Ordinal);

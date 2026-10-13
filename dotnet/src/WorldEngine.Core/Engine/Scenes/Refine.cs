@@ -75,18 +75,18 @@ public static class Refine
     {
         if (!DescendsFrom(next, subject.Template))
         {
-            return new Pipeline.Refusal(Status.Refused, "not_a_refinement");
+            return Pipeline.Refused("not_a_refinement");
         }
         if (RefinedParts(subject, next) is null)
         {
-            return new Pipeline.Refusal(Status.Refused, "unknown_part");
+            return Pipeline.Refused("unknown_part");
         }
         // A part cannot be sounder than the new preset lets it be.
         foreach (var (name, state) in subject.Parts)
         {
             if (state.Integrity > next.Parts.First(part => part.Name == name).MaxIntegrity)
             {
-                return new Pipeline.Refusal(Status.Refused, "integrity_out_of_range");
+                return Pipeline.Refused("integrity_out_of_range");
             }
         }
         var props = RefinedProps(subject, next);
@@ -115,7 +115,7 @@ public static class Refine
                 }
                 if (!PropFields.IsTrue(props.GetValueOrDefault("surface")))
                 {
-                    return new Pipeline.Refusal(Status.Refused, "not_a_surface");
+                    return Pipeline.Refused("not_a_surface");
                 }
                 if (registry.GetValueOrDefault(rider.Template) is { } riderTemplate
                     && Fit.Misfit(new double[] { riderTemplate.SizeCm.W, riderTemplate.SizeCm.D }, footprint) is { } data)

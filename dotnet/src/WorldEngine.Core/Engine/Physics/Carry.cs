@@ -54,22 +54,22 @@ public static class Carry
         var holder = snapshot.Entities.GetValueOrDefault(holderId);
         if (holder is null || !registry.TryGetValue(holder.Template, out var template))
         {
-            return new Pipeline.Refusal(Status.Refused, "unknown_part");
+            return Pipeline.Refused("unknown_part");
         }
         var space = HolderLayout(registry, template.Id).Spaces.FirstOrDefault(candidate => candidate.Name == part);
         if (space.Name is null)
         {
-            return new Pipeline.Refusal(Status.Refused, "unknown_part");
+            return Pipeline.Refused("unknown_part");
         }
         if (!registry.TryGetValue(item.Template, out var itemTemplate))
         {
-            return new Pipeline.Refusal(Status.Refused, "too_large");
+            return Pipeline.Refused("too_large");
         }
         var size = itemTemplate.SizeCm;
         var fit = Fit.Misfit([size.W, size.D, size.H], space.Inner.Select(value => (double)value).ToList());
         return fit is null
             ? null
-            : new Pipeline.Refusal(Status.Refused, "too_large", Pipeline.Reason(("item_cm", fit.Value.ItemCm), ("space_cm", fit.Value.SpaceCm)));
+            : Pipeline.Refused("too_large", Pipeline.Reason(("item_cm", fit.Value.ItemCm), ("space_cm", fit.Value.SpaceCm)));
     }
 
     public static Layout HolderLayout(IReadOnlyDictionary<string, Template> registry, string templateId)

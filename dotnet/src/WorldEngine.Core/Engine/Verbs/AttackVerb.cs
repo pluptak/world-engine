@@ -82,11 +82,11 @@ public static class AttackVerb
     {
         if (context.Target is null)
         {
-            return new Pipeline.Refusal(Status.Invalid, "missing_target");
+            return Pipeline.Invalid("missing_target");
         }
         if (StructureOf(context) is not { } structure)
         {
-            return new Pipeline.Refusal(Status.Invalid, "invalid_attack_target");
+            return Pipeline.Invalid("invalid_attack_target");
         }
 
         var snapshot = context.Snapshot;
@@ -100,7 +100,7 @@ public static class AttackVerb
         var struck = structure.PartName is null ? null : PartStates.Effective(template, entity, structure.PartName);
         if (entity.Status == EntityStatus.Destroyed || struck?.Status == PartStatus.Destroyed)
         {
-            return new Pipeline.Refusal(Status.Refused, "already_destroyed");
+            return Pipeline.Refused("already_destroyed");
         }
 
         var choice = ChooseAttack(context);
@@ -115,7 +115,7 @@ public static class AttackVerb
         }
         if (choice.Kind == "no_damage")
         {
-            return new Pipeline.Refusal(Status.Invalid, "invalid_attack_target");
+            return Pipeline.Invalid("invalid_attack_target");
         }
         // A fist goes through bars on an arm; a bite needs the head, measured as the attacker's body.
         if (choice.Mode!.CrossesGap == "body"

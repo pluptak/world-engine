@@ -66,43 +66,43 @@ public static class PourVerb
         var target = context.Target;
         if (destinationText is null)
         {
-            return Refused(new Pipeline.Refusal(Status.Invalid, "invalid_args"));
+            return Refused(Pipeline.Invalid("invalid_args"));
         }
         if (target is null)
         {
-            return Refused(new Pipeline.Refusal(Status.Invalid, "missing_target"));
+            return Refused(Pipeline.Invalid("missing_target"));
         }
         if (target.Part is not null)
         {
-            return Refused(new Pipeline.Refusal(Status.Refused, "not_carried"));
+            return Refused(Pipeline.Refused("not_carried"));
         }
         if (!snapshot.Entities.TryGetValue(target.EntityId, out var source))
         {
-            return Refused(new Pipeline.Refusal(Status.Invalid, "no_such_entity"));
+            return Refused(Pipeline.Invalid("no_such_entity"));
         }
         if (source.ContainedIn != actorId)
         {
-            return Refused(new Pipeline.Refusal(Status.Refused, "not_carried"));
+            return Refused(Pipeline.Refused("not_carried"));
         }
         // A vessel in a pocket is taken out before it is poured from.
         if (Carry.InSpacePart(context.Registry, actor, source))
         {
-            return Refused(new Pipeline.Refusal(Status.Refused, "not_in_hand"));
+            return Refused(Pipeline.Refused("not_in_hand"));
         }
 
         var material = PropValues.GetString(source.Props, "liquid_material");
         if (material is null || material.Length == 0)
         {
-            return Refused(new Pipeline.Refusal(Status.Refused, "no_liquid"));
+            return Refused(Pipeline.Refused("no_liquid"));
         }
         var available = WholeNumber(source.Props, "liquid_amount");
         if (available is null || available < 0)
         {
-            return Refused(new Pipeline.Refusal(Status.Refused, "no_liquid"));
+            return Refused(Pipeline.Refused("no_liquid"));
         }
         if (available == 0)
         {
-            return Refused(new Pipeline.Refusal(Status.Refused, "nothing_to_pour"));
+            return Refused(Pipeline.Refused("nothing_to_pour"));
         }
 
         // An absent amount pours everything; a present one is a whole positive integer, so no pour rounds or quietly
@@ -113,7 +113,7 @@ public static class PourVerb
         {
             if (args["amount"] is not JsonValue json || !json.TryGetValue(out long named) || named <= 0 || named > MaxSafeInteger)
             {
-                return Refused(new Pipeline.Refusal(Status.Invalid, "invalid_args"));
+                return Refused(Pipeline.Invalid("invalid_args"));
             }
             requested = named;
         }
@@ -137,7 +137,7 @@ public static class PourVerb
         var destination = address.Entity!;
         if (destination.Id == source.Id)
         {
-            return Refused(new Pipeline.Refusal(Status.Refused, "cannot_pour_into_self"));
+            return Refused(Pipeline.Refused("cannot_pour_into_self"));
         }
         // The floor has no position of its own, so reaching it is being in the room; anything else is measured from
         // where the actor stands.
@@ -156,7 +156,7 @@ public static class PourVerb
         var holds = PropValues.IsTrue(destination.Props, "container");
         if (!holds && !PropValues.IsTrue(destination.Props, "surface") && destination.Template != "room")
         {
-            return Refused(new Pipeline.Refusal(Status.Refused, "not_a_destination"));
+            return Refused(Pipeline.Refused("not_a_destination"));
         }
 
         // A container's own shutness hides its inside; anything else is hidden by whatever shut encloses it, and a
@@ -166,7 +166,7 @@ public static class PourVerb
             : Reach.ClosedEnclosure(snapshot, destination.Id);
         if (enclosure is not null)
         {
-            return Refused(new Pipeline.Refusal(Status.Refused, "container_closed", Pipeline.Reason(("enclosure", enclosure))));
+            return Refused(Pipeline.Refused("container_closed", Pipeline.Reason(("enclosure", enclosure))));
         }
 
         long held = 0;

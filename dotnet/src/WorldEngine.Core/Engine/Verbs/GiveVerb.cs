@@ -37,33 +37,33 @@ public static class GiveVerb
         var destinationText = Address.AddressText(context, "destination");
         if (destinationText is null)
         {
-            return new Pipeline.Refusal(Status.Invalid, "invalid_args");
+            return Pipeline.Invalid("invalid_args");
         }
 
         var target = context.Target;
         if (target is null)
         {
-            return new Pipeline.Refusal(Status.Invalid, "missing_target");
+            return Pipeline.Invalid("missing_target");
         }
         if (target.Part is not null)
         {
-            return new Pipeline.Refusal(Status.Refused, "not_carried");
+            return Pipeline.Refused("not_carried");
         }
 
         var snapshot = context.Snapshot;
         var actorId = context.Command.Actor;
         if (!snapshot.Entities.TryGetValue(target.EntityId, out var item))
         {
-            return new Pipeline.Refusal(Status.Invalid, "no_such_entity");
+            return Pipeline.Invalid("no_such_entity");
         }
         if (item.ContainedIn != actorId)
         {
-            return new Pipeline.Refusal(Status.Refused, "not_carried");
+            return Pipeline.Refused("not_carried");
         }
         // An item in a pocket is taken out of it before it is given.
         if (Carry.InSpacePart(context.Registry, snapshot.Entities[actorId], item))
         {
-            return new Pipeline.Refusal(Status.Refused, "not_in_hand");
+            return Pipeline.Refused("not_in_hand");
         }
 
         var address = Address.AddressEntity(context, destinationText, "not_an_actor");
@@ -75,15 +75,15 @@ public static class GiveVerb
 
         if (recipient.Id == actorId)
         {
-            return new Pipeline.Refusal(Status.Refused, "cannot_give_to_self");
+            return Pipeline.Refused("cannot_give_to_self");
         }
         if (!Reach.IsAgent(snapshot, recipient.Id))
         {
-            return new Pipeline.Refusal(Status.Refused, "not_an_actor");
+            return Pipeline.Refused("not_an_actor");
         }
         if (Address.WouldLoop(snapshot, item.Id, recipient.Id))
         {
-            return new Pipeline.Refusal(Status.Refused, "circular_placement");
+            return Pipeline.Refused("circular_placement");
         }
         if (Address.OutOfReach(snapshot, actorId, recipient.Id) is { } reach)
         {

@@ -20,23 +20,23 @@ public static class TakeVerb
         var target = context.Target;
         if (target is null)
         {
-            return new Pipeline.Refusal(Status.Invalid, "missing_target");
+            return Pipeline.Invalid("missing_target");
         }
         if (target.Part is not null)
         {
-            return new Pipeline.Refusal(Status.Refused, "target_attached");
+            return Pipeline.Refused("target_attached");
         }
         var snapshot = context.Snapshot;
         var actorId = context.Command.Actor;
         if (!snapshot.Entities.TryGetValue(target.EntityId, out var entity))
         {
-            return new Pipeline.Refusal(Status.Invalid, "no_such_entity");
+            return Pipeline.Invalid("no_such_entity");
         }
 
         // Taking oneself, or whatever holds one up, would hold the taker inside what it took.
         if (Address.WouldLoop(snapshot, entity.Id, actorId))
         {
-            return new Pipeline.Refusal(Status.Refused, "circular_placement");
+            return Pipeline.Refused("circular_placement");
         }
         if (Address.OutOfReach(snapshot, actorId, entity.Id) is { } reach)
         {
@@ -51,7 +51,7 @@ public static class TakeVerb
         // the carry check counts the item against itself (a full mouth is not the answer).
         if (entity.ContainedIn == actorId && Carry.PlaceInGrip(context, actorId, entity) is GripPlaced placed && placed.Part == entity.InPart)
         {
-            return new Pipeline.Refusal(Status.Refused, "already_held");
+            return Pipeline.Refused("already_held");
         }
 
         var carry = Carry.Check(
@@ -78,12 +78,12 @@ public static class TakeVerb
         {
             if (!snapshot.Entities.TryGetValue(holderId, out var holder))
             {
-                return new Pipeline.Refusal(Status.Invalid, "no_such_entity");
+                return Pipeline.Invalid("no_such_entity");
             }
             var enclosure = Reach.ClosedEnclosure(snapshot, entity.Id);
             if (enclosure is not null)
             {
-                return new Pipeline.Refusal(Status.Refused, "container_closed", Pipeline.Reason(("enclosure", enclosure)));
+                return Pipeline.Refused("container_closed", Pipeline.Reason(("enclosure", enclosure)));
             }
             // Only an agent holds: a container or a piece of furniture keeps what is inside it, and what it keeps is
             // there to be taken out. A pocket is just a container: taking from another agent's space part is allowed,
@@ -93,7 +93,7 @@ public static class TakeVerb
                 var spaces = Carry.HolderLayout(context.Registry, holder.Template).Spaces.Select(space => space.Name).ToList();
                 if (entity.InPart is null || !spaces.Contains(entity.InPart))
                 {
-                    return new Pipeline.Refusal(Status.Refused, "held_by_another");
+                    return Pipeline.Refused("held_by_another");
                 }
             }
         }

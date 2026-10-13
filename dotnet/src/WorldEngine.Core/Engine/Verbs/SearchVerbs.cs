@@ -21,21 +21,21 @@ public static class SearchVerbs
         var target = context.Target;
         if (target is null)
         {
-            return new Pipeline.Refusal(Status.Invalid, "missing_target");
+            return Pipeline.Invalid("missing_target");
         }
         // A part is not a thing to search under, only the entity that declares it.
         if (target.Part is not null)
         {
-            return new Pipeline.Refusal(Status.Refused, "target_attached");
+            return Pipeline.Refused("target_attached");
         }
         if (!context.Snapshot.Entities.ContainsKey(target.EntityId))
         {
-            return new Pipeline.Refusal(Status.Invalid, "no_such_entity");
+            return Pipeline.Invalid("no_such_entity");
         }
         var enclosure = Reach.ClosedEnclosure(context.Snapshot, target.EntityId);
         if (enclosure is not null)
         {
-            return new Pipeline.Refusal(Status.Refused, "container_closed", Pipeline.Reason(("enclosure", enclosure)));
+            return Pipeline.Refused("container_closed", Pipeline.Reason(("enclosure", enclosure)));
         }
         if (!Reach.InReach(context.Snapshot, context.Command.Actor, target.EntityId))
         {

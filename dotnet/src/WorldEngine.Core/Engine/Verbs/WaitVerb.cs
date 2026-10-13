@@ -27,11 +27,11 @@ public static class WaitVerb
         {
             if (until is not JsonValue json || !json.TryGetValue(out string? text) || text != "sensed")
             {
-                return new Pipeline.Refusal(Status.Invalid, "invalid_args");
+                return Pipeline.Invalid("invalid_args");
             }
         }
         return TimeVerbs.Ticks(context.Command) is null
-            ? new Pipeline.Refusal(Status.Invalid, "invalid_args")
+            ? Pipeline.Invalid("invalid_args")
             : null;
     }
 }

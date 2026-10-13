@@ -78,15 +78,15 @@ public static class TimeVerbs
         var command = context.Command;
         if (command.Actor != Resolve.WorldAuthor)
         {
-            return new Pipeline.Refusal(Status.Invalid, "invalid_author");
+            return Pipeline.Invalid("invalid_author");
         }
         if (Ticks(command) is null)
         {
-            return new Pipeline.Refusal(Status.Invalid, "invalid_args");
+            return Pipeline.Invalid("invalid_args");
         }
         if (Listed(command) is not { } ids)
         {
-            return new Pipeline.Refusal(Status.Invalid, "invalid_args");
+            return Pipeline.Invalid("invalid_args");
         }
         foreach (var id in ids)
         {
@@ -102,17 +102,17 @@ public static class TimeVerbs
         {
             if (stop is not JsonValue value || !value.TryGetValue(out string? id) || !Beats.IsBeatId(id))
             {
-                return new Pipeline.Refusal(Status.Invalid, "invalid_args");
+                return Pipeline.Invalid("invalid_args");
             }
             var cause = Schedule.Pending(context.Snapshot).FirstOrDefault(entry => entry.Kind == "beat" && entry.Id == id);
             if (cause is null)
             {
-                return new Pipeline.Refusal(Status.Refused, "no_such_beat");
+                return Pipeline.Refused("no_such_beat");
             }
             // The beat falls due at the very next tick: there is no time to run up to it, so nothing passes.
             if (cause.DueTick <= context.Snapshot.Tick + 1)
             {
-                return new Pipeline.Refusal(Status.Refused, "beat_not_ahead");
+                return Pipeline.Refused("beat_not_ahead");
             }
         }
         return null;
