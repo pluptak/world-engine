@@ -108,5 +108,30 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
 - 2026-10-13, Phase 1 soak, memory worlds: `dotnet/tools/golden-gen/property-trace.ts` records the TypeScript property sequences
   (seeds 0 to 499, 30 steps) and `PropertyTraceTests` replays them: 15,000 steps, answer and snapshot hashes equal at every step.
   It found one real divergence, fixed in the same commit (a beat's edit threw on a refusal code `edit` does not declare).
-- Still open in Phase 1: the store-world side of the soak (`property-store-*`: a store world, its files and `verify`), the
-  `scenarios/*.json` run through both engines, `verify` on the sample worlds, and the table of TS tests with no .NET counterpart.
+- 2026-10-13, Phase 1 soak, store worlds: the first 60 of those sequences also run on a store world (`WorldBuilder.Create` and
+  `StoreWorld`): same answers and snapshots, `verify` clean, a fresh open reads back the same snapshot. TypeScript's own store
+  subset runs 17 seeds.
+- Scenarios and sample worlds: all nine `scenarios/*.json` are already built by `InitGoldenTests` (files compared byte for byte
+  with TypeScript's) and driven by `Block21ReplayTests` (the recorded `scenario-*` and `acceptance` sequences, files hashed), and
+  `verify` runs in the store tests and the soak above. Nothing further to add.
+- The test-gap table, by coverage instead of by name. Matching TypeScript test files to .NET ones by name is unreliable (about 80 of
+  146 TS files have no name match, though most of what they check is reached through goldens and the replay). The measure used is
+  .NET line and branch coverage of `src/` under the full suite (coverlet, `dotnet test --collect:"XPlat Code Coverage"`):
+  91.5% of lines and 83.2% of branches, 1,012 lines not run. The least covered files, the gap list to work from:
+
+  | File | Lines run | Missed |
+  |---|---|---|
+  | `Core/Engine/NoSeedError.cs`, `Contract/ContractValues.cs` | 0% | 1, 11 |
+  | `Core/Engine/Scenes/Refine.cs` | 55% | 37 |
+  | `Store/WorldUpgrade.cs` | 66% | 55 |
+  | `Store/WorldLock.cs` | 76% | 45 |
+  | `Core/Engine/Scheduling/BeatShape.cs` | 78% | 29 |
+  | `Store/WorldVerify.cs` | 79% | 34 |
+  | `Core/Engine/Worlds/PlayerWorld.cs` | 82% | 27 |
+  | `Core/Engine/Verbs/AttackVerb.cs` | 84% | 48 |
+  | `Core/Engine/Verbs/EditParser.cs` | 87% | 42 |
+  | `Core/Engine/Physics/Physical.cs` | 87% | 44 |
+
+  Next step: for each, read the TS test that exercises the same code (`refine`, `upgrade`, `store-lock`, `scheduled-beat`,
+  `verify`, `player-slots`, `attack` ...), record its cases as goldens, and add them. Rerun coverage; the target is every
+  behavioural branch run, not a number.
