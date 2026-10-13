@@ -10,15 +10,11 @@ return a `World` with `command`, `edit`, `check`, `options`, `since`, `attempts`
 verb catalog and `ENGINE_CAPABILITIES` what the engine computes; the CLI answers both
 (`op` `verbs`, `capabilities`).
 
-**The CLI describes itself.** `{ "op": "schema" }` needs no world and answers
-`{ json_schema: "2020-12", request, responses, failure }`: `z.toJSONSchema` of `RequestSchema`
-(one `oneOf` branch per op, each with its `op` as a `const`), of the schema each op answers
-with, keyed by op, and of `{ status: "invalid", issues }`, which any op gives to a request
-it refuses. A caller in another language, or one generating tool definitions, reads that
-instead of `src/contract.ts`. `RESPONSES` in `src/contract.ts` is the table behind it (the
-compiler holds it to one entry per op), and `ResponseSchema`, which the CLI checks every
-answer against, is the union of its values and the failure. `tests/contract.test.ts` parses
-a real answer to every op with its own entry. Store worlds share a directory, so handles see
+**The CLI checks a request before it runs it.** Each op has a shape (`Checks` in
+`WorldEngine.Contract`): its members, their types, no member beyond them. A request that does not
+fit is answered `{ status: "invalid", issues }` with `invalid_request` and exit code 2, and nothing
+is run for it. The inside of an edit, a command's `args` or a prop is read by the engine, which
+refuses with its own codes. Store worlds share a directory, so handles see
 each other; memory worlds hold their own. A missing directory, a changed hash, or a bad
 version is a `WorldError` with a code.
 

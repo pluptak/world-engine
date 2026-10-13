@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -25,9 +25,9 @@ public static class JsonReads
         return value.TryGetValue(out double fraction) ? fraction : null;
     }
 
-    // A whole number within the safe range, as `Number.isSafeInteger` reads it; null otherwise.
+    // A whole number that fits a long; null otherwise.
     public static long? SafeInt(JsonNode? node) =>
-        Number(node) is { } number && IsSafeInteger(number)
+        Number(node) is { } number && IsWhole(number)
             ? (long)number
             : null;
 }

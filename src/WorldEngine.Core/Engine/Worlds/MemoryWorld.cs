@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 using static WorldEngine.Core.Engine.JsonReads;
 
 namespace WorldEngine.Core.Engine;
@@ -296,7 +296,7 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
 
     private void CheckVersion(long version)
     {
-        if (version < 0 || version > MaxSafeInteger)
+        if (version < 0)
         {
             throw new WorldError("invalid_version", $"Invalid version {version}");
         }

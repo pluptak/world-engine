@@ -1,7 +1,7 @@
 # world-engine
 
 A deterministic world model for narrative and agent grounding: commands in; statuses, deltas and
-events out, never prose. An in-process API (`createWorld`, `openWorld`, `memoryWorld`); a JSON CLI that publishes its own JSON schema.
+events out, never prose. An in-process API (`createWorld`, `openWorld`, `memoryWorld`); a JSON CLI.
 
 - **Verbs:** move, take, drop, put, give, pour, consume, push, pull, attack, open, close, lock, unlock, search,
   light, douse, say, wait, and the author's `edit` and `advance`; every refusal is a declared code with numbers, not text.

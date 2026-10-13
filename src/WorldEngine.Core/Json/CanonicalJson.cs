@@ -2,15 +2,14 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Json;
 
-// The only snapshot serializer, byte-for-byte the same as src/engine/canonical.ts: sorted keys at
-// every depth, no whitespace, strings escaped as JSON.stringify does.
+// The only snapshot serializer: sorted keys at every depth (ordinal), no whitespace, integers only, strings escaped minimally
+// (a lone surrogate as a unicode escape, so the output is always valid JSON).
 public static class CanonicalJson
 {
-    // The largest integer a JavaScript number holds exactly; the engine's numbers stay inside it.
     public static string Serialize(JsonNode? node)
     {
         var text = new StringBuilder();
@@ -75,11 +74,10 @@ public static class CanonicalJson
                 text.Append("false");
                 break;
             case JsonValueKind.Number:
-                // Snapshots hold integers only (AGENTS.md); a fraction would print differently here. The
-                // digits are read from the text, since a number set in code may not convert to a long.
+                // Snapshots hold integers only (AGENTS.md). The digits are read from the text, since a number set in
+                // code may not convert to a long.
                 var digits = scalar.ToJsonString();
-                if (!long.TryParse(digits, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out long integer)
-                    || integer < -MaxSafeInteger || integer > MaxSafeInteger)
+                if (!long.TryParse(digits, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out long integer))
                 {
                     throw new FormatException($"Not a safe integer: {digits}");
                 }
@@ -108,7 +106,7 @@ public static class CanonicalJson
                 default:
                     if (c < 0x20 || char.IsSurrogate(c) && !IsPairAt(value, index))
                     {
-                        // A lone surrogate is escaped, as JSON.stringify does since ES2019.
+                        // A lone surrogate has no UTF-8 form, so it is escaped.
                         text.Append("\\u").Append(((int)c).ToString("x4", CultureInfo.InvariantCulture));
                     }
                     else if (char.IsHighSurrogate(c))

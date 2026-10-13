@@ -14,9 +14,8 @@ namespace WorldEngine.Cli;
 // What one run of the CLI answers: the text it writes to stdout, and its exit status.
 public sealed record CliOutput(string Stdout, int Status);
 
-// The JSON adapter over a world (src/cli/main.ts `runCli`): one request in, one canonical answer out, status 0 for an answer and 2 for an
-// invalid request. This slice answers the read ops over a stored world (snapshot, since, attempts, verify), as the TypeScript CLI does.
-// The other ops, the contract's own check of each request and response, and `init` are the rest of the block.
+// The JSON adapter over a world: one request in, one answer out, status 0 for an answer and 2 for an invalid request. A request is
+// checked against the shape of its op (`Checks`) before anything runs; `init` builds a world from a scenario file.
 public static class CliRunner
 {
     public static CliOutput Run(IReadOnlyList<string> args, string input)
@@ -38,16 +37,11 @@ public static class CliRunner
                 return Invalid("invalid_json");
             }
             // A request the contract refuses is answered as invalid, and nothing is run for it (`RequestSchema`).
-            if (parsed is not JsonObject request || !ContractDocument.IsRequest(request))
+            if (parsed is not JsonObject request || !Checks.IsRequest(request))
             {
                 return Invalid("invalid_request");
             }
             var answer = Dispatch(request);
-            // An answer the contract does not accept is replaced by the failure `writeResponse` writes for it (`invalid_response`).
-            if (!ContractDocument.IsResponse(answer))
-            {
-                return Invalid("invalid_response");
-            }
             // An answer whose own status is invalid exits 2, whichever op gave it, as the TypeScript CLI does.
             return new CliOutput(Line(answer), answer["status"] is { } status && JsonReads.Text(status) == "invalid" ? 2 : 0);
         }
@@ -79,7 +73,7 @@ public static class CliRunner
         {
             return Invalid("invalid_scenario_json");
         }
-        if (!ContractDocument.IsScenario(scenario))
+        if (!Checks.IsScenario(scenario))
         {
             return Invalid("invalid_scenario");
         }
@@ -95,7 +89,7 @@ public static class CliRunner
             {
                 return Invalid("invalid_coverage_json");
             }
-            if (!ContractDocument.IsCoverage(coverageJson))
+            if (!Checks.IsCoverage(coverageJson))
             {
                 return Invalid("invalid_coverage");
             }
@@ -212,8 +206,6 @@ public static class CliRunner
                 }
             case "verbs":
                 return new JsonObject { ["verbs"] = VerbRegistry.Catalog() };
-            case "schema":
-                return ContractDocument.Describe();
             case "capabilities":
                 return CapabilitiesOf();
             case "actor_observe":

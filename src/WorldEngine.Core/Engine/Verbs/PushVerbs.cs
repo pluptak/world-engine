@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -32,7 +32,7 @@ public static class PushVerbs
         var distance = 30L;
         if (args is not null && args.TryGetValue("distance_cm", out var raw))
         {
-            if (raw is not JsonValue json || !json.TryGetValue(out long named) || named < 0 || named > MaxSafeInteger)
+            if (raw is not JsonValue json || !json.TryGetValue(out long named) || named < 0)
             {
                 return null;
             }

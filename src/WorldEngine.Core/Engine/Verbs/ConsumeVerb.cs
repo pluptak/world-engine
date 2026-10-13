@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -214,10 +214,10 @@ public static class ConsumeVerb
             && Carry.HeldInParts(context.Snapshot, actorId).Any(held => held.Id != itemId && mouths.Contains(held.InPart));
     }
 
-    // A whole number in the safe integer range, as the engine reads a count: a JSON number with no fraction.
+    // A whole number, as the engine reads a count: a JSON number with no fraction.
     private static bool WholeNumber(JsonNode? node, out long value)
     {
-        if (node is JsonValue json && json.TryGetValue(out long number) && IsSafeInteger(number))
+        if (node is JsonValue json && json.TryGetValue(out long number))
         {
             value = number;
             return true;

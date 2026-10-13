@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace WorldEngine.Core.Json;
 
-// How snapshots meet JSON: snake_case names, enums as their TypeScript strings, and an unknown field
+// How snapshots meet JSON: snake_case names, enums as strings, and an unknown field
 // is an error rather than a value silently dropped on the way through.
 public static class WorldJson
 {

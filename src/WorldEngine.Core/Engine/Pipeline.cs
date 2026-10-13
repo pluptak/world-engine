@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -227,7 +227,7 @@ public static class Pipeline
             ? 0L
             : verb.Duration?.Invoke(command)
               ?? throw new InvalidOperationException($"Verb {command.Verb} accepted a command without a duration");
-        if (!IsSafeInteger(snapshot.Tick + duration))
+        if (!TryAdd(snapshot.Tick, duration, out _))
         {
             return Unchanged(snapshot, command, Status.Invalid, reasonCode: "clock_overflow");
         }

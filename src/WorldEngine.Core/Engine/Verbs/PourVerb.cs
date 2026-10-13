@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -109,7 +109,7 @@ public static class PourVerb
         var args = context.Command.Args;
         if (args is not null && args.ContainsKey("amount"))
         {
-            if (args["amount"] is not JsonValue json || !json.TryGetValue(out long named) || named <= 0 || named > MaxSafeInteger)
+            if (args["amount"] is not JsonValue json || !json.TryGetValue(out long named) || named <= 0)
             {
                 return Refused(Pipeline.Invalid("invalid_args"));
             }
@@ -196,11 +196,11 @@ public static class PourVerb
 
     private static (Pouring? Pour, Pipeline.Refusal? Refusal) Refused(Pipeline.Refusal refusal) => (null, refusal);
 
-    // A numeric prop that is a whole number within the safe range, or null.
+    // A numeric prop that is a whole number, or null.
     private static long? WholeNumber(IReadOnlyDictionary<string, JsonNode?> props, string key)
     {
         var value = PropValues.GetNumber(props, key);
-        return value is { } number && IsSafeInteger(number)
+        return value is { } number && IsWhole(number)
             ? (long)number
             : null;
     }

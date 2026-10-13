@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -119,11 +119,11 @@ public static class OpenVerbs
         return Pipeline.RequirementRefusal(context);
     }
 
-    // A whole number prop within the safe range, or null.
+    // A whole number prop, or null.
     private static long? WholeNumber(IReadOnlyDictionary<string, JsonNode?> props, string key)
     {
         var value = PropValues.GetNumber(props, key);
-        return value is { } number && IsSafeInteger(number)
+        return value is { } number && IsWhole(number)
             ? (long)number
             : null;
     }
@@ -147,7 +147,7 @@ public static class OpenVerbs
         var others = new Dictionary<string, JsonNode?>(target.Props, StringComparer.Ordinal);
         others.Remove("closing");
         var shutTicks = WholeNumber(target.Props, "shut_ticks");
-        if (kind == Kind.Close && shutTicks is > 0 && working.Snapshot.Tick + shutTicks.Value is var due && IsSafeInteger(due))
+        if (kind == Kind.Close && shutTicks is > 0 && TryAdd(working.Snapshot.Tick, shutTicks.Value, out _))
         {
             StartClosing(working, target, shutTicks.Value, rootEventId);
             return;
@@ -178,7 +178,7 @@ public static class OpenVerbs
             Schedule.Cancel(working, "close", target.Id);
         }
         var closesAfter = WholeNumber(props, "closes_after");
-        if (kind == Kind.Open && closesAfter is > 0 && working.Snapshot.Tick + closesAfter.Value is var closeTick && IsSafeInteger(closeTick))
+        if (kind == Kind.Open && closesAfter is > 0 && TryAdd(working.Snapshot.Tick, closesAfter.Value, out var closeTick))
         {
             Schedule.Add(working, new ScheduledCause(closeTick, "close", target.Id, eventId));
         }

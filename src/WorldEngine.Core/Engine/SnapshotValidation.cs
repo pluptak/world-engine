@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -635,7 +635,7 @@ public static class SnapshotValidation
         {
             issues.Add(Issue("invalid_run", ["run"], "neither tick_limit nor slots"));
         }
-        if (run.TickLimit is { } limit && (Math.Abs(limit) > MaxSafeInteger || limit < 1))
+        if (run.TickLimit is { } limit && limit < 1)
         {
             issues.Add(Issue("invalid_run", ["run", "tick_limit"], limit.ToString(CultureInfo.InvariantCulture)));
         }
@@ -731,7 +731,7 @@ public static class SnapshotValidation
             {
                 issues.Add(Issue("unknown_cause_kind", path, cause.Kind));
             }
-            if (cause.DueTick > MaxSafeInteger || cause.DueTick <= snapshot.Tick)
+            if (cause.DueTick <= snapshot.Tick)
             {
                 issues.Add(Issue("schedule_not_ahead", path, $"due {cause.DueTick} at tick {snapshot.Tick}"));
             }

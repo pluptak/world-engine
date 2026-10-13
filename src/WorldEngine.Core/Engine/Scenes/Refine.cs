@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -50,7 +50,7 @@ public static class Refine
     private static double? LiquidCapacity(IReadOnlyDictionary<string, JsonNode?> props)
     {
         var declared = PropFields.Number(props.GetValueOrDefault("capacity_cm3"));
-        if (declared is { } capacity && IsSafeInteger(capacity) && capacity > 0)
+        if (declared is { } capacity && IsWhole(capacity) && capacity > 0)
         {
             return capacity;
         }

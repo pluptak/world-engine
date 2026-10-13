@@ -1,7 +1,7 @@
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Store;
 
@@ -138,7 +138,7 @@ public static class WorldHistory
     // The version must be a safe, non-negative integer and no later than the world's current one.
     private static void CheckVersion(string dir, long version, IReadOnlyDictionary<string, Template> registry)
     {
-        if (version < 0 || version > MaxSafeInteger)
+        if (version < 0)
         {
             throw new WorldError("invalid_version", $"Invalid version {version}");
         }

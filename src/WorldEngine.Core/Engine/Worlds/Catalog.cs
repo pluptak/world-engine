@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -65,11 +65,11 @@ public static class Catalog
         return found;
     }
 
-    // A prop that is a whole number within the safe range, as `Number.isSafeInteger` reads it; null otherwise.
+    // A prop that is a whole number that fits a long; null otherwise.
     private static long? IntegerProp(Template template, string name)
     {
         var value = PropFields.Number(template.Props.GetValueOrDefault(name));
-        return value is { } number && IsSafeInteger(number)
+        return value is { } number && IsWhole(number)
             ? (long)number
             : null;
     }

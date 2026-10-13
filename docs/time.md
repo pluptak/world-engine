@@ -15,7 +15,7 @@ modifier, under which the change to `modifiers` is recorded too ([provenance.md]
 
 A refused, invalid, unresolved or preempted command takes no time, and neither does `check`. A
 `beat` is an ordered batch, so its commands take their time in turn. A command that would carry the
-clock past the largest safe integer is `invalid` with `clock_overflow`, an edit excepted.
+clock past the largest `long` is `invalid` with `clock_overflow`, an edit excepted.
 
 Every event records its `tick`: the command's starting tick for the verb's own events, the tick it
 fell due for an expiry, so a five-tick `wait` from tick 1 that ends a stun shows `wait` at 1 and

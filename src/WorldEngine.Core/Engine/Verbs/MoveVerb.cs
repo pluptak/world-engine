@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -83,8 +83,8 @@ public static class MoveVerb
         if (hasTo && !hasLocation)
         {
             return args["to"] is JsonObject to
-                && to["x"] is JsonValue x && x.TryGetValue(out long px) && IsSafeInteger(px)
-                && to["y"] is JsonValue y && y.TryGetValue(out long py) && IsSafeInteger(py)
+                && to["x"] is JsonValue x && x.TryGetValue(out long px)
+                && to["y"] is JsonValue y && y.TryGetValue(out long py)
                     ? new AtPosition(new Pos(px, py))
                     : null;
         }

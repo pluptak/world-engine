@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 using static WorldEngine.Core.Engine.JsonReads;
 
 namespace WorldEngine.Core.Engine;
@@ -38,7 +38,7 @@ public static class WorldReads
             {
                 throw new WorldError("invalid_tick", "Observe since a version or since a tick, not both");
             }
-            if (tick < 0 || tick > MaxSafeInteger)
+            if (tick < 0)
             {
                 throw new WorldError("invalid_tick", $"Invalid tick {tick}");
             }

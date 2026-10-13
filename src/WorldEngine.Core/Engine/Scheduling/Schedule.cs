@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -125,8 +125,7 @@ public static class Schedule
     {
         var entity = working.Snapshot.Entities[entityId];
         var rule = Bleeding(entity.Props);
-        var due = working.Snapshot.Tick + (rule?.Every ?? 0);
-        if (rule is not null && remaining > 0 && IsSafeInteger(due))
+        if (rule is not null && remaining > 0 && TryAdd(working.Snapshot.Tick, rule.Value.Every, out var due))
         {
             Add(working, new ScheduledCause(due, "bleed", entityId, causeId, remaining));
         }
@@ -139,7 +138,7 @@ public static class Schedule
         static long? Read(IReadOnlyDictionary<string, JsonNode?> props, string name)
         {
             var value = PropValues.GetNumber(props, name);
-            return value is { } number && Math.Floor(number) == number && number > 0 && number <= MaxSafeInteger
+            return value is { } number && IsWhole(number) && number > 0
                 ? (long)number
                 : null;
         }

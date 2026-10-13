@@ -2,7 +2,7 @@ using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -19,9 +19,9 @@ public static class Processes
         return [.. template.Processes.Select(ProcessSpec.From)];
     }
 
-    // Number.isSafeInteger over a number read from a prop, null when the prop is no number.
+    // Whether a number read from a prop is whole; false when the prop is no number.
     private static bool IsInt(double? value) =>
-        value is { } number && IsSafeInteger(number);
+        value is { } number && IsWhole(number);
 
     // The condition under which a process runs, read from the entity's props as they are now. `eq` and `ne` compare any
     // primitive strictly; the ordering ops need numbers on both sides, and an absent or non-numeric prop satisfies none.
@@ -99,8 +99,7 @@ public static class Processes
             var can = Runnable(spec, entity);
             if (can && !waiting)
             {
-                var due = snapshot.Tick + DelayOf(spec, entity);
-                if (IsSafeInteger(due))
+                if (TryAdd(snapshot.Tick, DelayOf(spec, entity), out var due))
                 {
                     Schedule.Add(working, new ScheduledCause(due, "process", entityId, causeId, Process: spec.Id));
                 }
@@ -127,8 +126,7 @@ public static class Processes
         {
             return;
         }
-        var due = working.Snapshot.Tick + (long)after;
-        if (IsSafeInteger(due))
+        if (TryAdd(working.Snapshot.Tick, (long)after, out var due))
         {
             Schedule.Add(working, new ScheduledCause(due, "close", entity.Id, causeId));
         }
@@ -196,7 +194,7 @@ public static class Processes
         var to = adjust.By < 0
             ? Math.Max(moved, adjust.Min ?? long.MinValue)
             : Math.Min(moved, adjust.Max ?? long.MaxValue);
-        if (to == from || !IsSafeInteger(to))
+        if (to == from)
         {
             return;
         }

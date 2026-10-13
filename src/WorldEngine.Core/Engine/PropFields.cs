@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using WorldEngine.Core.Json;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -105,14 +105,14 @@ public static class PropFields
         ["unconscious"] = new(PropType.Boolean, Tier.State),
     };
 
-    // Whether a prop value (a JSON number, string or boolean) holds the type. An integer is a safe integer.
+    // Whether a prop value (a JSON number, string or boolean) holds the type. An integer is a whole number that fits a long.
     public static bool Matches(PropType type, JsonNode? value)
     {
         var kind = (value as JsonValue)?.GetValueKind();
         return type switch
         {
             PropType.Boolean => kind is System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False,
-            PropType.Integer => kind is System.Text.Json.JsonValueKind.Number && Number(value!) is { } safe && IsSafeInteger(safe),
+            PropType.Integer => kind is System.Text.Json.JsonValueKind.Number && Number(value!) is { } safe && IsWhole(safe),
             _ => kind is System.Text.Json.JsonValueKind.String,
         };
     }

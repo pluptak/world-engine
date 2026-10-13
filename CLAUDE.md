@@ -40,8 +40,8 @@ Four projects in `src`, each referencing the ones above it: `WorldEngine.Core` (
 **Core** (`Model/`, `Json/`, `Templates/`, `Engine/`)
 
 - `Model/`: `Snapshot`, `Entity`, `WorldEvent`, `Delta`, `Command`, `Status`, coverage. `Json/`:
-  `CanonicalJson` (the one serializer: sorted keys, no whitespace, JavaScript number formatting in
-  `JsNumber`) and `WorldJson`, the reader/writer options every file and request goes through.
+  `CanonicalJson` (the one serializer: sorted keys, no whitespace, integers only within the
+  range `Integers` defines) and `WorldJson`, the reader/writer options every file and request goes through.
 - `Engine/Pipeline.cs` `Apply(snapshot, registry, verbs, command)` is the single transition entry. It
   looks up the verb, checks the actor, resolves the target (`Resolve.cs`: name, alias or
   `entity.part`, among what the actor can address) and runs the verb's preconditions. Only then does it
@@ -92,11 +92,10 @@ Four projects in `src`, each referencing the ones above it: `WorldEngine.Core` (
   `WorldIO` (reads that do not hold a file against a writer on Windows), `WorldLock` (exclusive file
   create, dead-process or minute-old takeover, `store_busy` after `WORLD_LOCK_TIMEOUT_MS`).
 
-**Contract** (`src/WorldEngine.Contract`): typed records and the JSON Schema generated from them
-(`ContractSchema`), the checks of a request and of a response (`ContractDocument`), the shared value
-shapes (`ContractValues`). **Cli** (`src/WorldEngine.Cli`): `CliRunner.Run(args, input)` reads
-one request, dispatches to one `World` operation, validates the answer against the contract before
-writing it, and answers `{status:"invalid", issues}` with exit code 2 on failure. `init <dir>
+**Contract** (`src/WorldEngine.Contract`): `Checks`, the shape of each op's request and of a scenario
+and a coverage file, built from the combinators in `Shape.cs`. **Cli** (`src/WorldEngine.Cli`):
+`CliRunner.Run(args, input)` reads one request, checks its shape, dispatches to one `World` operation,
+and answers `{status:"invalid", issues}` with exit code 2 on failure. `init <dir>
 <scenario.json>` builds a world; the ops are listed in `docs/api.md`.
 
 ## Templates

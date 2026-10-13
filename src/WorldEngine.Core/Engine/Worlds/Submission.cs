@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -19,7 +19,7 @@ public static class Submission
         long basedOn,
         Func<long, Snapshot?> snapshotAt)
     {
-        if (basedOn < 0 || basedOn > MaxSafeInteger)
+        if (basedOn < 0)
         {
             return InvalidResult(current, command, "invalid_version");
         }

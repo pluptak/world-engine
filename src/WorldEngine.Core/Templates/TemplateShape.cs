@@ -133,7 +133,7 @@ public static class TemplateShape
         if (obj.ContainsKey("max_integrity"))
         {
             if (!IsNumber(obj["max_integrity"])
-                || !JsNumber.IsSafeInteger(Number(obj["max_integrity"]))
+                || !Integers.IsWhole(Number(obj["max_integrity"]))
                 || Number(obj["max_integrity"]) < 1
                 || Number(obj["max_integrity"]) > Limits.MaxIntegrity)
             {
@@ -472,7 +472,7 @@ public static class TemplateShape
         {
             throw new FormatException($"{label} must be a finite number");
         }
-        if (!JsNumber.IsSafeInteger(Number(value)))
+        if (!Integers.IsWhole(Number(value)))
         {
             throw new FormatException($"{label} must be an integer");
         }
@@ -480,7 +480,7 @@ public static class TemplateShape
 
     private static void AssertInteger(JsonNode? value, string label)
     {
-        if (!IsNumber(value) || !JsNumber.IsSafeInteger(Number(value)))
+        if (!IsNumber(value) || !Integers.IsWhole(Number(value)))
         {
             throw new FormatException($"{label} must be an integer");
         }

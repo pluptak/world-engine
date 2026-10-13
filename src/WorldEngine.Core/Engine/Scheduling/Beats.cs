@@ -2,7 +2,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -42,9 +42,9 @@ public static partial class Beats
 
     public static bool IsBeatId(string? id) => id is not null && BeatIdPattern.IsMatch(id);
 
-    // A number that is a whole number within the safe range, as `Number.isSafeInteger` reads it; null otherwise.
+    // A number that is a whole number fitting a long; null otherwise.
     private static long? SafeInt(JsonNode? node) =>
-        PropFields.Number(node) is { } number && IsSafeInteger(number)
+        PropFields.Number(node) is { } number && IsWhole(number)
             ? (long)number
             : null;
 

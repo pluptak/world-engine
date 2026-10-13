@@ -2,7 +2,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -116,9 +116,9 @@ public static partial class Beats
         foreach (var raw in children)
         {
             var child = (JsonObject)raw!;
-            var due = working.Snapshot.Tick + SafeInt(child["delay_ticks"])!.Value;
             var subject = ActionSubject((JsonObject)child["action"]!);
-            if (subject is null || !working.Snapshot.Entities.ContainsKey(subject) || !IsSafeInteger(due))
+            if (subject is null || !working.Snapshot.Entities.ContainsKey(subject)
+                || !TryAdd(working.Snapshot.Tick, SafeInt(child["delay_ticks"])!.Value, out var due))
             {
                 continue;
             }
@@ -144,8 +144,8 @@ public static partial class Beats
         {
             return;
         }
-        var due = working.Snapshot.Tick + SafeInt(repeat["every_ticks"])!.Value;
-        if (!working.Snapshot.Entities.ContainsKey(cause.Entity) || !IsSafeInteger(due))
+        if (!working.Snapshot.Entities.ContainsKey(cause.Entity)
+            || !TryAdd(working.Snapshot.Tick, SafeInt(repeat["every_ticks"])!.Value, out var due))
         {
             return;
         }

@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -370,7 +370,7 @@ public static partial class EditVerb
     private static string? Text(JsonNode? node, bool allowEmpty = false) =>
         node is JsonValue value && value.TryGetValue(out string? text) && (allowEmpty || text.Length > 0) ? text : null;
 
-    // A safe integer, or null when the node is not one.
+    // A whole number, or null when the node is not one.
     private static long? Int(JsonNode? node)
     {
         if (node is not JsonValue value || value.GetValueKind() != JsonValueKind.Number)
@@ -378,7 +378,7 @@ public static partial class EditVerb
             return null;
         }
         var number = PropFields.Number(value);
-        return number is { } n && IsSafeInteger(n) ? (long)n : null;
+        return number is { } n && IsWhole(n) ? (long)n : null;
     }
 
     // A reference field that is absent (no Given), null (a clear) or an id. False for anything else.

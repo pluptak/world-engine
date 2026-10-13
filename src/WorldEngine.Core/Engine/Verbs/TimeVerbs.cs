@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
-using static WorldEngine.Core.Json.JsNumber;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -41,7 +41,7 @@ public static class TimeVerbs
             return null;
         }
         var value = JsonReads.Number(node);
-        if (value is null || value != Math.Floor(value.Value) || value <= 0 || value > MaxSafeInteger)
+        if (value is null || !IsWhole(value.Value) || value <= 0)
         {
             return null;
         }
