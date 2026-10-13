@@ -18,8 +18,8 @@ below (same names, mostly: `pipeline.ts` is `Pipeline.cs`, `verbs/pour.ts` is `P
 dotnet test dotnet/WorldEngine.slnx                       # the whole suite (about 40 s); the usual gate
 dotnet test dotnet --filter "FullyQualifiedName~HostRunTests"   # one class or a name fragment
 dotnet build dotnet/WorldEngine.slnx                      # compile only
-dotnet run --project dotnet/src/WorldEngine.Cli -- init data/w1 scenarios/bottle.json     # create a world
-echo '{"op":"snapshot","world":"data/w1"}' | dotnet run --project dotnet/src/WorldEngine.Cli   # one JSON request on stdin
+dotnet run --project src/WorldEngine.Cli -- init data/w1 scenarios/bottle.json     # create a world
+echo '{"op":"snapshot","world":"data/w1"}' | dotnet run --project src/WorldEngine.Cli   # one JSON request on stdin
 dotnet run -c Release --project dotnet/tools/WorldEngine.Bench     # 10,000 store commands; ms/cmd first and last 1k
 dotnet run --project dotnet/tools/WorldEngine.Host -- <scene.json> <plan.json> <dir>   # the reference host (docs/host.md)
 WORLD_ENGINE_UPDATE_GOLDENS=1 dotnet test dotnet          # rewrite the supporting goldens from .NET (read the diff)
@@ -33,7 +33,7 @@ commit, and the fixture diff is read like code.
 
 ## Layout and flow
 
-Four projects in `dotnet/src`, each referencing the ones above it: `WorldEngine.Core` (pure, no I/O),
+Four projects in `src`, each referencing the ones above it: `WorldEngine.Core` (pure, no I/O),
 `WorldEngine.Store` (files), `WorldEngine.Contract` (the JSON boundary), `WorldEngine.Cli`.
 
 **Core** (`Model/`, `Json/`, `Templates/`, `Engine/`)
@@ -73,7 +73,7 @@ Four projects in `dotnet/src`, each referencing the ones above it: `WorldEngine.
 - `Templates/`: `TemplateShape` (checks a declaration's JSON as the loader must), `TemplateResolver`
   (`extends`, `part_overrides`, lineage), `TemplateValidation`, `TemplateHash` (`templates_hash`).
 
-**Store** (`dotnet/src/WorldEngine.Store`): a world is a directory (`initial.json`, `snapshot.json`,
+**Store** (`src/WorldEngine.Store`): a world is a directory (`initial.json`, `snapshot.json`,
 `log.jsonl`, `events.jsonl`, `deltas.jsonl`, `head.json`, `checkpoints/`, `lock`), `schema_version` 5.
 
 - `WorldWriter.Submit` takes the turn (`WorldLock`), appends the log line (every command, refused
@@ -91,9 +91,9 @@ Four projects in `dotnet/src`, each referencing the ones above it: `WorldEngine.
   `WorldIO` (reads that do not hold a file against a writer on Windows), `WorldLock` (exclusive file
   create, dead-process or minute-old takeover, `store_busy` after `WORLD_LOCK_TIMEOUT_MS`).
 
-**Contract** (`dotnet/src/WorldEngine.Contract`): typed records and the JSON Schema generated from them
+**Contract** (`src/WorldEngine.Contract`): typed records and the JSON Schema generated from them
 (`ContractSchema`), the checks of a request and of a response (`ContractDocument`), the shared value
-shapes (`ContractValues`). **Cli** (`dotnet/src/WorldEngine.Cli`): `CliRunner.Run(args, input)` reads
+shapes (`ContractValues`). **Cli** (`src/WorldEngine.Cli`): `CliRunner.Run(args, input)` reads
 one request, dispatches to one `World` operation, validates the answer against the contract before
 writing it, and answers `{status:"invalid", issues}` with exit code 2 on failure. `init <dir>
 <scenario.json>` builds a world; the ops are listed in `docs/api.md`.

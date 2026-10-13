@@ -29,7 +29,7 @@ to an item here.
 
 One item at a time on `main`. Sessions that run in parallel each work in their own git worktree and
 commit only their own files. Additions to the shared registration points (`VerbRegistry.cs`,
-`VerbSpecs.cs`, the `WorldError` codes, the contract in `dotnet/src/WorldEngine.Contract`, the `docs/verbs.md`
+`VerbSpecs.cs`, the `WorldError` codes, the contract in `src/WorldEngine.Contract`, the `docs/verbs.md`
 index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts at most trivially.
 
 ## Out of scope

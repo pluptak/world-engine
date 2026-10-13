@@ -16,7 +16,7 @@ for behaviour recorded from TypeScript; a change to .NET behaviour updates its g
   `plans/`. `plans/candidates.md` holds gaps with no plan yet: not work, never picked up by an agent.
 - Nothing here imports Story-writer and Story-writer imports nothing from it. Keep the two
   independent. `..\Story-writer\CLAUDE.md` is the precedent for process and comment style.
-- The hard rules and core types are the invariants below and `dotnet/src/WorldEngine.Core/Model/`; don't re-derive or
+- The hard rules and core types are the invariants below and `src/WorldEngine.Core/Model/`; don't re-derive or
   paraphrase the types.
 
 ## Working process — one block per session
@@ -41,7 +41,7 @@ for behaviour recorded from TypeScript; a change to .NET behaviour updates its g
 
 ## Stack and commands (`world-engine`)
 
-- .NET 10, C# with nullable enabled, four projects under `dotnet/src` (Core, Store, Contract, Cli), xUnit tests in `dotnet/tests`, tools
+- .NET 10, C# with nullable enabled, four projects under `src` (Core, Store, Contract, Cli), xUnit tests in `dotnet/tests`, tools
   (benchmark, reference host, golden generators) in `dotnet/tools`. The JSON boundary uses typed records and a generated JSON Schema, not
   Zod. No NuGet package beyond the test stack unless a block names it.
 - `dotnet test dotnet/WorldEngine.slnx` is the whole check; `CLAUDE.md` lists the other commands. No lint step.

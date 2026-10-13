@@ -171,7 +171,7 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   suite runs in about 40 s. `scripts/host.ts` is ported to `dotnet/tools/WorldEngine.Host` (a library, `HostRun`, and a scripted-plan
   entry point), with `HostRunTests` replaying `tests/host.test.ts` over the same fixtures; the schema check of the transcript is the
   command line's own, since it validates every answer before writing it. `npm run world` becomes
-  `dotnet run --project dotnet/src/WorldEngine.Cli` (a publish step waits for a user who needs one). Phase 3 is done.
+  `dotnet run --project src/WorldEngine.Cli` (a publish step waits for a user who needs one). Phase 3 is done.
 
 - **Phase 4 (2026-10-13):** `CLAUDE.md` and `AGENTS.md` are rewritten for the .NET layout, and `backlog.md`'s two Priorities are re-pointed
   at .NET. Left: the TypeScript identifiers in `docs/*.md` (the behaviour descriptions stay, and are the spec), `plans/dotnet-port.md`

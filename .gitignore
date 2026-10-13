@@ -6,3 +6,5 @@ docs/superpowers/
 .claude/
 .devcontainer/
 .vs/
+bin/
+obj/

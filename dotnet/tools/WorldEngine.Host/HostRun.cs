@@ -74,10 +74,11 @@ public static class HostRun
             }).ToList();
             // One deadline for the whole round: an answer that comes after it is dropped, not submitted later.
             var deadline = Task.Delay(timeoutMs);
-            await Task.WhenAll(pending.Select(p => Task.WhenAny(p.Answer, deadline)));
-            foreach (var (handle, answer) in pending)
+            // The deadline is listed first, so when a stalled host sees both finished it still counts the answer as late.
+            var settled = await Task.WhenAll(pending.Select(async p => (p.Handle, p.Answer, OnTime: await Task.WhenAny(deadline, p.Answer) == p.Answer)));
+            foreach (var (handle, answer, onTime) in settled)
             {
-                if (!answer.IsCompletedSuccessfully)
+                if (!onTime)
                 {
                     dropped.Add(new Dropped(round, handle));
                     continue;

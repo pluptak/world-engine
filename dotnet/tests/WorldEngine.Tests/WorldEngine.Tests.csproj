@@ -23,11 +23,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\WorldEngine.Core\WorldEngine.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\WorldEngine.Core\WorldEngine.Core.csproj" />
     <ProjectReference Include="..\..\tools\WorldEngine.Host\WorldEngine.Host.csproj" />
-    <ProjectReference Include="..\..\src\WorldEngine.Store\WorldEngine.Store.csproj" />
-    <ProjectReference Include="..\..\src\WorldEngine.Contract\WorldEngine.Contract.csproj" />
-    <ProjectReference Include="..\..\src\WorldEngine.Cli\WorldEngine.Cli.csproj" />
+    <ProjectReference Include="..\..\..\src\WorldEngine.Store\WorldEngine.Store.csproj" />
+    <ProjectReference Include="..\..\..\src\WorldEngine.Contract\WorldEngine.Contract.csproj" />
+    <ProjectReference Include="..\..\..\src\WorldEngine.Cli\WorldEngine.Cli.csproj" />
     <ProjectReference Include="..\WorldEngine.LockChild\WorldEngine.LockChild.csproj" />
   </ItemGroup>
 

@@ -8,7 +8,7 @@
 
   <!-- The shipped template set, the one TypeScript reads from templates/: a catalog or an init without a world uses it. -->
   <ItemGroup>
-    <None Include="../../../templates/*.json" Link="templates/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../templates/*.json" Link="templates/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <PropertyGroup>
