@@ -12,4 +12,4 @@ events out, never prose. An in-process API (`createWorld`, `openWorld`, `memoryW
 - **History:** a validated append-only store (`verify` replays it), `since`, `trace`, `beat`, stale commands preempted.
 - **Authoring:** presets with `extends` and a catalogue; scenarios with names, anchors, traits and percentage forms; `refine`.
 
-`npm run check` is the gate (Node ≥ 20). Start: `docs/overview.md`; index: `docs/DESIGN.md`; limits: `docs/limits.md`.
+`dotnet test dotnet/WorldEngine.slnx` is the gate (.NET 10). Start: `docs/overview.md`; index: `docs/DESIGN.md`; limits: `docs/limits.md`.

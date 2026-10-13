@@ -1,5 +1,7 @@
 # Design
 
+These docs describe behaviour. Where one names a `src/…ts` or `tests/…ts` file, that is the TypeScript source the engine was ported from; `CLAUDE.md` maps it to the .NET code under `dotnet/`.
+
 What is built, nothing aspirational, one concept per file:
 
 - [thesis.md](thesis.md): what the engine promises, and the decisions that bound it.
