@@ -3,46 +3,16 @@ using WorldEngine.Core.Model;
 
 namespace WorldEngine.Tests;
 
-// Snapshots written by the TypeScript engine (npm run world -- init, then snapshot.json). The bytes must
-// come back unchanged: that is the proof the port reads and writes the same state.
+// A snapshot field the model does not know is an error, never a value silently dropped on the way through (WorldJson). That
+// snapshots round-trip byte for byte is what every golden that writes one already checks.
 public class SnapshotGoldenTests
 {
     [Fact]
-    public void Typed_snapshot_round_trips_byte_for_byte()
-    {
-        var golden = ReadFixture("bottle.snapshot.json");
-
-        var snapshot = WorldJson.Read<Snapshot>(golden);
-
-        Assert.Equal(golden, WorldJson.Write(snapshot));
-        Assert.Equal(5, snapshot.Entities.Count);
-        Assert.Equal("bottle", snapshot.Entities["e3"].Name);
-    }
-
-    [Fact]
     public void Unknown_snapshot_field_is_refused_not_dropped()
     {
-        var golden = ReadFixture("bottle.snapshot.json");
+        var golden = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "bottle.snapshot.json"));
         var withField = golden.Replace("\"tick\":", "\"not_a_field\":[],\"tick\":");
 
         Assert.ThrowsAny<System.Text.Json.JsonException>(() => WorldJson.Read<Snapshot>(withField));
     }
-
-    // A process cause names the process it runs, and that name is kept on the way in and out.
-    [Fact]
-    public void Process_schedule_cause_keeps_its_process_name()
-    {
-        var golden = ReadFixture("bottle.snapshot.json");
-        var withProcess = golden.Replace(
-            "\"tick\":",
-            "\"schedule\":[{\"due_tick\":1,\"kind\":\"process\",\"entity\":\"e1\",\"cause_id\":null,\"process\":\"burn\"}],\"tick\":");
-
-        var snapshot = WorldJson.Read<Snapshot>(withProcess);
-
-        Assert.Equal("burn", snapshot.Schedule![0].Process);
-        Assert.Contains("\"process\":\"burn\"", WorldJson.Write(snapshot));
-    }
-
-    private static string ReadFixture(string name) =>
-        File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", name));
 }

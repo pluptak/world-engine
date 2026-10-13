@@ -39,7 +39,7 @@ committing it: it is the list of everything the change did. The first update of 
 Supported: `VerbMatrixTests`, `PropertyTraceTests` (the memory-world test), `TamperGoldenTests`, `TakeoverGoldenTests`,
 `TemplateFuzzTests`, the scripted rows (`MemoryGoldenTests`, `RefineGoldenTests`, `BeatShapesGoldenTests`) and the `command` and
 `validate` rows of `GoldenRows`. Not supported: the fixtures with a test of their own shape (the `cli-*`, `init`, `block21`, `store-*`,
-`settle`, `contract-*` and similar); when a change breaks one, edit the fixture by hand from the failure message.
+`contract-*` and similar); when a change breaks one, edit the fixture by hand from the failure message.
 
 ## Fixtures with no generator
 
