@@ -75,4 +75,14 @@ Exit: `dotnet test` needs nothing from `node_modules`.
 
 ## Phase 0 findings
 
-(filled in as the questions are answered)
+Found in the repo (2026-10-13):
+
+- **In-repo consumers of the TS package:** none beyond its own tests and scripts. `package.json` is `private`, version 0.0.0, with
+  `exports` pointing at `src/index.ts`. `scripts/host.ts` imports `runCli` directly, but `docs/host.md` presents it as a host that
+  sees only the CLI's JSON, as a caller in another language would.
+- **Documented surface:** README and `docs/overview.md` give the in-process API (`createWorld`, `openWorld`, `memoryWorld`) and
+  `npm run world` as the entry points. `backlog.md` mentions a possible "middleware" and a Story-writer repo as out of scope, so
+  consumers, if any, live outside this repository.
+- **Single-author history:** all 393 commits are by one author, so no other contributor's workflow depends on the npm tooling.
+
+Open, needs the maintainer: questions 1 (external consumers), 2 (old worlds), 3 (freeze) and 4 (schema clients) above.
