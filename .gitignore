@@ -5,3 +5,4 @@ docs/superpowers/
 .test-map.json
 .claude/
 .devcontainer/
+.vs/
