@@ -7,7 +7,7 @@ import { loadTemplates, parseRegistry } from "../../../src/templates.js";
 import { exportExtras, Script } from "./scripted.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../..");
-const fixtures = join(root, "dotnet/tests/WorldEngine.Tests/Fixtures");
+const fixtures = join(root, "tests/WorldEngine.Tests/Fixtures");
 const shipped = loadTemplates(join(root, "templates"));
 const registry = parseRegistry({
   ...(JSON.parse(canonicalJson(shipped)) as Record<string, unknown>),

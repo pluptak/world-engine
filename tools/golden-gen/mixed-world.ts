@@ -8,7 +8,7 @@ import { canonicalJson, createWorld, openWorld, verifyWorld, type World } from "
 import { loadTemplates, parseRegistry } from "../../../src/templates.js";
 
 export const root = join(dirname(fileURLToPath(import.meta.url)), "../../..");
-export const fixtures = join(root, "dotnet/tests/WorldEngine.Tests/Fixtures");
+export const fixtures = join(root, "tests/WorldEngine.Tests/Fixtures");
 export const shipped = loadTemplates(join(root, "templates"));
 export const registry = parseRegistry({ ...shipped, room: { ...shipped.room!, fields: { hush: { tier: "state", type: "boolean" } } } });
 

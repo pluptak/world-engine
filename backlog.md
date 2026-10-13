@@ -88,6 +88,6 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
   checkpoints, templates, ids, and an exclusive turn) with the file code behind it and the memory world's record behind another, and one
   driver over both. The design doc names TypeScript files; map them with `CLAUDE.md`'s layout.
 - Zero behaviour change: the same bytes on disk and the same CLI output. No SQLite code.
-- **Done when:** `dotnet test dotnet/WorldEngine.slnx` passes with no test edit beyond names, and one new seam test shows the file and
+- **Done when:** `dotnet test WorldEngine.slnx` passes with no test edit beyond names, and one new seam test shows the file and
   memory drivers fold a scripted log identically.
 - **Depends on:** nothing.

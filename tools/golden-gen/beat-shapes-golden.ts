@@ -194,5 +194,5 @@ for (const [name, extra] of live) {
 script.snapshot("scheduled");
 script.command("advance through the beats", { command_id: "adv-1", actor: "world", verb: "advance", args: { ticks: 14 } });
 script.snapshot("after");
-script.save(join(root, "dotnet/tests/WorldEngine.Tests/Fixtures/beat-shapes-golden.expected.json"));
+script.save(join(root, "tests/WorldEngine.Tests/Fixtures/beat-shapes-golden.expected.json"));
 console.log(`wrote ${script.rows.length} rows`);

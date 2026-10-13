@@ -4,9 +4,9 @@ Guidance for coding agents in this directory.
 
 ## Status: the engine is .NET
 
-The engine is the .NET one under `dotnet/` (`plans/ts-sunset.md`). The TypeScript in `src/`, `tests/`, `scripts/` and `package.json` is frozen
-and will be deleted: no feature work, no refactors, no fixes there. The goldens (`dotnet/tools/golden-gen/README.md`) are the reference
-for behaviour recorded from TypeScript; a change to .NET behaviour updates its goldens in the same commit, as a diff that is read.
+The engine is the .NET one (`src/`, `tests/`, `tools/`, `WorldEngine.slnx`). The TypeScript it was ported from is gone from the tree
+and lives at the git tag `ts-final` (`plans/ts-sunset.md`). The goldens (`tools/golden-gen/README.md`) are the reference for
+behaviour recorded from it; a change to .NET behaviour updates its goldens in the same commit, as a diff that is read.
 
 ## What this repo is
 
@@ -35,16 +35,16 @@ for behaviour recorded from TypeScript; a change to .NET behaviour updates its g
 
 ### Verification (before the commit)
 
-1. `dotnet test dotnet/WorldEngine.slnx` passes (about 40 s). Use `--filter "FullyQualifiedName~<name>"` while working.
+1. `dotnet test WorldEngine.slnx` passes (about 40 s). Use `--filter "FullyQualifiedName~<name>"` while working.
 2. Deliberately break one new test to confirm it can fail, then restore it.
 3. Read the staged diff: only this block's changes.
 
 ## Stack and commands (`world-engine`)
 
-- .NET 10, C# with nullable enabled, four projects under `src` (Core, Store, Contract, Cli), xUnit tests in `dotnet/tests`, tools
-  (benchmark, reference host, golden generators) in `dotnet/tools`. The JSON boundary uses typed records and a generated JSON Schema, not
+- .NET 10, C# with nullable enabled, four projects under `src` (Core, Store, Contract, Cli), xUnit tests in `tests`, tools
+  (benchmark, reference host, golden generators) in `tools`. The JSON boundary uses typed records and a generated JSON Schema, not
   Zod. No NuGet package beyond the test stack unless a block names it.
-- `dotnet test dotnet/WorldEngine.slnx` is the whole check; `CLAUDE.md` lists the other commands. No lint step.
+- `dotnet test WorldEngine.slnx` is the whole check; `CLAUDE.md` lists the other commands. No lint step.
 - `data/` is gitignored; store tests use the temp folder. Source files are CRLF on this checkout: edit them with the Edit tool, or open
   them with `newline=''` from a script.
 

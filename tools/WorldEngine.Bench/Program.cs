@@ -7,7 +7,7 @@ using WorldEngine.Store;
 using WorldEngine.Store.Templates;
 
 // The default workload of scripts/bench.ts: 10,000 alternating take/drop commands on a four-entity stored world, all ok. Prints
-// one JSON line. Run from anywhere: `dotnet run -c Release --project dotnet/tools/WorldEngine.Bench`. TypeScript's numbers on the
+// one JSON line. Run from anywhere: `dotnet run -c Release --project tools/WorldEngine.Bench`. TypeScript's numbers on the
 // same workload (2026-10-13, this machine): 311 cmd/s, 3.57 ms/cmd for the first 1k and 3.17 for the last.
 var root = AppContext.BaseDirectory;
 while (root is not null && !Directory.Exists(Path.Combine(root, "templates")))

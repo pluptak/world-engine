@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\WorldEngine.Core\WorldEngine.Core.csproj" />
-    <ProjectReference Include="..\..\..\src\WorldEngine.Store\WorldEngine.Store.csproj" />
+    <ProjectReference Include="..\..\src\WorldEngine.Cli\WorldEngine.Cli.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

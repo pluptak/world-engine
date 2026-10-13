@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../..");
 const dir = mkdtempSync(join(tmpdir(), "gap-"));
 cpSync(`${root}/templates`, join(dir, "templates"), { recursive: true });
-cpSync(`${root}/dotnet/tests/WorldEngine.Tests/Fixtures/test-templates`, join(dir, "templates"), { recursive: true });
+cpSync(`${root}/tests/WorldEngine.Tests/Fixtures/test-templates`, join(dir, "templates"), { recursive: true });
 const registry = loadTemplates(join(dir, "templates"));
 
 const hall = { id: "hall", template: "room", overrides: { name: "hall", props: { lit: true } } };
@@ -47,5 +47,5 @@ row("spawn into a holder with in_part null", { entities: people }, edit({ kind: 
 row("spawn into a holder with in_part omitted", { entities: people }, edit({ kind: "spawn", template: "stone", overrides: { location: "e1", contained_in: "e2" } }));
 row("spawn with a trait that is not a string", { entities: people }, edit({ kind: "spawn", template: "stone", overrides: { location: "e1", support: "e1", pos: { x: 5, y: 5 }, traits: { mood: 3 } } }));
 
-writeFileSync(`${root}/dotnet/tests/WorldEngine.Tests/Fixtures/gap-golden.expected.json`, canonicalJson(JSON.parse(JSON.stringify(rows))));
+writeFileSync(`${root}/tests/WorldEngine.Tests/Fixtures/gap-golden.expected.json`, canonicalJson(JSON.parse(JSON.stringify(rows))));
 console.log(rows.map((r: any) => `${r.name}: ${r.result.status} ${r.result.reason_code ?? ""} ev=${r.result.events.length}`).join("\n"));

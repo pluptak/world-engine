@@ -34,7 +34,7 @@ Measured on commit `7ff0464`.
   silently wrong): beat, run and role edits and `refine` in `edit`; `advance`'s `stop_before`; process
   and beat schedule causes; per-event perceivers and rounds in `Pipeline.Apply`; validation rules for
   runs, beats and processes; an explicit `in_part: null` on a spawn; non-string trait values on a spawn.
-- **Tests:** 107 xUnit tests, all passing. Goldens live in `dotnet/tests/WorldEngine.Tests/Fixtures/`
+- **Tests:** 107 xUnit tests, all passing. Goldens live in `tests/WorldEngine.Tests/Fixtures/`
   and are regenerated from TypeScript by the scratchpad generators in `gen/`.
 
 ## 2. What "full port" means

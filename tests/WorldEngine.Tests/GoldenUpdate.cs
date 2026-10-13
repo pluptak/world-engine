@@ -18,12 +18,12 @@ internal static class GoldenUpdate
 {
     public static bool Enabled => Environment.GetEnvironmentVariable("WORLD_ENGINE_UPDATE_GOLDENS") == "1";
 
-    // The fixture in the source tree: found by walking up from the test's folder to the one that holds dotnet/tests/WorldEngine.Tests.
+    // The fixture in the source tree: found by walking up from the test's folder to the one that holds tests/WorldEngine.Tests.
     public static string SourcePath(string fixture)
     {
         for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
         {
-            var candidate = Path.Combine(dir.FullName, "dotnet", "tests", "WorldEngine.Tests", "Fixtures");
+            var candidate = Path.Combine(dir.FullName, "tests", "WorldEngine.Tests", "Fixtures");
             if (Directory.Exists(candidate))
             {
                 return Path.Combine(candidate, fixture);

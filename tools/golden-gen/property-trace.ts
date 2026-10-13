@@ -2,9 +2,9 @@
 // suite replays: for each seed, the generated steps in order, with a hash of what each step answered and of the snapshot it left.
 // The generator reads the TypeScript snapshot to choose each step, so the steps are recorded, not regenerated, on the .NET side.
 //
-//   node --import tsx dotnet/tools/golden-gen/property-trace.ts [seeds] [steps]
+//   node --import tsx tools/golden-gen/property-trace.ts [seeds] [steps]
 //
-// Writes dotnet/tests/WorldEngine.Tests/Fixtures/property/: initial.snapshot.json, templates/ (the fixture templates the property
+// Writes tests/WorldEngine.Tests/Fixtures/property/: initial.snapshot.json, templates/ (the fixture templates the property
 // registry adds to templates/), and trace.jsonl.gz (one line per seed). Last generated from TypeScript at the commit that added it.
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -19,7 +19,7 @@ import { asEditCommand, registry } from "../../../tests/property-run.js";
 const seeds = Number(process.argv[2] ?? 500);
 const steps = Number(process.argv[3] ?? 30);
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../..");
-const out = join(root, "dotnet/tests/WorldEngine.Tests/Fixtures/property");
+const out = join(root, "tests/WorldEngine.Tests/Fixtures/property");
 mkdirSync(join(out, "templates"), { recursive: true });
 
 const hash = (value: unknown): string => createHash("sha256").update(canonicalJson(value)).digest("hex");

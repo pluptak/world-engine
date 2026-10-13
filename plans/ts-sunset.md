@@ -36,7 +36,7 @@ Exit: the .NET suite is green with no known failures, and the corpus comparison 
 
 ## Phase 2: Freeze goldens
 
-- Commit the golden generators (today in the scratchpad) into the repo, e.g. `dotnet/tools/golden-gen/`, marked "last generated
+- Commit the golden generators (today in the scratchpad) into the repo, e.g. `tools/golden-gen/`, marked "last generated
   from TS at commit X".
 - Add a .NET-native way to regenerate goldens, so a behaviour change is a deliberate golden update with a reviewed diff.
 - Invert the "TypeScript is the reference" rule in `CLAUDE.md`/`AGENTS.md`.
@@ -105,7 +105,7 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
 ## Progress
 
 - 2026-10-13, Phase 1: both baseline failures fixed (d0c6b22); the full .NET suite is green (5800 tests).
-- 2026-10-13, Phase 1 soak, memory worlds: `dotnet/tools/golden-gen/property-trace.ts` records the TypeScript property sequences
+- 2026-10-13, Phase 1 soak, memory worlds: `tools/golden-gen/property-trace.ts` records the TypeScript property sequences
   (seeds 0 to 499, 30 steps) and `PropertyTraceTests` replays them: 15,000 steps, answer and snapshot hashes equal at every step.
   It found one real divergence, fixed in the same commit (a beat's edit threw on a refusal code `edit` does not declare).
 - 2026-10-13, Phase 1 soak, store worlds: the first 60 of those sequences also run on a store world (`WorldBuilder.Create` and
@@ -135,7 +135,7 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   Next step: for each, read the TS test that exercises the same code (`refine`, `upgrade`, `store-lock`, `scheduled-beat`,
   `verify`, `player-slots`, `attack` ...), record its cases as goldens, and add them. Rerun coverage; the target is every
   behavioural branch run, not a number.
-- 2026-10-13, Phase 1, coverage-driven goldens (see `dotnet/tools/golden-gen/`: `scripted.ts` records a world driven through calls,
+- 2026-10-13, Phase 1, coverage-driven goldens (see `tools/golden-gen/`: `scripted.ts` records a world driven through calls,
   `mixed-world.ts` is the shared stored-world run): `refine-golden` (32 rows: every refine refusal), `beat-shapes-golden` (147 rows:
   conditions, repeats, followers, actions, ids and ticks, then beats run), `tamper-golden` (130 damaged stored worlds: verify,
   open, verify again, every file's hash; the 267-line mixed run is byte-identical to TypeScript's) and `takeover-golden` (17 sets a
@@ -154,21 +154,21 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   `WorldLockProcessTests` covers turn-taking) and `PlayerWorld` (27 lines, the `body_out` and `not_registered` refusals). Neither is a
   reason to hold Phase 2.
 
-- **Phase 2 (started 2026-10-13):** the generators are in `dotnet/tools/golden-gen/` with a README (`gap-golden.ts` moved in from the
+- **Phase 2 (started 2026-10-13):** the generators are in `tools/golden-gen/` with a README (`gap-golden.ts` moved in from the
   scratch folder; about sixty older goldens have no surviving generator and are frozen as recorded). `WORLD_ENGINE_UPDATE_GOLDENS=1`
   regenerates the supporting goldens from .NET (`GoldenUpdate`). The reference rule is inverted in
   `AGENTS.md`, `CLAUDE.md` and `plans/dotnet-port.md`. Phase 2 exit met: with `node_modules` moved away, `dotnet test` passes all 5,808
   tests, and no .NET source or test starts Node.
 
-- **Phase 3 (started 2026-10-13):** `.github/workflows/check.yml` has a `dotnet` job (`dotnet test dotnet/WorldEngine.slnx`) beside the npm one.
-  `dotnet/tools/WorldEngine.Bench` is the default `npm run bench` workload (10,000 take/drop on a four-entity stored world). Baseline on
+- **Phase 3 (started 2026-10-13):** `.github/workflows/check.yml` has a `dotnet` job (`dotnet test WorldEngine.slnx`) beside the npm one.
+  `tools/WorldEngine.Bench` is the default `npm run bench` workload (10,000 take/drop on a four-entity stored world). Baseline on
   this machine: TypeScript 311 cmd/s (3.57 ms/cmd for the first 1k, 3.17 for the last); `npm run bench:scale` 7.1 to 7.2 ms/cmd. The
   first .NET run was 87 cmd/s (14.9 and 11.1 ms): each command re-hashed the template set, loaded the current snapshot twice (once more
   for an observation nobody asked for) and refolded the log from the last snapshot, and a freshly written `head.json` is slow to open
   again. The store now keeps the hash per registry, the snapshot and head it last wrote (valid while the files' sizes and write times are
   as it left them), and `WithObservation` loads nothing when `observe` is off: 262 cmd/s (4.3 and 3.8 ms). The scale, reads and rounds
   workloads are not ported: they only matter to a later performance pass. `scripts/test-select.ts` is dropped, not replaced: the whole .NET
-  suite runs in about 40 s. `scripts/host.ts` is ported to `dotnet/tools/WorldEngine.Host` (a library, `HostRun`, and a scripted-plan
+  suite runs in about 40 s. `scripts/host.ts` is ported to `tools/WorldEngine.Host` (a library, `HostRun`, and a scripted-plan
   entry point), with `HostRunTests` replaying `tests/host.test.ts` over the same fixtures; the schema check of the transcript is the
   command line's own, since it validates every answer before writing it. `npm run world` becomes
   `dotnet run --project src/WorldEngine.Cli` (a publish step waits for a user who needs one). Phase 3 is done.

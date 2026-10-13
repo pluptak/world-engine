@@ -1,14 +1,14 @@
 # Golden generators
 
 The .NET suite is held to the TypeScript engine by recorded answers ("goldens") in
-`dotnet/tests/WorldEngine.Tests/Fixtures`. TypeScript was the reference when they were recorded; its last change is `83d5d4a`
+`tests/WorldEngine.Tests/Fixtures`. TypeScript was the reference when they were recorded; its last change is `83d5d4a`
 (2026-10-12). TypeScript is frozen (`plans/ts-sunset.md`), so from here a golden moves only when the .NET engine's behaviour is changed
 on purpose, and the change to the fixture is part of the same commit and is read as a diff.
 
 ## Generators in this folder (they need Node and the TypeScript tree)
 
 The TypeScript tree is removed from the main branch; it lives at the tag `ts-final`. To run a generator, check that tag out into a separate
-worktree (`git worktree add ../world-engine-ts ts-final`, then `npm ci` there) and run `node --import tsx dotnet/tools/golden-gen/<file>.ts`
+worktree (`git worktree add ../world-engine-ts ts-final`, then `npm ci` there) and run `node --import tsx tools/golden-gen/<file>.ts`
 from it, with this folder's generators copied in.
 
 | Generator | Fixture(s) | .NET test |
@@ -29,7 +29,7 @@ from it, with this folder's generators copied in.
 
 ```bash
 WORLD_ENGINE_UPDATE_GOLDENS=1 dotnet test --filter "FullyQualifiedName~VerbMatrixTests"
-git diff --stat dotnet/tests/WorldEngine.Tests/Fixtures
+git diff --stat tests/WorldEngine.Tests/Fixtures
 ```
 
 With the variable set, a supporting test writes what .NET does into the fixture in the source tree and passes. Read the diff before

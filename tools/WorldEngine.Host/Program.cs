@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Host;
 
-// dotnet run --project dotnet/tools/WorldEngine.Host -- <scene.json> <plan.json> <dir>
+// dotnet run --project tools/WorldEngine.Host -- <scene.json> <plan.json> <dir>
 if (args.Length != 3)
 {
     Console.Error.WriteLine("usage: WorldEngine.Host <scene.json> <plan.json> <dir>");

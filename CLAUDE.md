@@ -7,27 +7,28 @@ prose, coverage/`"unknown"`, parts and capacities, templates as data). Read it f
 adds what you need to find your way around the code. What to build next, in order, is the
 Priorities section of `backlog.md`; `plans/candidates.md` is unplanned gaps, not work.
 
-The engine is the .NET one under `dotnet/` (`plans/ts-sunset.md`). The TypeScript engine in `src/`
-and `tests/` is frozen, kept only until it is deleted; do not change it. `docs/` describes behaviour
-and is the specification; where a doc names a `src/…ts` file, the .NET counterpart is in the layout
-below (same names, mostly: `pipeline.ts` is `Pipeline.cs`, `verbs/pour.ts` is `PourVerb.cs`).
+The engine is the .NET one: `src/` (the four projects), `tests/`, `tools/` and `WorldEngine.slnx` at the root. The
+TypeScript engine it was ported from is gone from the tree and lives at the git tag `ts-final` (`plans/ts-sunset.md`).
+`docs/` describes behaviour and is the specification; where a doc names a `src/…ts` or `tests/…ts` file, that is the TypeScript
+source at the tag, and the .NET counterpart is in the layout below (mostly the same names: `pipeline.ts` is `Pipeline.cs`,
+`verbs/pour.ts` is `PourVerb.cs`).
 
 ## Commands
 
 ```bash
-dotnet test dotnet/WorldEngine.slnx                       # the whole suite (about 40 s); the usual gate
+dotnet test WorldEngine.slnx                       # the whole suite (about 40 s); the usual gate
 dotnet test dotnet --filter "FullyQualifiedName~HostRunTests"   # one class or a name fragment
-dotnet build dotnet/WorldEngine.slnx                      # compile only
+dotnet build WorldEngine.slnx                      # compile only
 dotnet run --project src/WorldEngine.Cli -- init data/w1 scenarios/bottle.json     # create a world
 echo '{"op":"snapshot","world":"data/w1"}' | dotnet run --project src/WorldEngine.Cli   # one JSON request on stdin
-dotnet run -c Release --project dotnet/tools/WorldEngine.Bench     # 10,000 store commands; ms/cmd first and last 1k
-dotnet run --project dotnet/tools/WorldEngine.Host -- <scene.json> <plan.json> <dir>   # the reference host (docs/host.md)
+dotnet run -c Release --project tools/WorldEngine.Bench     # 10,000 store commands; ms/cmd first and last 1k
+dotnet run --project tools/WorldEngine.Host -- <scene.json> <plan.json> <dir>   # the reference host (docs/host.md)
 WORLD_ENGINE_UPDATE_GOLDENS=1 dotnet test dotnet          # rewrite the supporting goldens from .NET (read the diff)
 ```
 
-There is no lint step. Tests are xUnit (`dotnet/tests/WorldEngine.Tests`); store tests write under the
+There is no lint step. Tests are xUnit (`tests/WorldEngine.Tests`); store tests write under the
 temp folder; `WorldEngine.LockChild` is the second process the lock tests spawn. The goldens are in
-`dotnet/tests/WorldEngine.Tests/Fixtures` and `dotnet/tools/golden-gen/README.md` says where each
+`tests/WorldEngine.Tests/Fixtures` and `tools/golden-gen/README.md` says where each
 came from (TypeScript at its freeze, `83d5d4a`). A behaviour change updates its goldens in the same
 commit, and the fixture diff is read like code.
 
