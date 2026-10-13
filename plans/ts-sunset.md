@@ -142,6 +142,10 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   head does not name). They found two real defects, both fixed: `StoreWorld.Open` never settled a world under its own moved
   set (the takeover path was unreachable, 0% covered) nor checked the snapshot it opened; and a beat condition with a fractional value
   (a deviation, below). Coverage went from 91.5% to about 93% of lines.
+- 2026-10-13, Phase 1: `verb-matrix` (31,859 commands: every verb, with every kind of actor, target and argument, over the 55 fixture
+  snapshots; all answers, refusals and effect hashes equal TypeScript's, first run) and `template-fuzz` (2,506 mutated template sets:
+  accept or refuse, and the message word for word). The fuzz found that .NET read a half-written template with defaults (a missing
+  `size_cm`, `every_ticks: null`, a `then: {}` ...) where TypeScript refuses it; `TemplateShape` now checks the JSON as `parseDecl` does.
 
 ## Deliberate deviations from TypeScript
 
@@ -154,3 +158,6 @@ Places where .NET differs on purpose, found by the Phase 1 replays. Each has a t
   reader ignores it, so `verify` goes on and names `snapshot.json` as differing; .NET's reader refuses the file (`verify` answers an
   error, the CLI an invalid response). Both flag the corruption; the .NET failure is earlier and plainer. Left out of
   `tamper-golden` on purpose (the generator skips that flip).
+- A fractional number in a template declaration (a size of `1.5`, a mass, a part's integrity, a hold's inner size): TypeScript takes any
+  finite number; .NET asks for a whole number (`must be an integer`), since the engine and the canonical form hold integers only.
+  `template-fuzz` leaves fractions out of its values.

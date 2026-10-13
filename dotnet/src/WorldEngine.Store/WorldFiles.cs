@@ -189,6 +189,7 @@ public static class WorldFiles
         var sources = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var id in set.Select(pair => pair.Key).Order(StringComparer.Ordinal))
         {
+            TemplateShape.Check(set[id], $"{source}#{id}");
             var decl = WorldJson.Read<TemplateDecl>(set[id]!.ToJsonString());
             if (decl.Id != id)
             {
