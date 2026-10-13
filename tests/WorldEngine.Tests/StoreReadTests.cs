@@ -56,6 +56,25 @@ public class StoreReadTests : IDisposable
     }
 
     [Fact]
+    public void A_head_with_fractional_sizes_is_refused()
+    {
+        var dir = Path.Combine(scratch, "world");
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Combine(dir, "head.json"),
+            """{"log_bytes":1.5,"events_bytes":0,"log_entries":1,"ok_entries":1,"templates_hash":"h"}""");
+
+        Assert.Null(WorldFiles.ReadHead(dir));
+    }
+
+    [Fact]
+    public void A_log_line_with_a_fractional_based_on_version_is_refused()
+    {
+        const string line = """{"based_on_version":1.5,"version":1,"status":"ok","command":{"command_id":"c1","actor":"e1","verb":"wait","args":{}}}""";
+
+        Assert.Throws<FormatException>(() => WorldFiles.ParseLogLine(line, 1));
+    }
+
+    [Fact]
     public void The_head_names_the_sizes_and_counts_the_files_have()
     {
         var head = WorldFiles.ReadHead(Fixture)!;

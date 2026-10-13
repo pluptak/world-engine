@@ -331,10 +331,11 @@ public static class WorldFiles
         return WorldJson.Read<Delta>(line);
     }
 
+    // A count or size as head.json or a log line holds it: whole numbers only, so a fraction is refused, never truncated.
     private static bool Number(JsonObject value, string key, out long number)
     {
-        var read = JsonReads.Number(value[key]);
-        number = read is null ? 0 : (long)read.Value;
+        var read = JsonReads.SafeInt(value[key]);
+        number = read ?? 0;
         return read is not null;
     }
 
