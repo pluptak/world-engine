@@ -51,9 +51,10 @@ public static partial class Beats
         {
             return false;
         }
-        // A string, a boolean or a number; the ordering ops need a number.
+        // A string, a boolean or a whole number; the ordering ops need a number. TypeScript also stores a fraction here, which breaks
+        // the snapshot's integers-only rule (and cannot be written canonically), so it is refused as malformed.
         var operand = obj["value"];
-        var number = PropFields.Number(operand) is not null;
+        var number = PropFields.Number(operand) is { } value && WorldEngine.Core.Json.JsNumber.IsSafeInteger(value);
         if (TextOf(operand) is null && !IsBool(operand) && !number)
         {
             return false;

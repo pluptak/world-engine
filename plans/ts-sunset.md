@@ -135,3 +135,11 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   Next step: for each, read the TS test that exercises the same code (`refine`, `upgrade`, `store-lock`, `scheduled-beat`,
   `verify`, `player-slots`, `attack` ...), record its cases as goldens, and add them. Rerun coverage; the target is every
   behavioural branch run, not a number.
+
+## Deliberate deviations from TypeScript
+
+Places where .NET differs on purpose, found by the Phase 1 replays. Each has a test that names it.
+
+- A beat condition whose `value` is a fraction: TypeScript queues it and stores the fraction in the snapshot, against the
+  integers-only rule (and .NET's canonical writer cannot print it); .NET refuses it as malformed (`invalid_args`).
+  `BeatShapesGoldenTests.A_fractional_condition_value_is_a_malformed_beat`.
