@@ -18,10 +18,7 @@ public static class ContractSchema
 
     public static JsonNode Of<T>()
     {
-        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(
-            Options,
-            typeof(T),
-            new JsonSchemaExporterOptions { TreatNullObliviousAsNonNullable = true });
+        JsonNode schema = Generate<T>();
         if (typeof(T) == typeof(AnchorPos))
         {
             schema["properties"]!["anchor"]!["minLength"] = 1;
@@ -55,6 +52,14 @@ public static class ContractSchema
             IssueConstraints(issue["$ref"] is null ? issue : schema["$defs"]!["ValidationIssue"]!);
         }
         return schema;
+    }
+
+    private static JsonNode Generate<T>()
+    {
+        return JsonSchemaExporter.GetJsonSchemaAsNode(
+            Options,
+            typeof(T),
+            new JsonSchemaExporterOptions { TreatNullObliviousAsNonNullable = true });
     }
 
     private static void IssueConstraints(JsonNode issue)
