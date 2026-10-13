@@ -1,0 +1,28 @@
+{
+  "id": "sturdy_bottle",
+  "extends": "bottle",
+  "size_cm": {
+    "w": 8,
+    "d": 8,
+    "h": 25
+  },
+  "mass_g": 900,
+  "parts": [],
+  "props": {
+    "break_fall_cm": 400,
+    "capacity_cm3": 750,
+    "liquid_amount": 750,
+    "liquid_material": "wine",
+    "liquid_nutrition": 10,
+    "topples": true
+  },
+  "break_products": [
+    {
+      "template": "glass_shard",
+      "count": 3
+    }
+  ],
+  "break_residue": {
+    "glass": 5
+  }
+}

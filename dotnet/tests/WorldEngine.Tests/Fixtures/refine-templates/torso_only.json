@@ -1,0 +1,46 @@
+{
+  "id": "torso_only",
+  "extends": "human",
+  "size_cm": {
+    "w": 45,
+    "d": 30,
+    "h": 180
+  },
+  "mass_g": 70000,
+  "parts": [
+    {
+      "name": "head",
+      "parent": null,
+      "contributes": {
+        "sight": 100,
+        "hearing": 100,
+        "speech": 100
+      },
+      "detachable": false,
+      "max_integrity": 100
+    },
+    {
+      "name": "torso",
+      "parent": null,
+      "contributes": {
+        "moving": 100,
+        "touch": 100
+      },
+      "detachable": false,
+      "max_integrity": 100
+    }
+  ],
+  "props": {
+    "agent": true,
+    "attack_damage": 40,
+    "bleed_damage": 5,
+    "bleed_every_ticks": 2,
+    "bleed_times": 3,
+    "default_hit_part": "torso",
+    "hand_carry_limit_g": 80000,
+    "hand_height_cm": 100,
+    "reach_cm": 100
+  },
+  "break_products": [],
+  "break_residue": {}
+}

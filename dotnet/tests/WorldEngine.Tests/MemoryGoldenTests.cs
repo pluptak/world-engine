@@ -12,22 +12,23 @@ namespace WorldEngine.Tests;
 public class MemoryGoldenTests
 {
     [Fact]
-    public void Memory_world_steps_match_TypeScript() => Replay("memory-golden.expected.json");
+    public void Memory_world_steps_match_TypeScript() => Replay("memory-golden.expected.json", TestTemplates.RepoRegistry);
 
     [Fact]
-    public void Memory_world_rounds_match_TypeScript() => Replay("memory-rounds-golden.expected.json");
+    public void Memory_world_rounds_match_TypeScript() => Replay("memory-rounds-golden.expected.json", TestTemplates.RepoRegistry);
 
-    private static void Replay(string fixture)
+    // A scripted golden (tools/golden-gen/scripted.ts) is the same rows, against the registry its script was recorded with.
+    internal static void Replay(string fixture, IReadOnlyDictionary<string, WorldEngine.Core.Templates.Template> registry)
     {
         var rows = GoldenRows.ReadRows(fixture);
         var start = WorldJson.Read<Snapshot>(rows[0]!["args"]!["snapshot"]!.ToJsonString());
-        var world = new MemoryWorld(start, TestTemplates.RepoRegistry, start.TemplatesHash);
+        var world = new MemoryWorld(start, registry, start.TemplatesHash);
 
         foreach (var step in rows.Skip(1))
         {
             var name = step!["name"]!.GetValue<string>();
             var args = step["args"]!;
-            var actual = Outcome(() => Step(world, step["op"]!.GetValue<string>(), args));
+            var actual = Outcome(() => Step(world, registry, step["op"]!.GetValue<string>(), args));
             Assert.True(
                 CanonicalJson.Serialize(step["result"]) == CanonicalJson.Serialize(actual),
                 $"{name}: expected {step["result"]?.ToJsonString()}, got {actual?.ToJsonString()}");
@@ -35,7 +36,7 @@ public class MemoryGoldenTests
     }
 
     // The answer to one call, in the shape the golden writes it.
-    private static JsonNode? Step(MemoryWorld world, string op, JsonNode args) => op switch
+    private static JsonNode? Step(MemoryWorld world, IReadOnlyDictionary<string, WorldEngine.Core.Templates.Template> registry, string op, JsonNode args) => op switch
     {
         "snapshot" => Json(world.CurrentSnapshot()),
         "options" => Json(world.OptionsFor(args["actor"]!.GetValue<string>(), args["refused"]?.GetValue<bool>() ?? false)),
@@ -50,7 +51,7 @@ public class MemoryGoldenTests
             args["observer"]!.GetValue<string>(),
             args["since"]?.GetValue<long>(),
             args["since_tick"]?.GetValue<long>()),
-        "inspect" => Projection.InspectEntity(world.CurrentSnapshot(), TestTemplates.RepoRegistry, [], args["observer"]!.GetValue<string>(), args["entity"]!.GetValue<string>()),
+        "inspect" => Projection.InspectEntity(world.CurrentSnapshot(), registry, [], args["observer"]!.GetValue<string>(), args["entity"]!.GetValue<string>()),
         "since" => Since(world, args["version"]!.GetValue<long>()),
         "attempts" => Json(world.Attempts(args["version"]!.GetValue<long>())),
         "query" => Query(world, args),
