@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace WorldEngine.Core.Json;
@@ -21,7 +20,4 @@ public static class WorldJson
 
     public static string Write<T>(T value) =>
         CanonicalJson.Serialize(JsonSerializer.SerializeToNode(value, Options));
-
-    public static string Canonicalize(string json) =>
-        CanonicalJson.Serialize(JsonNode.Parse(json));
 }

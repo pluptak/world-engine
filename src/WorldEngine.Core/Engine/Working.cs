@@ -50,7 +50,7 @@ public sealed class Working(Snapshot snapshot, string commandId)
         var entity = Snapshot.Entities[entityId];
         var from = JsonSerializer.SerializeToNode(entity.Modifiers, WorldJson.Options);
         var to = JsonSerializer.SerializeToNode(modifiers, WorldJson.Options);
-        if (CanonicalJson.Serialize(from) == CanonicalJson.Serialize(to))
+        if (JsonNode.DeepEquals(from, to))
         {
             return;
         }
@@ -162,7 +162,7 @@ public sealed class Working(Snapshot snapshot, string commandId)
         var entity = Snapshot.Entities[entityId];
         var from = JsonSerializer.SerializeToNode(FieldOf(entity, field), WorldJson.Options);
         var to = JsonSerializer.SerializeToNode(value, WorldJson.Options);
-        if (CanonicalJson.Serialize(from) == CanonicalJson.Serialize(to))
+        if (JsonNode.DeepEquals(from, to))
         {
             return;
         }

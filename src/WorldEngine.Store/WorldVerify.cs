@@ -230,7 +230,7 @@ public static class WorldVerify
 
     private static string? TextOrNull(string path) => File.Exists(path) ? WorldIO.ReadAllText(path) : null;
 
-    private static string Canonical<T>(T value) => WorldJson.Canonicalize(WorldJson.Write(value));
+    private static string Canonical<T>(T value) => WorldJson.Write(value);
 
     private static Verification Diverges(string file, int line, string code) => new(new Divergence(file, line, code), 0, 0);
 }

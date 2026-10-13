@@ -128,7 +128,7 @@ public static class PropFields
     public static bool SameValue(JsonNode? left, JsonNode? right) =>
         left is null || right is null
             ? left is null && right is null
-            : CanonicalJson.Serialize(left) == CanonicalJson.Serialize(right);
+            : JsonNode.DeepEquals(left, right);
 
     // A flag that is literally true, as `=== true` reads it; any other value, or none, is not.
     public static bool IsTrue(JsonNode? value) =>

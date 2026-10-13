@@ -192,5 +192,5 @@ public static class WorldWriter
     // One record as the store writes it: canonical JSON and a newline.
     internal static string Line<T>(T value) => Canonical(value) + "\n";
 
-    internal static string Canonical<T>(T value) => WorldJson.Canonicalize(WorldJson.Write(value));
+    internal static string Canonical<T>(T value) => WorldJson.Write(value);
 }
