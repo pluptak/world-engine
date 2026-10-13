@@ -1,0 +1,48 @@
+{
+  "id": "lichen",
+  "extends": "stone",
+  "size_cm": {
+    "w": 20,
+    "d": 20,
+    "h": 20
+  },
+  "mass_g": 2000,
+  "parts": [],
+  "props": {
+    "size": 1
+  },
+  "break_products": [],
+  "break_residue": {},
+  "spent_products": [
+    {
+      "template": "glass_shard",
+      "count": 1
+    }
+  ],
+  "spent_residue": {
+    "spores": 3
+  },
+  "processes": [
+    {
+      "id": "sprout",
+      "every_ticks": 1,
+      "effect": {
+        "adjust_prop": {
+          "prop": "size",
+          "by": 1,
+          "max": 6
+        }
+      },
+      "chance_pct": 50,
+      "then": {
+        "spent": true
+      }
+    }
+  ],
+  "fields": {
+    "size": {
+      "tier": "state",
+      "type": "integer"
+    }
+  }
+}

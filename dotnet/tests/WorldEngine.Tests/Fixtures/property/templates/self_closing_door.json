@@ -1,0 +1,18 @@
+{
+  "id": "self_closing_door",
+  "extends": "door",
+  "size_cm": {
+    "w": 90,
+    "d": 10,
+    "h": 200
+  },
+  "mass_g": 30000,
+  "parts": [],
+  "props": {
+    "open": true,
+    "openable": true,
+    "closes_after": 2
+  },
+  "break_products": [],
+  "break_residue": {}
+}

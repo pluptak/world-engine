@@ -1,0 +1,40 @@
+{
+  "id": "moss",
+  "extends": "stone",
+  "size_cm": {
+    "w": 20,
+    "d": 20,
+    "h": 20
+  },
+  "mass_g": 2000,
+  "parts": [],
+  "props": {
+    "size": 1
+  },
+  "break_products": [],
+  "break_residue": {},
+  "processes": [
+    {
+      "id": "grow",
+      "every_ticks": 3,
+      "effect": {
+        "adjust_prop": {
+          "prop": "size",
+          "by": 1,
+          "max": 4
+        }
+      },
+      "then": {
+        "damage": {
+          "amount": 60
+        }
+      }
+    }
+  ],
+  "fields": {
+    "size": {
+      "tier": "state",
+      "type": "integer"
+    }
+  }
+}

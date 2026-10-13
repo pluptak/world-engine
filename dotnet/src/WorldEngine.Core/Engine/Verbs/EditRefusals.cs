@@ -426,10 +426,8 @@ public static partial class EditVerb
         {
             return Refused("circular_placement");
         }
-        if (!Refuses.Contains(first.Code))
-        {
-            throw new InvalidOperationException($"Verb edit refused with undeclared code {first.Code}");
-        }
+        // An undeclared code is the pipeline's to catch (`AssertDeclared`), as in TypeScript; a beat's edit asks this too, and treats any
+        // refusal as a failed beat.
         return Refused(first.Code);
     }
 

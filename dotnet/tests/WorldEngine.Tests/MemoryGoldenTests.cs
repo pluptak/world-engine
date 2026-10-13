@@ -152,7 +152,7 @@ public class MemoryGoldenTests
         };
 
     // A result as the golden writes it: every field a result has, with the ones it does not have left out.
-    private static JsonNode Shape(Pipeline.Result result)
+    internal static JsonNode Shape(Pipeline.Result result)
     {
         var shape = new JsonObject
         {
