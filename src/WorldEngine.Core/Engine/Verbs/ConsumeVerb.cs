@@ -217,13 +217,9 @@ public static class ConsumeVerb
     // A whole number, as the engine reads a count: a JSON number with no fraction.
     private static bool WholeNumber(JsonNode? node, out long value)
     {
-        if (node is JsonValue json && json.TryGetValue(out long number))
-        {
-            value = number;
-            return true;
-        }
-        value = 0;
-        return false;
+        var number = JsonReads.SafeInt(node);
+        value = number ?? 0;
+        return number is not null;
     }
 
     private static Choice Refused(Status status, string reasonCode, IReadOnlyDictionary<string, JsonNode?>? reasonData = null) =>

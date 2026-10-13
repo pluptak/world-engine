@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace WorldEngine.Core.Json;
@@ -16,6 +17,10 @@ public static class WorldJson
 
     public static T Read<T>(string json) =>
         JsonSerializer.Deserialize<T>(json, Options)
+        ?? throw new JsonException($"Empty {typeof(T).Name}");
+
+    public static T Read<T>(JsonNode? node) =>
+        node.Deserialize<T>(Options)
         ?? throw new JsonException($"Empty {typeof(T).Name}");
 
     public static string Write<T>(T value) =>

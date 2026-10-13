@@ -179,7 +179,7 @@ public static class TemplateValidation
                 throw new FormatException($"{source} props.{name} must be {(type == PropType.Integer ? "an" : "a")} {TypeWord(type.Value)}");
             }
             var field = PropFields.Table.GetValueOrDefault(name);
-            var number = PropFields.Number(value);
+            var number = JsonReads.Number(value);
             if (field?.Min is { } least && number is { } low && low < least)
             {
                 throw new FormatException($"{source} props.{name} must be at least {least}");

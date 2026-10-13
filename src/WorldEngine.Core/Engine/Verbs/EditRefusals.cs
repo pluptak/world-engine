@@ -394,16 +394,13 @@ public static partial class EditVerb
         var names = template.Props.Keys.Concat(resulting.Keys).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal);
         foreach (var name in names)
         {
-            if (IsDefinition(name) && !SameValue(template.Props.GetValueOrDefault(name), resulting.GetValueOrDefault(name)))
+            if (IsDefinition(name) && !PropFields.SameValue(template.Props.GetValueOrDefault(name), resulting.GetValueOrDefault(name)))
             {
                 return name;
             }
         }
         return null;
     }
-
-    private static bool SameValue(JsonNode? left, JsonNode? right) =>
-        left is null || right is null ? left is null && right is null : left.ToJsonString() == right.ToJsonString();
 
     private static Dictionary<string, JsonNode?> Merge(IReadOnlyDictionary<string, JsonNode?> basis, IReadOnlyDictionary<string, JsonNode?> changes)
     {

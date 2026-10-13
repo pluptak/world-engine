@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Engine.JsonReads;
 
 namespace WorldEngine.Core.Engine;
 
@@ -436,15 +437,9 @@ public static class Geometry
         return (template.SizeCm.W, template.SizeCm.D);
     }
 
-    private static bool IsTrue(JsonNode? value) =>
-        (value as JsonValue)?.GetValueKind() is JsonValueKind.True;
-
     // A prop that must be a whole number above `floor`, else `floor` itself.
     private static long SafeIntegerAbove(JsonNode? value, long floor)
     {
-        var number = PropFields.Number(value);
-        return number is { } n && Math.Floor(n) == n && n > floor && n <= 9_007_199_254_740_991
-            ? (long)n
-            : floor;
+        return JsonReads.SafeInt(value) is { } n && n > floor ? n : floor;
     }
 }

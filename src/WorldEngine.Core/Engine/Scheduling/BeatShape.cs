@@ -46,7 +46,7 @@ public static partial class Beats
         if (!OnlyKeys(obj, "entity", "prop", "op", "value")
             || !NonEmpty(obj["entity"])
             || !NonEmpty(obj["prop"])
-            || TextOf(obj["op"]) is not { } op
+            || JsonReads.Text(obj["op"]) is not { } op
             || !Ops.Contains(op))
         {
             return false;
@@ -54,8 +54,8 @@ public static partial class Beats
         // A string, a boolean or a whole number; the ordering ops need a number. A fraction breaks the snapshot's integers-only
         // rule, so it is refused as malformed.
         var operand = obj["value"];
-        var number = PropFields.Number(operand) is { } value && WorldEngine.Core.Json.Integers.IsWhole(value);
-        if (TextOf(operand) is null && !IsBool(operand) && !number)
+        var number = JsonReads.Number(operand) is { } value && WorldEngine.Core.Json.Integers.IsWhole(value);
+        if (JsonReads.Text(operand) is null && !IsBool(operand) && !number)
         {
             return false;
         }
@@ -69,11 +69,11 @@ public static partial class Beats
         {
             return false;
         }
-        if (SafeInt(obj["every_ticks"]) is not { } every || every < 1)
+        if (JsonReads.SafeInt(obj["every_ticks"]) is not { } every || every < 1)
         {
             return false;
         }
-        if (SafeInt(obj["times"]) is not { } times || times < 1 || times > MaxRepeats)
+        if (JsonReads.SafeInt(obj["times"]) is not { } times || times < 1 || times > MaxRepeats)
         {
             return false;
         }
@@ -83,7 +83,7 @@ public static partial class Beats
     // An action: a sound from an entity, or one of the author's edits.
     private static bool ActionOk(JsonNode? node)
     {
-        if (node is not JsonObject obj || TextOf(obj["kind"]) is not { } kind)
+        if (node is not JsonObject obj || JsonReads.Text(obj["kind"]) is not { } kind)
         {
             return false;
         }
@@ -98,11 +98,11 @@ public static partial class Beats
 
     // The entity a beat is about: a sound's source, an edit's target, a spawn's location. It is the entity the beat goes with
     // if it is removed first.
-    public static string? ActionSubject(JsonObject action) => TextOf(action["kind"]) switch
+    public static string? ActionSubject(JsonObject action) => JsonReads.Text(action["kind"]) switch
     {
-        "sound" => TextOf(action["entity"]),
-        "spawn" => action["overrides"] is JsonObject overrides ? TextOf(overrides["location"]) : null,
-        _ => TextOf(action["target"]),
+        "sound" => JsonReads.Text(action["entity"]),
+        "spawn" => action["overrides"] is JsonObject overrides ? JsonReads.Text(overrides["location"]) : null,
+        _ => JsonReads.Text(action["target"]),
     };
 
     // The followers of a beat, nested to MaxDepth.
@@ -116,8 +116,8 @@ public static partial class Beats
         {
             if (raw is not JsonObject child
                 || !OnlyKeys(child, "id", "delay_ticks", "action", "only_if", "then")
-                || !IsBeatId(TextOf(child["id"]))
-                || SafeInt(child["delay_ticks"]) is not { } delay
+                || !IsBeatId(JsonReads.Text(child["id"]))
+                || JsonReads.SafeInt(child["delay_ticks"]) is not { } delay
                 || delay <= 0
                 || !ActionOk(child["action"]))
             {
@@ -188,7 +188,7 @@ public static partial class Beats
             {
                 if (child is JsonObject followed)
                 {
-                    NodeIds(TextOf(followed["id"]) ?? "undefined", followed["then"], ids);
+                    NodeIds(JsonReads.Text(followed["id"]) ?? "undefined", followed["then"], ids);
                 }
             }
         }

@@ -547,7 +547,7 @@ public static class SnapshotValidation
         {
             issues.Add(Issue("undeclared_prop", path, $"props.{name} is not a declared prop"));
         }
-        if (engine?.Min is { } min && PropFields.Number(value) is { } number && number < min)
+        if (engine?.Min is { } min && JsonReads.Number(value) is { } number && number < min)
         {
             issues.Add(Issue("wrong_prop_type", path, $"props.{name} must be at least {min}"));
         }

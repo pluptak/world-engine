@@ -1,7 +1,6 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using WorldEngine.Core.Json;
-using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -112,16 +111,10 @@ public static class PropFields
         return type switch
         {
             PropType.Boolean => kind is System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False,
-            PropType.Integer => kind is System.Text.Json.JsonValueKind.Number && Number(value!) is { } safe && IsWhole(safe),
+            PropType.Integer => JsonReads.SafeInt(value) is not null,
             _ => kind is System.Text.Json.JsonValueKind.String,
         };
     }
-
-    // A number as JavaScript reads it: a double. Null when the value is not a number.
-    public static double? Number(JsonNode? value) =>
-        (value as JsonValue)?.GetValueKind() is System.Text.Json.JsonValueKind.Number
-            ? double.Parse(value!.ToJsonString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture)
-            : null;
 
     // Strict equality of two props (`===` in TypeScript): an absent prop equals nothing, and two values are the same when they
     // read the same.
@@ -129,8 +122,4 @@ public static class PropFields
         left is null || right is null
             ? left is null && right is null
             : JsonNode.DeepEquals(left, right);
-
-    // A flag that is literally true, as `=== true` reads it; any other value, or none, is not.
-    public static bool IsTrue(JsonNode? value) =>
-        value is JsonValue flag && flag.TryGetValue(out bool set) && set;
 }

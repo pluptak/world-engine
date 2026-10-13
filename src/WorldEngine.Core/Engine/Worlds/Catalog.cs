@@ -68,7 +68,7 @@ public static class Catalog
     // A prop that is a whole number that fits a long; null otherwise.
     private static long? IntegerProp(Template template, string name)
     {
-        var value = PropFields.Number(template.Props.GetValueOrDefault(name));
+        var value = JsonReads.Number(template.Props.GetValueOrDefault(name));
         return value is { } number && IsWhole(number)
             ? (long)number
             : null;
@@ -127,12 +127,12 @@ public static class Catalog
             template.Id,
             template.SizeCm,
             template.MassG,
-            PropFields.IsTrue(template.Props.GetValueOrDefault("container")),
-            PropFields.IsTrue(template.Props.GetValueOrDefault("surface")),
-            PropFields.IsTrue(template.Props.GetValueOrDefault("openable")),
-            PropFields.IsTrue(template.Props.GetValueOrDefault("barrier")),
-            PropFields.IsTrue(template.Props.GetValueOrDefault("light_source")),
-            PropFields.IsTrue(template.Props.GetValueOrDefault("agent")),
+            JsonReads.IsTrue(template.Props.GetValueOrDefault("container")),
+            JsonReads.IsTrue(template.Props.GetValueOrDefault("surface")),
+            JsonReads.IsTrue(template.Props.GetValueOrDefault("openable")),
+            JsonReads.IsTrue(template.Props.GetValueOrDefault("barrier")),
+            JsonReads.IsTrue(template.Props.GetValueOrDefault("light_source")),
+            JsonReads.IsTrue(template.Props.GetValueOrDefault("agent")),
             IntegerProp(template, "capacity_cm3"),
             [.. template.Parts.Select(part => part.Name)],
             capacities,

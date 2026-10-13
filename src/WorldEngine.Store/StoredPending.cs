@@ -44,7 +44,7 @@ public sealed class StoredPending(string dir) : IPendingMoves
 
     private static IReadOnlyList<Command> MovesOf(JsonObject? entry) =>
         entry?["moves"] is JsonArray moves
-            ? moves.Select(move => WorldJson.Read<Command>(move!.ToJsonString())).ToList()
+            ? moves.Select(move => WorldJson.Read<Command>(move!)).ToList()
             : [];
 
     private static JsonArray Written(IEnumerable<Command> moves) =>

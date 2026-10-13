@@ -93,7 +93,7 @@ public static class CliRunner
             {
                 return Invalid("invalid_coverage");
             }
-            coverage = WorldJson.Read<Coverage>(coverageJson!.ToJsonString());
+            coverage = WorldJson.Read<Coverage>(coverageJson!);
         }
         var registry = ShippedTemplates;
         var made = WorldBuilder.Snapshot(scenario!, registry, coverage);
@@ -368,7 +368,7 @@ public static class CliRunner
     }
 
     private static List<Command> Commands(JsonNode? node) =>
-        [.. (node as JsonArray ?? throw new WorldError("invalid_request", "The request names no commands")).Select(item => WorldJson.Read<Command>(item!.ToJsonString()))];
+        [.. (node as JsonArray ?? throw new WorldError("invalid_request", "The request names no commands")).Select(item => WorldJson.Read<Command>(item!))];
 
     private static bool Flag(JsonNode? node) => node is JsonValue value && value.TryGetValue(out bool flag) && flag;
 
@@ -389,7 +389,7 @@ public static class CliRunner
         new() { ["events"] = Node(world.TraceOf(JsonReads.Text(query["event_id"]), JsonReads.Text(query["entity"]), JsonReads.Text(query["field"]))) };
 
     private static Command CommandOf(JsonObject request) =>
-        WorldJson.Read<Command>((request["command"] ?? throw new WorldError("invalid_command", "The request names no command")).ToJsonString());
+        WorldJson.Read<Command>(request["command"] ?? throw new WorldError("invalid_command", "The request names no command"));
 
     // A controller's command as an actor sends it: its id, verb, target and args, never an actor or `perceivers` (`ActorCommand`).
     private static ActorCommand ActorCommandOf(JsonObject request) =>

@@ -49,14 +49,14 @@ public static class Refine
     // volume, truncated. Null when neither is given.
     private static double? LiquidCapacity(IReadOnlyDictionary<string, JsonNode?> props)
     {
-        var declared = PropFields.Number(props.GetValueOrDefault("capacity_cm3"));
+        var declared = JsonReads.Number(props.GetValueOrDefault("capacity_cm3"));
         if (declared is { } capacity && IsWhole(capacity) && capacity > 0)
         {
             return capacity;
         }
-        var width = PropFields.Number(props.GetValueOrDefault("inner_w_cm"));
-        var depth = PropFields.Number(props.GetValueOrDefault("inner_d_cm"));
-        var height = PropFields.Number(props.GetValueOrDefault("inner_h_cm"));
+        var width = JsonReads.Number(props.GetValueOrDefault("inner_w_cm"));
+        var depth = JsonReads.Number(props.GetValueOrDefault("inner_d_cm"));
+        var height = JsonReads.Number(props.GetValueOrDefault("inner_h_cm"));
         return width is { } w && depth is { } d && height is { } h ? Math.Truncate(w * d * h) : null;
     }
 
@@ -91,7 +91,7 @@ public static class Refine
 
         var support = subject.Support is null ? null : snapshot.Entities.GetValueOrDefault(subject.Support);
         var supportTemplate = support is null ? null : registry.GetValueOrDefault(support.Template);
-        if (supportTemplate is not null && PropFields.IsTrue(support!.Props.GetValueOrDefault("surface")))
+        if (supportTemplate is not null && JsonReads.IsTrue(support!.Props.GetValueOrDefault("surface")))
         {
             var data = Fit.Misfit(footprint, [supportTemplate.SizeCm.W, supportTemplate.SizeCm.D]);
             if (data is { } misfit)
@@ -101,7 +101,7 @@ public static class Refine
         }
 
         // What stands on a surface has to keep a surface to stand on, and fit it.
-        if (PropFields.IsTrue(subject.Props.GetValueOrDefault("surface")))
+        if (JsonReads.IsTrue(subject.Props.GetValueOrDefault("surface")))
         {
             foreach (var id in snapshot.Entities.Keys.Order(StringComparer.Ordinal))
             {
@@ -110,7 +110,7 @@ public static class Refine
                 {
                     continue;
                 }
-                if (!PropFields.IsTrue(props.GetValueOrDefault("surface")))
+                if (!JsonReads.IsTrue(props.GetValueOrDefault("surface")))
                 {
                     return Pipeline.Refused("not_a_surface");
                 }
@@ -122,7 +122,7 @@ public static class Refine
             }
         }
 
-        var held = PropFields.Number(props.GetValueOrDefault("liquid_amount"));
+        var held = JsonReads.Number(props.GetValueOrDefault("liquid_amount"));
         var capacity = LiquidCapacity(props);
         if (held is { } amount && capacity is { } limit && amount > limit)
         {

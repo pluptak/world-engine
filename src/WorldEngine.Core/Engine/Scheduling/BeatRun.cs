@@ -14,7 +14,7 @@ public static partial class Beats
     // whose action ran; a failed run is still recorded and the watch goes on (src/engine/beats.ts `runBeat`).
     public static void Run(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause)
     {
-        var watch = cause.Repeat is JsonObject repeat && PropFields.IsTrue(repeat["until_ran"]);
+        var watch = cause.Repeat is JsonObject repeat && JsonReads.IsTrue(repeat["until_ran"]);
         if (cause.OnlyIf is not null && !Holds(cause.OnlyIf, working.Snapshot))
         {
             if (!watch)
@@ -54,10 +54,10 @@ public static partial class Beats
     private static Fired Fire(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause)
     {
         var action = (JsonObject)cause.Action!;
-        if (TextOf(action["kind"]) == "sound")
+        if (JsonReads.Text(action["kind"]) == "sound")
         {
-            var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["loud"] = JsonValue.Create(PropFields.IsTrue(action["loud"])) };
-            return new Done(working.Emit("sounded", TextOf(action["entity"])!, data, cause.CauseId));
+            var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["loud"] = JsonValue.Create(JsonReads.IsTrue(action["loud"])) };
+            return new Done(working.Emit("sounded", JsonReads.Text(action["entity"])!, data, cause.CauseId));
         }
         return FireEdit(working, registry, cause, action);
     }
@@ -66,7 +66,7 @@ public static partial class Beats
     // everything it wrote (the snapshot, the events and the deltas), and the snapshot-wide guard runs after it.
     private static Fired FireEdit(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause, JsonObject action)
     {
-        var targetText = TextOf(action["target"]);
+        var targetText = JsonReads.Text(action["target"]);
         Resolve.TargetAddress? target = null;
         if (targetText is not null)
         {
@@ -118,7 +118,7 @@ public static partial class Beats
             var child = (JsonObject)raw!;
             var subject = ActionSubject((JsonObject)child["action"]!);
             if (subject is null || !working.Snapshot.Entities.ContainsKey(subject)
-                || !TryAdd(working.Snapshot.Tick, SafeInt(child["delay_ticks"])!.Value, out var due))
+                || !TryAdd(working.Snapshot.Tick, JsonReads.SafeInt(child["delay_ticks"])!.Value, out var due))
             {
                 continue;
             }
@@ -129,7 +129,7 @@ public static partial class Beats
                     "beat",
                     subject,
                     parentEvent,
-                    Id: TextOf(child["id"]),
+                    Id: JsonReads.Text(child["id"]),
                     Action: child["action"]!.DeepClone(),
                     OnlyIf: child["only_if"]?.DeepClone(),
                     Then: child["then"]?.DeepClone()));
@@ -145,11 +145,11 @@ public static partial class Beats
             return;
         }
         if (!working.Snapshot.Entities.ContainsKey(cause.Entity)
-            || !TryAdd(working.Snapshot.Tick, SafeInt(repeat["every_ticks"])!.Value, out var due))
+            || !TryAdd(working.Snapshot.Tick, JsonReads.SafeInt(repeat["every_ticks"])!.Value, out var due))
         {
             return;
         }
-        var times = SafeInt(repeat["times"])!.Value;
+        var times = JsonReads.SafeInt(repeat["times"])!.Value;
         var next = cause with
         {
             DueTick = due,

@@ -73,7 +73,7 @@ public static class Runs
             string? next = null;
             foreach (var entity in snapshot.Entities.Values)
             {
-                if (TextOf(entity.Props, "succeeds") == current && (next is null || NumberAfter(entity.Id, next)))
+                if (JsonReads.Text(entity.Props.GetValueOrDefault("succeeds")) == current && (next is null || NumberAfter(entity.Id, next)))
                 {
                     next = entity.Id;
                 }
@@ -131,10 +131,6 @@ public static class Runs
             EndRun(working, "no_live_players");
         }
     }
-
-    // The string a prop holds, or null when it holds none or another type.
-    private static string? TextOf(IReadOnlyDictionary<string, JsonNode?> props, string key) =>
-        props.TryGetValue(key, out var node) && node is JsonValue value && value.TryGetValue(out string? text) ? text : null;
 
     // Whether `candidate`'s number is greater than `current`'s, as src/engine/run.ts compares the `e<n>` ids; an id with no
     // number is never greater.

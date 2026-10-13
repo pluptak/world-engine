@@ -26,7 +26,7 @@ public sealed record ProcessSpec(
     {
         var body = System.Text.Json.JsonSerializer.SerializeToNode(decl.Body, WorldJson.Options) as JsonObject ?? new JsonObject();
         body["id"] = decl.Id;
-        return WorldJson.Read<ProcessSpec>(body.ToJsonString());
+        return WorldJson.Read<ProcessSpec>(body);
     }
 }
 

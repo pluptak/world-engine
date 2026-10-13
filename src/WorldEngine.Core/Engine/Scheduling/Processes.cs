@@ -44,8 +44,8 @@ public static class Processes
         {
             throw new InvalidOperationException($"Unknown while op {condition.Op}");
         }
-        return PropFields.Number(actual) is { } have
-            && PropFields.Number(condition.Value) is { } want
+        return JsonReads.Number(actual) is { } have
+            && JsonReads.Number(condition.Value) is { } want
             && OrderOps.Holds(condition.Op, have, want);
     }
 
@@ -54,7 +54,7 @@ public static class Processes
     private static bool Runnable(ProcessSpec spec, Entity entity)
     {
         var adjust = spec.Effect.AdjustProp;
-        var value = PropFields.Number(entity.Props.GetValueOrDefault(adjust.Prop));
+        var value = JsonReads.Number(entity.Props.GetValueOrDefault(adjust.Prop));
         if (entity.Status == EntityStatus.Destroyed || !IsInt(value) || !WhileHolds(spec, entity.Props))
         {
             return false;
@@ -75,7 +75,7 @@ public static class Processes
     // when the run is scheduled, so a run already pending keeps the delay it was given.
     private static long DelayOf(ProcessSpec spec, Entity entity)
     {
-        var rate = spec.EveryTicksProp is { } prop ? PropFields.Number(entity.Props.GetValueOrDefault(prop)) : null;
+        var rate = spec.EveryTicksProp is { } prop ? JsonReads.Number(entity.Props.GetValueOrDefault(prop)) : null;
         return IsInt(rate) && rate >= 1 ? (long)rate!.Value : spec.EveryTicks;
     }
 
@@ -117,9 +117,9 @@ public static class Processes
     // edited or refined into one. The `open` verb schedules its own first, so one already pending is left as it is.
     private static void ReconcileClose(Working working, Entity entity, string? causeId)
     {
-        if (!PropFields.IsTrue(entity.Props.GetValueOrDefault("openable"))
-            || !PropFields.IsTrue(entity.Props.GetValueOrDefault("open"))
-            || PropFields.Number(entity.Props.GetValueOrDefault("closes_after")) is not { } after
+        if (!JsonReads.IsTrue(entity.Props.GetValueOrDefault("openable"))
+            || !JsonReads.IsTrue(entity.Props.GetValueOrDefault("open"))
+            || JsonReads.Number(entity.Props.GetValueOrDefault("closes_after")) is not { } after
             || !IsInt(after)
             || after <= 0
             || Schedule.Pending(working.Snapshot).Any(cause => cause.Kind == "close" && cause.Entity == entity.Id))
@@ -189,7 +189,7 @@ public static class Processes
             return;
         }
         var adjust = spec.Effect.AdjustProp;
-        var from = (long)PropFields.Number(entity.Props[adjust.Prop])!.Value;
+        var from = (long)JsonReads.Number(entity.Props[adjust.Prop])!.Value;
         var moved = from + adjust.By;
         var to = adjust.By < 0
             ? Math.Max(moved, adjust.Min ?? long.MinValue)

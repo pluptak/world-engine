@@ -368,18 +368,9 @@ public static partial class EditVerb
 
     // A non-empty string, or any string when `allowEmpty`; null for anything else.
     private static string? Text(JsonNode? node, bool allowEmpty = false) =>
-        node is JsonValue value && value.TryGetValue(out string? text) && (allowEmpty || text.Length > 0) ? text : null;
+        JsonReads.Text(node) is { } text && (allowEmpty || text.Length > 0) ? text : null;
 
-    // A whole number, or null when the node is not one.
-    private static long? Int(JsonNode? node)
-    {
-        if (node is not JsonValue value || value.GetValueKind() != JsonValueKind.Number)
-        {
-            return null;
-        }
-        var number = PropFields.Number(value);
-        return number is { } n && IsWhole(n) ? (long)n : null;
-    }
+    private static long? Int(JsonNode? node) => JsonReads.SafeInt(node);
 
     // A reference field that is absent (no Given), null (a clear) or an id. False for anything else.
     private static bool Ref(JsonObject obj, string key, out Given<string>? given)

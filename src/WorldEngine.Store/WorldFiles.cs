@@ -221,7 +221,7 @@ public static class WorldFiles
         foreach (var id in set.Select(pair => pair.Key).Order(StringComparer.Ordinal))
         {
             TemplateShape.Check(set[id], $"{source}#{id}");
-            var decl = WorldJson.Read<TemplateDecl>(set[id]!.ToJsonString());
+            var decl = WorldJson.Read<TemplateDecl>(set[id]!);
             if (decl.Id != id)
             {
                 throw new FormatException($"{source}#{id} declares id {decl.Id}");
@@ -248,7 +248,7 @@ public static class WorldFiles
         {
             throw new FormatException($"Invalid snapshot file {path}");
         }
-        return WorldJson.Read<Snapshot>(snapshot.ToJsonString());
+        return WorldJson.Read<Snapshot>(snapshot);
     }
 
     // The bytes through the last newline: a read that overlaps a writer's append takes no line the writer has not finished.

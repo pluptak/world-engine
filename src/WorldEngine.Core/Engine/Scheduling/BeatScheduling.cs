@@ -13,7 +13,7 @@ public static partial class Beats
     // repeat that is present must have a value; a null is not one.
     public static bool ParseScheduleBeat(JsonObject edit)
     {
-        if (!OnlyKeys(edit, "kind", "id", "at_tick", "action", "only_if", "then", "repeat") || SafeInt(edit["at_tick"]) is null)
+        if (!OnlyKeys(edit, "kind", "id", "at_tick", "action", "only_if", "then", "repeat") || JsonReads.SafeInt(edit["at_tick"]) is null)
         {
             return false;
         }
@@ -21,17 +21,17 @@ public static partial class Beats
         {
             return false;
         }
-        return ShapeOk(TextOf(edit["id"]), edit["action"], edit["only_if"], edit["then"], edit["repeat"]);
+        return ShapeOk(JsonReads.Text(edit["id"]), edit["action"], edit["only_if"], edit["then"], edit["repeat"]);
     }
 
     // The beat a schedule_beat edit makes: due at its tick, about the entity its action names, caused by the edit's own event.
     public static ScheduledCause CauseOf(JsonObject edit, string? causeId) =>
         new(
-            SafeInt(edit["at_tick"])!.Value,
+            JsonReads.SafeInt(edit["at_tick"])!.Value,
             "beat",
             ActionSubject((JsonObject)edit["action"]!)!,
             causeId,
-            Id: TextOf(edit["id"]),
+            Id: JsonReads.Text(edit["id"]),
             Action: edit["action"]!.DeepClone(),
             OnlyIf: edit["only_if"]?.DeepClone(),
             Then: edit["then"]?.DeepClone(),
@@ -41,7 +41,7 @@ public static partial class Beats
     public static List<string> EditIds(JsonObject edit)
     {
         var ids = new List<string>();
-        NodeIds(TextOf(edit["id"])!, edit["then"], ids);
+        NodeIds(JsonReads.Text(edit["id"])!, edit["then"], ids);
         return ids;
     }
 
@@ -98,14 +98,14 @@ public static partial class Beats
     public static List<string> ConditionSubjects(JsonNode condition) =>
         [.. ((JsonArray)((JsonObject)condition)["all"]!)
             .Select(single => (JsonObject)single!)
-            .Select(single => TextOf(single.ContainsKey("room") ? single["room"] : single["entity"])!)];
+            .Select(single => JsonReads.Text(single.ContainsKey("room") ? single["room"] : single["entity"])!)];
 
     // The code of the first prop a set_props or update_props action would write that its subject's template refuses, or null
     // (src/engine/validate.ts beatPropRefusal). A missing subject is judged where the beat is scheduled, not here.
     public static string? PropRefusal(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, JsonObject action)
     {
-        var kind = TextOf(action["kind"]);
-        if (kind is not ("set_props" or "update_props") || !snapshot.Entities.TryGetValue(TextOf(action["target"])!, out var subject))
+        var kind = JsonReads.Text(action["kind"]);
+        if (kind is not ("set_props" or "update_props") || !snapshot.Entities.TryGetValue(JsonReads.Text(action["target"])!, out var subject))
         {
             return null;
         }

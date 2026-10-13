@@ -42,16 +42,7 @@ public static partial class Beats
 
     public static bool IsBeatId(string? id) => id is not null && BeatIdPattern.IsMatch(id);
 
-    // A number that is a whole number fitting a long; null otherwise.
-    private static long? SafeInt(JsonNode? node) =>
-        PropFields.Number(node) is { } number && IsWhole(number)
-            ? (long)number
-            : null;
-
-    private static string? TextOf(JsonNode? node) =>
-        node is JsonValue value && value.TryGetValue(out string? text) ? text : null;
-
-    private static bool NonEmpty(JsonNode? node) => TextOf(node) is { Length: > 0 };
+    private static bool NonEmpty(JsonNode? node) => JsonReads.Text(node) is { Length: > 0 };
 
     private static bool IsBool(JsonNode? node) => node is JsonValue value && value.TryGetValue(out bool _);
 

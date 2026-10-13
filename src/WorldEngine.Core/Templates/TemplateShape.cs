@@ -489,7 +489,7 @@ public static class TemplateShape
     // An absent key and one that is JSON `undefined` are the same in TypeScript; null is a value, and is refused where one is read.
     private static bool Defined(JsonObject obj, string key) => obj.ContainsKey(key);
 
-    private static double Number(JsonNode? node) => node!.GetValue<double>();
+    private static double Number(JsonNode? node) => JsonReads.Number(node)!.Value;
 
     private static bool IsNumber(JsonNode? node) => node is JsonValue value && value.GetValueKind() == JsonValueKind.Number;
 
@@ -497,5 +497,5 @@ public static class TemplateShape
 
     private static bool IsBool(JsonNode? node) => node is JsonValue value && value.GetValueKind() is JsonValueKind.True or JsonValueKind.False;
 
-    private static string? Text(JsonNode? node) => IsText(node) ? node!.GetValue<string>() : null;
+    private static string? Text(JsonNode? node) => JsonReads.Text(node);
 }

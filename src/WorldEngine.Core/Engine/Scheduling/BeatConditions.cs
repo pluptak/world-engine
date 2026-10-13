@@ -26,20 +26,20 @@ public static partial class Beats
         if (obj.ContainsKey("in"))
         {
             // A room that is not there holds nothing, so asking after it needs no check of its own.
-            return snapshot.Entities.TryGetValue(TextOf(obj["entity"])!, out var subject) && subject.Location == TextOf(obj["in"]);
+            return snapshot.Entities.TryGetValue(JsonReads.Text(obj["entity"])!, out var subject) && subject.Location == JsonReads.Text(obj["in"]);
         }
         if (obj.ContainsKey("room"))
         {
-            var room = TextOf(obj["room"])!;
+            var room = JsonReads.Text(obj["room"])!;
             return snapshot.Entities.ContainsKey(room) && Occupied(snapshot, room) == BoolOf(obj["occupied"]);
         }
-        if (!snapshot.Entities.TryGetValue(TextOf(obj["entity"])!, out var entity)
-            || !entity.Props.TryGetValue(TextOf(obj["prop"])!, out var have))
+        if (!snapshot.Entities.TryGetValue(JsonReads.Text(obj["entity"])!, out var entity)
+            || !entity.Props.TryGetValue(JsonReads.Text(obj["prop"])!, out var have))
         {
             return false;
         }
         var want = obj["value"];
-        var op = TextOf(obj["op"])!;
+        var op = JsonReads.Text(obj["op"])!;
         switch (op)
         {
             case "eq":
@@ -47,8 +47,8 @@ public static partial class Beats
             case "ne":
                 return !PropFields.SameValue(have, want);
             default:
-                return PropFields.Number(have) is { } left
-                    && PropFields.Number(want) is { } right
+                return JsonReads.Number(have) is { } left
+                    && JsonReads.Number(want) is { } right
                     && OrderOps.Holds(op, left, right);
         }
     }
