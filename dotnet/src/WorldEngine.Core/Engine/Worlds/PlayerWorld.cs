@@ -8,16 +8,8 @@ namespace WorldEngine.Core.Engine;
 // player role. It submits one move per body for the next round, held in the world until the director closes that round, and it reads
 // nothing of another player's move. A move names its body by the view's alias when the slot holds several bodies; a slot of one needs
 // no name. Results are as the handle's own callers read them, not the world's.
-public sealed class PlayerWorld
+public sealed class PlayerWorld(IWorld world, string handle)
 {
-    private readonly IWorld world;
-    private readonly string handle;
-
-    public PlayerWorld(IWorld world, string handle)
-    {
-        this.world = world;
-        this.handle = handle;
-    }
 
     // A handle's slot: its root (the first body, which names it) and the bodies it drives now, in slot order.
     private sealed record Bound(string Root, IReadOnlyList<string> Bodies);

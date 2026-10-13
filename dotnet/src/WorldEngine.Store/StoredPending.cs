@@ -8,16 +8,9 @@ namespace WorldEngine.Store;
 // The players' pending moves of a stored world (src/api.ts `storedPending`): `pending.json` beside the log, one entry per handle, written
 // under the world's turn. A replay never reads it, and nothing in the world's state depends on it (`docs/roles.md`). An entry holds a
 // handle's moves, one per body, or its idle mark, and the list is rewritten whole with the handle's entry replaced.
-public sealed class StoredPending : IPendingMoves
+public sealed class StoredPending(string dir) : IPendingMoves
 {
-    private readonly string dir;
-    private readonly string path;
-
-    public StoredPending(string dir)
-    {
-        this.dir = dir;
-        path = Path.Combine(dir, "pending.json");
-    }
+    private readonly string path = Path.Combine(dir, "pending.json");
 
     public IReadOnlyList<Command> Moves(string handle) => MovesOf(Read().FirstOrDefault(entry => Handle(entry) == handle));
 

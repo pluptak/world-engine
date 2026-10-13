@@ -7,15 +7,8 @@ namespace WorldEngine.Core.Engine;
 // under the director role, so the engine refuses what a director may not send. It has no `command`: a director acts between rounds
 // through its levers, never as a character. It learns which players have submitted, never what they submitted, and it closes a round
 // with those moves.
-public sealed class DirectorWorld
+public sealed class DirectorWorld(IWorld world)
 {
-    private readonly IWorld world;
-
-    public DirectorWorld(IWorld world)
-    {
-        this.world = world;
-    }
-
     public Snapshot Current() => world.CurrentSnapshot();
 
     // An edit under the director's role (`by`), so the engine refuses what a director may not send.

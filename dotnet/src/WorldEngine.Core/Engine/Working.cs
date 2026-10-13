@@ -8,19 +8,11 @@ namespace WorldEngine.Core.Engine;
 
 // The state one command builds up while it runs (src/engine/pipeline.ts `emit` and `set`): the working snapshot, the
 // events the command emitted, and the deltas that record each field change under the event that made it.
-public sealed class Working
+public sealed class Working(Snapshot snapshot, string commandId)
 {
-    private readonly string commandId;
-
-    public Working(Snapshot snapshot, string commandId)
-    {
-        Snapshot = snapshot;
-        this.commandId = commandId;
-    }
-
     public string CommandId => commandId;
 
-    public Snapshot Snapshot { get; private set; }
+    public Snapshot Snapshot { get; private set; } = snapshot;
 
     // What a failed attempt puts back: the snapshot, and how many events and deltas were written before it (src/engine/beats.ts).
     public readonly record struct Checkpoint(Snapshot Snapshot, int Events, int Deltas);
