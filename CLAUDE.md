@@ -2,251 +2,132 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**The TypeScript engine described below is frozen and being replaced by the .NET one in `dotnet/` (`plans/ts-sunset.md`, status in `AGENTS.md`).** This file still maps the TypeScript code, which is the specification until the docs are rewritten for .NET.
-
-`AGENTS.md` holds the process rules and the invariants (determinism, pure core, `canonicalJson`, no
+`AGENTS.md` holds the process rules and the invariants (determinism, pure core, canonical JSON, no
 prose, coverage/`"unknown"`, parts and capacities, templates as data). Read it first; this file only
 adds what you need to find your way around the code. What to build next, in order, is the
 Priorities section of `backlog.md`; `plans/candidates.md` is unplanned gaps, not work.
 
+The engine is the .NET one under `dotnet/` (`plans/ts-sunset.md`). The TypeScript engine in `src/`
+and `tests/` is frozen, kept only until it is deleted; do not change it. `docs/` describes behaviour
+and is the specification; where a doc names a `src/…ts` file, the .NET counterpart is in the layout
+below (same names, mostly: `pipeline.ts` is `Pipeline.cs`, `verbs/pour.ts` is `PourVerb.cs`).
+
 ## Commands
 
 ```bash
-npm run check:changed                           # the usual gate: tsc + the tests the change can reach
-npm run check                                   # tsc + every test, refreshing .test-map.json
-npm run test:changed -- --list                  # which tests a change selects, and why
-npm run test:changed -- --list --paths src/engine/verbs/pour.ts   # what a change to a file would run
-npm run typecheck
-npm test                                        # globs tests/**/*.test.ts; don't append a path
-node --import tsx --test tests/query.test.ts    # one file
-node --import tsx --test --test-name-pattern="<regex>" tests/query.test.ts   # one test
-npm run world -- init data/w1 scenarios/bottle.json                          # create a world
-echo '{"op":"snapshot","world":"data/w1"}' | npm run world --silent          # one JSON request on stdin
-npm run bench                                   # 10k store commands; ms/cmd for the first and last 1k
-npm run bench:scale                             # 500 entities, 20 rooms: ms/cmd and a pipeline/validate/rest split
-npm run bench:reads                             # cost of since/observe/query/trace as the log grows to 10k
-npm run bench:rounds                            # 8 players' moves over 1,000 rounds, then 200 quiet ones: ms/round by phase
+dotnet test dotnet/WorldEngine.slnx                       # the whole suite (about 40 s); the usual gate
+dotnet test dotnet --filter "FullyQualifiedName~HostRunTests"   # one class or a name fragment
+dotnet build dotnet/WorldEngine.slnx                      # compile only
+dotnet run --project dotnet/src/WorldEngine.Cli -- init data/w1 scenarios/bottle.json     # create a world
+echo '{"op":"snapshot","world":"data/w1"}' | dotnet run --project dotnet/src/WorldEngine.Cli   # one JSON request on stdin
+dotnet run -c Release --project dotnet/tools/WorldEngine.Bench     # 10,000 store commands; ms/cmd first and last 1k
+dotnet run --project dotnet/tools/WorldEngine.Host -- <scene.json> <plan.json> <dir>   # the reference host (docs/host.md)
+WORLD_ENGINE_UPDATE_GOLDENS=1 dotnet test dotnet          # rewrite the supporting goldens from .NET (read the diff)
 ```
 
-`scripts/test-select.ts` picks tests by `.test-map.json` (gitignored, written by `npm run check` or
-`npm run test:map`): the project files each test file ran under V8 coverage, beyond what loading
-every module runs. A change selects the test files that ran a changed file, a changed test file, a
-test naming a changed `scenarios/`/`docs/` path, or one whose `// test-select: reads <glob>` line
-matches (`fields`, `senses`, `catalog` read source and docs as text). Templates, `package.json`,
-`tsconfig.json` or no map run everything; files no test reads run nothing. The diff is taken from
-the commit the map was built at, so a stale map selects more, never less. Tests call the CLI in
-process (`tests/cli-run.ts`, `runCli` in `src/cli/main.ts`); `cliProcess` and `store-lock` spawn.
-
-There's no lint step and no build output (`noEmit`; everything runs through `tsx`). Imports use `.js`
-suffixes (NodeNext).
+There is no lint step. Tests are xUnit (`dotnet/tests/WorldEngine.Tests`); store tests write under the
+temp folder; `WorldEngine.LockChild` is the second process the lock tests spawn. The goldens are in
+`dotnet/tests/WorldEngine.Tests/Fixtures` and `dotnet/tools/golden-gen/README.md` says where each
+came from (TypeScript at its freeze, `83d5d4a`). A behaviour change updates its goldens in the same
+commit, and the fixture diff is read like code.
 
 ## Layout and flow
 
-- `src/model.ts`: core types (`Snapshot`, `Entity`, `WorldEvent`, `Delta`, `Status`) and
-  `defaultCoverage()`. `src/contract.ts`: Zod schemas for the CLI's JSON boundary (requests,
-  responses, the snapshot; `RESPONSES` names the schema each op answers with, and the `schema` op
-  turns them into JSON Schema, `docs/api.md`). Zod is used only there and in `src/cli/`.
-- `src/engine/pipeline.ts` `apply(snapshot, registry, command)`: the single transition entry point.
-  It looks up the verb, then checks the actor, resolves the target (`resolve.ts`: name, alias or
-  `entity.part`, among what the actor can address: `addressable` in `query.ts`, `docs/perception.md`) and runs `verb.preconditions`. Only after all of those pass does it emit the root
-  event and call `verb.transition`. Any status other than `ok` returns the input snapshot unchanged.
-   After the transition, `advanceClock` (`src/engine/clock.ts`; a verb's `wake_on` names agents whose senses end the time early, as `advance`'s `stop_on_perceived` and a `wait` with `until: "sensed"` do, `sensedBy` in `query.ts`) moves `tick` on by the verb's
-   declared `duration` (one tick, `wait` and the author's `advance` their `ticks` arg, `edit` none), expiring every modifier due
-   on the way with a `capability_changed` caused by the modifier's `cause_id`, under which the
-   `modifiers` delta is recorded too (`docs/provenance.md`); `emit` stamps each event with the
-   current `tick`, so an expiry carries the tick it fell due. At each tick it also runs the
-   snapshot's `schedule` (`src/engine/schedule.ts`, `docs/schedule.md`): pending causes, absent when
-   none: the `close` that `open` schedules on an openable with `closes_after` (`close` withdraws
-   it; either way a shutting gate moves its footprint's occupants aside first, `pushOccupantsAside`
-   in `verbs/gate.ts`, uncovering what each hid), and the `bleed` a severed part opens on a body with `bleed_*`
-   props, each scheduling the next, a body bled out dropping what it held (`docs/bleeding.md`); the
-   pipeline prunes causes whose entity is gone, a template's `processes` (`src/engine/process.ts`,
-   `docs/processes.md`) are the third kind (the author's `schedule_beat` is a fourth, `src/engine/beats.ts`, `docs/beats.md`), reconciled against the props of every entity a command
-   or a cause touched (`reconcileSince`; `createWorld` calls `startProcesses`; a bound can `then` set a
-   prop, `hurt` the body, `removeEntity` or `spendEntity`), and `isAgent` is false for a destroyed body, and
-   `perceive` answers `false` / `observer_destroyed` for one. Stored worlds are `schema_version` 5.
-   `ok` bumps `version`. A verb may also define `validateResult`, which runs after its transition:
-   a failure returns the input snapshot unchanged. `edit` uses it to refuse results that break a
-   snapshot invariant. `move` to another room, `place`, and removals re-derive `location` for the
-   whole subtree below the change (`refreshSubtreeLocations` in `verbs/address.ts`); `place` setting
-   one relation clears the other, `spawn` fills an omitted `location` from the chain, and what a
-   removed support or container held takes the relation the removed thing itself was in — carried
-   by its holder, inside its container, else on the surface under it.
-- Verbs (`src/engine/verbs/*.ts`) implement `Verb` from `command.ts` and are registered in
-  `verbs/index.ts`. A transition mutates state only through its `TransitionContext`: `set` (records a
-  delta, skips no-ops), `emit` (allocates `ev<next_seq>` and chains `cause_id`), `recordDelta`, and
-  a `snapshot` getter and setter that verbs use to splice in `spawn()` results.
-- Capacity needs are declared on the verb, never hard-coded, and every check reads its own verb's
-  declaration through `context.verb`. `carry_alternatives` (`src/engine/carry.ts`: `manipulation`
-  scaled by the item's `hands_required`, or `mouth_carry` within the carrier's `carry_limit_g` —
-  one item at a time, never two-handed) gate `take` and `give` and drive attack's drop-on-loss rule;
-  `carryCheck` refuses with the failure that came furthest through its conditions:
-  `insufficient_<capacity>`, `two_hands_required`, `too_heavy`, `mouth_full`. `attack_modes` in
-  `verbs/attack.ts` pick the strike (a fist reads `attack_damage`, a bite `bite_damage`).
-  `requires` gates `lock`, `unlock`, and `put` into a container on `manipulation`; `open`,
-  `close`, `drop`, and `put` onto a surface stay free. An attack that structurally removes the
-  capacity a victim held with drops what it held — structural sums, not modifier dips: a stunned
-  carrier holds on.
-- `src/resolvers/physical.ts`: consequences that run after the verb, such as support loss,
-  displacement, falls, breaking into `break_products`, `spendEntity` (a thing used up, by `consume`'s last portion or a process's `then: { spent: true }`, leaves its `spent_products` and `spent_residue` where it stood, or at its holder's feet), residue transfer, `resolveImpact`
-  (mass × distance against each party's mass × `break_fall_cm`), and `restingPlace` (the surface
-  under a fall that catches it). Verbs call into it.
-- `src/engine/query.ts`: `fact` and `perceive` queries (a `fact` subject may be `<entity>.<part>`; `reachable` answers
-  by `inReach` in `verbs/address.ts`, the one reach rule `take`, `give`, `push`, `attack` and the
-  rest apply). They answer `"true"`, `"false"` or
-  `"unknown"` with a `basis_code`, from the snapshot, the templates, coverage and the replayed event
-  list. Senses are `sight`, `hearing`, `smell`, and `touch`, read from `EVENT_SENSES` (one row per event type,
-  `docs/senses.md`); sight needs a lit room (`isLit`: its `lit` prop, or a burning `light_source` in it that is not shut in a container; the `light` and `douse` verbs set `burning`); smell answers only where coverage declares it, else `"unknown"`. `touch` reads the
-  observer's own body and grips instead of any room. `eventPerceivers` is the
-  batch form: every agent, every covered sense, an agent listed exactly when `perceive` is true for
-  it before or after the events' command.
-- `src/engine/capacity.ts` (`capacity` adds part contributions and unexpired modifiers;
-  `structuralCapacity`/`structuralCapacities` skip modifiers), `geometry.ts` (derived position and
-  elevation along support/containment chains; `sweep`, how far a footprint slides before it meets
-  another on the same support, which stops `push`/`pull` with `collided` or refuses `blocked`;
-  `walkStop`, where an agent's `move` is refused: `out_of_bounds` past the room's footprint, whose
-  origin is its centre, `blocked` by a `barrier` on the straight path or by anything solid at least
-  `STEP_OVER_CM` tall at the destination; `gapStop`, the barrier a thing given, put or taken
-  across a room cannot pass, its smallest dimension over the barrier's `gap_cm`, which `take`, `give`
-  and `put` refuse `too_big_for_gap`, as does an `attack` whose mode crosses as the `body`, a bite),
-  `spawn.ts` (ids from `next_seq`), `residue.ts`,
-  `canonical.ts`, `carry.ts`, `validate.ts` (snapshot invariants: no loops, `pos`/`location` match
-  the chain, no dangling references (`detached_from` is history, not a link), detached parts
-  accounted for, no part stored at its default, integrity range, ids below `next_seq`, a template the registry owns); `own` in `model.ts` is the read for any id, template or name from outside, so `constructor` is none, `parts.ts`
-  (part state is sparse: an absent entry is the template default, intact at `max_integrity`; read
-  through `partState`, write through `withParts`, which drops an entry set back to the default; a
-  severed subtree is stored as its root alone, and `effectivePart` gives a part under a detached or
-  destroyed ancestor that ancestor's status).
-- `src/store/file-store.ts`: each world is a directory with `initial.json`, `snapshot.json`,
-  `log.jsonl`, `events.jsonl`, `deltas.jsonl` and `head.json`. `submit` appends the log line (every command, including
-  refused and invalid ones, as an `Attempt` with the version it was decided at and its reason), the command's events and an accepted command's deltas, atomically writes the snapshot every
-  `SNAPSHOT_EVERY` (32) accepted commands (or the `snapshotEvery` `openWorld` was given), and writes
-  `head.json` last: the three files' byte sizes,
-  `log_entries` (all lines, used for default edit ids), `ok_entries`, and the version and log byte the
-  snapshot holds (`snapshot_version`, `snapshot_log_bytes`). `resolveSubmission` runs `validateSnapshot` on every accepted result and
-  downgrades a breaking one to `invalid` with the rule's code, so a verb bug is logged but never
-  written; no verb leans on it, which the property test holds (an `apply` that is ok must stay ok). `load` trusts the head when it matches the file sizes and `ok_entries`, and folds the accepted
-  commands after the snapshot's byte onto a snapshot that is behind (`docs/persistence.md`); otherwise it counts `ok` entries,
-  replays and rewrites the snapshot, events, deltas and head if they disagree (a missing or short `deltas.jsonl`, or a head with no size for it, is rebuilt, which is why a world made before it still opens at `schema_version` 5). Writers take turns (`src/store/lock.ts`, `docs/locking.md`): a `lock` file made with the exclusive flag, held by `submit`, by `edit` around its default id, by `upgradeTemplates` and by the repair in `load`, whose fast path takes none and which settles a world under the turn after looking again; a waiter past `WORLD_LOCK_TIMEOUT_MS` fails `store_busy`, and a lock of a dead process or over a minute old is taken over. Store queries read `events.jsonl`, and `trace` of a field `deltas.jsonl`, each parsed once per handle and extended by the lines appended since; `since` and event-time perceive replay only from the newest usable
-checkpoint (`checkpoints/`, a cache every 256 accepted commands, bound to the log bytes, `initial.json` and template set;
-`docs/persistence.md`). A stale `based_on_version` is re-evaluated against the current snapshot, and a command that
-  fails now but would have succeeded at its base version becomes `preempted`. `WorldError` codes
-  surface as CLI issue codes. `verify` (`World.verify()`, or `verifyWorld(dir)` for a world not open, which
-  the CLI's `verify` op uses since opening settles the files) replays the log from `initial.json` and
-  names the first byte of `log.jsonl`, `events.jsonl`, `deltas.jsonl`, `snapshot.json` or a checkpoint that differs
-  (`docs/persistence.md`).
-- `src/api.ts`: the public surface (`createWorld`, `openWorld`, `memoryWorld` → a `World` with
-  `command`/`edit`/`check`/`options`/`since`/`attempts`/`query`/`observe`/`inspect`/`snapshot`/`entity`/`catalog`/`schedule`/`round`;
-  `options` (`src/options.ts`) dry-runs every non-author verb against everything the actor can name
-  (`addressable`) and sorts the verdicts into `ready`, `needs_args` and, on request, `blocked`; a verb's `suggest` lists the arg sets
-  to try (`give`, `put`, `move`, `pour`), `free_args` the args no list holds, `aims_at_parts` (`attack`) has it
-  tried at each part of a body in view (`docs/verbs.md`);
-  `attempts(version)` is every submission decided at that version or later, ok or not, as an
-  `Attempt` (`engine/command.ts`): a store world's log lines, a memory world's own record; `observe` is
-  `src/engine/projection.ts` over the world's own `snapshot`, `since` and event-form `query`,
-  `inspect` one entity of it in detail, and `command(c, { observe: true })` attaches the actor's
-  projection since the version the command was applied to), re-exported by `src/index.ts` (with `actorWorld`,
-  `src/actor-world.ts`: one actor's side of a `World`, results without the world's record) and by
-  the package's `exports`, together with `verbs` (`verbCatalog` in `verbs/index.ts`, which throws on
-  a verb that does not declare `args` and `refuses`, and returns structuredClone copies so callers
-  cannot mutate the declarations the checks read). Command checks read their own verb's declaration
-  through `context.verb`; a refusal with an undeclared code throws in `pipeline.ts`, which makes the
-  whole suite a drift check for the declared lists. `src/errors.ts` holds `WorldError`, whose
-  codes surface as CLI issue codes. The world's dice are `Snapshot.rng` (`src/engine/rng.ts`,
-  `docs/rng.md`): `TransitionContext.random()` advances it, a world with no seed refuses a command
-  that rolls `no_seed` (caught in `pipeline.ts`, a code no verb declares), `createWorld` and
-  `memoryWorld` take `seed`, and a template process's `chance_pct` is the first roll. `edit` sends one `spawn`/`remove`/`place`/`set_props`/`update_props` (merges)/`set_part`/`set_seed`/`schedule_beat`/`cancel_beat`/`retime_beat`
-  through the pipeline as the reserved non-agent author `world` (`WORLD_AUTHOR`, which also alone may issue `advance`: time with no agent waiting; a verb opts in with `author_only`), which skips the
-  agency check; `src/engine/verbs/edit.ts` holds it. `check` runs `resolveSubmission` against the
-  current version with the same validation gate, but never writes or logs; `since` folds the store's
-  log, or a memory world's per-command records, into the deltas and events of every ok command after
-  the version — a memory world only knows its own lifetime and throws `history_unavailable` below
-  the version it started from. An event-form `perceive` is perceptible if true before or after
-  that event's command; the store's `replayUntilEvent` in `store/file-store.ts` returns both
-  snapshots, a memory world provides them through its history map, and `queryAtEvent` in the
-  engine combines both answers, while the entity form and an unknown event read the present. A
-  command with `perceivers: true` names, on every event of an ok result, who sensed it by sense
-  (`Perceivers` in `model.ts`, validated by `PerceiversSchema`); the flag rides on the `Command`
-  through the log and replay, and events without it carry no such field. `EditOptions` can set
-  `perceivers: true` to enable this for edits, and the CLI's `edit` op accepts `perceivers` as a
-  field. A default edit id is `edit-<n>` with n one plus the world's submission count — log lines
-  for a store world, a closure counter over its own commands and edits for a memory one — so the
-  same sequence of calls writes the same log through any number of handles. A memory world keeps
-  past snapshots so stale commands preempt exactly like store-backed ones.
-- `src/cli/main.ts`: a JSON adapter over `World` — it reads one request (`op`: `command` | `edit` |
-  `check` | `options` | `since` | `attempts` | `query` | `observe` | `inspect` | `snapshot` | `verbs` |
-  `capabilities` | `catalog` | `schema` | `verify`, and the five `actor_*` ops of `docs/actor-view.md`, through `actorWorld`, and the `player_*` and `director_*` ops of `docs/roles.md`, through the handles), calls one
-  `World` method, `verbCatalog` or returns `ENGINE_CAPABILITIES` (`src/engine/capabilities.ts`: the
-  relations and senses the engine computes, which `validateSnapshot` holds coverage to), and
-  validates every response against `ResponseSchema` before writing it. `init <dir> <scenario.json>`
-  builds a world from spawn specs in `scenarios/*.json`. A failure becomes `{status:"invalid",
-  issues}` with exit code 2.
-- `src/engine/scene.ts`: a scene (`{ seed?, entities, beats?, run? }`, `docs/scenario.md`) built into a snapshot by
-  `sceneSnapshot`; a bare list is a scene with no seed, beats or run. `src/engine/run.ts`: a run's life
-  (`docs/run.md`), registering, running, then ended with its reason, and `liveBodyOf`, the body a slot is
-  driven through.
-- `src/engine/round.ts`: one round of moves (`World.round`, `docs/rounds.md`): each move decided against the
-  same world, taken in an order from the dice's own stream, the clock moving once.
-- `src/director-world.ts` and `src/player-world.ts`: the two handles of `docs/roles.md`. A director registers
-  players and closes rounds; a player's handle observes, checks and submits one move per body it drives.
-  `src/internal.ts` holds what they share with the view, and is never exported by the package.
-- The run documents: `docs/scenario.md`, `docs/run.md`, `docs/rounds.md`, `docs/roles.md`, `docs/schedule-api.md`.
+Four projects in `dotnet/src`, each referencing the ones above it: `WorldEngine.Core` (pure, no I/O),
+`WorldEngine.Store` (files), `WorldEngine.Contract` (the JSON boundary), `WorldEngine.Cli`.
+
+**Core** (`Model/`, `Json/`, `Templates/`, `Engine/`)
+
+- `Model/`: `Snapshot`, `Entity`, `WorldEvent`, `Delta`, `Command`, `Status`, coverage. `Json/`:
+  `CanonicalJson` (the one serializer: sorted keys, no whitespace, JavaScript number formatting in
+  `JsNumber`) and `WorldJson`, the reader/writer options every file and request goes through.
+- `Engine/Pipeline.cs` `Apply(snapshot, registry, verbs, command)` is the single transition entry. It
+  looks up the verb, checks the actor, resolves the target (`Resolve.cs`: name, alias or
+  `entity.part`, among what the actor can address) and runs the verb's preconditions. Only then does it
+  emit the root event and call the transition. Any status other than `ok` returns the input snapshot
+  unchanged. `ok` bumps `version`. After the transition `Scheduling/Clock.cs` moves `tick` by the verb's
+  declared duration, expiring modifiers due on the way, and runs the pending causes of
+  `Scheduling/Schedule.cs`: `close`, `bleed`, template `Processes`, scheduled `Beats`.
+  `SnapshotValidation.cs` holds the snapshot invariants; a verb may define a `validateResult`.
+  A refusal with a code the verb does not declare throws, which makes the whole suite a drift check.
+- A transition changes state only through `Working` (`Engine/Working.cs`): `Set` records a delta and
+  skips no-ops, `Emit` allocates the event id and chains `cause_id`, `Random()` advances the world's
+  dice (`Rng.cs`; a world with no seed refuses a rolling command `no_seed`).
+- `Engine/Verbs/*`: one file per verb family, registered in `VerbRegistry.cs` with the declared
+  `args`/`refuses` in `VerbSpecs.cs`. Capacity needs are declared on the verb and read through the
+  verb itself, never hard-coded. `EditVerb.cs` (with `EditParser`, `EditTransitions`, `EditRefusals`)
+  is the author's verb: spawn, remove, place, props, parts, seed, beats, runs, roles, refine.
+- `Engine/Physics/`: `Capacities` (parts plus unexpired modifiers; structural ones skip modifiers),
+  `Geometry` (position/elevation along support and containment, `sweep`, `walkStop`, `gapStop`),
+  `Carry`, `Fit`, `Harm`, `Power`, `Residue`, `PartStates` (sparse part state), `Placements`, and
+  `Physical.cs`: the consequences that run after a verb (support loss, falls, breaking, `SpendEntity`,
+  `RemoveEntity`, impact).
+- `Engine/Perception/`: `Queries` (`fact` and `perceive`; answers `"true"`, `"false"`, `"unknown"` with
+  a `basis_code`), `Perception`, `EventPerception`, `Reach` (the one reach rule), `Concealment`.
+- `Engine/Scheduling/`: clock, schedule, processes (`ProcessSpec`), beats (`Beat*`), runs, rounds,
+  pending moves. `Engine/Scenes/`: the scene builder, scenario forms, `Refine`, `Upgrade`.
+- `Engine/Worlds/`: the facade shared by memory and stored worlds: `IWorld`, `IWorldDriver`,
+  `IWorldReads`, `MemoryWorld`, `WorldReads` (check, options, observe, inspect), `Submission` (the
+  stale-version and preempt rule, validation gate), `Projection`, `Trace`, `Options`, `Catalog`,
+  `ActorWorld`, `PlayerWorld`, `DirectorWorld`.
+- `Templates/`: `TemplateShape` (checks a declaration's JSON as the loader must), `TemplateResolver`
+  (`extends`, `part_overrides`, lineage), `TemplateValidation`, `TemplateHash` (`templates_hash`).
+
+**Store** (`dotnet/src/WorldEngine.Store`): a world is a directory (`initial.json`, `snapshot.json`,
+`log.jsonl`, `events.jsonl`, `deltas.jsonl`, `head.json`, `checkpoints/`, `lock`), `schema_version` 5.
+
+- `WorldWriter.Submit` takes the turn (`WorldLock`), appends the log line (every command, refused
+  and invalid too), the events and an accepted command's deltas, writes the snapshot every 32 accepted
+  commands, then `head.json` last. `WorldSettle.Load` trusts the head when it matches the file sizes
+  and folds the log forward from the snapshot's byte; otherwise it repairs under the turn. A snapshot
+  that breaks an invariant is downgraded to `invalid` and never written.
+- This process remembers the hash of a registry, the head it last wrote and the snapshot it last left
+  (`WorldReplay.Remember`, `WorldFiles.RememberHead`), valid while the files' sizes and write times
+  are as it left them: reads after a write need no fold.
+- `WorldReplay` (full and partial folds), `WorldCheckpoints` (cache every 256 accepted commands),
+  `WorldHistory` (since, trace, event-time perceive), `WorldVerify` (names the first byte of any file
+  that differs from a replay), `WorldUpgrade` (a world moves to another template set), `WorldBuilder`
+  (`init`/`restart`), `StoreWorld` (the stored `IWorld`), `StoredPending` (`pending.json`),
+  `WorldIO` (reads that do not hold a file against a writer on Windows), `WorldLock` (exclusive file
+  create, dead-process or minute-old takeover, `store_busy` after `WORLD_LOCK_TIMEOUT_MS`).
+
+**Contract** (`dotnet/src/WorldEngine.Contract`): typed records and the JSON Schema generated from them
+(`ContractSchema`), the checks of a request and of a response (`ContractDocument`), the shared value
+shapes (`ContractValues`). **Cli** (`dotnet/src/WorldEngine.Cli`): `CliRunner.Run(args, input)` reads
+one request, dispatches to one `World` operation, validates the answer against the contract before
+writing it, and answers `{status:"invalid", issues}` with exit code 2 on failure. `init <dir>
+<scenario.json>` builds a world; the ops are listed in `docs/api.md`.
 
 ## Templates
 
-`templates/*.json` are loaded and validated by `src/templates.ts`, and all of them are hashed into
-`templates_hash`. Editing any template therefore makes existing worlds fail with `templates_changed`.
-A detachable part needs a companion template named `<template>.<part>.json` (for example
-`human.hand_l.json`); a child that declares no `parts` inherits its parent's, resolved with the set. The
-registry is rejected when loading, in a world's templates.json, or by
-`upgradeTemplates` if a detached part has no companion. Detaching spawns that template.
-A human's `head` contributes `speech`, which `say` requires (`docs/speech.md`; the verb's `rootEvent` puts its event on the speaker even when addressed). `dog`, `cat`, and `horse` are agents with `moving`, `sight`, `hearing`, `smell` and a detachable
-`jaw` that provides `mouth_carry`; default coverage stays `sight`+`hearing`, so smell answers only
-where a snapshot's coverage declares it.
+`templates/*.json` at the repository root are loaded and validated by `TemplateDirectory` and
+`TemplateResolver`, and all of them are hashed into `templates_hash`. Editing any template therefore makes
+existing worlds fail with `templates_changed` (an `upgrade` moves a world). A detachable part needs a
+companion template named `<template>.<part>.json` (for example `human.hand_l.json`); a child that
+declares no `parts` inherits its parent's. `extends` is resolved once when a set is loaded; a cycle
+or unknown parent is refused with the chain. `docs/fields.md` is the schema of every prop the engine
+reads; a template declares a prop no code reads under `fields`.
 
 ## Areas
 
-One bullet per area, and an area is extended by appending to its own bullet only. A new verb or
-refusal code also touches the shared registration points, one line or one entry each:
-`src/engine/verbs/index.ts`, `src/errors.ts`, `src/contract.ts`, the verb table in
-`tests/property-gen.ts`, and one line in the `docs/verbs.md` index, whose rules go in the family
-file it links (`docs/verbs-*.md`; `tests/catalog.test.ts` holds the two in step).
+One bullet per area; extend an area by appending to its own bullet only. A new verb or refusal code
+also touches the shared registration points, one line each: `VerbRegistry.cs`, `VerbSpecs.cs`,
+`WorldError` codes, the contract, and one line in the `docs/verbs.md` index, whose rules go in the
+family file it links (`docs/verbs-*.md`).
 
-- **Relations and perception:** `src/engine/validate.ts`, `src/model.ts` (`Entity`), the perception
-  half of `src/engine/query.ts`, `docs/state.md`, `docs/perception.md`, `docs/relations.md`
-  (one row per relation: kind, exclusivity, loop, live or history, what removal and detaching do,
-  the enforcing `validateSnapshot` code and the test). `concealed_by` is that area's relation:
-  `revealConcealed` in `verbs/search.ts` clears it when either end moves, and is called from `take`,
-  `push`, `move` (for the walker and all it carries), the fall path in `physical.ts` and `edit`'s place and remove; sight of a concealed entity
-  answers `false` / `concealed`, and a `found` event is perceived against its `concealer`, so it
-  reads as where the search happened. Nothing records who searched or who knows. `touch` reads the
-  observer's own body and grips (`own_body`, else `not_touching`) instead of any room, with its
-  column in `docs/senses.md`; `take` from another agent's pocket is allowed, from a grip refused.
-- **Templates:** `src/templates.ts`, `src/engine/upgrade.ts`, `templates/*.json`, the hash and
-  companion rules above, and `docs/templates.md`: a template may declare `"extends": "<parent id>"`,
-  resolved once when a set is loaded or parsed (own field wins, `props` shallow-merged, `parts`
-  replaced only if declared, everything else inherited; a cycle or unknown parent is refused with
-  the chain), so no `extends` key survives into the hash (a resolved template keeps its `lineage`, outside the hash, for `refine`), a frozen `templates.json`, the companion
-  rule or `lostField`. `templates/wine_bottle.json` is the worked example. `src/engine/fields.ts` (`docs/fields.md`) is
-  the schema of every prop the engine reads (type, tier, `requires`) and of the entity fields'
-  tiers; a template declares a prop no code reads under `fields`, and `validateProps` refuses an
-  undeclared prop, a wrong type or a missing requirement when a set is resolved.
-- **Materials:** `src/engine/residue.ts` and `src/resolvers/physical.ts`, whose behaviour the rest
-  of the engine relies on; a material's own verb lives in `src/engine/verbs/` — `pour` moves
-  `liquid_material`/`liquid_amount` between props and residue, and `docs/liquids.md` has that model.
-- **Authoring space:** `src/scenario.ts`, the `place` path of `src/engine/verbs/edit.ts`, the `fact`
-  half of `src/engine/query.ts`, `docs/api.md`. A position may be written as `{anchor, dx, dy}`
-  instead of `pos` (`AnchorPos` in `command.ts`, `ScenarioOverrides` in `scenario.ts`): it resolves
-  to the anchor's position in the anchor's room and adds no relation, refusing
-  `conflicting_placement` beside a named holder and `anchor_not_room_supported` for an anchor not
-  standing in a room. `templates/anchor.json` is the empty point template and declares
-  `abstract: true`; an abstract entity is skipped by target resolution and answers `false` /
-  `abstract` to perception (`isAbstract` in `resolve.ts`), which is why an anchor is a fixed point
-  nothing can move. `fact`'s `near` is derived from both sides' positions under
-  `NEAR_THRESHOLD_CM` (in the default coverage); docs: `docs/space.md`.
+- **Relations and perception:** `SnapshotValidation.cs`, `Model/Snapshot.cs` (`Entity`), `Perception/`,
+  `docs/state.md`, `docs/perception.md`, `docs/relations.md`. `concealed_by` is that area's relation:
+  `Concealment.RevealConcealed` clears it when either end moves.
+- **Templates:** `Templates/`, `Scenes/Upgrade.cs`, `templates/*.json`, `docs/templates.md`, `docs/fields.md`.
+- **Materials:** `Physics/Residue.cs`, `Physics/Physical.cs`, `PourVerb.cs`, `docs/liquids.md`.
+- **Authoring space:** `Scenes/`, the `place` path of `EditVerb.cs`, the `fact` half of `Queries.cs`,
+  `docs/api.md`, `docs/space.md`. A position may be written `{anchor, dx, dy}`; abstract entities
+  (`templates/anchor.json`) are skipped by target resolution.
 
 ## Tests
 
-`tests/*.test.ts` use `node:test` and `node:assert`. Engine tests deep-freeze the input snapshot and
-compare with `canonicalJson`. Store tests write under `os.tmpdir()`. The `scenario-*` tests and
-`acceptance` test run complete command sequences end to end.
+xUnit with the engine's input snapshot compared by canonical JSON. The goldens replay recorded
+TypeScript answers (verb matrix, property traces, damaged worlds, template fuzz, beat shapes,
+refine) and the `acceptance` and `scenario-*` sequences (`Block21ReplayTests`). `PropertyTraceTests`
+also runs the sequences on a store world. A test for a new behaviour sits beside the file it
+covers; a deliberate deviation from TypeScript has a test that names it (`plans/ts-sunset.md`).

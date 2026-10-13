@@ -2,12 +2,11 @@
 
 Guidance for coding agents in this directory.
 
-## Status: the TypeScript engine is being retired
+## Status: the engine is .NET
 
-The .NET engine under `dotnet/` is replacing the TypeScript one (`plans/ts-sunset.md`). TypeScript is frozen: no feature work and no
-refactors in `src/`, `tests/` or `templates/` unless a bug the .NET replays find has to be matched there, and then the golden is
-regenerated in the same change. New behaviour is built and tested in `dotnet/`, where the goldens (`dotnet/tools/golden-gen/README.md`)
-are the reference now: a change to .NET behaviour updates its goldens in the same commit. The rules below still describe the design.
+The engine is the .NET one under `dotnet/` (`plans/ts-sunset.md`). The TypeScript in `src/`, `tests/`, `scripts/` and `package.json` is frozen
+and will be deleted: no feature work, no refactors, no fixes there. The goldens (`dotnet/tools/golden-gen/README.md`) are the reference
+for behaviour recorded from TypeScript; a change to .NET behaviour updates its goldens in the same commit, as a diff that is read.
 
 ## What this repo is
 
@@ -17,7 +16,7 @@ are the reference now: a change to .NET behaviour updates its goldens in the sam
   `plans/`. `plans/candidates.md` holds gaps with no plan yet: not work, never picked up by an agent.
 - Nothing here imports Story-writer and Story-writer imports nothing from it. Keep the two
   independent. `..\Story-writer\CLAUDE.md` is the precedent for process and comment style.
-- The hard rules and core types are the invariants below and `src/model.ts`; don't re-derive or
+- The hard rules and core types are the invariants below and `dotnet/src/WorldEngine.Core/Model/`; don't re-derive or
   paraphrase the types.
 
 ## Working process — one block per session
@@ -36,32 +35,28 @@ are the reference now: a change to .NET behaviour updates its goldens in the sam
 
 ### Verification (before the commit)
 
-1. `npm run check:changed` passes: typecheck and the tests the change can reach. Run the full
-   `npm run check` when it selects nearly everything anyway, or when the map is old.
+1. `dotnet test dotnet/WorldEngine.slnx` passes (about 40 s). Use `--filter "FullyQualifiedName~<name>"` while working.
 2. Deliberately break one new test to confirm it can fail, then restore it.
 3. Read the staged diff: only this block's changes.
 
 ## Stack and commands (`world-engine`)
 
-- TypeScript `strict` + `noUncheckedIndexedAccess`, `module`/`moduleResolution` NodeNext, target ES2022,
-  Node ≥ 20. Test runner is `node:test` via `tsx`. **Zod only at the JSON boundary.**
-- `npm run check` = `typecheck` (`tsc --noEmit`) + every test, writing `.test-map.json`;
-  `npm run check:changed` runs only the tests the change can reach (`CLAUDE.md`). No lint step.
-- `npm test` = `node --import tsx --test "tests/**/*.test.ts"` — the script already globs everything, so
-  a focused run needs a direct `node --import tsx --test tests/<file>.test.ts` instead of appending a
-  path to `npm test`.
-- devDependencies only: typescript, tsx, @types/node, zod. `data/` and `node_modules` are
-  gitignored; store tests use `os.tmpdir()`.
+- .NET 10, C# with nullable enabled, four projects under `dotnet/src` (Core, Store, Contract, Cli), xUnit tests in `dotnet/tests`, tools
+  (benchmark, reference host, golden generators) in `dotnet/tools`. The JSON boundary uses typed records and a generated JSON Schema, not
+  Zod. No NuGet package beyond the test stack unless a block names it.
+- `dotnet test dotnet/WorldEngine.slnx` is the whole check; `CLAUDE.md` lists the other commands. No lint step.
+- `data/` is gitignored; store tests use the temp folder. Source files are CRLF on this checkout: edit them with the Edit tool, or open
+  them with `newline=''` from a script.
 
 ## Invariants every block must preserve
 
-- **Determinism.** No `Date`, no `Math.random`, never iterate unordered input without sorting. IDs come
+- **Determinism.** No wall clock and no `Random` in the engine, never iterate unordered input without sorting (`StringComparer.Ordinal`). IDs come
   from `snapshot.next_seq` (`"e1"`, events `"ev1"`). Integer arithmetic only (cm, grams, integrity
-  0..100). Same snapshot + same command ⇒ byte-identical output; compare with `canonicalJson`.
-- **Pure core.** `engine/` functions take a `Snapshot`, return a new one, never mutate the input (tests
-  deep-freeze it), and never do I/O. I/O lives **only** in `store/` and `cli/`.
-- **`canonicalJson` is the only snapshot serializer** in the project — sorted keys at every depth, no
-  whitespace. Reach for it instead of `JSON.stringify` on state.
+  0..100). Same snapshot + same command ⇒ byte-identical output; compare with `CanonicalJson`.
+- **Pure core.** `Engine/` functions take a `Snapshot`, return a new one, never mutate the input,
+  and never do I/O. I/O lives **only** in `WorldEngine.Store` and `WorldEngine.Cli`.
+- **`CanonicalJson` is the only snapshot serializer** in the project — sorted keys at every depth, no
+  whitespace. Reach for it (via `WorldJson`) instead of `System.Text.Json` directly on state.
 - **No prose crosses the boundary.** Outputs are statuses, deltas, events, and machine codes
   (`reason_code`, `basis_code`) — never sentences.
 - **The engine owns world state, never knowledge.** Do not model who knows/noticed/remembers anything.
@@ -70,9 +65,9 @@ are the reference now: a change to .NET behaviour updates its goldens in the sam
   `no_such_entity`.
 - **Parts exist only where a template declares them.** Below the smallest declared part nothing is an
   entity: fragments become residue (material → amount) on whatever received them.
-- **Actions check capacities, never parts.** `capacity()` returns `null`, not `0`, when the template
+- **Actions check capacities, never parts.** `Capacities` returns `null`, not `0`, when the template
   declares no parts, so callers can tell "stone" from "paralysed human".
-- **Templates are data** in `templates/*.json`, hashed into `snapshot.templates_hash`; a hash mismatch
+- **Templates are data** in `templates/*.json` (repository root), hashed into `snapshot.templates_hash`; a hash mismatch
   on load throws — no silent migration.
 - **Comments only where a line is non-obvious** (a bound, an ordering, an asymmetry). No doc comments
   restating the code. History and lessons belong in git history.

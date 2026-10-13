@@ -173,6 +173,10 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   command line's own, since it validates every answer before writing it. `npm run world` becomes
   `dotnet run --project dotnet/src/WorldEngine.Cli` (a publish step waits for a user who needs one). Phase 3 is done.
 
+- **Phase 4 (2026-10-13):** `CLAUDE.md` and `AGENTS.md` are rewritten for the .NET layout, and `backlog.md`'s two Priorities are re-pointed
+  at .NET. Left: the TypeScript identifiers in `docs/*.md` (the behaviour descriptions stay, and are the spec), `plans/dotnet-port.md`
+  marked complete, and `plans/candidates.md` and `storage-seam-design.md` read for .NET when picked up.
+
 ## Deliberate deviations from TypeScript
 
 Places where .NET differs on purpose, found by the Phase 1 replays. Each has a test that names it.
