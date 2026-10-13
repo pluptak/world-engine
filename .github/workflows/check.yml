@@ -13,3 +13,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+  dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet test dotnet/WorldEngine.slnx

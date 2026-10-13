@@ -160,6 +160,15 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   `AGENTS.md`, `CLAUDE.md` and `plans/dotnet-port.md`. Phase 2 exit met: with `node_modules` moved away, `dotnet test` passes all 5,808
   tests, and no .NET source or test starts Node.
 
+- **Phase 3 (started 2026-10-13):** `.github/workflows/check.yml` has a `dotnet` job (`dotnet test dotnet/WorldEngine.slnx`) beside the npm one.
+  `dotnet/tools/WorldEngine.Bench` is the default `npm run bench` workload (10,000 take/drop on a four-entity stored world). Baseline on
+  this machine: TypeScript 311 cmd/s (3.57 ms/cmd for the first 1k, 3.17 for the last); `npm run bench:scale` 7.1 to 7.2 ms/cmd. The
+  first .NET run was 87 cmd/s (14.9 and 11.1 ms): each command re-hashed the template set, loaded the current snapshot twice (once more
+  for an observation nobody asked for) and refolded the log from the last snapshot, and a freshly written `head.json` is slow to open
+  again. The store now keeps the hash per registry, the snapshot and head it last wrote (valid while the files' sizes and write times are
+  as it left them), and `WithObservation` loads nothing when `observe` is off: 262 cmd/s (4.3 and 3.8 ms). Still to do: the scale,
+  reads and rounds workloads, then `test-select`, `host.ts` and `npm run world`.
+
 ## Deliberate deviations from TypeScript
 
 Places where .NET differs on purpose, found by the Phase 1 replays. Each has a test that names it.

@@ -88,6 +88,18 @@ public static class WorldWriter
             ["templates_hash"] = WorldReplay.HashOf(registry),
         };
         AtomicWrite(Path.Combine(dir, WorldFiles.Head), Canonical(written));
+        var writtenHead = new WorldFiles.HeadFile(
+            logSize,
+            (long)written["events_bytes"]!,
+            (long)written["log_entries"]!,
+            (long)written["ok_entries"]!,
+            (string)written["templates_hash"]!,
+            (long)written["deltas_bytes"]!,
+            (long)written["rounds_closed"]!,
+            (long)written["snapshot_version"]!,
+            (long)written["snapshot_log_bytes"]!);
+        WorldFiles.RememberHead(dir, writtenHead);
+        WorldReplay.Remember(dir, registry, writtenHead, ok ? result.Snapshot : current);
 
         // The cache is written last and may fail without costing the command anything.
         if (ok && result.Snapshot.Version % checkpointEvery == 0)

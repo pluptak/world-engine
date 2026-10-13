@@ -73,10 +73,41 @@ public static class WorldFiles
     public static HeadFile? ReadHead(string dir)
     {
         var path = Path.Combine(dir, Head);
-        if (!File.Exists(path))
+        var info = new FileInfo(path);
+        if (!info.Exists)
         {
             return null;
         }
+        var stamp = (info.LastWriteTimeUtc.Ticks, info.Length);
+        if (Heads.TryGetValue(path, out var known) && known.Stamp == stamp)
+        {
+            return known.Head;
+        }
+        var head = ParseHead(path);
+        if (head is not null)
+        {
+            Heads[path] = (stamp, head);
+        }
+        return head;
+    }
+
+    // The head this process wrote last, or read last, by the file's write time and size: a freshly written file is slow to open again on
+    // some systems, and the writer knows what it wrote.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, ((long Ticks, long Length) Stamp, HeadFile Head)> Heads = new();
+
+    // Notes the head a writer has just put in head.json, so the next read of it need not open the file.
+    public static void RememberHead(string dir, HeadFile head)
+    {
+        var path = Path.Combine(dir, Head);
+        var info = new FileInfo(path);
+        if (info.Exists)
+        {
+            Heads[path] = ((info.LastWriteTimeUtc.Ticks, info.Length), head);
+        }
+    }
+
+    private static HeadFile? ParseHead(string path)
+    {
         try
         {
             if (JsonNode.Parse(WorldIO.ReadAllText(path)) is not JsonObject value

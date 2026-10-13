@@ -19,7 +19,12 @@ public static class WorldReplay
 
     // The hash of a resolved template set: the same as the set's `templatesHash` (src/templates.ts), so it can be checked against the
     // hash a snapshot carries.
-    public static string HashOf(IReadOnlyDictionary<string, Template> registry)
+    public static string HashOf(IReadOnlyDictionary<string, Template> registry) => Hashes.GetValue(registry, Compute);
+
+    // A resolved registry never changes, so its hash is worked out once per instance, not on every read and write of a world.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<IReadOnlyDictionary<string, Template>, string> Hashes = new();
+
+    private static string Compute(IReadOnlyDictionary<string, Template> registry)
     {
         var declared = new JsonObject();
         foreach (var (id, template) in registry)
@@ -85,23 +90,23 @@ public static class WorldReplay
     // is refused, as `load` refuses it. The TypeScript process also keeps the snapshot it last returned, which only saves a fold.
     public static Snapshot? TrustedSnapshot(string dir, IReadOnlyDictionary<string, Template> registry)
     {
-        var initial = WorldFiles.ReadSnapshot(Path.Combine(dir, WorldFiles.InitialSnapshot));
         var head = WorldFiles.ReadHead(dir);
         var frozen = HashOf(registry);
         if (head is null || head.TemplatesHash != frozen)
         {
+            WorldFiles.ReadSnapshot(Path.Combine(dir, WorldFiles.InitialSnapshot));
             return null;
         }
+        var stamp = StampOf(dir, frozen, head);
+        if (stamp is not null && Trusted.TryGetValue(Path.GetFullPath(dir), out var remembered) && remembered.Stamp == stamp)
+        {
+            return remembered.Snapshot;
+        }
+        var initial = WorldFiles.ReadSnapshot(Path.Combine(dir, WorldFiles.InitialSnapshot));
         AssertTemplates(initial.TemplatesHash, frozen);
         try
         {
-            if (FileSize(Path.Combine(dir, WorldFiles.Log)) == head.LogBytes
-                && FileSize(Path.Combine(dir, WorldFiles.Events)) == head.EventsBytes
-                && head.DeltasBytes is { } deltasBytes
-                && FileSize(Path.Combine(dir, WorldFiles.Deltas)) == deltasBytes
-                && head.RoundsClosed is not null
-                && head.SnapshotVersion is { } snapshotVersion
-                && head.SnapshotLogBytes is { } snapshotLogBytes)
+            if (stamp is not null && head.SnapshotVersion is { } snapshotVersion && head.SnapshotLogBytes is { } snapshotLogBytes)
             {
                 var stored = WorldFiles.ReadSnapshot(Path.Combine(dir, WorldFiles.CurrentSnapshot));
                 AssertTemplates(stored.TemplatesHash, frozen);
@@ -110,6 +115,7 @@ public static class WorldReplay
                     var current = FoldLogFrom(dir, stored, snapshotLogBytes, head.LogBytes, registry);
                     if (current.Version == initial.Version + head.OkEntries)
                     {
+                        Trusted[Path.GetFullPath(dir)] = (stamp, current);
                         return current;
                     }
                 }
@@ -120,6 +126,65 @@ public static class WorldReplay
             // Fall through to the full check, which settles the world or says why it cannot.
         }
         return null;
+    }
+
+    // Notes the snapshot a write has just left the world at, under the head it wrote, so the next read in this process need not fold the log
+    // to find it. Taken only when the files now agree with that head, exactly as `TrustedSnapshot` would have found them.
+    public static void Remember(string dir, IReadOnlyDictionary<string, Template> registry, WorldFiles.HeadFile written, Snapshot current)
+    {
+        try
+        {
+            var frozen = HashOf(registry);
+            if (written.TemplatesHash == frozen && StampOf(dir, frozen, written) is { } stamp)
+            {
+                Trusted[Path.GetFullPath(dir)] = (stamp, current);
+            }
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            // Not remembering only costs the next read a fold.
+        }
+    }
+
+    // What a read of the world rests on: null when the head and the files' sizes disagree or the head lacks a field a trusted read needs,
+    // else the head's numbers and the write times of the files the snapshot comes from. What a read made last time is reused while
+    // this is as it was; a handle that writes the world moves it, so the next read folds afresh.
+    private static string? StampOf(string dir, string frozen, WorldFiles.HeadFile head)
+    {
+        try
+        {
+            return Stamp(dir, frozen, head);
+        }
+        catch (IOException)
+        {
+            // A file gone is a world the files do not agree on.
+            return null;
+        }
+    }
+
+    private static string? Stamp(string dir, string frozen, WorldFiles.HeadFile head)
+    {
+        if (FileSize(Path.Combine(dir, WorldFiles.Log)) != head.LogBytes
+            || FileSize(Path.Combine(dir, WorldFiles.Events)) != head.EventsBytes
+            || head.DeltasBytes is not { } deltasBytes
+            || FileSize(Path.Combine(dir, WorldFiles.Deltas)) != deltasBytes
+            || head.RoundsClosed is null
+            || head.SnapshotVersion is not { } snapshotVersion
+            || head.SnapshotLogBytes is not { } snapshotLogBytes)
+        {
+            return null;
+        }
+        return string.Join(
+            '|',
+            frozen,
+            head.LogBytes,
+            head.OkEntries,
+            snapshotVersion,
+            snapshotLogBytes,
+            WrittenAt(dir, WorldFiles.Head),
+            WrittenAt(dir, WorldFiles.Log),
+            WrittenAt(dir, WorldFiles.CurrentSnapshot),
+            WrittenAt(dir, WorldFiles.InitialSnapshot));
     }
 
     // The replay from initial.json with the templates the world holds, checked against initial.json (`replayWithEvents`).
@@ -136,6 +201,10 @@ public static class WorldReplay
             throw new WorldError("templates_changed", "Template hash mismatch");
         }
     }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (string Stamp, Snapshot Snapshot)> Trusted = new();
+
+    private static long WrittenAt(string dir, string file) => File.GetLastWriteTimeUtc(Path.Combine(dir, file)).Ticks;
 
     private static long FileSize(string path) => new FileInfo(path).Length;
 

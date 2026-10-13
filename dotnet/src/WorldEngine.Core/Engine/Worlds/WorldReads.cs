@@ -135,8 +135,12 @@ public static class WorldReads
     // events are exactly those after the version before it.
     public static Pipeline.Result WithObservation(IWorldReads world, string actor, Pipeline.Result result, bool observe)
     {
+        if (!observe)
+        {
+            return result;
+        }
         var current = world.CurrentSnapshot();
-        if (!observe || !current.Entities.ContainsKey(actor))
+        if (!current.Entities.ContainsKey(actor))
         {
             return result;
         }
