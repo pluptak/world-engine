@@ -33,5 +33,8 @@ one lock and renaming another: the owner released it and exited between the take
 pid probe, a next writer took the freed turn, and the taker renamed that fresh lock away, so both
 wrote at once and a `lock.stale-<pid>` was left behind. A takeover now proceeds only when the
 moved bytes equal the judged ones (each acquisition writes a nonce, compared byte for byte, and
-anything else is put back), and a release deletes only the lock its own bytes name. What it costs
+anything else is put back), and a release deletes only the lock its own bytes name. Two takers of
+one stale lock could still race: the second renamed away the lock the first had just made, and the
+put-back failed when a third writer made one in the gap. Takers now go one at a time behind
+`lock.takeover` and read the lock again before renaming it ([locking-crash.md](locking-crash.md)). What it costs
 is in [measurements-writers.md](measurements-writers.md).

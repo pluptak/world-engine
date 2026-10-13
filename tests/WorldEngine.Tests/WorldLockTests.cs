@@ -169,4 +169,42 @@ public class WorldLockTests : IDisposable
         Assert.Equal(live, File.ReadAllText(LockPath));
         Assert.Empty(Directory.EnumerateFiles(dir, "lock.stale-*"));
     }
+
+    [Fact]
+    public void A_holder_removes_the_grave_a_dead_taker_left()
+    {
+        var grave = $"{LockPath}.stale-{DeadPid}";
+        File.WriteAllText(grave, "{}");
+
+        WorldLock.With(dir, () => 0, timeoutMs: 500);
+
+        Assert.False(File.Exists(grave));
+    }
+
+    [Fact]
+    public void A_grave_of_this_process_does_not_stop_its_next_takeover()
+    {
+        File.WriteAllText($"{LockPath}.stale-{Environment.ProcessId}", "{}");
+        HoldAs(DeadPid, NowMs());
+
+        Assert.Equal(7, WorldLock.With(dir, () => 7, timeoutMs: 500));
+
+        Assert.False(File.Exists(LockPath));
+        Assert.Empty(Directory.EnumerateFiles(dir, "lock.stale-*"));
+    }
+
+    [Fact]
+    public void One_taker_at_a_time_a_stale_lock_waits_while_another_takeover_holds_the_guard()
+    {
+        HoldAs(DeadPid, NowMs());
+        using (new FileStream($"{LockPath}.takeover", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 1, FileOptions.DeleteOnClose))
+        {
+            var error = Assert.Throws<WorldError>(() => WorldLock.With(dir, () => 1, timeoutMs: 150));
+            Assert.Equal("store_busy", error.Code);
+            Assert.True(File.Exists(LockPath), "the stale lock is left while another takeover is under way");
+        }
+
+        Assert.Equal(7, WorldLock.With(dir, () => 7, timeoutMs: 500));
+        Assert.Empty(Directory.EnumerateFiles(dir));
+    }
 }

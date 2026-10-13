@@ -67,6 +67,7 @@ public static class WorldLock
         finally
         {
             held.Remove(key);
+            SweepGraves(dir);
             Release(path, 55, mine);
         }
     }
@@ -132,7 +133,8 @@ public static class WorldLock
     }
 
     // True when the lock is gone and the turn can be tried for again. The verdict below must refer to the same lock the rename
-    // moves: the judged bytes are compared with what arrived in the grave, and anything else is put back.
+    // moves: one taker at a time (the guard), the lock read again under the guard, and the judged bytes compared with what arrived in
+    // the grave, anything else put back.
     private static bool TakeOver(string path)
     {
         string judged;
@@ -152,7 +154,35 @@ public static class WorldLock
         {
             return Judge(path) == Verdict.Gone;
         }
-        return TakeOverJudged(path, judged);
+        // Two takers of one stale lock raced: the second renamed away the lock the first had just made, and when a third writer made
+        // one in the gap the put-back failed, leaving two writers and a grave. The guard is held by the operating system, so a taker
+        // that dies frees it, and it is deleted on close.
+        FileStream guard;
+        try
+        {
+            guard = new FileStream($"{path}.takeover", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 1, FileOptions.DeleteOnClose);
+        }
+        catch (Exception error) when (Busy(error))
+        {
+            return false;
+        }
+        using (guard)
+        {
+            string current;
+            try
+            {
+                current = WorldIO.ReadAllText(path);
+            }
+            catch (FileNotFoundException)
+            {
+                return true;
+            }
+            catch (Exception error) when (Busy(error))
+            {
+                return false;
+            }
+            return string.Equals(current, judged, StringComparison.Ordinal) && TakeOverJudged(path, judged);
+        }
     }
 
     // Renames a lock judged stale away, proceeding only when the grave holds the judged bytes. A lock another writer made after
@@ -160,6 +190,15 @@ public static class WorldLock
     internal static bool TakeOverJudged(string path, string judged)
     {
         var grave = $"{path}.stale-{Environment.ProcessId}";
+        try
+        {
+            // A grave of this process's that an earlier takeover could not delete would make the rename fail.
+            File.Delete(grave);
+        }
+        catch (Exception error) when (Busy(error))
+        {
+            return false;
+        }
         try
         {
             File.Move(path, grave);
@@ -309,6 +348,28 @@ public static class WorldLock
                 {
                     // Someone else's sweep got there first.
                 }
+            }
+        }
+    }
+
+    // The graves a holder can remove before giving the turn back: those of dead takers, and this process's own. A taker's delete can
+    // lose to a reader holding the file, and the grave would otherwise wait for the next takeover's sweep.
+    private static void SweepGraves(string dir)
+    {
+        foreach (var path in Directory.EnumerateFiles(dir, $"{LockFile}.stale-*"))
+        {
+            var pid = LeftBy(Path.GetFileName(path));
+            if (pid is null || (pid != Environment.ProcessId && Alive(pid.Value)))
+            {
+                continue;
+            }
+            try
+            {
+                File.Delete(path);
+            }
+            catch (Exception error) when (Busy(error))
+            {
+                // Still held; the next holder tries again.
             }
         }
     }
