@@ -1,0 +1,70 @@
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json.Nodes;
+using WorldEngine.Core.Engine;
+using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
+
+namespace WorldEngine.Tests;
+
+// A matrix of commands over the fixture snapshots against TypeScript's pipeline (Fixtures/verb-matrix.expected.json.gz, from
+// tools/golden-gen/verb-matrix.ts): for each of the 55 snapshots the verb goldens start from, the commands the world offers its agents
+// and a seeded sample of every verb with every kind of actor, target and argument, well formed or not, about 27,000 in all. Each answer
+// is one line (status, reason code, resolved target, reason data, and for an ok result a hash of the snapshot, events and deltas), so a
+// refusal, an invalid request and an effect each have to be TypeScript's. A command that throws in TypeScript (a hand-built fixture whose
+// ids run past next_seq) has to throw here.
+public class VerbMatrixTests
+{
+    [Fact]
+    public void Every_recorded_command_is_answered_as_TypeScript_answers_it()
+    {
+        JsonObject golden;
+        using (var file = File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Fixtures", "verb-matrix.expected.json.gz")))
+        using (var zip = new GZipStream(file, CompressionMode.Decompress))
+        {
+            golden = (JsonObject)JsonNode.Parse(zip)!;
+        }
+
+        var differing = new List<string>();
+        var total = 0;
+        foreach (var (name, rows) in (JsonObject)golden["snapshots"]!)
+        {
+            var snapshot = WorldJson.Read<Snapshot>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", name)));
+            foreach (var row in (JsonArray)rows!)
+            {
+                total += 1;
+                var command = WorldJson.Read<Command>(row![0]!.ToJsonString());
+                var expected = row[1]!.GetValue<string>();
+                var actual = Answer(snapshot, command);
+                if (actual != expected && !(expected.StartsWith("throw|") && actual.StartsWith("throw|")))
+                {
+                    differing.Add($"{name} {row[0]!.ToJsonString()}: {actual}, TypeScript's {expected}");
+                }
+            }
+        }
+        Assert.True(total > 25000, $"only {total} commands were recorded");
+        Assert.True(differing.Count == 0, $"{differing.Count} of {total} differ, first: {string.Join(" | ", differing.Take(6))}");
+    }
+
+    private static string Answer(Snapshot snapshot, Command command)
+    {
+        Pipeline.Result result;
+        try
+        {
+            result = Pipeline.Apply(snapshot, TestTemplates.Registry, VerbRegistry.All, command);
+        }
+        catch (Exception error)
+        {
+            return $"throw|{error.Message}";
+        }
+        var reasonData = result.ReasonData is null ? "null" : CanonicalJson.Serialize(JsonNode.Parse(WorldJson.Write(result.ReasonData)));
+        var line = string.Join('|', result.Status.ToString().ToLowerInvariant(), result.ReasonCode ?? "", result.ResolvedTarget ?? "", reasonData);
+        return result.Status == Status.Ok
+            ? $"{line}|{Hash8(result.Snapshot)}|{Hash8(result.Events)}|{Hash8(result.Deltas)}"
+            : line;
+    }
+
+    private static string Hash8<T>(T value) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(WorldJson.Write(value)))).ToLowerInvariant()[..12];
+}
