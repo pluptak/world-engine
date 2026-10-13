@@ -1,4 +1,6 @@
-# .NET port — plan for the full port
+# .NET port — plan for the full port
+
+**Status (2026-10-13): complete.** Every block below has landed, no `NotPortedException` is left in the engine, and the replays in `plans/ts-sunset.md` show no unexplained difference from TypeScript. What remains is the sunset plan's Phase 4 docs and Phase 5.
 
 Date: 2026-10-12. Scope: port the TypeScript world engine (`src/`, 69 modules, 17,880 lines) to .NET 10
 under `dotnet/`, on branch `dotnet-skeleton`. TypeScript stays the reference: every ported piece is
