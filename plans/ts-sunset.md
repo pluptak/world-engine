@@ -135,6 +135,13 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   Next step: for each, read the TS test that exercises the same code (`refine`, `upgrade`, `store-lock`, `scheduled-beat`,
   `verify`, `player-slots`, `attack` ...), record its cases as goldens, and add them. Rerun coverage; the target is every
   behavioural branch run, not a number.
+- 2026-10-13, Phase 1, coverage-driven goldens (see `dotnet/tools/golden-gen/`: `scripted.ts` records a world driven through calls,
+  `mixed-world.ts` is the shared stored-world run): `refine-golden` (32 rows: every refine refusal), `beat-shapes-golden` (147 rows:
+  conditions, repeats, followers, actions, ids and ticks, then beats run), `tamper-golden` (130 damaged stored worlds: verify,
+  open, verify again, every file's hash; the 267-line mixed run is byte-identical to TypeScript's) and `takeover-golden` (17 sets a
+  head does not name). They found two real defects, both fixed: `StoreWorld.Open` never settled a world under its own moved
+  set (the takeover path was unreachable, 0% covered) nor checked the snapshot it opened; and a beat condition with a fractional value
+  (a deviation, below). Coverage went from 91.5% to about 93% of lines.
 
 ## Deliberate deviations from TypeScript
 

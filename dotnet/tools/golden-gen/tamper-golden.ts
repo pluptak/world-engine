@@ -3,74 +3,17 @@
 // cut or emptied or gone, a byte flipped, text appended) and records what TypeScript says: `verify`, what opening the world does (the
 // snapshot it settles to, or the error), `verify` again, and the hash of every file afterwards. Writes
 // Fixtures/tamper-golden.expected.json, whose cases the .NET suite applies to its own copy of the same world.
-import { createHash } from "node:crypto";
-import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, existsSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { canonicalJson, createWorld, openWorld, verifyWorld, type World } from "../../../src/index.js";
-import { loadTemplates, parseRegistry } from "../../../src/templates.js";
+import { join } from "node:path";
+import { canonicalJson } from "../../../src/index.js";
+import { build, fixtures, observe, registry, scene, shipped } from "./mixed-world.js";
 import { exportExtras } from "./scripted.js";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "../../..");
-const fixtures = join(root, "dotnet/tests/WorldEngine.Tests/Fixtures");
-const shipped = loadTemplates(join(root, "templates"));
-const registry = parseRegistry({ ...shipped, room: { ...shipped.room!, fields: { hush: { tier: "state", type: "boolean" } } } });
 exportExtras(registry, shipped, join(fixtures, "tamper-templates"));
-
-const scene = [
-  { id: "room", template: "room", overrides: { name: "room", props: { lit: true } } },
-  { id: "table", template: "table", overrides: { name: "table", location: "room", support: "room", pos: { x: 30, y: 0 } } },
-  { id: "bottle", template: "bottle", overrides: { name: "bottle", location: "room", support: "table" } },
-  { id: "ann", template: "human", overrides: { name: "ann", location: "room", support: "room", pos: { x: -50, y: 0 } } },
-  { id: "bob", template: "human", overrides: { name: "bob", location: "room", support: "room", pos: { x: 400, y: 0 } } },
-];
-
-type Step = { command: Record<string, unknown>; basedOn?: number } | { edit: Record<string, unknown> };
-function steps(world: World): Step[] {
-  const ann = world.id("ann")!;
-  const bob = world.id("bob")!;
-  const room = world.id("room")!;
-  const list: Step[] = [
-    { command: { command_id: "push", actor: ann, verb: "push", target: "table" } },
-    { command: { command_id: "late-take", actor: ann, verb: "take", target: "bottle" }, basedOn: 0 },
-    { command: { command_id: "far-take", actor: bob, verb: "take", target: "bottle" } },
-    { command: { command_id: "fly", actor: ann, verb: "fly" } },
-    { command: { command_id: "ghost", actor: ann, verb: "take", target: "ghost" } },
-    { edit: { kind: "set_props", target: room, props: { ...world.entity(room)!.props, hush: true } } },
-  ];
-  for (let index = 0; index < 260; index += 1) {
-    list.push({ command: { command_id: `rest-${index}`, actor: ann, verb: "wait", args: { ticks: 1 } } });
-  }
-  list.push({ command: { command_id: "late-far", actor: bob, verb: "take", target: "bottle" } });
-  return list;
-}
-
 const base = mkdtempSync(join(tmpdir(), "tamper-"));
-const world = createWorld(join(base, "w"), scene as never, registry);
-const list = steps(world);
-for (const step of list) {
-  if ("edit" in step) {
-    world.edit(step.edit as never);
-  } else {
-    world.command(step.command as never, step.basedOn === undefined ? undefined : { basedOn: step.basedOn });
-  }
-}
 const pristine = join(base, "w");
-
-const hash = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
-function files(dir: string, prefix = ""): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const name of readdirSync(dir).sort()) {
-    const path = join(dir, name);
-    if (statSync(path).isDirectory()) {
-      Object.assign(out, files(path, `${prefix}${name}/`));
-    } else {
-      out[`${prefix}${name}`] = hash(readFileSync(path));
-    }
-  }
-  return out;
-}
+const list = build(pristine);
 
 type Op = { op: string; n?: number; text?: string };
 function tamper(dir: string, file: string, op: Op): void {
@@ -135,24 +78,6 @@ function tamper(dir: string, file: string, op: Op): void {
   writeFileSync(path, bytes);
 }
 
-const observe = (dir: string) => {
-  const verifyOf = () => {
-    try {
-      return verifyWorld(dir);
-    } catch (error) {
-      return { error: (error as { code?: string }).code ?? "error" };
-    }
-  };
-  const first = verifyOf();
-  let opened: unknown;
-  try {
-    opened = { snapshot: hash(canonicalJson(openWorld(dir).snapshot())) };
-  } catch (error) {
-    opened = { error: (error as { code?: string }).code ?? "error" };
-  }
-  return { verify: first, open: opened, verify_after: verifyOf(), files: files(dir) };
-};
-
 const targets = ["log.jsonl", "events.jsonl", "deltas.jsonl", "snapshot.json", "head.json", "initial.json", "templates.json"];
 for (const name of readdirSync(join(pristine, "checkpoints"))) {
   targets.push(`checkpoints/${name}`);
@@ -196,4 +121,3 @@ const golden = { scene, steps: list, pristine: observe(pristine), cases };
 writeFileSync(join(fixtures, "tamper-golden.expected.json"), canonicalJson(golden) + "\n");
 rmSync(base, { recursive: true, force: true });
 console.log(`wrote ${cases.length} cases`);
-void existsSync;

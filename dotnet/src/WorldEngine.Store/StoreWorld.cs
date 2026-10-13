@@ -34,7 +34,16 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
         {
             throw new WorldError("no_such_world", $"No world at {dir}");
         }
-        return new StoreWorld(dir, WorldFiles.ReadTemplates(dir), snapshotEvery, checkpointEvery);
+        // A world that opens is a world whose snapshot holds together. The set comes from the world's own file, which is what lets the
+        // load settle a moved set (an upgrade a crash cut short) rather than refuse it (`storeWorld` in src/api.ts).
+        var registry = WorldFiles.ReadTemplates(dir);
+        var opened = WorldSettle.Load(dir, registry, setIsTheWorlds: true);
+        var issues = SnapshotValidation.Validate(opened, registry);
+        if (issues.Count > 0)
+        {
+            throw new WorldError("invalid_snapshot", $"Snapshot violates {issues[0].Code} ({issues.Count} issue(s))") { Issues = issues };
+        }
+        return new StoreWorld(dir, registry, snapshotEvery, checkpointEvery);
     }
 
     public IReadOnlyDictionary<string, Template> Registry => registry;
