@@ -1,0 +1,15 @@
+{
+  "timeout_ms": 50,
+  "handles": {
+    "ann": { "slot": "ann", "moves": [{ "command_id": "ann-key", "verb": "take", "target": "key" }, "idle"] },
+    "bob": { "slot": "bob", "moves": [{ "command_id": "bob-key", "verb": "take", "target": "key" }, "idle"] },
+    "ai": {
+      "slot": "terminal",
+      "moves": [{ "command_id": "ai-unlock", "verb": "unlock", "target": "exit door", "body": "xdea9f2c7f791" }, "idle"]
+    },
+    "dee": {
+      "slot": "dee",
+      "moves": ["idle", { "late": { "command_id": "dee-close", "verb": "close", "target": "dormitory door" } }]
+    }
+  }
+}

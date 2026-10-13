@@ -166,8 +166,12 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   first .NET run was 87 cmd/s (14.9 and 11.1 ms): each command re-hashed the template set, loaded the current snapshot twice (once more
   for an observation nobody asked for) and refolded the log from the last snapshot, and a freshly written `head.json` is slow to open
   again. The store now keeps the hash per registry, the snapshot and head it last wrote (valid while the files' sizes and write times are
-  as it left them), and `WithObservation` loads nothing when `observe` is off: 262 cmd/s (4.3 and 3.8 ms). Still to do: the scale,
-  reads and rounds workloads, then `test-select`, `host.ts` and `npm run world`.
+  as it left them), and `WithObservation` loads nothing when `observe` is off: 262 cmd/s (4.3 and 3.8 ms). The scale, reads and rounds
+  workloads are not ported: they only matter to a later performance pass. `scripts/test-select.ts` is dropped, not replaced: the whole .NET
+  suite runs in about 40 s. `scripts/host.ts` is ported to `dotnet/tools/WorldEngine.Host` (a library, `HostRun`, and a scripted-plan
+  entry point), with `HostRunTests` replaying `tests/host.test.ts` over the same fixtures; the schema check of the transcript is the
+  command line's own, since it validates every answer before writing it. `npm run world` becomes
+  `dotnet run --project dotnet/src/WorldEngine.Cli` (a publish step waits for a user who needs one). Phase 3 is done.
 
 ## Deliberate deviations from TypeScript
 
