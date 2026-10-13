@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using WorldEngine.Core.Json;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -32,8 +33,6 @@ public sealed record PropField(
 
 public static class PropFields
 {
-    private const long MaxSafeInteger = 9_007_199_254_740_991;
-
     public static readonly IReadOnlyDictionary<string, PropField> Table = new Dictionary<string, PropField>(StringComparer.Ordinal)
     {
         ["abstract"] = new(PropType.Boolean, Tier.Definition),
@@ -113,7 +112,7 @@ public static class PropFields
         return type switch
         {
             PropType.Boolean => kind is System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False,
-            PropType.Integer => kind is System.Text.Json.JsonValueKind.Number && IsSafeInteger(Number(value!)),
+            PropType.Integer => kind is System.Text.Json.JsonValueKind.Number && Number(value!) is { } safe && IsSafeInteger(safe),
             _ => kind is System.Text.Json.JsonValueKind.String,
         };
     }
@@ -134,7 +133,4 @@ public static class PropFields
     // A flag that is literally true, as `=== true` reads it; any other value, or none, is not.
     public static bool IsTrue(JsonNode? value) =>
         value is JsonValue flag && flag.TryGetValue(out bool set) && set;
-
-    private static bool IsSafeInteger(double? number) =>
-        number is { } n && Math.Floor(n) == n && Math.Abs(n) <= MaxSafeInteger;
 }

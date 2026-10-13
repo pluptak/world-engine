@@ -285,10 +285,10 @@ public static class Perception
 
     // Whether a camera's cone takes in a subject: the angle between its facing and the line to the subject is at most
     // half the cone, the edge included. A camera with no cone sees its whole room.
-    private static bool InCone(Snapshot snapshot, Entity camera, string subjectId)
+    internal static bool InCone(Snapshot snapshot, Entity camera, string subjectId)
     {
         var cone = PropValues.GetNumber(camera.Props, "cone_deg");
-        if (cone is null || cone >= 360)
+        if (cone is null || cone >= Limits.FullCircleDegrees)
         {
             return true;
         }
@@ -307,6 +307,6 @@ public static class Perception
         double dy = to.Y - from.Y;
         var theta = facing.Value * Math.PI / 180;
         var along = Math.Cos(theta) * dx + Math.Sin(theta) * dy;
-        return along >= double.Hypot(dx, dy) * Math.Cos(cone.Value * Math.PI / 360) - 1e-9;
+        return along >= double.Hypot(dx, dy) * Math.Cos(cone.Value * Math.PI / Limits.FullCircleDegrees) - 1e-9;
     }
 }

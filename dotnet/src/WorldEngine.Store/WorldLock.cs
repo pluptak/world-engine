@@ -266,7 +266,7 @@ public static class WorldLock
     // this process, which is not writing anything while it sweeps.
     private static void SweepLeftovers(string dir, int? evicted)
     {
-        foreach (var folder in new[] { dir, Path.Combine(dir, "checkpoints") })
+        foreach (var folder in new[] { dir, Path.Combine(dir, WorldCheckpoints.Folder) })
         {
             if (!Directory.Exists(folder))
             {

@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -23,8 +24,6 @@ public static partial class Beats
     // Single conditions one `all` holds: from one to this many (MAX_ALL).
     public const int MaxAll = 16;
 
-    private const long MaxSafeInteger = 9007199254740991;
-
     private static readonly Regex BeatIdPattern = new("^[A-Za-z0-9_.:-]{1,64}\\z", RegexOptions.CultureInvariant);
     private static readonly HashSet<string> Ops = new(StringComparer.Ordinal) { "eq", "ne", "lt", "lte", "gt", "gte" };
     private static readonly HashSet<string> ActionEdits = new(StringComparer.Ordinal)
@@ -45,11 +44,9 @@ public static partial class Beats
 
     // A number that is a whole number within the safe range, as `Number.isSafeInteger` reads it; null otherwise.
     private static long? SafeInt(JsonNode? node) =>
-        PropFields.Number(node) is { } number && Math.Floor(number) == number && Math.Abs(number) <= MaxSafeInteger
+        PropFields.Number(node) is { } number && IsSafeInteger(number)
             ? (long)number
             : null;
-
-    private static bool IsSafeInteger(long value) => Math.Abs(value) <= MaxSafeInteger;
 
     private static string? TextOf(JsonNode? node) =>
         node is JsonValue value && value.TryGetValue(out string? text) ? text : null;

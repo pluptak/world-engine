@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Json;
 
@@ -10,8 +11,6 @@ namespace WorldEngine.Core.Json;
 public static class CanonicalJson
 {
     // The largest integer a JavaScript number holds exactly; the engine's numbers stay inside it.
-    private const long MaxSafeInteger = 9_007_199_254_740_991;
-
     public static string Serialize(JsonNode? node)
     {
         var text = new StringBuilder();

@@ -68,7 +68,7 @@ public static class Runs
     public static string LiveBodyOf(Snapshot snapshot, string slot)
     {
         var current = slot;
-        for (var steps = 0; steps < 256; steps += 1)
+        for (var steps = 0; steps < Limits.MaxSuccessionSteps; steps += 1)
         {
             string? next = null;
             foreach (var entity in snapshot.Entities.Values)

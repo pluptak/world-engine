@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -301,9 +302,7 @@ public static class Pipeline
     {
         var described = EventPerception.EventPerceivers(before, after, registry, events)
             .ToDictionary(entry => entry.EventId, entry => entry.Perceivers, StringComparer.Ordinal);
-        return events
-            .Select(@event => described.TryGetValue(@event.EventId, out var perceivers) ? @event with { Perceivers = perceivers } : @event)
-            .ToList();
+        return [.. events.Select(@event => described.TryGetValue(@event.EventId, out var perceivers) ? @event with { Perceivers = perceivers } : @event)];
     }
 
     // A refusal a verb did not declare is a bug (src/engine/pipeline.ts): it throws, so a declaration that drifts from the
@@ -327,7 +326,4 @@ public static class Pipeline
             ? resolved.Target
             : null;
 
-    private const long MaxSafeInteger = 9007199254740991;
-
-    private static bool IsSafeInteger(long value) => Math.Abs(value) <= MaxSafeInteger;
 }

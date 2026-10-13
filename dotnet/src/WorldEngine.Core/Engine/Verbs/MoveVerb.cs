@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -52,7 +53,7 @@ public static class MoveVerb
         }
         return rooms
             .Where(room => context.Snapshot.Entities.TryGetValue(room, out var entity)
-                && entity.Template == "room"
+                && entity.Template == TemplateIds.Room
                 && !(room == here && OnFloor(actor)))
             .Select(location => new JsonObject { ["location"] = location })
             .ToList<JsonObject>();
@@ -66,8 +67,6 @@ public static class MoveVerb
     private sealed record InRoom(string Id) : Destination;
 
     private sealed record ThroughDoor(string Text) : Destination;
-
-    private const long MaxSafeInteger = 9007199254740991;
 
     private static Destination? DestinationOf(IReadOnlyDictionary<string, JsonNode?>? args)
     {
@@ -85,8 +84,8 @@ public static class MoveVerb
         if (hasTo && !hasLocation)
         {
             return args["to"] is JsonObject to
-                && to["x"] is JsonValue x && x.TryGetValue(out long px) && IsSafe(px)
-                && to["y"] is JsonValue y && y.TryGetValue(out long py) && IsSafe(py)
+                && to["x"] is JsonValue x && x.TryGetValue(out long px) && IsSafeInteger(px)
+                && to["y"] is JsonValue y && y.TryGetValue(out long py) && IsSafeInteger(py)
                     ? new AtPosition(new Pos(px, py))
                     : null;
         }
@@ -96,8 +95,6 @@ public static class MoveVerb
         }
         return null;
     }
-
-    private static bool IsSafe(long value) => Math.Abs(value) <= MaxSafeInteger;
 
     private static string? Text(IReadOnlyDictionary<string, JsonNode?> args, string key) =>
         args.TryGetValue(key, out var value) && value is JsonValue json && json.TryGetValue(out string? text) ? text : null;
@@ -135,7 +132,7 @@ public static class MoveVerb
             return (null, Pipeline.Invalid("invalid_location"));
         }
         var far = from == here ? to : from;
-        if (snapshot.Entities.GetValueOrDefault(far)?.Template != "room")
+        if (snapshot.Entities.GetValueOrDefault(far)?.Template != TemplateIds.Room)
         {
             return (null, Pipeline.Invalid("invalid_location"));
         }
@@ -216,7 +213,7 @@ public static class MoveVerb
         if (walk.To is InRoom room)
         {
             var location = snapshot.Entities.GetValueOrDefault(room.Id);
-            if (location is null || location.Template != "room" || !NameableRoom(context, room.Id))
+            if (location is null || location.Template != TemplateIds.Room || !NameableRoom(context, room.Id))
             {
                 return Pipeline.Invalid("invalid_location");
             }

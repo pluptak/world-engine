@@ -78,7 +78,7 @@ public static class Physical
         working.SetStatus(entityId, EntityStatus.Broken, brokenEvent);
 
         var landingSurface = landing.Support is null ? null : working.Snapshot.Entities.GetValueOrDefault(landing.Support);
-        var location = landingSurface?.Template == "room" ? landingSurface.Id : landing.Location;
+        var location = landingSurface?.Template == TemplateIds.Room ? landingSurface.Id : landing.Location;
         foreach (var product in template.BreakProducts)
         {
             if (product.Count < 0)
@@ -161,7 +161,7 @@ public static class Physical
         {
             throw new InvalidOperationException($"Unknown template {entity.Template}");
         }
-        if (entity.Template == "room")
+        if (entity.Template == TemplateIds.Room)
         {
             return false;
         }
@@ -204,7 +204,7 @@ public static class Physical
         {
             return false;
         }
-        if (doomed.Template == "room"
+        if (doomed.Template == TemplateIds.Room
             && working.Snapshot.Entities.Values.Any(entity => entity.Location == doomed.Id))
         {
             return false;
@@ -339,14 +339,14 @@ public static class Physical
         var oldSupport = snapshot.Entities[oldSupportId];
         var oldElevation = Geometry.Elevation(snapshot, registry, entityId);
         var pos = Geometry.EffectivePos(snapshot, oldSupportId);
-        string? supportId = oldSupport.Template == "room" ? oldSupport.Id : oldSupport.Support;
+        string? supportId = oldSupport.Template == TemplateIds.Room ? oldSupport.Id : oldSupport.Support;
         string? lastSupport = null;
 
         // Climbs to the room, remembering the last thing on the way, which is where a fall from it lands if no room is named.
         while (supportId is not null)
         {
             var support = snapshot.Entities[supportId];
-            if (support.Template == "room")
+            if (support.Template == TemplateIds.Room)
             {
                 break;
             }
@@ -357,13 +357,13 @@ public static class Physical
         if (supportId is null)
         {
             var locationEntity = entity.Location is null ? null : snapshot.Entities.GetValueOrDefault(entity.Location);
-            supportId = locationEntity?.Template == "room" ? entity.Location : lastSupport;
+            supportId = locationEntity?.Template == TemplateIds.Room ? entity.Location : lastSupport;
         }
 
         long newElevation = 0;
         Pos? landingPos = pos;
         var floor = supportId is null ? null : snapshot.Entities.GetValueOrDefault(supportId);
-        var rest = floor?.Template == "room" && pos is not null
+        var rest = floor?.Template == TemplateIds.Room && pos is not null
             ? DropVerb.RestingPlace(snapshot, registry, floor.Id, pos, oldElevation, entityId, [oldSupportId])
             : null;
         if (rest is not null)
@@ -375,7 +375,7 @@ public static class Physical
         else if (supportId is not null)
         {
             var support = snapshot.Entities[supportId];
-            if (support.Template != "room")
+            if (support.Template != TemplateIds.Room)
             {
                 newElevation = Geometry.Elevation(snapshot, registry, supportId) + registry[support.Template].SizeCm.H;
             }
@@ -393,7 +393,7 @@ public static class Physical
             return null;
         }
         var support = snapshot.Entities[supportId];
-        return support.Template == "room" ? support.Id : support.Location;
+        return support.Template == TemplateIds.Room ? support.Id : support.Location;
     }
 
     // What sat in or on a removed thing takes its place (src/engine/verbs/edit.ts `releaseDependents`): contents go to

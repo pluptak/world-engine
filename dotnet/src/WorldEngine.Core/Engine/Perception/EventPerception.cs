@@ -10,7 +10,6 @@ namespace WorldEngine.Core.Engine;
 public static class EventPerception
 {
     // Speech is heard within this distance of a whisperer (src/engine/query.ts `NEAR_THRESHOLD_CM`).
-    private const long NearThresholdCm = 100;
 
     private static readonly string[] Senses = ["sight", "hearing", "smell", "touch"];
 
@@ -223,7 +222,7 @@ public static class EventPerception
     {
         var dx = here.X - there.X;
         var dy = here.Y - there.Y;
-        return dx * dx + dy * dy <= NearThresholdCm * NearThresholdCm;
+        return dx * dx + dy * dy <= Queries.NearThresholdCm * Queries.NearThresholdCm;
     }
 
     // Whether speech at its volume reaches a listener (an agent, or an intercom standing for one): a whisper only within
@@ -296,33 +295,6 @@ public static class EventPerception
             .Any(entity => Resolve.IsDoor(entity)
                 && (!openOnly || PropValues.IsTrue(entity.Props, "open"))
                 && Reach.DoorJoins(entity.Props, from, to));
-
-    // Whether a camera's cone takes in a subject: the angle between its facing and the line to the subject is at most half
-    // the cone, the edge included. A camera with no cone sees its whole room.
-    private static bool InCone(Snapshot snapshot, Entity camera, string subjectId)
-    {
-        var cone = PropValues.GetNumber(camera.Props, "cone_deg");
-        if (cone is null || cone >= 360)
-        {
-            return true;
-        }
-        var facing = PropValues.GetNumber(camera.Props, "facing_deg");
-        var from = Geometry.EffectivePos(snapshot, camera.Id);
-        var to = Geometry.EffectivePos(snapshot, subjectId);
-        if (facing is null || from is null)
-        {
-            return false;
-        }
-        if (to is null || (to.X == from.X && to.Y == from.Y))
-        {
-            return true;
-        }
-        var dx = (double)(to.X - from.X);
-        var dy = (double)(to.Y - from.Y);
-        var theta = facing.Value * Math.PI / 180;
-        var along = Math.Cos(theta) * dx + Math.Sin(theta) * dy;
-        return along >= Math.Sqrt(dx * dx + dy * dy) * Math.Cos(cone.Value * Math.PI / 360) - 1e-9;
-    }
 
     // Whether an observer senses an event by a sense (`perceive` with an event). `Value` is "true", "false" or "unknown";
     // the basis says why.
@@ -451,7 +423,7 @@ public static class EventPerception
             var cameraEntity = snapshot.Entities[camera];
             var at = cameraEntity.Location;
             var where = TargetLocationForPerception(subject, EventLocation(eventRecord, subject), at);
-            if (at is not null && at == where && Perception.IsLit(snapshot, at) && InCone(snapshot, cameraEntity, subject.Id))
+            if (at is not null && at == where && Perception.IsLit(snapshot, at) && Perception.InCone(snapshot, cameraEntity, subject.Id))
             {
                 return new Perception.Answer("true", "camera");
             }

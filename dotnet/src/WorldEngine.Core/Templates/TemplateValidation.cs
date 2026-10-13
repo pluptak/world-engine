@@ -1,4 +1,5 @@
 using System.Text.Json;
+using WorldEngine.Core.Model;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 
@@ -60,9 +61,9 @@ public static class TemplateValidation
                 }
             }
         }
-        if (decl.MaxIntegrity is { } maxIntegrity && (maxIntegrity < 1 || maxIntegrity > 100))
+        if (decl.MaxIntegrity is { } maxIntegrity && (maxIntegrity < 1 || maxIntegrity > Limits.MaxIntegrity))
         {
-            throw new FormatException($"{source}.max_integrity must be an integer from 1 to 100");
+            throw new FormatException($"{source}.max_integrity must be an integer from 1 to {Limits.MaxIntegrity}");
         }
         if (decl.Fields is not null)
         {
@@ -261,7 +262,7 @@ public static class TemplateValidation
                     {
                         throw new FormatException($"{at} names unknown template {product.Template}");
                     }
-                    if (product.Template == "room")
+                    if (product.Template == TemplateIds.Room)
                     {
                         throw new FormatException($"{at} names room, which cannot be set on anything");
                     }

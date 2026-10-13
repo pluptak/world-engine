@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -83,5 +84,4 @@ public static class Submission
             round,
             command.By);
 
-    private const long MaxSafeInteger = 9007199254740991;
 }

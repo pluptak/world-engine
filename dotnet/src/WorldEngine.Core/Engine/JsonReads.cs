@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -7,8 +8,6 @@ namespace WorldEngine.Core.Engine;
 // missing or of another type comes back null.
 public static class JsonReads
 {
-    private const long MaxSafeInteger = 9007199254740991;
-
     public static string? Text(JsonNode? node) => node is JsonValue value && value.TryGetValue(out string? text) ? text : null;
 
     // A number, whether it was parsed from text or built in code: a whole number is read as one, anything else as a double.
@@ -28,7 +27,7 @@ public static class JsonReads
 
     // A whole number within the safe range, as `Number.isSafeInteger` reads it; null otherwise.
     public static long? SafeInt(JsonNode? node) =>
-        Number(node) is { } number && Math.Floor(number) == number && Math.Abs(number) <= MaxSafeInteger
+        Number(node) is { } number && IsSafeInteger(number)
             ? (long)number
             : null;
 }

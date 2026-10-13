@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -9,8 +10,6 @@ namespace WorldEngine.Core.Engine;
 // beat and remaining kinds are refused.
 public static class Schedule
 {
-    private const long MaxSafeInteger = 9007199254740991;
-
     public static IReadOnlyList<ScheduledCause> Pending(Snapshot snapshot) => snapshot.Schedule ?? [];
 
     // What the world will do by itself that matches a filter, in run order: a read that changes nothing. `untilTick` keeps the
@@ -128,7 +127,7 @@ public static class Schedule
         var entity = working.Snapshot.Entities[entityId];
         var rule = Bleeding(entity.Props);
         var due = working.Snapshot.Tick + (rule?.Every ?? 0);
-        if (rule is not null && remaining > 0 && Math.Abs(due) <= MaxSafeInteger)
+        if (rule is not null && remaining > 0 && IsSafeInteger(due))
         {
             Add(working, new ScheduledCause(due, "bleed", entityId, causeId, remaining));
         }

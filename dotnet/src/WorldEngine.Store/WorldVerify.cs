@@ -53,7 +53,7 @@ public static class WorldVerify
             }
             catch (Exception error) when (error is FormatException or System.Text.Json.JsonException or WorldError)
             {
-                return Diverges("log.jsonl", index + 1, "differs");
+                return Diverges(WorldFiles.Log, index + 1, "differs");
             }
         }
 
@@ -106,7 +106,7 @@ public static class WorldVerify
             if (Canonical(decided) != log.Lines[index])
             {
                 var same = decided.Status == entry.Status && decided.ReasonCode == entry.ReasonCode;
-                return Diverges("log.jsonl", index + 1, same ? "differs" : "status_differs");
+                return Diverges(WorldFiles.Log, index + 1, same ? "differs" : "status_differs");
             }
             events.AddRange(result.Events.Select(item => Canonical(item)));
             if (result.Status == Status.Ok)
@@ -125,7 +125,7 @@ public static class WorldVerify
         }
         if (log.Tail != "")
         {
-            return Diverges("log.jsonl", log.Lines.Count + 1, "differs");
+            return Diverges(WorldFiles.Log, log.Lines.Count + 1, "differs");
         }
 
         var divergence = DivergenceOf(WorldFiles.Events, events, TextOrNull(Path.Combine(dir, WorldFiles.Events)))

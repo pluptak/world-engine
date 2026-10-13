@@ -1,6 +1,7 @@
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Store;
 
@@ -169,5 +170,4 @@ public static class WorldHistory
         return stored.GetRange(0, end + 1);
     }
 
-    private const long MaxSafeInteger = 9007199254740991;
 }

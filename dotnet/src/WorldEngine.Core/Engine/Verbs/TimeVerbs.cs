@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -9,8 +10,6 @@ namespace WorldEngine.Core.Engine;
 // beat ends it one tick short of that beat's tick, while the beat is pending there.
 public static class TimeVerbs
 {
-    private const double MaxSafeInteger = 9007199254740991;
-
     public static Pipeline.VerbDecl Advance { get; } = new(
         RequiresTarget: false,
         AuthorOnly: true,

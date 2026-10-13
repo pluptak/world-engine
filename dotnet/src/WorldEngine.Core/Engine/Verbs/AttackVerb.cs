@@ -159,7 +159,7 @@ public static class AttackVerb
         {
             return null;
         }
-        if (entity.Location is not null && snapshot.Entities.GetValueOrDefault(entity.Location)?.Template == "room")
+        if (entity.Location is not null && snapshot.Entities.GetValueOrDefault(entity.Location)?.Template == TemplateIds.Room)
         {
             return entity.Location;
         }
@@ -175,7 +175,7 @@ public static class AttackVerb
             {
                 return null;
             }
-            if (support.Template == "room")
+            if (support.Template == TemplateIds.Room)
             {
                 return support.Id;
             }

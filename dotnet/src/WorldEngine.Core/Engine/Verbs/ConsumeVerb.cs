@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -26,8 +27,6 @@ public static class ConsumeVerb
 
     // The outcome of planning: the item and its plan, or the refusal that stopped it.
     private sealed record Choice(Entity? Item, Plan? Plan, Pipeline.Refusal? Refusal);
-
-    private const long MaxSafeInteger = 9007199254740991;
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context) => Planned(context).Refusal;
 
@@ -219,7 +218,7 @@ public static class ConsumeVerb
     // A whole number in the safe integer range, as the engine reads a count: a JSON number with no fraction.
     private static bool WholeNumber(JsonNode? node, out long value)
     {
-        if (node is JsonValue json && json.TryGetValue(out long number) && Math.Abs(number) <= MaxSafeInteger)
+        if (node is JsonValue json && json.TryGetValue(out long number) && IsSafeInteger(number))
         {
             value = number;
             return true;

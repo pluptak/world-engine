@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 using static WorldEngine.Core.Engine.JsonReads;
 
 namespace WorldEngine.Core.Engine;
@@ -311,5 +312,4 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
 
     // A command that carries the round flag or a role is not a caller's to send (`isFlagged`).
     // What a view says of a volume: the text of it, as a string written in a log reads (`String(value)` of an absent one is "undefined").
-    private const long MaxSafeInteger = 9007199254740991;
 }

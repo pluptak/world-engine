@@ -1,3 +1,4 @@
+using WorldEngine.Core.Model;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Engine.JsonReads;
@@ -87,7 +88,7 @@ public static class Forms
                 throw Fail("invalid_form", index, "condition must be intact or damaged");
             }
             // Intact is the template's whole integrity, damaged half of it: 100 and 50 for a thing with no max.
-            var whole = template.MaxIntegrity ?? 100;
+            var whole = template.MaxIntegrity ?? Limits.MaxIntegrity;
             result["integrity"] = JsonValue.Create(condition == "intact" ? whole : whole / 2);
         }
         if (overrides.ContainsKey("hunger_pct"))

@@ -65,7 +65,7 @@ public static class Spawn
             ConcealedBy: overrides.ConcealedBy,
             Pos: overrides.Pos,
             DetachedFrom: overrides.DetachedFrom,
-            Integrity: overrides.Integrity ?? template.MaxIntegrity ?? 100,
+            Integrity: overrides.Integrity ?? template.MaxIntegrity ?? Limits.MaxIntegrity,
             Status: overrides.Status ?? EntityStatus.Intact,
             Parts: new Dictionary<string, PartState>(),
             Residue: new Dictionary<string, long>(overrides.Residue ?? new Dictionary<string, long>(), StringComparer.Ordinal),

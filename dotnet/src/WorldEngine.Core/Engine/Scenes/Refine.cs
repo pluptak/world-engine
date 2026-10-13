@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -58,10 +59,6 @@ public static class Refine
         var height = PropFields.Number(props.GetValueOrDefault("inner_h_cm"));
         return width is { } w && depth is { } d && height is { } h ? Math.Truncate(w * d * h) : null;
     }
-
-    // Number.isSafeInteger: a whole number within 2^53 - 1 in magnitude.
-    private static bool IsSafeInteger(double value) =>
-        Math.Floor(value) == value && Math.Abs(value) <= 9007199254740991;
 
     // Why an entity cannot become `next` here, or null for ok. Contents that no longer fit their holder or its parts are the
     // snapshot's own rules, held after the transition; what only a refinement can break is checked here: it is not a

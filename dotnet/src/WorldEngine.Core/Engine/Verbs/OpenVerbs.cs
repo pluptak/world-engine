@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -16,8 +17,6 @@ public static class OpenVerbs
         Lock,
         Unlock,
     }
-
-    private const long MaxSafeInteger = 9007199254740991;
 
     // Turning a key needs hands; nosing a door open or shut does not. Declared before the verbs, which read it as they are built.
     private static readonly IReadOnlyList<Pipeline.Requirement> Hands = [new Pipeline.Requirement("manipulation", 50)];
@@ -124,7 +123,7 @@ public static class OpenVerbs
     private static long? WholeNumber(IReadOnlyDictionary<string, JsonNode?> props, string key)
     {
         var value = PropValues.GetNumber(props, key);
-        return value is { } number && Math.Floor(number) == number && Math.Abs(number) <= MaxSafeInteger
+        return value is { } number && IsSafeInteger(number)
             ? (long)number
             : null;
     }
@@ -148,7 +147,7 @@ public static class OpenVerbs
         var others = new Dictionary<string, JsonNode?>(target.Props, StringComparer.Ordinal);
         others.Remove("closing");
         var shutTicks = WholeNumber(target.Props, "shut_ticks");
-        if (kind == Kind.Close && shutTicks is > 0 && working.Snapshot.Tick + shutTicks.Value is var due && Math.Abs(due) <= MaxSafeInteger)
+        if (kind == Kind.Close && shutTicks is > 0 && working.Snapshot.Tick + shutTicks.Value is var due && IsSafeInteger(due))
         {
             StartClosing(working, target, shutTicks.Value, rootEventId);
             return;
@@ -179,7 +178,7 @@ public static class OpenVerbs
             Schedule.Cancel(working, "close", target.Id);
         }
         var closesAfter = WholeNumber(props, "closes_after");
-        if (kind == Kind.Open && closesAfter is > 0 && working.Snapshot.Tick + closesAfter.Value is var closeTick && Math.Abs(closeTick) <= MaxSafeInteger)
+        if (kind == Kind.Open && closesAfter is > 0 && working.Snapshot.Tick + closesAfter.Value is var closeTick && IsSafeInteger(closeTick))
         {
             Schedule.Add(working, new ScheduledCause(closeTick, "close", target.Id, eventId));
         }

@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -9,8 +10,6 @@ namespace WorldEngine.Core.Engine;
 // one before it. A process that can run has one pending; one that cannot is withdrawn. Reconciled wherever props can change.
 public static class Processes
 {
-    private const long MaxSafeInteger = 9007199254740991;
-
     private static IReadOnlyList<ProcessSpec> DeclsOf(IReadOnlyDictionary<string, Template> registry, Entity entity)
     {
         if (!registry.TryGetValue(entity.Template, out var template) || template.Processes is null)
@@ -22,9 +21,7 @@ public static class Processes
 
     // Number.isSafeInteger over a number read from a prop, null when the prop is no number.
     private static bool IsInt(double? value) =>
-        value is { } number && Math.Floor(number) == number && Math.Abs(number) <= MaxSafeInteger;
-
-    private static bool IsSafeInteger(long value) => Math.Abs(value) <= MaxSafeInteger;
+        value is { } number && IsSafeInteger(number);
 
     // The condition under which a process runs, read from the entity's props as they are now. `eq` and `ne` compare any
     // primitive strictly; the ordering ops need numbers on both sides, and an absent or non-numeric prop satisfies none.

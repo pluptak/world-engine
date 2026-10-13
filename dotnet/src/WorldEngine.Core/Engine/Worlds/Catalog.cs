@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -9,8 +10,6 @@ namespace WorldEngine.Core.Engine;
 // template set alone, so a caller can read it before any world exists.
 public static class Catalog
 {
-    private const long MaxSafeInteger = 9007199254740991;
-
     public sealed record CatalogLiquid(string? Material, long Pct);
 
     public sealed record CatalogForms(
@@ -71,7 +70,7 @@ public static class Catalog
     private static long? IntegerProp(Template template, string name)
     {
         var value = PropFields.Number(template.Props.GetValueOrDefault(name));
-        return value is { } number && Math.Floor(number) == number && Math.Abs(number) <= MaxSafeInteger
+        return value is { } number && IsSafeInteger(number)
             ? (long)number
             : null;
     }

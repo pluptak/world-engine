@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -39,12 +40,10 @@ public static class PourVerb
         return nameable
             .Where(id => id != source.Id
                 && context.Snapshot.Entities.TryGetValue(id, out var entity)
-                && (PropValues.IsTrue(entity.Props, "container") || PropValues.IsTrue(entity.Props, "surface") || entity.Template == "room"))
+                && (PropValues.IsTrue(entity.Props, "container") || PropValues.IsTrue(entity.Props, "surface") || entity.Template == TemplateIds.Room))
             .Select(destination => new JsonObject { ["destination"] = destination })
             .ToList();
     }
-
-    private const long MaxSafeInteger = 9007199254740991;
 
     private sealed record Pouring(
         Entity Source,
@@ -141,7 +140,7 @@ public static class PourVerb
         }
         // The floor has no position of its own, so reaching it is being in the room; anything else is measured from
         // where the actor stands.
-        var reachable = destination.Template == "room"
+        var reachable = destination.Template == TemplateIds.Room
             ? destination.Id == actor.Location
             : Reach.InReach(snapshot, actorId, destination.Id);
         if (!reachable)
@@ -154,7 +153,7 @@ public static class PourVerb
         }
 
         var holds = PropValues.IsTrue(destination.Props, "container");
-        if (!holds && !PropValues.IsTrue(destination.Props, "surface") && destination.Template != "room")
+        if (!holds && !PropValues.IsTrue(destination.Props, "surface") && destination.Template != TemplateIds.Room)
         {
             return Refused(Pipeline.Refused("not_a_destination"));
         }
@@ -202,7 +201,7 @@ public static class PourVerb
     private static long? WholeNumber(IReadOnlyDictionary<string, JsonNode?> props, string key)
     {
         var value = PropValues.GetNumber(props, key);
-        return value is { } number && Math.Floor(number) == number && Math.Abs(number) <= MaxSafeInteger
+        return value is { } number && IsSafeInteger(number)
             ? (long)number
             : null;
     }

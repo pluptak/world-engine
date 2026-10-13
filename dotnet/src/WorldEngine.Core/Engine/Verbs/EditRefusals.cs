@@ -40,7 +40,7 @@ public static partial class EditVerb
         {
             return Invalid("invalid_location");
         }
-        if (location is not null && snapshot.Entities[location].Template != "room")
+        if (location is not null && snapshot.Entities[location].Template != TemplateIds.Room)
         {
             return Invalid("invalid_location");
         }
@@ -66,7 +66,7 @@ public static partial class EditVerb
         {
             return Refused("field_not_editable");
         }
-        if (fields.Support is not null && snapshot.Entities.GetValueOrDefault(fields.Support)?.Template == "room")
+        if (fields.Support is not null && snapshot.Entities.GetValueOrDefault(fields.Support)?.Template == TemplateIds.Room)
         {
             if (fields.Pos is null)
             {
@@ -108,7 +108,7 @@ public static partial class EditVerb
 
     private static Pipeline.Refusal? RemoveRefusal(Snapshot snapshot, Entity subject)
     {
-        if (subject.Template != "room")
+        if (subject.Template != TemplateIds.Room)
         {
             return null;
         }
@@ -157,7 +157,7 @@ public static partial class EditVerb
             return edit;
         }
         var room = anchor.Support is null ? null : snapshot.Entities.GetValueOrDefault(anchor.Support);
-        var at = room?.Template == "room" ? Geometry.EffectivePos(snapshot, anchor.Id) : null;
+        var at = room?.Template == TemplateIds.Room ? Geometry.EffectivePos(snapshot, anchor.Id) : null;
         if (at is not { } basePos)
         {
             refusal = Refused("anchor_not_room_supported");
@@ -194,7 +194,7 @@ public static partial class EditVerb
         {
             return Refused("circular_placement");
         }
-        if (placement.Support is not null && context.Snapshot.Entities[placement.Support].Template == "room")
+        if (placement.Support is not null && context.Snapshot.Entities[placement.Support].Template == TemplateIds.Room)
         {
             return placement.Pos is null ? Refused("room_support_without_pos") : null;
         }

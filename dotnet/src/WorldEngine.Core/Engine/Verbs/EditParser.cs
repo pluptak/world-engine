@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -377,7 +378,7 @@ public static partial class EditVerb
             return null;
         }
         var number = PropFields.Number(value);
-        return number is { } n && Math.Floor(n) == n && Math.Abs(n) <= 9007199254740991 ? (long)n : null;
+        return number is { } n && IsSafeInteger(n) ? (long)n : null;
     }
 
     // A reference field that is absent (no Given), null (a clear) or an id. False for anything else.

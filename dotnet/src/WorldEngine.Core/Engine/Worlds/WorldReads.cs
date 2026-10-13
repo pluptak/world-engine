@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 using static WorldEngine.Core.Engine.JsonReads;
 
 namespace WorldEngine.Core.Engine;
@@ -149,5 +150,4 @@ public static class WorldReads
     public static Pipeline.Result RoundFlagged(Snapshot snapshot, Command command) =>
         Pipeline.Unchanged(snapshot, command, Status.Invalid, reasonCode: "invalid_args");
 
-    private const long MaxSafeInteger = 9007199254740991;
 }

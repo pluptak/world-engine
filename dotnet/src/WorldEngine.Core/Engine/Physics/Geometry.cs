@@ -47,7 +47,7 @@ public static class Geometry
             {
                 var support = RequireEntity(snapshot, entity.Support);
                 var supportElevation = Resolve(support.Id);
-                result = support.Template == "room"
+                result = support.Template == TemplateIds.Room
                     ? 0
                     : supportElevation + RequireTemplate(registry, support.Template).SizeCm.H;
             }
@@ -169,7 +169,7 @@ public static class Geometry
         var mover = RequireEntity(snapshot, id);
         var from = EffectivePos(snapshot, id);
         var room = mover.Support is null ? null : snapshot.Entities.GetValueOrDefault(mover.Support);
-        if (from is null || room is null || room.Template != "room")
+        if (from is null || room is null || room.Template != TemplateIds.Room)
         {
             return null;
         }

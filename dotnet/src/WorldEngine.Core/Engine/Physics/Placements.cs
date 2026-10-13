@@ -53,7 +53,7 @@ public static class Placements
                 location = null;
                 return false;
             }
-            if (entity.Template == "room")
+            if (entity.Template == TemplateIds.Room)
             {
                 location = entity.Id;
                 return true;

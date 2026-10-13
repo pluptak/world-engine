@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -11,8 +12,6 @@ public static class PushVerbs
     public static Pipeline.VerbDecl Push { get; } = Declare(reverse: false);
 
     public static Pipeline.VerbDecl Pull { get; } = Declare(reverse: true);
-
-    private const long MaxSafeInteger = 9007199254740991;
 
     private static readonly string[] Directions = ["+x", "-x", "+y", "-y"];
 
@@ -111,7 +110,7 @@ public static class PushVerbs
         }
         // A push slides a footprint across a room's floor; a cup on a table moves by `take` and `put`.
         var support = entity.Support is null ? null : snapshot.Entities.GetValueOrDefault(entity.Support);
-        if (support?.Template != "room" || entity.Pos is null)
+        if (support?.Template != TemplateIds.Room || entity.Pos is null)
         {
             return new Pipeline.Refusal(
                 Status.Refused,

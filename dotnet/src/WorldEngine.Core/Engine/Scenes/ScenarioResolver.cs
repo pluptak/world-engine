@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Model;
 using System.Text.RegularExpressions;
 using static WorldEngine.Core.Engine.JsonReads;
 
@@ -11,7 +12,6 @@ public static class ScenarioResolver
     // The resolved entries (each a scenario entry with its names replaced by ids) and the ids the names named.
     public sealed record Resolved(JsonArray Scenario, IReadOnlyDictionary<string, string> Ids);
 
-    private const string Room = "room";
     private static readonly Regex AllocatedId = new(@"^e[1-9][0-9]*\z", RegexOptions.CultureInvariant);
     private static readonly string[] ReferenceFields = ["location", "support", "contained_in", "concealed_by"];
     private static readonly string[] HolderFields = ["location", "support", "contained_in"];
@@ -140,7 +140,7 @@ public static class ScenarioResolver
             var origin = anchorOverrides?["pos"] as JsonObject;
             var roomTemplate = room is null ? null : Text(byId.GetValueOrDefault(room)?["template"]);
             // An anchor is a fixed point: it stands in a room, and its own position is not another anchor.
-            if (anchor is null || room is null || roomTemplate != Room || !IsPos(origin))
+            if (anchor is null || room is null || roomTemplate != TemplateIds.Room || !IsPos(origin))
             {
                 throw new WorldError("anchor_not_room_supported", $"Anchor {anchorName} at entry {index} is not a fixed point in a room");
             }

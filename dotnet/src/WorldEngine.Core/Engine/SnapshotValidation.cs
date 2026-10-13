@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.JsNumber;
 
 namespace WorldEngine.Core.Engine;
 
@@ -13,7 +14,6 @@ public sealed record SnapshotIssue(string Code, IReadOnlyList<string> Path, stri
 // Issues come in TypeScript's order, so the first one is the same code either side.
 public static class SnapshotValidation
 {
-    private const long MaxSafeInteger = 9007199254740991;
     private const int MaxTraits = 16;
     private static readonly Regex TraitKey = new(@"^[a-z][a-z0-9_]{0,31}$", RegexOptions.CultureInvariant);
 
@@ -68,7 +68,7 @@ public static class SnapshotValidation
             issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => Str(entity.Props, "controlled_by")), id, reportedControlLoops, path, "control_loop"));
 
             // A room is where things are, never a thing somewhere: nothing holds, supports or hides it.
-            if (entity.Template == "room" && (entity.Support is not null || entity.ContainedIn is not null || entity.ConcealedBy is not null))
+            if (entity.Template == TemplateIds.Room && (entity.Support is not null || entity.ContainedIn is not null || entity.ConcealedBy is not null))
             {
                 issues.Add(Issue("room_placed", path, $"support {entity.Support} contained_in {entity.ContainedIn}"));
             }
@@ -93,7 +93,7 @@ public static class SnapshotValidation
                     "support_or_containment_cycle"));
 
                 var support = entity.Support is null ? null : snapshot.Entities.GetValueOrDefault(entity.Support);
-                if (support?.Template == "room")
+                if (support?.Template == TemplateIds.Room)
                 {
                     if (entity.Pos is null)
                     {
@@ -337,14 +337,14 @@ public static class SnapshotValidation
     {
         var entity = snapshot.Entities[id];
         var issues = new List<SnapshotIssue>();
-        if (entity.Integrity < 0 || entity.Integrity > 100)
+        if (entity.Integrity < 0 || entity.Integrity > Limits.MaxIntegrity)
         {
             issues.Add(Issue("integrity_out_of_range", [.. path, "integrity"], $"integrity {entity.Integrity}"));
         }
         // A partless thing is no higher than its template's `max_integrity`, which is 100 when it declares none.
         if (registry.TryGetValue(entity.Template, out var template)
             && template.Parts.Count == 0
-            && entity.Integrity > (template.MaxIntegrity ?? 100))
+            && entity.Integrity > (template.MaxIntegrity ?? Limits.MaxIntegrity))
         {
             issues.Add(Issue("integrity_out_of_range", [.. path, "integrity"], $"integrity {entity.Integrity}"));
         }
@@ -364,7 +364,7 @@ public static class SnapshotValidation
     {
         var props = snapshot.Entities[id].Props;
         var cone = PropValues.GetNumber(props, "cone_deg");
-        if (cone is null || cone >= 360 || PropValues.IsNumber(props, "facing_deg"))
+        if (cone is null || cone >= Limits.FullCircleDegrees || PropValues.IsNumber(props, "facing_deg"))
         {
             return [];
         }
@@ -407,7 +407,7 @@ public static class SnapshotValidation
                 {
                     issues.Add(Issue("dangling_reference", [.. path, "props", side], $"unknown entity {reference}"));
                 }
-                else if (target.Template != "room")
+                else if (target.Template != TemplateIds.Room)
                 {
                     issues.Add(Issue("door_side_not_room", [.. path, "props", side], $"template {target.Template}"));
                 }
