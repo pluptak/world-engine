@@ -7,24 +7,11 @@ using WorldEngine.Store.Templates;
 namespace WorldEngine.Tests;
 
 // Template validation by mutation against TypeScript (Fixtures/template-fuzz.expected.json.gz, from tools/golden-gen/template-fuzz.ts):
-// twelve shipped templates, every key to depth three set to thirteen odd values and deleted in turn, about 2,500 sets. Each is written to a
-// directory and loaded; the answer is "ok" with the hash of the resolved set, or the error message, and must be TypeScript's, word for word.
-public class TemplateFuzzTests : IDisposable
+// twelve shipped templates, every key to depth three set to thirteen odd values and deleted in turn, about 2,500 sets. Each is read as the
+// directory reader reads its files, from the texts in memory with the mutated one swapped in; the answer is "ok" with the hash of the
+// resolved set, or the error message, and must be TypeScript's, word for word.
+public class TemplateFuzzTests
 {
-    private readonly string dir = Path.Combine(Path.GetTempPath(), "fuzz-net-" + Guid.NewGuid().ToString("N"));
-
-    public void Dispose()
-    {
-        try
-        {
-            Directory.Delete(dir, recursive: true);
-        }
-        catch (IOException)
-        {
-            // A file a failed run left open is the run's own leftover.
-        }
-    }
-
     [Fact]
     public void Every_mutated_set_is_accepted_or_refused_as_TypeScript_does()
     {
@@ -35,34 +22,22 @@ public class TemplateFuzzTests : IDisposable
             golden = (JsonObject)JsonNode.Parse(zip)!;
         }
         var source = Path.Combine(AppContext.BaseDirectory, "Fixtures", "templates");
+        var originals = Directory.GetFiles(source, "*.json").ToDictionary(path => Path.GetFileName(path), File.ReadAllText, StringComparer.Ordinal);
         var cases = (JsonArray)golden["cases"]!;
         Assert.NotEmpty(cases);
         var rows = cases.Cast<JsonArray>().ToList();
 
-        // The cases are independent, so they run in parallel, each worker on its own copy of the set; differences are reported in case order.
+        // The cases are independent, so they run in parallel; differences are reported in case order.
         var answers = new string[rows.Count];
-        var workers = 0;
-        Parallel.For(0, rows.Count, () =>
-        {
-            var copy = Path.Combine(dir, $"w{Interlocked.Increment(ref workers)}");
-            Directory.CreateDirectory(copy);
-            foreach (var path in Directory.EnumerateFiles(source))
-            {
-                File.Copy(path, Path.Combine(copy, Path.GetFileName(path)));
-            }
-            return copy;
-        }, (index, _, copy) =>
+        Parallel.For(0, rows.Count, index =>
         {
             var row = rows[index];
-            var file = Path.Combine(copy, $"{row[0]!.GetValue<string>()}.json");
-            var original = File.ReadAllText(file);
-            var mutated = JsonNode.Parse(original)!;
+            var file = $"{row[0]!.GetValue<string>()}.json";
+            var mutated = JsonNode.Parse(originals[file])!;
             Mutate(mutated, [.. row[1]!.AsArray().Select(key => key!.GetValue<string>())], (JsonObject)row[2]!);
-            File.WriteAllText(file, mutated.ToJsonString());
-            answers[index] = Answer(copy);
-            File.WriteAllText(file, original);
-            return copy;
-        }, _ => { });
+            var texts = originals.Select(pair => (pair.Key, pair.Key == file ? mutated.ToJsonString() : pair.Value));
+            answers[index] = Answer(texts);
+        });
 
         var differing = new List<string>();
         for (var index = 0; index < rows.Count; index++)
@@ -88,16 +63,16 @@ public class TemplateFuzzTests : IDisposable
         Assert.True(differing.Count == 0, $"{differing.Count} of {cases.Count} differ, first: {string.Join(" || ", differing.Take(6))}");
     }
 
-    private static string Answer(string dir)
+    private static string Answer(IEnumerable<(string File, string Text)> texts)
     {
         try
         {
-            var registry = TemplateResolver.Resolve(TemplateDirectory.ReadDeclarations(dir));
+            var registry = TemplateResolver.Resolve(TemplateDirectory.ReadDeclarations(texts));
             return $"ok {WorldReplay.HashOf(registry)[..12]}";
         }
         catch (Exception error)
         {
-            return error.Message.Replace(dir, "<dir>");
+            return error.Message;
         }
     }
 

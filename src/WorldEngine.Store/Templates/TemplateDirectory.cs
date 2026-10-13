@@ -8,17 +8,19 @@ namespace WorldEngine.Store.Templates;
 // template each, named by its file in the messages. Resolution is the core's job; this only does the reading.
 public static class TemplateDirectory
 {
-    public static DeclaredSet ReadDeclarations(string directory)
+    public static DeclaredSet ReadDeclarations(string directory) =>
+        ReadDeclarations(Directory.GetFiles(directory, "*.json")
+            .Select(Path.GetFileName)
+            .OfType<string>()
+            .Select(file => (file, WorldIO.ReadAllText(Path.Combine(directory, file)))));
+
+    // The same reading of texts already in hand, each named by its file name.
+    public static DeclaredSet ReadDeclarations(IEnumerable<(string File, string Text)> texts)
     {
         var decls = new Dictionary<string, TemplateDecl>();
         var sources = new Dictionary<string, string>();
-        var files = Directory.GetFiles(directory, "*.json")
-            .Select(Path.GetFileName)
-            .OfType<string>()
-            .OrderBy(name => name, StringComparer.Ordinal);
-        foreach (var file in files)
+        foreach (var (file, text) in texts.OrderBy(entry => entry.File, StringComparer.Ordinal))
         {
-            var text = WorldIO.ReadAllText(Path.Combine(directory, file));
             TemplateShape.Check(System.Text.Json.Nodes.JsonNode.Parse(text), file);
             var decl = WorldJson.Read<TemplateDecl>(text);
             if (decls.ContainsKey(decl.Id))

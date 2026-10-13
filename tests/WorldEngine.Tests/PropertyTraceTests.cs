@@ -45,7 +45,8 @@ public class PropertyTraceTests
     }
 
     // The same sequences against a store world, whose files must stay the replay of its log: the answers and snapshots are the memory
-    // world's (as in tests/property-run.ts `storeSubsetTest`), `verify` is clean, and a fresh open reads back the snapshot it left.
+    // world's (as in tests/property-run.ts `storeSubsetTest`), `verify` is clean, and a fresh open reads back the snapshot it left. Twenty
+    // seeds, where TypeScript ran sixty: the memory replay above covers every seed, and Block 21 and the tamper goldens cover the store.
     [Fact]
     public void The_first_sequences_on_a_store_world_give_the_same_answers_and_verify()
     {
@@ -54,7 +55,7 @@ public class PropertyTraceTests
         var scratch = Path.Combine(Path.GetTempPath(), "property-store-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var records = Records().Take(60).ToList();
+            var records = Records().Take(20).ToList();
             var failed = new List<string>[records.Count];
             Parallel.For(0, records.Count, index =>
             {
