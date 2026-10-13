@@ -92,6 +92,9 @@ public class WorldLockProcessTests : IDisposable
             RedirectStandardError = true,
             UseShellExecute = false,
         };
+        // The test is about taking turns, not about the wait running out: eight cold-started processes on a busy host can queue longer
+        // than the default five seconds, and the lock is not fair.
+        start.Environment["WORLD_LOCK_TIMEOUT_MS"] = "60000";
         start.ArgumentList.Add(Child);
         start.ArgumentList.Add(mode);
         start.ArgumentList.Add(dir);

@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Text.Json.Nodes;
 using WorldEngine.Cli;
 
@@ -123,16 +124,17 @@ public class Block21ReplayTests : IDisposable
     {
         private readonly string scenes = Path.Combine(scratch, "_scenes");
 
-        public string Into(string text) => text.Replace("{TMP}", scratch).Replace("{ROOT}", root);
+        public string Into(string text) => Native(text.Replace("{TMP}", scratch).Replace("{ROOT}", root));
 
-        public string IntoJson(string text) => text.Replace("{TMP}", Escape(scratch)).Replace("{ROOT}", Escape(root));
+        public string IntoJson(string text) => NativeJson(text.Replace("{TMP}", Escape(scratch)).Replace("{ROOT}", Escape(root)));
 
-        // An answer back in placeholders, so the replay's own folders do not show in the comparison.
-        public string OutOf(string text) => text
+        // An answer back in placeholders, so the replay's own folders do not show in the comparison. TypeScript's trace was recorded on
+        // Windows, so a path after a placeholder is written back with the backslashes it had there.
+        public string OutOf(string text) => Recorded(text
             .Replace(Escape(scratch), "{TMP}")
             .Replace(scratch, "{TMP}")
             .Replace(Escape(root), "{ROOT}")
-            .Replace(root, "{ROOT}");
+            .Replace(root, "{ROOT}"));
 
         public string Scene(int index, JsonNode scene) => Write(Path.Combine(scenes, $"{index}.json"), scene.ToJsonString());
 
@@ -144,6 +146,19 @@ public class Block21ReplayTests : IDisposable
             File.WriteAllText(path, text);
             return path;
         }
+
+        // The recorded paths use Windows separators. Where the replay's folders are Unix paths, the run of a path after the folder
+        // (already substituted) is read with its separators as the host's: a backslash, or a doubled one inside JSON, becomes a slash.
+        private string Native(string text) => Path.DirectorySeparatorChar == '\\' ? text : Regex.Replace(text, Run(scratch, root), match => match.Value.Replace('\\', '/'));
+
+        private string NativeJson(string text) => Path.DirectorySeparatorChar == '\\' ? text : Regex.Replace(text, Run(Escape(scratch), Escape(root)), match => match.Value.Replace("\\\\", "/").Replace('\\', '/'));
+
+        private static string Run(string first, string second) =>
+            "(?:" + Regex.Escape(first) + "|" + Regex.Escape(second) + @")(?:\\\\?[\w.\-]+)*";
+
+        private static string Recorded(string text) => Path.DirectorySeparatorChar == '\\'
+            ? text
+            : Regex.Replace(text, @"\{(?:TMP|ROOT)\}(?:/[\w.\-]+)*", match => match.Value.Replace("/", "\\\\"));
 
         // A path as it sits inside a JSON string: backslashes doubled.
         private static string Escape(string path) => path.Replace("\\", "\\\\");
