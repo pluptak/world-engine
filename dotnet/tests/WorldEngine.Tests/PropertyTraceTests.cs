@@ -26,11 +26,18 @@ public class PropertyTraceTests
         var initial = Initial();
         var failures = new List<string>();
         var seeds = 0;
+        var records = new List<JsonObject>();
         foreach (var record in Records())
         {
             seeds += 1;
+            records.Add(record);
             var world = new MemoryWorld(initial, registry, initial.TemplatesHash);
             Replay(world, record, failures);
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            WriteTrace(records);
+            return;
         }
         Assert.True(seeds >= 500, $"only {seeds} seeds were recorded");
         Assert.True(failures.Count == 0, $"{failures.Count} of {seeds} sequences diverge, first: {string.Join("; ", failures.Take(5))}");
@@ -91,6 +98,12 @@ public class PropertyTraceTests
             var result = step["edit"] is JsonObject edit
                 ? world.Edit(edit)
                 : world.Apply(WorldJson.Read<Command>(step.ToJsonString()));
+            if (GoldenUpdate.Enabled)
+            {
+                recorded["result"] = Hash(MemoryGoldenTests.Shape(result));
+                recorded["snapshot"] = Hash(JsonNode.Parse(WorldJson.Write(world.CurrentSnapshot())));
+                continue;
+            }
             if (Hash(MemoryGoldenTests.Shape(result)) != recorded["result"]!.GetValue<string>())
             {
                 failures.Add($"seed {seed} step {index}: the answer differs ({step.ToJsonString()})");
@@ -102,6 +115,14 @@ public class PropertyTraceTests
                 return;
             }
         }
+    }
+
+    // The recorded sequences, one line each, gzipped (the layout tools/golden-gen/property-trace.ts writes).
+    private static void WriteTrace(List<JsonObject> records)
+    {
+        using var file = File.Create(GoldenUpdate.SourcePath(Path.Combine("property", "trace.jsonl.gz")));
+        using var zip = new GZipStream(file, CompressionLevel.SmallestSize);
+        zip.Write(Encoding.UTF8.GetBytes(string.Join("\n", records.Select(record => record.ToJsonString())) + "\n"));
     }
 
     private static Snapshot Initial() => WorldJson.Read<Snapshot>(File.ReadAllText(Path.Combine(Folder, "initial.snapshot.json")));

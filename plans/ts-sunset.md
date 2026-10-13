@@ -154,6 +154,11 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
   `WorldLockProcessTests` covers turn-taking) and `PlayerWorld` (27 lines, the `body_out` and `not_registered` refusals). Neither is a
   reason to hold Phase 2.
 
+- **Phase 2 (started 2026-10-13):** the generators are in `dotnet/tools/golden-gen/` with a README (`gap-golden.ts` moved in from the
+  scratch folder; about sixty older goldens have no surviving generator and are frozen as recorded). `WORLD_ENGINE_UPDATE_GOLDENS=1`
+  regenerates the supporting goldens from .NET (`GoldenUpdate`). Still to do in Phase 2: the TypeScript-is-the-reference rule in
+  `CLAUDE.md` and `AGENTS.md`, and `plans/dotnet-port.md`.
+
 ## Deliberate deviations from TypeScript
 
 Places where .NET differs on purpose, found by the Phase 1 replays. Each has a test that names it.

@@ -29,9 +29,18 @@ public class MemoryGoldenTests
             var name = step!["name"]!.GetValue<string>();
             var args = step["args"]!;
             var actual = Outcome(() => Step(world, registry, step["op"]!.GetValue<string>(), args));
+            if (GoldenUpdate.Enabled)
+            {
+                step["result"] = actual?.DeepClone();
+                continue;
+            }
             Assert.True(
                 CanonicalJson.Serialize(step["result"]) == CanonicalJson.Serialize(actual),
                 $"{name}: expected {step["result"]?.ToJsonString()}, got {actual?.ToJsonString()}");
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write(fixture, rows);
         }
     }
 

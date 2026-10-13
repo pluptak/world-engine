@@ -38,7 +38,14 @@ public class TamperGoldenTests : IDisposable
     {
         var pristine = MixedWorld.Build(golden, Path.Combine(scratch, "pristine"));
         var problems = new List<string>();
-        MixedWorld.Compare("pristine", MixedWorld.Observe(pristine), golden["pristine"]!, problems);
+        if (GoldenUpdate.Enabled)
+        {
+            golden["pristine"] = MixedWorld.Observe(pristine);
+        }
+        else
+        {
+            MixedWorld.Compare("pristine", MixedWorld.Observe(pristine), golden["pristine"]!, problems);
+        }
 
         var cases = (JsonArray)golden["cases"]!;
         var number = 0;
@@ -48,7 +55,17 @@ public class TamperGoldenTests : IDisposable
             var dir = Path.Combine(scratch, $"c{number}");
             MixedWorld.CopyDirectory(pristine, dir);
             Tamper(dir, node!["file"]!.GetValue<string>(), (JsonObject)node["op"]!);
+            if (GoldenUpdate.Enabled)
+            {
+                node["observed"] = MixedWorld.Observe(dir);
+                continue;
+            }
             MixedWorld.Compare(node["name"]!.GetValue<string>(), MixedWorld.Observe(dir), node["observed"]!, problems);
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("tamper-golden.expected.json", golden);
+            return;
         }
         Assert.True(problems.Count == 0, $"{problems.Count} of {cases.Count + 1} differ, first: {string.Join(" | ", problems.Take(8))}");
     }

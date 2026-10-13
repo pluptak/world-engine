@@ -37,11 +37,21 @@ public class VerbMatrixTests
                 var command = WorldJson.Read<Command>(row![0]!.ToJsonString());
                 var expected = row[1]!.GetValue<string>();
                 var actual = Answer(snapshot, command);
+                if (GoldenUpdate.Enabled)
+                {
+                    row[1] = actual;
+                    continue;
+                }
                 if (actual != expected && !(expected.StartsWith("throw|") && actual.StartsWith("throw|")))
                 {
                     differing.Add($"{name} {row[0]!.ToJsonString()}: {actual}, TypeScript's {expected}");
                 }
             }
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.WriteGzip("verb-matrix.expected.json.gz", golden);
+            return;
         }
         Assert.True(total > 25000, $"only {total} commands were recorded");
         Assert.True(differing.Count == 0, $"{differing.Count} of {total} differ, first: {string.Join(" | ", differing.Take(6))}");

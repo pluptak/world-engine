@@ -34,7 +34,14 @@ public class TakeoverGoldenTests : IDisposable
         var pristine = MixedWorld.Build(golden, Path.Combine(scratch, "pristine"));
         StoreWorld.Open(pristine).Edit((JsonObject)golden["extra"]!["edit"]!);
         var problems = new List<string>();
-        MixedWorld.Compare("pristine", MixedWorld.Observe(pristine), golden["pristine"]!, problems);
+        if (GoldenUpdate.Enabled)
+        {
+            golden["pristine"] = MixedWorld.Observe(pristine);
+        }
+        else
+        {
+            MixedWorld.Compare("pristine", MixedWorld.Observe(pristine), golden["pristine"]!, problems);
+        }
 
         var number = 0;
         foreach (var node in (JsonArray)golden["cases"]!)
@@ -62,7 +69,17 @@ public class TakeoverGoldenTests : IDisposable
                     File.WriteAllBytes(path, bytes[..^7]);
                 }
             }
+            if (GoldenUpdate.Enabled)
+            {
+                node["observed"] = MixedWorld.Observe(dir);
+                continue;
+            }
             MixedWorld.Compare(node["name"]!.GetValue<string>(), MixedWorld.Observe(dir), node["observed"]!, problems);
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("takeover-golden.expected.json", golden);
+            return;
         }
         Assert.True(problems.Count == 0, $"{problems.Count} differ, first: {string.Join(" | ", problems.Take(8))}");
     }

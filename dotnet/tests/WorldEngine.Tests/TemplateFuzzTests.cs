@@ -53,12 +53,22 @@ public class TemplateFuzzTests : IDisposable
             File.WriteAllText(file, mutated.ToJsonString());
             var actual = Answer();
             File.WriteAllText(file, original);
+            if (GoldenUpdate.Enabled)
+            {
+                row[3] = actual;
+                continue;
+            }
             var expected = row[3]!.GetValue<string>();
             var sameVerdict = actual == expected;
             if (!sameVerdict)
             {
                 differing.Add($"{template} {row[1]!.ToJsonString()} {row[2]!.ToJsonString()}: {actual} | TypeScript's {expected}");
             }
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.WriteGzip("template-fuzz.expected.json.gz", golden);
+            return;
         }
         Assert.True(differing.Count == 0, $"{differing.Count} of {cases.Count} differ, first: {string.Join(" || ", differing.Take(6))}");
     }

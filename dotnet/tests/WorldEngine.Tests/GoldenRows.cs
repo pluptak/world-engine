@@ -23,12 +23,27 @@ public static class GoldenRows
                 case "command":
                     var command = WorldJson.Read<Command>(row["command"]!.ToJsonString());
                     var result = Pipeline.Apply(snapshot, TestTemplates.RepoRegistry, verbs, command);
+                    if (GoldenUpdate.Enabled)
+                    {
+                        row["result"] = JsonNode.Parse(WorldJson.Write(PipelineShape.Of(result)));
+                        break;
+                    }
                     Assert.True(
                         CanonicalJson.Serialize(row["result"]) == WorldJson.Write(PipelineShape.Of(result)),
                         $"{name}: the result differs from TypeScript's");
                     break;
                 case "validate":
                     var issues = SnapshotValidation.Validate(snapshot, TestTemplates.RepoRegistry);
+                    if (GoldenUpdate.Enabled)
+                    {
+                        row["issues"] = new JsonArray([.. issues.Select(issue => (JsonNode?)new JsonObject
+                        {
+                            ["code"] = issue.Code,
+                            ["path"] = new JsonArray([.. issue.Path.Select(part => (JsonNode?)JsonValue.Create(part))]),
+                            ["message"] = issue.Message,
+                        })]);
+                        break;
+                    }
                     var expected = row["issues"]!.AsArray()
                         .Select(issue => (
                             Code: issue!["code"]!.GetValue<string>(),
@@ -40,6 +55,10 @@ public static class GoldenRows
                 default:
                     throw new InvalidDataException($"{name}: unknown row kind");
             }
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write(fixture, rows);
         }
     }
 
