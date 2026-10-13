@@ -156,8 +156,9 @@ storage seam) name TypeScript files and need re-pointing or closing before any w
 
 - **Phase 2 (started 2026-10-13):** the generators are in `dotnet/tools/golden-gen/` with a README (`gap-golden.ts` moved in from the
   scratch folder; about sixty older goldens have no surviving generator and are frozen as recorded). `WORLD_ENGINE_UPDATE_GOLDENS=1`
-  regenerates the supporting goldens from .NET (`GoldenUpdate`). Still to do in Phase 2: the TypeScript-is-the-reference rule in
-  `CLAUDE.md` and `AGENTS.md`, and `plans/dotnet-port.md`.
+  regenerates the supporting goldens from .NET (`GoldenUpdate`). The reference rule is inverted in
+  `AGENTS.md`, `CLAUDE.md` and `plans/dotnet-port.md`. Phase 2 exit met: with `node_modules` moved away, `dotnet test` passes all 5,808
+  tests, and no .NET source or test starts Node.
 
 ## Deliberate deviations from TypeScript
 

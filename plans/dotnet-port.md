@@ -4,6 +4,9 @@ Date: 2026-10-12. Scope: port the TypeScript world engine (`src/`, 69 modules, 1
 under `dotnet/`, on branch `dotnet-skeleton`. TypeScript stays the reference: every ported piece is
 checked against golden output generated from it, never against the .NET author's reading of the spec.
 
+> Superseded by `plans/ts-sunset.md`: the port is complete and TypeScript is frozen. From the end of Phase 2 of that plan the .NET engine and
+> its goldens are the reference, and a golden changes only with a deliberate change to .NET behaviour.
+
 ## 1. Where things stand
 
 Measured on commit `7ff0464`.

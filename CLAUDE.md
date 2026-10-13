@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**The TypeScript engine described below is frozen and being replaced by the .NET one in `dotnet/` (`plans/ts-sunset.md`, status in `AGENTS.md`).** This file still maps the TypeScript code, which is the specification until the docs are rewritten for .NET.
+
 `AGENTS.md` holds the process rules and the invariants (determinism, pure core, `canonicalJson`, no
 prose, coverage/`"unknown"`, parts and capacities, templates as data). Read it first; this file only
 adds what you need to find your way around the code. What to build next, in order, is the

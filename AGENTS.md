@@ -2,6 +2,13 @@
 
 Guidance for coding agents in this directory.
 
+## Status: the TypeScript engine is being retired
+
+The .NET engine under `dotnet/` is replacing the TypeScript one (`plans/ts-sunset.md`). TypeScript is frozen: no feature work and no
+refactors in `src/`, `tests/` or `templates/` unless a bug the .NET replays find has to be matched there, and then the golden is
+regenerated in the same change. New behaviour is built and tested in `dotnet/`, where the goldens (`dotnet/tools/golden-gen/README.md`)
+are the reference now: a change to .NET behaviour updates its goldens in the same commit. The rules below still describe the design.
+
 ## What this repo is
 
 - A deterministic, persistent, causal world-transition engine (physics is one resolver underneath
