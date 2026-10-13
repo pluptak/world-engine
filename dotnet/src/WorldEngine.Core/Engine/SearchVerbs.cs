@@ -48,7 +48,7 @@ public static class SearchVerbs
         return Pipeline.RequirementRefusal(context);
     }
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)
     {
         var concealer = context.Target!.EntityId;
         foreach (var id in Concealment.HiddenBy(working.Snapshot, concealer))

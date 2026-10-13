@@ -143,7 +143,7 @@ public static class PushVerbs
             : new Pos(position.X, position.Y + distance * sign);
     }
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId, bool reverse)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId, bool reverse)
     {
         var targetId = context.Target!.EntityId;
         var move = MovementOf(context) ?? throw new InvalidOperationException("Push movement changed after validation");

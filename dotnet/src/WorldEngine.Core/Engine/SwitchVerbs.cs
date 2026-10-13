@@ -82,7 +82,7 @@ public static class SwitchVerbs
         return snapshot with { Entities = entities };
     }
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId, bool on)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId, bool on)
     {
         var targetId = context.Target!.EntityId;
         var entity = working.Snapshot.Entities[targetId];

@@ -118,7 +118,7 @@ public static class GiveVerb
 
     // The item moves from the actor's hand into the recipient's grip. The grip is recomputed here, since the context
     // carries no verdict from the preconditions.
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)
     {
         var actorId = context.Command.Actor;
         var targetId = context.Target!.EntityId;

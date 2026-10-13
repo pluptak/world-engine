@@ -5,7 +5,7 @@ using WorldEngine.Core.Templates;
 namespace WorldEngine.Core.Engine;
 
 // What an observer can sense now, and what an actor can name (src/engine/query.ts). This is the current-state half:
-// the perceive query with no event. The event form, which reads what happened and who sensed it, is not ported yet.
+// the perceive query with no event. The event form, which reads what happened and who sensed it, is `EventPerception`.
 public static class Perception
 {
     public sealed record Answer(string Value, string BasisCode);

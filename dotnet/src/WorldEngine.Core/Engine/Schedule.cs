@@ -75,7 +75,7 @@ public static class Schedule
                 Beats.Run(working, registry, cause);
                 return;
             default:
-                throw new NotPortedException($"scheduled {cause.Kind} causes");
+                throw new InvalidOperationException($"Unknown scheduled cause kind {cause.Kind}");
         }
     }
 

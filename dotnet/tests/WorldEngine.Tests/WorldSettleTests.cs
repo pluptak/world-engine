@@ -56,6 +56,24 @@ public class WorldSettleTests : IDisposable
         }
     }
 
+    [Fact]
+    public void Reading_history_from_a_disturbed_world_settles_it_first()
+    {
+        var whole = Path.Combine(scratch, "whole");
+        var lost = Path.Combine(scratch, "lost");
+        CopyTree(Golden, whole);
+        CopyTree(Golden, lost);
+        File.AppendAllText(Path.Combine(lost, "events.jsonl"), "x");
+
+        var expected = WorldHistory.Since(whole, 0, WorldFiles.ReadTemplates(whole));
+        var settled = WorldHistory.Since(lost, 0, WorldFiles.ReadTemplates(lost));
+
+        Assert.Equal(WorldJson.Write(expected.Events), WorldJson.Write(settled.Events));
+        Assert.Equal(WorldJson.Write(expected.Deltas), WorldJson.Write(settled.Deltas));
+        // The head now agrees with the files, so the world is trusted as it stands.
+        Assert.NotNull(WorldReplay.TrustedSnapshot(lost, WorldFiles.ReadTemplates(lost)));
+    }
+
     // One disturbance: copy a file over another, delete one, append text, or set fields of head.json.
     private static void Apply(string dir, JsonNode edit)
     {

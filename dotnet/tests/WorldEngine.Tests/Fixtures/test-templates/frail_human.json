@@ -1,0 +1,1 @@
+{ "id": "frail_human", "extends": "human", "props": { "successor": "human" } }

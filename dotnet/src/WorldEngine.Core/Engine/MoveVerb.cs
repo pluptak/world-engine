@@ -269,7 +269,7 @@ public static class MoveVerb
         _ => new Pipeline.Refusal(Status.Refused, "out_of_bounds"),
     };
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)
     {
         var actorId = context.Command.Actor;
         var walk = WalkTo(context, DestinationOf(context.Command.Args)!);

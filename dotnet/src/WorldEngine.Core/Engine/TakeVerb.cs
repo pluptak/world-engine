@@ -100,7 +100,7 @@ public static class TakeVerb
         return null;
     }
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)
     {
         var actorId = context.Command.Actor;
         var targetId = context.Target!.EntityId;

@@ -71,7 +71,7 @@ public static class LightVerbs
         return Pipeline.RequirementRefusal(context);
     }
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId, bool lit)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId, bool lit)
     {
         var lightId = context.Target!.EntityId;
         var light = working.Snapshot.Entities[lightId];

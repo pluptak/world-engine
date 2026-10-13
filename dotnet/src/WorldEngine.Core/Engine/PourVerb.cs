@@ -229,7 +229,7 @@ public static class PourVerb
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context) => PlanOf(context).Refusal;
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)
     {
         var pour = PlanOf(context).Pour ?? throw new InvalidOperationException("Pour changed after validation");
         var poured = working.Emit(

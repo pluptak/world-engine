@@ -315,7 +315,7 @@ public static class Beats
     }
 
     // The beat a schedule_beat edit makes: due at its tick, about the entity its action names, caused by the edit's own event.
-    public static ScheduledCause CauseOf(JsonObject edit, string causeId) =>
+    public static ScheduledCause CauseOf(JsonObject edit, string? causeId) =>
         new(
             SafeInt(edit["at_tick"])!.Value,
             "beat",
@@ -482,10 +482,6 @@ public static class Beats
     // everything it wrote (the snapshot, the events and the deltas), and the snapshot-wide guard runs after it.
     private static Fired FireEdit(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause, JsonObject action)
     {
-        if (cause.CauseId is null)
-        {
-            throw new NotPortedException("a beat's edit with no cause");
-        }
         var targetText = TextOf(action["target"]);
         Resolve.TargetAddress? target = null;
         if (targetText is not null)

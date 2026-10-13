@@ -148,10 +148,8 @@ public static class WorldHistory
         }
     }
 
-    // The current snapshot, from the files as they agree; a world whose files disagree is not settled here yet.
-    internal static Snapshot Current(string dir, IReadOnlyDictionary<string, Template> registry) =>
-        WorldReplay.TrustedSnapshot(dir, registry)
-        ?? throw new WorldError("store_unsettled", "The world's files disagree with its head; settling them is not ported yet");
+    // The current snapshot, from the files as they agree; a world whose files disagree is settled first, under the world's turn.
+    internal static Snapshot Current(string dir, IReadOnlyDictionary<string, Template> registry) => WorldSettle.Load(dir, registry);
 
     // Every event up to the end of the command that wrote the event, from the events file (`eventsThrough`). Null when the file does not
     // hold the event.

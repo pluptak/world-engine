@@ -134,6 +134,19 @@ public static class Physical
         }
     }
 
+    // Where a thing goes in place of the one that stood here: at its holder's feet, or beside a container it does not fit, as a
+    // used-up thing's products go. A destroyed body's successor (`Harm.Apply`) is placed this way, so a body carried when it
+    // dies leaves its successor on the floor rather than in a grip that holds one item.
+    public static Placement PlaceInstead(
+        Snapshot snapshot,
+        IReadOnlyDictionary<string, Template> registry,
+        Entity entity,
+        string templateId)
+    {
+        var at = Placements.PlacementOf(snapshot, entity);
+        return registry.TryGetValue(templateId, out var template) ? Placements.Fitting(snapshot, at, template.SizeCm) : at;
+    }
+
     // A thing used up (src/resolvers/physical.ts `spendEntity`): a `spent` event on it, each `spent_products` spawned
     // where it stood, its `spent_residue` added to the surface it stood on, and last the thing removed under `spent`.
     // A room is never used up. Returns whether it was removed.
@@ -185,7 +198,7 @@ public static class Physical
         Working working,
         IReadOnlyDictionary<string, Template> registry,
         string targetId,
-        string causeId)
+        string? causeId)
     {
         if (!working.Snapshot.Entities.TryGetValue(targetId, out var doomed))
         {

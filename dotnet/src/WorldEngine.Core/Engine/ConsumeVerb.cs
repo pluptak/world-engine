@@ -31,7 +31,7 @@ public static class ConsumeVerb
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context) => Planned(context).Refusal;
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)
     {
         var actorId = context.Command.Actor;
         var choice = Planned(context with { Snapshot = working.Snapshot });

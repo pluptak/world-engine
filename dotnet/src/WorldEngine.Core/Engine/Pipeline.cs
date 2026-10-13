@@ -4,10 +4,10 @@ using WorldEngine.Core.Templates;
 
 namespace WorldEngine.Core.Engine;
 
-// The front of a command's transition (src/engine/pipeline.ts `apply`, up to the verb's preconditions): what the
-// command names and whether its actor can act at all. A command that fails here never reaches a verb, so its result
-// is decided by the world alone. The rest of `apply` (preconditions, the root event, the transition, the clock) is
-// not ported yet, and `Screen` returns null for a command that would go on to them.
+// A command's transition (src/engine/pipeline.ts `apply`). `Screen` is the front of it: what the command names and
+// whether its actor can act at all. A command that fails there never reaches a verb, so its result is decided by the
+// world alone, and `Screen` returns null for a command that would go on to the verb's preconditions, the root event, the
+// transition and the clock.
 public static class Pipeline
 {
     // What a verb declares: whether it needs a target, whether only the world author may issue it, its preconditions
@@ -20,7 +20,7 @@ public static class Pipeline
         Func<CommandContext, Refusal?>? Preconditions = null,
         Func<Command, long?>? Duration = null,
         IReadOnlyList<Requirement>? Requires = null,
-        Action<Working, CommandContext, string>? Transition = null,
+        Action<Working, CommandContext, string?>? Transition = null,
         Func<CommandContext, (string Entity, IReadOnlyDictionary<string, JsonNode?> Data)>? RootEvent = null,
         Func<Command, IReadOnlyList<string>>? WakeOn = null,
         // Judges the snapshot the transition and the clock left (src/engine/pipeline.ts `validateResult`): a refusal

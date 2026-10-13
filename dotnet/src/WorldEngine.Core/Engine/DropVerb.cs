@@ -44,7 +44,7 @@ public static class DropVerb
         return null;
     }
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId) =>
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId) =>
         DropCarriedItem(working, context.Registry, context.Command.Actor, context.Target!.EntityId, rootEventId);
 
     // Puts a thing a holder carries down: it falls from the holder's hand height onto the surface under the holder's
@@ -54,7 +54,7 @@ public static class DropVerb
         IReadOnlyDictionary<string, Template> registry,
         string holderId,
         string entityId,
-        string causeId)
+        string? causeId)
     {
         var snapshot = working.Snapshot;
         var holder = snapshot.Entities[holderId];

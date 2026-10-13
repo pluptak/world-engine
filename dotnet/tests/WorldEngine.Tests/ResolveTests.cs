@@ -10,7 +10,7 @@ namespace WorldEngine.Tests;
 
 // Target resolution answers from src/engine/resolve.ts run on the same snapshot: the author's names (ids and
 // `entity.part`, which need no access checks) match the golden files, and an agent's names are checked with
-// stubbed access, since `addressable` is not ported yet.
+// stubbed access, so these tests do not depend on `addressable`.
 public class ResolveTests
 {
     private static IReadOnlyDictionary<string, Template> Registry { get; } =

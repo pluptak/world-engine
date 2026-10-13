@@ -1,0 +1,9 @@
+{
+  "id": "rotting_human",
+  "extends": "frail_human",
+  "props": { "rot": 1 },
+  "fields": { "rot": { "tier": "state", "type": "integer" } },
+  "processes": [
+    { "id": "rot", "every_ticks": 1, "effect": { "adjust_prop": { "prop": "rot", "by": -1, "min": 0 } }, "then": { "damage": { "amount": 100 } } }
+  ]
+}

@@ -136,7 +136,7 @@ public sealed class Working
         IReadOnlyDictionary<string, Template> registry,
         string templateId,
         Spawn.Overrides overrides,
-        string causeEventId,
+        string? causeEventId,
         string? deltaEventId = null)
     {
         var created = Spawn.Create(Snapshot, registry, templateId, overrides);

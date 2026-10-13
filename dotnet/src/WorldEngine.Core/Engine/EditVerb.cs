@@ -556,7 +556,7 @@ public static class EditVerb
         return Refused(first.Code);
     }
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)
     {
         var edit = Parse(context.Command.Args) ?? throw new InvalidOperationException("Edit changed after validation");
         switch (edit)
@@ -618,7 +618,7 @@ public static class EditVerb
     }
 
     // The pool beat leaves the pool and is queued at its tick, caused by this edit's event, as a `schedule_beat` is.
-    private static void TransitionPlay(Working working, PlayBeatEdit edit, string rootEventId)
+    private static void TransitionPlay(Working working, PlayBeatEdit edit, string? rootEventId)
     {
         var run = working.Snapshot.Run ?? throw new InvalidOperationException("Play without a run after validation");
         var pool = run.Pool ?? [];
@@ -672,7 +672,7 @@ public static class EditVerb
         Schedule.Add(working, cause with { DueTick = edit.AtTick });
     }
 
-    private static void TransitionRefine(Working working, Pipeline.CommandContext context, RefineEdit edit, string rootEventId)
+    private static void TransitionRefine(Working working, Pipeline.CommandContext context, RefineEdit edit, string? rootEventId)
     {
         var subject = context.Snapshot.Entities[edit.Target];
         var next = context.Registry[edit.Template];
@@ -689,7 +689,7 @@ public static class EditVerb
             edited);
     }
 
-    private static void TransitionPlace(Working working, Pipeline.CommandContext context, PlaceEdit edit, string rootEventId)
+    private static void TransitionPlace(Working working, Pipeline.CommandContext context, PlaceEdit edit, string? rootEventId)
     {
         var subject = context.Snapshot.Entities[edit.Target];
         edit = ResolveAnchor(context.Snapshot, edit, out var anchorRefusal);
@@ -735,7 +735,7 @@ public static class EditVerb
     private static bool SamePos(Pos? left, Pos? right) =>
         left is null || right is null ? left is null && right is null : left == right;
 
-    private static void TransitionProps(Working working, Pipeline.CommandContext context, PropsEdit edit, string rootEventId)
+    private static void TransitionProps(Working working, Pipeline.CommandContext context, PropsEdit edit, string? rootEventId)
     {
         var subject = context.Snapshot.Entities[edit.Target];
         var edited = working.Emit("edited", edit.Target, Pipeline.Reason(("field", "props")), rootEventId);
@@ -743,7 +743,7 @@ public static class EditVerb
         working.SetProps(edit.Target, Merge(basis, edit.Props), edited);
     }
 
-    private static void TransitionPart(Working working, Pipeline.CommandContext context, SetPartEdit edit, string rootEventId)
+    private static void TransitionPart(Working working, Pipeline.CommandContext context, SetPartEdit edit, string? rootEventId)
     {
         var subject = context.Snapshot.Entities[edit.Target];
         var edited = working.Emit("edited", edit.Target, Pipeline.Reason(("field", "parts"), ("part", edit.Part)), rootEventId);
@@ -912,8 +912,8 @@ public static class EditVerb
     }
 
     // The overrides of a spawn, each field as TypeScript's isOverrides reads it: absent is the blank field, null where the
-    // field takes null, and a value the field cannot hold makes the edit malformed (null). An explicit null in_part and a
-    // trait that is not a token string are not ported and are refused loudly.
+    // field takes null, and a value the field cannot hold makes the edit malformed (null). A trait that is not a string makes
+    // the spawn malformed.
     public static SpawnEdit? ParseOverrides(string template, JsonObject overrides)
     {
         string? name = null;
@@ -935,18 +935,23 @@ public static class EditVerb
         {
             return null;
         }
+        // An explicit null `in_part` is a part given as none: the spawn does not take a free grip, as an omitted one does.
         string? inPart = null;
+        var noPart = false;
         if (overrides.ContainsKey("in_part"))
         {
             if (overrides["in_part"] is null)
             {
-                throw new NotPortedException("spawn with an explicit null in_part");
+                noPart = true;
             }
-            if (Text(overrides["in_part"], allowEmpty: true) is not { } part)
+            else if (Text(overrides["in_part"], allowEmpty: true) is not { } part)
             {
                 return null;
             }
-            inPart = part;
+            else
+            {
+                inPart = part;
+            }
         }
         var props = Props(overrides);
         if (overrides.ContainsKey("props") && props is null)
@@ -993,7 +998,8 @@ public static class EditVerb
                 ConcealedBy: concealedBy?.Value,
                 Residue: residue,
                 Status: status?.Value,
-                InPart: inPart),
+                InPart: inPart,
+                NoPart: noPart),
             overrides.ContainsKey("modifiers") && overrides["modifiers"] is JsonArray { Count: > 0 });
     }
 
@@ -1032,8 +1038,7 @@ public static class EditVerb
         return aliases;
     }
 
-    // A map of trait keys to strings; null when it is not a map, and an exception for a value that is not a string, which
-    // TypeScript refuses only in validation (`invalid_trait`).
+    // A map of trait keys to strings; null when it is not a map or holds a value that is not a string.
     private static Dictionary<string, string>? Traits(JsonObject overrides)
     {
         if (!overrides.TryGetPropertyValue("traits", out var node))
@@ -1049,7 +1054,7 @@ public static class EditVerb
         {
             if (Text(value, allowEmpty: true) is not { } token)
             {
-                throw new NotPortedException("spawn trait that is not a string");
+                return null;
             }
             result[key] = token;
         }

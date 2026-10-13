@@ -293,7 +293,7 @@ public static class AttackVerb
             spawned.EventId);
     }
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)
     {
         var structure = StructureOf(context) ?? throw new InvalidOperationException("Attack target changed after validation");
         var choice = ChooseAttack(context);

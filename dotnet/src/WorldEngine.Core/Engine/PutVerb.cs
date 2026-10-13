@@ -187,7 +187,7 @@ public static class PutVerb
 
     // The placement the verb makes (src/engine/verbs/put.ts `transition`): a pocket is the holder's, else the item
     // is inside or on the destination, and its position clears either way.
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)
     {
         var targetId = context.Target!.EntityId;
         var actorId = context.Command.Actor;

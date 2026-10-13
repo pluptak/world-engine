@@ -6,7 +6,7 @@ namespace WorldEngine.Core.Engine;
 // The open, close, lock and unlock verbs (src/engine/verbs/openable.ts): a door, lid or gate is opened or shut, and a lock
 // is turned with a key carried in hand. Each is reached as a device is (`Remote`). A door with `shut_ticks` shuts that
 // many ticks on, under a `closing` window; one with `closes_after` swings shut that many ticks after it is opened.
-// A jam (a `jam_pct` rolled on a remote command) is not ported: it is refused loudly when reached.
+// A remote command to a device with `jam_pct` rolls the dice and may jam: the tick is spent and nothing else happens.
 public static class OpenVerbs
 {
     private enum Kind
@@ -129,7 +129,7 @@ public static class OpenVerbs
             : null;
     }
 
-    private static void Transition(Working working, Pipeline.CommandContext context, string rootEventId, Kind kind)
+    private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId, Kind kind)
     {
         var (entity, failure) = OpenableTarget(context);
         if (failure is not null)
@@ -207,7 +207,7 @@ public static class OpenVerbs
     };
 
     // The window a door with `shut_ticks` opens: a `closing` event, and the shut a scheduled close caused by it.
-    private static void StartClosing(Working working, Entity target, long shutTicks, string rootEventId)
+    private static void StartClosing(Working working, Entity target, long shutTicks, string? rootEventId)
     {
         var eventId = working.Emit("closing", target.Id, new Dictionary<string, JsonNode?>(), rootEventId);
         var props = new Dictionary<string, JsonNode?>(target.Props, StringComparer.Ordinal)

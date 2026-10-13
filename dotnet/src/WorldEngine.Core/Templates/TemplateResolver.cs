@@ -5,7 +5,7 @@ namespace WorldEngine.Core.Templates;
 
 // Resolution of declared templates into the set a world stores (src/templates.ts resolveTemplates). It
 // runs once, here: everything downstream sees no `extends`, so the hash and a frozen templates.json never
-// need to know a parent existed. Validation of parts, props and products is not ported yet.
+// need to know a parent existed. Parts, props and products are validated as each template resolves.
 public static class TemplateResolver
 {
     public static IReadOnlyDictionary<string, Template> Resolve(IReadOnlyDictionary<string, TemplateDecl> declared) =>

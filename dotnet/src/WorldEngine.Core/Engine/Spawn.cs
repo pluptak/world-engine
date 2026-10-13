@@ -5,8 +5,8 @@ using WorldEngine.Core.Templates;
 namespace WorldEngine.Core.Engine;
 
 // Creating an entity (src/engine/spawn.ts `spawn`): a new id from `next_seq`, every field at its default, the template's
-// props, then the overrides. Only the placements a break, a fall or a used-up thing writes (location, support, position,
-// and the container it lands in) are taken; spawning a holder, which claims grips, is not ported.
+// props, then the overrides. A spawn into a holder takes its first free grip, and a holder spawned after
+// what names it takes that thing into a grip.
 public static class Spawn
 {
     public sealed record Overrides(
@@ -26,7 +26,9 @@ public static class Spawn
         IReadOnlyDictionary<string, long>? Residue = null,
         EntityStatus? Status = null,
         IReadOnlyList<Modifier>? Modifiers = null,
-        string? InPart = null);
+        string? InPart = null,
+        // An explicit null `in_part`: given as none, so the spawn takes no free grip.
+        bool NoPart = false);
 
     public static (Snapshot Snapshot, string Id) Create(
         Snapshot snapshot,
@@ -74,6 +76,7 @@ public static class Spawn
         // A spawn into a holder with grips and no part named takes the first free grip (spawn.ts `spawn`).
         if (entity.ContainedIn is { } holderId
             && overrides.InPart is null
+            && !overrides.NoPart
             && snapshot.Entities.TryGetValue(holderId, out var holder)
             && Carry.HolderLayout(registry, holder.Template).Grips.Count > 0
             && Carry.ClaimGrip(snapshot, registry, holderId, entity) is GripFound found)

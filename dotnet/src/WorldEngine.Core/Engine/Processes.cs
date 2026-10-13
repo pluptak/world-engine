@@ -186,9 +186,12 @@ public static class Processes
         {
             return;
         }
-        if (spec.ChancePct is not null)
+        // A chance process rolls each run: a miss does nothing and says nothing, and the next run is scheduled as though this
+        // one had happened, since no write will do it.
+        if (spec.ChancePct is { } chance && working.Random() * 100 >= chance)
         {
-            throw new NotPortedException("chance processes");
+            Reconcile(working, registry, entity.Id, cause.CauseId);
+            return;
         }
         var adjust = spec.Effect.AdjustProp;
         var from = (long)PropFields.Number(entity.Props[adjust.Prop])!.Value;
@@ -215,8 +218,8 @@ public static class Processes
     }
 
     // What a process does once, on reaching its bound, under the `changed` that reached it: write a prop (a second `changed`),
-    // take integrity (the same chain a bleed makes), or use the entity up (`spent`). Each can start or stop other processes
-    // through the reconcile that follows. A `remove` is not ported.
+    // take integrity (the same chain a bleed makes), take the entity out of the world, or use it up (`spent`). Each can
+    // start or stop other processes through the reconcile that follows.
     private static void RunThen(
         Working working,
         IReadOnlyDictionary<string, Template> registry,
@@ -256,7 +259,7 @@ public static class Processes
         }
         else
         {
-            throw new NotPortedException("process that removes its entity");
+            Physical.RemoveEntity(working, registry, entityId, causeId);
         }
     }
 }
