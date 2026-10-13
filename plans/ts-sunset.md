@@ -101,3 +101,12 @@ Decided by the maintainer (2026-10-13):
 Consequences for the phases: Phase 1 starts now; the freeze already holds, so Phase 2's "freeze window" item is done and what
 remains of it is the golden generators and the .NET-native regeneration. Backlog items 1 and 2 (the multi-process failure and the
 storage seam) name TypeScript files and need re-pointing or closing before any work on them.
+
+## Progress
+
+- 2026-10-13, Phase 1: both baseline failures fixed (d0c6b22); the full .NET suite is green (5800 tests).
+- 2026-10-13, Phase 1 soak, memory worlds: `dotnet/tools/golden-gen/property-trace.ts` records the TypeScript property sequences
+  (seeds 0 to 499, 30 steps) and `PropertyTraceTests` replays them: 15,000 steps, answer and snapshot hashes equal at every step.
+  It found one real divergence, fixed in the same commit (a beat's edit threw on a refusal code `edit` does not declare).
+- Still open in Phase 1: the store-world side of the soak (`property-store-*`: a store world, its files and `verify`), the
+  `scenarios/*.json` run through both engines, `verify` on the sample worlds, and the table of TS tests with no .NET counterpart.
