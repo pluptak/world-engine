@@ -1,7 +1,7 @@
 # Command via: who sent an actor's command
 
-A command names the body it acts for in `actor`. An actor view may also name the agent that sent it, `via`: the
-body's controller, the one whose `controlled_by` walk reaches the body.
+A command names the body it acts for in `actor`. An actor view may also name the agent that sent
+it, `via`: the body's controller, the one whose `controlled_by` walk reaches the body.
 
 ```
 terminal ---controls---> arm        actor_command(arm, via: terminal)
