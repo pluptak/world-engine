@@ -57,8 +57,9 @@ public class TemplateValidationTests
 
 public class PropTests
 {
+    // The TypeScript table, and the two props .NET adds after it: `blind` and `deaf` (backlog: blind and deaf), which TypeScript never had.
     [Fact]
-    public void Table_matches_the_TypeScript_table_exactly()
+    public void Table_matches_the_TypeScript_table_and_the_props_added_since()
     {
         var golden = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "fields.json"));
 

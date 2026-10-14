@@ -19,12 +19,11 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [Possession: a curse makes a body act only at another's word](#possession-a-curse-makes-a-body-act-only-at-anothers-word).
-2. [Blind and deaf: a body that cannot see, or cannot hear](#blind-and-deaf-a-body-that-cannot-see-or-cannot-hear).
-3. [Bound: a body or a part tied, taking what it gives](#bound-a-body-or-a-part-tied-taking-what-it-gives).
-4. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
-5. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
-6. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
-7. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
+2. [Bound: a body or a part tied, taking what it gives](#bound-a-body-or-a-part-tied-taking-what-it-gives).
+3. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
+4. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
+5. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
+6. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -115,29 +114,6 @@ actor may work on its own body.
 - **Non-goals:** sensing through the victim, breaking free by a roll, a `released` event.
 - **Done when:** as above.
 - **Depends on:** Command provenance.
-
-### Blind and deaf: a body that cannot see, or cannot hear
-
-- **What:** two state props an author sets, as `asleep` is (`docs/senses.md`): `blind` takes sight, `deaf` takes
-  hearing. Unlike `asleep`, neither refuses the body's commands: a blind body still acts on what it touches,
-  hears or smells.
-- **Props** (`Engine/Prop.cs`, `Flag(..., Tier.State)`, `docs/fields.md`): `blind`, `deaf`.
-- **Rules:** in both perception checks, `Perception.cs` (entity form) and `EventPerception.cs` (event form), right
-  after the `asleep` check and in the same shape: `blind` and the sense is sight → `false` with a new basis code
-  `blind`; `deaf` and the sense is hearing → `false` / `deaf`. Nothing else reads them. Their capacity is untouched,
-  so `capacity` still reports `sight` 100 for a blind body: the condition is not damage.
-- **Scenarios:** `Scenes/Forms.cs` `ArchitectProps` gains `Prop.Blind` and `Prop.Deaf`, beside `Prop.Asleep`.
-  A beat may set them (`set_props` / `update_props` are beat edits already), which is how a curse strikes later.
-- **Files:** `Engine/Prop.cs`, `Engine/Perception/Perception.cs`, `Engine/Perception/EventPerception.cs`,
-  `Model/Code.cs` (two members), `Scenes/Forms.cs`, `docs/senses.md` (two lines beside `asleep`),
-  `docs/senses-bases.md` (the two codes), `docs/fields.md`.
-- **Tests** (beside the `asleep` perception tests): in a lit room, a blind human does not see a stone in front
-  of it (`false` / `blind`) and still touches the one it holds; it hears another's `say`; a deaf human sees the
-  `say` and does not hear it (`false` / `deaf`); both still `move` and `take`; `observe` lists for a blind body
-  only what touch and smell give; set by a beat at tick 2, the `false` begins at tick 2.
-- **Non-goals:** partial blindness, a sense restored by a timer (an author or a beat clears the prop).
-- **Done when:** the tests pass, `dotnet test WorldEngine.slnx` and the deep run pass, and no existing golden moves.
-- **Depends on:** nothing.
 
 ### Bound: a body or a part tied, taking what it gives
 

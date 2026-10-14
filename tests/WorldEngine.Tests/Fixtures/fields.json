@@ -35,6 +35,10 @@
     "type": "integer",
     "tier": "definition"
   },
+  "blind": {
+    "type": "boolean",
+    "tier": "state"
+  },
   "break_fall_cm": {
     "type": "integer",
     "tier": "definition"
@@ -93,6 +97,10 @@
   },
   "controlled_by": {
     "type": "id",
+    "tier": "state"
+  },
+  "deaf": {
+    "type": "boolean",
     "tier": "state"
   },
   "default_hit_part": {

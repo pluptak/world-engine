@@ -20,7 +20,7 @@ public static class Forms
     private static readonly HashSet<string> ArchitectProps =
         [
             Prop.Open, Prop.Locked, Prop.Burning, Prop.Lit, Prop.From, Prop.To, Prop.Opens, Prop.PoweredBy, Prop.ControlledBy,
-            Prop.FacingDeg, Prop.Asleep, Prop.Unconscious,
+            Prop.FacingDeg, Prop.Asleep, Prop.Unconscious, Prop.Blind, Prop.Deaf,
         ];
 
     // A percentage of what the preset holds, floored, except that one above 0 never comes to 0: a candle's 8 fuel at 10% is 1, so it
