@@ -8,7 +8,7 @@ A scenario file is a list of entries, or a scene: `{ seed?, entities, beats?, ru
 - `seed`: the dice's starting state, a whole number from 0 to 2^32 - 1 ([rng.md](rng.md)).
 - `beats`: each a `schedule_beat` body (`id`, `at_tick`, `action`, `only_if?`, `then?`, `repeat?`,
   as in [beats.md](beats.md)). `at_tick` is from 1, and an entity in an action, a condition or a
-  follower is named by its scenario id. They are queued at creation with a `cause_id` of null, since
+  follower is named by its scenario id. They are queued at creation with no `cause_id`, since
   no event set them going, as for a process the initial state started.
 - `run`: `{ tick_limit?, slots?, pool?, odds? }`. `pool`: beat bodies with no `at_tick`, each with
   an `id` unique among the beats and the pool, which the director plays (`play_beat`,
@@ -27,7 +27,7 @@ the path and the rule, such as `beats[2].action.entity: no_such_entity`. The rul
 `not_an_agent`, `duplicate_slot`, `empty_run` and `invalid_run`. A stored `run` is checked the same
 way by `validateSnapshot`.
 
-**Versions.** A world without a scene stores nothing new: `run` is absent, and a beat with a null
+**Versions.** A world without a scene stores nothing new: `run` is absent, and a beat with no
 `cause_id` is only ever written by a scene. So `schema_version` stays 5.
 
 **The worked example.** `scenarios/lab-run.json` is the lab ([limits-lab.md](limits-lab.md)) as a

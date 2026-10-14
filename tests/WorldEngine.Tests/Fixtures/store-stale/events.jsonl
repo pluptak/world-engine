@@ -1,5 +1,5 @@
-{"cause_id":null,"command_id":"s1","data":{},"entity":"e3","event_id":"ev5","tick":0,"type":"take"}
+{"command_id":"s1","data":{},"entity":"e3","event_id":"ev5","tick":0,"type":"take"}
 {"cause_id":"ev5","command_id":"s1","data":{},"entity":"e3","event_id":"ev6","tick":0,"type":"moved"}
-{"cause_id":null,"command_id":"s4","data":{"utterance":"hi","volume":"normal"},"entity":"e2","event_id":"ev7","tick":1,"type":"say"}
-{"cause_id":null,"command_id":"s5","data":{},"entity":"e3","event_id":"ev8","tick":2,"type":"drop"}
+{"command_id":"s4","data":{"utterance":"hi","volume":"normal"},"entity":"e2","event_id":"ev7","tick":1,"type":"say"}
+{"command_id":"s5","data":{},"entity":"e3","event_id":"ev8","tick":2,"type":"drop"}
 {"cause_id":"ev8","command_id":"s5","data":{"fall_cm":100},"entity":"e3","event_id":"ev9","tick":2,"type":"dropped"}

@@ -1,36 +1,36 @@
 using System.Globalization;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
-using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Json;
 
-// The only snapshot serializer: sorted keys at every depth (ordinal), no whitespace, integers only, strings escaped minimally
-// (a lone surrogate as a unicode escape, so the output is always valid JSON).
+// The only snapshot serializer: sorted keys at every depth (ordinal), no whitespace, integers only, no null member (an absent
+// field and a null one are the same), strings escaped minimally (a lone surrogate as a unicode escape, so the output is always valid
+// JSON). It writes a `Value`; a JSON node is read into one first.
 public static class CanonicalJson
 {
-    public static string Serialize(Value value) => Serialize(ValueJson.ToNode(value));
+    public static string Serialize(JsonNode? node) => Serialize(ValueJson.FromNode(node));
 
-    public static string Serialize(JsonNode? node)
+    // Null only at the top, where an answer may be nothing at all.
+    public static string Serialize(Value? value)
     {
         var text = new StringBuilder();
-        Write(text, node);
+        Write(text, value);
         return text.ToString();
     }
 
-    private static void Write(StringBuilder text, JsonNode? node)
+    private static void Write(StringBuilder text, Value? value)
     {
-        switch (node)
+        switch (value)
         {
             case null:
                 text.Append("null");
                 break;
-            case JsonObject record:
+            case Value.Map map:
                 text.Append('{');
                 var first = true;
-                foreach (var (key, value) in record.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+                foreach (var (key, field) in map.Fields)
                 {
                     if (!first)
                     {
@@ -39,55 +39,33 @@ public static class CanonicalJson
                     first = false;
                     WriteString(text, key);
                     text.Append(':');
-                    Write(text, value);
+                    Write(text, field);
                 }
                 text.Append('}');
                 break;
-            case JsonArray list:
+            case Value.List list:
                 text.Append('[');
-                for (var index = 0; index < list.Count; index += 1)
+                for (var index = 0; index < list.Items.Length; index += 1)
                 {
                     if (index > 0)
                     {
                         text.Append(',');
                     }
-                    Write(text, list[index]);
+                    Write(text, list.Items[index]);
                 }
                 text.Append(']');
                 break;
-            case JsonValue scalar:
-                WriteScalar(text, scalar);
+            case Value.Text content:
+                WriteString(text, content.Content);
+                break;
+            case Value.Bool flag:
+                text.Append(flag.Flag ? "true" : "false");
+                break;
+            case Value.Int number:
+                text.Append(number.Number.ToString(CultureInfo.InvariantCulture));
                 break;
             default:
-                throw new NotSupportedException($"Cannot serialize {node.GetType().Name}");
-        }
-    }
-
-    private static void WriteScalar(StringBuilder text, JsonValue scalar)
-    {
-        switch (scalar.GetValueKind())
-        {
-            case JsonValueKind.String:
-                WriteString(text, scalar.GetValue<string>());
-                break;
-            case JsonValueKind.True:
-                text.Append("true");
-                break;
-            case JsonValueKind.False:
-                text.Append("false");
-                break;
-            case JsonValueKind.Number:
-                // Snapshots hold integers only (AGENTS.md). The digits are read from the text, since a number set in
-                // code may not convert to a long.
-                var digits = scalar.ToJsonString();
-                if (!long.TryParse(digits, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out long integer))
-                {
-                    throw new FormatException($"Not a safe integer: {digits}");
-                }
-                text.Append(integer.ToString(CultureInfo.InvariantCulture));
-                break;
-            default:
-                throw new NotSupportedException($"Cannot serialize {scalar.GetValueKind()}");
+                throw new NotSupportedException($"Cannot serialize {value.GetType().Name}");
         }
     }
 

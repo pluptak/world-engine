@@ -9,6 +9,17 @@ namespace WorldEngine.Core.Engine;
 // missing or of another type comes back null.
 public static class JsonReads
 {
+    // A copy with every null member left out, at any depth: an absent field and a null one are the same. Numbers are kept as they
+    // are, so a fraction still reaches whatever refuses it.
+    public static JsonNode? WithoutNulls(JsonNode? node) => node switch
+    {
+        JsonObject record => new JsonObject(record
+            .Where(pair => pair.Value is not null)
+            .Select(pair => KeyValuePair.Create(pair.Key, WithoutNulls(pair.Value)))),
+        JsonArray list => new JsonArray([.. list.Select(WithoutNulls)]),
+        _ => node?.DeepClone(),
+    };
+
     public static string? Text(JsonNode? node) => node is JsonValue value && value.TryGetValue(out string? text) ? text : null;
 
     // A number, whether it was parsed from text or built in code: a whole number is read as one, anything else as a double.

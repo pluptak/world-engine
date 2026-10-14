@@ -15,7 +15,7 @@ public sealed record Pos(long X, long Y);
 [JsonDerivedType(typeof(BleedCause), CauseKind.Bleed)]
 [JsonDerivedType(typeof(ProcessCause), CauseKind.Process)]
 [JsonDerivedType(typeof(BeatCause), CauseKind.Beat)]
-public abstract record ScheduledCause(long DueTick, string Entity, [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? CauseId)
+public abstract record ScheduledCause(long DueTick, string Entity, string? CauseId)
 {
     [JsonIgnore]
     public string Kind => this switch
@@ -66,7 +66,7 @@ public enum EntityStatus
 
 public sealed record PartState(long Integrity, PartStatus Status);
 
-public sealed record Modifier(string Capacity, long Delta, [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] long? ExpiresAtTick, string CauseId);
+public sealed record Modifier(string Capacity, long Delta, long? ExpiresAtTick, string CauseId);
 
 public sealed record DetachedFrom(string Entity, string Part);
 
@@ -75,13 +75,13 @@ public sealed record Entity(
     string Template,
     string Name,
     IReadOnlyList<string> Aliases,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? Location,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? Support,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? ContainedIn,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? InPart,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? ConcealedBy,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] Pos? Pos,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] DetachedFrom? DetachedFrom,
+    string? Location,
+    string? Support,
+    string? ContainedIn,
+    string? InPart,
+    string? ConcealedBy,
+    Pos? Pos,
+    DetachedFrom? DetachedFrom,
     long Integrity,
     EntityStatus Status,
     IReadOnlyDictionary<string, PartState> Parts,

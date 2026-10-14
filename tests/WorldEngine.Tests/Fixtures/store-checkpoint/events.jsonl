@@ -1,6 +1,6 @@
-{"cause_id":null,"command_id":"c1","data":{},"entity":"e3","event_id":"ev5","tick":0,"type":"take"}
+{"command_id":"c1","data":{},"entity":"e3","event_id":"ev5","tick":0,"type":"take"}
 {"cause_id":"ev5","command_id":"c1","data":{},"entity":"e3","event_id":"ev6","tick":0,"type":"moved"}
-{"cause_id":null,"command_id":"edit-3","data":{},"entity":"world","event_id":"ev7","tick":1,"type":"edit"}
-{"cause_id":null,"command_id":"c3","data":{"utterance":"hello","volume":"normal"},"entity":"e2","event_id":"ev8","tick":1,"type":"say"}
-{"cause_id":null,"command_id":"c4","data":{},"entity":"e4","event_id":"ev9","tick":2,"type":"douse"}
+{"command_id":"edit-3","data":{},"entity":"world","event_id":"ev7","tick":1,"type":"edit"}
+{"command_id":"c3","data":{"utterance":"hello","volume":"normal"},"entity":"e2","event_id":"ev8","tick":1,"type":"say"}
+{"command_id":"c4","data":{},"entity":"e4","event_id":"ev9","tick":2,"type":"douse"}
 {"cause_id":"ev9","command_id":"c4","data":{},"entity":"e4","event_id":"ev10","tick":2,"type":"doused"}

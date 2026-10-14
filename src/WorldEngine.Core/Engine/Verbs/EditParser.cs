@@ -105,11 +105,13 @@ public static partial class EditVerb
             }
             case "place":
             {
-                if (!Only(obj, "kind", "target", "support", "contained_in", "in_part", "concealed_by", "pos")
-                    || Text(obj["target"]) is not { } target)
+                if (!Only(obj, "kind", "target", "support", "contained_in", "in_part", "concealed_by", "pos", "clear")
+                    || Text(obj["target"]) is not { } target
+                    || Cleared(obj, "support", "contained_in", "in_part", "concealed_by", "pos") is not { } cleared)
                 {
                     return null;
                 }
+                obj = cleared;
                 AnchorOffset? anchor = null;
                 if (obj["pos"] is JsonObject offset && !IsPlainPos(offset) && IsAnchor(offset))
                 {
@@ -164,6 +166,11 @@ public static partial class EditVerb
     // the spawn malformed.
     public static SpawnEdit? ParseOverrides(string template, JsonObject overrides)
     {
+        if (Cleared(overrides, "location", "support", "contained_in", "in_part", "concealed_by", "pos") is not { } cleared)
+        {
+            return null;
+        }
+        overrides = cleared;
         string? name = null;
         if (overrides.ContainsKey("name"))
         {
@@ -365,6 +372,32 @@ public static partial class EditVerb
     }
 
     private static bool Only(JsonObject obj, params string[] allowed) => obj.All(pair => allowed.Contains(pair.Key));
+
+    // An edit empties a field by naming it in `clear` (an absent field is one the edit leaves alone, and a request holds no null):
+    // the fields it names read as given empty. Null when `clear` is not a list of fields it may name, or names one the edit also
+    // gives a value.
+    private static JsonObject? Cleared(JsonObject obj, params string[] clearable)
+    {
+        if (!obj.TryGetPropertyValue("clear", out var node))
+        {
+            return obj;
+        }
+        if (node is not JsonArray names)
+        {
+            return null;
+        }
+        var given = (JsonObject)obj.DeepClone();
+        given.Remove("clear");
+        foreach (var name in names)
+        {
+            if (Text(name) is not { } field || !clearable.Contains(field) || given.ContainsKey(field))
+            {
+                return null;
+            }
+            given[field] = null;
+        }
+        return given;
+    }
 
     // A non-empty string, or any string when `allowEmpty`; null for anything else.
     private static string? Text(JsonNode? node, bool allowEmpty = false) =>

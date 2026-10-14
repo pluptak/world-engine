@@ -1,5 +1,4 @@
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Json.Integers;
 
@@ -10,7 +9,7 @@ namespace WorldEngine.Core.Engine;
 // template set alone, so a caller can read it before any world exists.
 public static class Catalog
 {
-    public sealed record CatalogLiquid([property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? Material, long Pct);
+    public sealed record CatalogLiquid(string? Material, long Pct);
 
     public sealed record CatalogForms(
         long? FuelPct,

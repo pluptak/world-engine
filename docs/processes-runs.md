@@ -2,7 +2,7 @@
 
 **A world's first processes.** A world built from a scenario has no event behind it, so
 `createWorld` calls `startProcesses`, which reconciles every entity with
-a cause of `null`: the first `changed` of such a process is a root. A
+no cause: the first `changed` of such a process is a root. A
 caller that builds a snapshot itself and opens it with `memoryWorld` calls
 `startProcesses(snapshot, registry)` first if it wants them running; otherwise a
 process starts the first time something touches its entity. `startProcesses` is exported for this.
@@ -10,7 +10,7 @@ process starts the first time something touches its entity. `startProcesses` is 
 **Perception.** `changed` is read like a hand act: seen by whoever sees the entity in a lit room,
 never heard, never smelt, felt only by the body it is on (`silent` in [senses.md](senses.md)).
 
-**Stored one way.** A `process` cause is `{ due_tick, kind: "process", entity, cause_id | null,
+**Stored one way.** A `process` cause is `{ due_tick, kind: "process", entity, cause_id?,
 process }`. `validateSnapshot` refuses an empty `process` (`invalid_process`)
 and a second pending run of one process on one entity (`duplicate_process`).
 It does not check the template still declares the process: after an upgrade

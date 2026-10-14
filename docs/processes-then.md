@@ -5,7 +5,7 @@ moving toward (`min` for a negative `by`, `max` for a positive one, so a `then` 
 such bound is refused when the templates load). Exactly one of:
 
 - `{ set_prop: { prop, value } }`: a second `changed` under the first, writing a prop of the entity
-  (`from` is `null` when the prop was absent). Writing the prop a condition reads is how a lantern
+  (no `from` when the prop was absent). Writing the prop a condition reads is how a lantern
   snuffs itself: `edited` → `changed` (fuel 0) → `changed` (burning false).
 - `{ damage: { amount } }`: takes integrity under a `damaged`, or a `destroyed` that sets the status
   when none is left and drops what the body held, each fall caused by the

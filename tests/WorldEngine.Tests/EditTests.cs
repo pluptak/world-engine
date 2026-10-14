@@ -31,9 +31,36 @@ public class EditTests
             var command = WorldJson.Read<Command>(row["command"]!.ToJsonString());
 
             var result = Pipeline.Apply(snapshot, Registry, Verbs, command);
+            if (GoldenUpdate.Enabled)
+            {
+                row["result"] = JsonNode.Parse(WorldJson.Write(PipelineShape.Of(result)));
+                continue;
+            }
 
             Meaning.Same(row["result"], WorldJson.Write(PipelineShape.Of(result)), $"{name}: the result differs from TypeScript's");
         }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("edit-golden.expected.json", rows);
+        }
+    }
+
+    // An edit empties a field by naming it in `clear`; a list that names a field the edit also gives, a field it may not clear, or
+    // is not a list of names is malformed.
+    [Theory]
+    [InlineData("""{"kind":"place","target":"e2","support":"e1","clear":["support"]}""")]
+    [InlineData("""{"kind":"place","target":"e2","clear":["location"]}""")]
+    [InlineData("""{"kind":"place","target":"e2","clear":"pos"}""")]
+    [InlineData("""{"kind":"spawn","template":"stone","overrides":{"clear":["name"]}}""")]
+    public void A_malformed_clear_is_invalid_args(string edit)
+    {
+        var snapshot = WorldJson.Read<Snapshot>(ReadFixture("edit-base.snapshot.json"));
+        var command = new Command("c1", "world", "edit", Args: new Dictionary<string, JsonNode?> { ["edit"] = JsonNode.Parse(edit) });
+
+        var result = Pipeline.Apply(snapshot, Registry, Verbs, command);
+
+        Assert.Equal(Status.Invalid, result.Status);
+        Assert.Equal(Code.InvalidArgs, result.ReasonCode);
     }
 
     private static string ReadFixture(string name) =>

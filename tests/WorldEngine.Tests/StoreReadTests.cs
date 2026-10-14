@@ -81,15 +81,16 @@ public class StoreReadTests : IDisposable
         var head = WorldFiles.ReadHead(Fixture)!;
         var expected = Expected["head"]!.AsObject();
 
-        Assert.Equal(expected["log_bytes"]!.GetValue<long>(), head.LogBytes);
-        Assert.Equal(expected["events_bytes"]!.GetValue<long>(), head.EventsBytes);
+        // The sizes are the files' own: read against them, not a recording.
+        Assert.Equal(new FileInfo(Path.Combine(Fixture, "log.jsonl")).Length, head.LogBytes);
+        Assert.Equal(new FileInfo(Path.Combine(Fixture, "events.jsonl")).Length, head.EventsBytes);
+        Assert.Equal(new FileInfo(Path.Combine(Fixture, "deltas.jsonl")).Length, head.DeltasBytes);
+        Assert.Equal(expected["snapshot_log_bytes"]?.GetValue<long>(), head.SnapshotLogBytes);
         Assert.Equal(expected["log_entries"]!.GetValue<long>(), head.LogEntries);
         Assert.Equal(expected["ok_entries"]!.GetValue<long>(), head.OkEntries);
         Assert.Equal(expected["templates_hash"]!.GetValue<string>(), head.TemplatesHash);
-        Assert.Equal(expected["deltas_bytes"]?.GetValue<long>(), head.DeltasBytes);
         Assert.Equal(expected["rounds_closed"]?.GetValue<long>(), head.RoundsClosed);
         Assert.Equal(expected["snapshot_version"]?.GetValue<long>(), head.SnapshotVersion);
-        Assert.Equal(expected["snapshot_log_bytes"]?.GetValue<long>(), head.SnapshotLogBytes);
     }
 
     [Fact]

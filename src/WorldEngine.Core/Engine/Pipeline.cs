@@ -205,6 +205,15 @@ public static class Pipeline
         return null;
     }
 
+    // Whether a value holds a null member anywhere (a null in a list is not one: it is kept, for whatever refuses it).
+    private static bool HoldsNull(JsonNode? node) => node switch
+    {
+        null => true,
+        JsonObject record => record.Any(pair => HoldsNull(pair.Value)),
+        JsonArray list => list.Any(item => item is not null && HoldsNull(item)),
+        _ => false,
+    };
+
     // The whole transition of a command the front lets through, for the verbs ported so far. The run gate decides with the
     // front; preconditions decide next; then the root event, the verb's effects, the clock (cut at a run's limit), the run's
     // finish. A round's move is judged here as a command with the round flag, which the run gate and the clock read.
@@ -214,6 +223,11 @@ public static class Pipeline
         IReadOnlyDictionary<string, VerbDecl> verbs,
         Command command)
     {
+        // A null arg is an absent one, as the log that replays this command holds it.
+        if (command.Args is { } args && args.Values.Any(HoldsNull))
+        {
+            command = command with { Args = args.Where(pair => pair.Value is not null).ToDictionary(pair => pair.Key, pair => JsonReads.WithoutNulls(pair.Value)) };
+        }
         if (Screen(snapshot, registry, verbs, command) is { } screened)
         {
             return screened;

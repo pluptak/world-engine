@@ -305,7 +305,6 @@ public static class WorldFiles
         var value = JsonNode.Parse(line) as JsonObject;
         if (value is null
             || Text(value, "event_id") is null
-            || !value.ContainsKey("cause_id")
             || (value["cause_id"] is not null && Text(value, "cause_id") is null)
             || Text(value, "command_id") is null
             || !SafeInteger(value, "tick")

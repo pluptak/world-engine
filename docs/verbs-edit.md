@@ -11,3 +11,6 @@
   - A `place` may write `pos` as `{anchor, dx, dy}`
     ([space.md](space.md)) and `concealed_by`, hiding the thing
     under or behind another in the same room.
+  - A `place`, or a `spawn`'s overrides, empties a field by naming
+    it in `clear` (`"clear": ["pos"]`); a field it leaves out is left
+    alone. A request holds no null: a null field is an absent one.

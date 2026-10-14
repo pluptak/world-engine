@@ -1,3 +1,3 @@
-{"cause_id":null,"command_id":"reg-alice","data":{},"entity":"world","event_id":"ev5","tick":0,"type":"edit"}
-{"cause_id":null,"command_id":"reg-bob","data":{},"entity":"world","event_id":"ev6","tick":0,"type":"edit"}
-{"cause_id":null,"command_id":"start","data":{},"entity":"world","event_id":"ev7","tick":0,"type":"edit"}
+{"command_id":"reg-alice","data":{},"entity":"world","event_id":"ev5","tick":0,"type":"edit"}
+{"command_id":"reg-bob","data":{},"entity":"world","event_id":"ev6","tick":0,"type":"edit"}
+{"command_id":"start","data":{},"entity":"world","event_id":"ev7","tick":0,"type":"edit"}

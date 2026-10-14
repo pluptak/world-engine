@@ -84,11 +84,19 @@ public class VerbGoldenTests
                     snapshots[name] = snapshot;
                 }
                 var command = WorldJson.Read<Command>(row["command"]);
-                var result = Pipeline.Apply(snapshot, registry, verbs, command);
-                if (CanonicalJson.Serialize(row["result"]) != WorldJson.Write(Shape(result)))
+                var result = JsonNode.Parse(WorldJson.Write(Shape(Pipeline.Apply(snapshot, registry, verbs, command))));
+                if (GoldenUpdate.Enabled)
                 {
-                    differing.Add($"{golden.Fixture} {name} {command.CommandId}");
+                    row["result"] = result;
                 }
+                else if (!Meaning.Matches(row["result"], result))
+                {
+                    differing.Add($"{golden.Fixture} {name} {command.CommandId}: {Meaning.Difference(row["result"], result)}");
+                }
+            }
+            if (GoldenUpdate.Enabled)
+            {
+                GoldenUpdate.Write(golden.Fixture, rows);
             }
         }
         Assert.True(differing.Count == 0, $"{differing.Count} of {total} differ from TypeScript's, first: {string.Join(" | ", differing.Take(8))}");

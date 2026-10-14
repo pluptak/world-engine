@@ -14,8 +14,9 @@ coverage does not declare are named in `unknown_senses` and never consulted.
 An entity seen or felt carries `facts`; one only smelt does not. A fact is present when coverage
 declares it: `location`, `support`, `contained_in` (with `in_part` beside it) and `status` from
 `relations`, `integrity`, `residue` and `pos` from `properties`, `pos` being the derived one. A
-reference names another listed entity, the observer's own room, or is `null` for none; a reference
-to anything else is left out, so a stone seen through a door into a lit room has no `location`.
+reference names another listed entity or the observer's own room, and is absent for none; one that
+names anything else is not shown and listed in `hidden` instead, so a stone seen through a door into
+a lit room has `"hidden": ["location"]`.
 
 `events`, given `since`, lists every event after that version the observer sensed (given
 `since_tick`, each one at that tick or later; both is `invalid_tick`), with its `event_id`, `tick`,

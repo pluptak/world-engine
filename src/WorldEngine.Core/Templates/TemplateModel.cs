@@ -24,7 +24,7 @@ public sealed record Holds(
 
 public sealed record PartDecl(
     string Name,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? Parent,
+    string? Parent,
     IReadOnlyDictionary<string, long> Contributes,
     bool Detachable,
     long MaxIntegrity,

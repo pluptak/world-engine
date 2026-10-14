@@ -12,8 +12,7 @@ public static class WorldJson
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
-        // An absent optional field is left out; a field every record carries, even empty (an entity's `location`, an event's
-        // `cause_id`), says `JsonIgnoreCondition.Never` and is written as null.
+        // A null field is an absent one (`Value`), so it is never written.
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         // Canonical JSON sorts keys, so a stored cause's `kind` comes after fields that sort before it.
         AllowOutOfOrderMetadataProperties = true,

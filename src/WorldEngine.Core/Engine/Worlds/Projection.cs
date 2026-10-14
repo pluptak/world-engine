@@ -108,16 +108,31 @@ public static class Projection
                 continue;
             }
             var facts = new JsonObject();
+            // A relation left empty is none (a null field is an absent one); one that names what may not be shown is listed in
+            // `hidden`, so a caller never reads "not shown" as "none".
+            var hidden = new List<string>();
             void Link(string field, string? value)
             {
-                if (relations.Contains(field) && Shown(value, out var node))
+                if (!relations.Contains(field))
+                {
+                    return;
+                }
+                if (Shown(value, out var node))
                 {
                     facts[field] = node;
+                }
+                else
+                {
+                    hidden.Add(field);
                 }
             }
             Link("location", entity.Location);
             Link("support", entity.Support);
             Link("contained_in", entity.ContainedIn);
+            if (hidden.Count > 0)
+            {
+                facts["hidden"] = Strings(hidden);
+            }
             // Which hand or pocket rides with the holder it names: no holder shown, no part shown.
             if (facts.ContainsKey("contained_in"))
             {

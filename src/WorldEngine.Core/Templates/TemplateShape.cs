@@ -62,7 +62,8 @@ public static class TemplateShape
                 {
                     throw new FormatException($"{label}.name must be a non-empty string");
                 }
-                if (!part.ContainsKey("parent") || (part["parent"] is not null && !IsText(part["parent"])))
+                // A root part has no parent: the field is absent, or null as an author may write it.
+                if (part["parent"] is not null && !IsText(part["parent"]))
                 {
                     throw new FormatException($"{label}.parent must be a string or null");
                 }

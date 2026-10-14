@@ -1,5 +1,4 @@
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 
 namespace WorldEngine.Core.Model;
 
@@ -16,7 +15,7 @@ public sealed record Perceivers(
 
 public sealed record WorldEvent(
     string EventId,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? CauseId,
+    string? CauseId,
     string CommandId,
     long Tick,
     string Type,
@@ -29,5 +28,5 @@ public sealed record Delta(
     string EventId,
     string Entity,
     string Field,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] JsonNode? From,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] JsonNode? To);
+    JsonNode? From,
+    JsonNode? To);

@@ -328,9 +328,10 @@ public static class CliRunner
             response.Add(Node(delta));
             if (delta.Field == "entity" && delta.To is JsonObject entity)
             {
+                // A field the new entity leaves empty has no delta: it was nothing and is nothing.
                 foreach (var field in new[] { "support", "contained_in", "location", "detached_from", "pos" })
                 {
-                    if (entity.ContainsKey(field))
+                    if (entity[field] is not null)
                     {
                         response.Add(new JsonObject
                         {

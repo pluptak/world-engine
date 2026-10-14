@@ -109,7 +109,7 @@ internal static class MixedWorld
         foreach (var key in new[] { "verify", "open", "verify_after", "files" })
         {
             // The snapshot hash is of TypeScript's canonical snapshot text, which is what WorldJson.Write also produces.
-            if (CanonicalJson.Serialize(actual[key]) != CanonicalJson.Serialize(expected[key]))
+            if (!Meaning.Matches(expected[key], actual[key]))
             {
                 problems.Add($"{name}: {key} is {Snip(actual[key]!.ToJsonString())}, TypeScript's {Snip(expected[key]!.ToJsonString())}");
                 return;

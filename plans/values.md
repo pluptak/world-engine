@@ -44,11 +44,12 @@ in ordinal order and lists and maps compare by content, so equality is structura
    the contract, against the engine itself: the same commands written twice are the same files, `verify` reproduces them,
    and the canonical writer's own tests. `GoldenUpdate` stays for a change that moves meaning. Done: `Meaning` (tests) holds the
    comparison, the store harnesses use `Meaning.SameTree`, and the acceptance replay and the hashed goldens regenerate.
-3. **No null on the way out.** `CanonicalJson` writes through `Value`, so null members are left out everywhere and the
-   `JsonIgnoreCondition.Never` fields go; readers that demanded a key be present (a resolved part's `parent`, an event
-   line's `cause_id`) stop doing so. The template hash moves with the templates' bytes. A probe of this rule with block 2's
-   comparisons left 44 tests failing, nearly all on the moved `templates_hash`; the one change of meaning is that a spawned
-   entity no longer records a delta for a field it leaves empty (`contained_in` and `detached_from`, null to null).
+3. **No null.** Done. `CanonicalJson` writes through `Value`, so a null member is never written and the
+   `JsonIgnoreCondition.Never` fields are gone; `Pipeline.Apply` drops null members from a command's args, so a live world
+   and its replay read the same request. What null used to say has its own form: an edit empties a field by naming it in
+   `clear` (`place`, a `spawn`'s overrides), and an observed entity lists the relations it may not show in `hidden`, so
+   "not shown" is never read as "none". A spawned entity no longer records a delta for a field it leaves empty, a null
+   arg reads as absent (`consume` with `amount: null` eats it all), and the fixture worlds were rewritten without nulls.
 4. **The model holds `Value`.** `Entity.Props` and a template's `Props`, `WorldEvent.Data`, `Command.Args`, `ReasonData`,
    `Delta.From`/`To`, `Run.Slots`. `Prop<T>`, `Pipeline.Reason` and `Working` change under the verbs; `Working` detects a
    no-op by `Value` equality, and the codec turns a field's record into a `Value` for its delta. Verb code that reads args

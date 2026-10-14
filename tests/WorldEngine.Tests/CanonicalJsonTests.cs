@@ -8,9 +8,19 @@ public class CanonicalJsonTests
     [Fact]
     public void Sorts_keys_at_every_depth_by_code_unit()
     {
-        var node = JsonNode.Parse("""{"b":1,"a":[2,{"d":null,"c":true}],"B":"x"}""");
+        var node = JsonNode.Parse("""{"b":1,"a":[2,{"d":false,"c":true}],"B":"x"}""");
 
-        Assert.Equal("""{"B":"x","a":[2,{"c":true,"d":null}],"b":1}""", CanonicalJson.Serialize(node));
+        Assert.Equal("""{"B":"x","a":[2,{"c":true,"d":false}],"b":1}""", CanonicalJson.Serialize(node));
+    }
+
+    // An absent field and a null one are the same (`Value`), so a null member is never written; a null in a list has no such
+    // reading and is refused.
+    [Fact]
+    public void Leaves_a_null_member_out_and_refuses_a_null_in_a_list()
+    {
+        Assert.Equal("""{"a":{},"b":1}""", CanonicalJson.Serialize(JsonNode.Parse("""{"b":1,"a":{"c":null},"d":null}""")));
+        Assert.Equal("null", CanonicalJson.Serialize((JsonNode?)null));
+        Assert.Throws<FormatException>(() => CanonicalJson.Serialize(JsonNode.Parse("[1,null]")));
     }
 
     [Fact]

@@ -9,11 +9,11 @@ namespace WorldEngine.Tests;
 public class TemplateResolverTests
 {
     [Fact]
-    public void Resolves_the_frozen_registry_byte_for_byte()
+    public void Resolves_the_frozen_registry()
     {
         var registry = TemplateResolver.Resolve(TemplateDirectory.ReadDeclarations(FixtureDirectory("templates")));
 
-        Assert.Equal(ReadFixture("bottle.templates.json"), WorldJson.Write(registry));
+        Meaning.Same(ReadFixture("bottle.templates.json"), WorldJson.Write(registry), "the resolved registry");
     }
 
     [Fact]

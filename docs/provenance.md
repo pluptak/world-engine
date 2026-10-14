@@ -7,9 +7,10 @@ stored log carry.
 
 **Events.** Every event has an `event_id` (`ev<n>`, from `next_seq`), the `command_id` of the
 command it happened in, the `tick` it happened at ([time.md](time.md)), and one `cause_id`. An ok
-command first emits its root event, named after its verb (`push`, `edit`, `wait`), with `cause_id:
-null`; everything the command causes names an earlier event as its one parent. So the events form a
-tree whose roots are commands, and a root id needs no field of its own: it is the end of the walk.
+command first emits its root event, named after its verb (`push`, `edit`, `wait`), with no
+`cause_id`; everything the command causes names an earlier event as its one parent. So the events
+form a tree whose roots are commands, and a root id needs no field of its own: it is the end of the
+walk.
 
 **Deltas.** Every delta names the event it happened under (`event_id`), so a field's current value
 leads to an event too: `trace({ entity, field })` starts from the last delta of that field (an

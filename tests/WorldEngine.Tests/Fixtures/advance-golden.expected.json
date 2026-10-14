@@ -10,9 +10,18 @@
       }
     },
     "result": {
-      "status": "ok",
       "command_id": "a1",
-      "resolved_target": null,
+      "deltas": [],
+      "events": [
+        {
+          "command_id": "a1",
+          "data": {},
+          "entity": "world",
+          "event_id": "ev6",
+          "tick": 0,
+          "type": "advance"
+        }
+      ],
       "snapshot": {
         "coverage": {
           "properties": [
@@ -40,30 +49,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -83,17 +212,12 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -109,11 +233,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -141,11 +261,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -165,231 +281,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 7,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 5,
         "version": 1
       },
-      "deltas": [],
-      "events": [
-        {
-          "event_id": "ev6",
-          "cause_id": null,
-          "command_id": "a1",
-          "tick": 0,
-          "type": "advance",
-          "entity": "world",
-          "data": {}
-        }
-      ]
+      "status": "ok"
     }
   },
   {
@@ -403,9 +328,18 @@
       }
     },
     "result": {
-      "status": "ok",
       "command_id": "a2",
-      "resolved_target": null,
+      "deltas": [],
+      "events": [
+        {
+          "command_id": "a2",
+          "data": {},
+          "entity": "world",
+          "event_id": "ev6",
+          "tick": 0,
+          "type": "advance"
+        }
+      ],
       "snapshot": {
         "coverage": {
           "properties": [
@@ -433,30 +367,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -476,17 +530,12 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -502,11 +551,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -534,11 +579,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -558,231 +599,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 7,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 1,
         "version": 1
       },
-      "deltas": [],
-      "events": [
-        {
-          "event_id": "ev6",
-          "cause_id": null,
-          "command_id": "a2",
-          "tick": 0,
-          "type": "advance",
-          "entity": "world",
-          "data": {}
-        }
-      ]
+      "status": "ok"
     }
   },
   {
@@ -796,9 +646,18 @@
       }
     },
     "result": {
-      "status": "ok",
       "command_id": "a3",
-      "resolved_target": null,
+      "deltas": [],
+      "events": [
+        {
+          "command_id": "a3",
+          "data": {},
+          "entity": "world",
+          "event_id": "ev6",
+          "tick": 0,
+          "type": "advance"
+        }
+      ],
       "snapshot": {
         "coverage": {
           "properties": [
@@ -826,30 +685,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -869,17 +848,12 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -895,11 +869,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -927,11 +897,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -951,231 +917,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 7,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 3,
         "version": 1
       },
-      "deltas": [],
-      "events": [
-        {
-          "event_id": "ev6",
-          "cause_id": null,
-          "command_id": "a3",
-          "tick": 0,
-          "type": "advance",
-          "entity": "world",
-          "data": {}
-        }
-      ]
+      "status": "ok"
     }
   },
   {
@@ -1189,9 +964,9 @@
       }
     },
     "result": {
-      "status": "invalid",
       "command_id": "a4",
-      "resolved_target": null,
+      "deltas": [],
+      "events": [],
       "reason_code": "invalid_author",
       "snapshot": {
         "coverage": {
@@ -1220,30 +995,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1263,17 +1158,12 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -1289,11 +1179,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1321,11 +1207,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1345,221 +1227,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 6,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 0,
         "version": 0
       },
-      "deltas": [],
-      "events": []
+      "status": "invalid"
     }
   },
   {
@@ -1570,9 +1271,9 @@
       "verb": "advance"
     },
     "result": {
-      "status": "invalid",
       "command_id": "a5",
-      "resolved_target": null,
+      "deltas": [],
+      "events": [],
       "reason_code": "invalid_args",
       "snapshot": {
         "coverage": {
@@ -1601,30 +1302,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1644,17 +1465,12 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -1670,11 +1486,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1702,11 +1514,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1726,221 +1534,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 6,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 0,
         "version": 0
       },
-      "deltas": [],
-      "events": []
+      "status": "invalid"
     }
   },
   {
@@ -1954,9 +1581,9 @@
       }
     },
     "result": {
-      "status": "invalid",
       "command_id": "a6",
-      "resolved_target": null,
+      "deltas": [],
+      "events": [],
       "reason_code": "invalid_args",
       "snapshot": {
         "coverage": {
@@ -1985,30 +1612,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2028,17 +1775,12 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -2054,11 +1796,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2086,11 +1824,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2110,221 +1844,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 6,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 0,
         "version": 0
       },
-      "deltas": [],
-      "events": []
+      "status": "invalid"
     }
   },
   {
@@ -2338,9 +1891,134 @@
       }
     },
     "result": {
-      "status": "ok",
       "command_id": "a1",
-      "resolved_target": null,
+      "deltas": [
+        {
+          "entity": "e4",
+          "event_id": "ev7",
+          "field": "modifiers",
+          "from": [
+            {
+              "capacity": "manipulation",
+              "cause_id": "ev0",
+              "delta": -30,
+              "expires_at_tick": 2
+            },
+            {
+              "capacity": "manipulation",
+              "cause_id": "ev1",
+              "delta": 10,
+              "expires_at_tick": 4
+            },
+            {
+              "capacity": "sight",
+              "cause_id": "ev2",
+              "delta": 5
+            }
+          ],
+          "to": [
+            {
+              "capacity": "manipulation",
+              "cause_id": "ev1",
+              "delta": 10,
+              "expires_at_tick": 4
+            },
+            {
+              "capacity": "sight",
+              "cause_id": "ev2",
+              "delta": 5
+            }
+          ]
+        },
+        {
+          "entity": "e3",
+          "event_id": "ev8",
+          "field": "modifiers",
+          "from": [
+            {
+              "capacity": "sight",
+              "cause_id": "ev3",
+              "delta": 7,
+              "expires_at_tick": 3
+            }
+          ],
+          "to": []
+        },
+        {
+          "entity": "e4",
+          "event_id": "ev9",
+          "field": "modifiers",
+          "from": [
+            {
+              "capacity": "manipulation",
+              "cause_id": "ev1",
+              "delta": 10,
+              "expires_at_tick": 4
+            },
+            {
+              "capacity": "sight",
+              "cause_id": "ev2",
+              "delta": 5
+            }
+          ],
+          "to": [
+            {
+              "capacity": "sight",
+              "cause_id": "ev2",
+              "delta": 5
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "command_id": "a1",
+          "data": {},
+          "entity": "world",
+          "event_id": "ev6",
+          "tick": 0,
+          "type": "advance"
+        },
+        {
+          "cause_id": "ev0",
+          "command_id": "a1",
+          "data": {
+            "capacity": "manipulation",
+            "from": 80,
+            "to": 100
+          },
+          "entity": "e4",
+          "event_id": "ev7",
+          "tick": 2,
+          "type": "capability_changed"
+        },
+        {
+          "cause_id": "ev3",
+          "command_id": "a1",
+          "data": {
+            "capacity": "sight",
+            "from": 0,
+            "to": 0
+          },
+          "entity": "e3",
+          "event_id": "ev8",
+          "tick": 3,
+          "type": "capability_changed"
+        },
+        {
+          "cause_id": "ev1",
+          "command_id": "a1",
+          "data": {
+            "capacity": "manipulation",
+            "from": 100,
+            "to": 100
+          },
+          "entity": "e4",
+          "event_id": "ev9",
+          "tick": 4,
+          "type": "capability_changed"
+        }
+      ],
       "snapshot": {
         "coverage": {
           "properties": [
@@ -2368,30 +2046,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2411,17 +2209,12 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -2437,19 +2230,14 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [
               {
                 "capacity": "sight",
-                "delta": 5,
-                "expires_at_tick": null,
-                "cause_id": "ev2"
+                "cause_id": "ev2",
+                "delta": 5
               }
             ],
             "name": "pusher",
@@ -2476,11 +2264,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2500,351 +2284,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 10,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 5,
         "version": 1
       },
-      "deltas": [
-        {
-          "event_id": "ev7",
-          "entity": "e4",
-          "field": "modifiers",
-          "from": [
-            {
-              "capacity": "manipulation",
-              "delta": -30,
-              "expires_at_tick": 2,
-              "cause_id": "ev0"
-            },
-            {
-              "capacity": "manipulation",
-              "delta": 10,
-              "expires_at_tick": 4,
-              "cause_id": "ev1"
-            },
-            {
-              "capacity": "sight",
-              "delta": 5,
-              "expires_at_tick": null,
-              "cause_id": "ev2"
-            }
-          ],
-          "to": [
-            {
-              "capacity": "manipulation",
-              "delta": 10,
-              "expires_at_tick": 4,
-              "cause_id": "ev1"
-            },
-            {
-              "capacity": "sight",
-              "delta": 5,
-              "expires_at_tick": null,
-              "cause_id": "ev2"
-            }
-          ]
-        },
-        {
-          "event_id": "ev8",
-          "entity": "e3",
-          "field": "modifiers",
-          "from": [
-            {
-              "capacity": "sight",
-              "delta": 7,
-              "expires_at_tick": 3,
-              "cause_id": "ev3"
-            }
-          ],
-          "to": []
-        },
-        {
-          "event_id": "ev9",
-          "entity": "e4",
-          "field": "modifiers",
-          "from": [
-            {
-              "capacity": "manipulation",
-              "delta": 10,
-              "expires_at_tick": 4,
-              "cause_id": "ev1"
-            },
-            {
-              "capacity": "sight",
-              "delta": 5,
-              "expires_at_tick": null,
-              "cause_id": "ev2"
-            }
-          ],
-          "to": [
-            {
-              "capacity": "sight",
-              "delta": 5,
-              "expires_at_tick": null,
-              "cause_id": "ev2"
-            }
-          ]
-        }
-      ],
-      "events": [
-        {
-          "event_id": "ev6",
-          "cause_id": null,
-          "command_id": "a1",
-          "tick": 0,
-          "type": "advance",
-          "entity": "world",
-          "data": {}
-        },
-        {
-          "event_id": "ev7",
-          "cause_id": "ev0",
-          "command_id": "a1",
-          "tick": 2,
-          "type": "capability_changed",
-          "entity": "e4",
-          "data": {
-            "capacity": "manipulation",
-            "from": 80,
-            "to": 100
-          }
-        },
-        {
-          "event_id": "ev8",
-          "cause_id": "ev3",
-          "command_id": "a1",
-          "tick": 3,
-          "type": "capability_changed",
-          "entity": "e3",
-          "data": {
-            "capacity": "sight",
-            "from": 0,
-            "to": 0
-          }
-        },
-        {
-          "event_id": "ev9",
-          "cause_id": "ev1",
-          "command_id": "a1",
-          "tick": 4,
-          "type": "capability_changed",
-          "entity": "e4",
-          "data": {
-            "capacity": "manipulation",
-            "from": 100,
-            "to": 100
-          }
-        }
-      ]
+      "status": "ok"
     }
   },
   {
@@ -2858,9 +2331,18 @@
       }
     },
     "result": {
-      "status": "ok",
       "command_id": "a2",
-      "resolved_target": null,
+      "deltas": [],
+      "events": [
+        {
+          "command_id": "a2",
+          "data": {},
+          "entity": "world",
+          "event_id": "ev6",
+          "tick": 0,
+          "type": "advance"
+        }
+      ],
       "snapshot": {
         "coverage": {
           "properties": [
@@ -2888,30 +2370,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2931,24 +2533,19 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [
               {
                 "capacity": "sight",
+                "cause_id": "ev3",
                 "delta": 7,
-                "expires_at_tick": 3,
-                "cause_id": "ev3"
+                "expires_at_tick": 3
               }
             ],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -2964,31 +2561,26 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [
               {
                 "capacity": "manipulation",
+                "cause_id": "ev0",
                 "delta": -30,
-                "expires_at_tick": 2,
-                "cause_id": "ev0"
+                "expires_at_tick": 2
               },
               {
                 "capacity": "manipulation",
+                "cause_id": "ev1",
                 "delta": 10,
-                "expires_at_tick": 4,
-                "cause_id": "ev1"
+                "expires_at_tick": 4
               },
               {
                 "capacity": "sight",
-                "delta": 5,
-                "expires_at_tick": null,
-                "cause_id": "ev2"
+                "cause_id": "ev2",
+                "delta": 5
               }
             ],
             "name": "pusher",
@@ -3015,11 +2607,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -3039,231 +2627,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 7,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 1,
         "version": 1
       },
-      "deltas": [],
-      "events": [
-        {
-          "event_id": "ev6",
-          "cause_id": null,
-          "command_id": "a2",
-          "tick": 0,
-          "type": "advance",
-          "entity": "world",
-          "data": {}
-        }
-      ]
+      "status": "ok"
     }
   },
   {
@@ -3277,9 +2674,96 @@
       }
     },
     "result": {
-      "status": "ok",
       "command_id": "a3",
-      "resolved_target": null,
+      "deltas": [
+        {
+          "entity": "e4",
+          "event_id": "ev7",
+          "field": "modifiers",
+          "from": [
+            {
+              "capacity": "manipulation",
+              "cause_id": "ev0",
+              "delta": -30,
+              "expires_at_tick": 2
+            },
+            {
+              "capacity": "manipulation",
+              "cause_id": "ev1",
+              "delta": 10,
+              "expires_at_tick": 4
+            },
+            {
+              "capacity": "sight",
+              "cause_id": "ev2",
+              "delta": 5
+            }
+          ],
+          "to": [
+            {
+              "capacity": "manipulation",
+              "cause_id": "ev1",
+              "delta": 10,
+              "expires_at_tick": 4
+            },
+            {
+              "capacity": "sight",
+              "cause_id": "ev2",
+              "delta": 5
+            }
+          ]
+        },
+        {
+          "entity": "e3",
+          "event_id": "ev8",
+          "field": "modifiers",
+          "from": [
+            {
+              "capacity": "sight",
+              "cause_id": "ev3",
+              "delta": 7,
+              "expires_at_tick": 3
+            }
+          ],
+          "to": []
+        }
+      ],
+      "events": [
+        {
+          "command_id": "a3",
+          "data": {},
+          "entity": "world",
+          "event_id": "ev6",
+          "tick": 0,
+          "type": "advance"
+        },
+        {
+          "cause_id": "ev0",
+          "command_id": "a3",
+          "data": {
+            "capacity": "manipulation",
+            "from": 80,
+            "to": 100
+          },
+          "entity": "e4",
+          "event_id": "ev7",
+          "tick": 2,
+          "type": "capability_changed"
+        },
+        {
+          "cause_id": "ev3",
+          "command_id": "a3",
+          "data": {
+            "capacity": "sight",
+            "from": 0,
+            "to": 0
+          },
+          "entity": "e3",
+          "event_id": "ev8",
+          "tick": 3,
+          "type": "capability_changed"
+        }
+      ],
       "snapshot": {
         "coverage": {
           "properties": [
@@ -3307,30 +2791,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -3350,17 +2954,12 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -3376,25 +2975,20 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [
               {
                 "capacity": "manipulation",
+                "cause_id": "ev1",
                 "delta": 10,
-                "expires_at_tick": 4,
-                "cause_id": "ev1"
+                "expires_at_tick": 4
               },
               {
                 "capacity": "sight",
-                "delta": 5,
-                "expires_at_tick": null,
-                "cause_id": "ev2"
+                "cause_id": "ev2",
+                "delta": 5
               }
             ],
             "name": "pusher",
@@ -3421,11 +3015,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -3445,311 +3035,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 9,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 3,
         "version": 1
       },
-      "deltas": [
-        {
-          "event_id": "ev7",
-          "entity": "e4",
-          "field": "modifiers",
-          "from": [
-            {
-              "capacity": "manipulation",
-              "delta": -30,
-              "expires_at_tick": 2,
-              "cause_id": "ev0"
-            },
-            {
-              "capacity": "manipulation",
-              "delta": 10,
-              "expires_at_tick": 4,
-              "cause_id": "ev1"
-            },
-            {
-              "capacity": "sight",
-              "delta": 5,
-              "expires_at_tick": null,
-              "cause_id": "ev2"
-            }
-          ],
-          "to": [
-            {
-              "capacity": "manipulation",
-              "delta": 10,
-              "expires_at_tick": 4,
-              "cause_id": "ev1"
-            },
-            {
-              "capacity": "sight",
-              "delta": 5,
-              "expires_at_tick": null,
-              "cause_id": "ev2"
-            }
-          ]
-        },
-        {
-          "event_id": "ev8",
-          "entity": "e3",
-          "field": "modifiers",
-          "from": [
-            {
-              "capacity": "sight",
-              "delta": 7,
-              "expires_at_tick": 3,
-              "cause_id": "ev3"
-            }
-          ],
-          "to": []
-        }
-      ],
-      "events": [
-        {
-          "event_id": "ev6",
-          "cause_id": null,
-          "command_id": "a3",
-          "tick": 0,
-          "type": "advance",
-          "entity": "world",
-          "data": {}
-        },
-        {
-          "event_id": "ev7",
-          "cause_id": "ev0",
-          "command_id": "a3",
-          "tick": 2,
-          "type": "capability_changed",
-          "entity": "e4",
-          "data": {
-            "capacity": "manipulation",
-            "from": 80,
-            "to": 100
-          }
-        },
-        {
-          "event_id": "ev8",
-          "cause_id": "ev3",
-          "command_id": "a3",
-          "tick": 3,
-          "type": "capability_changed",
-          "entity": "e3",
-          "data": {
-            "capacity": "sight",
-            "from": 0,
-            "to": 0
-          }
-        }
-      ]
+      "status": "ok"
     }
   },
   {
@@ -3763,9 +3082,9 @@
       }
     },
     "result": {
-      "status": "invalid",
       "command_id": "a4",
-      "resolved_target": null,
+      "deltas": [],
+      "events": [],
       "reason_code": "invalid_author",
       "snapshot": {
         "coverage": {
@@ -3794,30 +3113,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -3837,24 +3276,19 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [
               {
                 "capacity": "sight",
+                "cause_id": "ev3",
                 "delta": 7,
-                "expires_at_tick": 3,
-                "cause_id": "ev3"
+                "expires_at_tick": 3
               }
             ],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -3870,31 +3304,26 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [
               {
                 "capacity": "manipulation",
+                "cause_id": "ev0",
                 "delta": -30,
-                "expires_at_tick": 2,
-                "cause_id": "ev0"
+                "expires_at_tick": 2
               },
               {
                 "capacity": "manipulation",
+                "cause_id": "ev1",
                 "delta": 10,
-                "expires_at_tick": 4,
-                "cause_id": "ev1"
+                "expires_at_tick": 4
               },
               {
                 "capacity": "sight",
-                "delta": 5,
-                "expires_at_tick": null,
-                "cause_id": "ev2"
+                "cause_id": "ev2",
+                "delta": 5
               }
             ],
             "name": "pusher",
@@ -3921,11 +3350,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -3945,221 +3370,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 6,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 0,
         "version": 0
       },
-      "deltas": [],
-      "events": []
+      "status": "invalid"
     }
   },
   {
@@ -4170,9 +3414,9 @@
       "verb": "advance"
     },
     "result": {
-      "status": "invalid",
       "command_id": "a5",
-      "resolved_target": null,
+      "deltas": [],
+      "events": [],
       "reason_code": "invalid_args",
       "snapshot": {
         "coverage": {
@@ -4201,30 +3445,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -4244,24 +3608,19 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [
               {
                 "capacity": "sight",
+                "cause_id": "ev3",
                 "delta": 7,
-                "expires_at_tick": 3,
-                "cause_id": "ev3"
+                "expires_at_tick": 3
               }
             ],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -4277,31 +3636,26 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [
               {
                 "capacity": "manipulation",
+                "cause_id": "ev0",
                 "delta": -30,
-                "expires_at_tick": 2,
-                "cause_id": "ev0"
+                "expires_at_tick": 2
               },
               {
                 "capacity": "manipulation",
+                "cause_id": "ev1",
                 "delta": 10,
-                "expires_at_tick": 4,
-                "cause_id": "ev1"
+                "expires_at_tick": 4
               },
               {
                 "capacity": "sight",
-                "delta": 5,
-                "expires_at_tick": null,
-                "cause_id": "ev2"
+                "cause_id": "ev2",
+                "delta": 5
               }
             ],
             "name": "pusher",
@@ -4328,11 +3682,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -4352,221 +3702,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 6,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 0,
         "version": 0
       },
-      "deltas": [],
-      "events": []
+      "status": "invalid"
     }
   },
   {
@@ -4580,9 +3749,9 @@
       }
     },
     "result": {
-      "status": "invalid",
       "command_id": "a6",
-      "resolved_target": null,
+      "deltas": [],
+      "events": [],
       "reason_code": "invalid_args",
       "snapshot": {
         "coverage": {
@@ -4611,30 +3780,150 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
+          },
+          "e10": {
+            "aliases": [],
+            "id": "e10",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "lens",
+            "parts": {},
+            "pos": {
+              "x": 100,
+              "y": 100
+            },
+            "props": {
+              "camera": true,
+              "cone_deg": 90,
+              "controlled_by": "e4",
+              "facing_deg": 0,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "camera"
+          },
+          "e11": {
+            "aliases": [],
+            "id": "e11",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "lamp",
+            "parts": {},
+            "pos": {
+              "x": 50,
+              "y": 50
+            },
+            "props": {
+              "burning": true,
+              "light_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "lamp"
+          },
+          "e12": {
+            "aliases": [],
+            "id": "e12",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "intercom",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "props": {
+              "controlled_by": "e4",
+              "intercom": true,
+              "powered_by": "e16"
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "intercom"
+          },
+          "e13": {
+            "aliases": [],
+            "id": "e13",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "crate",
+            "parts": {},
+            "pos": {
+              "x": 200,
+              "y": 200
+            },
+            "props": {
+              "open": false,
+              "openable": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "crate"
+          },
+          "e14": {
+            "aliases": [],
+            "contained_in": "e13",
+            "id": "e14",
+            "integrity": 100,
+            "location": "e9",
+            "modifiers": [],
+            "name": "bead",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e15": {
+            "aliases": [],
+            "concealed_by": "e5",
+            "id": "e15",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "rag",
+            "parts": {},
+            "props": {},
+            "residue": {},
+            "status": "intact",
+            "template": "stone"
+          },
+          "e16": {
+            "aliases": [],
+            "id": "e16",
+            "integrity": 100,
+            "location": "e1",
+            "modifiers": [],
+            "name": "generator",
+            "parts": {},
+            "pos": {
+              "x": 0,
+              "y": 150
+            },
+            "props": {
+              "power_source": true
+            },
+            "residue": {},
+            "status": "intact",
+            "template": "generator"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -4654,24 +3943,19 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e3",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [
               {
                 "capacity": "sight",
+                "cause_id": "ev3",
                 "delta": 7,
-                "expires_at_tick": 3,
-                "cause_id": "ev3"
+                "expires_at_tick": 3
               }
             ],
             "name": "bottle",
             "parts": {},
-            "pos": null,
             "props": {
               "break_fall_cm": 50,
               "capacity_cm3": 750,
@@ -4687,31 +3971,26 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [
               {
                 "capacity": "manipulation",
+                "cause_id": "ev0",
                 "delta": -30,
-                "expires_at_tick": 2,
-                "cause_id": "ev0"
+                "expires_at_tick": 2
               },
               {
                 "capacity": "manipulation",
+                "cause_id": "ev1",
                 "delta": 10,
-                "expires_at_tick": 4,
-                "cause_id": "ev1"
+                "expires_at_tick": 4
               },
               {
                 "capacity": "sight",
-                "delta": 5,
-                "expires_at_tick": null,
-                "cause_id": "ev2"
+                "cause_id": "ev2",
+                "delta": 5
               }
             ],
             "name": "pusher",
@@ -4738,11 +4017,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -4762,221 +4037,40 @@
             "aliases": [
               "hatch"
             ],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "door",
             "parts": {},
-            "pos": null,
             "props": {
+              "from": "e1",
               "open": false,
               "openable": true,
-              "from": "e1",
               "to": "e9"
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "door"
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "hall",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
-          },
-          "e10": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e10",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "lens",
-            "parts": {},
-            "pos": {
-              "x": 100,
-              "y": 100
-            },
-            "props": {
-              "camera": true,
-              "controlled_by": "e4",
-              "cone_deg": 90,
-              "facing_deg": 0,
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "camera"
-          },
-          "e11": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e11",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "lamp",
-            "parts": {},
-            "pos": {
-              "x": 50,
-              "y": 50
-            },
-            "props": {
-              "light_source": true,
-              "burning": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "lamp"
-          },
-          "e12": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e12",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "intercom",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            },
-            "props": {
-              "intercom": true,
-              "controlled_by": "e4",
-              "powered_by": "e16"
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "intercom"
-          },
-          "e13": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e13",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "crate",
-            "parts": {},
-            "pos": {
-              "x": 200,
-              "y": 200
-            },
-            "props": {
-              "openable": true,
-              "open": false
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "crate"
-          },
-          "e14": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": "e13",
-            "detached_from": null,
-            "id": "e14",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e9",
-            "modifiers": [],
-            "name": "bead",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e15": {
-            "aliases": [],
-            "concealed_by": "e5",
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e15",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "rag",
-            "parts": {},
-            "pos": null,
-            "props": {},
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "stone"
-          },
-          "e16": {
-            "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
-            "id": "e16",
-            "in_part": null,
-            "integrity": 100,
-            "location": "e1",
-            "modifiers": [],
-            "name": "generator",
-            "parts": {},
-            "pos": {
-              "x": 0,
-              "y": 150
-            },
-            "props": {
-              "power_source": true
-            },
-            "residue": {},
-            "status": "intact",
-            "support": null,
-            "template": "generator"
           }
         },
         "next_seq": 6,
-        "templates_hash": "4e0ef0221409772e39fdd35a7e866750fcfa0d5841674320f387acbdf585ad1f",
+        "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
         "tick": 0,
         "version": 0
       },
-      "deltas": [],
-      "events": []
+      "status": "invalid"
     }
   }
 ]

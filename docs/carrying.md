@@ -9,7 +9,7 @@ sits in. A template declares which parts hold, with `holds`:
   container: a human's `pocket`, 18 × 12 × 4 cm, takes a note or a key, not a bottle.
 
 `in_part` is set exactly when the holder declares holding parts, so a chest's or a cup's contents
-leave it `null`. A part holds only while it and every part above it are intact or damaged: a hand
+leave it empty. A part holds only while it and every part above it are intact or damaged: a hand
 on a severed arm holds nothing.
 
 A two-handed item (`hands_required: 2`) sits in one grip and also fills the lowest other grip. That

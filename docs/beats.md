@@ -14,7 +14,7 @@ the engine knows ticks only.
   must be ahead of the clock (`beat_in_past`), since the schedule only holds causes
   ahead of it. The beat's *subject* (below) must exist (`no_such_entity`, `invalid`). A
   malformed beat is `invalid_args`.
-- A scene's beats are queued at creation with a null `cause_id`, as a process the
+- A scene's beats are queued at creation with no `cause_id`, as a process the
   initial state started ([scenario.md](scenario.md)); the `schedule_beat` edit is the
   only other way one is made.
 - `cancel_beat { id }` withdraws a pending beat and everything it would have chained,

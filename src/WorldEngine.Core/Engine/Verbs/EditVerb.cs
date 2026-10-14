@@ -39,7 +39,7 @@ public static partial class EditVerb
     private static readonly HashSet<string> OverrideKeys =
     [
         "name", "aliases", "location", "support", "contained_in", "in_part", "concealed_by", "pos", "detached_from",
-        "integrity", "status", "residue", "modifiers", "props", "traits",
+        "integrity", "status", "residue", "modifiers", "props", "traits", "clear",
     ];
 
     // A field the edit names: Value is what it names, null for an explicit null (a clear). An absent field is no Given.

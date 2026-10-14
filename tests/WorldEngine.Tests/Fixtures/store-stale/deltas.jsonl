@@ -1,8 +1,8 @@
-{"entity":"e3","event_id":"ev6","field":"contained_in","from":null,"to":"e2"}
-{"entity":"e3","event_id":"ev6","field":"in_part","from":null,"to":"hand_l"}
-{"entity":"e3","event_id":"ev6","field":"support","from":"e1","to":null}
-{"entity":"e3","event_id":"ev6","field":"pos","from":{"x":30,"y":0},"to":null}
-{"entity":"e3","event_id":"ev9","field":"contained_in","from":"e2","to":null}
-{"entity":"e3","event_id":"ev9","field":"in_part","from":"hand_l","to":null}
-{"entity":"e3","event_id":"ev9","field":"support","from":null,"to":"e1"}
-{"entity":"e3","event_id":"ev9","field":"pos","from":null,"to":{"x":0,"y":0}}
+{"entity":"e3","event_id":"ev6","field":"contained_in","to":"e2"}
+{"entity":"e3","event_id":"ev6","field":"in_part","to":"hand_l"}
+{"entity":"e3","event_id":"ev6","field":"support","from":"e1"}
+{"entity":"e3","event_id":"ev6","field":"pos","from":{"x":30,"y":0}}
+{"entity":"e3","event_id":"ev9","field":"contained_in","from":"e2"}
+{"entity":"e3","event_id":"ev9","field":"in_part","from":"hand_l"}
+{"entity":"e3","event_id":"ev9","field":"support","to":"e1"}
+{"entity":"e3","event_id":"ev9","field":"pos","to":{"x":0,"y":0}}
