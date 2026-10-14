@@ -14,7 +14,7 @@ public static partial class EditVerb
         RequiresTarget: false,
         AuthorOnly: true,
         Preconditions: Preconditions,
-        Duration: _ => 0,
+        Duration: VerbDuration.Fixed(0),
         Transition: Transition,
         ValidateResult: ValidateResult);
 

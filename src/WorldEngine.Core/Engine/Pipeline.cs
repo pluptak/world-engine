@@ -20,7 +20,8 @@ public static class Pipeline
         bool RequiresTarget,
         bool AuthorOnly,
         Func<CommandContext, Refusal?>? Preconditions = null,
-        Func<Command, long?>? Duration = null,
+        // Null is one tick.
+        VerbDuration? Duration = null,
         IReadOnlyList<Requirement>? Requires = null,
         Action<Working, CommandContext, string?>? Transition = null,
         Func<CommandContext, (string Entity, IReadOnlyDictionary<string, JsonNode?> Data)>? RootEvent = null,
@@ -239,7 +240,7 @@ public static class Pipeline
         // A round's move takes no time of its own: the round's close is the tick the clock moves (`docs/rounds.md`).
         var duration = command.Round == true && verb.OneTick
             ? 0L
-            : verb.Duration?.Invoke(command)
+            : (verb.Duration ?? VerbDuration.OneTick).For(command)
               ?? throw new InvalidOperationException($"Verb {command.Verb} accepted a command without a duration");
         if (!TryAdd(snapshot.Tick, duration, out _))
         {

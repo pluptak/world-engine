@@ -13,7 +13,6 @@ public static class MoveVerb
         RequiresTarget: false,
         AuthorOnly: false,
         Preconditions: Preconditions,
-        Duration: _ => 1,
         OneTick: true,
         Suggest: Suggest,
         FreeArgs: true,

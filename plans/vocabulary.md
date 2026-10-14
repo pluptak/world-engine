@@ -15,9 +15,7 @@ template ids, entity names and other author data. Replacing those with constants
 
 Each block is independently pausable and ends with `dotnet test WorldEngine.slnx` green.
 
-1. **Typed verb specs.** `VerbSpec` holds records, not JSON text: `Args` as a map of `ArgSpec`, `Duration`,
-   `CarryAlternative`, `AttackMode`. The catalog serializes them; its golden is regenerated.
-2. **Scheduled causes as types.** `ScheduledCause` splits into `CloseCause`, `BleedCause`, `ProcessCause` and `BeatCause`
+1. **Scheduled causes as types.** `ScheduledCause` splits into `CloseCause`, `BleedCause`, `ProcessCause` and `BeatCause`
    (polymorphic on `kind`), with the beat's action, condition and followers as records instead of `JsonNode`. The
    kind-by-kind checks in `SnapshotValidation` and the `JsonNode` walking in `BeatConditions` go.
 
@@ -37,6 +35,10 @@ Each block is independently pausable and ends with `dotnet test WorldEngine.slnx
   event is named for its verb, and verbs are a registry) and `CauseKind` (a stored snapshot may name another, reported as
   `unknown_cause_kind`; the typed causes below settle it). A verb's required capacity maps to its `insufficient_*` code in
   `Pipeline.Insufficient`, which `CatalogGoldenTests` holds to every verb's `refuses`.
+
+- A verb's declarations are typed. `VerbSpec` holds its `ArgSpec`s and `refuses`, and names the lists the engine itself
+  uses for carrying and striking (`Carry.Alternatives`, `AttackVerb.Modes`) rather than a copy; its duration is a
+  `VerbDuration` on the verb (one tick when absent), which the pipeline times commands by and the catalog writes.
 
 ## Out of this plan
 

@@ -149,7 +149,7 @@ public sealed class ActorWorld
     // A `token` arg (what `say` says) is opaque text, passed as it is: never an alias, and never an id-shaped word rewritten.
     internal static bool IsToken(string verb, string key) =>
         VerbSpecs.ByVerb.TryGetValue(verb, out var spec)
-        && JsonNode.Parse(spec.Args)?[key]?["kind"]?.GetValue<string>() == "token";
+        && spec.Args.GetValueOrDefault(key)?.Kind == ArgKind.Token;
 
     private string Alias(string id) => ActorAlias.Of(key, id);
 

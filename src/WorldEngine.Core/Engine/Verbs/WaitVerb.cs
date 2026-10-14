@@ -12,7 +12,7 @@ public static class WaitVerb
         RequiresTarget: false,
         AuthorOnly: false,
         Preconditions: Preconditions,
-        Duration: TimeVerbs.Ticks,
+        Duration: VerbDuration.FromArg("ticks"),
         WakeOn: command => Sensed(command) ? [command.Actor] : [],
         FreeArgs: true);
 

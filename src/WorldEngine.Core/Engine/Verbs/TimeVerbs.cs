@@ -1,7 +1,5 @@
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
-using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -14,7 +12,7 @@ public static class TimeVerbs
         RequiresTarget: false,
         AuthorOnly: true,
         Preconditions: AdvancePreconditions,
-        Duration: Ticks,
+        Duration: VerbDuration.FromArg("ticks"),
         WakeOn: command => Listed(command) ?? [],
         StopBefore: StopBeatOf);
 
@@ -31,22 +29,7 @@ public static class TimeVerbs
     }
 
     // The `ticks` arg as a positive safe integer, or null when it is not one (src/engine/clock.ts `commandDuration`).
-    public static long? Ticks(Command command)
-    {
-        if (command.Args is null
-            || !command.Args.TryGetValue("ticks", out var node)
-            || node is null
-            || node.GetValueKind() != JsonValueKind.Number)
-        {
-            return null;
-        }
-        var value = JsonReads.Number(node);
-        if (value is null || !IsWhole(value.Value) || value <= 0)
-        {
-            return null;
-        }
-        return (long)value.Value;
-    }
+    public static long? Ticks(Command command) => VerbDuration.ArgTicks(command, "ticks");
 
     // The agents `stop_on_perceived` names: none when the argument is absent, else a non-empty list of ids, or null when
     // the argument is malformed.

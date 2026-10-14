@@ -11,7 +11,6 @@ public static class TakeVerb
         RequiresTarget: true,
         AuthorOnly: false,
         Preconditions: Preconditions,
-        Duration: _ => 1,
         OneTick: true,
         Transition: Transition);
 

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -13,11 +14,11 @@ public static class Carry
 {
     public sealed record Alternative(
         string Capacity,
-        long? PerHand = null,
-        long? AtLeast = null,
-        long? MaxHands = null,
-        Prop<long>? MassLimitProp = null,
-        long? Holds = null);
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? PerHand = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? AtLeast = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? MaxHands = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Prop<long>? MassLimitProp = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Holds = null);
 
     public static readonly IReadOnlyList<Alternative> Alternatives =
     [

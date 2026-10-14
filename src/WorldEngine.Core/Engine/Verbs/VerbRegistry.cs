@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 
@@ -46,17 +47,14 @@ public static class VerbRegistry
         {
             ["verb"] = name,
             ["requires_target"] = decl.RequiresTarget,
-            ["args"] = JsonNode.Parse(spec.Args),
-            ["duration"] = JsonNode.Parse(spec.Duration),
-            ["requires"] = new JsonArray([.. (decl.Requires ?? [])
-                .Select(requirement => (JsonNode?)new JsonObject
-                {
-                    ["capacity"] = requirement.Capacity,
-                    ["at_least"] = requirement.AtLeast,
-                })]),
-            ["carry_alternatives"] = JsonNode.Parse(spec.CarryAlternatives),
-            ["attack_modes"] = JsonNode.Parse(spec.AttackModes),
-            ["refuses"] = new JsonArray([.. spec.Refuses.Select(code => (JsonNode?)WorldJson.Name(code))]),
+            ["args"] = Node(spec.Args),
+            ["duration"] = Node(decl.Duration ?? VerbDuration.OneTick),
+            ["requires"] = Node(decl.Requires ?? []),
+            ["carry_alternatives"] = Node(spec.CarryAlternatives ?? []),
+            ["attack_modes"] = Node(spec.AttackModes ?? []),
+            ["refuses"] = Node(spec.Refuses),
         };
     }
+
+    private static JsonNode? Node<T>(T value) => JsonSerializer.SerializeToNode(value, WorldJson.Options);
 }

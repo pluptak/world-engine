@@ -33,7 +33,6 @@ public static class OpenVerbs
         RequiresTarget: true,
         AuthorOnly: false,
         Preconditions: context => Preconditions(context, kind),
-        Duration: _ => 1,
         OneTick: true,
         Requires: kind is Kind.Lock or Kind.Unlock ? Hands : null,
         Transition: (working, context, rootEventId) => Transition(working, context, rootEventId, kind));

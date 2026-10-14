@@ -13,7 +13,6 @@ public static class PutVerb
         RequiresTarget: true,
         AuthorOnly: false,
         Preconditions: Preconditions,
-        Duration: _ => 1,
         OneTick: true,
         Requires: [new Pipeline.Requirement(Capacity.Manipulation, 50)],
         Suggest: Suggest,

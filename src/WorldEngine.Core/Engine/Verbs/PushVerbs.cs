@@ -13,13 +13,12 @@ public static class PushVerbs
 
     public static Pipeline.VerbDecl Pull { get; } = Declare(reverse: true);
 
-    private static readonly string[] Directions = ["+x", "-x", "+y", "-y"];
+    public static readonly IReadOnlyList<string> Directions = ["+x", "-x", "+y", "-y"];
 
     private static Pipeline.VerbDecl Declare(bool reverse) => new(
         RequiresTarget: true,
         AuthorOnly: false,
         Preconditions: context => Preconditions(context, reverse),
-        Duration: _ => 1,
         OneTick: true,
         Transition: (working, context, rootEventId) => Transition(working, context, rootEventId, reverse));
 

@@ -16,7 +16,6 @@ public static class LightVerbs
         RequiresTarget: true,
         AuthorOnly: false,
         Preconditions: context => Preconditions(context, lit),
-        Duration: _ => 1,
         OneTick: true,
         Requires: [new Pipeline.Requirement(Capacity.Manipulation, 50)],
         Transition: (working, context, rootEventId) => Transition(working, context, rootEventId, lit));

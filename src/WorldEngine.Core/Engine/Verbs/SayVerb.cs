@@ -13,7 +13,6 @@ public static class SayVerb
         RequiresTarget: false,
         AuthorOnly: false,
         Preconditions: Preconditions,
-        Duration: _ => 1,
         OneTick: true,
         FreeArgs: true,
         Requires: [new Pipeline.Requirement(Capacity.Speech, 50)],
@@ -22,7 +21,7 @@ public static class SayVerb
     // `\z`, not `$`: a trailing newline is not part of a token.
     internal static readonly Regex Utterance = new(@"^[A-Za-z0-9_.:-]{1,64}\z", RegexOptions.CultureInvariant);
 
-    private static readonly string[] Volumes = ["whisper", "normal", "shout"];
+    public static readonly IReadOnlyList<string> Volumes = ["whisper", "normal", "shout"];
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
     {

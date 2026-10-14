@@ -14,15 +14,14 @@ public static class AttackVerb
         RequiresTarget: true,
         AuthorOnly: false,
         Preconditions: Preconditions,
-        Duration: _ => 1,
         OneTick: true,
         AimsAtParts: true,
         Transition: Transition);
 
     // A fist needs hands, a bite a jaw; the damage of the mode used comes from the attacker's template.
-    private sealed record Mode(string Capacity, long AtLeast, Prop<long> DamageProp, string CrossesGap);
+    public sealed record AttackMode(string Capacity, long AtLeast, Prop<long> DamageProp, string CrossesGap);
 
-    private static readonly Mode[] Modes =
+    public static readonly IReadOnlyList<AttackMode> Modes =
     [
         new(Capacity.Manipulation, 1, Prop.AttackDamage, "limb"),
         new(Capacity.MouthCarry, 1, Prop.BiteDamage, "body"),
@@ -30,7 +29,7 @@ public static class AttackVerb
 
     private sealed record Structure(string EntityId, string? PartName);
 
-    private sealed record Choice(Mode? Mode, long Damage, string Kind);
+    private sealed record Choice(AttackMode? Mode, long Damage, string Kind);
 
     // The entity a blow lands on, and the part it lands on: the part named, else the template's default hit part.
     private static Structure? StructureOf(Pipeline.CommandContext context)

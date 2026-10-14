@@ -12,7 +12,6 @@ public static class GiveVerb
         RequiresTarget: true,
         AuthorOnly: false,
         Preconditions: Preconditions,
-        Duration: _ => 1,
         OneTick: true,
         Suggest: Suggest,
         Transition: Transition);
