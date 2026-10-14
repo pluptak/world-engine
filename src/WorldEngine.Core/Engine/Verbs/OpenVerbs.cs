@@ -19,7 +19,7 @@ public static class OpenVerbs
     }
 
     // Turning a key needs hands; nosing a door open or shut does not. Declared before the verbs, which read it as they are built.
-    private static readonly IReadOnlyList<Pipeline.Requirement> Hands = [new Pipeline.Requirement("manipulation", 50)];
+    private static readonly IReadOnlyList<Pipeline.Requirement> Hands = [new Pipeline.Requirement(Capacity.Manipulation, 50)];
 
     public static Pipeline.VerbDecl Open { get; } = Declare(Kind.Open);
 
@@ -130,7 +130,7 @@ public static class OpenVerbs
         var target = entity!;
         if (Jams(working, context, target))
         {
-            working.Emit("jammed", target.Id, new Dictionary<string, JsonNode?> { ["verb"] = JsonValue.Create(KindName(kind)) }, rootEventId);
+            working.Emit(EventType.Jammed, target.Id, new Dictionary<string, JsonNode?> { ["verb"] = JsonValue.Create(KindName(kind)) }, rootEventId);
             return;
         }
 
@@ -145,10 +145,10 @@ public static class OpenVerbs
 
         var (prop, value, eventType) = kind switch
         {
-            Kind.Open => (Prop.Open, true, "opened"),
-            Kind.Close => (Prop.Open, false, "closed"),
-            Kind.Lock => (Prop.Locked, true, "locked"),
-            _ => (Prop.Locked, false, "unlocked"),
+            Kind.Open => (Prop.Open, true, EventType.Opened),
+            Kind.Close => (Prop.Open, false, EventType.Closed),
+            Kind.Lock => (Prop.Locked, true, EventType.Locked),
+            _ => (Prop.Locked, false, EventType.Unlocked),
         };
         var props = (kind == Kind.Open ? target.Props.Without(Prop.Closing) : target.Props).With(prop, value);
         var eventId = working.Emit(eventType, target.Id, new Dictionary<string, JsonNode?>(), rootEventId);
@@ -162,12 +162,12 @@ public static class OpenVerbs
         // over, and shutting it by hand leaves nothing to come.
         if (kind is Kind.Open or Kind.Close)
         {
-            Schedule.Cancel(working, "close", target.Id);
+            Schedule.Cancel(working, CauseKind.Close, target.Id);
         }
         var closesAfter = props.Get(Prop.ClosesAfter);
         if (kind == Kind.Open && closesAfter is > 0 && TryAdd(working.Snapshot.Tick, closesAfter.Value, out var closeTick))
         {
-            Schedule.Add(working, new ScheduledCause(closeTick, "close", target.Id, eventId));
+            Schedule.Add(working, new ScheduledCause(closeTick, CauseKind.Close, target.Id, eventId));
         }
     }
 
@@ -195,9 +195,9 @@ public static class OpenVerbs
     // The window a door with `shut_ticks` opens: a `closing` event, and the shut a scheduled close caused by it.
     private static void StartClosing(Working working, Entity target, long shutTicks, string? rootEventId)
     {
-        var eventId = working.Emit("closing", target.Id, new Dictionary<string, JsonNode?>(), rootEventId);
+        var eventId = working.Emit(EventType.Closing, target.Id, new Dictionary<string, JsonNode?>(), rootEventId);
         working.SetProps(target.Id, target.Props.With(Prop.Closing, true), eventId);
-        Schedule.Cancel(working, "close", target.Id);
-        Schedule.Add(working, new ScheduledCause(working.Snapshot.Tick + shutTicks, "close", target.Id, eventId));
+        Schedule.Cancel(working, CauseKind.Close, target.Id);
+        Schedule.Add(working, new ScheduledCause(working.Snapshot.Tick + shutTicks, CauseKind.Close, target.Id, eventId));
     }
 }

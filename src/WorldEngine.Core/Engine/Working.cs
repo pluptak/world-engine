@@ -133,7 +133,7 @@ public sealed class Working(Snapshot snapshot, string commandId)
     {
         var created = Spawn.Create(Snapshot, registry, templateId, overrides);
         Snapshot = created.Snapshot;
-        var spawnedEvent = Emit("spawned", created.Id, Pipeline.Reason(("template", templateId)), causeEventId);
+        var spawnedEvent = Emit(EventType.Spawned, created.Id, Pipeline.Reason(("template", templateId)), causeEventId);
         Deltas.Add(new Delta(
             deltaEventId ?? spawnedEvent,
             created.Id,

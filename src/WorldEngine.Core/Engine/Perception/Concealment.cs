@@ -27,7 +27,7 @@ public static class Concealment
             {
                 ["concealer"] = concealer is null ? null : JsonValue.Create(concealer),
             };
-            var revealed = working.Emit("revealed", id, data, causeEventId);
+            var revealed = working.Emit(EventType.Revealed, id, data, causeEventId);
             working.SetRelation(id, "concealed_by", null, revealed);
         }
     }

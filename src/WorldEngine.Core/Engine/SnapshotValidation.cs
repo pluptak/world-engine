@@ -425,7 +425,7 @@ public static class SnapshotValidation
         if (entity.Props.Is(Prop.Closing))
         {
             var shutting = entity.Props.Is(Prop.Open)
-                && (snapshot.Schedule ?? []).Any(cause => cause.Kind == "close" && cause.Entity == entity.Id);
+                && (snapshot.Schedule ?? []).Any(cause => cause.Kind == CauseKind.Close && cause.Entity == entity.Id);
             if (!shutting)
             {
                 issues.Add(Issue(Code.ClosingWithoutClose, [.. path, "props", Prop.Closing.Name], entity.Id));
@@ -721,7 +721,7 @@ public static class SnapshotValidation
         {
             var cause = snapshot.Schedule[index];
             var path = new[] { "schedule", index.ToString() };
-            if (cause.Kind is not ("close" or "bleed" or "process" or "beat"))
+            if (cause.Kind is not (CauseKind.Close or CauseKind.Bleed or CauseKind.Process or CauseKind.Beat))
             {
                 issues.Add(Issue(Code.UnknownCauseKind, path, cause.Kind));
             }
@@ -739,7 +739,7 @@ public static class SnapshotValidation
                 issues.Add(Issue(Code.ScheduleDangling, path, cause.Entity));
             }
             // A process runs at most once at a time on an entity: reconcile never schedules a second.
-            if (cause.Kind == "process")
+            if (cause.Kind == CauseKind.Process)
             {
                 var key = $"{cause.Entity}/{cause.Process ?? "undefined"}";
                 if (!running.Add(key))
@@ -747,15 +747,15 @@ public static class SnapshotValidation
                     issues.Add(Issue(Code.DuplicateProcess, path, key));
                 }
             }
-            if (cause.Kind == "bleed" && !(cause.Remaining is { } remaining && remaining > 0))
+            if (cause.Kind == CauseKind.Bleed && !(cause.Remaining is { } remaining && remaining > 0))
             {
                 issues.Add(Issue(Code.BleedNotRemaining, path, $"remaining {cause.Remaining?.ToString() ?? "null"}"));
             }
-            if (cause.Kind == "process" && string.IsNullOrEmpty(cause.Process))
+            if (cause.Kind == CauseKind.Process && string.IsNullOrEmpty(cause.Process))
             {
                 issues.Add(Issue(Code.InvalidProcess, path, cause.Process ?? "undefined"));
             }
-            if (cause.Kind == "beat" && Beats.Invalid(cause) is { } broken)
+            if (cause.Kind == CauseKind.Beat && Beats.Invalid(cause) is { } broken)
             {
                 issues.Add(Issue(Code.InvalidBeat, path, broken));
             }

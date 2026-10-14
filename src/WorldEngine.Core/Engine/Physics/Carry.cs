@@ -21,8 +21,8 @@ public static class Carry
 
     public static readonly IReadOnlyList<Alternative> Alternatives =
     [
-        new("manipulation", PerHand: 50, MassLimitProp: Prop.HandCarryLimitG),
-        new("mouth_carry", AtLeast: 1, MaxHands: 1, MassLimitProp: Prop.CarryLimitG, Holds: 1),
+        new(Capacity.Manipulation, PerHand: 50, MassLimitProp: Prop.HandCarryLimitG),
+        new(Capacity.MouthCarry, AtLeast: 1, MaxHands: 1, MassLimitProp: Prop.CarryLimitG, Holds: 1),
     ];
 
     // The item a holder carries in one of its own parts. Grips hold one item each; a space holds what fits.

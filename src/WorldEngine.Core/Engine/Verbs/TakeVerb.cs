@@ -110,7 +110,7 @@ public static class TakeVerb
             throw new InvalidOperationException("Take grip changed after validation");
         }
 
-        var moved = working.Emit("moved", targetId, new Dictionary<string, JsonNode?>(), rootEventId);
+        var moved = working.Emit(EventType.Moved, targetId, new Dictionary<string, JsonNode?>(), rootEventId);
         working.SetRelation(targetId, "contained_in", actorId, moved);
         working.SetRelation(targetId, "in_part", grip.Part, moved);
         working.SetRelation(targetId, "support", null, moved);

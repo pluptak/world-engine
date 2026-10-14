@@ -17,7 +17,7 @@ public static class Gate
         foreach (var occupantId in Geometry.OccupantsIn(working.Snapshot, registry, gateId))
         {
             var destination = Geometry.PushAsideDestination(working.Snapshot, registry, gateId, occupantId);
-            var movedEvent = working.Emit("moved", occupantId, new Dictionary<string, JsonNode?>(), closedEvent);
+            var movedEvent = working.Emit(EventType.Moved, occupantId, new Dictionary<string, JsonNode?>(), closedEvent);
             working.SetPos(occupantId, destination, movedEvent);
             Concealment.RevealConcealed(working, occupantId, movedEvent);
         }

@@ -15,7 +15,7 @@ public static class PutVerb
         Preconditions: Preconditions,
         Duration: _ => 1,
         OneTick: true,
-        Requires: [new Pipeline.Requirement("manipulation", 50)],
+        Requires: [new Pipeline.Requirement(Capacity.Manipulation, 50)],
         Suggest: Suggest,
         Transition: Transition);
 
@@ -200,7 +200,7 @@ public static class PutVerb
         {
             throw new InvalidOperationException("Put destination changed after validation");
         }
-        var moved = working.Emit("moved", targetId, Pipeline.Reason(("relation", relation)), rootEventId);
+        var moved = working.Emit(EventType.Moved, targetId, Pipeline.Reason(("relation", relation)), rootEventId);
         if (resolved.Target.Part is { } part)
         {
             working.SetRelation(targetId, "contained_in", actorId, moved);

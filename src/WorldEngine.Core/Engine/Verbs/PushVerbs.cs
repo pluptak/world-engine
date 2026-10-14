@@ -96,13 +96,13 @@ public static class PushVerbs
         {
             return reach;
         }
-        var moving = Capacities.Of(snapshot, context.Registry, actorId, "moving") ?? 0;
+        var moving = Capacities.Of(snapshot, context.Registry, actorId, Capacity.Moving) ?? 0;
         if (moving < 1)
         {
             return new Pipeline.Refusal(
                 Status.Refused,
                 Code.InsufficientMoving,
-                Pipeline.Reason(("capacity", "moving"), ("have", moving), ("need", 1L)));
+                Pipeline.Reason(("capacity", Capacity.Moving), ("have", moving), ("need", 1L)));
         }
         if (entity.ContainedIn is not null)
         {
@@ -151,13 +151,13 @@ public static class PushVerbs
             ?? throw new InvalidOperationException("Push target has no position");
 
         var path = Swept(current, targetId, move, reverse);
-        var movedEvent = working.Emit("moved", targetId, Pipeline.Reason(("distance_cm", path.Distance)), rootEventId);
+        var movedEvent = working.Emit(EventType.Moved, targetId, Pipeline.Reason(("distance_cm", path.Distance)), rootEventId);
         working.SetPos(targetId, Offset(position, Travel(move, reverse), path.Distance), movedEvent);
         Concealment.RevealConcealed(working, targetId, movedEvent);
         // What stands on the target rides along; only stopping short jolts off what topples.
         if (path.Obstacle is { } obstacle)
         {
-            var collidedEvent = working.Emit("collided", targetId, Pipeline.Reason(("with", obstacle)), movedEvent);
+            var collidedEvent = working.Emit(EventType.Collided, targetId, Pipeline.Reason(("with", obstacle)), movedEvent);
             Physical.ResolveImpact(working, context.Registry, targetId, obstacle, path.Distance, collidedEvent);
             Physical.PropagateSupportLoss(working, context.Registry, targetId, collidedEvent);
         }

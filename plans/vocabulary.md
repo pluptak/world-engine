@@ -15,13 +15,9 @@ template ids, entity names and other author data. Replacing those with constants
 
 Each block is independently pausable and ends with `dotnet test WorldEngine.slnx` green.
 
-1. **Cause kinds, capacities and event types.** The schedule's cause kinds (`close`, `bleed`, `process`, `beat`), the
-   capacity names the engine reads (`manipulation`, `moving`, `speech`, `mouth_carry`) and the event types it compares
-   (`sounded`, `moved`, `say`, …) become enums or named constants by the rule below. With capacities typed,
-   `Pipeline.Insufficient` maps a capacity to its `insufficient_*` code by a switch instead of parsing the name.
-2. **Typed verb specs.** `VerbSpec` holds records, not JSON text: `Args` as a map of `ArgSpec`, `Duration`,
+1. **Typed verb specs.** `VerbSpec` holds records, not JSON text: `Args` as a map of `ArgSpec`, `Duration`,
    `CarryAlternative`, `AttackMode`. The catalog serializes them; its golden is regenerated.
-3. **Scheduled causes as types.** `ScheduledCause` splits into `CloseCause`, `BleedCause`, `ProcessCause` and `BeatCause`
+2. **Scheduled causes as types.** `ScheduledCause` splits into `CloseCause`, `BleedCause`, `ProcessCause` and `BeatCause`
    (polymorphic on `kind`), with the beat's action, condition and followers as records instead of `JsonNode`. The
    kind-by-kind checks in `SnapshotValidation` and the `JsonNode` walking in `BeatConditions` go.
 
@@ -36,8 +32,11 @@ Each block is independently pausable and ends with `dotnet test WorldEngine.slnx
 - Every machine code is a member of `Code` (`Model/Code.cs`): reason, basis, invariant and refused-input codes are one
   vocabulary, since an edit refuses with the invariant it would break. A new code is one member there. Where a status
   stands in for a missing code (`ambiguous`), `Pipeline.ReasonName` gives the string.
-- A vocabulary a caller may extend stays a string with named constants and one list: `Sense` (a request may name a sense the
-  engine has no rule for, which answers `engine_incapable`).
+- A vocabulary a caller may extend stays a string with named constants: `Sense` (a request may name a sense the engine has
+  no rule for, which answers `engine_incapable`), `Capacity` (a template's parts may contribute any), `EventType` (a root
+  event is named for its verb, and verbs are a registry) and `CauseKind` (a stored snapshot may name another, reported as
+  `unknown_cause_kind`; the typed causes below settle it). A verb's required capacity maps to its `insufficient_*` code in
+  `Pipeline.Insufficient`, which `CatalogGoldenTests` holds to every verb's `refuses`.
 
 ## Out of this plan
 

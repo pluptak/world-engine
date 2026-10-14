@@ -67,7 +67,13 @@ public static class Pipeline
     public static Refusal Refused(Code code, IReadOnlyDictionary<string, JsonNode?>? data = null) => new(Status.Refused, code, data);
 
     // The refusal of a body short of a capacity: `insufficient_manipulation` for `manipulation`.
-    public static Code Insufficient(string capacity) => WorldJson.Parse<Code>($"insufficient_{capacity}");
+    public static Code Insufficient(string capacity) => capacity switch
+    {
+        Capacity.Manipulation => Code.InsufficientManipulation,
+        Capacity.Moving => Code.InsufficientMoving,
+        Capacity.Speech => Code.InsufficientSpeech,
+        _ => throw new InvalidOperationException($"No refusal names a body short of {capacity}"),
+    };
 
     // What a log or a skipped beat names as the reason: the code, or the status where there is none (`ambiguous`).
     public static string ReasonName(Code? reasonCode, Status status) =>

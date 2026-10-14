@@ -65,7 +65,7 @@ public static class Clock
         {
             return long.MaxValue;
         }
-        var waiting = Schedule.Pending(snapshot).Any(cause => cause.Kind == "beat" && cause.Id == stop.Id && cause.DueTick == stop.DueTick);
+        var waiting = Schedule.Pending(snapshot).Any(cause => cause.Kind == CauseKind.Beat && cause.Id == stop.Id && cause.DueTick == stop.DueTick);
         return waiting ? stop.DueTick - 1 : long.MaxValue;
     }
 
@@ -145,7 +145,7 @@ public static class Clock
                 ["from"] = Level(before[entry.Entity], entry.Modifier.Capacity),
                 ["to"] = Level(after[entry.Entity], entry.Modifier.Capacity),
             };
-            var eventId = working.Emit("capability_changed", entry.Entity, data, entry.Modifier.CauseId);
+            var eventId = working.Emit(EventType.CapabilityChanged, entry.Entity, data, entry.Modifier.CauseId);
             firstEvent.TryAdd(entry.Entity, eventId);
         }
         foreach (var id in affected)

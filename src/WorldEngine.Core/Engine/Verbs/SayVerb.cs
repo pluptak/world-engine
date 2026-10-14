@@ -16,7 +16,7 @@ public static class SayVerb
         Duration: _ => 1,
         OneTick: true,
         FreeArgs: true,
-        Requires: [new Pipeline.Requirement("speech", 50)],
+        Requires: [new Pipeline.Requirement(Capacity.Speech, 50)],
         RootEvent: RootEvent);
 
     // `\z`, not `$`: a trailing newline is not part of a token.

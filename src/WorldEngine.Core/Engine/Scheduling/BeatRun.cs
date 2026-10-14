@@ -49,7 +49,7 @@ public static partial class Beats
         {
             fields[key] = JsonValue.Create(value);
         }
-        working.Emit("beat_skipped", cause.Entity, fields, cause.CauseId);
+        working.Emit(EventType.BeatSkipped, cause.Entity, fields, cause.CauseId);
     }
 
     private static Fired Fire(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause)
@@ -58,7 +58,7 @@ public static partial class Beats
         if (JsonReads.Text(action["kind"]) == "sound")
         {
             var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["loud"] = JsonValue.Create(JsonReads.IsTrue(action["loud"])) };
-            return new Done(working.Emit("sounded", JsonReads.Text(action["entity"])!, data, cause.CauseId));
+            return new Done(working.Emit(EventType.Sounded, JsonReads.Text(action["entity"])!, data, cause.CauseId));
         }
         return FireEdit(working, registry, cause, action);
     }
@@ -126,7 +126,7 @@ public static partial class Beats
                 working,
                 new ScheduledCause(
                     due,
-                    "beat",
+                    CauseKind.Beat,
                     subject,
                     parentEvent,
                     Id: JsonReads.Text(child["id"]),

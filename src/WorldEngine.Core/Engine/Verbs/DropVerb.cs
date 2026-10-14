@@ -67,7 +67,7 @@ public static class DropVerb
             : null;
         var fallCm = handHeight - (rest?.HeightCm ?? 0);
 
-        var dropped = working.Emit("dropped", entityId, Pipeline.Reason(("fall_cm", fallCm)), causeId);
+        var dropped = working.Emit(EventType.Dropped, entityId, Pipeline.Reason(("fall_cm", fallCm)), causeId);
         working.SetRelation(entityId, "contained_in", null, dropped);
         working.SetRelation(entityId, "in_part", null, dropped);
         working.SetRelation(entityId, "support", rest?.Support ?? holder.Location, dropped);

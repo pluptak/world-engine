@@ -28,7 +28,7 @@ public static partial class Beats
     public static ScheduledCause CauseOf(JsonObject edit, string? causeId) =>
         new(
             JsonReads.SafeInt(edit["at_tick"])!.Value,
-            "beat",
+            CauseKind.Beat,
             ActionSubject((JsonObject)edit["action"]!)!,
             causeId,
             Id: JsonReads.Text(edit["id"]),

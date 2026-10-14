@@ -18,7 +18,7 @@ public static class LightVerbs
         Preconditions: context => Preconditions(context, lit),
         Duration: _ => 1,
         OneTick: true,
-        Requires: [new Pipeline.Requirement("manipulation", 50)],
+        Requires: [new Pipeline.Requirement(Capacity.Manipulation, 50)],
         Transition: (working, context, rootEventId) => Transition(working, context, rootEventId, lit));
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context, bool lit)
@@ -75,7 +75,7 @@ public static class LightVerbs
     {
         var lightId = context.Target!.EntityId;
         var light = working.Snapshot.Entities[lightId];
-        var eventId = working.Emit(lit ? "lit" : "doused", lightId, new Dictionary<string, JsonNode?>(), rootEventId);
+        var eventId = working.Emit(lit ? EventType.Lit : EventType.Doused, lightId, new Dictionary<string, JsonNode?>(), rootEventId);
         working.SetProps(lightId, light.Props.With(Prop.Burning, lit), eventId);
     }
 }

@@ -24,8 +24,8 @@ public static class AttackVerb
 
     private static readonly Mode[] Modes =
     [
-        new("manipulation", 1, Prop.AttackDamage, "limb"),
-        new("mouth_carry", 1, Prop.BiteDamage, "body"),
+        new(Capacity.Manipulation, 1, Prop.AttackDamage, "limb"),
+        new(Capacity.MouthCarry, 1, Prop.BiteDamage, "body"),
     ];
 
     private sealed record Structure(string EntityId, string? PartName);
@@ -201,7 +201,7 @@ public static class AttackVerb
             if (from != to)
             {
                 var eventId = working.Emit(
-                    "capability_changed",
+                    EventType.CapabilityChanged,
                     entityId,
                     Pipeline.Reason(("capacity", name), ("from", from), ("to", to)),
                     causeId);
@@ -318,14 +318,14 @@ public static class AttackVerb
             var integrity = Math.Max(0, state.Integrity - damage);
             if (integrity == 0 && part.Detachable)
             {
-                damageEvent = working.Emit("detached", target.Id, Pipeline.Reason(("part", partName)), rootEventId);
+                damageEvent = working.Emit(EventType.Detached, target.Id, Pipeline.Reason(("part", partName)), rootEventId);
                 detachEvent = damageEvent;
                 DetachPart(working, registry, target.Id, partName, integrity, damageEvent);
                 Schedule.StartBleeding(working, target.Id, damageEvent);
             }
             else if (integrity == 0)
             {
-                damageEvent = working.Emit("destroyed", target.Id, Pipeline.Reason(("part", partName)), rootEventId);
+                damageEvent = working.Emit(EventType.Destroyed, target.Id, Pipeline.Reason(("part", partName)), rootEventId);
                 working.SetParts(
                     target.Id,
                     PartStates.With(template, target.Parts, new Dictionary<string, PartState>(StringComparer.Ordinal)
@@ -337,7 +337,7 @@ public static class AttackVerb
             else
             {
                 damageEvent = working.Emit(
-                    "damaged",
+                    EventType.Damaged,
                     target.Id,
                     Pipeline.Reason(("part", partName), ("integrity", integrity)),
                     rootEventId);
@@ -367,14 +367,14 @@ public static class AttackVerb
             var integrity = Math.Max(0, target.Integrity - damage);
             if (integrity == 0)
             {
-                damageEvent = working.Emit("destroyed", target.Id, Pipeline.Reason(("integrity", integrity)), rootEventId);
+                damageEvent = working.Emit(EventType.Destroyed, target.Id, Pipeline.Reason(("integrity", integrity)), rootEventId);
                 working.SetIntegrity(target.Id, integrity, damageEvent);
                 working.SetStatus(target.Id, EntityStatus.Destroyed, damageEvent);
                 AddBreakResidue(working, registry, target.Id, damageEvent);
             }
             else
             {
-                damageEvent = working.Emit("damaged", target.Id, Pipeline.Reason(("integrity", integrity)), rootEventId);
+                damageEvent = working.Emit(EventType.Damaged, target.Id, Pipeline.Reason(("integrity", integrity)), rootEventId);
                 working.SetIntegrity(target.Id, integrity, damageEvent);
             }
         }

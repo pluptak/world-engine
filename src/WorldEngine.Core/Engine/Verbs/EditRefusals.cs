@@ -290,7 +290,7 @@ public static partial class EditVerb
     private static Pipeline.Refusal? BeatRefusal(Pipeline.CommandContext context, WorldEdit edit) => edit switch
     {
         ScheduleBeatEdit scheduled => ScheduleBeatRefusal(context, scheduled.Beat),
-        CancelBeatEdit cancelled => Schedule.Pending(context.Snapshot).Any(cause => cause.Kind == "beat" && cause.Id == cancelled.Id)
+        CancelBeatEdit cancelled => Schedule.Pending(context.Snapshot).Any(cause => cause.Kind == CauseKind.Beat && cause.Id == cancelled.Id)
             ? null
             : Refused(Code.NoSuchBeat),
         RetimeBeatEdit moved => RetimeBeatRefusal(context, moved),
@@ -343,7 +343,7 @@ public static partial class EditVerb
     // refused, and its new tick is not in the past.
     private static Pipeline.Refusal? RetimeBeatRefusal(Pipeline.CommandContext context, RetimeBeatEdit edit)
     {
-        var cause = Schedule.Pending(context.Snapshot).FirstOrDefault(entry => entry.Kind == "beat" && entry.Id == edit.Id);
+        var cause = Schedule.Pending(context.Snapshot).FirstOrDefault(entry => entry.Kind == CauseKind.Beat && entry.Id == edit.Id);
         if (cause is null)
         {
             return Refused(Code.NoSuchBeat);

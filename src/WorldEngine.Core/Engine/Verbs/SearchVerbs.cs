@@ -13,7 +13,7 @@ public static class SearchVerbs
         Preconditions: Preconditions,
         Duration: _ => 1,
         OneTick: true,
-        Requires: [new Pipeline.Requirement("manipulation", 50)],
+        Requires: [new Pipeline.Requirement(Capacity.Manipulation, 50)],
         Transition: Transition);
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
@@ -53,7 +53,7 @@ public static class SearchVerbs
         var concealer = context.Target!.EntityId;
         foreach (var id in Concealment.HiddenBy(working.Snapshot, concealer))
         {
-            working.Emit("found", id, Pipeline.Reason(("concealer", concealer)), rootEventId);
+            working.Emit(EventType.Found, id, Pipeline.Reason(("concealer", concealer)), rootEventId);
         }
     }
 }

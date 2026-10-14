@@ -106,7 +106,7 @@ public sealed class DirectorWorld(IWorld world)
 
     private long? PendingDue(string id)
     {
-        var cause = world.Scheduled().FirstOrDefault(entry => entry.Kind == "beat" && entry.Id == id);
+        var cause = world.Scheduled().FirstOrDefault(entry => entry.Kind == CauseKind.Beat && entry.Id == id);
         return cause?.DueTick;
     }
 

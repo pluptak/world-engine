@@ -80,7 +80,7 @@ public static class Processes
     }
 
     private static bool IsPendingFor(ScheduledCause cause, string entity, string process) =>
-        cause.Kind == "process" && cause.Entity == entity && cause.Process == process;
+        cause.Kind == CauseKind.Process && cause.Entity == entity && cause.Process == process;
 
     // Brings one entity's schedule in line with its props: a process that can run and has nothing pending is scheduled
     // `every_ticks` from now, naming the event that made it so; a pending one that can no longer run is withdrawn, recording
@@ -101,7 +101,7 @@ public static class Processes
             {
                 if (TryAdd(snapshot.Tick, DelayOf(spec, entity), out var due))
                 {
-                    Schedule.Add(working, new ScheduledCause(due, "process", entityId, causeId, Process: spec.Id));
+                    Schedule.Add(working, new ScheduledCause(due, CauseKind.Process, entityId, causeId, Process: spec.Id));
                 }
             }
             else if (!can && waiting)
@@ -122,13 +122,13 @@ public static class Processes
             || entity.Props.Get(Prop.ClosesAfter) is not { } after
             || !IsInt(after)
             || after <= 0
-            || Schedule.Pending(working.Snapshot).Any(cause => cause.Kind == "close" && cause.Entity == entity.Id))
+            || Schedule.Pending(working.Snapshot).Any(cause => cause.Kind == CauseKind.Close && cause.Entity == entity.Id))
         {
             return;
         }
         if (TryAdd(working.Snapshot.Tick, (long)after, out var due))
         {
-            Schedule.Add(working, new ScheduledCause(due, "close", entity.Id, causeId));
+            Schedule.Add(working, new ScheduledCause(due, CauseKind.Close, entity.Id, causeId));
         }
     }
 
@@ -199,7 +199,7 @@ public static class Processes
             return;
         }
         var eventId = working.Emit(
-            "changed",
+            EventType.Changed,
             entity.Id,
             Pipeline.Reason(("prop", adjust.Prop), ("from", from), ("to", to), ("process", spec.Id)),
             cause.CauseId);
@@ -239,7 +239,7 @@ public static class Processes
                     ["to"] = set.Value?.DeepClone(),
                     ["process"] = JsonValue.Create(spec.Id),
                 };
-                var eventId = working.Emit("changed", entityId, data, causeId);
+                var eventId = working.Emit(EventType.Changed, entityId, data, causeId);
                 var props = new Dictionary<string, JsonNode?>(entity.Props, StringComparer.Ordinal) { [set.Prop] = set.Value?.DeepClone() };
                 working.SetProps(entityId, props, eventId);
             }

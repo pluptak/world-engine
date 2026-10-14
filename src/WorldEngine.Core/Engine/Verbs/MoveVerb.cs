@@ -195,13 +195,13 @@ public static class MoveVerb
                 Code.BeingCarried,
                 Pipeline.Reason(("carrier", CarrierOf(snapshot, actor))));
         }
-        var moving = Capacities.Of(snapshot, context.Registry, actor.Id, "moving") ?? 0;
+        var moving = Capacities.Of(snapshot, context.Registry, actor.Id, Capacity.Moving) ?? 0;
         if (moving < 1)
         {
             return new Pipeline.Refusal(
                 Status.Refused,
                 Code.InsufficientMoving,
-                Pipeline.Reason(("capacity", "moving"), ("have", moving), ("need", 1L)));
+                Pipeline.Reason(("capacity", Capacity.Moving), ("have", moving), ("need", 1L)));
         }
 
         var walk = WalkTo(context, asked);
@@ -271,7 +271,7 @@ public static class MoveVerb
         var walk = WalkTo(context, DestinationOf(context.Command.Args)!);
         var to = walk.To!;
         var from = Geometry.EffectivePos(working.Snapshot, actorId);
-        var movedEvent = working.Emit("moved", actorId, new Dictionary<string, JsonNode?>(), rootEventId);
+        var movedEvent = working.Emit(EventType.Moved, actorId, new Dictionary<string, JsonNode?>(), rootEventId);
         var room = to is AtPosition ? context.Snapshot.Entities[actorId].Location! : ((InRoom)to).Id;
         working.SetRelation(actorId, "location", room, movedEvent);
         working.SetRelation(actorId, "support", room, movedEvent);

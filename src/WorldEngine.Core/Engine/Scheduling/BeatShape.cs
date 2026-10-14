@@ -171,7 +171,7 @@ public static partial class Beats
         var ids = new List<string>();
         foreach (var cause in causes)
         {
-            if (cause.Kind == "beat")
+            if (cause.Kind == CauseKind.Beat)
             {
                 NodeIds(cause.Id ?? "undefined", cause.Then, ids);
             }

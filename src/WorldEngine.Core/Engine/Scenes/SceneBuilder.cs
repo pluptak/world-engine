@@ -154,7 +154,7 @@ public static class SceneBuilder
             }
             var cause = new ScheduledCause(
                 atTick,
-                "beat",
+                CauseKind.Beat,
                 subject,
                 null,
                 Id: Text(resolved["id"]),

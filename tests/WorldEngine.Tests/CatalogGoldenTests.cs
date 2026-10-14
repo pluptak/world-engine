@@ -19,6 +19,19 @@ public class CatalogGoldenTests
             "the catalog differs from TypeScript's");
     }
 
+    // A verb that needs a capacity refuses a body short of it with that capacity's own code, which the verb declares.
+    [Fact]
+    public void Every_capacity_a_verb_requires_has_its_declared_refusal()
+    {
+        foreach (var (name, verb) in VerbRegistry.All)
+        {
+            foreach (var requirement in verb.Requires ?? [])
+            {
+                Assert.Contains(Pipeline.Insufficient(requirement.Capacity), VerbSpecs.ByVerb[name].Refuses);
+            }
+        }
+    }
+
     [Fact]
     public void A_refusal_the_verb_did_not_declare_throws()
     {

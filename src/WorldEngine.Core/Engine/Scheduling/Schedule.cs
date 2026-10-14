@@ -60,16 +60,16 @@ public static class Schedule
     {
         switch (cause.Kind)
         {
-            case "close":
+            case CauseKind.Close:
                 RunClose(working, registry, cause);
                 return;
-            case "bleed":
+            case CauseKind.Bleed:
                 RunBleed(working, registry, cause);
                 return;
-            case "process":
+            case CauseKind.Process:
                 Processes.RunProcess(working, registry, cause);
                 return;
-            case "beat":
+            case CauseKind.Beat:
                 Beats.Run(working, registry, cause);
                 return;
             default:
@@ -84,7 +84,7 @@ public static class Schedule
         {
             return;
         }
-        var closed = working.Emit("closed", entity.Id, new Dictionary<string, JsonNode?>(), cause.CauseId);
+        var closed = working.Emit(EventType.Closed, entity.Id, new Dictionary<string, JsonNode?>(), cause.CauseId);
         // A door on its way shut has `closing` no longer, once it is shut.
         working.SetProps(entity.Id, entity.Props.Without(Prop.Closing).With(Prop.Open, false), closed);
         Gate.PushOccupantsAside(working, registry, entity.Id, closed);
@@ -124,7 +124,7 @@ public static class Schedule
         var rule = Bleeding(entity.Props);
         if (rule is not null && remaining > 0 && TryAdd(working.Snapshot.Tick, rule.Value.Every, out var due))
         {
-            Add(working, new ScheduledCause(due, "bleed", entityId, causeId, remaining));
+            Add(working, new ScheduledCause(due, CauseKind.Bleed, entityId, causeId, remaining));
         }
     }
 

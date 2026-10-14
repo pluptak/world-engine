@@ -18,7 +18,7 @@ public static class SwitchVerbs
         Preconditions: context => Preconditions(context, on),
         Duration: _ => 1,
         OneTick: true,
-        Requires: [new Pipeline.Requirement("manipulation", 50)],
+        Requires: [new Pipeline.Requirement(Capacity.Manipulation, 50)],
         Transition: (working, context, rootEventId) => Transition(working, context, rootEventId, on));
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context, bool on)
@@ -84,7 +84,7 @@ public static class SwitchVerbs
     {
         var targetId = context.Target!.EntityId;
         var entity = working.Snapshot.Entities[targetId];
-        var eventId = working.Emit("switched", targetId, Pipeline.Reason(("on", on)), rootEventId);
+        var eventId = working.Emit(EventType.Switched, targetId, Pipeline.Reason(("on", on)), rootEventId);
         working.SetProps(targetId, entity.Props.With(Prop.On, on), eventId);
     }
 }

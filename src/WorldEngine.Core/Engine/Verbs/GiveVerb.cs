@@ -131,7 +131,7 @@ public static class GiveVerb
         }
         var item = working.Snapshot.Entities[targetId];
         var moved = working.Emit(
-            "moved",
+            EventType.Moved,
             targetId,
             Pipeline.Reason(("from", actorId), ("to", recipient.Id)),
             rootEventId);

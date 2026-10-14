@@ -38,7 +38,7 @@ public static class ConsumeVerb
         {
             throw new InvalidOperationException("Consume target changed after validation");
         }
-        var eaten = working.Emit("consumed", item.Id, ConsumedData(taken), rootEventId);
+        var eaten = working.Emit(EventType.Consumed, item.Id, ConsumedData(taken), rootEventId);
 
         // Only a body that declares a hunger has one to lower.
         var actor = working.Snapshot.Entities[actorId];
@@ -196,7 +196,7 @@ public static class ConsumeVerb
         var actor = context.Snapshot.Entities[actorId];
         var mouths = context.Registry.TryGetValue(actor.Template, out var template)
             ? [.. template.Parts
-                .Where(part => part.Contributes.GetValueOrDefault("mouth_carry") > 0 && part.Holds?.Kind == HoldKind.Grip)
+                .Where(part => part.Contributes.GetValueOrDefault(Capacity.MouthCarry) > 0 && part.Holds?.Kind == HoldKind.Grip)
                 .Select(part => part.Name)]
             : new List<string>();
         return mouths.Count > 0

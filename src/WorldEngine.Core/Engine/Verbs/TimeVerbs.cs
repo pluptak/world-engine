@@ -26,7 +26,7 @@ public static class TimeVerbs
         {
             return null;
         }
-        var cause = Schedule.Pending(snapshot).FirstOrDefault(entry => entry.Kind == "beat" && entry.Id == id);
+        var cause = Schedule.Pending(snapshot).FirstOrDefault(entry => entry.Kind == CauseKind.Beat && entry.Id == id);
         return cause is null ? null : new Clock.StopBeat(id, cause.DueTick);
     }
 
@@ -103,7 +103,7 @@ public static class TimeVerbs
             {
                 return Pipeline.Invalid(Code.InvalidArgs);
             }
-            var cause = Schedule.Pending(context.Snapshot).FirstOrDefault(entry => entry.Kind == "beat" && entry.Id == id);
+            var cause = Schedule.Pending(context.Snapshot).FirstOrDefault(entry => entry.Kind == CauseKind.Beat && entry.Id == id);
             if (cause is null)
             {
                 return Pipeline.Refused(Code.NoSuchBeat);

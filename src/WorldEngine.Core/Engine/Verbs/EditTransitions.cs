@@ -46,7 +46,7 @@ public static partial class EditVerb
                 // Withdrawn at the source, recording nothing: the `edit` event is the record.
                 Schedule.Replace(
                     working,
-                    [.. Schedule.Pending(working.Snapshot).Where(cause => cause.Kind != "beat" || cause.Id != cancelled.Id)]);
+                    [.. Schedule.Pending(working.Snapshot).Where(cause => cause.Kind != CauseKind.Beat || cause.Id != cancelled.Id)]);
                 return;
             case RetimeBeatEdit moved:
                 TransitionRetime(working, moved);
@@ -113,7 +113,7 @@ public static partial class EditVerb
     private static void TransitionRetime(Working working, RetimeBeatEdit edit)
     {
         var list = Schedule.Pending(working.Snapshot).ToList();
-        var index = list.FindIndex(entry => entry.Kind == "beat" && entry.Id == edit.Id);
+        var index = list.FindIndex(entry => entry.Kind == CauseKind.Beat && entry.Id == edit.Id);
         if (index < 0)
         {
             throw new InvalidOperationException("Edit changed after validation");
@@ -129,7 +129,7 @@ public static partial class EditVerb
         var subject = context.Snapshot.Entities[edit.Target];
         var next = context.Registry[edit.Template];
         var edited = working.Emit(
-            "edited",
+            EventType.Edited,
             edit.Target,
             Pipeline.Reason(("field", "template"), ("from", subject.Template), ("to", edit.Template)),
             rootEventId);
@@ -150,7 +150,7 @@ public static partial class EditVerb
             throw new InvalidOperationException("Edit placement changed after validation");
         }
         var placement = NormalizedPlacement(subject, edit) ?? throw new InvalidOperationException("Edit placement changed after validation");
-        var placed = working.Emit("placed", edit.Target, new Dictionary<string, JsonNode?>(), rootEventId);
+        var placed = working.Emit(EventType.Placed, edit.Target, new Dictionary<string, JsonNode?>(), rootEventId);
         if (subject.Support is not null && placement.Support is null && placement.Contained is null)
         {
             Physical.PropagateSupportLoss(working, context.Registry, edit.Target, placed);
@@ -190,7 +190,7 @@ public static partial class EditVerb
     private static void TransitionProps(Working working, Pipeline.CommandContext context, PropsEdit edit, string? rootEventId)
     {
         var subject = context.Snapshot.Entities[edit.Target];
-        var edited = working.Emit("edited", edit.Target, Pipeline.Reason(("field", "props")), rootEventId);
+        var edited = working.Emit(EventType.Edited, edit.Target, Pipeline.Reason(("field", "props")), rootEventId);
         IReadOnlyDictionary<string, JsonNode?> basis = edit.Kind == "update_props" ? subject.Props : new Dictionary<string, JsonNode?>();
         working.SetProps(edit.Target, Merge(basis, edit.Props), edited);
     }
@@ -198,7 +198,7 @@ public static partial class EditVerb
     private static void TransitionPart(Working working, Pipeline.CommandContext context, SetPartEdit edit, string? rootEventId)
     {
         var subject = context.Snapshot.Entities[edit.Target];
-        var edited = working.Emit("edited", edit.Target, Pipeline.Reason(("field", "parts"), ("part", edit.Part)), rootEventId);
+        var edited = working.Emit(EventType.Edited, edit.Target, Pipeline.Reason(("field", "parts"), ("part", edit.Part)), rootEventId);
         var template = context.Registry[subject.Template];
         working.SetParts(
             edit.Target,

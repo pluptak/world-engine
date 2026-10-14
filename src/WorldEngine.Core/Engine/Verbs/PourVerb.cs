@@ -15,7 +15,7 @@ public static class PourVerb
         Preconditions: Preconditions,
         Duration: _ => 1,
         OneTick: true,
-        Requires: [new Pipeline.Requirement("manipulation", 50)],
+        Requires: [new Pipeline.Requirement(Capacity.Manipulation, 50)],
         Suggest: Suggest,
         FreeArgs: true,
         Transition: Transition);
@@ -223,7 +223,7 @@ public static class PourVerb
     {
         var pour = PlanOf(context).Pour ?? throw new InvalidOperationException("Pour changed after validation");
         var poured = working.Emit(
-            "poured",
+            EventType.Poured,
             pour.Source.Id,
             Pipeline.Reason(("material", pour.Material), ("amount", pour.Amount), ("to", pour.Destination.Id)),
             rootEventId);

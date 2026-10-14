@@ -25,7 +25,7 @@ public static class Harm
         }
         var integrity = Math.Max(0, entity.Integrity - amount);
         var eventId = working.Emit(
-            integrity == 0 ? "destroyed" : "damaged",
+            integrity == 0 ? EventType.Destroyed : EventType.Damaged,
             entity.Id,
             Pipeline.Reason(("integrity", integrity)),
             causeId);

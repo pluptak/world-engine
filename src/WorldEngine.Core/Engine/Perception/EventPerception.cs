@@ -90,44 +90,44 @@ public static class EventPerception
         ["attack"] = Audible,
         ["wait"] = Silent,
         ["advance"] = Authored,
-        ["changed"] = Silent,
+        [EventType.Changed] = Silent,
         ["search"] = Silent,
         ["consume"] = Silent,
-        ["consumed"] = Silent,
-        ["spent"] = Silent,
+        [EventType.Consumed] = Silent,
+        [EventType.Spent] = Silent,
         ["light"] = Silent,
         ["douse"] = Silent,
-        ["lit"] = Silent,
-        ["doused"] = Silent,
-        ["moved"] = Audible,
-        ["collided"] = Audible,
-        ["dropped"] = Audible,
-        ["displaced"] = Audible,
-        ["damaged"] = Audible,
-        ["destroyed"] = Audible,
-        ["detached"] = Audible,
-        ["capability_changed"] = Silent,
-        ["opened"] = Audible,
-        ["closed"] = Audible,
-        ["closing"] = Audible,
-        ["switched"] = Audible,
-        ["jammed"] = Audible,
-        ["locked"] = Audible,
-        ["unlocked"] = Audible,
-        ["spawned"] = Audible,
-        ["revealed"] = Silent,
-        ["found"] = Silent,
+        [EventType.Lit] = Silent,
+        [EventType.Doused] = Silent,
+        [EventType.Moved] = Audible,
+        [EventType.Collided] = Audible,
+        [EventType.Dropped] = Audible,
+        [EventType.Displaced] = Audible,
+        [EventType.Damaged] = Audible,
+        [EventType.Destroyed] = Audible,
+        [EventType.Detached] = Audible,
+        [EventType.CapabilityChanged] = Silent,
+        [EventType.Opened] = Audible,
+        [EventType.Closed] = Audible,
+        [EventType.Closing] = Audible,
+        [EventType.Switched] = Audible,
+        [EventType.Jammed] = Audible,
+        [EventType.Locked] = Audible,
+        [EventType.Unlocked] = Audible,
+        [EventType.Spawned] = Audible,
+        [EventType.Revealed] = Silent,
+        [EventType.Found] = Silent,
         ["pour"] = Pour,
-        ["poured"] = Pour,
-        ["spilled"] = Pour,
-        ["broken"] = Broken,
+        [EventType.Poured] = Pour,
+        [EventType.Spilled] = Pour,
+        [EventType.Broken] = Broken,
         ["edit"] = Authored,
-        ["placed"] = Authored,
-        ["edited"] = Authored,
-        ["removed"] = Authored,
-        ["sounded"] = Sounded,
+        [EventType.Placed] = Authored,
+        [EventType.Edited] = Authored,
+        [EventType.Removed] = Authored,
+        [EventType.Sounded] = Sounded,
         ["say"] = Say,
-        ["beat_skipped"] = Authored,
+        [EventType.BeatSkipped] = Authored,
     };
 
     // Whether the world authored this event: decided from its own type and one step up its cause chain, never from an actor.
@@ -137,7 +137,7 @@ public static class EventPerception
         {
             return true;
         }
-        if (eventRecord.Type != "spawned" || eventRecord.CauseId is null)
+        if (eventRecord.Type != EventType.Spawned || eventRecord.CauseId is null)
         {
             return false;
         }
@@ -179,10 +179,10 @@ public static class EventPerception
             return false;
         }
         var data = eventRecord.Data;
-        return eventRecord.Type is "broken" or "detached"
-            || (eventRecord.Type == "sounded" && JsonReads.IsTrue(data.GetValueOrDefault("loud")))
+        return eventRecord.Type is EventType.Broken or EventType.Detached
+            || (eventRecord.Type == EventType.Sounded && JsonReads.IsTrue(data.GetValueOrDefault("loud")))
             || (eventRecord.Type == "say" && JsonReads.Text(data.GetValueOrDefault("volume")) == "shout")
-            || (eventRecord.Type == "dropped" && JsonReads.Number(data.GetValueOrDefault("fall_cm")) is { } fall && fall >= 50);
+            || (eventRecord.Type == EventType.Dropped && JsonReads.Number(data.GetValueOrDefault("fall_cm")) is { } fall && fall >= 50);
     }
 
     // The room an event happened in: the room its data names, else the subject's own.
@@ -355,7 +355,7 @@ public static class EventPerception
             return authored ? new Perception.Answer(Truth.False, Code.Authored) : new Perception.Answer(Truth.False, Code.NoSuchEntity);
         }
         // A `found` event is where the search happened, not what was under it: it is read against the concealer.
-        var subject = eventRecord.Type == "found" && JsonReads.Text(eventRecord.Data.GetValueOrDefault("concealer")) is { } concealer
+        var subject = eventRecord.Type == EventType.Found && JsonReads.Text(eventRecord.Data.GetValueOrDefault("concealer")) is { } concealer
             && snapshot.Entities.TryGetValue(concealer, out var concealerEntity)
                 ? concealerEntity
                 : named;
@@ -378,7 +378,7 @@ public static class EventPerception
                 return new Perception.Answer(Truth.False, Code.Authored);
             }
             // A collision is felt by what was hit as much as by what moved.
-            var struck = eventRecord.Type == "collided" && JsonReads.Text(eventRecord.Data.GetValueOrDefault("with")) is { } with
+            var struck = eventRecord.Type == EventType.Collided && JsonReads.Text(eventRecord.Data.GetValueOrDefault("with")) is { } with
                 ? snapshot.Entities.GetValueOrDefault(with)
                 : null;
             return TouchesBody(snapshot, registry, observer.Id, subject)
@@ -387,7 +387,7 @@ public static class EventPerception
                 : new Perception.Answer(Truth.False, Code.NotTouching);
         }
         // A sound is heard, never seen, wherever the observer stands.
-        if (sense == Sense.Sight && eventRecord.Type == "sounded")
+        if (sense == Sense.Sight && eventRecord.Type == EventType.Sounded)
         {
             return new Perception.Answer(Truth.False, Code.Unseen);
         }
@@ -448,7 +448,7 @@ public static class EventPerception
         var crossesDoors = sense is Sense.Hearing or Sense.Smell;
         // A `moved` the hands caused is as silent as the act behind it: footsteps stay audible, and the door never carries
         // what the room itself does not hear.
-        if (sense == Sense.Hearing && eventRecord.Type == "moved" && HandCaused(eventRecord, events))
+        if (sense == Sense.Hearing && eventRecord.Type == EventType.Moved && HandCaused(eventRecord, events))
         {
             return new Perception.Answer(Truth.False, Code.Quiet);
         }
