@@ -13,6 +13,11 @@ public class CatalogGoldenTests
     [Fact]
     public void Catalog_matches_TypeScript()
     {
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("catalog-golden.expected.json", VerbRegistry.Catalog());
+            return;
+        }
         var expected = GoldenRows.ReadRows("catalog-golden.expected.json");
         Assert.True(
             CanonicalJson.Serialize(expected) == CanonicalJson.Serialize(VerbRegistry.Catalog()),

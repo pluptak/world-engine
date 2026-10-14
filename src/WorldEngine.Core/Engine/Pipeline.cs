@@ -13,14 +13,12 @@ namespace WorldEngine.Core.Engine;
 public static class Pipeline
 {
     // What a verb declares: whether it needs a target, whether only the world author may issue it, its preconditions
-    // (null when it has none beyond the front), its duration in ticks (null when it takes none), the capacities its
-    // actor must hold (`requires`), and its transition, run after the root event (null when it changes nothing). The
-    // verbs are ported one at a time; a verb without a declaration here is not yet in the table.
+    // (null when it has none beyond the front), its duration (null is one tick), the capacities its actor must hold
+    // (`requires`), and its transition, run after the root event (null when it changes nothing).
     public sealed record VerbDecl(
         bool RequiresTarget,
         bool AuthorOnly,
         Func<CommandContext, Refusal?>? Preconditions = null,
-        // Null is one tick.
         VerbDuration? Duration = null,
         IReadOnlyList<Requirement>? Requires = null,
         Action<Working, CommandContext, string?>? Transition = null,

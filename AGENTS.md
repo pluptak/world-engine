@@ -45,8 +45,7 @@ behaviour recorded from it; a change to .NET behaviour updates its goldens in th
   (benchmark, reference host, golden generators) in `tools`. The JSON boundary uses typed records and a generated JSON Schema, not
   Zod. No NuGet package beyond the test stack unless a block names it.
 - `dotnet test WorldEngine.slnx` is the whole check; `CLAUDE.md` lists the other commands. No lint step.
-- `data/` is gitignored; store tests use the temp folder. Source files are CRLF on this checkout: edit them with the Edit tool, or open
-  them with `newline=''` from a script.
+- `data/` is gitignored; store tests use the temp folder. Source files are LF.
 
 ## Invariants every block must preserve
 
