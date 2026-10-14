@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -13,7 +12,7 @@ public static class WorldEdits
     public static Pipeline.Result Edit(
         string dir,
         IReadOnlyDictionary<string, Template> registry,
-        JsonObject edit,
+        Value.Map edit,
         string? commandId = null,
         bool perceivers = false,
         By? by = null,

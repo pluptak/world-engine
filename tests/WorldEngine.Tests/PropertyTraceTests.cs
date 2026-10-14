@@ -105,7 +105,7 @@ public class PropertyTraceTests
             var recorded = steps[index]!;
             var step = recorded["step"]!;
             var result = step["edit"] is JsonObject edit
-                ? world.Edit(edit)
+                ? world.Edit(Edits.Of(edit))
                 : world.Apply(WorldJson.Read<Command>(step.ToJsonString()));
             if (GoldenUpdate.Enabled)
             {

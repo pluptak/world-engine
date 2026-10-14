@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -8,8 +7,7 @@ namespace WorldEngine.Core.Engine;
 
 // Authored beats (src/engine/beats.ts): an intention kept in the schedule as a cause of kind `beat`. When it falls due it
 // becomes ordinary events, so every observer senses it as any others. A beat is data: its action is one of a closed set,
-// never code. A beat that arrives as JSON passes the shape rules before it is read into its records; a stored one is held to
-// them in the form it is stored in.
+// never code. A beat an edit or a scene writes is read into its records and held to the shape rules there, as a stored one is.
 public static partial class Beats
 {
     // Beats the schedule may hold, counting each follower (src/engine/beats.ts MAX_BEATS).
@@ -42,13 +40,5 @@ public static partial class Beats
 
     public static bool IsBeatId(string? id) => id is not null && BeatIdPattern.IsMatch(id);
 
-    private static bool NonEmpty(JsonNode? node) => JsonReads.Text(node) is { Length: > 0 };
-
-    private static bool IsBool(JsonNode? node) => node is JsonValue value && value.TryGetValue(out bool _);
-
-    private static bool? BoolOf(JsonNode? node) =>
-        node is JsonValue value && value.TryGetValue(out bool flag) ? flag : null;
-
-    private static bool OnlyKeys(JsonObject obj, params string[] allowed) => obj.All(pair => allowed.Contains(pair.Key));
-
+    private static bool NonEmpty(string? text) => text is { Length: > 0 };
 }

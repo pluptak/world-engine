@@ -23,7 +23,7 @@ internal static class MixedWorld
         {
             if (step!["edit"] is JsonObject edit)
             {
-                world.Edit(edit);
+                world.Edit(Edits.Of(edit));
             }
             else
             {

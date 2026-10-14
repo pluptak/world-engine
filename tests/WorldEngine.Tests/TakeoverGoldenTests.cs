@@ -32,7 +32,7 @@ public class TakeoverGoldenTests : IDisposable
     public void Opening_a_world_under_another_set_does_what_TypeScript_does()
     {
         var pristine = MixedWorld.Build(golden, Path.Combine(scratch, "pristine"));
-        StoreWorld.Open(pristine).Edit((JsonObject)golden["extra"]!["edit"]!);
+        StoreWorld.Open(pristine).Edit(Edits.Of(golden["extra"]!["edit"]));
         var problems = new List<string>();
         if (GoldenUpdate.Enabled)
         {

@@ -1,5 +1,3 @@
-using System.Text.Json.Nodes;
-
 namespace WorldEngine.Core.Model;
 
 // A beat's condition, in one of four forms told apart by which fields it has: `all` (single conditions that each must hold),
@@ -26,14 +24,14 @@ public sealed record BeatRepeat(
 public sealed record BeatFollower(
     string Id,
     long DelayTicks,
-    JsonObject Action,
+    Value.Map Action,
     BeatCondition? OnlyIf = null,
     IReadOnlyList<BeatFollower>? Then = null);
 
 // A beat a scene keeps in its run's pool, with no tick until the director plays it.
 public sealed record PoolBeat(
     string Id,
-    JsonObject Action,
+    Value.Map Action,
     BeatCondition? OnlyIf = null,
     IReadOnlyList<BeatFollower>? Then = null,
     BeatRepeat? Repeat = null);

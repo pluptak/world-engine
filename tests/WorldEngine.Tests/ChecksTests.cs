@@ -1,12 +1,15 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Cli;
 using WorldEngine.Contract;
+using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Tests;
 
 public class ChecksTests
 {
-    private static JsonNode Parse(string json) => JsonNode.Parse(json)!;
+    // A request as the command line reads it: none when it cannot be a value, which the contract refuses.
+    private static Value? Parse(string json) => ValueJson.TryFromNode(JsonNode.Parse(json), out var value) ? value : null;
 
     [Theory]
     [InlineData("""{"op":"snapshot","world":"w"}""")]
@@ -33,6 +36,9 @@ public class ChecksTests
     [InlineData("""{"op":"command","world":"w","command":{"actor":"e1","args":{"to":{"x":1.5,"y":0}},"command_id":"c1","verb":"move"}}""")]
     [InlineData("""{"op":"actor_command","world":"w","actor":"e1","command":{"args":{"amount":1.5},"command_id":"c1","verb":"consume"}}""")]
     [InlineData("""{"op":"edit","world":"w","edit":{"target":"e1"}}""")]
+    [InlineData("""{"op":"edit","world":"w","edit":{"kind":"spawn","template":"stone","overrides":{"residue":{"wine":1.5}}}}""")]
+    [InlineData("""{"op":"edit","world":"w","edit":{"kind":"schedule_beat","id":"b","at_tick":2.5,"action":{"kind":"sound","entity":"e3"}}}""")]
+    [InlineData("""{"op":"edit","world":"w","edit":{"kind":"schedule_beat","id":"b","at_tick":5,"action":{"kind":"sound","entity":"e3"},"only_if":{"entity":"e5","prop":"fuel","op":"eq","value":1.5}}}""")]
     [InlineData("""{"op":"schedule","world":"w","filter":{"kind":"tomorrow"}}""")]
     [InlineData("""{"op":"query","world":"w","query":{"kind":"fact","subject":"e1"}}""")]
     public void A_request_that_does_not_fit_its_op_is_refused(string json) => Assert.False(Checks.IsRequest(Parse(json)));
@@ -52,11 +58,13 @@ public class ChecksTests
     [InlineData("""[{"id":"hero"}]""", false)]
     [InlineData("""[{"template":"human","overrides":{"integrity":1.5}}]""", false)]
     [InlineData("""[{"template":"human","overrides":{"unknown":1}}]""", false)]
+    [InlineData("""[{"template":"human","overrides":{"fuel_pct":2.5}}]""", false)]
+    [InlineData("""[{"template":"human","overrides":{"support":null,"clear":["in_part"]}}]""", true)]
     [InlineData("""{"entities":[],"seed":-1}""", false)]
     [InlineData("""{"entities":[],"run":{"tick_limit":0}}""", false)]
     [InlineData("null", false)]
     public void A_scenario_is_a_list_of_entries_or_a_scene(string json, bool valid) =>
-        Assert.Equal(valid, Checks.IsScenario(JsonNode.Parse(json)));
+        Assert.Equal(valid, Checks.IsScenario(Parse(json)));
 
     [Theory]
     [InlineData("""{"relations":[],"senses":[],"properties":[]}""", true)]

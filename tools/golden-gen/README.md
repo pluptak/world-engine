@@ -47,6 +47,10 @@ count, and a failure names the path where the two part. A stored world's files c
 property traces, the tamper and takeover goldens and `block21/golden.json` keep are of that meaning (`Meaning.Digest`,
 `Meaning.FileDigest`), regenerated from .NET when they stopped being TypeScript's byte hashes.
 
+`beat-shapes-golden.expected.json` lacks the three rows TypeScript recorded with a fraction in an edit (`repeat float`,
+`follower float delay`, `edit: tick float`): the contract refuses such a request before the engine reads it, and
+`ChecksTests` covers it.
+
 ## Fixtures with no generator
 
 About sixty fixtures were recorded by scratch scripts that were not kept (the verb goldens `*-golden.expected.json`, the `*.snapshot.json`

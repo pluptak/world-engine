@@ -68,7 +68,7 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
     Pipeline.Result IWorldDriver.Apply(Command command, long? basedOn) => Apply(command, basedOn, observe: false);
 
     // An author edit, with `edit-<n>` as its id unless one is given (`edit`).
-    public Pipeline.Result Edit(JsonObject edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null) =>
+    public Pipeline.Result Edit(Value.Map edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null) =>
         WorldEdits.Edit(dir, registry, edit, commandId, perceivers, by, basedOn, snapshotEvery: snapshotEvery, checkpointEvery: checkpointEvery);
 
     // What a command would get now, with nothing logged (`check`).

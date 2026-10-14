@@ -1,41 +1,32 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using WorldEngine.Core.Engine;
-using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Contract;
 
-// A check of one JSON value's shape, built from the pieces below. An object shape is strict: a member it does not name is refused, and one
-// it names with `Opt` may be absent but is never null unless its check allows null.
-internal delegate bool Shape(JsonNode? node);
+// A check of one value's shape, built from the pieces below. A record shape is strict: a member it does not name is refused, and one
+// it names with `Opt` may be absent. A value holds no null and no fraction, so neither is ever a shape's to refuse.
+internal delegate bool Shape(Value? value);
 
 internal sealed record Field(Shape Shape, bool Optional);
 
 internal static class Shapes
 {
-    public static readonly Shape Text = node => JsonReads.Text(node) is not null;
-    public static readonly Shape NonEmpty = node => JsonReads.Text(node) is { Length: > 0 };
-    public static readonly Shape Bool = node => node is JsonValue value && value.GetValueKind() is JsonValueKind.True or JsonValueKind.False;
-    public static readonly Shape Number = node => JsonReads.Number(node) is not null;
-    public static readonly Shape Int = node => JsonReads.Number(node) is { } number && Integers.IsWhole(number);
-    public static readonly Shape Record = node => node is JsonObject;
-    // A command's args: a record the engine can hold as a value, so no fraction and no null in a list anywhere in it.
-    public static readonly Shape Args = node => node is JsonObject && ValueJson.TryFromNode(node, out _);
+    public static readonly Shape Text = value => value is Value.Text;
+    public static readonly Shape NonEmpty = value => value.AsText() is { Length: > 0 };
+    public static readonly Shape Bool = value => value is Value.Bool;
+    public static readonly Shape Int = value => value is Value.Int;
+    public static readonly Shape Record = value => value is Value.Map;
 
-    public static Shape Between(long low, long high) =>
-        node => JsonReads.Number(node) is { } number && Integers.IsWhole(number) && number >= low && number <= high;
+    public static Shape Between(long low, long high) => value => value.AsInt() is { } number && number >= low && number <= high;
 
     public static Shape AtLeast(long low) => Between(low, long.MaxValue);
 
-    public static Shape Const(string text) => node => JsonReads.Text(node) == text;
+    public static Shape Const(string text) => value => value.AsText() == text;
 
-    public static Shape OneOfText(params string[] texts) => node => JsonReads.Text(node) is { } text && texts.Contains(text);
+    public static Shape OneOfText(params string[] texts) => value => value.AsText() is { } text && texts.Contains(text);
 
-    public static Shape Null(Shape shape) => node => node is null || shape(node);
+    public static Shape Or(params Shape[] shapes) => value => shapes.Any(shape => shape(value));
 
-    public static Shape Or(params Shape[] shapes) => node => shapes.Any(shape => shape(node));
-
-    public static Shape List(Shape item) => node => node is JsonArray list && list.All(element => item(element));
+    public static Shape List(Shape item) => value => value is Value.List list && list.Items.All(element => item(element));
 
     public static Field Req(Shape shape) => new(shape, false);
 
@@ -44,15 +35,15 @@ internal static class Shapes
     public static Shape Obj(params (string Name, Field Field)[] fields)
     {
         var byName = fields.ToDictionary(pair => pair.Name, pair => pair.Field, StringComparer.Ordinal);
-        return node =>
+        return value =>
         {
-            if (node is not JsonObject record)
+            if (value is not Value.Map record)
             {
                 return false;
             }
-            foreach (var (name, value) in record)
+            foreach (var (name, member) in record)
             {
-                if (!byName.TryGetValue(name, out var field) || !field.Shape(value))
+                if (!byName.TryGetValue(name, out var field) || !field.Shape(member))
                 {
                     return false;
                 }

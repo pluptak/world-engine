@@ -1,23 +1,22 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Model;
 using static WorldEngine.Contract.Shapes;
 
 namespace WorldEngine.Contract;
 
-// What the command line accepts before it runs anything: the shape of a request, of a scenario file and of a coverage file. Only the
-// outer shape is judged here. The inside of an edit, a command's args or a prop is the engine's own to read, with its own refusals.
+// What the command line accepts before it runs anything: the shape of a request, of a scenario file and of a coverage file, each read
+// as a value first (so a fraction or a null in a list is refused before any shape is judged). Only the outer shape is judged here. The inside of an edit, a command's args or a prop is the engine's own to read, with its own refusals.
 public static class Checks
 {
-    public static bool IsRequest(JsonNode? request) => request is JsonObject record
-        && JsonReads.Text(record["op"]) is { } op
+    public static bool IsRequest(Value? request) =>
+        (request as Value.Map)?.GetValueOrDefault("op").AsText() is { } op
         && Requests.TryGetValue(op, out var shape)
         && shape(request);
 
     // A scenario file is a list of entries, or a scene.
-    public static bool IsScenario(JsonNode? scenario) => scenario is not null && (scenario is JsonArray ? Entries(scenario) : Scene(scenario));
+    public static bool IsScenario(Value? scenario) => scenario is Value.List ? Entries(scenario) : Scene(scenario);
 
-    public static bool IsCoverage(JsonNode? coverage) => Coverage(coverage);
+    public static bool IsCoverage(Value? coverage) => Coverage(coverage);
 
     private static (string, Field) Op(string name) => ("op", Req(Const(name)));
     private static readonly (string, Field) World = ("world", Req(NonEmpty));
@@ -25,15 +24,15 @@ public static class Checks
     private static readonly (string, Field) IncludeSnapshot = ("include_snapshot", Opt(Bool));
 
     private static readonly Shape Command = Obj(
-        ("actor", Req(Text)), ("args", Opt(Args)), ("command_id", Req(Text)), ("perceivers", Opt(Bool)), ("target", Opt(Text)), ("verb", Req(Text)));
+        ("actor", Req(Text)), ("args", Opt(Record)), ("command_id", Req(Text)), ("perceivers", Opt(Bool)), ("target", Opt(Text)), ("verb", Req(Text)));
 
-    private static readonly Shape ActorCommand = Obj(("args", Opt(Args)), ("command_id", Req(Text)), ("target", Opt(Text)), ("verb", Req(Text)));
+    private static readonly Shape ActorCommand = Obj(("args", Opt(Record)), ("command_id", Req(Text)), ("target", Opt(Text)), ("verb", Req(Text)));
 
     private static readonly Shape Move = Obj(
-        ("args", Opt(Args)), ("body", Opt(NonEmpty)), ("command_id", Req(Text)), ("target", Opt(Text)), ("verb", Req(Text)));
+        ("args", Opt(Record)), ("body", Opt(NonEmpty)), ("command_id", Req(Text)), ("target", Opt(Text)), ("verb", Req(Text)));
 
     // An edit is an object that names its kind; each kind's own members are checked by the edit itself.
-    private static readonly Shape Edit = node => node is JsonObject record && JsonReads.Text(record["kind"]) is not null;
+    private static readonly Shape Edit = value => (value as Value.Map)?.GetValueOrDefault("kind") is Value.Text;
 
     private static readonly Shape FactQuery = Obj(
         ("kind", Req(Const("fact"))), ("object", Opt(Text)), ("relation", Req(Text)), ("subject", Req(Text)));
@@ -50,25 +49,26 @@ public static class Checks
 
     private static readonly Shape Overrides = Obj(
         ("aliases", Opt(List(Text))),
-        ("concealed_by", Opt(Null(Text))),
+        ("clear", Opt(List(OneOfText("location", "support", "contained_in", "in_part", "concealed_by", "pos")))),
+        ("concealed_by", Opt(Text)),
         ("condition", Opt(Text)),
-        ("contained_in", Opt(Null(Text))),
-        ("detached_from", Opt(Null(Obj(("entity", Req(Text)), ("part", Req(Text)))))),
-        ("fuel_pct", Opt(Number)),
-        ("hunger_pct", Opt(Number)),
-        ("in_part", Opt(Null(Text))),
+        ("contained_in", Opt(Text)),
+        ("detached_from", Opt(Obj(("entity", Req(Text)), ("part", Req(Text))))),
+        ("fuel_pct", Opt(Int)),
+        ("hunger_pct", Opt(Int)),
+        ("in_part", Opt(Text)),
         ("integrity", Opt(Int)),
-        ("liquid", Opt(Obj(("material", Opt(Text)), ("pct", Req(Number))))),
-        ("location", Opt(Null(Text))),
+        ("liquid", Opt(Obj(("material", Opt(Text)), ("pct", Req(Int))))),
+        ("location", Opt(Text)),
         ("modifiers", Opt(List(Obj(
-            ("capacity", Req(Text)), ("cause_id", Req(Text)), ("delta", Req(Int)), ("expires_at_tick", Req(Null(Int))))))),
+            ("capacity", Req(Text)), ("cause_id", Req(Text)), ("delta", Req(Int)), ("expires_at_tick", Opt(Int)))))),
         ("name", Opt(Text)),
-        ("portions_pct", Opt(Number)),
-        ("pos", Opt(Null(Or(Plain, Anchor)))),
+        ("portions_pct", Opt(Int)),
+        ("pos", Opt(Or(Plain, Anchor))),
         ("props", Opt(Record)),
         ("residue", Opt(Record)),
         ("status", Opt(OneOfText("intact", "broken", "destroyed"))),
-        ("support", Opt(Null(Text))),
+        ("support", Opt(Text)),
         ("traits", Opt(Record)));
 
     private static readonly Shape Entry = Obj(("id", Opt(NonEmpty)), ("overrides", Opt(Overrides)), ("template", Req(NonEmpty)));

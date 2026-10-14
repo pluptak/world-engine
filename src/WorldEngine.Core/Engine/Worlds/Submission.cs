@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Json.Integers;
@@ -62,12 +61,12 @@ public static class Submission
 
     // The log's record of a submission (`attemptOf`): the command, the version it was based on and decided at, and what it said.
     // An edit as the command the reserved author sends (`editCommand`): logged and replayed like any command, with the edit as its argument.
-    public static Command EditCommand(JsonObject edit, string commandId, bool perceivers = false, By? by = null) =>
+    public static Command EditCommand(Value.Map edit, string commandId, bool perceivers = false, By? by = null) =>
         new(
             commandId,
             Resolve.WorldAuthor,
             "edit",
-            Target: JsonReads.Text(edit["target"]),
+            Target: edit.GetValueOrDefault("target").AsText(),
             Args: EditVerb.EditArgs(edit),
             Perceivers: perceivers ? true : null,
             By: by);

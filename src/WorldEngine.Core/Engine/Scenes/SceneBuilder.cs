@@ -91,7 +91,7 @@ public static class SceneBuilder
     private static void CheckSubjects(
         Snapshot snapshot,
         IReadOnlyDictionary<string, Template> registry,
-        JsonObject action,
+        Value.Map action,
         IReadOnlyList<BeatFollower>? then,
         string path)
     {
@@ -129,11 +129,7 @@ public static class SceneBuilder
             }
             var resolved = (JsonObject)ResolveBody(body, names, path)!;
             resolved["kind"] = JsonValue.Create("schedule_beat");
-            if (!Beats.ParseScheduleBeat(resolved))
-            {
-                throw Refused(path, Code.InvalidBeat);
-            }
-            var cause = Beats.CauseOf(resolved);
+            var cause = ScheduleBeatOf(resolved) ?? throw Refused(path, Code.InvalidBeat);
             if (cause.DueTick < 1)
             {
                 throw Refused(path, Code.BeatInPast);
@@ -177,11 +173,7 @@ public static class SceneBuilder
             // The tick is a placeholder the shape check needs; a pool beat is played at a tick the director names.
             resolved["at_tick"] = JsonValue.Create(1L);
             resolved["kind"] = JsonValue.Create("schedule_beat");
-            if (!Beats.ParseScheduleBeat(resolved))
-            {
-                throw Refused(path, Code.InvalidBeat);
-            }
-            var beat = Beats.PoolBeatOf(resolved);
+            var beat = Beats.PoolBeatOf(ScheduleBeatOf(resolved) ?? throw Refused(path, Code.InvalidBeat));
             CheckSubjects(snapshot, registry, beat.Action, beat.Then, path);
             foreach (var id in Beats.Ids(beat.Id, beat.Then))
             {
@@ -194,6 +186,10 @@ public static class SceneBuilder
         }
         return pool;
     }
+
+    // A scene's beat as a schedule_beat edit would make it; null when it is not one (a fraction in it is none).
+    private static BeatCause? ScheduleBeatOf(JsonObject resolved) =>
+        ValueJson.TryFromNode(resolved, out var value) && value is Value.Map edit ? Beats.ScheduleBeatOf(edit) : null;
 
     // A door's odds are steered within a range the scene sets, which must be a whole range from 0 to 100 (`docs/roles.md`).
     private static List<Odds> SceneOdds(Snapshot snapshot, IReadOnlyDictionary<string, string> names, JsonArray odds)

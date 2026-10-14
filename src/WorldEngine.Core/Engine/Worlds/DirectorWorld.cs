@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -15,7 +14,7 @@ public sealed class DirectorWorld(IWorld world)
     public Snapshot Current() => world.CurrentSnapshot();
 
     // An edit under the director's role (`by`), so the engine refuses what a director may not send.
-    public Pipeline.Result Edit(JsonObject edit, string? commandId = null, bool perceivers = false) =>
+    public Pipeline.Result Edit(Value.Map edit, string? commandId = null, bool perceivers = false) =>
         world.Edit(edit, commandId, perceivers, new By(Role.Director));
 
     // The handles that hold a pending move for the next round; their moves are not in it.

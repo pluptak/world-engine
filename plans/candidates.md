@@ -92,10 +92,20 @@ Priorities there, then deleting it here in the same commit.
     a removed or destroyed installed entity leaves the socket empty, not the part destroyed.
   - Power and hacking need nothing new: an installed entity may carry `powered_by` and `controlled_by`
     (see Control).
-  Open: whether a socket nests (a hand socket on an installed arm); whether capacities may pass 100 for
-  augments, or 100 stays the ceiling and an augment only restores; whether `attack` on an installed part
-  harms the installed entity or the body; and whether rejection or wear is a process on the installed
-  entity.
+  Decided by the maintainer: capacities keep their 0–100 ceiling. A capacity is a share of what the
+  body's class can do, and the class is the template: its definition props are the absolute amounts
+  (`hand_carry_limit_g`, `attack_damage`, `reach_cm`, part `max_integrity`). A stronger body is another
+  class, not a capacity over 100: `cyborg` extends `human` with larger amounts (props and
+  `part_overrides`), so a cyborg at 100 out-lifts and out-hits a human at 100. A body changes class by
+  the existing `refine` edit (`human` → `cyborg`, a refinement since it extends `human`), which keeps the
+  state the new preset still declares (`docs/refine.md`); no new prop.
+  Open: whether a socket nests (a hand socket on an installed arm); whether `install` may refine the body
+  itself (a body taking a cyber-arm becomes a `cyborg`), or the class change stays the author's `edit`,
+  since `refine` is author-only today; how far a class is per body or per part (one cyber-arm: the whole
+  body a `cyborg`, or that arm's amounts read from the installed entity); whether a class ever goes back
+  (a cyborg with every implant removed is not a refinement of itself, so `refine` cannot return it to
+  `human`); whether `attack` on an installed part harms the installed entity or the body; and whether
+  rejection or wear is a process on the installed entity.
 - **Identity by appearance.** Scenes: Face/Off (a face and voice swapped between two bodies), a disguise, a
   shapeshifter. Today an actor names every other thing by an alias hashed from the observer and the
   entity's id (`docs/actor-view.md`), so a body keeps its alias whatever face it wears: the engine itself

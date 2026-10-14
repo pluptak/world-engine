@@ -55,7 +55,7 @@ public class WorldDriverTests : IDisposable
         }
         foreach (var item in edits)
         {
-            var result = driver.Edit(item!["edit"]!.AsObject(), item["command_id"]?.GetValue<string>());
+            var result = driver.Edit(Edits.Of(item!["edit"]), item["command_id"]?.GetValue<string>());
             answers.Add($"{result.CommandId} {result.Status} {result.ReasonCode}");
         }
         answers.Add(CanonicalJson.Serialize(JsonNode.Parse(WorldJson.Write(driver.CurrentSnapshot()))));

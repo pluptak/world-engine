@@ -1,145 +1,107 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
-using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
-using WorldEngine.Core.Templates;
 
 namespace WorldEngine.Core.Engine;
 
-// What a stored beat may carry (src/engine/beats.ts `parseScheduleBeat` and what it calls): the shape rules over the JSON the
-// snapshot stores, which `validateSnapshot` also holds a stored beat to.
+// What a beat may carry (src/engine/beats.ts `parseScheduleBeat` and what it calls): the shape rules over a beat's records, which
+// a beat an edit or a scene writes is held to when it is read, and `validateSnapshot` holds a stored beat to.
 public static partial class Beats
 {
     // `{ all: [...] }` holds when each of its one to MaxAll single conditions does, and the singles are not nested. Otherwise
-    // one of three single forms, told apart by their keys.
-    private static bool ConditionOk(JsonNode? node)
+    // one of three single forms, told apart by their fields.
+    private static bool ConditionOk(BeatCondition condition)
     {
-        if (node is JsonObject obj && obj.ContainsKey("all"))
+        if (condition.All is { } all)
         {
-            return OnlyKeys(obj, "all")
-                && obj["all"] is JsonArray all
+            return condition with { All = null } == new BeatCondition()
                 && all.Count > 0
                 && all.Count <= MaxAll
                 && all.All(SingleOk);
         }
-        return SingleOk(node);
+        return SingleOk(condition);
     }
 
-    private static bool SingleOk(JsonNode? node)
+    private static bool SingleOk(BeatCondition condition)
     {
-        if (node is not JsonObject obj)
+        if (condition.All is not null)
         {
             return false;
         }
-        if (obj.ContainsKey("in"))
+        if (condition.In is not null)
         {
-            return OnlyKeys(obj, "entity", "in") && NonEmpty(obj["entity"]) && NonEmpty(obj["in"]);
+            return condition == new BeatCondition(Entity: condition.Entity, In: condition.In) && NonEmpty(condition.Entity) && NonEmpty(condition.In);
         }
-        if (obj.ContainsKey("room") || obj.ContainsKey("occupied"))
+        if (condition.Room is not null || condition.Occupied is not null)
         {
-            return OnlyKeys(obj, "room", "occupied") && NonEmpty(obj["room"]) && IsBool(obj["occupied"]);
+            return condition == new BeatCondition(Room: condition.Room, Occupied: condition.Occupied)
+                && NonEmpty(condition.Room)
+                && condition.Occupied is not null;
         }
-        return PropConditionOk(obj);
+        return PropConditionOk(condition);
     }
 
-    private static bool PropConditionOk(JsonObject obj)
+    // A string, a boolean or a whole number; the ordering ops need a number.
+    private static bool PropConditionOk(BeatCondition condition)
     {
-        if (!OnlyKeys(obj, "entity", "prop", "op", "value")
-            || !NonEmpty(obj["entity"])
-            || !NonEmpty(obj["prop"])
-            || JsonReads.Text(obj["op"]) is not { } op
-            || !Ops.Contains(op))
+        if (!NonEmpty(condition.Entity) || !NonEmpty(condition.Prop) || condition.Op is not { } op || !Ops.Contains(op))
         {
             return false;
         }
-        // A string, a boolean or a whole number; the ordering ops need a number. A fraction breaks the snapshot's integers-only
-        // rule, so it is refused as malformed.
-        var operand = obj["value"];
-        var number = JsonReads.Number(operand) is { } value && WorldEngine.Core.Json.Integers.IsWhole(value);
-        if (JsonReads.Text(operand) is null && !IsBool(operand) && !number)
+        return condition.Value switch
         {
-            return false;
-        }
-        return op is "eq" or "ne" || number;
+            Value.Int => true,
+            Value.Text or Value.Bool => op is "eq" or "ne",
+            _ => false,
+        };
     }
 
     // A `repeat`: a run every so many ticks, a number of times after the first, and optionally a watch.
-    private static bool RepeatOk(JsonNode? node)
-    {
-        if (node is not JsonObject obj || !OnlyKeys(obj, "every_ticks", "times", "until_ran"))
-        {
-            return false;
-        }
-        if (JsonReads.SafeInt(obj["every_ticks"]) is not { } every || every < 1)
-        {
-            return false;
-        }
-        if (JsonReads.SafeInt(obj["times"]) is not { } times || times < 1 || times > MaxRepeats)
-        {
-            return false;
-        }
-        return !obj.ContainsKey("until_ran") || BoolOf(obj["until_ran"]) == true;
-    }
+    private static bool RepeatOk(BeatRepeat repeat) =>
+        repeat.EveryTicks >= 1 && repeat.Times >= 1 && repeat.Times <= MaxRepeats && repeat.UntilRan is null or true;
 
     // An action: a sound from an entity, or one of the author's edits.
-    private static bool ActionOk(JsonNode? node)
+    private static bool ActionOk(Value.Map? action)
     {
-        if (node is not JsonObject obj || JsonReads.Text(obj["kind"]) is not { } kind)
+        if (action?.GetValueOrDefault("kind").AsText() is not { } kind)
         {
             return false;
         }
         if (kind == "sound")
         {
-            return OnlyKeys(obj, "kind", "entity", "loud")
-                && NonEmpty(obj["entity"])
-                && (!obj.ContainsKey("loud") || IsBool(obj["loud"]));
+            return action.Keys.All(key => key is "kind" or "entity" or "loud")
+                && NonEmpty(action.GetValueOrDefault("entity").AsText())
+                && action.GetValueOrDefault("loud") is null or Value.Bool;
         }
-        return ActionEdits.Contains(kind) && EditVerb.ParsesAsEdit(obj) && ActionSubject(obj) is not null;
+        return ActionEdits.Contains(kind) && EditVerb.ParsesAsEdit(action) && ActionSubject(action) is not null;
     }
 
     // The entity a beat is about: a sound's source, an edit's target, a spawn's location. It is the entity the beat goes with
     // if it is removed first.
-    public static string? ActionSubject(JsonObject action) => JsonReads.Text(action["kind"]) switch
+    public static string? ActionSubject(Value.Map action) => action.GetValueOrDefault("kind").AsText() switch
     {
-        "sound" => JsonReads.Text(action["entity"]),
-        "spawn" => action["overrides"] is JsonObject overrides ? JsonReads.Text(overrides["location"]) : null,
-        _ => JsonReads.Text(action["target"]),
+        "sound" => action.GetValueOrDefault("entity").AsText(),
+        "spawn" => (action.GetValueOrDefault("overrides") as Value.Map)?.GetValueOrDefault("location").AsText(),
+        _ => action.GetValueOrDefault("target").AsText(),
     };
 
     // The followers of a beat, nested to MaxDepth.
-    private static bool ChildrenOk(JsonNode? node, int depth)
+    private static bool ChildrenOk(IReadOnlyList<BeatFollower> children, int depth)
     {
-        if (node is not JsonArray children || children.Count == 0 || depth > MaxDepth)
+        if (children.Count == 0 || depth > MaxDepth)
         {
             return false;
         }
-        foreach (var raw in children)
-        {
-            if (raw is not JsonObject child
-                || !OnlyKeys(child, "id", "delay_ticks", "action", "only_if", "then")
-                || !IsBeatId(JsonReads.Text(child["id"]))
-                || JsonReads.SafeInt(child["delay_ticks"]) is not { } delay
-                || delay <= 0
-                || !ActionOk(child["action"]))
-            {
-                return false;
-            }
-            if (child.ContainsKey("only_if") && !ConditionOk(child["only_if"]))
-            {
-                return false;
-            }
-            if (child.ContainsKey("then") && !ChildrenOk(child["then"], depth + 1))
-            {
-                return false;
-            }
-        }
-        return true;
+        return children.All(child =>
+            child is not null
+            && IsBeatId(child.Id)
+            && child.DelayTicks > 0
+            && ActionOk(child.Action)
+            && (child.OnlyIf is null || ConditionOk(child.OnlyIf))
+            && (child.Then is null || ChildrenOk(child.Then, depth + 1)));
     }
 
     // Whether a beat's parts are well formed together: its id, its action, and optionally a condition, followers and a repeat,
     // which a beat cannot have with followers (parseScheduleBeat).
-    private static bool ShapeOk(string? id, JsonNode? action, JsonNode? onlyIf, JsonNode? then, JsonNode? repeat)
+    private static bool ShapeOk(string? id, Value.Map? action, BeatCondition? onlyIf, IReadOnlyList<BeatFollower>? then, BeatRepeat? repeat)
     {
         if (!IsBeatId(id) || !ActionOk(action))
         {
@@ -157,10 +119,9 @@ public static partial class Beats
     }
 
     // What is wrong with a stored beat cause, or null: its shape, and that its action is about its own entity.
-    // A stored beat is held to the rules in the JSON form it is stored in.
     public static string? Invalid(BeatCause cause)
     {
-        if (!ShapeOk(cause.Id, cause.Action, Node(cause.OnlyIf), Node(cause.Then), Node(cause.Repeat)))
+        if (!ShapeOk(cause.Id, cause.Action, cause.OnlyIf, cause.Then, cause.Repeat))
         {
             return $"beat {cause.Id} is malformed";
         }
@@ -171,8 +132,4 @@ public static partial class Beats
     // Every id in the pending beats and the chains they will schedule, in schedule order.
     public static List<string> PendingBeatIds(IEnumerable<ScheduledCause> causes) =>
         [.. causes.OfType<BeatCause>().SelectMany(beat => Ids(beat.Id, beat.Then))];
-
-    private static JsonNode? Node<T>(T? part)
-        where T : class => part is null ? null : JsonSerializer.SerializeToNode(part, WorldJson.Options);
-
 }

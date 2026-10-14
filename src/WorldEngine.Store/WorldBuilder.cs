@@ -53,7 +53,7 @@ public static class WorldBuilder
             var overrides = registry.TryGetValue(template, out var known) && Forms.HasForms(written)
                 ? Forms.Apply(known, written, index)
                 : written;
-            var parsed = EditVerb.ParseOverrides(template, overrides)
+            var parsed = (ValueJson.TryFromNode(overrides, out var value) && value is Value.Map fields ? EditVerb.ParseOverrides(template, fields) : null)
                 ?? throw new WorldError(Code.InvalidScenario, $"Scenario entry {index} does not describe an entity");
             // A scenario's spawn keeps the location as written, and an omitted one is none: the chain is not derived here (a location the
             // chain gives must be written, and the snapshot check refuses one that is not, as spawn in src/engine/spawn.ts does).

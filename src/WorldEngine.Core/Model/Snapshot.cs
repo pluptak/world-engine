@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace WorldEngine.Core.Model;
@@ -36,14 +35,14 @@ public sealed record BleedCause(long DueTick, string Entity, string? CauseId, lo
 // The next step of a template process on its entity.
 public sealed record ProcessCause(long DueTick, string Entity, string? CauseId, string Process) : ScheduledCause(DueTick, Entity, CauseId);
 
-// An authored beat: its id, its action (an author's edit, or a sound, kept as written for the edit verb to read), and optionally its
+// An authored beat: its id, its action (an author's edit, or a sound, kept as the value written for the edit verb to read), and optionally its
 // condition, followers and repeat, held to `Beats`' shape rules wherever one is made or read.
 public sealed record BeatCause(
     long DueTick,
     string Entity,
     string? CauseId,
     string Id,
-    JsonObject Action,
+    Value.Map Action,
     BeatCondition? OnlyIf = null,
     IReadOnlyList<BeatFollower>? Then = null,
     BeatRepeat? Repeat = null)

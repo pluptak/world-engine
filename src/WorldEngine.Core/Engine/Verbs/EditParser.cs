@@ -1,27 +1,24 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
-using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
-// Reading an edit from the command's args, each field as TypeScript's `isEdit` and `isOverrides` read it.
+// Reading an edit from the command's args, each field as TypeScript's `isEdit` and `isOverrides` read it. An edit empties a field
+// by naming it in `clear`; an absent field is one it leaves alone.
 public static partial class EditVerb
 {
+    // Whether a beat's action reads as an edit (src/engine/beats.ts parseAction).
+    internal static bool ParsesAsEdit(Value.Map action) => ParseEdit(action) is not null;
+
+    // An edit as a command's args.
+    internal static Value.Map EditArgs(Value.Map edit) => Value.Map.Empty.With("edit", edit);
+
     // Reads the `edit` argument (src/engine/verbs/edit.ts `parseEdit`): null when it is not a well-formed edit.
-    // Whether a JSON object reads as an edit, the action of a beat (src/engine/beats.ts parseAction).
-    internal static bool ParsesAsEdit(JsonObject action) => Parse(EditArgs(action)) is not null;
+    private static WorldEdit? Parse(Value.Map? args) =>
+        args?.GetValueOrDefault("edit") is Value.Map edit ? ParseEdit(edit) : null;
 
-    // An edit as a command's args; an edit that cannot be a value (a fraction in it) is no edit, and parses as none.
-    internal static Value.Map EditArgs(JsonObject edit) =>
-        ValueJson.TryFromNode(edit, out var value) ? Value.Map.Empty.With("edit", value) : Value.Map.Empty;
-
-    // The edit is still read as JSON (plans/values.md, block 6 types it).
-    private static WorldEdit? Parse(Value.Map? args)
+    private static WorldEdit? ParseEdit(Value.Map obj)
     {
-        if (ValueJson.ToNode(args?.GetValueOrDefault("edit")) is not JsonObject obj || Text(obj["kind"]) is not { } kind)
+        if (Text(obj.GetValueOrDefault("kind")) is not { } kind)
         {
             return null;
         }
@@ -29,15 +26,15 @@ public static partial class EditVerb
         {
             case "spawn":
             {
-                if (!Only(obj, "kind", "template", "overrides") || Text(obj["template"]) is not { } template)
+                if (!Only(obj, "kind", "template", "overrides") || Text(obj.GetValueOrDefault("template")) is not { } template)
                 {
                     return null;
                 }
-                if (obj["overrides"] is null)
+                if (obj.GetValueOrDefault("overrides") is null)
                 {
                     return new SpawnEdit(template, null, new Spawn.Overrides(), false);
                 }
-                if (obj["overrides"] is not JsonObject overrides || !overrides.All(pair => OverrideKeys.Contains(pair.Key)))
+                if (obj.GetValueOrDefault("overrides") is not Value.Map overrides || !overrides.All(pair => OverrideKeys.Contains(pair.Key)))
                 {
                     return null;
                 }
@@ -45,7 +42,7 @@ public static partial class EditVerb
             }
             case "set_seed":
             {
-                if (!Only(obj, "kind", "seed") || Int(obj["seed"]) is not { } seed || !Rng.IsState(seed))
+                if (!Only(obj, "kind", "seed") || Int(obj.GetValueOrDefault("seed")) is not { } seed || !Rng.IsState(seed))
                 {
                     return null;
                 }
@@ -53,38 +50,38 @@ public static partial class EditVerb
             }
             case "schedule_beat":
             {
-                return Beats.ParseScheduleBeat(obj) ? new ScheduleBeatEdit(Beats.CauseOf(obj)) : null;
+                return Beats.ScheduleBeatOf(obj) is { } beat ? new ScheduleBeatEdit(beat) : null;
             }
             case "cancel_beat":
             {
-                return Only(obj, "kind", "id") && Text(obj["id"]) is { } cancelled && Beats.IsBeatId(cancelled)
+                return Only(obj, "kind", "id") && Text(obj.GetValueOrDefault("id")) is { } cancelled && Beats.IsBeatId(cancelled)
                     ? new CancelBeatEdit(cancelled)
                     : null;
             }
             case "retime_beat":
             {
-                return Only(obj, "kind", "id", "at_tick") && Text(obj["id"]) is { } moved && Beats.IsBeatId(moved) && Int(obj["at_tick"]) is { } tick
+                return Only(obj, "kind", "id", "at_tick") && Text(obj.GetValueOrDefault("id")) is { } moved && Beats.IsBeatId(moved) && Int(obj.GetValueOrDefault("at_tick")) is { } tick
                     ? new RetimeBeatEdit(moved, tick)
                     : null;
             }
             case "register_player":
             {
-                return Only(obj, "kind", "handle", "slot") && Text(obj["handle"]) is { } handle && Beats.IsBeatId(handle)
-                    && Text(obj["slot"]) is { } slot
+                return Only(obj, "kind", "handle", "slot") && Text(obj.GetValueOrDefault("handle")) is { } handle && Beats.IsBeatId(handle)
+                    && Text(obj.GetValueOrDefault("slot")) is { } slot
                     ? new RegisterEdit(handle, slot)
                     : null;
             }
             case "play_beat":
             {
-                return Only(obj, "kind", "id", "at_tick") && Text(obj["id"]) is { } played && Beats.IsBeatId(played)
-                    && Int(obj["at_tick"]) is { } tick
+                return Only(obj, "kind", "id", "at_tick") && Text(obj.GetValueOrDefault("id")) is { } played && Beats.IsBeatId(played)
+                    && Int(obj.GetValueOrDefault("at_tick")) is { } tick
                     ? new PlayBeatEdit(played, tick)
                     : null;
             }
             case "steer":
             {
-                return Only(obj, "kind", "entity", "prop", "value") && Text(obj["entity"]) is { } entity
-                    && Text(obj["prop"]) == Prop.JamPct && Int(obj["value"]) is { } value
+                return Only(obj, "kind", "entity", "prop", "value") && Text(obj.GetValueOrDefault("entity")) is { } entity
+                    && Text(obj.GetValueOrDefault("prop")) == Prop.JamPct && Int(obj.GetValueOrDefault("value")) is { } value
                     ? new SteerEdit(entity, value)
                     : null;
             }
@@ -94,7 +91,7 @@ public static partial class EditVerb
                 return Only(obj, "kind") ? new EndRunEdit() : null;
             case "refine":
             {
-                if (!Only(obj, "kind", "target", "template") || Text(obj["target"]) is not { } target || Text(obj["template"]) is not { } template)
+                if (!Only(obj, "kind", "target", "template") || Text(obj.GetValueOrDefault("target")) is not { } target || Text(obj.GetValueOrDefault("template")) is not { } template)
                 {
                     return null;
                 }
@@ -102,7 +99,7 @@ public static partial class EditVerb
             }
             case "remove":
             {
-                if (!Only(obj, "kind", "target") || Text(obj["target"]) is not { } target)
+                if (!Only(obj, "kind", "target") || Text(obj.GetValueOrDefault("target")) is not { } target)
                 {
                     return null;
                 }
@@ -111,23 +108,22 @@ public static partial class EditVerb
             case "place":
             {
                 if (!Only(obj, "kind", "target", "support", "contained_in", "in_part", "concealed_by", "pos", "clear")
-                    || Text(obj["target"]) is not { } target
-                    || Cleared(obj, "support", "contained_in", "in_part", "concealed_by", "pos") is not { } cleared)
+                    || Text(obj.GetValueOrDefault("target")) is not { } target
+                    || Clears(obj, "support", "contained_in", "in_part", "concealed_by", "pos") is not { } clears)
                 {
                     return null;
                 }
-                obj = cleared;
                 AnchorOffset? anchor = null;
-                if (obj["pos"] is JsonObject offset && !IsPlainPos(offset) && IsAnchor(offset))
+                if (obj.GetValueOrDefault("pos") is Value.Map offset && !IsPlainPos(offset) && IsAnchor(offset))
                 {
-                    anchor = new AnchorOffset(Text(offset["anchor"])!, Int(offset["dx"])!.Value, Int(offset["dy"])!.Value);
+                    anchor = new AnchorOffset(Text(offset.GetValueOrDefault("anchor"))!, Int(offset.GetValueOrDefault("dx"))!.Value, Int(offset.GetValueOrDefault("dy"))!.Value);
                 }
                 Given<Pos>? pos = null;
-                if (!Ref(obj, "support", out var support)
-                    || !Ref(obj, "contained_in", out var containedIn)
-                    || !Ref(obj, "in_part", out var inPart)
-                    || !Ref(obj, "concealed_by", out var concealedBy)
-                    || (anchor is null && !PosField(obj, "pos", out pos)))
+                if (!Ref(obj, clears, "support", out var support)
+                    || !Ref(obj, clears, "contained_in", out var containedIn)
+                    || !Ref(obj, clears, "in_part", out var inPart)
+                    || !Ref(obj, clears, "concealed_by", out var concealedBy)
+                    || (anchor is null && !PosField(obj, clears, "pos", out pos)))
                 {
                     return null;
                 }
@@ -136,18 +132,18 @@ public static partial class EditVerb
             case "set_props":
             case "update_props":
             {
-                if (!Only(obj, "kind", "target", "props") || Text(obj["target"]) is not { } target
-                    || obj["props"] is not JsonObject props || !props.All(pair => IsPrimitive(pair.Value)))
+                if (!Only(obj, "kind", "target", "props") || Text(obj.GetValueOrDefault("target")) is not { } target
+                    || obj.GetValueOrDefault("props") is not Value.Map props || !props.Values.All(IsPrimitive))
                 {
                     return null;
                 }
-                return new PropsEdit(kind, target, PropsOf(props));
+                return new PropsEdit(kind, target, props);
             }
             case "set_part":
             {
-                if (!Only(obj, "kind", "target", "part", "state") || Text(obj["target"]) is not { } target
-                    || Text(obj["part"]) is not { } part || obj["state"] is not JsonObject state
-                    || Int(state["integrity"]) is not { } integrity || Text(state["status"]) is not { } status)
+                if (!Only(obj, "kind", "target", "part", "state") || Text(obj.GetValueOrDefault("target")) is not { } target
+                    || Text(obj.GetValueOrDefault("part")) is not { } part || obj.GetValueOrDefault("state") is not Value.Map state
+                    || Int(state.GetValueOrDefault("integrity")) is not { } integrity || Text(state.GetValueOrDefault("status")) is not { } status)
                 {
                     return null;
                 }
@@ -166,79 +162,104 @@ public static partial class EditVerb
         }
     }
 
-    // The overrides of a spawn, each field as TypeScript's isOverrides reads it: absent is the blank field, null where the
-    // field takes null, and a value the field cannot hold makes the edit malformed (null). A trait that is not a string makes
-    // the spawn malformed.
-    public static SpawnEdit? ParseOverrides(string template, JsonObject overrides)
+    // The overrides of a spawn, each field as TypeScript's isOverrides reads it: absent is the blank field, named in `clear` is
+    // given as none, and a value the field cannot hold makes the edit malformed (null). A trait that is not a string makes the
+    // spawn malformed.
+    public static SpawnEdit? ParseOverrides(string template, Value.Map overrides)
     {
-        if (Cleared(overrides, "location", "support", "contained_in", "in_part", "concealed_by", "pos") is not { } cleared)
+        if (Clears(overrides, "location", "support", "contained_in", "in_part", "concealed_by", "pos") is not { } clears)
         {
             return null;
         }
-        overrides = cleared;
         string? name = null;
-        if (overrides.ContainsKey("name"))
+        if (overrides.TryGetValue("name", out var named))
         {
-            if (Text(overrides["name"], allowEmpty: true) is not { } given)
+            if (Text(named, allowEmpty: true) is not { } given)
             {
                 return null;
             }
             name = given;
         }
-        if (!Ref(overrides, "location", out var location)
-            || !Ref(overrides, "support", out var support)
-            || !Ref(overrides, "contained_in", out var containedIn)
-            || !Ref(overrides, "concealed_by", out var concealedBy)
-            || !PosField(overrides, "pos", out var pos)
+        if (!Ref(overrides, clears, "location", out var location)
+            || !Ref(overrides, clears, "support", out var support)
+            || !Ref(overrides, clears, "contained_in", out var containedIn)
+            || !Ref(overrides, clears, "concealed_by", out var concealedBy)
+            || !PosField(overrides, clears, "pos", out var pos)
             || !Origin(overrides, out var origin)
             || !Integrity(overrides, out var integrity))
         {
             return null;
         }
-        // An explicit null `in_part` is a part given as none: the spawn does not take a free grip, as an omitted one does.
+        // A cleared `in_part` is a part given as none: the spawn does not take a free grip, as an omitted one does.
         string? inPart = null;
-        var noPart = false;
-        if (overrides.ContainsKey("in_part"))
+        var noPart = clears.Contains("in_part");
+        if (overrides.TryGetValue("in_part", out var partValue))
         {
-            if (overrides["in_part"] is null)
-            {
-                noPart = true;
-            }
-            else if (Text(overrides["in_part"], allowEmpty: true) is not { } part)
+            if (Text(partValue, allowEmpty: true) is not { } part)
             {
                 return null;
             }
-            else
+            inPart = part;
+        }
+        Value.Map? props = null;
+        if (overrides.TryGetValue("props", out var propsValue))
+        {
+            props = propsValue is Value.Map map && map.Values.All(IsPrimitive) ? map : null;
+            if (props is null)
             {
-                inPart = part;
+                return null;
             }
         }
-        var props = Props(overrides);
-        if (overrides.ContainsKey("props") && props is null)
+        List<string>? aliases = null;
+        if (overrides.TryGetValue("aliases", out var aliasesValue))
         {
-            return null;
+            aliases = aliasesValue is Value.List list && list.Items.All(item => item is Value.Text)
+                ? [.. list.Items.Select(item => item.AsText()!)]
+                : null;
+            if (aliases is null)
+            {
+                return null;
+            }
         }
-        var aliases = Aliases(overrides);
-        if (overrides.ContainsKey("aliases") && aliases is null)
+        Dictionary<string, string>? traits = null;
+        if (overrides.TryGetValue("traits", out var traitsValue))
         {
-            return null;
+            traits = traitsValue is Value.Map map && map.Values.All(item => item is Value.Text)
+                ? map.ToDictionary(pair => pair.Key, pair => pair.Value.AsText()!, StringComparer.Ordinal)
+                : null;
+            if (traits is null)
+            {
+                return null;
+            }
         }
-        var traits = Traits(overrides);
-        if (overrides.ContainsKey("traits") && traits is null)
+        Dictionary<string, long>? residue = null;
+        if (overrides.TryGetValue("residue", out var residueValue))
         {
-            return null;
+            residue = residueValue is Value.Map map && map.Values.All(item => item is Value.Int)
+                ? map.ToDictionary(pair => pair.Key, pair => pair.Value.AsInt()!.Value, StringComparer.Ordinal)
+                : null;
+            if (residue is null)
+            {
+                return null;
+            }
         }
-        var residue = Residue(overrides);
-        if (overrides.ContainsKey("residue") && residue is null)
+        EntityStatus? status = null;
+        if (overrides.TryGetValue("status", out var statusValue))
         {
-            return null;
+            status = statusValue.AsText() switch
+            {
+                "intact" => EntityStatus.Intact,
+                "broken" => EntityStatus.Broken,
+                "destroyed" => EntityStatus.Destroyed,
+                _ => null,
+            };
+            if (status is null)
+            {
+                return null;
+            }
         }
-        var status = StatusOf(overrides);
-        if (overrides.ContainsKey("status") && status is null)
-        {
-            return null;
-        }
-        if (overrides.ContainsKey("modifiers") && !Modifiers(overrides["modifiers"]))
+        var modifiers = overrides.GetValueOrDefault("modifiers");
+        if (modifiers is not null && !Modifiers(modifiers))
         {
             return null;
         }
@@ -257,168 +278,61 @@ public static partial class EditVerb
                 Traits: traits,
                 ConcealedBy: concealedBy?.Value,
                 Residue: residue,
-                Status: status?.Value,
+                Status: status,
                 InPart: inPart,
                 NoPart: noPart),
-            overrides.ContainsKey("modifiers") && overrides["modifiers"] is JsonArray { Count: > 0 });
-    }
-
-    // A map of props, each a whole number, a string or a boolean; null when it is not one.
-    private static Value.Map? Props(JsonObject overrides)
-    {
-        if (!overrides.TryGetPropertyValue("props", out var node))
-        {
-            return null;
-        }
-        return node is JsonObject props && props.All(pair => IsPrimitive(pair.Value)) ? PropsOf(props) : null;
-    }
-
-    // A list of strings; null when it is not one.
-    private static List<string>? Aliases(JsonObject overrides)
-    {
-        if (!overrides.TryGetPropertyValue("aliases", out var node))
-        {
-            return null;
-        }
-        if (node is not JsonArray array)
-        {
-            return null;
-        }
-        var aliases = new List<string>(array.Count);
-        foreach (var element in array)
-        {
-            if (Text(element, allowEmpty: true) is not { } alias)
-            {
-                return null;
-            }
-            aliases.Add(alias);
-        }
-        return aliases;
-    }
-
-    // A map of trait keys to strings; null when it is not a map or holds a value that is not a string.
-    private static Dictionary<string, string>? Traits(JsonObject overrides)
-    {
-        if (!overrides.TryGetPropertyValue("traits", out var node))
-        {
-            return null;
-        }
-        if (node is not JsonObject traits)
-        {
-            return null;
-        }
-        var result = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var (key, value) in traits)
-        {
-            if (Text(value, allowEmpty: true) is not { } token)
-            {
-                return null;
-            }
-            result[key] = token;
-        }
-        return result;
-    }
-
-    // A map of residue to whole amounts; null when it is not one.
-    private static Dictionary<string, long>? Residue(JsonObject overrides)
-    {
-        if (!overrides.TryGetPropertyValue("residue", out var node))
-        {
-            return null;
-        }
-        if (node is not JsonObject residue)
-        {
-            return null;
-        }
-        var result = new Dictionary<string, long>(StringComparer.Ordinal);
-        foreach (var (key, value) in residue)
-        {
-            if (Int(value) is not { } amount)
-            {
-                return null;
-            }
-            result[key] = amount;
-        }
-        return result;
-    }
-
-    // The state a spawn starts in: intact, broken or destroyed; null when it is none of those.
-    private static Given<EntityStatus>? StatusOf(JsonObject overrides)
-    {
-        if (!overrides.TryGetPropertyValue("status", out var node))
-        {
-            return null;
-        }
-        return Text(node) switch
-        {
-            "intact" => new Given<EntityStatus>(EntityStatus.Intact),
-            "broken" => new Given<EntityStatus>(EntityStatus.Broken),
-            "destroyed" => new Given<EntityStatus>(EntityStatus.Destroyed),
-            _ => null,
-        };
+            modifiers is Value.List { Items.Length: > 0 });
     }
 
     // Whether a spawn's modifiers are well formed: a list of records each with a capacity, a whole delta, an optional
     // expiry and a cause. Any modifier at all is refused by the caller; this only says the list is well formed.
-    private static bool Modifiers(JsonNode? node)
-    {
-        if (node is not JsonArray array)
-        {
-            return false;
-        }
-        return array.All(modifier =>
-            modifier is JsonObject record
-            && Text(record["capacity"], allowEmpty: true) is not null
-            && Int(record["delta"]) is not null
-            && (record["expires_at_tick"] is null || Int(record["expires_at_tick"]) is not null)
-            && Text(record["cause_id"]) is not null);
-    }
+    private static bool Modifiers(Value node) =>
+        node is Value.List list
+        && list.Items.All(modifier =>
+            modifier is Value.Map record
+            && Text(record.GetValueOrDefault("capacity"), allowEmpty: true) is not null
+            && Int(record.GetValueOrDefault("delta")) is not null
+            && (!record.ContainsKey("expires_at_tick") || Int(record.GetValueOrDefault("expires_at_tick")) is not null)
+            && Text(record.GetValueOrDefault("cause_id")) is not null);
 
-    private static bool Only(JsonObject obj, params string[] allowed) => obj.All(pair => allowed.Contains(pair.Key));
+    private static bool Only(Value.Map obj, params string[] allowed) => obj.Keys.All(allowed.Contains);
 
-    // An edit empties a field by naming it in `clear` (an absent field is one the edit leaves alone, and a request holds no null):
-    // the fields it names read as given empty. Null when `clear` is not a list of fields it may name, or names one the edit also
-    // gives a value.
-    private static JsonObject? Cleared(JsonObject obj, params string[] clearable)
+    // The fields an edit empties by naming them in `clear`. Null when `clear` is not a list of fields it may name, or names one the
+    // edit also gives a value.
+    private static HashSet<string>? Clears(Value.Map obj, params string[] clearable)
     {
-        if (!obj.TryGetPropertyValue("clear", out var node))
+        var clears = new HashSet<string>(StringComparer.Ordinal);
+        if (!obj.TryGetValue("clear", out var node))
         {
-            return obj;
+            return clears;
         }
-        if (node is not JsonArray names)
+        if (node is not Value.List names)
         {
             return null;
         }
-        var given = (JsonObject)obj.DeepClone();
-        given.Remove("clear");
-        foreach (var name in names)
+        foreach (var name in names.Items)
         {
-            if (Text(name) is not { } field || !clearable.Contains(field) || given.ContainsKey(field))
+            if (Text(name) is not { } field || !clearable.Contains(field) || obj.ContainsKey(field))
             {
                 return null;
             }
-            given[field] = null;
+            clears.Add(field);
         }
-        return given;
+        return clears;
     }
 
     // A non-empty string, or any string when `allowEmpty`; null for anything else.
-    private static string? Text(JsonNode? node, bool allowEmpty = false) =>
-        JsonReads.Text(node) is { } text && (allowEmpty || text.Length > 0) ? text : null;
+    private static string? Text(Value? node, bool allowEmpty = false) =>
+        node.AsText() is { } text && (allowEmpty || text.Length > 0) ? text : null;
 
-    private static long? Int(JsonNode? node) => JsonReads.SafeInt(node);
+    private static long? Int(Value? node) => node.AsInt();
 
-    // A reference field that is absent (no Given), null (a clear) or an id. False for anything else.
-    private static bool Ref(JsonObject obj, string key, out Given<string>? given)
+    // A reference field that is absent (no Given), cleared (Given none) or an id. False for anything else.
+    private static bool Ref(Value.Map obj, HashSet<string> clears, string key, out Given<string>? given)
     {
-        given = null;
-        if (!obj.TryGetPropertyValue(key, out var node))
+        given = clears.Contains(key) ? new Given<string>(null) : null;
+        if (!obj.TryGetValue(key, out var node))
         {
-            return true;
-        }
-        if (node is null)
-        {
-            given = new Given<string>(null);
             return true;
         }
         var id = Text(node);
@@ -426,36 +340,31 @@ public static partial class EditVerb
         return id is not null;
     }
 
-    // A position field that is absent, null, or a plain position; an anchor form is refused loudly by the caller.
-    private static bool PosField(JsonObject obj, string key, out Given<Pos>? given)
+    // A position field that is absent, cleared, or a plain position; an anchor form is refused loudly by the caller.
+    private static bool PosField(Value.Map obj, HashSet<string> clears, string key, out Given<Pos>? given)
     {
-        given = null;
-        if (!obj.TryGetPropertyValue(key, out var node))
+        given = clears.Contains(key) ? new Given<Pos>(null) : null;
+        if (!obj.TryGetValue(key, out var node))
         {
             return true;
         }
-        if (node is null)
+        if (node is Value.Map plain && IsPlainPos(plain))
         {
-            given = new Given<Pos>(null);
-            return true;
-        }
-        if (node is JsonObject plain && IsPlainPos(plain))
-        {
-            given = new Given<Pos>(new Pos(Int(plain["x"])!.Value, Int(plain["y"])!.Value));
+            given = new Given<Pos>(new Pos(Int(plain.GetValueOrDefault("x"))!.Value, Int(plain.GetValueOrDefault("y"))!.Value));
             return true;
         }
         return false;
     }
 
-    // The detached_from origin of a spawn: null, or an entity and a part.
-    private static bool Origin(JsonObject obj, out DetachedFrom? origin)
+    // The detached_from origin of a spawn: absent, or an entity and a part.
+    private static bool Origin(Value.Map obj, out DetachedFrom? origin)
     {
         origin = null;
-        if (!obj.TryGetPropertyValue("detached_from", out var node) || node is null)
+        if (!obj.TryGetValue("detached_from", out var node))
         {
             return true;
         }
-        if (node is not JsonObject record || Text(record["entity"]) is not { } entity || Text(record["part"]) is not { } part)
+        if (node is not Value.Map record || Text(record.GetValueOrDefault("entity")) is not { } entity || Text(record.GetValueOrDefault("part")) is not { } part)
         {
             return false;
         }
@@ -463,11 +372,11 @@ public static partial class EditVerb
         return true;
     }
 
-    // The spawn's integrity: absent, or a safe integer.
-    private static bool Integrity(JsonObject obj, out long? integrity)
+    // The spawn's integrity: absent, or a whole number.
+    private static bool Integrity(Value.Map obj, out long? integrity)
     {
         integrity = null;
-        if (!obj.TryGetPropertyValue("integrity", out var node))
+        if (!obj.TryGetValue("integrity", out var node))
         {
             return true;
         }
@@ -475,17 +384,13 @@ public static partial class EditVerb
         return integrity is not null;
     }
 
-    private static bool IsPlainPos(JsonObject obj) =>
-        obj.Count == 2 && obj.ContainsKey("x") && obj.ContainsKey("y") && Int(obj["x"]) is not null && Int(obj["y"]) is not null;
+    private static bool IsPlainPos(Value.Map obj) =>
+        obj.Count == 2 && Int(obj.GetValueOrDefault("x")) is not null && Int(obj.GetValueOrDefault("y")) is not null;
 
-    private static bool IsAnchor(JsonObject obj) =>
-        obj.All(pair => pair.Key is "anchor" or "dx" or "dy") && Text(obj["anchor"]) is not null && Int(obj["dx"]) is not null && Int(obj["dy"]) is not null;
+    private static bool IsAnchor(Value.Map obj) =>
+        Only(obj, "anchor", "dx", "dy") && Text(obj.GetValueOrDefault("anchor")) is not null
+        && Int(obj.GetValueOrDefault("dx")) is not null && Int(obj.GetValueOrDefault("dy")) is not null;
 
-    // A prop's value: a string, a boolean or a whole number (a fraction is none).
-    private static bool IsPrimitive(JsonNode? node) =>
-        node is JsonValue value
-        && (value.GetValueKind() is JsonValueKind.String or JsonValueKind.True or JsonValueKind.False || Int(node) is not null);
-
-    private static Value.Map PropsOf(JsonObject props) =>
-        Value.Of(props.Select(pair => KeyValuePair.Create(pair.Key, ValueJson.FromNode(pair.Value))));
+    // A prop's value: a string, a boolean or a whole number.
+    private static bool IsPrimitive(Value value) => value is Value.Text or Value.Bool or Value.Int;
 }

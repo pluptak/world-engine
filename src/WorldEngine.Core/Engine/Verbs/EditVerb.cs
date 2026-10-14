@@ -40,21 +40,21 @@ public static partial class EditVerb
         "integrity", "status", "residue", "modifiers", "props", "traits", "clear",
     ];
 
-    // A field the edit names: Value is what it names, null for an explicit null (a clear). An absent field is no Given.
+    // A field the edit names: Value is what it names, null for a field named in `clear`. An absent field is no Given.
     public sealed record Given<T>(T? Value);
 
     public abstract record WorldEdit;
-    // A spawn: the template, whether the location was named (Given, so an explicit null is kept apart from none), the
+    // A spawn: the template, whether the location was named (Given, so a cleared one is kept apart from none), the
     // overrides as the spawn takes them, and whether any modifier was named (which is never allowed at a spawn).
     public sealed record SpawnEdit(string Template, Given<string>? Location, Spawn.Overrides Fields, bool HasModifiers) : WorldEdit;
     private sealed record SetSeedEdit(long Seed) : WorldEdit;
     private sealed record RemoveEdit(string Target) : WorldEdit;
-    // A place: each relation as the edit names it (Given, so an explicit null is kept apart from none), and the position as
+    // A place: each relation as the edit names it (Given, so a cleared one is kept apart from none), and the position as
     // a plain position or as an offset from an anchor, which is resolved to a plain position before any rule reads it.
     private sealed record PlaceEdit(string Target, Given<string>? Support, Given<string>? ContainedIn, Given<string>? InPart, Given<string>? ConcealedBy, Given<Pos>? Pos, AnchorOffset? Anchor = null) : WorldEdit;
     private sealed record AnchorOffset(string Anchor, long Dx, long Dy);
     private sealed record RefineEdit(string Target, string Template) : WorldEdit;
-    // The author's beat edits (src/engine/verbs/edit.ts): a beat to schedule, held as the edit's own JSON; a beat to cancel; and
+    // The author's beat edits (src/engine/verbs/edit.ts): a beat to schedule, its action held as the value written; a beat to cancel; and
     // a beat to move to another tick.
     private sealed record ScheduleBeatEdit(BeatCause Beat) : WorldEdit;
     private sealed record CancelBeatEdit(string Id) : WorldEdit;

@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -43,5 +42,5 @@ public interface IWorld
     IReadOnlyList<Catalog.CatalogEntry> CatalogEntries();
 
     // An edit sent under a role; the director's edit is the one that reaches this (`src/director-world.ts`).
-    Pipeline.Result Edit(JsonObject edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null);
+    Pipeline.Result Edit(Value.Map edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null);
 }

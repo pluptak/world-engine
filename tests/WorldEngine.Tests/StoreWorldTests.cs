@@ -49,7 +49,7 @@ public class StoreWorldTests : IDisposable
         var edits = (JsonArray)JsonNode.Parse(File.ReadAllText(Path.Combine(Fixtures, "store-edit.edits.json")))!;
 
         var ids = edits
-            .Select(item => world.Edit(item!["edit"]!.AsObject(), item["command_id"]?.GetValue<string>()).CommandId)
+            .Select(item => world.Edit(Edits.Of(item!["edit"]), item["command_id"]?.GetValue<string>()).CommandId)
             .ToList();
 
         Assert.Equal(["edit-7", "tuned"], ids);

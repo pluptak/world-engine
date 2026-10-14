@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+using WorldEngine.Core.Engine;
 using WorldEngine.Core.Model;
 using WorldEngine.Store;
 
@@ -36,12 +36,7 @@ switch (mode)
         var stone = WorldFiles.ReadIds(dir)["stone"];
         for (var i = 0; i < count; i++)
         {
-            var edit = new JsonObject
-            {
-                ["kind"] = "set_props",
-                ["target"] = stone,
-                ["props"] = new JsonObject { ["mark"] = $"{who}-{i}" },
-            };
+            var edit = Pipeline.Reason(("kind", "set_props"), ("target", stone), ("props", Pipeline.Reason(("mark", $"{who}-{i}"))));
             WorldEdits.Edit(dir, registry, edit);
         }
         break;

@@ -52,7 +52,7 @@ public class MemoryGoldenTests
             Read<Command>(args["command"]!),
             args["basedOn"]?.GetValue<long>(),
             args["observe"]?.GetValue<bool>() ?? false)),
-        "edit" => Shape(world.Edit(args["edit"]!.AsObject(), args["command_id"]?.GetValue<string>())),
+        "edit" => Shape(world.Edit(Edits.Of(args["edit"]), args["command_id"]?.GetValue<string>())),
         "beat" => new JsonArray([.. world.Beat([.. args["commands"]!.AsArray().Select(command => Read<Command>(command!))]).Select(result => (JsonNode?)Shape(result))]),
         "observe" => Json(world.Observe(
             args["observer"]!.GetValue<string>(),

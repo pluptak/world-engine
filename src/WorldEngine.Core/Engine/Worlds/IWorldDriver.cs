@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -13,7 +12,7 @@ public interface IWorldDriver
     Pipeline.Result Apply(Command command, long? basedOn = null);
 
     // An author edit, with `edit-<n>` as its id unless one is given.
-    Pipeline.Result Edit(JsonObject edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null);
+    Pipeline.Result Edit(Value.Map edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null);
 
     // The deltas and events of every accepted command decided at `version` or later.
     (List<Delta> Deltas, List<WorldEvent> Events) Since(long version);

@@ -37,7 +37,7 @@ public static class CliRunner
                 return Invalid(Code.InvalidJson);
             }
             // A request the contract refuses is answered as invalid, and nothing is run for it (`RequestSchema`).
-            if (parsed is not JsonObject request || !Checks.IsRequest(request))
+            if (parsed is not JsonObject request || !Checks.IsRequest(ValueOf(request)))
             {
                 return Invalid(Code.InvalidRequest);
             }
@@ -73,7 +73,7 @@ public static class CliRunner
         {
             return Invalid(Code.InvalidScenarioJson);
         }
-        if (!Checks.IsScenario(scenario))
+        if (!Checks.IsScenario(ValueOf(scenario)))
         {
             return Invalid(Code.InvalidScenario);
         }
@@ -89,7 +89,7 @@ public static class CliRunner
             {
                 return Invalid(Code.InvalidCoverageJson);
             }
-            if (!Checks.IsCoverage(coverageJson))
+            if (!Checks.IsCoverage(ValueOf(coverageJson)))
             {
                 return Invalid(Code.InvalidCoverage);
             }
@@ -155,7 +155,7 @@ public static class CliRunner
             case "edit":
                 return Answer(
                     StoreWorld.Open(Required(world)).Edit(
-                        request["edit"] as JsonObject ?? throw new WorldError(Code.InvalidEdit, "The request names no edit"),
+                        EditOf(request),
                         JsonReads.Text(request["command_id"]),
                         Flag(request["perceivers"]),
                         null,
@@ -239,7 +239,7 @@ public static class CliRunner
             case "director_edit":
                 return Answer(
                     new DirectorWorld(StoreWorld.Open(Required(world))).Edit(
-                        request["edit"] as JsonObject ?? throw new WorldError(Code.InvalidEdit, "The request names no edit"),
+                        EditOf(request),
                         JsonReads.Text(request["command_id"]),
                         Flag(request["perceivers"])),
                     Flag(request["include_snapshot"]));
@@ -412,6 +412,13 @@ public static class CliRunner
     }
 
     // The view of the body the request names, as `actorWorld` builds it over the world.
+    // A file or request as the contract reads it: none when it cannot be a value (a fraction, or a null in a list).
+    private static Value? ValueOf(JsonNode? node) => ValueJson.TryFromNode(node, out var value) ? value : null;
+
+    // The request's edit as the engine reads it; the contract has checked it is one.
+    private static Value.Map EditOf(JsonObject request) =>
+        ValueJson.FromNode(request["edit"]) as Value.Map ?? throw new WorldError(Code.InvalidEdit, "The request names no edit");
+
     private static ActorWorld ActorOf(StoreWorld world, JsonObject request) => new(world, Text(request, "actor"));
 
     // The handle of a player, over the world, as `playerWorld` builds it for the handle the request names.

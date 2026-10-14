@@ -32,7 +32,7 @@ public class HandlesGoldenTests
         return op switch
         {
             "snapshot" => Json(world.CurrentSnapshot()),
-            "edit" => Shape(world.Edit(args["edit"]!.AsObject())),
+            "edit" => Shape(world.Edit(Edits.Of(args["edit"]))),
             "observe" => Json(new PlayerWorld(world, handle!).Observe(args["since_tick"]?.GetValue<long>())),
             "inspect" => Json(new PlayerWorld(world, handle!).Inspect(args["entity"]!.GetValue<string>())),
             "options" => Json(new PlayerWorld(world, handle!).Options(args["body"]?.GetValue<string>(), args["refused"]?.GetValue<bool>() ?? false)),

@@ -1,6 +1,3 @@
-using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
-using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Json.Integers;
@@ -10,7 +7,6 @@ namespace WorldEngine.Core.Engine;
 // Running a due beat: its condition, its action, its followers and its next repeat.
 public static partial class Beats
 {
-
     // A watch (a repeating beat with `until_ran`) records nothing while its condition is false, and ends after the first run
     // whose action ran; a failed run is still recorded and the watch goes on (src/engine/beats.ts `runBeat`).
     public static void Run(Working working, IReadOnlyDictionary<string, Template> registry, BeatCause cause)
@@ -50,19 +46,19 @@ public static partial class Beats
     private static Fired Fire(Working working, IReadOnlyDictionary<string, Template> registry, BeatCause cause)
     {
         var action = cause.Action;
-        if (JsonReads.Text(action["kind"]) == "sound")
+        if (action.GetValueOrDefault("kind").AsText() == "sound")
         {
-            var data = Pipeline.Reason(("loud", JsonReads.IsTrue(action["loud"])));
-            return new Done(working.Emit(EventType.Sounded, JsonReads.Text(action["entity"])!, data, cause.CauseId));
+            var data = Pipeline.Reason(("loud", action.GetValueOrDefault("loud").IsTrue()));
+            return new Done(working.Emit(EventType.Sounded, action.GetValueOrDefault("entity").AsText()!, data, cause.CauseId));
         }
         return FireEdit(working, registry, cause, action);
     }
 
     // An edit runs under the beat's own cause, as the author's `edit` would, with the verb's own checks; a failure puts back
     // everything it wrote (the snapshot, the events and the deltas), and the snapshot-wide guard runs after it.
-    private static Fired FireEdit(Working working, IReadOnlyDictionary<string, Template> registry, BeatCause cause, JsonObject action)
+    private static Fired FireEdit(Working working, IReadOnlyDictionary<string, Template> registry, BeatCause cause, Value.Map action)
     {
-        var targetText = JsonReads.Text(action["target"]);
+        var targetText = action.GetValueOrDefault("target").AsText();
         Resolve.TargetAddress? target = null;
         if (targetText is not null)
         {

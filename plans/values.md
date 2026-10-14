@@ -63,10 +63,17 @@ in ordinal order and lists and maps compare by content, so equality is structura
    verb catalog `VerbRegistry.CatalogEntry`. Options and a verb's suggestions hold args as `Value.Map`, and a query's
    property match reads a `Value`. The CLI and the tests encode a record once (`WorldJson.Node`); no golden moved.
    `IWorld.Edit` still takes the edit's JSON until block 6. 27 Core files still import `System.Text.Json`.
-6. **Requests and edits are typed.** `Contract/Shape.cs` checks a `Value`; `EditParser` turns it into the `WorldEdit`
-   records it already builds, and `IWorld.Edit` takes those. A beat's action is stored as its `WorldEdit` (or a sound), not
-   as the edit's JSON, so `BeatShape` stops re-checking stored actions. An edit that clears a field (`Given<T>` with no
-   value) needs its own form, since a null is no longer one.
+6. **Requests and edits are typed.** Done. `Contract/Shape.cs` checks a `Value`: the CLI reads a request, a scenario and a
+   coverage file as a value first, so a fraction anywhere (an edit, a scenario's `fuel_pct`) is an invalid request, and
+   `Null(...)` shapes are gone (a scenario's override names a field to empty in `clear`, as an edit does). `EditParser`
+   reads the edit as a `Value.Map` into its `WorldEdit` records, and the JSON bridge is gone; a cleared field is the
+   `clear` list read into `Given<T>` with no value. `IWorld.Edit` takes the edit as a `Value.Map` rather than a
+   `WorldEdit`: the edit is logged as the command's args, and a record there would need an encoder back for nothing. A
+   beat's action is stored as a `Value.Map` (the snapshot did not move), and the shape rules hold a beat's records
+   (`BeatCondition`, `BeatFollower`, `BeatRepeat`), read from the edit through `ValueJson.TryRead`, the same way whether
+   an edit, a scene or a stored snapshot carries it. The three beat-shape golden rows and two tests that sent a fraction
+   in an edit became contract tests (`ChecksTests`). `SceneBuilder` and `WorldBuilder` bridge their JSON to these until
+   block 7.
 7. **Templates and scenes are read from `Value`.** `TemplateShape`, `TemplateResolver`, `SceneBuilder`,
    `ScenarioResolver`, `Forms`, `Refine`, `Upgrade`.
 8. **The store and the CLI encode only through the codec.** Log, head, checkpoint and pending lines become records; the

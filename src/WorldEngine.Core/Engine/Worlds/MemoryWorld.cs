@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -89,7 +88,7 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
     }
 
     // An edit is a command by the reserved author, so it is logged and replayed like one. Its id is `edit-<n>` unless given.
-    public Pipeline.Result Edit(JsonObject edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null)
+    public Pipeline.Result Edit(Value.Map edit, string? commandId = null, bool perceivers = false, By? by = null, long? basedOn = null)
     {
         var command = Submission.EditCommand(edit, commandId ?? $"edit-{submissions + 1}", perceivers, by);
         return Submit(command, basedOn ?? current.Version, null);
