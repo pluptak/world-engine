@@ -13,6 +13,9 @@ pocketing, moving and perceiving store nothing.
 **What writes a part.** Only a transition with an event that names the part or an ancestor:
 `damaged`, `destroyed`, `detached`, or an `edited` from `set_part`. Reading the template is not a
 write and not an event, so there is no materialization step and nothing in the history for it.
+A part tied (`bound: true` in its state) takes no capacity, as a detached one does, and so do
+the parts under it; a bound body (`bound` prop) has no `moving` or `manipulation`. The `set_part`
+that ties it is the `edited` event.
 TypeScript's property test held every generated step to this; the property traces
 (`PropertyTraceTests`) replay those steps.
 

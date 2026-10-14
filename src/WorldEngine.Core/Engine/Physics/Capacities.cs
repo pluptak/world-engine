@@ -15,6 +15,11 @@ public static class Capacities
         {
             return null;
         }
+        // A body tied up has no moving and no manipulation, whatever its parts (`docs/structure.md`).
+        if (entity.Props.Is(Prop.Bound) && (name is "moving" or "manipulation"))
+        {
+            return 0;
+        }
 
         var partsByName = template.Parts.ToDictionary(part => part.Name, StringComparer.Ordinal);
         PartState? StateOf(string partName) => PartStates.State(template, entity, partName);
@@ -23,6 +28,7 @@ public static class Capacities
         {
             var state = StateOf(part.Name);
             if (state is null
+                || state.Bound is true
                 || state.Status is not (PartStatus.Intact or PartStatus.Damaged)
                 || !part.Contributes.ContainsKey(name)
                 || !AncestorsAvailable(part, partsByName, StateOf))
@@ -119,7 +125,7 @@ public static class Capacities
                 throw new InvalidOperationException($"Part cycle at {ancestorName}");
             }
             var state = stateOf(ancestorName);
-            if (state is null || state.Status is PartStatus.Detached or PartStatus.Destroyed)
+            if (state is null || state.Bound is true || state.Status is PartStatus.Detached or PartStatus.Destroyed)
             {
                 return false;
             }

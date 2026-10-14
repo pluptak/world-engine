@@ -2,7 +2,7 @@
 
 - `edit`: carries one change as `args.edit`. Takes no time.
   - `spawn`, `remove`, `place`, `set_props` (replaces),
-    `update_props` (merges), `set_part`, `refine`
+    `update_props` (merges), `set_part` (its `state` may take `bound`), `refine`
     ([refine.md](refine.md)), `set_seed` ([rng.md](rng.md)),
     `schedule_beat`, `cancel_beat`, `retime_beat`
     ([beats.md](beats.md)), `start_run`, `end_run`.

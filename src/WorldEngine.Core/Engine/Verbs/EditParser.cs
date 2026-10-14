@@ -153,10 +153,13 @@ public static partial class EditVerb
             {
                 if (!Only(obj, "kind", "target", "part", "state") || Text(obj.GetValueOrDefault("target")) is not { } target
                     || Text(obj.GetValueOrDefault("part")) is not { } part || obj.GetValueOrDefault("state") is not Value.Map state
-                    || Int(state.GetValueOrDefault("integrity")) is not { } integrity || Text(state.GetValueOrDefault("status")) is not { } status)
+                    || !state.Keys.All(key => key is "integrity" or "status" or "bound")
+                    || Int(state.GetValueOrDefault("integrity")) is not { } integrity || Text(state.GetValueOrDefault("status")) is not { } status
+                    || (state.ContainsKey("bound") && state.GetValueOrDefault("bound") is not Value.Bool))
                 {
                     return null;
                 }
+                var bound = state.GetValueOrDefault("bound") is Value.Bool { Flag: true } ? true : (bool?)null;
                 var partStatus = status switch
                 {
                     "intact" => PartStatus.Intact,
@@ -165,7 +168,7 @@ public static partial class EditVerb
                     "destroyed" => PartStatus.Destroyed,
                     _ => (PartStatus?)null,
                 };
-                return partStatus is { } value ? new SetPartEdit(target, part, new PartState(integrity, value)) : null;
+                return partStatus is { } value ? new SetPartEdit(target, part, new PartState(integrity, value, bound)) : null;
             }
             default:
                 return null;

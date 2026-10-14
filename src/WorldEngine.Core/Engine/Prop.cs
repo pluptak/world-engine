@@ -30,6 +30,7 @@ public static class Prop
     public static readonly Prop<long> BleedEveryTicks = Integer("bleed_every_ticks", Tier.Definition);
     public static readonly Prop<long> BleedTimes = Integer("bleed_times", Tier.Definition);
     public static readonly Prop<bool> Blind = Flag("blind", Tier.State);
+    public static readonly Prop<bool> Bound = Flag("bound", Tier.State);
     public static readonly Prop<long> BreakFallCm = Integer("break_fall_cm", Tier.Definition);
     public static readonly Prop<bool> Burning = Flag("burning", Tier.State, requires: ["light_source"]);
     public static readonly Prop<bool> Camera = Flag("camera", Tier.Definition);

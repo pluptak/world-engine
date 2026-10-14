@@ -39,6 +39,10 @@
     "type": "boolean",
     "tier": "state"
   },
+  "bound": {
+    "type": "boolean",
+    "tier": "state"
+  },
   "break_fall_cm": {
     "type": "integer",
     "tier": "definition"

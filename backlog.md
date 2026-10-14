@@ -19,11 +19,10 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
 1. [Possession: a curse makes a body act only at another's word](#possession-a-curse-makes-a-body-act-only-at-anothers-word).
-2. [Bound: a body or a part tied, taking what it gives](#bound-a-body-or-a-part-tied-taking-what-it-gives).
-3. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
-4. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
-5. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
-6. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
+2. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
+3. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
+4. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
+5. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -114,39 +113,6 @@ actor may work on its own body.
 - **Non-goals:** sensing through the victim, breaking free by a roll, a `released` event.
 - **Done when:** as above.
 - **Depends on:** Command provenance.
-
-### Bound: a body or a part tied, taking what it gives
-
-- **What:** binding takes capacities the way losing a part does, and is undone by clearing it. Decided
-  (`plans/candidates.md` history): bound with no part named takes `moving` and `manipulation`; a bound part takes
-  only what that part, and the parts under it, contribute. A bound body still speaks and senses.
-- **Model:**
-  - Body-wide: a state prop `bound` (`Engine/Prop.cs`, `Flag`), in `ArchitectProps` beside `asleep`.
-  - One part: `PartState` gains `bool? Bound` (`Model/Snapshot.cs`), written only when true, absent read as false
-    (no schema change). The `set_part` edit's `state` takes an optional `bound` (`Verbs/EditParser.cs`); that is how
-    a scene or a beat binds a part, since a scenario does not write part state at tick 0. Wounds and Sockets add
-    their own optional fields to the same record and edit: whichever lands second adds beside the first.
-- **Rules** (`Engine/Physics/Capacities.cs`, `Structural`):
-  - A part that is bound, or has a bound ancestor (the `AncestorsAvailable` walk), contributes nothing.
-  - A body with `bound` reads `Structural` 0 for `moving` and `manipulation`, whatever its parts.
-  - Both are structural, so `Capacities.Of` follows, and modifiers still add on top as today, clamped to 0–100.
-  - What a bound part holds stays held: `Carry.PartAvailable` and the `in_part` rules do not read `Bound`. A bound
-    hand cannot take anything new, since its `manipulation` is gone.
-  - No event of its own: the change is an `edited` event, as `set_part` and `update_props` already record. No
-    `capability_changed` is emitted for it, as for any edit today.
-- **Files:** `Model/Snapshot.cs`, `Engine/Physics/PartStates.cs` (default check counts `Bound`),
-  `Engine/Physics/Capacities.cs`, `Engine/Prop.cs`, `Verbs/EditParser.cs`, `Scenes/Forms.cs`,
-  `docs/structure.md` (a bound part), `docs/state.md` (capacities), `docs/fields.md`, `docs/verbs-edit.md`
-  (`set_part` takes `bound`).
-- **Tests:** a human with `bound` reads `moving` 0 and `manipulation` 0, `sight` and `speech` 100; its `move` is
-  refused `insufficient_moving` and its `say` is accepted; `set_part` binding `hand_l` takes 50 `manipulation`
-  (hand 30 and thumb 20) and leaves the right hand's 50; the stone `hand_l` held stays in it; clearing the binding
-  (a `set_part` with no `bound`, or `update_props` dropping `bound`) restores every capacity; a beat binds the body
-  at tick 3; a store world folds alike.
-- **Non-goals:** `bind` and `untie` verbs and the rope they would need, struggling free, binding by a part's
-  name other than through `set_part`.
-- **Done when:** as above, and no existing golden moves.
-- **Depends on:** nothing.
 
 ### Wounds: a cut opens a part without severing it
 

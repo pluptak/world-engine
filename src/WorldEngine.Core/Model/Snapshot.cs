@@ -54,7 +54,8 @@ public enum EntityStatus
     Destroyed,
 }
 
-public sealed record PartState(long Integrity, PartStatus Status);
+// `Bound` is written only when true: a part tied by a rope takes no capacity (`docs/structure.md`).
+public sealed record PartState(long Integrity, PartStatus Status, bool? Bound = null);
 
 public sealed record Modifier(string Capacity, long Delta, long? ExpiresAtTick, string CauseId);
 
