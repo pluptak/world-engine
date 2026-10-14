@@ -10,8 +10,14 @@ namespace WorldEngine.Core.Templates;
 
 public sealed record Dimensions(long W, long D, long H);
 
+public enum HoldKind
+{
+    Grip,
+    Space,
+}
+
 public sealed record Holds(
-    string Kind,
+    HoldKind Kind,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? InnerWCm = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? InnerDCm = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? InnerHCm = null);

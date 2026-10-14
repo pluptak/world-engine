@@ -279,7 +279,7 @@ public class StoreReadTests : IDisposable
             var answer = row["event_id"] is { } eventId
                 ? WorldHistory.QueryPerceive(Fixture, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, eventId: eventId.GetValue<string>())
                 : WorldHistory.QueryPerceive(Fixture, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, entity: row["entity"]!.GetValue<string>());
-            var actual = new JsonObject { ["value"] = answer.Value, ["basis_code"] = answer.BasisCode };
+            var actual = new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = answer.BasisCode };
 
             Assert.Equal(CanonicalJson.Serialize(row["answer"]), CanonicalJson.Serialize(actual));
         }
@@ -332,7 +332,7 @@ public class StoreReadTests : IDisposable
             var answer = row["event_id"] is { } eventId
                 ? WorldHistory.QueryPerceive(Checkpointed, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, eventId: eventId.GetValue<string>())
                 : WorldHistory.QueryPerceive(Checkpointed, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, entity: row["entity"]!.GetValue<string>());
-            var actual = new JsonObject { ["value"] = answer.Value, ["basis_code"] = answer.BasisCode };
+            var actual = new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = answer.BasisCode };
 
             Assert.Equal(CanonicalJson.Serialize(row["answer"]), CanonicalJson.Serialize(actual));
         }

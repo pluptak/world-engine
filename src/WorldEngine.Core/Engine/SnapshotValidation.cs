@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Json.Integers;
@@ -20,7 +21,6 @@ public static class SnapshotValidation
     // The relations and senses the engine computes (src/engine/capabilities.ts `ENGINE_CAPABILITIES`).
     private static readonly HashSet<string> ComputedRelations =
         ["support", "contained_in", "location", "attached_to", "status", "near", "reachable"];
-    private static readonly HashSet<string> ComputedSenses = ["sight", "hearing", "smell", "touch"];
 
     public static IReadOnlyList<SnapshotIssue> Validate(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry)
     {
@@ -37,7 +37,7 @@ public static class SnapshotValidation
         {
             issues.Add(Issue("coverage_not_computable", ["coverage", "relations", name], name));
         }
-        foreach (var name in snapshot.Coverage.Senses.Order(StringComparer.Ordinal).Where(name => !ComputedSenses.Contains(name)))
+        foreach (var name in snapshot.Coverage.Senses.Order(StringComparer.Ordinal).Where(name => !Sense.All.Contains(name)))
         {
             issues.Add(Issue("coverage_not_computable", ["coverage", "senses", name], name));
         }
@@ -134,7 +134,7 @@ public static class SnapshotValidation
                 if (state.Status != PartStatus.Detached
                     && PartStates.Effective(template, entity, part)?.Status == PartStatus.Detached)
                 {
-                    issues.Add(Issue("part_under_detached", [.. path, "parts", part], StatusName(state.Status)));
+                    issues.Add(Issue("part_under_detached", [.. path, "parts", part], WorldJson.Name(state.Status)));
                 }
             }
         }
@@ -151,8 +151,6 @@ public static class SnapshotValidation
 
     private static SnapshotIssue Issue(string code, IReadOnlyList<string> path, string message) =>
         new(code, path, message);
-
-    private static string StatusName(PartStatus status) => status.ToString().ToLowerInvariant();
 
     // The string a prop holds, or null when it holds anything else or nothing.
     private static string? Str(IReadOnlyDictionary<string, JsonNode?> props, string key) =>
@@ -540,7 +538,7 @@ public static class SnapshotValidation
         {
             if (declaredType is null || !PropFields.Matches(declaredType.Value, value))
             {
-                issues.Add(Issue("wrong_prop_type", path, $"props.{name} must be {declaredType?.ToString().ToLowerInvariant() ?? "declared"}"));
+                issues.Add(Issue("wrong_prop_type", path, $"props.{name} must be {(declaredType is { } type ? WorldJson.Name(type) : "declared")}"));
             }
         }
         else

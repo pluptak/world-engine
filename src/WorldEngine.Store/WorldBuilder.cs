@@ -14,7 +14,7 @@ public static class WorldBuilder
     // The coverage a world declares when its scenario names none (src/model.ts `defaultCoverage`). The order is TypeScript's.
     public static readonly Coverage DefaultCoverage = new(
         ["support", "contained_in", "attached_to", "status", "location", "near", "reachable"],
-        ["sight", "hearing"],
+        [Sense.Sight, Sense.Hearing],
         ["integrity", "residue", "pos", "open"]);
 
     // The snapshot a scenario makes, and the ids its names gave. A scenario is a list of entries, or a scene with `entities`, `seed`,

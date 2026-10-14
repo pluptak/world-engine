@@ -4,13 +4,24 @@ using WorldEngine.Core.Templates;
 
 namespace WorldEngine.Core.Engine;
 
+// A query's value. `Unknown` is never 'could not compute': the world's coverage leaves the category out, or the engine has no
+// rule for it (`engine_incapable`).
+public enum Truth
+{
+    True,
+    False,
+    Unknown,
+}
+
 // What an observer can sense now, and what an actor can name (src/engine/query.ts). This is the current-state half:
 // the perceive query with no event. The event form, which reads what happened and who sensed it, is `EventPerception`.
 public static class Perception
 {
-    public sealed record Answer(string Value, string BasisCode);
+    public sealed record Answer(Truth Value, string BasisCode)
+    {
+        public static Answer Of(bool holds, string basisCode) => new(holds ? Truth.True : Truth.False, basisCode);
+    }
 
-    private static readonly string[] ComputedSenses = ["sight", "hearing", "smell", "touch"];
 
     // Whether an observer senses an entity by a sense, now (`perceive` with no event). `value` is "true", "false" or
     // "unknown"; the basis says why.
@@ -18,76 +29,76 @@ public static class Perception
     {
         if (!snapshot.Entities.TryGetValue(observerId, out var observer))
         {
-            return new Answer("false", "no_such_entity");
+            return new Answer(Truth.False, "no_such_entity");
         }
-        if (!ComputedSenses.Contains(sense))
+        if (!Sense.All.Contains(sense))
         {
-            return new Answer("unknown", "engine_incapable");
+            return new Answer(Truth.Unknown, "engine_incapable");
         }
         if (!snapshot.Coverage.Senses.Contains(sense))
         {
-            return new Answer("unknown", "uncovered_sense");
+            return new Answer(Truth.Unknown, "uncovered_sense");
         }
         // A destroyed body senses nothing, whatever its parts: the same end that stops it acting.
         if (observer.Status == EntityStatus.Destroyed)
         {
-            return new Answer("false", "observer_destroyed");
+            return new Answer(Truth.False, "observer_destroyed");
         }
         // A body that runs on power senses nothing without it.
         if (PropValues.GetString(observer.Props, "powered_by") is not null && !Power.Powered(snapshot, observer.Id))
         {
-            return new Answer("false", "unpowered");
+            return new Answer(Truth.False, "unpowered");
         }
         // A sleeping body sees and hears nothing; touch and smell are unchanged.
-        if (PropValues.IsTrue(observer.Props, "asleep") && sense is "sight" or "hearing")
+        if (PropValues.IsTrue(observer.Props, "asleep") && sense is Sense.Sight or Sense.Hearing)
         {
-            return new Answer("false", "asleep");
+            return new Answer(Truth.False, "asleep");
         }
         // An unconscious body takes every sense.
         if (PropValues.IsTrue(observer.Props, "unconscious"))
         {
-            return new Answer("false", "unconscious");
+            return new Answer(Truth.False, "unconscious");
         }
         if ((Capacities.Of(snapshot, registry, observer.Id, sense) ?? 0) == 0)
         {
-            return new Answer("false", "no_sense_capacity");
+            return new Answer(Truth.False, "no_sense_capacity");
         }
 
         if (!snapshot.Entities.TryGetValue(entityId, out var subject))
         {
-            return new Answer("false", "no_such_entity");
+            return new Answer(Truth.False, "no_such_entity");
         }
         // An abstract entity exists and is not a thing to be sensed.
         if (Resolve.IsAbstract(registry, subject))
         {
-            return new Answer("false", "abstract");
+            return new Answer(Truth.False, "abstract");
         }
         // Touch reads the body instead of the room.
-        if (sense == "touch")
+        if (sense == Sense.Touch)
         {
             return TouchesBody(snapshot, registry, observer.Id, subject)
-                ? new Answer("true", "own_body")
-                : new Answer("false", "not_touching");
+                ? new Answer(Truth.True, "own_body")
+                : new Answer(Truth.False, "not_touching");
         }
         // What is hidden under or behind something is not seen, by anybody, until the relation is broken.
-        if (sense == "sight" && subject.ConcealedBy is not null)
+        if (sense == Sense.Sight && subject.ConcealedBy is not null)
         {
-            return new Answer("false", "concealed");
+            return new Answer(Truth.False, "concealed");
         }
         // A shut container hides what is inside it, however deep; hearing and smell do not care.
-        if (sense == "sight" && Reach.ClosedEnclosure(snapshot, subject.Id) is not null)
+        if (sense == Sense.Sight && Reach.ClosedEnclosure(snapshot, subject.Id) is not null)
         {
-            return new Answer("false", "enclosed");
+            return new Answer(Truth.False, "enclosed");
         }
 
         // The body's own answer from where it stands; then, for sight it does not have, each camera that feeds it.
         var body = BodyAnswer(snapshot, observer, subject, sense);
         // What the body cannot hear, an intercom may carry.
-        if (sense == "hearing" && body.Value == "false" && body.BasisCode != "quiet" && HeardThroughIntercom(snapshot, observer, subject))
+        if (sense == Sense.Hearing && body.Value == Truth.False && body.BasisCode != "quiet" && HeardThroughIntercom(snapshot, observer, subject))
         {
-            return new Answer("true", "intercom");
+            return new Answer(Truth.True, "intercom");
         }
-        if (sense != "sight" || body.Value == "true")
+        if (sense != Sense.Sight || body.Value == Truth.True)
         {
             return body;
         }
@@ -98,7 +109,7 @@ public static class Perception
             var where = TargetLocationForPerception(subject, subject.Location, at);
             if (at is not null && at == where && IsLit(snapshot, at) && InCone(snapshot, cameraEntity, subject.Id))
             {
-                return new Answer("true", "camera");
+                return new Answer(Truth.True, "camera");
             }
         }
         return body;
@@ -116,9 +127,9 @@ public static class Perception
         {
             return true;
         }
-        var sensed = new[] { "sight", "smell", "touch" }.Any(sense =>
+        var sensed = new[] { Sense.Sight, Sense.Smell, Sense.Touch }.Any(sense =>
             snapshot.Coverage.Senses.Contains(sense)
-            && Perceive(snapshot, registry, actorId, entityId, sense).Value == "true");
+            && Perceive(snapshot, registry, actorId, entityId, sense).Value == Truth.True);
         return sensed || Gropable(snapshot, actorId, entityId);
     }
 
@@ -206,36 +217,36 @@ public static class Perception
         var targetLocation = TargetLocationForPerception(subject, subject.Location, observerLocation);
         if (observerLocation is null || targetLocation is null)
         {
-            return new Answer("false", "not_perceptible");
+            return new Answer(Truth.False, "not_perceptible");
         }
-        var crossesDoors = sense is "hearing" or "smell";
+        var crossesDoors = sense is Sense.Hearing or Sense.Smell;
         if (observerLocation == targetLocation)
         {
             if (crossesDoors)
             {
                 // The entity row: hearing always reaches the listener in the same room; smell only where there is
                 // something to smell.
-                if (sense == "hearing" || (sense == "smell" && Smells(subject)))
+                if (sense == Sense.Hearing || (sense == Sense.Smell && Smells(subject)))
                 {
-                    return new Answer("true", "same_location");
+                    return new Answer(Truth.True, "same_location");
                 }
-                return new Answer("false", "odourless");
+                return new Answer(Truth.False, "odourless");
             }
             return IsLit(snapshot, observerLocation)
-                ? new Answer("true", "same_location_lit")
-                : new Answer("false", "location_unlit");
+                ? new Answer(Truth.True, "same_location_lit")
+                : new Answer(Truth.False, "location_unlit");
         }
 
-        if (sense == "sight")
+        if (sense == Sense.Sight)
         {
             var connected = ConnectedByDoor(snapshot, observerLocation, targetLocation, true);
             var bothLit = IsLit(snapshot, observerLocation) && IsLit(snapshot, targetLocation);
             return connected && bothLit
-                ? new Answer("true", "adjacent_open_door_lit")
-                : new Answer("false", connected ? "location_unlit" : "not_perceptible");
+                ? new Answer(Truth.True, "adjacent_open_door_lit")
+                : new Answer(Truth.False, connected ? "location_unlit" : "not_perceptible");
         }
         // The entity row never carries sound or smell through a door.
-        return new Answer("false", "not_perceptible");
+        return new Answer(Truth.False, "not_perceptible");
     }
 
     // Whether the observer feels the subject through its body: the subject is the observer itself, or sits in one of
@@ -253,7 +264,7 @@ public static class Perception
         var template = snapshot.Entities.TryGetValue(observerId, out var observer) && registry.TryGetValue(observer.Template, out var found)
             ? found
             : null;
-        return template?.Parts.Any(part => part.Name == subject.InPart && part.Holds?.Kind == "grip") == true;
+        return template?.Parts.Any(part => part.Name == subject.InPart && part.Holds?.Kind == HoldKind.Grip) == true;
     }
 
     // What an entity offers the nose: a liquid it holds, or residue spilled on it.

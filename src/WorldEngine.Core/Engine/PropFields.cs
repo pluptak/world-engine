@@ -9,17 +9,17 @@ namespace WorldEngine.Core.Engine;
 
 public enum PropType
 {
-    [JsonStringEnumMemberName("boolean")] Boolean,
-    [JsonStringEnumMemberName("integer")] Integer,
-    [JsonStringEnumMemberName("string")] String,
-    [JsonStringEnumMemberName("id")] Id,
+    Boolean,
+    Integer,
+    String,
+    Id,
 }
 
 public enum Tier
 {
-    [JsonStringEnumMemberName("definition")] Definition,
-    [JsonStringEnumMemberName("state")] State,
-    [JsonStringEnumMemberName("derived")] Derived,
+    Definition,
+    State,
+    Derived,
 }
 
 public sealed record PropField(

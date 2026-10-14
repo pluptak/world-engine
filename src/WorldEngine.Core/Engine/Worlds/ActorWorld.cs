@@ -356,7 +356,7 @@ public sealed class ActorWorld
         }
         var output = new JsonObject
         {
-            ["status"] = result.Status.ToString().ToLowerInvariant(),
+            ["status"] = WorldJson.Name(result.Status),
             ["command_id"] = result.CommandId,
             ["resolved_target"] = result.ResolvedTarget is null ? null : (JsonNode)Alias(result.ResolvedTarget),
         };

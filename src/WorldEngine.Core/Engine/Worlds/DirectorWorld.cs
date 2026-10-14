@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -81,7 +82,7 @@ public sealed class DirectorWorld(IWorld world)
             var closed = world.TakeRoundAs([]);
             if (closed.Status != Status.Ok || closed.Closing is null)
             {
-                return Quiet("refused", rounds, reasonCode: closed.ReasonCode ?? closed.Status.ToString().ToLowerInvariant());
+                return Quiet("refused", rounds, reasonCode: closed.ReasonCode ?? WorldJson.Name(closed.Status));
             }
             rounds += 1;
             // A registered body that sensed anything the round made stops the quiet: no player sleeps through it.

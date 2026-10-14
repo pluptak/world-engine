@@ -8,19 +8,19 @@ namespace WorldEngine.Core.Model;
 
 public enum Status
 {
-    [JsonStringEnumMemberName("ok")] Ok,
-    [JsonStringEnumMemberName("refused")] Refused,
-    [JsonStringEnumMemberName("ambiguous")] Ambiguous,
-    [JsonStringEnumMemberName("unresolved")] Unresolved,
-    [JsonStringEnumMemberName("preempted")] Preempted,
-    [JsonStringEnumMemberName("invalid")] Invalid,
+    Ok,
+    Refused,
+    Ambiguous,
+    Unresolved,
+    Preempted,
+    Invalid,
 }
 
 public enum Role
 {
-    [JsonStringEnumMemberName("author")] Author,
-    [JsonStringEnumMemberName("director")] Director,
-    [JsonStringEnumMemberName("player")] Player,
+    Author,
+    Director,
+    Player,
 }
 
 // The role a command was sent under (`docs/roles.md`); absent for the author of a bare world.

@@ -28,17 +28,17 @@ public sealed record ScheduledCause(
 
 public enum PartStatus
 {
-    [JsonStringEnumMemberName("intact")] Intact,
-    [JsonStringEnumMemberName("damaged")] Damaged,
-    [JsonStringEnumMemberName("detached")] Detached,
-    [JsonStringEnumMemberName("destroyed")] Destroyed,
+    Intact,
+    Damaged,
+    Detached,
+    Destroyed,
 }
 
 public enum EntityStatus
 {
-    [JsonStringEnumMemberName("intact")] Intact,
-    [JsonStringEnumMemberName("broken")] Broken,
-    [JsonStringEnumMemberName("destroyed")] Destroyed,
+    Intact,
+    Broken,
+    Destroyed,
 }
 
 public sealed record PartState(long Integrity, PartStatus Status);

@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Engine.JsonReads;
@@ -59,13 +60,13 @@ public static class Projection
         string observer)
     {
         var covered = Capabilities.Senses
-            .Where(sense => sense != "hearing" && snapshot.Coverage.Senses.Contains(sense))
+            .Where(sense => sense != Sense.Hearing && snapshot.Coverage.Senses.Contains(sense))
             .ToList();
         var sensed = new List<(string Id, List<string> Senses)>();
         foreach (var id in snapshot.Entities.Keys.Order(StringComparer.Ordinal))
         {
             var senses = covered
-                .Where(sense => Perception.Perceive(snapshot, registry, observer, id, sense).Value == "true")
+                .Where(sense => Perception.Perceive(snapshot, registry, observer, id, sense).Value == Truth.True)
                 .ToList();
             if (senses.Count > 0)
             {
@@ -101,7 +102,7 @@ public static class Projection
                 ["name"] = entity.Name,
                 ["senses"] = Strings(senses),
             };
-            if (!senses.Contains("sight") && !senses.Contains("touch"))
+            if (!senses.Contains(Sense.Sight) && !senses.Contains(Sense.Touch))
             {
                 result.Add(observed);
                 continue;
@@ -124,7 +125,7 @@ public static class Projection
             }
             if (relations.Contains("status"))
             {
-                facts["status"] = Queries.Name(entity.Status);
+                facts["status"] = WorldJson.Name(entity.Status);
             }
             if (properties.Contains("integrity"))
             {
@@ -166,7 +167,7 @@ public static class Projection
             var part = new JsonObject
             {
                 ["name"] = decl.Name,
-                ["status"] = Queries.Name(state.Status),
+                ["status"] = WorldJson.Name(state.Status),
             };
             if (withIntegrity)
             {
@@ -186,9 +187,9 @@ public static class Projection
         {
             return null;
         }
-        var feels = new[] { "sight", "touch" }.Any(sense =>
+        var feels = new[] { Sense.Sight, Sense.Touch }.Any(sense =>
             snapshot.Coverage.Senses.Contains(sense)
-            && Perception.Perceive(snapshot, registry, observer, entityId, sense).Value == "true");
+            && Perception.Perceive(snapshot, registry, observer, entityId, sense).Value == Truth.True);
         return feels ? BodyParts(snapshot, registry, entityId) : null;
     }
 

@@ -8,7 +8,7 @@ public static class Capabilities
 {
     public static readonly IReadOnlyList<string> Relations = ["support", "contained_in", "location", "attached_to", "status", "near", "reachable"];
 
-    public static readonly IReadOnlyList<string> Senses = ["sight", "hearing", "smell", "touch"];
+    public static readonly IReadOnlyList<string> Senses = Sense.All;
 
     public static readonly IReadOnlyList<string> ComputedProperties = ["integrity", "residue", "pos"];
 

@@ -58,10 +58,10 @@ public static class WorldReads
             foreach (var sense in covered)
             {
                 var answer = world.PerceiveAtEvent(observer, sense, @event.EventId);
-                if (answer.Value == "true")
+                if (answer.Value == Truth.True)
                 {
                     senses.Add(sense);
-                    hearing = sense == "hearing" ? answer.BasisCode : hearing;
+                    hearing = sense == Sense.Hearing ? answer.BasisCode : hearing;
                 }
             }
             if (senses.Count == 0)
@@ -77,7 +77,7 @@ public static class WorldReads
             };
             // One heard alone names where the sound came from and nobody; one heard alone from the next room names the door it came
             // through too. Anything sensed besides names its entity instead.
-            if (senses is ["hearing"])
+            if (senses is [Sense.Hearing])
             {
                 var from = Projection.HeardFrom(hearing);
                 entry["from"] = from;
@@ -90,7 +90,7 @@ public static class WorldReads
             {
                 entry["entity"] = @event.Entity;
             }
-            if (@event.Type == "say" && senses.Contains("hearing") && Text(@event.Data.GetValueOrDefault("utterance")) is { } utterance)
+            if (@event.Type == "say" && senses.Contains(Sense.Hearing) && Text(@event.Data.GetValueOrDefault("utterance")) is { } utterance)
             {
                 entry["utterance"] = utterance;
                 entry["volume"] = VolumeText(@event.Data.GetValueOrDefault("volume"));

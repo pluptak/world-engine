@@ -207,7 +207,7 @@ public static class ConsumeVerb
         var actor = context.Snapshot.Entities[actorId];
         var mouths = context.Registry.TryGetValue(actor.Template, out var template)
             ? [.. template.Parts
-                .Where(part => part.Contributes.GetValueOrDefault("mouth_carry") > 0 && part.Holds?.Kind == "grip")
+                .Where(part => part.Contributes.GetValueOrDefault("mouth_carry") > 0 && part.Holds?.Kind == HoldKind.Grip)
                 .Select(part => part.Name)]
             : new List<string>();
         return mouths.Count > 0

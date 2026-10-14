@@ -149,7 +149,7 @@ public class MemoryGoldenTests
                 args["sense"]!.GetValue<string>(),
                 args["event_id"]?.GetValue<string>(),
                 args["entity"]?.GetValue<string>());
-        return new JsonObject { ["value"] = answer.Value, ["basis_code"] = answer.BasisCode };
+        return new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = answer.BasisCode };
     }
 
     private static JsonNode Trace(MemoryWorld world, JsonNode args) =>

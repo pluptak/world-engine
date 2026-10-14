@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
+using WorldEngine.Core.Templates;
 
 namespace WorldEngine.Core.Engine;
 
@@ -113,7 +114,7 @@ public static class PutVerb
         var holds = holder is null
             ? null
             : context.Registry.GetValueOrDefault(holder.Template)?.Parts.FirstOrDefault(decl => decl.Name == part)?.Holds;
-        if (holderId != context.Command.Actor || holds?.Kind != "space" || relation != "in")
+        if (holderId != context.Command.Actor || holds?.Kind != HoldKind.Space || relation != "in")
         {
             return Pipeline.Refused("not_a_surface");
         }

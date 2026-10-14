@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -138,7 +139,7 @@ public static class Options
     }
 
     // The reason an attempt was refused with: its code, or its status where it has none.
-    private static string ReasonOf(Pipeline.Result result) => result.ReasonCode ?? Queries.Name(result.Status);
+    private static string ReasonOf(Pipeline.Result result) => result.ReasonCode ?? WorldJson.Name(result.Status);
 
     // A suggested arg set as a command's args (the options hold them as JSON).
     private static Dictionary<string, JsonNode?>? ArgsOf(JsonObject args) =>

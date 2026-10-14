@@ -35,35 +35,35 @@ public static class Queries
                 // Existence is modelled, so a bad object is false rather than unknown, and only the basis says which way it failed.
                 if (obj is null)
                 {
-                    return new Perception.Answer("false", "no_object");
+                    return new Perception.Answer(Truth.False, "no_object");
                 }
                 if (!snapshot.Entities.TryGetValue(obj, out var other))
                 {
-                    return new Perception.Answer("false", "no_such_entity");
+                    return new Perception.Answer(Truth.False, "no_such_entity");
                 }
-                return new Perception.Answer(NearValue(snapshot, entity, other) ? "true" : "false", "derived_near");
+                return Perception.Answer.Of(NearValue(snapshot, entity, other), "derived_near");
             }
             // Whether the subject could lay a hand on the object now, by the rule every verb that reaches applies.
             if (relation == "reachable")
             {
                 if (obj is null)
                 {
-                    return new Perception.Answer("false", "no_object");
+                    return new Perception.Answer(Truth.False, "no_object");
                 }
                 if (!snapshot.Entities.ContainsKey(obj))
                 {
-                    return new Perception.Answer("false", "no_such_entity");
+                    return new Perception.Answer(Truth.False, "no_such_entity");
                 }
-                return new Perception.Answer(Reach.InReach(snapshot, entity.Id, obj) ? "true" : "false", "derived_reach");
+                return Perception.Answer.Of(Reach.InReach(snapshot, entity.Id, obj), "derived_reach");
             }
-            return new Perception.Answer(RelationValue(registry, entity, relation, obj) ? "true" : "false", "relation_state");
+            return Perception.Answer.Of(RelationValue(registry, entity, relation, obj), "relation_state");
         }
         if (snapshot.Coverage.Properties.Contains(relation))
         {
             var (defined, value) = PropertyValue(entity, relation);
-            return new Perception.Answer(PropertyMatches(defined, value, obj, relation) ? "true" : "false", "property_state");
+            return Perception.Answer.Of(PropertyMatches(defined, value, obj, relation), "property_state");
         }
-        return new Perception.Answer("unknown", "uncovered_category");
+        return new Perception.Answer(Truth.Unknown, "uncovered_category");
     }
 
     // Whether an observer senses an event at either end of its command: true before or after, else the answer after
@@ -78,12 +78,12 @@ public static class Queries
         string sense)
     {
         var afterAnswer = EventPerception.Perceive(after, registry, events, observerId, eventId, sense);
-        if (afterAnswer.Value == "true")
+        if (afterAnswer.Value == Truth.True)
         {
             return afterAnswer;
         }
         var beforeAnswer = EventPerception.Perceive(before, registry, events, observerId, eventId, sense);
-        return beforeAnswer.Value == "true" ? beforeAnswer : afterAnswer;
+        return beforeAnswer.Value == Truth.True ? beforeAnswer : afterAnswer;
     }
 
     // Whether the entity holds the relation to the object (or any object, when none is named) as the snapshot stores it.
@@ -98,7 +98,7 @@ public static class Queries
             case "location":
                 return obj is null ? entity.Location is not null : entity.Location == obj;
             case "status":
-                return obj is null || Name(entity.Status) == obj;
+                return obj is null || WorldJson.Name(entity.Status) == obj;
             case "attached_to":
             {
                 registry.TryGetValue(entity.Template, out var template);
@@ -131,33 +131,33 @@ public static class Queries
         var separator = subject.LastIndexOf('.');
         if (separator <= 0 || !snapshot.Entities.TryGetValue(subject[..separator], out var entity))
         {
-            return new Perception.Answer("false", "no_such_entity");
+            return new Perception.Answer(Truth.False, "no_such_entity");
         }
         registry.TryGetValue(entity.Template, out var template);
         var state = PartStates.Effective(template, entity, subject[(separator + 1)..]);
         if (state is null)
         {
-            return new Perception.Answer("false", "no_such_part");
+            return new Perception.Answer(Truth.False, "no_such_part");
         }
         var isRelation = snapshot.Coverage.Relations.Contains(relation);
         if (!isRelation && !snapshot.Coverage.Properties.Contains(relation))
         {
-            return new Perception.Answer("unknown", "uncovered_category");
+            return new Perception.Answer(Truth.Unknown, "uncovered_category");
         }
         // A part is not an entity: of the relations only its status and what it is attached to mean anything, and of the
         // properties only its integrity is read.
         if (!isRelation)
         {
             return relation == "integrity"
-                ? new Perception.Answer(PropertyMatches(true, JsonValue.Create(state.Integrity), obj, "integrity") ? "true" : "false", "part_state")
-                : new Perception.Answer("false", "not_a_part_field");
+                ? Perception.Answer.Of(PropertyMatches(true, JsonValue.Create(state.Integrity), obj, "integrity"), "part_state")
+                : new Perception.Answer(Truth.False, "not_a_part_field");
         }
         var attached = Attached(state);
         return relation switch
         {
-            "status" => new Perception.Answer(obj is null || Name(state.Status) == obj ? "true" : "false", "part_state"),
-            "attached_to" => new Perception.Answer(attached && (obj is null || obj == entity.Id) ? "true" : "false", "part_state"),
-            _ => new Perception.Answer("false", "not_a_part_field"),
+            "status" => Perception.Answer.Of(obj is null || WorldJson.Name(state.Status) == obj, "part_state"),
+            "attached_to" => Perception.Answer.Of(attached && (obj is null || obj == entity.Id), "part_state"),
+            _ => new Perception.Answer(Truth.False, "not_a_part_field"),
         };
     }
 
@@ -237,7 +237,4 @@ public static class Queries
         Math.Floor(number) == number && Math.Abs(number) < 1e21
             ? ((long)number).ToString(CultureInfo.InvariantCulture)
             : number.ToString("R", CultureInfo.InvariantCulture);
-
-    // The name a status takes in a snapshot (`intact`, `broken`, `destroyed`, or a part's `detached`).
-    internal static string Name<TEnum>(TEnum value) where TEnum : struct, Enum => value.ToString().ToLowerInvariant();
 }

@@ -383,7 +383,7 @@ public static class CliRunner
         var kind => throw new WorldError("invalid_query", $"Unknown query {kind}"),
     };
 
-    private static JsonObject Answer(Perception.Answer answer) => new() { ["value"] = answer.Value, ["basis_code"] = answer.BasisCode };
+    private static JsonObject Answer(Perception.Answer answer) => new() { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = answer.BasisCode };
 
     private static JsonObject Trace(StoreWorld world, JsonObject query) =>
         new() { ["events"] = Node(world.TraceOf(JsonReads.Text(query["event_id"]), JsonReads.Text(query["entity"]), JsonReads.Text(query["field"]))) };

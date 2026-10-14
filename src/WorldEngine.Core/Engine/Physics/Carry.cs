@@ -84,7 +84,7 @@ public static class Carry
                 {
                     continue;
                 }
-                if (part.Holds.Kind == "grip")
+                if (part.Holds.Kind == HoldKind.Grip)
                 {
                     grips.Add(part.Name);
                 }

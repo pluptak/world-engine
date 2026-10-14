@@ -48,7 +48,7 @@ public class EngineQueryTests
                 ["observer"] = observer,
                 ["entity"] = entity,
                 ["sense"] = sense,
-                ["result"] = new Dictionary<string, object?> { ["value"] = answer.Value, ["basis_code"] = answer.BasisCode },
+                ["result"] = new Dictionary<string, object?> { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = answer.BasisCode },
             };
         }).ToList();
 

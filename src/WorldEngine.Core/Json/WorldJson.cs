@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace WorldEngine.Core.Json;
 
-// How snapshots meet JSON: snake_case names, enums as strings, and an unknown field
+// How snapshots meet JSON: snake_case names, enums as snake_case strings (`Name` gives one outside a record), and an unknown field
 // is an error rather than a value silently dropped on the way through.
 public static class WorldJson
 {
@@ -12,8 +12,11 @@ public static class WorldJson
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
-        Converters = { new JsonStringEnumConverter() },
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
     };
+
+    public static string Name<T>(T value)
+        where T : struct, Enum => JsonNamingPolicy.SnakeCaseLower.ConvertName(value.ToString());
 
     public static T Read<T>(string json) =>
         JsonSerializer.Deserialize<T>(json, Options)

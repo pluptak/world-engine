@@ -62,7 +62,7 @@ public class QueryGoldenTests
 
     private static JsonNode Answer(Perception.Answer answer) => new JsonObject
     {
-        ["value"] = answer.Value,
+        ["value"] = WorldJson.Name(answer.Value),
         ["basis_code"] = answer.BasisCode,
     };
 }
