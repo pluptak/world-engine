@@ -215,7 +215,7 @@ public static class Queries
         }
         if (value is null)
         {
-            return CanonicalJson.Serialize(null) == obj;
+            return obj == "null";
         }
         if (value is JsonValue scalar)
         {

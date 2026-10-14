@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Model;
 using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Json;
@@ -10,6 +11,8 @@ namespace WorldEngine.Core.Json;
 // (a lone surrogate as a unicode escape, so the output is always valid JSON).
 public static class CanonicalJson
 {
+    public static string Serialize(Value value) => Serialize(ValueJson.ToNode(value));
+
     public static string Serialize(JsonNode? node)
     {
         var text = new StringBuilder();

@@ -17,7 +17,7 @@ public static class WorldJson
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         // Canonical JSON sorts keys, so a stored cause's `kind` comes after fields that sort before it.
         AllowOutOfOrderMetadataProperties = true,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower), new ValueJson.Converter() },
     };
 
     public static string Name<T>(T value)

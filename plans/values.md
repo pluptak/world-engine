@@ -26,35 +26,44 @@ A closed, immutable set of records (`Model/Value.cs`): `Bool`, `Int` (`long`), `
 in ordinal order and lists and maps compare by content, so equality is structural.
 
 - **No null.** An absent field and a null one are the same: maps hold no null entries, and the writer leaves null fields out
-  everywhere, so the 14 `JsonIgnoreCondition.Never` fields go (an entity with no `contained_in` simply has none). A delta
+  everywhere, so the 14 `JsonIgnoreCondition.Never` fields go (an entity with no `contained_in` simply has none; block 3). A delta
   that clears a field has no `to`; one that sets it has no `from`.
 - **No fractions.** A number that is not a whole `long` is refused where text is read, as an invalid request, rather than
   carried to the verb to be refused `invalid_args`. `Integers`' range checks move to the reader.
 
 ## Blocks
 
-1. **`Value` and its codec.** `Model/Value.cs`; `Json/ValueJson.cs` reads and writes it and is registered in
-   `WorldJson.Options`; `CanonicalJson` writes a `Value`. The null rule above lands here with its golden diff.
-2. **The model holds `Value`.** `Entity.Props` and a template's `Props`, `WorldEvent.Data`, `Command.Args`, `ReasonData`,
+1. **`Value` and its codec.** Done: `Model/Value.cs`, `Json/ValueJson.cs` (registered in `WorldJson.Options`, reading a
+   null member as absent and refusing a fraction or a null in a list), `CanonicalJson.Serialize(Value)`. No output moved.
+2. **Every golden regenerates from .NET.** Only 8 golden tests take `WORLD_ENGINE_UPDATE_GOLDENS`; about 20 others
+   (the CLI rows, init and restart, the store's files and `head.json`, stale, upgrade, trace, read-only rows, scenes, the
+   `acceptance` replay) compare against TypeScript's recording with no way to rewrite it, and the stored fixture worlds
+   carry a `templates_hash`. Each takes the switch through `GoldenUpdate`, so a block that moves output rewrites its
+   goldens in one run. Found by trying the null rule in block 1: it moved 59 tests, 25 of which nothing could regenerate.
+3. **No null on the way out.** `CanonicalJson` writes through `Value`, so null members are left out everywhere and the
+   `JsonIgnoreCondition.Never` fields go; readers that demanded a key be present (a resolved part's `parent`, an event
+   line's `cause_id`) stop doing so. The template hash moves with the templates' bytes.
+4. **The model holds `Value`.** `Entity.Props` and a template's `Props`, `WorldEvent.Data`, `Command.Args`, `ReasonData`,
    `Delta.From`/`To`, `Run.Slots`. `Prop<T>`, `Pipeline.Reason` and `Working` change under the verbs; `Working` detects a
    no-op by `Value` equality, and the codec turns a field's record into a `Value` for its delta. Verb code that reads args
    or data directly reads `Value` patterns (`args["amount"] is Value.Int(var n)`). Fractions are refused at the reader.
-3. **Reads answer in records.** `Projection`, `WorldReads`, `ActorWorld`, `PlayerWorld`, `DirectorWorld`, `Options` and
+5. **Reads answer in records.** `Projection`, `WorldReads`, `ActorWorld`, `PlayerWorld`, `DirectorWorld`, `Options` and
    `Trace` build typed records, as `Catalog` does, and `IWorld`/`IWorldReads` carry no `JsonObject`. A response whose
    shape only mirrored TypeScript's construction may take the record's plainer shape.
-4. **Requests and edits are typed.** `Contract/Shape.cs` checks a `Value`; `EditParser` turns it into the `WorldEdit`
+6. **Requests and edits are typed.** `Contract/Shape.cs` checks a `Value`; `EditParser` turns it into the `WorldEdit`
    records it already builds, and `IWorld.Edit` takes those. A beat's action is stored as its `WorldEdit` (or a sound), not
-   as the edit's JSON, so `BeatShape` stops re-checking stored actions.
-5. **Templates and scenes are read from `Value`.** `TemplateShape`, `TemplateResolver`, `SceneBuilder`,
+   as the edit's JSON, so `BeatShape` stops re-checking stored actions. An edit that clears a field (`Given<T>` with no
+   value) needs its own form, since a null is no longer one.
+7. **Templates and scenes are read from `Value`.** `TemplateShape`, `TemplateResolver`, `SceneBuilder`,
    `ScenarioResolver`, `Forms`, `Refine`, `Upgrade`.
-6. **The store and the CLI encode only through the codec.** Log, head, checkpoint and pending lines become records; the
+8. **The store and the CLI encode only through the codec.** Log, head, checkpoint and pending lines become records; the
    CLI parses its request once and writes its answer once. A test fails on `System.Text.Json` anywhere in Core outside
    `Json/`, or in Contract; AGENTS.md gains the invariant.
 
-Each block leaves the suite green and may keep a bridge at its border for the blocks still to come; block 6 removes the
-last one. Blocks 2 and 3 are the large ones (about 300 references each).
+Each block leaves the suite green and may keep a bridge at its border for the blocks still to come; block 8 removes the
+last one. Blocks 4 and 5 are the large ones (about 300 references each).
 
 ## Out of this plan
 
-A second encoding (YAML, MessagePack): once block 6 is in, it is one class and needs no plan of its own. Typing the props bag
+A second encoding (YAML, MessagePack): once block 8 is in, it is one class and needs no plan of its own. Typing the props bag
 as a record stays out, for the reason in `plans/vocabulary.md`.
