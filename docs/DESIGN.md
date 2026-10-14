@@ -71,6 +71,7 @@ What is built, nothing aspirational, one concept per file:
 - [senses-bases.md](senses-bases.md): the basis codes a perception answers with.
 - [projection.md](projection.md), [actor-view.md](actor-view.md): observation; one actor's side.
 - [projection-inspect.md](projection-inspect.md): one entity in detail; a command's observation.
+- [command-via.md](command-via.md): the agent that sent an actor's command (`via`).
 - [liquids.md](liquids.md): liquid in props, and the `pour` verb.
 - [forms.md](forms.md): the architect's percentages and conditions in a scenario, and
   `capacity_cm3`.

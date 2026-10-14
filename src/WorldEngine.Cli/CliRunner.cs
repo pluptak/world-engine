@@ -330,7 +330,7 @@ public static class CliRunner
         request.GetValueOrDefault("edit") as Value.Map ?? throw new WorldError(Code.InvalidEdit, "The request names no edit");
 
     // The view of the body the request names, as `actorWorld` builds it over the world.
-    private static ActorWorld ActorOf(StoreWorld world, Value.Map request) => new(world, Text(request, "actor"));
+    private static ActorWorld ActorOf(StoreWorld world, Value.Map request) => new(world, Text(request, "actor"), Optional(request, "via"));
 
     // The handle of a player, over the world, as `playerWorld` builds it for the handle the request names.
     private static PlayerWorld PlayerOf(StoreWorld world, Value.Map request) => new(world, Text(request, "handle"));

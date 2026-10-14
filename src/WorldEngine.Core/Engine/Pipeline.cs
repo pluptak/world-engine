@@ -163,6 +163,22 @@ public static class Pipeline
         {
             return Unchanged(snapshot, command, Status.Refused, reasonCode: fault.ReasonCode, reasonData: fault.ReasonData);
         }
+        // A command sent for another agent is the body's controller's to send, and no one else's.
+        if (command.Via is { } via)
+        {
+            if (!snapshot.Entities.ContainsKey(via))
+            {
+                return Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.NoSuchActor);
+            }
+            if (!Reach.IsAgent(snapshot, via))
+            {
+                return Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.NotAnAgent);
+            }
+            if (Power.Controller(snapshot, command.Actor) != via)
+            {
+                return Unchanged(snapshot, command, Status.Refused, reasonCode: Code.NotController);
+            }
+        }
         // A sleeping body makes no command of its own; the world author may still act on it.
         var actor = snapshot.Entities.GetValueOrDefault(command.Actor);
         if (!authored && actor is not null && actor.Props.Is(Prop.Asleep))

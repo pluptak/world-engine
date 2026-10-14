@@ -38,8 +38,8 @@ public class ActorGoldenTests
                 var view = new ActorWorld(
                     world,
                     args["actor"]!.GetValue<string>(),
-                    args["key"]?.GetValue<string>(),
-                    args["senses"]?.AsArray().Select(sense => sense!.GetValue<string>()).ToList());
+                    key: args["key"]?.GetValue<string>(),
+                    senses: args["senses"]?.AsArray().Select(sense => sense!.GetValue<string>()).ToList());
                 views[args["name"]!.GetValue<string>()] = view;
                 return new JsonObject { ["actor"] = view.Actor };
             }

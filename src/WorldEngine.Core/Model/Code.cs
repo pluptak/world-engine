@@ -150,6 +150,7 @@ public enum Code
     NotASurface,
     NotAnActor,
     NotAnAgent,
+    NotController,
     NotBurning,
     NotCarried,
     NotConsumable,

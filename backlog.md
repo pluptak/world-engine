@@ -18,14 +18,13 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Command provenance: a command says which agent issued it](#command-provenance-a-command-says-which-agent-issued-it).
-2. [Possession: a curse makes a body act only at another's word](#possession-a-curse-makes-a-body-act-only-at-anothers-word).
-3. [Blind and deaf: a body that cannot see, or cannot hear](#blind-and-deaf-a-body-that-cannot-see-or-cannot-hear).
-4. [Bound: a body or a part tied, taking what it gives](#bound-a-body-or-a-part-tied-taking-what-it-gives).
-5. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
-6. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
-7. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
-8. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
+1. [Possession: a curse makes a body act only at another's word](#possession-a-curse-makes-a-body-act-only-at-anothers-word).
+2. [Blind and deaf: a body that cannot see, or cannot hear](#blind-and-deaf-a-body-that-cannot-see-or-cannot-hear).
+3. [Bound: a body or a part tied, taking what it gives](#bound-a-body-or-a-part-tied-taking-what-it-gives).
+4. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
+5. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
+6. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
+7. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -79,29 +78,6 @@ naming a part of the target's template; unknown is `invalid_args`). Not a `<body
 detached part does not resolve (`Resolve.cs`, the part branch), and `install` and `staunch` must reach a stump.
 Each also requires the body within the actor's reach (`Reach.InReach`), else `out_of_reach` (existing code); an
 actor may work on its own body.
-
-### Command provenance: a command says which agent issued it
-
-- **What:** `Command` gains `string? Via` (`Model/Commands.cs`), the agent issuing a command for the body named by
-  `Actor`. It is set only by a handle: `ActorWorld` takes an optional `via` (constructor parameter after `actor`)
-  and writes it into every command it decodes (`ActorWorld.Decode`). The bare `command` op and request shape do not
-  take it.
-- **Rules** (`Pipeline.Screen`, after the `AgentFault` check):
-  - `Via` absent: as today.
-  - `Via` names no entity, or no agent: `invalid` `no_such_actor` / `not_an_agent`, as `Actor` is checked.
-  - `Via` present and not `Power.Controller(snapshot, actor)`: refused with a new code `not_controller`.
-  - Logged and replayed with the command: `Attempt.Command` carries it, `WorldJson` writes it as `via`, and replay
-    folds it like any field. An attempt without it reads as before (no schema change).
-- **CLI:** `actor_command` and `actor_check` take an optional `via` (`Contract/Checks.cs`, one field each) and
-  build the `ActorWorld` with it (`Cli/CliRunner.cs`).
-- **Files:** `Model/Commands.cs`, `Engine/Pipeline.cs`, `Worlds/ActorWorld.cs`, `Model/Code.cs`,
-  `Contract/Checks.cs`, `Cli/CliRunner.cs`, `docs/actor-view.md` (one paragraph), `docs/api.md` (the two ops).
-- **Tests:** the lab's arm (`scenarios/lab.json`, `controlled_by: "terminal"`) commanded through
-  `actorWorld(arm, via: <its Power.Controller>)` is accepted and its log line carries `via`; with `via` naming another human it is refused `not_controller`; a
-  store world replays the log to the same snapshot; `verify` passes on it; a command with no `via` is unchanged
-  (the existing suite).
-- **Done when:** as above, and every existing golden is unchanged.
-- **Depends on:** nothing.
 
 ### Possession: a curse makes a body act only at another's word
 
