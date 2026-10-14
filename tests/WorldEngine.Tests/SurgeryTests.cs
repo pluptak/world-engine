@@ -189,7 +189,9 @@ public class SurgeryTests : IDisposable
         }
         Assert.Equal(Code.NotBleeding, Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_r")).ReasonCode);
         Assert.Equal(Code.NotIncised, Pipeline.Apply(snapshot, Registry, Verbs, Suture("t2", Surgeon, Patient, "arm_r")).ReasonCode);
-        Assert.Equal(Code.InvalidArgs, Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t3", Surgeon, Patient, "elbow")).ReasonCode);
+        var unknown = Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t3", Surgeon, Patient, "elbow"));
+        Assert.Equal(Code.InvalidArgs, unknown.ReasonCode);
+        Assert.Equal(WorldJson.Write(snapshot), WorldJson.Write(unknown.Snapshot));
 
         var severed = snapshot;
         for (var index = 0; index < 3; index++)
@@ -199,6 +201,28 @@ public class SurgeryTests : IDisposable
         var sutured = Pipeline.Apply(severed, Registry, Verbs, Suture("t4", Surgeon, Patient, "hand_l"));
         Assert.Equal(Status.Refused, sutured.Status);
         Assert.Equal(Code.NotIncised, sutured.ReasonCode);
+        Assert.Equal(WorldJson.Write(severed), WorldJson.Write(sutured.Snapshot));
+    }
+
+    [Fact]
+    public void Staunching_a_part_with_no_bleed_leaves_the_other_chain()
+    {
+        var snapshot = Built();
+        snapshot = Pipeline.Apply(snapshot, Registry, Verbs, Cut(Surgeon, Patient, "arm_l")).Snapshot;
+        for (var index = 0; index < 3; index++)
+        {
+            var struck = Pipeline.Apply(snapshot, Registry, Verbs, new Command($"s{index}", Surgeon, "attack", $"{Patient}.hand_l"));
+            Assert.Equal(Status.Ok, struck.Status);
+            snapshot = struck.Snapshot;
+        }
+
+        var staunched = Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_r"));
+
+        Assert.Equal(Status.Refused, staunched.Status);
+        Assert.Equal(Code.NotBleeding, staunched.ReasonCode);
+        Assert.Equal(WorldJson.Write(snapshot), WorldJson.Write(staunched.Snapshot));
+        var parts = (staunched.Snapshot.Schedule ?? []).OfType<BleedCause>().Select(cause => cause.Part).Order(StringComparer.Ordinal).ToList();
+        Assert.Equal(["arm_l", "hand_l"], parts);
     }
 
     [Fact]
