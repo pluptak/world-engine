@@ -22,6 +22,10 @@ public static class ValueJson
     // A record as a value, as the world's JSON options write it: how a delta holds the field it changed.
     public static Value? Of<T>(T value) => FromNode(JsonSerializer.SerializeToNode(value, WorldJson.Options));
 
+    // A value read into a record as the world's JSON options read it; a member the record does not have, or a value of another
+    // type, throws.
+    public static T Read<T>(Value value) => WorldJson.Read<T>(ToNode(value));
+
     // A value read into a record as the world's JSON options read it: false when it is not one (a member the record does not
     // have, or a value of another type).
     public static bool TryRead<T>(Value value, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out T? read)

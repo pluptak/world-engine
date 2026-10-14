@@ -21,10 +21,10 @@ public static class WorldBuilder
     // `beats` and `run`; a list alone is a scene with none of the rest.
     public sealed record Made(Snapshot Snapshot, IReadOnlyDictionary<string, string> Ids);
 
-    public static Made Snapshot(JsonNode scenario, IReadOnlyDictionary<string, Template> registry, Coverage? coverage = null)
+    public static Made Snapshot(Value scenario, IReadOnlyDictionary<string, Template> registry, Coverage? coverage = null)
     {
-        var scene = scenario as JsonObject;
-        var entries = scene is null ? (JsonArray)scenario : (JsonArray)scene["entities"]!;
+        var scene = scenario as Value.Map;
+        var entries = (Value.List)(scene is null ? scenario : scene["entities"]);
         var initial = new Snapshot(
             Version: 0,
             Tick: 0,
@@ -32,15 +32,15 @@ public static class WorldBuilder
             TemplatesHash: WorldReplay.HashOf(registry),
             Coverage: coverage ?? DefaultCoverage,
             Entities: new Dictionary<string, Entity>(StringComparer.Ordinal),
-            Rng: JsonReads.SafeInt(scene?["seed"]));
+            Rng: scene?.GetValueOrDefault("seed").AsInt());
 
         var resolved = ScenarioResolver.Resolve(entries, initial.NextSeq);
         var snapshot = initial;
         for (var index = 0; index < resolved.Scenario.Count; index++)
         {
-            var entry = resolved.Scenario[index]!.AsObject();
-            var template = entry["template"]!.GetValue<string>();
-            var written = entry["overrides"] as JsonObject ?? new JsonObject();
+            var entry = resolved.Scenario[index];
+            var template = entry["template"].AsText()!;
+            var written = entry.GetValueOrDefault("overrides") as Value.Map ?? Value.Map.Empty;
             if (DerivedFieldWritten(snapshot, written) is { } derived)
             {
                 throw new WorldError(Code.DerivedField, $"Scenario entry {index} writes the derived field {derived}");
@@ -53,7 +53,7 @@ public static class WorldBuilder
             var overrides = registry.TryGetValue(template, out var known) && Forms.HasForms(written)
                 ? Forms.Apply(known, written, index)
                 : written;
-            var parsed = (ValueJson.TryFromNode(overrides, out var value) && value is Value.Map fields ? EditVerb.ParseOverrides(template, fields) : null)
+            var parsed = EditVerb.ParseOverrides(template, overrides)
                 ?? throw new WorldError(Code.InvalidScenario, $"Scenario entry {index} does not describe an entity");
             // A scenario's spawn keeps the location as written, and an omitted one is none: the chain is not derived here (a location the
             // chain gives must be written, and the snapshot check refuses one that is not, as spawn in src/engine/spawn.ts does).
@@ -62,7 +62,7 @@ public static class WorldBuilder
         }
 
         snapshot = Processes.StartProcesses(snapshot, registry);
-        snapshot = SceneBuilder.Build(snapshot, registry, resolved.Ids, scene?["beats"] as JsonArray, scene?["run"] as JsonObject);
+        snapshot = SceneBuilder.Build(snapshot, registry, resolved.Ids, scene?.GetValueOrDefault("beats") as Value.List, scene?.GetValueOrDefault("run") as Value.Map);
         var issues = SnapshotValidation.Validate(snapshot, registry);
         if (issues.Count > 0)
         {
@@ -121,14 +121,14 @@ public static class WorldBuilder
 
     // The first thing a scenario entry writes that the engine would derive instead (`derivedFieldWritten`): a location the chain does not
     // give, or a modifier, since every modifier is caused by an event. Null when neither.
-    private static string? DerivedFieldWritten(Snapshot snapshot, JsonObject overrides)
+    private static string? DerivedFieldWritten(Snapshot snapshot, Value.Map overrides)
     {
         if (overrides.ContainsKey("location")
-            && Placements.DerivedLocationOf(snapshot, JsonReads.Text(overrides["support"]), JsonReads.Text(overrides["contained_in"]), out var derived)
-            && derived != JsonReads.Text(overrides["location"]))
+            && Placements.DerivedLocationOf(snapshot, overrides.GetValueOrDefault("support").AsText(), overrides.GetValueOrDefault("contained_in").AsText(), out var derived)
+            && derived != overrides.GetValueOrDefault("location").AsText())
         {
             return "location";
         }
-        return overrides["modifiers"] is JsonArray { Count: > 0 } ? "modifiers" : null;
+        return overrides.GetValueOrDefault("modifiers") is Value.List { Items.Length: > 0 } ? "modifiers" : null;
     }
 }

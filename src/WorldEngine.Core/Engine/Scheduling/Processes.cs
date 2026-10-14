@@ -9,14 +9,8 @@ namespace WorldEngine.Core.Engine;
 // one before it. A process that can run has one pending; one that cannot is withdrawn. Reconciled wherever props can change.
 public static class Processes
 {
-    private static IReadOnlyList<ProcessSpec> DeclsOf(IReadOnlyDictionary<string, Template> registry, Entity entity)
-    {
-        if (!registry.TryGetValue(entity.Template, out var template) || template.Processes is null)
-        {
-            return [];
-        }
-        return [.. template.Processes.Select(ProcessSpec.From)];
-    }
+    private static IReadOnlyList<ProcessSpec> DeclsOf(IReadOnlyDictionary<string, Template> registry, Entity entity) =>
+        registry.TryGetValue(entity.Template, out var template) ? template.Processes ?? [] : [];
 
     // The condition under which a process runs, read from the entity's props as they are now. `eq` and `ne` compare any
     // primitive strictly; the ordering ops need numbers on both sides, and an absent or non-numeric prop satisfies none.

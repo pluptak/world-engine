@@ -1,6 +1,4 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using WorldEngine.Core.Json;
+using WorldEngine.Core.Engine;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Templates;
@@ -170,7 +168,7 @@ public static class TemplateResolver
             SizeCm: decl.SizeCm!,
             MassG: decl.MassG!.Value,
             Parts: CopyParts(decl.Parts!),
-            Props: PropsOf(decl.Props!),
+            Props: decl.Props!,
             BreakProducts: CopyProducts(decl.BreakProducts!),
             BreakResidue: new Dictionary<string, long>(decl.BreakResidue!),
             SpentProducts: NonEmptyProducts(decl.SpentProducts),
@@ -192,7 +190,7 @@ public static class TemplateResolver
             fields[name] = field;
         }
         var props = parent.Props;
-        foreach (var (name, value) in PropsOf(decl.Props ?? new Dictionary<string, JsonNode?>()))
+        foreach (var (name, value) in decl.Props ?? Value.Map.Empty)
         {
             props = props.With(name, value);
         }
@@ -237,9 +235,7 @@ public static class TemplateResolver
             var found = overrides.TryGetValue(part.Name, out var over);
             return new PartDecl(
                 Name: part.Name,
-                Parent: found && over!.Parent.ValueKind is not JsonValueKind.Undefined
-                    ? over.Parent.ValueKind is JsonValueKind.String ? over.Parent.GetString() : null
-                    : part.Parent,
+                Parent: found && over!.Parent is { } parent ? (parent.Length == 0 ? null : parent) : part.Parent,
                 Contributes: found && over!.Contributes is not null
                     ? new Dictionary<string, long>(over.Contributes)
                     : new Dictionary<string, long>(part.Contributes),
@@ -251,9 +247,9 @@ public static class TemplateResolver
 
     // Processes merge by id like props: the parent's list, each replaced by a child's of the same id, then the
     // child's new ones in the order it declares them.
-    private static List<ProcessDecl> MergeProcesses(IReadOnlyList<ProcessDecl> parent, IReadOnlyList<ProcessDecl> own)
+    private static List<ProcessSpec> MergeProcesses(IReadOnlyList<ProcessSpec> parent, IReadOnlyList<ProcessSpec> own)
     {
-        var replaced = new Dictionary<string, ProcessDecl>();
+        var replaced = new Dictionary<string, ProcessSpec>();
         foreach (var decl in own)
         {
             replaced[decl.Id] = decl;
@@ -270,10 +266,6 @@ public static class TemplateResolver
             Contributes = new Dictionary<string, long>(part.Contributes),
         })];
 
-    // A declaration's props as values: a null one is no prop.
-    private static Value.Map PropsOf(IReadOnlyDictionary<string, JsonNode?> props) =>
-        Value.Of(props.Select(pair => KeyValuePair.Create(pair.Key, ValueJson.FromNode(pair.Value))));
-
     private static List<Product> CopyProducts(IReadOnlyList<Product> products) => [.. products];
 
     private static List<Product>? NonEmptyProducts(IReadOnlyList<Product>? products) =>
@@ -282,7 +274,7 @@ public static class TemplateResolver
     private static Dictionary<string, long>? NonEmptyResidue(IReadOnlyDictionary<string, long>? residue) =>
         residue is { Count: > 0 } ? new Dictionary<string, long>(residue) : null;
 
-    private static List<ProcessDecl>? NonEmptyProcesses(IReadOnlyList<ProcessDecl>? processes) =>
+    private static List<ProcessSpec>? NonEmptyProcesses(IReadOnlyList<ProcessSpec>? processes) =>
         processes is { Count: > 0 } ? [.. processes] : null;
 
     private static Dictionary<string, FieldDecl>? NonEmptyFields(IReadOnlyDictionary<string, FieldDecl>? fields) =>

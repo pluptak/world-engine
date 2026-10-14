@@ -74,8 +74,17 @@ in ordinal order and lists and maps compare by content, so equality is structura
    an edit, a scene or a stored snapshot carries it. The three beat-shape golden rows and two tests that sent a fraction
    in an edit became contract tests (`ChecksTests`). `SceneBuilder` and `WorldBuilder` bridge their JSON to these until
    block 7.
-7. **Templates and scenes are read from `Value`.** `TemplateShape`, `TemplateResolver`, `SceneBuilder`,
-   `ScenarioResolver`, `Forms`, `Refine`, `Upgrade`.
+7. **Templates and scenes are read from `Value`.** Done. A template file or a world's stored set is read as a value (a null
+   in a list is refused with its source) and `TemplateShape` checks that value before it is read into a `TemplateDecl`,
+   whose props are a `Value.Map`. A process is its typed `ProcessSpec` rather than a record keeping its body as JSON, and
+   `TemplateHash` hashes the resolved set itself; no hash moved. A `part_overrides` parent is a string, and `""` moves the
+   part to the root (a null did). `ScenarioResolver`, `Forms`, `SceneBuilder` and `WorldBuilder` read the scenario as a
+   value, and a scenario override may name the placement fields to empty in `clear`. Refine and Upgrade already held no
+   JSON. Goldens: 132 template-fuzz cases moved (112 that set a key to null now read it as absent, 20 lose "or null"
+   from the parent message), and the forms golden lost its 177 form rows and 3 architect rows that held a null; a form
+   row holding a fraction is checked to be one TypeScript refused, since the contract refuses it first. What is left in
+   Core outside `Json/` is block 8's: `JsonReads`, the prop-key converter, and the attributes on the cause records and
+   `ArgSpec`.
 8. **The store and the CLI encode only through the codec.** Log, head, checkpoint and pending lines become records; the
    CLI parses its request once and writes its answer once. A test fails on `System.Text.Json` anywhere in Core outside
    `Json/`, or in Contract; AGENTS.md gains the invariant.

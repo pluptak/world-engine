@@ -41,7 +41,7 @@ public class TemplateValidationTests
                 SizeCm: new Dimensions(1, 1, 1),
                 MassG: 1,
                 Parts: [],
-                Props: new Dictionary<string, JsonNode?> { ["scenery"] = true, ["surface"] = true },
+                Props: Value.Map.Empty.With("scenery", true).With("surface", true),
                 BreakProducts: [],
                 BreakResidue: new Dictionary<string, long>()),
         };
@@ -69,12 +69,11 @@ public class PropTests
     [InlineData(PropType.Boolean, "true", true)]
     [InlineData(PropType.Boolean, "1", false)]
     [InlineData(PropType.Integer, "3", true)]
-    [InlineData(PropType.Integer, "3.5", false)]
     [InlineData(PropType.Integer, "\"3\"", false)]
     [InlineData(PropType.String, "\"x\"", true)]
     [InlineData(PropType.String, "true", false)]
     public void Prop_values_match_their_declared_type(PropType type, string json, bool expected) =>
-        Assert.Equal(expected, Prop.Matches(type, JsonNode.Parse(json)));
+        Assert.Equal(expected, Prop.Matches(type, ValueJson.FromNode(JsonNode.Parse(json))));
 
     [Fact]
     public void A_typed_read_gives_the_value_only_when_it_has_the_type()

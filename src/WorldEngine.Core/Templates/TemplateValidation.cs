@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -32,16 +30,6 @@ public static class TemplateValidation
         {
             throw new FormatException($"{source} declares both parts and part_overrides");
         }
-        if (decl.PartOverrides is not null)
-        {
-            foreach (var (name, over) in decl.PartOverrides)
-            {
-                if (over.Parent.ValueKind is not (JsonValueKind.Undefined or JsonValueKind.Null or JsonValueKind.String))
-                {
-                    throw new FormatException($"{source}.part_overrides.{name}.parent must be a string or null");
-                }
-            }
-        }
         if (decl.Parts is not null)
         {
             for (var index = 0; index < decl.Parts.Count; index += 1)
@@ -56,7 +44,7 @@ public static class TemplateValidation
         {
             foreach (var (key, value) in decl.Props)
             {
-                if (value is null or JsonObject or JsonArray)
+                if (value is Value.List or Value.Map)
                 {
                     throw new FormatException($"{source}.props.{key} must be a primitive");
                 }
@@ -203,19 +191,11 @@ public static class TemplateValidation
             }
         }
 
-        foreach (var process in template.Processes ?? Array.Empty<ProcessDecl>())
+        foreach (var process in template.Processes ?? [])
         {
             var at = $"{source} processes.{process.Id}";
-            var body = process.Body;
-            var adjust = Walk(body, "effect", "adjust_prop", "prop")?.GetString()
-                ?? throw new FormatException($"{at} has no effect on a prop");
-            var named = new[]
-            {
-                Walk(body, "while", "prop")?.GetString(),
-                adjust,
-                Walk(body, "every_ticks_prop")?.GetString(),
-                Walk(body, "then", "set_prop", "prop")?.GetString(),
-            };
+            var adjust = process.Effect.AdjustProp.Prop;
+            var named = new[] { process.While?.Prop, adjust, process.EveryTicksProp, process.Then?.SetProp?.Prop };
             foreach (var name in named)
             {
                 if (name is not null && TypeOf(name) is null)
@@ -227,14 +207,12 @@ public static class TemplateValidation
             {
                 throw new FormatException($"{at} adjusts {adjust}, which is not an integer prop");
             }
-            if (Walk(body, "then", "set_prop") is { } setProp)
+            if (process.Then?.SetProp is { } setProp)
             {
-                var prop = setProp.GetProperty("prop").GetString()!;
-                var value = JsonNode.Parse(setProp.GetProperty("value").GetRawText());
-                var type = TypeOf(prop)!.Value;
-                if (!Prop.Matches(type, value))
+                var type = TypeOf(setProp.Prop)!.Value;
+                if (!Prop.Matches(type, setProp.Value))
                 {
-                    throw new FormatException($"{at} sets {prop} to a value that is not {TypeWord(type)}");
+                    throw new FormatException($"{at} sets {setProp.Prop} to a value that is not {TypeWord(type)}");
                 }
             }
         }
@@ -290,8 +268,6 @@ public static class TemplateValidation
         }
     }
 
-    private static JsonValueKind? KindOf(JsonNode? node) => (node as JsonValue)?.GetValueKind();
-
     private static PropType? ParseType(string type) => type switch
     {
         "boolean" => PropType.Boolean,
@@ -307,21 +283,4 @@ public static class TemplateValidation
         PropType.String => "string",
         _ => "id",
     };
-
-    // The element at a path through a process body, or null where the path is absent.
-    private static JsonElement? Walk(IReadOnlyDictionary<string, JsonElement> body, params string[] path)
-    {
-        if (!body.TryGetValue(path[0], out var current))
-        {
-            return null;
-        }
-        foreach (var key in path.Skip(1))
-        {
-            if (current.ValueKind != JsonValueKind.Object || !current.TryGetProperty(key, out current))
-            {
-                return null;
-            }
-        }
-        return current;
-    }
 }

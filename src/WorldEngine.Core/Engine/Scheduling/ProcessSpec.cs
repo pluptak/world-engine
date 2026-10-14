@@ -1,34 +1,17 @@
-using System.Runtime.CompilerServices;
-using System.Text.Json.Nodes;
-using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
-using WorldEngine.Core.Templates;
 
 namespace WorldEngine.Core.Engine;
 
-// A template's process as the engine runs it (src/templates.ts ProcessDecl). The loader keeps a process's body as JSON so the
-// template hash and the frozen templates stay as they were; this reads that body when a process runs. Unknown members are
-// refused, as the loader would refuse them.
+// A template's process (src/templates.ts ProcessDecl): every so many ticks, while its condition holds, one prop moved toward a
+// bound, and what it does once on reaching it. `TemplateShape` holds a declaration to these fields before it is read.
 public sealed record ProcessSpec(
     string Id,
     long EveryTicks,
-    string? EveryTicksProp,
-    ProcessWhile? While,
     ProcessEffect Effect,
-    long? ChancePct,
-    ProcessThen? Then)
-{
-    private static readonly ConditionalWeakTable<ProcessDecl, ProcessSpec> Parsed = new();
-
-    public static ProcessSpec From(ProcessDecl decl) => Parsed.GetValue(decl, Parse);
-
-    private static ProcessSpec Parse(ProcessDecl decl)
-    {
-        var body = System.Text.Json.JsonSerializer.SerializeToNode(decl.Body, WorldJson.Options) as JsonObject ?? new JsonObject();
-        body["id"] = decl.Id;
-        return WorldJson.Read<ProcessSpec>(body);
-    }
-}
+    string? EveryTicksProp = null,
+    ProcessWhile? While = null,
+    long? ChancePct = null,
+    ProcessThen? Then = null);
 
 // The condition a process runs under: a prop, a comparison, and the value compared with.
 public sealed record ProcessWhile(string Prop, string Op, Value? Value);
@@ -48,7 +31,7 @@ public sealed record ProcessThen(
     ProcessSetProp? SetProp = null,
     ProcessDamage? Damage = null,
     bool? Spent = null,
-    JsonNode? Remove = null);
+    bool? Remove = null);
 
 public sealed record ProcessSetProp(string Prop, Value? Value);
 

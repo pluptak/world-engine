@@ -1,13 +1,10 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
+using WorldEngine.Core.Engine;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Templates;
 
 // What a template file declares (TemplateDecl) and what a resolved set holds (Template), as in
-// src/templates.ts. Processes keep their body as JSON until the processes are ported; resolution only
-// reads their id.
+// src/templates.ts.
 
 public sealed record Dimensions(long W, long D, long H);
 
@@ -31,12 +28,10 @@ public sealed record PartDecl(
     long MaxIntegrity,
     Holds? Holds = null);
 
-// What a child may change of an inherited part: any field but its name. A parent override is a
-// JsonElement so an absent parent inherits, an explicit null reparents to the root, and a string
-// renames it (System.Text.Json leaves a missing struct property default, whose ValueKind is
-// Undefined); anything else is refused where declarations are checked.
+// What a child may change of an inherited part: any field but its name. An absent parent inherits, an empty one moves the part
+// to the root, and any other names its new parent.
 public sealed record PartOverride(
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] JsonElement Parent = default,
+    string? Parent = null,
     long? MaxIntegrity = null,
     bool? Detachable = null,
     IReadOnlyDictionary<string, long>? Contributes = null,
@@ -46,12 +41,6 @@ public sealed record Product(string Template, long Count);
 
 public sealed record FieldDecl(string Tier, string Type);
 
-public sealed record ProcessDecl(string Id)
-{
-    [JsonExtensionData]
-    public Dictionary<string, JsonElement> Body { get; init; } = new();
-}
-
 // A template file before its parent is folded in: every field but `id` may be absent.
 public sealed record TemplateDecl(
     string Id,
@@ -60,12 +49,12 @@ public sealed record TemplateDecl(
     long? MassG = null,
     IReadOnlyList<PartDecl>? Parts = null,
     IReadOnlyDictionary<string, PartOverride>? PartOverrides = null,
-    IReadOnlyDictionary<string, JsonNode?>? Props = null,
+    Value.Map? Props = null,
     IReadOnlyList<Product>? BreakProducts = null,
     IReadOnlyDictionary<string, long>? BreakResidue = null,
     IReadOnlyList<Product>? SpentProducts = null,
     IReadOnlyDictionary<string, long>? SpentResidue = null,
-    IReadOnlyList<ProcessDecl>? Processes = null,
+    IReadOnlyList<ProcessSpec>? Processes = null,
     IReadOnlyDictionary<string, FieldDecl>? Fields = null,
     IReadOnlyList<string>? Lineage = null,
     bool? Catalog = null,
@@ -86,7 +75,7 @@ public sealed record Template(
     // Only `false`, and never inherited: a child of a catalog-hidden base is offered.
     bool? Catalog = null,
     long? MaxIntegrity = null,
-    IReadOnlyList<ProcessDecl>? Processes = null,
+    IReadOnlyList<ProcessSpec>? Processes = null,
     IReadOnlyDictionary<string, FieldDecl>? Fields = null);
 
 // The declarations of one set, with where each came from (a file name, for the messages that name it).

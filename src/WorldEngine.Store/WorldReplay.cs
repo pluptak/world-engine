@@ -24,15 +24,7 @@ public static class WorldReplay
     // A resolved registry never changes, so its hash is worked out once per instance, not on every read and write of a world.
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<IReadOnlyDictionary<string, Template>, string> Hashes = new();
 
-    private static string Compute(IReadOnlyDictionary<string, Template> registry)
-    {
-        var declared = new JsonObject();
-        foreach (var (id, template) in registry)
-        {
-            declared[id] = JsonNode.Parse(WorldJson.Write(template));
-        }
-        return TemplateHash.Of(declared);
-    }
+    private static string Compute(IReadOnlyDictionary<string, Template> registry) => TemplateHash.Of(registry);
 
     // Replays the whole log from initial.json. An accepted command that no longer applies is a divergence, named by its line.
     public static Fold ReplayFold(string dir, IReadOnlyDictionary<string, Template> registry)

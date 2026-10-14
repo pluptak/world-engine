@@ -96,7 +96,7 @@ public static class CliRunner
             coverage = WorldJson.Read<Coverage>(coverageJson!);
         }
         var registry = ShippedTemplates;
-        var made = WorldBuilder.Snapshot(scenario!, registry, coverage);
+        var made = WorldBuilder.Snapshot(ValueOf(scenario)!, registry, coverage);
         WorldBuilder.Create(args[1], made.Snapshot, registry, made.Ids);
         return new CliOutput(
             Line(new JsonObject { ["status"] = "ok", ["world"] = args[1], ["snapshot_version"] = made.Snapshot.Version }),

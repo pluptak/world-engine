@@ -51,6 +51,10 @@ property traces, the tamper and takeover goldens and `block21/golden.json` keep 
 `follower float delay`, `edit: tick float`): the contract refuses such a request before the engine reads it, and
 `ChecksTests` covers it.
 
+Two more are no longer TypeScript's word for word, since a null member is an absent one: `template-fuzz.expected.json.gz` was
+regenerated from .NET (112 cases that set a key to null, 20 whose parent message no longer says "or null"), and
+`forms-golden.expected.json` lacks the 177 form rows and 3 architect rows that held a null.
+
 ## Fixtures with no generator
 
 About sixty fixtures were recorded by scratch scripts that were not kept (the verb goldens `*-golden.expected.json`, the `*.snapshot.json`

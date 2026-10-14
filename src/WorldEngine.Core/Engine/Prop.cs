@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using WorldEngine.Core.Model;
 
@@ -141,27 +140,9 @@ public static class Prop
 
     public static Value.Map Without<T>(this Value.Map props, Prop<T> prop) => props.Without(prop.Name);
 
-    // Whether a prop value (a JSON number, string or boolean) holds the type. An integer is a whole number that fits a long.
-    public static bool Matches(PropType type, JsonNode? value)
-    {
-        var kind = (value as JsonValue)?.GetValueKind();
-        return type switch
-        {
-            PropType.Boolean => kind is System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False,
-            PropType.Integer => JsonReads.SafeInt(value) is not null,
-            _ => kind is System.Text.Json.JsonValueKind.String,
-        };
-    }
-
-    // Strict equality of two props (`===` in TypeScript): an absent prop equals nothing, and two values are the same when they
-    // read the same.
     public static bool SameValue(Value? left, Value? right) => Equals(left, right);
 
-    public static bool SameValue(JsonNode? left, JsonNode? right) =>
-        left is null || right is null
-            ? left is null && right is null
-            : JsonNode.DeepEquals(left, right);
-
+    // Whether a prop value holds the type.
     public static bool Matches(PropType type, Value? value) => type switch
     {
         PropType.Boolean => value is Value.Bool,

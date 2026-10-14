@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using WorldEngine.Store;
@@ -33,7 +34,7 @@ var scenario = JsonNode.Parse("""
 var dir = Path.Combine(Path.GetTempPath(), "world-engine-bench-" + Guid.NewGuid().ToString("N"));
 try
 {
-    var made = WorldBuilder.Snapshot(scenario, registry);
+    var made = WorldBuilder.Snapshot(ValueJson.FromNode(scenario)!, registry);
     WorldBuilder.Create(dir, made.Snapshot, registry, made.Ids);
     var world = StoreWorld.Open(dir);
     const int commands = 10000;

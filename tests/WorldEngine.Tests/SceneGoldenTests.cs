@@ -20,7 +20,7 @@ public class SceneGoldenTests
         {
             var name = row!["name"]!.GetValue<string>();
             var input = row["input"]!;
-            var scenario = input["scenario"]!.AsArray();
+            var scenario = (Value.List)Values.Of(input["scenario"])!;
             var nextSeq = input["next_seq"]!.GetValue<long>();
             var actual = Outcome(() =>
             {
@@ -28,7 +28,7 @@ public class SceneGoldenTests
                 return new JsonObject
                 {
                     ["status"] = "ok",
-                    ["scenario"] = resolved.Scenario.DeepClone(),
+                    ["scenario"] = WorldJson.Node(resolved.Scenario),
                     ["ids"] = new JsonObject(resolved.Ids.Select(pair => KeyValuePair.Create(pair.Key, (JsonNode?)pair.Value))),
                 };
             });
@@ -46,8 +46,8 @@ public class SceneGoldenTests
             var snapshot = WorldJson.Read<Snapshot>(input["snapshot"]!.ToJsonString());
             var names = input["names"]!.AsObject()
                 .ToDictionary(pair => pair.Key, pair => pair.Value!.GetValue<string>(), StringComparer.Ordinal);
-            var beats = input["beats"] as JsonArray;
-            var run = input["run"] as JsonObject;
+            var beats = Values.Of(input["beats"]) as Value.List;
+            var run = Values.Of(input["run"]) as Value.Map;
             var actual = Outcome(() => new JsonObject
             {
                 ["status"] = "ok",

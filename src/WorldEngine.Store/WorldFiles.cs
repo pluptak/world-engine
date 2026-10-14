@@ -210,18 +210,18 @@ public static class WorldFiles
     }
 
     // A template set as the world keeps it: an object from id to declaration, checked against its own id (`parseRegistry`).
-    private static DeclaredSet ParseRegistry(JsonNode? value, string source)
+    private static DeclaredSet ParseRegistry(JsonNode? node, string source)
     {
-        if (value is not JsonObject set)
+        if (WorldEngine.Store.Templates.TemplateDirectory.TemplateValue(node, source) is not Value.Map set)
         {
             throw new FormatException($"{source} must contain a template object");
         }
         var decls = new Dictionary<string, TemplateDecl>(StringComparer.Ordinal);
         var sources = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var id in set.Select(pair => pair.Key).Order(StringComparer.Ordinal))
+        foreach (var id in set.Keys)
         {
             TemplateShape.Check(set[id], $"{source}#{id}");
-            var decl = WorldJson.Read<TemplateDecl>(set[id]!);
+            var decl = ValueJson.Read<TemplateDecl>(set[id]);
             if (decl.Id != id)
             {
                 throw new FormatException($"{source}#{id} declares id {decl.Id}");

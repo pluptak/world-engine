@@ -21,8 +21,9 @@ public static class TemplateDirectory
         var sources = new Dictionary<string, string>();
         foreach (var (file, text) in texts.OrderBy(entry => entry.File, StringComparer.Ordinal))
         {
-            TemplateShape.Check(System.Text.Json.Nodes.JsonNode.Parse(text), file);
-            var decl = WorldJson.Read<TemplateDecl>(text);
+            var value = TemplateValue(System.Text.Json.Nodes.JsonNode.Parse(text), file);
+            TemplateShape.Check(value, file);
+            var decl = ValueJson.Read<TemplateDecl>(value!);
             if (decls.ContainsKey(decl.Id))
             {
                 throw new FormatException($"Duplicate template id {decl.Id}");
@@ -31,5 +32,18 @@ public static class TemplateDirectory
             sources[decl.Id] = file;
         }
         return new DeclaredSet(decls, sources);
+    }
+
+    // A declaration as a value: a null in a list, or a number that is not whole, is refused with the source that holds it.
+    public static WorldEngine.Core.Model.Value? TemplateValue(System.Text.Json.Nodes.JsonNode? node, string source)
+    {
+        try
+        {
+            return ValueJson.FromNode(node);
+        }
+        catch (FormatException error)
+        {
+            throw new FormatException($"{source}: {error.Message}");
+        }
     }
 }

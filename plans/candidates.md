@@ -92,20 +92,52 @@ Priorities there, then deleting it here in the same commit.
     a removed or destroyed installed entity leaves the socket empty, not the part destroyed.
   - Power and hacking need nothing new: an installed entity may carry `powered_by` and `controlled_by`
     (see Control).
-  Decided by the maintainer: capacities keep their 0–100 ceiling. A capacity is a share of what the
-  body's class can do, and the class is the template: its definition props are the absolute amounts
-  (`hand_carry_limit_g`, `attack_damage`, `reach_cm`, part `max_integrity`). A stronger body is another
-  class, not a capacity over 100: `cyborg` extends `human` with larger amounts (props and
-  `part_overrides`), so a cyborg at 100 out-lifts and out-hits a human at 100. A body changes class by
-  the existing `refine` edit (`human` → `cyborg`, a refinement since it extends `human`), which keeps the
-  state the new preset still declares (`docs/refine.md`); no new prop.
-  Open: whether a socket nests (a hand socket on an installed arm); whether `install` may refine the body
-  itself (a body taking a cyber-arm becomes a `cyborg`), or the class change stays the author's `edit`,
-  since `refine` is author-only today; how far a class is per body or per part (one cyber-arm: the whole
-  body a `cyborg`, or that arm's amounts read from the installed entity); whether a class ever goes back
-  (a cyborg with every implant removed is not a refinement of itself, so `refine` cannot return it to
-  `human`); whether `attack` on an installed part harms the installed entity or the body; and whether
-  rejection or wear is a process on the installed entity.
+  - An upgrade's success, failure and the body's change of class are a scheduled outcome (see Class
+    changes): `install` starts it, it does not decide it.
+  Open: whether a socket nests (a hand socket on an installed arm); whether `attack` on an installed
+  part harms the installed entity or the body; and whether rejection or wear is a process on the
+  installed entity.
+- **Class changes by a scheduled outcome.** Story: a character decides to install an upgrade (a robo-arm),
+  the attempt goes on the schedule, it succeeds or fails when it falls due, and on success the
+  character's template changes to `cyborg`. The same shape serves a downgrade (an EMP: `cyborg` →
+  `human`) and a curse (`human` → `werewolf`, and back when it is lifted).
+  Decided by the maintainer:
+  - Capacities keep their 0–100 ceiling. A capacity is a share of what the body's class can do, and the
+    class is the template: its definition props are the absolute amounts (`hand_carry_limit_g`,
+    `attack_damage`, `reach_cm`, part `max_integrity`). A stronger body is another class, not a capacity
+    over 100: `cyborg` extends `human` with larger amounts (props and `part_overrides`), so a cyborg at
+    100 out-lifts and out-hits a human at 100.
+  - The class changes by a world event, never inside the command that starts it. The character's
+    command (`install`, a `cast`, drinking a potion) only puts an outcome on the schedule; success or
+    failure is decided when it falls due, and only success changes the class.
+  The flow, all of it one `cause_id` chain so `trace` reads decision → attempt → result → class:
+  1. The command is accepted and emits `outcome_scheduled`; a fifth schedule kind, `outcome`
+     (`docs/schedule.md`), is stored with its `due_tick`, the body and the procedure entity.
+  2. At the due tick the world's dice roll against the odds (`docs/rng.md`; a world with no seed refuses
+     the starting command `no_seed`, so a scheduled outcome always has dice to roll).
+  3. Success emits `outcome_succeeded`, applies the procedure's effect (the implant `installed_in` its
+     socket) and changes the body's class, emitting `refined`; failure emits `outcome_failed` and its
+     consequence, and the class stays.
+  Minimal props, all definition tier on the procedure entity's template (the robo-arm, the curse, the
+  EMP), so the story's odds and result are data:
+  - `success_pct` (integer, 0–100): the odds; 100 never rolls, so a certain outcome needs no seed.
+  - `outcome_ticks` (integer, ≥ 0): how long until it is decided.
+  - `grants_class` (string, a template of the set): the body's class on success; checked when the set
+    loads, like `successor`.
+  - `failure_damage` (integer, ≥ 0, optional): harm to the target part on failure (a rejected implant).
+  And one template key, not a prop: `becomes` (a list of templates) on the body's template, the classes
+  it may change into. `refine` allows only a template that extends the entity's own, so `human` →
+  `cyborg` passes it but `cyborg` → `human` and `werewolf` → `human` do not; `becomes` names the
+  changes allowed beyond that, and any other is refused `not_a_class_change`. State carries over as
+  `refine` keeps it (`docs/refine.md`). An author's beat may also carry the class change (`refine` added
+  to `docs/beats-actions.md`) for a change that no character starts.
+  Open: how far a class is per body or per part (one cyber-arm: the whole body a `cyborg`, or that arm's
+  amounts read from the installed entity), TBD; whether a class ever goes back, and so whether `becomes`
+  is wanted at all, TBD; what the body may do while its outcome is pending (act freely, or be held as
+  `unconscious` on the table); whether the odds read anything but the procedure (the surgeon's
+  `manipulation`, the part `incised`); whether a pending outcome can be cancelled (the body leaves, the
+  implant is taken away), and whether it is then pruned as a beat's is; and part state the new class
+  does not declare (a cyborg's part a human lacks), dropped or refused.
 - **Identity by appearance.** Scenes: Face/Off (a face and voice swapped between two bodies), a disguise, a
   shapeshifter. Today an actor names every other thing by an alias hashed from the observer and the
   entity's id (`docs/actor-view.md`), so a body keeps its alias whatever face it wears: the engine itself

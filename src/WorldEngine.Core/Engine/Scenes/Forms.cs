@@ -1,21 +1,19 @@
 using WorldEngine.Core.Model;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Engine.JsonReads;
 
 namespace WorldEngine.Core.Engine;
 
 // What the architect may say about a thing in a scenario instead of a raw quantity (src/engine/forms.ts): whole percentages of what the
 // preset holds, and two named levels of condition. Each is converted once, here, to the one stored value (fuel, liquid_amount and
 // liquid_material, integrity, hunger, portions), so a form is a second way to write a field and never a second stored field.
-// Pure and integer. Works on the overrides as JSON, since the scenario is read that way.
+// Pure and integer. Works on the overrides as values, since the scenario is read that way.
 public static class Forms
 {
     public static readonly string[] FormKeys = ["fuel_pct", "liquid", "condition", "hunger_pct", "portions_pct"];
 
     private static readonly HashSet<string> ArchitectFields =
     [
-        "name", "aliases", "traits", "location", "support", "contained_in", "in_part", "concealed_by", "pos",
+        "name", "aliases", "traits", "location", "support", "contained_in", "in_part", "concealed_by", "pos", "clear",
         "fuel_pct", "liquid", "condition", "hunger_pct", "portions_pct",
     ];
 
@@ -33,99 +31,82 @@ public static class Forms
         return percent > 0 ? Math.Max(part, 1) : part;
     }
 
-    public static bool HasForms(JsonObject overrides) => FormKeys.Any(overrides.ContainsKey);
+    public static bool HasForms(Value.Map overrides) => FormKeys.Any(overrides.ContainsKey);
 
     // The overrides with every form converted away. A scenario entry is checked by ArchitectWrites first, so no raw prop a form converts
-    // to is beside it: one fact is written one way. A form given as null is given, and refused as the wrong kind of value.
-    public static JsonObject Apply(Template template, JsonObject overrides, int index)
+    // to is beside it: one fact is written one way.
+    public static Value.Map Apply(Template template, Value.Map overrides, int index)
     {
-        var props = new JsonObject();
-        if (overrides["props"] is JsonObject given)
-        {
-            foreach (var (name, value) in given)
-            {
-                props[name] = value?.DeepClone();
-            }
-        }
-        var result = new JsonObject();
-        foreach (var (key, value) in overrides)
-        {
-            if (!FormKeys.Contains(key))
-            {
-                result[key] = value?.DeepClone();
-            }
-        }
+        var props = overrides.GetValueOrDefault("props") as Value.Map ?? Value.Map.Empty;
+        var result = overrides.Only(key => !FormKeys.Contains(key));
 
-        if (overrides.ContainsKey("fuel_pct"))
+        if (overrides.TryGetValue("fuel_pct", out var fuel))
         {
-            var percent = WholePercent(overrides["fuel_pct"], index, "fuel_pct");
-            props[Prop.Fuel] = JsonValue.Create(Share(PresetInteger(template, Prop.Fuel, index, "fuel_pct"), percent));
+            var percent = WholePercent(fuel, index, "fuel_pct");
+            props = props.With(Prop.Fuel, Share(PresetInteger(template, Prop.Fuel, index, "fuel_pct"), percent));
         }
-        if (overrides.ContainsKey("liquid"))
+        if (overrides.TryGetValue("liquid", out var liquidValue))
         {
-            var liquid = overrides["liquid"];
-            if (liquid is null || !IsLiquidShape(liquid))
+            // An empty list passes the shape as it does in TypeScript, whose arrays have no members, and then fails for its missing pct.
+            var liquid = liquidValue switch
             {
-                throw Fail(Code.InvalidForm, index, "liquid must be { material?, pct }");
-            }
-            var percent = WholePercent(Member(liquid, "pct"), index, "liquid.pct");
-            var material = Member(liquid, "material");
-            if (material is not null && (Text(material) is not { } text || text == ""))
+                Value.Map map when map.Keys.All(key => key is "material" or "pct") => map,
+                Value.List { Items.Length: 0 } => Value.Map.Empty,
+                _ => throw Fail(Code.InvalidForm, index, "liquid must be { material?, pct }"),
+            };
+            var percent = WholePercent(liquid.GetValueOrDefault("pct"), index, "liquid.pct");
+            var material = liquid.GetValueOrDefault("material");
+            if (material is not null && material.AsText() is not { Length: > 0 })
             {
                 throw Fail(Code.InvalidForm, index, "liquid.material must be a non-empty string");
             }
             var capacity = PresetInteger(template, Prop.CapacityCm3, index, "liquid");
-            var name = Text(material) ?? template.Props.Get(Prop.LiquidMaterial);
+            var name = material.AsText() ?? template.Props.Get(Prop.LiquidMaterial);
             if (percent > 0 && string.IsNullOrEmpty(name))
             {
                 throw Fail(Code.NoLiquidMaterial, index, $"liquid at {percent}% names no material and {template.Id} holds none");
             }
-            props[Prop.LiquidAmount] = JsonValue.Create(Share(capacity, percent));
-            props[Prop.LiquidMaterial] = JsonValue.Create(percent == 0 ? "" : name);
+            props = props.With(Prop.LiquidAmount, Share(capacity, percent)).With(Prop.LiquidMaterial, percent == 0 ? "" : name!);
         }
-        if (overrides.ContainsKey("condition"))
+        if (overrides.TryGetValue("condition", out var conditionValue))
         {
-            var condition = Text(overrides["condition"]);
+            var condition = conditionValue.AsText();
             if (condition is not ("intact" or "damaged"))
             {
                 throw Fail(Code.InvalidForm, index, "condition must be intact or damaged");
             }
             // Intact is the template's whole integrity, damaged half of it: 100 and 50 for a thing with no max.
             var whole = template.MaxIntegrity ?? Limits.MaxIntegrity;
-            result["integrity"] = JsonValue.Create(condition == "intact" ? whole : whole / 2);
+            result = result.With("integrity", condition == "intact" ? whole : whole / 2);
         }
-        if (overrides.ContainsKey("hunger_pct"))
+        if (overrides.TryGetValue("hunger_pct", out var hunger))
         {
             PresetInteger(template, Prop.Hunger, index, "hunger_pct");
-            props[Prop.Hunger] = JsonValue.Create(WholePercent(overrides["hunger_pct"], index, "hunger_pct"));
+            props = props.With(Prop.Hunger, WholePercent(hunger, index, "hunger_pct"));
         }
-        if (overrides.ContainsKey("portions_pct"))
+        if (overrides.TryGetValue("portions_pct", out var portions))
         {
-            var percent = WholePercent(overrides["portions_pct"], index, "portions_pct");
-            props[Prop.Portions] = JsonValue.Create(Share(PresetInteger(template, Prop.Portions, index, "portions_pct"), percent));
+            var percent = WholePercent(portions, index, "portions_pct");
+            props = props.With(Prop.Portions, Share(PresetInteger(template, Prop.Portions, index, "portions_pct"), percent));
         }
-        if (props.Count > 0)
-        {
-            result["props"] = props;
-        }
-        return result;
+        return props.Count > 0 ? result.With("props", props) : result;
     }
 
     // The first field or prop (props.name) of a scenario entry's overrides the architect may not write, or null. Run on the entry as
     // written, before the forms become the raw props they convert to.
-    public static string? ArchitectWrites(JsonObject overrides)
+    public static string? ArchitectWrites(Value.Map overrides)
     {
-        foreach (var key in overrides.Select(pair => pair.Key))
+        foreach (var key in overrides.Keys)
         {
             if (!ArchitectFields.Contains(key) && key != "props")
             {
                 return key;
             }
         }
-        switch (overrides["props"])
+        switch (overrides.GetValueOrDefault("props"))
         {
-            case JsonObject props:
-                foreach (var name in props.Select(pair => pair.Key))
+            case Value.Map props:
+                foreach (var name in props.Keys)
                 {
                     if (!ArchitectProps.Contains(name))
                     {
@@ -133,28 +114,16 @@ public static class Forms
                     }
                 }
                 break;
-            // An array's keys are its indexes, which no prop is named.
-            case JsonArray { Count: > 0 }:
+            // A list's keys are its indexes, which no prop is named.
+            case Value.List { Items.Length: > 0 }:
                 return "props.0";
         }
         return null;
     }
 
-    // The liquid form is an object of material and pct only. An empty array passes this check as it does in TypeScript, and then fails
-    // for its missing pct.
-    private static bool IsLiquidShape(JsonNode liquid) => liquid switch
+    private static long WholePercent(Value? value, int index, string form)
     {
-        JsonObject liquidObject => liquidObject.All(pair => pair.Key is "material" or "pct"),
-        JsonArray array => array.Count == 0,
-        _ => false,
-    };
-
-    // A member of a form, read as its JavaScript would: an array has none, so its members are absent.
-    private static JsonNode? Member(JsonNode form, string name) => form is JsonObject obj ? obj[name] : null;
-
-    private static long WholePercent(JsonNode? value, int index, string form)
-    {
-        if (SafeInt(value) is not { } whole || whole < 0 || whole > 100)
+        if (value.AsInt() is not { } whole || whole < 0 || whole > 100)
         {
             throw Fail(Code.InvalidForm, index, $"{form} must be a whole number from 0 to 100");
         }

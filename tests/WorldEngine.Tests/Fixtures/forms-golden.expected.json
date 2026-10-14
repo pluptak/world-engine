@@ -75,17 +75,6 @@
   {
    "template": "anchor",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "anchor",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -160,17 +149,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "anchor",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -287,17 +265,6 @@
    "template": "anchor",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "anchor",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -483,17 +450,6 @@
   {
    "template": "arm",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "arm",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -568,17 +524,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "arm",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -695,17 +640,6 @@
    "template": "arm",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "arm",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -891,17 +825,6 @@
   {
    "template": "bars",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "bars",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -976,17 +899,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "bars",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -1103,17 +1015,6 @@
    "template": "bars",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "bars",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -1299,17 +1200,6 @@
   {
    "template": "book",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "book",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -1384,17 +1274,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "book",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -1511,17 +1390,6 @@
    "template": "book",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "book",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -1707,17 +1575,6 @@
   {
    "template": "bottle",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "bottle",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -1798,17 +1655,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "bottle",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -1927,17 +1773,6 @@
    "template": "bottle",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "bottle",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -2123,17 +1958,6 @@
   {
    "template": "bread",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "bread",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -2208,17 +2032,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "bread",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -2335,17 +2148,6 @@
    "template": "bread",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "bread",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -2533,17 +2335,6 @@
   {
    "template": "cable",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "cable",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -2618,17 +2409,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "cable",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -2745,17 +2525,6 @@
    "template": "cable",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "cable",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -2941,17 +2710,6 @@
   {
    "template": "camera",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "camera",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -3026,17 +2784,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "camera",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -3153,17 +2900,6 @@
    "template": "camera",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "camera",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -3352,17 +3088,6 @@
   {
    "template": "candle",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "candle",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -3437,17 +3162,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "candle",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -3564,17 +3278,6 @@
    "template": "candle",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "candle",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -3763,17 +3466,6 @@
   {
    "template": "cat",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "cat",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -3848,17 +3540,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "cat",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -3975,17 +3656,6 @@
    "template": "cat",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "cat",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -4171,17 +3841,6 @@
   {
    "template": "cat.jaw",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "cat.jaw",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -4256,17 +3915,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "cat.jaw",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -4383,17 +4031,6 @@
    "template": "cat.jaw",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "cat.jaw",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -4579,17 +4216,6 @@
   {
    "template": "chair",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "chair",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -4664,17 +4290,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "chair",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -4791,17 +4406,6 @@
    "template": "chair",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "chair",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -4987,17 +4591,6 @@
   {
    "template": "chair.leg_bl",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "chair.leg_bl",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -5072,17 +4665,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "chair.leg_bl",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -5199,17 +4781,6 @@
    "template": "chair.leg_bl",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "chair.leg_bl",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -5395,17 +4966,6 @@
   {
    "template": "chair.leg_br",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "chair.leg_br",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -5480,17 +5040,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "chair.leg_br",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -5607,17 +5156,6 @@
    "template": "chair.leg_br",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "chair.leg_br",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -5803,17 +5341,6 @@
   {
    "template": "chair.leg_fl",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "chair.leg_fl",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -5888,17 +5415,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "chair.leg_fl",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -6015,17 +5531,6 @@
    "template": "chair.leg_fl",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "chair.leg_fl",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -6211,17 +5716,6 @@
   {
    "template": "chair.leg_fr",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "chair.leg_fr",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -6296,17 +5790,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "chair.leg_fr",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -6423,17 +5906,6 @@
    "template": "chair.leg_fr",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "chair.leg_fr",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -6619,17 +6091,6 @@
   {
    "template": "chest",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "chest",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -6704,17 +6165,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "chest",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -6831,17 +6281,6 @@
    "template": "chest",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "chest",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -7027,17 +6466,6 @@
   {
    "template": "crate",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "crate",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -7112,17 +6540,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "crate",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -7239,17 +6656,6 @@
    "template": "crate",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "crate",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -7435,17 +6841,6 @@
   {
    "template": "cup",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "cup",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -7524,17 +6919,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "cup",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -7653,17 +7037,6 @@
    "template": "cup",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "cup",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -7849,17 +7222,6 @@
   {
    "template": "dog",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "dog",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -7934,17 +7296,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "dog",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -8061,17 +7412,6 @@
    "template": "dog",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "dog",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -8257,17 +7597,6 @@
   {
    "template": "dog.jaw",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "dog.jaw",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -8342,17 +7671,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "dog.jaw",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -8469,17 +7787,6 @@
    "template": "dog.jaw",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "dog.jaw",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -8665,17 +7972,6 @@
   {
    "template": "door",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "door",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -8750,17 +8046,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "door",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -8877,17 +8162,6 @@
    "template": "door",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "door",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -9073,17 +8347,6 @@
   {
    "template": "experiment",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "experiment",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -9158,17 +8421,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "experiment",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -9285,17 +8537,6 @@
    "template": "experiment",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "experiment",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -9481,17 +8722,6 @@
   {
    "template": "gate",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "gate",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -9566,17 +8796,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "gate",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -9693,17 +8912,6 @@
    "template": "gate",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "gate",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -9889,17 +9097,6 @@
   {
    "template": "generator",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "generator",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -9974,17 +9171,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "generator",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -10101,17 +9287,6 @@
    "template": "generator",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "generator",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -10297,17 +9472,6 @@
   {
    "template": "glass_shard",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "glass_shard",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -10382,17 +9546,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "glass_shard",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -10509,17 +9662,6 @@
    "template": "glass_shard",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "glass_shard",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -10705,17 +9847,6 @@
   {
    "template": "horse",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "horse",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -10790,17 +9921,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "horse",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -10917,17 +10037,6 @@
    "template": "horse",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "horse",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -11113,17 +10222,6 @@
   {
    "template": "horse.jaw",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "horse.jaw",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -11198,17 +10296,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "horse.jaw",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -11325,17 +10412,6 @@
    "template": "horse.jaw",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "horse.jaw",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -11521,17 +10597,6 @@
   {
    "template": "human",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -11606,17 +10671,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -11733,17 +10787,6 @@
    "template": "human",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -11929,17 +10972,6 @@
   {
    "template": "human.arm_l",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human.arm_l",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -12014,17 +11046,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human.arm_l",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -12141,17 +11162,6 @@
    "template": "human.arm_l",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human.arm_l",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -12337,17 +11347,6 @@
   {
    "template": "human.arm_l.hand_l",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human.arm_l.hand_l",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -12422,17 +11421,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human.arm_l.hand_l",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -12549,17 +11537,6 @@
    "template": "human.arm_l.hand_l",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human.arm_l.hand_l",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -12745,17 +11722,6 @@
   {
    "template": "human.arm_r",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human.arm_r",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -12830,17 +11796,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human.arm_r",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -12957,17 +11912,6 @@
    "template": "human.arm_r",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human.arm_r",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -13153,17 +12097,6 @@
   {
    "template": "human.arm_r.hand_r",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human.arm_r.hand_r",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -13238,17 +12171,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human.arm_r.hand_r",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -13365,17 +12287,6 @@
    "template": "human.arm_r.hand_r",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human.arm_r.hand_r",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -13561,17 +12472,6 @@
   {
    "template": "human.hand_l",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human.hand_l",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -13646,17 +12546,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human.hand_l",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -13773,17 +12662,6 @@
    "template": "human.hand_l",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human.hand_l",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -13969,17 +12847,6 @@
   {
    "template": "human.hand_r",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human.hand_r",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -14054,17 +12921,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human.hand_r",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -14181,17 +13037,6 @@
    "template": "human.hand_r",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human.hand_r",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -14377,17 +13222,6 @@
   {
    "template": "human_hungry",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human_hungry",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -14462,17 +13296,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human_hungry",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -14589,17 +13412,6 @@
    "template": "human_hungry",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human_hungry",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -14786,17 +13598,6 @@
   {
    "template": "human_hungry.arm_l",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human_hungry.arm_l",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -14871,17 +13672,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human_hungry.arm_l",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -14998,17 +13788,6 @@
    "template": "human_hungry.arm_l",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human_hungry.arm_l",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -15194,17 +13973,6 @@
   {
    "template": "human_hungry.arm_l.hand_l",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human_hungry.arm_l.hand_l",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -15279,17 +14047,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human_hungry.arm_l.hand_l",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -15406,17 +14163,6 @@
    "template": "human_hungry.arm_l.hand_l",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human_hungry.arm_l.hand_l",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -15602,17 +14348,6 @@
   {
    "template": "human_hungry.arm_r",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human_hungry.arm_r",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -15687,17 +14422,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human_hungry.arm_r",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -15814,17 +14538,6 @@
    "template": "human_hungry.arm_r",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human_hungry.arm_r",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -16010,17 +14723,6 @@
   {
    "template": "human_hungry.arm_r.hand_r",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human_hungry.arm_r.hand_r",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -16095,17 +14797,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human_hungry.arm_r.hand_r",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -16222,17 +14913,6 @@
    "template": "human_hungry.arm_r.hand_r",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human_hungry.arm_r.hand_r",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -16418,17 +15098,6 @@
   {
    "template": "human_hungry.hand_l",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human_hungry.hand_l",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -16503,17 +15172,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human_hungry.hand_l",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -16630,17 +15288,6 @@
    "template": "human_hungry.hand_l",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human_hungry.hand_l",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -16826,17 +15473,6 @@
   {
    "template": "human_hungry.hand_r",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "human_hungry.hand_r",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -16911,17 +15547,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "human_hungry.hand_r",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -17038,17 +15663,6 @@
    "template": "human_hungry.hand_r",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "human_hungry.hand_r",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -17234,17 +15848,6 @@
   {
    "template": "intercom",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "intercom",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -17319,17 +15922,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "intercom",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -17446,17 +16038,6 @@
    "template": "intercom",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "intercom",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -17642,17 +16223,6 @@
   {
    "template": "jamming_door",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "jamming_door",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -17727,17 +16297,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "jamming_door",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -17854,17 +16413,6 @@
    "template": "jamming_door",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "jamming_door",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -18050,17 +16598,6 @@
   {
    "template": "key",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "key",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -18135,17 +16672,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "key",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -18262,17 +16788,6 @@
    "template": "key",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "key",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -18458,17 +16973,6 @@
   {
    "template": "lamp",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "lamp",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -18543,17 +17047,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "lamp",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -18670,17 +17163,6 @@
    "template": "lamp",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "lamp",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -18869,17 +17351,6 @@
   {
    "template": "lantern",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "lantern",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -18954,17 +17425,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "lantern",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -19081,17 +17541,6 @@
    "template": "lantern",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "lantern",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -19280,17 +17729,6 @@
   {
    "template": "locked_chest",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "locked_chest",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -19365,17 +17803,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "locked_chest",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -19492,17 +17919,6 @@
    "template": "locked_chest",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "locked_chest",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -19688,17 +18104,6 @@
   {
    "template": "narrow_camera",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "narrow_camera",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -19773,17 +18178,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "narrow_camera",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -19900,17 +18294,6 @@
    "template": "narrow_camera",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "narrow_camera",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -20096,17 +18479,6 @@
   {
    "template": "note",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "note",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -20181,17 +18553,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "note",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -20308,17 +18669,6 @@
    "template": "note",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "note",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -20504,17 +18854,6 @@
   {
    "template": "panel",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "panel",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -20589,17 +18928,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "panel",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -20716,17 +19044,6 @@
    "template": "panel",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "panel",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -20912,17 +19229,6 @@
   {
    "template": "quadruped",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "quadruped",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -20997,17 +19303,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "quadruped",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -21124,17 +19419,6 @@
    "template": "quadruped",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "quadruped",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -21320,17 +19604,6 @@
   {
    "template": "quadruped.jaw",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "quadruped.jaw",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -21405,17 +19678,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "quadruped.jaw",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -21532,17 +19794,6 @@
    "template": "quadruped.jaw",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "quadruped.jaw",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -21728,17 +19979,6 @@
   {
    "template": "room",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "room",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -21813,17 +20053,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "room",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -21940,17 +20169,6 @@
    "template": "room",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "room",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -22136,17 +20354,6 @@
   {
    "template": "shut_door",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "shut_door",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -22221,17 +20428,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "shut_door",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -22348,17 +20544,6 @@
    "template": "shut_door",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "shut_door",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -22544,17 +20729,6 @@
   {
    "template": "stone",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "stone",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -22629,17 +20803,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "stone",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -22756,17 +20919,6 @@
    "template": "stone",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "stone",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -22952,17 +21104,6 @@
   {
    "template": "table",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "table",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -23037,17 +21178,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "table",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -23164,17 +21294,6 @@
    "template": "table",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "table",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -23360,17 +21479,6 @@
   {
    "template": "terminal",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "terminal",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -23445,17 +21553,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "terminal",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -23572,17 +21669,6 @@
    "template": "terminal",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "terminal",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -23768,17 +21854,6 @@
   {
    "template": "wine_bottle",
    "overrides": {
-    "fuel_pct": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: fuel_pct must be a whole number from 0 to 100"
-   }
-  },
-  {
-   "template": "wine_bottle",
-   "overrides": {
     "fuel_pct": "5"
    },
    "index": 2,
@@ -23859,17 +21934,6 @@
    "error": {
     "code": "invalid_form",
     "message": "Scenario entry 2: liquid.material must be a non-empty string"
-   }
-  },
-  {
-   "template": "wine_bottle",
-   "overrides": {
-    "liquid": null
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: liquid must be { material?, pct }"
    }
   },
   {
@@ -23988,17 +22052,6 @@
    "template": "wine_bottle",
    "overrides": {
     "condition": "broken"
-   },
-   "index": 2,
-   "error": {
-    "code": "invalid_form",
-    "message": "Scenario entry 2: condition must be intact or damaged"
-   }
-  },
-  {
-   "template": "wine_bottle",
-   "overrides": {
-    "condition": null
    },
    "index": 2,
    "error": {
@@ -24210,12 +22263,6 @@
   },
   {
    "overrides": {
-    "props": null
-   },
-   "architect": null
-  },
-  {
-   "overrides": {
     "props": 5
    },
    "architect": null
@@ -24231,12 +22278,6 @@
     "residue": {}
    },
    "architect": "residue"
-  },
-  {
-   "overrides": {
-    "detached_from": null
-   },
-   "architect": "detached_from"
   },
   {
    "overrides": {
@@ -24287,12 +22328,6 @@
     "contained_in": "e1",
     "condition": "intact",
     "hunger_pct": 3
-   },
-   "architect": null
-  },
-  {
-   "overrides": {
-    "in_part": null
    },
    "architect": null
   }

@@ -1,8 +1,6 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Engine.JsonReads;
 
 namespace WorldEngine.Core.Engine;
 
@@ -21,8 +19,8 @@ public static class SceneBuilder
         Snapshot snapshot,
         IReadOnlyDictionary<string, Template> registry,
         IReadOnlyDictionary<string, string> names,
-        JsonArray? beats,
-        JsonObject? run)
+        Value.List? beats,
+        Value.Map? run)
     {
         var withBeats = beats is null ? snapshot : QueueBeats(snapshot, registry, names, beats);
         return run is null ? withBeats : SceneRun(withBeats, registry, names, run);
@@ -35,56 +33,36 @@ public static class SceneBuilder
 
     // The body with every name it reads replaced by the id it names, wherever it holds one: an action's target, a condition's
     // entity or room, a follower's action and condition.
-    private static JsonNode? ResolveBody(JsonNode? value, IReadOnlyDictionary<string, string> names, string path)
+    private static Value ResolveBody(Value value, IReadOnlyDictionary<string, string> names, string path)
     {
         switch (value)
         {
-            case JsonArray array:
+            case Value.List list:
+                return Value.Of(list.Items.Select((item, index) => ResolveBody(item, names, $"{path}[{index}]")));
+            case Value.Map map:
             {
-                var items = new JsonArray();
-                for (var index = 0; index < array.Count; index++)
-                {
-                    items.Add(ResolveBody(array[index], names, $"{path}[{index}]"));
-                }
-                return items;
-            }
-            case JsonObject obj:
-            {
-                var body = new JsonObject();
-                foreach (var (key, field) in obj)
+                var body = Value.Map.Empty;
+                foreach (var (key, field) in map)
                 {
                     var at = $"{path}.{key}";
-                    if (Text(field) is { } name && ReferenceKeys.Contains(key))
+                    body = body.With(key, field switch
                     {
-                        body[key] = JsonValue.Create(Named(names, name, at));
-                    }
-                    else if (key == "props" && field is JsonObject props)
-                    {
-                        body[key] = ResolveProps(props, names, at);
-                    }
-                    else
-                    {
-                        body[key] = ResolveBody(field, names, at);
-                    }
+                        Value.Text name when ReferenceKeys.Contains(key) => Named(names, name.Content, at),
+                        Value.Map props when key == "props" => ResolveProps(props, names, at),
+                        _ => ResolveBody(field, names, at),
+                    });
                 }
                 return body;
             }
             default:
-                return value?.DeepClone();
+                return value;
         }
     }
 
-    private static JsonObject ResolveProps(JsonObject props, IReadOnlyDictionary<string, string> names, string path)
-    {
-        var resolved = new JsonObject();
-        foreach (var (key, value) in props)
-        {
-            resolved[key] = Text(value) is { } name && Prop.References.Contains(key)
-                ? JsonValue.Create(Named(names, name, $"{path}.{key}"))
-                : value?.DeepClone();
-        }
-        return resolved;
-    }
+    private static Value.Map ResolveProps(Value.Map props, IReadOnlyDictionary<string, string> names, string path) =>
+        Value.Of(props.Select(pair => KeyValuePair.Create(
+            pair.Key,
+            (Value?)(pair.Value is Value.Text name && Prop.References.Contains(pair.Key) ? Named(names, name.Content, $"{path}.{pair.Key}") : pair.Value))));
 
     // Every subject a beat and its followers act on is an entity of the world, and every prop one writes is one its template
     // holds, checked as a schedule_beat would check them.
@@ -116,20 +94,19 @@ public static class SceneBuilder
         Snapshot snapshot,
         IReadOnlyDictionary<string, Template> registry,
         IReadOnlyDictionary<string, string> names,
-        JsonArray beats)
+        Value.List beats)
     {
         var next = snapshot;
         var taken = new HashSet<string>(StringComparer.Ordinal);
-        for (var index = 0; index < beats.Count; index++)
+        for (var index = 0; index < beats.Items.Length; index++)
         {
             var path = $"beats[{index}]";
-            if (beats[index] is not JsonObject body)
+            if (beats.Items[index] is not Value.Map body)
             {
                 throw Refused(path, Code.InvalidBeat);
             }
-            var resolved = (JsonObject)ResolveBody(body, names, path)!;
-            resolved["kind"] = JsonValue.Create("schedule_beat");
-            var cause = ScheduleBeatOf(resolved) ?? throw Refused(path, Code.InvalidBeat);
+            var resolved = ((Value.Map)ResolveBody(body, names, path)).With("kind", "schedule_beat");
+            var cause = Beats.ScheduleBeatOf(resolved) ?? throw Refused(path, Code.InvalidBeat);
             if (cause.DueTick < 1)
             {
                 throw Refused(path, Code.BeatInPast);
@@ -157,23 +134,21 @@ public static class SceneBuilder
         Snapshot snapshot,
         IReadOnlyDictionary<string, Template> registry,
         IReadOnlyDictionary<string, string> names,
-        JsonArray bodies,
+        Value.List bodies,
         IEnumerable<string> taken)
     {
         var used = new HashSet<string>(taken, StringComparer.Ordinal);
-        var pool = new List<PoolBeat>(bodies.Count);
-        for (var index = 0; index < bodies.Count; index++)
+        var pool = new List<PoolBeat>(bodies.Items.Length);
+        for (var index = 0; index < bodies.Items.Length; index++)
         {
             var path = $"run.pool[{index}]";
-            if (bodies[index] is not JsonObject body || body.ContainsKey("at_tick"))
+            if (bodies.Items[index] is not Value.Map body || body.ContainsKey("at_tick"))
             {
                 throw Refused(path, Code.InvalidBeat);
             }
-            var resolved = (JsonObject)ResolveBody(body, names, path)!;
             // The tick is a placeholder the shape check needs; a pool beat is played at a tick the director names.
-            resolved["at_tick"] = JsonValue.Create(1L);
-            resolved["kind"] = JsonValue.Create("schedule_beat");
-            var beat = Beats.PoolBeatOf(ScheduleBeatOf(resolved) ?? throw Refused(path, Code.InvalidBeat));
+            var resolved = ((Value.Map)ResolveBody(body, names, path)).With("at_tick", 1L).With("kind", "schedule_beat");
+            var beat = Beats.PoolBeatOf(Beats.ScheduleBeatOf(resolved) ?? throw Refused(path, Code.InvalidBeat));
             CheckSubjects(snapshot, registry, beat.Action, beat.Then, path);
             foreach (var id in Beats.Ids(beat.Id, beat.Then))
             {
@@ -187,25 +162,21 @@ public static class SceneBuilder
         return pool;
     }
 
-    // A scene's beat as a schedule_beat edit would make it; null when it is not one (a fraction in it is none).
-    private static BeatCause? ScheduleBeatOf(JsonObject resolved) =>
-        ValueJson.TryFromNode(resolved, out var value) && value is Value.Map edit ? Beats.ScheduleBeatOf(edit) : null;
-
     // A door's odds are steered within a range the scene sets, which must be a whole range from 0 to 100 (`docs/roles.md`).
-    private static List<Odds> SceneOdds(Snapshot snapshot, IReadOnlyDictionary<string, string> names, JsonArray odds)
+    private static List<Odds> SceneOdds(Snapshot snapshot, IReadOnlyDictionary<string, string> names, Value.List odds)
     {
-        var result = new List<Odds>(odds.Count);
-        for (var index = 0; index < odds.Count; index++)
+        var result = new List<Odds>(odds.Items.Length);
+        for (var index = 0; index < odds.Items.Length; index++)
         {
-            var entry = (JsonObject)odds[index]!;
+            var entry = (Value.Map)odds.Items[index];
             var path = $"run.odds[{index}]";
-            var entity = Named(names, Text(entry["entity"]) ?? "", $"{path}.entity");
+            var entity = Named(names, entry.GetValueOrDefault("entity").AsText() ?? "", $"{path}.entity");
             if (!(snapshot.Entities.TryGetValue(entity, out var door)
                 && door.Props.Get(Prop.Open) is not null))
             {
                 throw Refused($"{path}.entity", Code.NotADoor);
             }
-            if (SafeInt(entry["min"]) is not { } min || SafeInt(entry["max"]) is not { } max
+            if (entry.GetValueOrDefault("min").AsInt() is not { } min || entry.GetValueOrDefault("max").AsInt() is not { } max
                 || !InRange(min) || !InRange(max) || min > max)
             {
                 throw Refused(path, Code.InvalidOdds);
@@ -219,21 +190,21 @@ public static class SceneBuilder
 
     // A run names a limit, its slots, a pool or odds: a positive tick limit, agents that are its slots, beats for the director to
     // play, and the odds it may steer. A run with none of these is no run to end or steer.
-    private static Snapshot SceneRun(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, IReadOnlyDictionary<string, string> names, JsonObject run)
+    private static Snapshot SceneRun(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, IReadOnlyDictionary<string, string> names, Value.Map run)
     {
-        var tickNode = run["tick_limit"];
-        var slotsNode = run["slots"] as JsonArray;
-        var poolNode = run["pool"] as JsonArray;
-        var oddsNode = run["odds"] as JsonArray;
+        var tickNode = run.GetValueOrDefault("tick_limit");
+        var slotsNode = run.GetValueOrDefault("slots") as Value.List;
+        var poolNode = run.GetValueOrDefault("pool") as Value.List;
+        var oddsNode = run.GetValueOrDefault("odds") as Value.List;
         if (tickNode is null && slotsNode is null && poolNode is null && oddsNode is null)
         {
             throw Refused("run", Code.EmptyRun);
         }
-        if (tickNode is not null && (SafeInt(tickNode) is not { } limit || limit < 1))
+        if (tickNode is not null && (tickNode.AsInt() is not { } limit || limit < 1))
         {
             throw Refused("run.tick_limit", Code.InvalidRun);
         }
-        if (slotsNode is { Count: 0 })
+        if (slotsNode is { Items.Length: 0 })
         {
             throw Refused("run.slots", Code.InvalidRun);
         }
@@ -241,12 +212,12 @@ public static class SceneBuilder
         // A slot is one id, or a list of several named bodies; a list of one is stored as its id.
         var slots = new List<Value>();
         var bodies = new List<string>();
-        for (var index = 0; slotsNode is not null && index < slotsNode.Count; index++)
+        for (var index = 0; slotsNode is not null && index < slotsNode.Items.Length; index++)
         {
-            var entry = slotsNode[index];
+            var entry = slotsNode.Items[index];
             var path = $"run.slots[{index}]";
-            var group = entry is JsonArray;
-            List<string?> members = entry is JsonArray list ? [.. list.Select(Text)] : [Text(entry)];
+            var group = entry is Value.List;
+            List<string?> members = entry is Value.List list ? [.. list.Items.Select(item => item.AsText())] : [entry.AsText()];
             if (members.Count == 0)
             {
                 throw Refused(path, Code.InvalidRun);
@@ -279,7 +250,7 @@ public static class SceneBuilder
         {
             Run = new Run(
                 "registering",
-                TickLimit: tickNode is null ? null : SafeInt(tickNode),
+                TickLimit: tickNode.AsInt(),
                 Slots: slotsNode is null ? null : slots,
                 Pool: pool,
                 Odds: odds),

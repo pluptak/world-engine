@@ -16,7 +16,7 @@ internal static class MixedWorld
     public static string Build(JsonObject golden, string dir)
     {
         var registry = Registry();
-        var made = WorldBuilder.Snapshot(golden["scene"]!, registry);
+        var made = WorldBuilder.Snapshot(Values.Of(golden["scene"])!, registry);
         WorldBuilder.Create(dir, made.Snapshot, registry, made.Ids);
         var world = StoreWorld.Open(dir);
         foreach (var step in (JsonArray)golden["steps"]!)

@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Templates;
 
@@ -10,18 +10,9 @@ namespace WorldEngine.Core.Templates;
 // template came from, not what it is.
 public static class TemplateHash
 {
-    public static string Of(JsonObject registry)
+    public static string Of(IReadOnlyDictionary<string, Template> registry)
     {
-        var plain = new JsonObject();
-        foreach (var (id, template) in registry)
-        {
-            var copy = template is JsonObject record
-                ? (JsonObject)record.DeepClone()
-                : throw new FormatException($"Template {id} is not an object");
-            copy.Remove("lineage");
-            plain[id] = copy;
-        }
-
+        var plain = Value.Of(registry.Select(pair => KeyValuePair.Create(pair.Key, ValueJson.Of(pair.Value with { Lineage = null }))));
         var bytes = Encoding.UTF8.GetBytes(CanonicalJson.Serialize(plain));
         return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
     }

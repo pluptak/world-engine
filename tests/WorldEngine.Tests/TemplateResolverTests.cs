@@ -1,4 +1,5 @@
 using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using WorldEngine.Store.Templates;
 
@@ -95,7 +96,7 @@ public class TemplateResolverTests
             SizeCm: new Dimensions(1, 1, 1),
             MassG: 1,
             Parts: parts,
-            Props: new Dictionary<string, System.Text.Json.Nodes.JsonNode?>(),
+            Props: Value.Map.Empty,
             BreakProducts: [],
             BreakResidue: new Dictionary<string, long>());
 
