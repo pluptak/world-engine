@@ -45,7 +45,10 @@ public static class SocketVerbs
         {
             return (null, Pipeline.Invalid(Code.NoSuchEntity));
         }
-        var template = context.Registry[body.Template];
+        if (!context.Registry.TryGetValue(body.Template, out var template))
+        {
+            return (null, Pipeline.Invalid(Code.UnknownTemplate));
+        }
         if (PartNamed(context) is not { } part || template.Parts.All(decl => decl.Name != part))
         {
             return (null, Pipeline.Invalid(Code.InvalidArgs));

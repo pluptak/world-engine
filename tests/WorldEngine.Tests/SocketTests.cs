@@ -235,6 +235,57 @@ public class SocketTests : IDisposable
         Assert.True(world.Verify().Ok);
     }
 
+    [Fact]
+    public void Installing_on_a_body_of_an_unknown_template_is_invalid()
+    {
+        var severed = Sever(Patient) with { Coverage = new Coverage([], [], []) };
+        var withoutHuman = new Dictionary<string, Template>(StringComparer.Ordinal);
+
+        var installed = Pipeline.Apply(severed, withoutHuman, Verbs, Install("i1", Surgeon, Patient, "arm_l", Arm));
+
+        Assert.Equal(Status.Invalid, installed.Status);
+        Assert.Equal(Code.UnknownTemplate, installed.ReasonCode);
+    }
+
+    [Fact]
+    public void Installing_an_item_of_an_unknown_template_is_invalid()
+    {
+        var severed = Sever(Patient);
+        var withoutRobo = new Dictionary<string, Template>(Registry, StringComparer.Ordinal);
+        withoutRobo.Remove("robo_arm_l");
+
+        var installed = Pipeline.Apply(severed, withoutRobo, Verbs, Install("i1", Surgeon, Patient, "arm_l", Arm));
+
+        Assert.Equal(Status.Invalid, installed.Status);
+        Assert.Equal(Code.UnknownTemplate, installed.ReasonCode);
+    }
+
+    [Fact]
+    public void Extracting_a_part_the_body_template_lost_is_invalid()
+    {
+        var human = Registry["human"];
+        var lost = new HashSet<string>(StringComparer.Ordinal) { "arm_l" };
+        bool grown;
+        do
+        {
+            grown = false;
+            foreach (var part in human.Parts)
+            {
+                if (part.Parent is not null && lost.Contains(part.Parent) && lost.Add(part.Name))
+                {
+                    grown = true;
+                }
+            }
+        } while (grown);
+        var armless = human with { Parts = [.. human.Parts.Where(part => !lost.Contains(part.Name))] };
+        var registry = new Dictionary<string, Template>(Registry, StringComparer.Ordinal) { ["human"] = armless };
+
+        var extracted = Pipeline.Apply(Built(), registry, Verbs, Extract("x1", Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Invalid, extracted.Status);
+        Assert.Equal(Code.InvalidArgs, extracted.ReasonCode);
+    }
+
     private static Command Install(string id, string actor, string target, string part, string item) =>
         new(id, actor, "install", target, Args: Value.Map.Empty.With("part", part).With("item", item));
 
