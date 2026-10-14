@@ -68,13 +68,17 @@ behaviour recorded from it; a change to .NET behaviour updates its goldens in th
   declares no parts, so callers can tell "stone" from "paralysed human".
 - **Templates are data** in `templates/*.json` (repository root), hashed into `snapshot.templates_hash`; a hash mismatch
   on load throws — no silent migration.
+- **No bare vocabulary strings.** A closed set is an enum (`Code`, `Status`, `Truth`), written
+  snake_case through `WorldJson`; an open set is a constant (`EventType`, `Capacity`, `Sense`,
+  `CauseKind`); a prop is read and written through its `Prop` descriptor. `plans/vocabulary.md`.
 - **Comments only where a line is non-obvious** (a bound, an ordering, an asymmetry). No doc comments
   restating the code. History and lessons belong in git history.
 
 ## Doc size caps
 
-- `world-engine/README.md` ≤ 15 lines. `docs/` describes **what is built, nothing aspirational**, one
-  concept per file, each ≤ 40 lines and ≤ 100 columns; `docs/DESIGN.md` is the index of those files.
+- `README.md` has no line cap: it is the GitHub landing page, written for a first-time reader.
+- `docs/` describes **what is built, nothing aspirational**, one concept per file, each ≤ 40 lines
+  and ≤ 100 columns; `docs/DESIGN.md` is the index of those files.
   A topic that outgrows its cap splits into a new file rather than losing content.
 - Write for humans first: plain words, short sentences, lists over paragraphs. Where a shape,
   chain, or flow is easier drawn than described (support chain, cause chain, file layout), add a
