@@ -1,7 +1,4 @@
-using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using WorldEngine.Core.Model;
-using WorldEngine.Core.Templates;
 
 namespace WorldEngine.Core.Engine;
 
@@ -10,37 +7,26 @@ public static partial class Beats
 {
 
     // Whether a well-formed condition holds (src/engine/beats.ts `holds`).
-    public static bool Holds(JsonNode condition, Snapshot snapshot)
-    {
-        var obj = (JsonObject)condition;
-        if (obj.ContainsKey("all"))
-        {
-            return ((JsonArray)obj["all"]!).All(single => SingleHolds(single!, snapshot));
-        }
-        return SingleHolds(obj, snapshot);
-    }
+    public static bool Holds(BeatCondition condition, Snapshot snapshot) =>
+        condition.All is { } all ? all.All(single => SingleHolds(single, snapshot)) : SingleHolds(condition, snapshot);
 
-    private static bool SingleHolds(JsonNode node, Snapshot snapshot)
+    private static bool SingleHolds(BeatCondition condition, Snapshot snapshot)
     {
-        var obj = (JsonObject)node;
-        if (obj.ContainsKey("in"))
+        if (condition.In is { } room)
         {
             // A room that is not there holds nothing, so asking after it needs no check of its own.
-            return snapshot.Entities.TryGetValue(JsonReads.Text(obj["entity"])!, out var subject) && subject.Location == JsonReads.Text(obj["in"]);
+            return snapshot.Entities.TryGetValue(condition.Entity!, out var subject) && subject.Location == room;
         }
-        if (obj.ContainsKey("room"))
+        if (condition.Room is { } watched)
         {
-            var room = JsonReads.Text(obj["room"])!;
-            return snapshot.Entities.ContainsKey(room) && Occupied(snapshot, room) == BoolOf(obj["occupied"]);
+            return snapshot.Entities.ContainsKey(watched) && Occupied(snapshot, watched) == condition.Occupied;
         }
-        if (!snapshot.Entities.TryGetValue(JsonReads.Text(obj["entity"])!, out var entity)
-            || !entity.Props.TryGetValue(JsonReads.Text(obj["prop"])!, out var have))
+        if (!snapshot.Entities.TryGetValue(condition.Entity!, out var entity) || !entity.Props.TryGetValue(condition.Prop!, out var have))
         {
             return false;
         }
-        var want = obj["value"];
-        var op = JsonReads.Text(obj["op"])!;
-        switch (op)
+        var want = condition.Value;
+        switch (condition.Op)
         {
             case "eq":
                 return Prop.SameValue(have, want);
@@ -49,7 +35,7 @@ public static partial class Beats
             default:
                 return JsonReads.Number(have) is { } left
                     && JsonReads.Number(want) is { } right
-                    && OrderOps.Holds(op, left, right);
+                    && OrderOps.Holds(condition.Op!, left, right);
         }
     }
 

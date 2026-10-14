@@ -88,11 +88,11 @@ public static class SceneBuilder
 
     // Every subject a beat and its followers act on is an entity of the world, and every prop one writes is one its template
     // holds, checked as a schedule_beat would check them.
-    private static string SubjectOf(
+    private static void CheckSubjects(
         Snapshot snapshot,
         IReadOnlyDictionary<string, Template> registry,
         JsonObject action,
-        JsonArray? then,
+        IReadOnlyList<BeatFollower>? then,
         string path)
     {
         var subject = Beats.ActionSubject(action);
@@ -106,10 +106,8 @@ public static class SceneBuilder
         }
         for (var index = 0; then is not null && index < then.Count; index++)
         {
-            var child = (JsonObject)then[index]!;
-            SubjectOf(snapshot, registry, (JsonObject)child["action"]!, child["then"] as JsonArray, $"{path}.then[{index}]");
+            CheckSubjects(snapshot, registry, then[index].Action, then[index].Then, $"{path}.then[{index}]");
         }
-        return subject;
     }
 
     // Each beat is checked as a schedule_beat would be, against the entities the scene made, and queued with no cause: no event
@@ -135,13 +133,13 @@ public static class SceneBuilder
             {
                 throw Refused(path, Code.InvalidBeat);
             }
-            var atTick = SafeInt(resolved["at_tick"])!.Value;
-            if (atTick < 1)
+            var cause = Beats.CauseOf(resolved);
+            if (cause.DueTick < 1)
             {
                 throw Refused(path, Code.BeatInPast);
             }
-            var subject = SubjectOf(next, registry, (JsonObject)resolved["action"]!, resolved["then"] as JsonArray, path);
-            foreach (var id in Beats.EditIds(resolved))
+            CheckSubjects(next, registry, cause.Action, cause.Then, path);
+            foreach (var id in Beats.Ids(cause.Id, cause.Then))
             {
                 if (!taken.Add(id))
                 {
@@ -152,7 +150,6 @@ public static class SceneBuilder
             {
                 throw Refused(path, Code.TooManyBeats);
             }
-            var cause = Beats.CauseOf(resolved, atTick, subject, null);
             next = AddCause(next, cause);
         }
         return next;
@@ -160,7 +157,7 @@ public static class SceneBuilder
 
     // A pool beat is a beat body with no tick: checked as a beat is, and its id unique among the beats the scene queued and the
     // pool's own (`docs/beats.md`). It is kept for the director to play.
-    private static List<JsonObject> ScenePool(
+    private static List<PoolBeat> ScenePool(
         Snapshot snapshot,
         IReadOnlyDictionary<string, Template> registry,
         IReadOnlyDictionary<string, string> names,
@@ -168,7 +165,7 @@ public static class SceneBuilder
         IEnumerable<string> taken)
     {
         var used = new HashSet<string>(taken, StringComparer.Ordinal);
-        var pool = new List<JsonObject>(bodies.Count);
+        var pool = new List<PoolBeat>(bodies.Count);
         for (var index = 0; index < bodies.Count; index++)
         {
             var path = $"run.pool[{index}]";
@@ -184,32 +181,16 @@ public static class SceneBuilder
             {
                 throw Refused(path, Code.InvalidBeat);
             }
-            SubjectOf(snapshot, registry, (JsonObject)resolved["action"]!, resolved["then"] as JsonArray, path);
-            foreach (var id in Beats.EditIds(resolved))
+            var beat = Beats.PoolBeatOf(resolved);
+            CheckSubjects(snapshot, registry, beat.Action, beat.Then, path);
+            foreach (var id in Beats.Ids(beat.Id, beat.Then))
             {
                 if (!used.Add(id))
                 {
                     throw Refused(path, Code.DuplicateBeat);
                 }
             }
-            var entry = new JsonObject
-            {
-                ["id"] = resolved["id"]!.DeepClone(),
-                ["action"] = resolved["action"]!.DeepClone(),
-            };
-            if (resolved["only_if"] is { } onlyIf)
-            {
-                entry["only_if"] = onlyIf.DeepClone();
-            }
-            if (resolved["then"] is { } then)
-            {
-                entry["then"] = then.DeepClone();
-            }
-            if (resolved["repeat"] is { } repeat)
-            {
-                entry["repeat"] = repeat.DeepClone();
-            }
-            pool.Add(entry);
+            pool.Add(beat);
         }
         return pool;
     }

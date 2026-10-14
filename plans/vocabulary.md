@@ -13,9 +13,7 @@ template ids, entity names and other author data. Replacing those with constants
 
 ## Blocks
 
-All done. Left open, unplanned: a beat's condition, followers and repeat are still the JSON the author wrote, held to `Beats`'
-shape rules where a beat is made or read. Typing them needs a converter for the condition's key-told forms and moves the
-shape rules from the JSON onto the records; its action stays JSON, as it is an author's edit.
+All done.
 
 ## Conventions (in place)
 
@@ -34,6 +32,9 @@ shape rules from the JSON onto the records; its action stays JSON, as it is an a
   `Pipeline.Insufficient`, which `CatalogGoldenTests` holds to every verb's `refuses`.
 - A scheduled cause is one record per kind (`CloseCause`, `BleedCause`, `ProcessCause`, `BeatCause`), told apart in JSON by
   `kind` (`CauseKind`); a stored cause of another kind does not read.
+  A beat's condition, followers and repeat are records (`Model/Beat.cs`), as is a run's pool beat; its action stays the JSON
+  of an author's edit. `Beats`' shape rules gate every beat that arrives as JSON (a scene, an edit) before it is read into
+  records, and a stored beat is held to the same rules in the form it is stored in.
 - A verb's declarations are typed. `VerbSpec` holds its `ArgSpec`s and `refuses`, and names the lists the engine itself
   uses for carrying and striking (`Carry.Alternatives`, `AttackVerb.Modes`) rather than a copy; its duration is a
   `VerbDuration` on the verb (one tick when absent), which the pipeline times commands by and the catalog writes.

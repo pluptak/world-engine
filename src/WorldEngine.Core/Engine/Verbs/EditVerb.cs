@@ -58,7 +58,7 @@ public static partial class EditVerb
     private sealed record RefineEdit(string Target, string Template) : WorldEdit;
     // The author's beat edits (src/engine/verbs/edit.ts): a beat to schedule, held as the edit's own JSON; a beat to cancel; and
     // a beat to move to another tick.
-    private sealed record ScheduleBeatEdit(JsonObject Beat) : WorldEdit;
+    private sealed record ScheduleBeatEdit(BeatCause Beat) : WorldEdit;
     private sealed record CancelBeatEdit(string Id) : WorldEdit;
     private sealed record RetimeBeatEdit(string Id, long AtTick) : WorldEdit;
     // The run and role edits (src/engine/verbs/edit.ts): a registration, a pool beat played at a tick, a door's odds steered,

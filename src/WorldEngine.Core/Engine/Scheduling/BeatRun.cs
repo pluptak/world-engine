@@ -15,8 +15,8 @@ public static partial class Beats
     // whose action ran; a failed run is still recorded and the watch goes on (src/engine/beats.ts `runBeat`).
     public static void Run(Working working, IReadOnlyDictionary<string, Template> registry, BeatCause cause)
     {
-        var watch = cause.Repeat is JsonObject repeat && JsonReads.IsTrue(repeat["until_ran"]);
-        if (cause.OnlyIf is not null && !Holds(cause.OnlyIf, working.Snapshot))
+        var watch = cause.Repeat is { UntilRan: true };
+        if (cause.OnlyIf is { } onlyIf && !Holds(onlyIf, working.Snapshot))
         {
             if (!watch)
             {
@@ -107,22 +107,17 @@ public static partial class Beats
 
     // Each follower is scheduled `delay_ticks` after its parent ran, with the parent's event as its cause. One whose subject is
     // gone, or whose due tick is out of range, is not scheduled.
-    private static void ScheduleFollowers(Working working, JsonArray? children, string? parentEvent)
+    private static void ScheduleFollowers(Working working, IReadOnlyList<BeatFollower>? children, string? parentEvent)
     {
-        if (children is null)
+        foreach (var child in children ?? [])
         {
-            return;
-        }
-        foreach (var raw in children)
-        {
-            var child = (JsonObject)raw!;
-            var subject = ActionSubject((JsonObject)child["action"]!);
+            var subject = ActionSubject(child.Action);
             if (subject is null || !working.Snapshot.Entities.ContainsKey(subject)
-                || !TryAdd(working.Snapshot.Tick, JsonReads.SafeInt(child["delay_ticks"])!.Value, out var due))
+                || !TryAdd(working.Snapshot.Tick, child.DelayTicks, out var due))
             {
                 continue;
             }
-            Schedule.Add(working, CauseOf(child, due, subject, parentEvent));
+            Schedule.Add(working, new BeatCause(due, subject, parentEvent, child.Id, child.Action, child.OnlyIf, child.Then));
         }
     }
 
@@ -134,24 +129,15 @@ public static partial class Beats
         {
             return;
         }
-        if (!working.Snapshot.Entities.ContainsKey(cause.Entity)
-            || !TryAdd(working.Snapshot.Tick, JsonReads.SafeInt(repeat["every_ticks"])!.Value, out var due))
+        if (!working.Snapshot.Entities.ContainsKey(cause.Entity) || !TryAdd(working.Snapshot.Tick, repeat.EveryTicks, out var due))
         {
             return;
         }
-        var times = JsonReads.SafeInt(repeat["times"])!.Value;
         var next = cause with
         {
             DueTick = due,
-            Repeat = times > 1 ? WithTimes(repeat, times - 1) : null,
+            Repeat = repeat.Times > 1 ? repeat with { Times = repeat.Times - 1 } : null,
         };
         Schedule.Add(working, next);
-    }
-
-    private static JsonObject WithTimes(JsonObject repeat, long times)
-    {
-        var copy = (JsonObject)repeat.DeepClone();
-        copy["times"] = JsonValue.Create(times);
-        return copy;
     }
 }

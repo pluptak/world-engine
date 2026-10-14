@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -24,85 +25,51 @@ public static partial class Beats
         return ShapeOk(JsonReads.Text(edit["id"]), edit["action"], edit["only_if"], edit["then"], edit["repeat"]);
     }
 
-    // The beat a schedule_beat edit makes: due at its tick, about the entity its action names, caused by the edit's own event.
-    public static BeatCause CauseOf(JsonObject edit, string? causeId) =>
-        CauseOf(edit, JsonReads.SafeInt(edit["at_tick"])!.Value, ActionSubject((JsonObject)edit["action"]!)!, causeId);
-
-    // A beat cause from a body its shape rules have passed (a scene's, an edit's, a follower's): its id, a copy of its action,
-    // and its condition, followers and repeat when it has them.
-    public static BeatCause CauseOf(JsonObject body, long due, string subject, string? causeId) =>
+    // The beat a schedule_beat edit makes: due at its tick, about the entity its action names, with no cause until the edit
+    // that queues it gives its own event.
+    public static BeatCause CauseOf(JsonObject edit) =>
         new(
-            due,
-            subject,
-            causeId,
+            JsonReads.SafeInt(edit["at_tick"])!.Value,
+            ActionSubject((JsonObject)edit["action"]!)!,
+            null,
+            JsonReads.Text(edit["id"])!,
+            (JsonObject)edit["action"]!.DeepClone(),
+            Typed<BeatCondition>(edit["only_if"]),
+            Typed<List<BeatFollower>>(edit["then"]),
+            Typed<BeatRepeat>(edit["repeat"]));
+
+    // A pool beat from a body its shape rules have passed: as a schedule_beat holds it, less the tick.
+    public static PoolBeat PoolBeatOf(JsonObject body) =>
+        new(
             JsonReads.Text(body["id"])!,
             (JsonObject)body["action"]!.DeepClone(),
-            (JsonObject?)body["only_if"]?.DeepClone(),
-            (JsonArray?)body["then"]?.DeepClone(),
-            (JsonObject?)body["repeat"]?.DeepClone());
+            Typed<BeatCondition>(body["only_if"]),
+            Typed<List<BeatFollower>>(body["then"]),
+            Typed<BeatRepeat>(body["repeat"]));
 
-    // Every id the edit's beat would hold: its own, and its followers' and their followers', in order.
-    public static List<string> EditIds(JsonObject edit)
-    {
-        var ids = new List<string>();
-        NodeIds(JsonReads.Text(edit["id"])!, edit["then"], ids);
-        return ids;
-    }
+    // A played pool beat, due at its tick and caused by the edit that played it.
+    public static BeatCause CauseOf(PoolBeat beat, long due, string? causeId) =>
+        new(due, ActionSubject(beat.Action)!, causeId, beat.Id, beat.Action, beat.OnlyIf, beat.Then, beat.Repeat);
+
+    // A part of a beat its shape rules have passed, read into its record.
+    private static T? Typed<T>(JsonNode? node)
+        where T : class => node is null ? null : WorldJson.Read<T>(node);
+
+    // Every id a beat holds: its own, and its followers' and their followers', in order.
+    public static IEnumerable<string> Ids(string id, IReadOnlyList<BeatFollower>? then) =>
+        [id, .. (then ?? []).SelectMany(child => Ids(child.Id, child.Then))];
 
     // Every action a beat carries, its followers' included, in the order they are written.
-    public static List<JsonObject> EditActions(JsonObject beat)
-    {
-        var found = new List<JsonObject> { (JsonObject)beat["action"]! };
-        VisitActions(beat["then"], found);
-        return found;
-    }
-
-    private static void VisitActions(JsonNode? then, List<JsonObject> found)
-    {
-        if (then is not JsonArray children)
-        {
-            return;
-        }
-        foreach (var child in children.OfType<JsonObject>())
-        {
-            found.Add((JsonObject)child["action"]!);
-            VisitActions(child["then"], found);
-        }
-    }
+    public static IEnumerable<JsonObject> Actions(JsonObject action, IReadOnlyList<BeatFollower>? then) =>
+        [action, .. (then ?? []).SelectMany(child => Actions(child.Action, child.Then))];
 
     // Every condition a beat carries, its followers' included, in the order they are written.
-    public static List<JsonNode> EditConditions(JsonObject beat)
-    {
-        var found = new List<JsonNode>();
-        if (beat["only_if"] is { } only)
-        {
-            found.Add(only);
-        }
-        VisitConditions(beat["then"], found);
-        return found;
-    }
-
-    private static void VisitConditions(JsonNode? then, List<JsonNode> found)
-    {
-        if (then is not JsonArray children)
-        {
-            return;
-        }
-        foreach (var child in children.OfType<JsonObject>())
-        {
-            if (child["only_if"] is { } only)
-            {
-                found.Add(only);
-            }
-            VisitConditions(child["then"], found);
-        }
-    }
+    public static IEnumerable<BeatCondition> Conditions(BeatCondition? onlyIf, IReadOnlyList<BeatFollower>? then) =>
+        [.. onlyIf is null ? [] : new[] { onlyIf }, .. (then ?? []).SelectMany(child => Conditions(child.OnlyIf, child.Then))];
 
     // The entities an `all` reads: each single condition's room, or its entity.
-    public static List<string> ConditionSubjects(JsonNode condition) =>
-        [.. ((JsonArray)((JsonObject)condition)["all"]!)
-            .Select(single => (JsonObject)single!)
-            .Select(single => JsonReads.Text(single.ContainsKey("room") ? single["room"] : single["entity"])!)];
+    public static IEnumerable<string> ConditionSubjects(BeatCondition condition) =>
+        (condition.All ?? []).Select(single => single.Room ?? single.Entity!);
 
     // The code of the first prop a set_props or update_props action would write that its subject's template refuses, or null
     // (src/engine/validate.ts beatPropRefusal). A missing subject is judged where the beat is scheduled, not here.

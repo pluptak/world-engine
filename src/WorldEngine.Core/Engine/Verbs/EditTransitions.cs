@@ -40,7 +40,7 @@ public static partial class EditVerb
                 return;
             case ScheduleBeatEdit scheduled:
                 // The beat is the `edit` event's to cause: what it does when due names that event.
-                Schedule.Add(working, Beats.CauseOf(scheduled.Beat, rootEventId));
+                Schedule.Add(working, scheduled.Beat with { CauseId = rootEventId });
                 return;
             case CancelBeatEdit cancelled:
                 // Withdrawn at the source, recording nothing: the `edit` event is the record.
@@ -74,28 +74,10 @@ public static partial class EditVerb
     {
         var run = working.Snapshot.Run ?? throw new InvalidOperationException("Play without a run after validation");
         var pool = run.Pool ?? [];
-        var beat = pool.FirstOrDefault(entry => PoolId(entry) == edit.Id)
+        var beat = pool.FirstOrDefault(entry => entry.Id == edit.Id)
             ?? throw new InvalidOperationException("Play changed after validation");
-        working.SetRun(run with { Pool = [.. pool.Where(entry => PoolId(entry) != edit.Id)] });
-        var queued = new JsonObject
-        {
-            ["at_tick"] = JsonValue.Create(edit.AtTick),
-            ["id"] = beat["id"]!.DeepClone(),
-            ["action"] = beat["action"]!.DeepClone(),
-        };
-        if (beat["only_if"] is { } onlyIf)
-        {
-            queued["only_if"] = onlyIf.DeepClone();
-        }
-        if (beat["then"] is { } then)
-        {
-            queued["then"] = then.DeepClone();
-        }
-        if (beat["repeat"] is { } repeat)
-        {
-            queued["repeat"] = repeat.DeepClone();
-        }
-        Schedule.Add(working, Beats.CauseOf(queued, rootEventId));
+        working.SetRun(run with { Pool = [.. pool.Where(entry => entry.Id != edit.Id)] });
+        Schedule.Add(working, Beats.CauseOf(beat, edit.AtTick, rootEventId));
     }
 
     // The steered value takes the place of any earlier one for the same device and prop, and is in force from now.

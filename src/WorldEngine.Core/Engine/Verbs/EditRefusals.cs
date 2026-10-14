@@ -256,7 +256,7 @@ public static partial class EditVerb
         {
             return Refused(Code.NoRun);
         }
-        if (!(run.Pool ?? []).Any(beat => PoolId(beat) == edit.Id))
+        if (!(run.Pool ?? []).Any(beat => beat.Id == edit.Id))
         {
             return Refused(Code.NoSuchPoolBeat);
         }
@@ -283,10 +283,6 @@ public static partial class EditVerb
         return edit.Value < odds.Min || edit.Value > odds.Max ? Refused(Code.OutOfRange) : null;
     }
 
-    // The id a pool beat's body names, or null when it names none.
-    private static string? PoolId(JsonObject beat) =>
-        beat["id"] is JsonValue value && value.TryGetValue(out string? id) ? id : null;
-
     private static Pipeline.Refusal? BeatRefusal(Pipeline.CommandContext context, WorldEdit edit) => edit switch
     {
         ScheduleBeatEdit scheduled => ScheduleBeatRefusal(context, scheduled.Beat),
@@ -299,38 +295,26 @@ public static partial class EditVerb
 
     // Whether the beat may be scheduled now (src/engine/verbs/edit.ts scheduleBeatRefusal): its subject is there, every entity
     // an `all` reads is there, nothing it writes is refused, it is not in the past, and its ids are new and within the bound.
-    private static Pipeline.Refusal? ScheduleBeatRefusal(Pipeline.CommandContext context, JsonObject beat)
+    private static Pipeline.Refusal? ScheduleBeatRefusal(Pipeline.CommandContext context, BeatCause beat)
     {
         var snapshot = context.Snapshot;
-        var subject = Beats.ActionSubject((JsonObject)beat["action"]!);
-        if (subject is null || !snapshot.Entities.ContainsKey(subject))
+        if (!snapshot.Entities.ContainsKey(beat.Entity)
+            || Beats.Conditions(beat.OnlyIf, beat.Then).Any(condition => Beats.ConditionSubjects(condition).Any(id => !snapshot.Entities.ContainsKey(id))))
         {
             return Invalid(Code.NoSuchEntity);
         }
-        foreach (var condition in Beats.EditConditions(beat))
-        {
-            if (condition is JsonObject { } obj && obj.ContainsKey("all")
-                && Beats.ConditionSubjects(condition).Any(id => !snapshot.Entities.ContainsKey(id)))
-            {
-                return Invalid(Code.NoSuchEntity);
-            }
-        }
-        foreach (var action in Beats.EditActions(beat))
+        foreach (var action in Beats.Actions(beat.Action, beat.Then))
         {
             if (Beats.PropRefusal(snapshot, context.Registry, action) is { } code)
             {
                 return Refused(code);
             }
         }
-        if (Int(beat["at_tick"]) is not { } atTick)
-        {
-            return Invalid(Code.InvalidArgs);
-        }
-        if (atTick <= snapshot.Tick)
+        if (beat.DueTick <= snapshot.Tick)
         {
             return Refused(Code.BeatInPast);
         }
-        var ids = Beats.EditIds(beat);
+        var ids = Beats.Ids(beat.Id, beat.Then).ToList();
         var taken = Beats.PendingBeatIds(Schedule.Pending(snapshot));
         if (ids.Distinct(StringComparer.Ordinal).Count() != ids.Count || ids.Any(id => taken.Contains(id)))
         {
@@ -350,8 +334,7 @@ public static partial class EditVerb
         }
         // A beat queued with a write to a definition is not moved to a tick where it would be skipped: the same refusal a
         // schedule gives.
-        var beat = new JsonObject { ["action"] = cause.Action.DeepClone(), ["then"] = cause.Then?.DeepClone() };
-        foreach (var action in Beats.EditActions(beat))
+        foreach (var action in Beats.Actions(cause.Action, cause.Then))
         {
             if (Beats.PropRefusal(context.Snapshot, context.Registry, action) is { } code)
             {

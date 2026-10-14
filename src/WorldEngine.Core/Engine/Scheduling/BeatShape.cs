@@ -1,5 +1,7 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -155,40 +157,22 @@ public static partial class Beats
     }
 
     // What is wrong with a stored beat cause, or null: its shape, and that its action is about its own entity.
+    // A stored beat is held to the rules in the JSON form it is stored in.
     public static string? Invalid(BeatCause cause)
     {
-        if (!ShapeOk(cause.Id, cause.Action, cause.OnlyIf, cause.Then, cause.Repeat))
+        if (!ShapeOk(cause.Id, cause.Action, Node(cause.OnlyIf), Node(cause.Then), Node(cause.Repeat)))
         {
-            return $"beat {cause.Id ?? "undefined"} is malformed";
+            return $"beat {cause.Id} is malformed";
         }
         var subject = ActionSubject(cause.Action);
         return subject == cause.Entity ? null : $"beat {cause.Id} is not about {cause.Entity}";
     }
 
     // Every id in the pending beats and the chains they will schedule, in schedule order.
-    public static List<string> PendingBeatIds(IEnumerable<ScheduledCause> causes)
-    {
-        var ids = new List<string>();
-        foreach (var beat in causes.OfType<BeatCause>())
-        {
-            NodeIds(beat.Id ?? "undefined", beat.Then, ids);
-        }
-        return ids;
-    }
+    public static List<string> PendingBeatIds(IEnumerable<ScheduledCause> causes) =>
+        [.. causes.OfType<BeatCause>().SelectMany(beat => Ids(beat.Id, beat.Then))];
 
-    private static void NodeIds(string id, JsonNode? then, List<string> ids)
-    {
-        ids.Add(id);
-        if (then is JsonArray children)
-        {
-            foreach (var child in children)
-            {
-                if (child is JsonObject followed)
-                {
-                    NodeIds(JsonReads.Text(followed["id"]) ?? "undefined", followed["then"], ids);
-                }
-            }
-        }
-    }
+    private static JsonNode? Node<T>(T? part)
+        where T : class => part is null ? null : JsonSerializer.SerializeToNode(part, WorldJson.Options);
 
 }

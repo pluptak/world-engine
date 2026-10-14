@@ -36,17 +36,17 @@ public sealed record BleedCause(long DueTick, string Entity, string? CauseId, lo
 // The next step of a template process on its entity.
 public sealed record ProcessCause(long DueTick, string Entity, string? CauseId, string Process) : ScheduledCause(DueTick, Entity, CauseId);
 
-// An authored beat: its id, its action (an author's edit, or a sound), and optionally its condition, followers and repeat, kept as
-// the snapshot writes them and held to `Beats`' shape rules wherever one is made or read.
+// An authored beat: its id, its action (an author's edit, or a sound, kept as written for the edit verb to read), and optionally its
+// condition, followers and repeat, held to `Beats`' shape rules wherever one is made or read.
 public sealed record BeatCause(
     long DueTick,
     string Entity,
     string? CauseId,
     string Id,
     JsonObject Action,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonObject? OnlyIf = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonArray? Then = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonObject? Repeat = null)
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BeatCondition? OnlyIf = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<BeatFollower>? Then = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BeatRepeat? Repeat = null)
     : ScheduledCause(DueTick, Entity, CauseId);
 
 public enum PartStatus
@@ -120,7 +120,7 @@ public sealed record Run(
     string State,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? TickLimit = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<JsonNode>? Slots = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<JsonObject>? Pool = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<PoolBeat>? Pool = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<Odds>? Odds = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<Player>? Players = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<Steered>? Steered = null,

@@ -48,7 +48,7 @@ public static partial class EditVerb
             }
             case "schedule_beat":
             {
-                return Beats.ParseScheduleBeat(obj) ? new ScheduleBeatEdit((JsonObject)obj.DeepClone()) : null;
+                return Beats.ParseScheduleBeat(obj) ? new ScheduleBeatEdit(Beats.CauseOf(obj)) : null;
             }
             case "cancel_beat":
             {
