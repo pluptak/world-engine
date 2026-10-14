@@ -20,8 +20,7 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 
 1. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
 2. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
-3. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
-4. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
+3. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -122,51 +121,6 @@ actor may work on its own body.
   and leaves any remaining bleed; the refusals change nothing.
 - **Done when:** as above.
 - **Depends on:** Wounds.
-
-### Sockets: install a limb or an implant into a severed part, and reattach
-
-- **What:** a severed part can be filled again, either by its own severed limb (reattachment) or by an entity
-  made to fit it (a robo-arm). Installing reverses severing: the entity is absorbed into the body's part state, as
-  `AttackVerb.DetachPart` spawns one out of it. Parts have no identity until they detach (`docs/structure.md`),
-  and an installed part keeps to that.
-- **Templates:**
-  - A new top-level template field `fits` (`Templates/TemplateModel.cs`, `TemplateShape`, `TemplateValidation`):
-    the id of the companion template it stands in for (`human.arm_l`). An installable template must have the same
-    part names, parents and `holds` as that companion (reuse the subtree check `DetachPart` makes); its own
-    `contributes` and `max_integrity` are its own. A companion template fits itself without declaring `fits`.
-  - `templates/robo_arm_l.json`: `fits: "human.arm_l"`, its `hand_l` contributing `manipulation` 40 and its
-    `arm_l` and `thumb_l` 0, so a test can tell its sum from the human's (30 + 20). Changes `templates_hash`.
-- **Model:** `PartState` gains `string? Installed`: on the root part of an installed subtree, the installable
-  template's id; absent for the body's own parts (and for a reattached limb, which is its own again). The
-  `set_part` edit's `state` takes an optional `installed`, validated as `install` validates it.
-- **Capacities:** `Capacities.Structural` reads a part's `contributes` from the installed template's part of the
-  same name when the part or an ancestor has `Installed`; otherwise from the body's template. Holding (grips) is
-  unchanged: the parts are the body's parts.
-- **Verbs** (`Verbs/SocketVerbs.cs`, new), target the body, `args.part`, one tick, `manipulation` 50:
-  - `install`, `args.item`: an entity the actor holds. The part must be `detached` (the stump), else
-    `socket_occupied` (new); the item's template must be the part's companion template or fit it, else
-    `does_not_fit` (new). The transition removes the item (`Physical.RemoveEntity`), writes the subtree's states
-    from the item's parts (as `DetachPart` copied them out, in reverse), sets `Installed` when the item is not the
-    companion, and emits a consequence `installed { part, template }` (new `EventType`, `Audible`).
-  - `extract`: the part must have `Installed`, else `nothing_installed` (new). It spawns an entity of the
-    installed template at the body's feet with the subtree's states, sets the root part `detached`, clears
-    `Installed`, and emits `extracted { part, entity }` (new `EventType`, `Audible`). A reattached limb has no
-    `Installed` and cannot be extracted; attack severs it as before.
-  - `AttackVerb.DetachPart` spawns the root part's `Installed` template, when set, instead of the companion.
-- **No surgery in this item:** installing needs no incision. A later item may require one.
-- **Files:** `Templates/TemplateModel.cs`, `TemplateShape.cs`, `TemplateValidation.cs`, `Model/Snapshot.cs`,
-  `Engine/Physics/Capacities.cs`, `Engine/Physics/PartStates.cs`, `Verbs/AttackVerb.cs`, `Verbs/EditParser.cs`,
-  `Verbs/SocketVerbs.cs`, the registration points, `templates/robo_arm_l.json`, `docs/sockets.md` (new, ≤ 40
-  lines, indexed), `docs/structure.md` (one line), `docs/templates.md` (`fits`).
-- **Tests:** a human whose `arm_l` is severed reads `manipulation` 50 (the right hand); after `install` of the
-  robo-arm it reads 90 (50 + 40), against 100 for an intact human; after `extract` the robo-arm is a thing at the body's feet and
-  the arm reads `detached`; the severed `human.arm_l` installed back reads the capacities and part states it had
-  when severed and has no `Installed`; a mismatched template is refused `does_not_fit`; an attack that severs the
-  installed arm spawns a robo-arm, not a `human.arm_l`; a store world folds alike.
-- **Non-goals:** nested sockets, rejection or wear, power or hacking of an installed part (it is no entity while
-  installed), a change of the body's class.
-- **Done when:** as above.
-- **Depends on:** nothing (Wounds and Treatment are not needed by it).
 
 ### Scheduled outcomes: an install decided later, by the dice
 

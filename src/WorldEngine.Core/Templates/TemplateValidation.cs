@@ -22,6 +22,10 @@ public static class TemplateValidation
         {
             throw new FormatException($"{source}.extends must be a non-empty string");
         }
+        if (decl.Fits is not null && decl.Fits.Length == 0)
+        {
+            throw new FormatException($"{source}.fits must be a non-empty string");
+        }
         if (decl.Extends is not null && decl.Lineage is not null)
         {
             throw new FormatException($"{source} declares both extends and lineage");
@@ -248,6 +252,45 @@ public static class TemplateValidation
                 }
             }
         }
+    }
+
+    // An installable template stands in for its companion: the same part names, parents and holds, so installing
+    // writes a subtree the body understands (`docs/sockets.md`). Its own `contributes` and `max_integrity` are its own.
+    public static void AssertFits(
+        IReadOnlyDictionary<string, Template> registry,
+        IReadOnlyDictionary<string, string> sources)
+    {
+        foreach (var id in registry.Keys.OrderBy(key => key, StringComparer.Ordinal))
+        {
+            var template = registry[id];
+            if (template.Fits is not { } fits)
+            {
+                continue;
+            }
+            var source = sources.GetValueOrDefault(id, id);
+            if (!registry.TryGetValue(fits, out var companion))
+            {
+                throw new FormatException($"{source}.fits names unknown template {fits}");
+            }
+            if (!SameSockets(template, companion))
+            {
+                throw new FormatException($"{source} fits {fits} but declares different parts");
+            }
+        }
+    }
+
+    // Whether two part lists match as sockets must: the same names, parents and holds, whatever each contributes.
+    private static bool SameSockets(Template template, Template companion)
+    {
+        if (template.Parts.Count != companion.Parts.Count)
+        {
+            return false;
+        }
+        var parts = template.Parts.ToDictionary(part => part.Name, StringComparer.Ordinal);
+        return companion.Parts.All(part =>
+            parts.TryGetValue(part.Name, out var own)
+            && own.Parent == part.Parent
+            && own.Holds == part.Holds);
     }
 
     // A successor is an agent template the set holds, so one that names anything else is refused.

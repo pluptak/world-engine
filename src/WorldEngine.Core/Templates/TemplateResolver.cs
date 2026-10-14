@@ -28,6 +28,7 @@ public static class TemplateResolver
                 AssertNoMissingCompanions(registry);
                 TemplateValidation.AssertProducts(registry, sources);
                 TemplateValidation.AssertSuccessors(registry);
+                TemplateValidation.AssertFits(registry, sources);
                 return registry;
             }
             foreach (var (id, parent) in inherited)
@@ -177,7 +178,8 @@ public static class TemplateResolver
             Catalog: decl.Catalog == false ? false : null,
             MaxIntegrity: decl.MaxIntegrity,
             Processes: NonEmptyProcesses(decl.Processes),
-            Fields: NonEmptyFields(decl.Fields));
+            Fields: NonEmptyFields(decl.Fields),
+            Fits: decl.Fits);
     }
 
     // The child's own field wins, props are shallow-merged over the parent's, and parts are replaced rather
@@ -211,7 +213,8 @@ public static class TemplateResolver
             Catalog: decl.Catalog == false ? false : null,
             MaxIntegrity: decl.MaxIntegrity ?? parent.MaxIntegrity,
             Processes: NonEmptyProcesses(MergeProcesses(parent.Processes ?? [], decl.Processes ?? [])),
-            Fields: NonEmptyFields(fields));
+            Fields: NonEmptyFields(fields),
+            Fits: decl.Fits ?? parent.Fits);
     }
 
     // The parent's parts with a child's `part_overrides` merged onto the part of each name. A name the parent

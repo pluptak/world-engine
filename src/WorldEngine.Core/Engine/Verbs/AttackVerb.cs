@@ -150,7 +150,7 @@ public static class AttackVerb
     }
 
     // The room under a thing, or the room a support chain ends in (src/engine/verbs/attack.ts `floorSupport`).
-    private static string? FloorSupport(Snapshot snapshot, string entityId)
+    internal static string? FloorSupport(Snapshot snapshot, string entityId)
     {
         var entity = snapshot.Entities.GetValueOrDefault(entityId);
         if (entity is null)
@@ -256,7 +256,7 @@ public static class AttackVerb
             }),
             eventId);
 
-        var detachedTemplateId = $"{entity.Template}.{partName}";
+        var detachedTemplateId = PartStates.State(template, entity, partName)?.Installed ?? $"{entity.Template}.{partName}";
         if (!registry.TryGetValue(detachedTemplateId, out var detachedTemplate))
         {
             throw new InvalidOperationException($"Missing detached part template {detachedTemplateId}");
@@ -328,7 +328,8 @@ public static class AttackVerb
                     target.Id,
                     PartStates.With(template, target.Parts, new Dictionary<string, PartState>(StringComparer.Ordinal)
                     {
-                        [partName] = new PartState(integrity, PartStatus.Destroyed),
+                        // Damage keeps what the socket holds; severing clears it (`DetachPart` below).
+                        [partName] = new PartState(integrity, PartStatus.Destroyed, null, state.Installed),
                     }),
                     damageEvent);
             }
@@ -343,7 +344,7 @@ public static class AttackVerb
                     target.Id,
                     PartStates.With(template, target.Parts, new Dictionary<string, PartState>(StringComparer.Ordinal)
                     {
-                        [partName] = new PartState(integrity, PartStatus.Damaged),
+                        [partName] = new PartState(integrity, PartStatus.Damaged, null, state.Installed),
                     }),
                     damageEvent);
                 // A blow that bruises a part takes from the capacity it contributes (its first, by name).

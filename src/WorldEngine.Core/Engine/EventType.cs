@@ -19,7 +19,9 @@ public static class EventType
     public const string Doused = "doused";
     public const string Dropped = "dropped";
     public const string Edited = "edited";
+    public const string Extracted = "extracted";
     public const string Found = "found";
+    public const string Installed = "installed";
     public const string Jammed = "jammed";
     public const string Lit = "lit";
     public const string Locked = "locked";

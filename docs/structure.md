@@ -30,6 +30,7 @@ are intact or damaged. A `fact` may name one part, `<entity>.<part>`, for `statu
 alone (`part_under_detached` refuses an entry below it). A part gone before its ancestor was severed
 rides on the new entity as `detached` and is accounted for back along `detached_from`. Parts have no
 identity of their own until they detach; until then they are addressed as `<entity>.<part>`.
+Installing fills a severed part again, by its own limb or an implant ([sockets.md](sockets.md)).
 
 **Cost.** Structure no command reaches leaves no trace: TypeScript's property test ran the same
 sequences against templates with extra latent parts and got byte-identical snapshots and events. A
