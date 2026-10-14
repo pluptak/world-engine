@@ -33,6 +33,9 @@ public static partial class EditVerb
             case SetPartEdit part:
                 TransitionPart(working, context, part, rootEventId);
                 return;
+            case AfflictEdit afflict:
+                TransitionAfflict(working, context, afflict, rootEventId);
+                return;
             case RefineEdit refine:
                 TransitionRefine(working, context, refine, rootEventId);
                 return;
@@ -173,6 +176,21 @@ public static partial class EditVerb
         var edited = working.Emit(EventType.Edited, edit.Target, Pipeline.Reason(("field", "props")), rootEventId);
         var basis = edit.Kind == "update_props" ? subject.Props : Value.Map.Empty;
         working.SetProps(edit.Target, edit.Props.Aggregate(basis, (merged, change) => merged.With(change.Key, change.Value)), edited);
+    }
+
+    // The modifier is caused by the `edited` event, so its expiry is caused by this edit; a capacity whose level moved says so.
+    private static void TransitionAfflict(Working working, Pipeline.CommandContext context, AfflictEdit edit, string? rootEventId)
+    {
+        var before = Capacities.All(working.Snapshot, context.Registry, edit.Target)!;
+        var edited = working.Emit(EventType.Edited, edit.Target, Pipeline.Reason(("field", "modifiers"), ("capacity", edit.Capacity)), rootEventId);
+        var modifiers = working.Snapshot.Entities[edit.Target].Modifiers.Append(new Modifier(edit.Capacity, edit.Amount, edit.Until, edited)).ToList();
+        working.SetModifiers(edit.Target, modifiers, edited);
+        var from = before[edit.Capacity];
+        var to = Capacities.All(working.Snapshot, context.Registry, edit.Target)![edit.Capacity];
+        if (from != to)
+        {
+            working.Emit(EventType.CapabilityChanged, edit.Target, Pipeline.Reason(("capacity", edit.Capacity), ("from", from), ("to", to)), edited);
+        }
     }
 
     private static void TransitionPart(Working working, Pipeline.CommandContext context, SetPartEdit edit, string? rootEventId)

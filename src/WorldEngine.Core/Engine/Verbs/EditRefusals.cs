@@ -14,6 +14,7 @@ public static partial class EditVerb
         PropsEdit props => props.Target,
         SetPartEdit part => part.Target,
         RefineEdit refine => refine.Target,
+        AfflictEdit afflict => afflict.Target,
         _ => throw new InvalidOperationException("Edit has no target"),
     };
 
@@ -346,6 +347,17 @@ public static partial class EditVerb
         // `set_props` replaces every prop, so it must carry the template's definitions along; `update_props` merges.
         var resulting = edit.Kind == "set_props" ? edit.Props : Merge(subject.Props, edit.Props);
         return DefinitionWritten(template, resulting) is null ? null : Refused(Code.FieldNotEditable);
+    }
+
+    // An affliction lands on a capacity the body has, and holds from a tick still to come. A body with no parts has none.
+    private static Pipeline.Refusal? AfflictRefusal(Pipeline.CommandContext context, Entity subject, AfflictEdit edit)
+    {
+        if (edit.Until <= context.Snapshot.Tick)
+        {
+            return Invalid(Code.InvalidTick);
+        }
+        var capacities = Capacities.All(context.Snapshot, context.Registry, subject.Id);
+        return capacities is not null && capacities.ContainsKey(edit.Capacity) ? null : Refused(Code.UnknownCapacity);
     }
 
     private static Pipeline.Refusal? PartRefusal(IReadOnlyDictionary<string, Template> registry, Entity subject, string part)

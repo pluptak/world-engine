@@ -139,6 +139,16 @@ public static partial class EditVerb
                 }
                 return new PropsEdit(kind, target, props);
             }
+            case "afflict":
+            {
+                if (!Only(obj, "kind", "target", "capacity", "amount", "until") || Text(obj.GetValueOrDefault("target")) is not { } target
+                    || Text(obj.GetValueOrDefault("capacity")) is not { } capacity || Int(obj.GetValueOrDefault("amount")) is not { } amount
+                    || amount is 0 or < -100 or > 100 || Int(obj.GetValueOrDefault("until")) is not { } until)
+                {
+                    return null;
+                }
+                return new AfflictEdit(target, capacity, amount, until);
+            }
             case "set_part":
             {
                 if (!Only(obj, "kind", "target", "part", "state") || Text(obj.GetValueOrDefault("target")) is not { } target

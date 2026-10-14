@@ -221,7 +221,8 @@
       "role_forbidden",
       "no_such_pool_beat",
       "not_steerable",
-      "out_of_range"
+      "out_of_range",
+      "unknown_capacity"
     ]
   },
   {

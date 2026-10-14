@@ -31,7 +31,7 @@ public static partial class EditVerb
         Code.PartContentsTooLarge, Code.ContainerContentsTooLarge, Code.InvalidTrait, Code.BeatInPast, Code.DuplicateBeat,
         Code.TooManyBeats, Code.NoSuchBeat, Code.InvalidBeat, Code.UndeclaredProp, Code.WrongPropType, Code.UnmetRequires, Code.NoRun,
         Code.RunNotRegistering, Code.RunNotRunning, Code.NoSuchSlot, Code.SlotTaken, Code.HandleTaken, Code.RoleForbidden,
-        Code.NoSuchPoolBeat, Code.NotSteerable, Code.OutOfRange,
+        Code.NoSuchPoolBeat, Code.NotSteerable, Code.OutOfRange, Code.UnknownCapacity,
     ];
 
     private static readonly HashSet<string> OverrideKeys =
@@ -68,6 +68,8 @@ public static partial class EditVerb
     private sealed record EndRunEdit : WorldEdit;
     private sealed record PropsEdit(string Kind, string Target, Value.Map Props) : WorldEdit;
     private sealed record SetPartEdit(string Target, string Part, PartState State) : WorldEdit;
+    // The author's timed modifier: `Amount` to a capacity of the target, until the first tick it no longer holds.
+    private sealed record AfflictEdit(string Target, string Capacity, long Amount, long Until) : WorldEdit;
 
     private static Pipeline.Refusal Invalid(Code code) => new(Status.Invalid, code);
 
@@ -122,6 +124,7 @@ public static partial class EditVerb
             RemoveEdit => RemoveRefusal(context.Snapshot, subject),
             PlaceEdit place => PlaceRefusal(context, place, subject),
             PropsEdit props => PropsRefusal(context, subject, props),
+            AfflictEdit afflict => AfflictRefusal(context, subject, afflict),
             SetPartEdit part => PartRefusal(context.Registry, subject, part.Part),
             RefineEdit refine => context.Registry.TryGetValue(refine.Template, out var next)
                 ? Refine.RefineRefusal(context.Snapshot, context.Registry, subject, next)

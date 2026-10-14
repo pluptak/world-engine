@@ -18,15 +18,14 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Afflictions: the author lays a timed modifier](#afflictions-the-author-lays-a-timed-modifier).
-2. [Command provenance: a command says which agent issued it](#command-provenance-a-command-says-which-agent-issued-it).
-3. [Possession: a curse makes a body act only at another's word](#possession-a-curse-makes-a-body-act-only-at-anothers-word).
-4. [Blind and deaf: a body that cannot see, or cannot hear](#blind-and-deaf-a-body-that-cannot-see-or-cannot-hear).
-5. [Bound: a body or a part tied, taking what it gives](#bound-a-body-or-a-part-tied-taking-what-it-gives).
-6. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
-7. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
-8. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
-9. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
+1. [Command provenance: a command says which agent issued it](#command-provenance-a-command-says-which-agent-issued-it).
+2. [Possession: a curse makes a body act only at another's word](#possession-a-curse-makes-a-body-act-only-at-anothers-word).
+3. [Blind and deaf: a body that cannot see, or cannot hear](#blind-and-deaf-a-body-that-cannot-see-or-cannot-hear).
+4. [Bound: a body or a part tied, taking what it gives](#bound-a-body-or-a-part-tied-taking-what-it-gives).
+5. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
+6. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
+7. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
+8. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -80,34 +79,6 @@ naming a part of the target's template; unknown is `invalid_args`). Not a `<body
 detached part does not resolve (`Resolve.cs`, the part branch), and `install` and `staunch` must reach a stump.
 Each also requires the body within the actor's reach (`Reach.InReach`), else `out_of_reach` (existing code); an
 actor may work on its own body.
-
-### Afflictions: the author lays a timed modifier
-
-- **What:** a new edit kind `afflict { target, capacity, amount, until }`, author only, that appends one
-  `Modifier(capacity, amount, until, <edited event id>)` to the target. It expires through the clock exactly as an
-  attack's modifier does (`Scheduling/Clock.cs` `ExpireAt`): nothing new in the clock.
-- **Rules:**
-  - `until` is the first tick the modifier no longer holds (`Capacities.Of` already reads `ExpiresAtTick > Tick`);
-    `until <= snapshot.Tick` is refused `invalid_tick` (existing code).
-  - `amount` is a whole number from -100 to 100, not 0; anything else parses to null (`invalid_edit`).
-  - The target must have parts (`Capacities.All` not null) and `capacity` must be one of its keys; else refused
-    with a new code `unknown_capacity`. A missing target is `no_such_entity` as other edits are.
-  - Afflictions stack as modifiers already sum (`Capacities.Of`); structural capacity never reads them.
-  - The `edited` event is the modifier's `CauseId`. When the capacity's level moved, emit one
-    `capability_changed { capacity, from, to }` caused by it, as `AttackVerb` does after a blow (its lines that
-    compare `Capacities.All` before and after).
-  - A beat does not carry `afflict` (it is not added to `docs/beats-actions.md`'s list); the role table in
-    `EditVerb.cs` gives it to the author only.
-- **Files:** `Verbs/EditParser.cs` (an `AfflictEdit` record and its case, as `refine`'s), `Verbs/EditTransitions.cs`,
-  `Verbs/EditRefusals.cs`, `Verbs/EditVerb.cs` (role table), `Verbs/VerbSpecs.cs` (edit's `Refuses` gains
-  `unknown_capacity`), `Model/Code.cs`, `docs/verbs-edit.md` (one bullet; `docs/time.md` already states expiry).
-- **Tests** (`tests/WorldEngine.Tests`, beside the edit tests): a human at `moving` 100, `afflict` -50 at tick 0
-  `until` 3: `moving` reads 50 at ticks 0, 1, 2 and 100 from 3, with the expiry's `capability_changed` at 3 caused by
-  the `edited`; two afflictions of -30 read 40; `structural` stays 100; an unknown capacity, a past `until` and a
-  stone target are refused and change nothing; the same commands on a store world fold to the same snapshot.
-- **Done when:** the tests pass, `dotnet test WorldEngine.slnx` and the deep run pass, and the catalog golden's diff
-  shows only the new code.
-- **Depends on:** nothing.
 
 ### Command provenance: a command says which agent issued it
 

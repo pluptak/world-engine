@@ -216,6 +216,7 @@ public enum Code
     UnexpectedTarget,
     UnknownAnchor,
     UnknownName,
+    UnknownCapacity,
     UnknownPart,
     UnknownTemplate,
     UnknownVerb,
