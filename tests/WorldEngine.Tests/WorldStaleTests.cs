@@ -49,13 +49,7 @@ public class WorldStaleTests : IDisposable
         Assert.Equal(
             ["ok", "preempted:already_held", "refused:already_held", "ok", "ok", "invalid:future_version", "invalid:invalid_version"],
             statuses);
-        Assert.Equal(Files(Golden), Files(dir));
-        foreach (var relative in Files(Golden))
-        {
-            Assert.True(
-                File.ReadAllBytes(Path.Combine(Golden, relative)).AsSpan().SequenceEqual(File.ReadAllBytes(Path.Combine(dir, relative))),
-                $"{relative} differs from the TypeScript store's");
-        }
+        Meaning.SameTree(Golden, dir, "the TypeScript store's files");
     }
 
     private static List<string> Files(string root) =>

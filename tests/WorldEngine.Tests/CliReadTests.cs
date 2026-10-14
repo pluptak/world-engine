@@ -46,7 +46,7 @@ public class CliReadTests : IDisposable
             : "{";
         var output = CliRunner.Run([], input);
 
-        Assert.Equal(row["stdout"]!.GetValue<string>(), output.Stdout);
+        Meaning.Same(row["stdout"]!.GetValue<string>(), output.Stdout);
         Assert.Equal(row["status"]!.GetValue<int>(), output.Status);
     }
 
@@ -61,9 +61,9 @@ public class CliReadTests : IDisposable
         var answered = Run(new JsonObject { ["op"] = "verify", ["world"] = dir }.ToJsonString());
         var declined = Run(new JsonObject { ["op"] = "snapshot", ["world"] = Path.Combine(scratch, "none") }.ToJsonString());
 
-        Assert.Equal(verify["stdout"]!.GetValue<string>(), answered.Stdout);
+        Meaning.Same(verify["stdout"]!.GetValue<string>(), answered.Stdout);
         Assert.Equal(0, answered.Status);
-        Assert.Equal(refused["stdout"]!.GetValue<string>(), declined.Stdout);
+        Meaning.Same(refused["stdout"]!.GetValue<string>(), declined.Stdout);
         Assert.Equal(2, declined.Status);
     }
 

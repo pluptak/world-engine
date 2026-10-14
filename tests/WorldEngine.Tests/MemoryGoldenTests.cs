@@ -34,9 +34,7 @@ public class MemoryGoldenTests
                 step["result"] = actual?.DeepClone();
                 continue;
             }
-            Assert.True(
-                CanonicalJson.Serialize(step["result"]) == CanonicalJson.Serialize(actual),
-                $"{name}: expected {step["result"]?.ToJsonString()}, got {actual?.ToJsonString()}");
+            Meaning.Same(step["result"], actual, $"{name}: expected {step["result"]?.ToJsonString()}, got {actual?.ToJsonString()}");
         }
         if (GoldenUpdate.Enabled)
         {

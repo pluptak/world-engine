@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Text.Json.Nodes;
 using WorldEngine.Cli;
@@ -7,8 +6,8 @@ namespace WorldEngine.Tests;
 
 // Block 21 (the plan's parity phase): the TypeScript acceptance and scenario sequences that drive a stored world or the command line,
 // recorded from the test files as the requests they make (scratchpad/gen/block21), replayed here through the .NET command line in order.
-// Every answer must be the TypeScript command line's, byte for byte, and every world made must hold the same files, each with the same
-// hash (Fixtures/block21/golden.json, from the same trace replayed through TypeScript). Placeholders: {TMP} is the replay's scratch
+// Every answer must mean what the recorded one means, and every world made must hold the same files, each with the same hash by
+// meaning (`Meaning.FileDigest`; Fixtures/block21/golden.json, regenerated from .NET with WORLD_ENGINE_UPDATE_GOLDENS). Placeholders: {TMP} is the replay's scratch
 // directory, {ROOT} the folder holding the scenario files (Fixtures/block21/root).
 public class Block21ReplayTests : IDisposable
 {
@@ -54,6 +53,23 @@ public class Block21ReplayTests : IDisposable
         });
         var mismatches = found.OfType<string>().ToList();
 
+        if (GoldenUpdate.Enabled)
+        {
+            foreach (var placeholder in manifest.Select(pair => pair.Key).ToList())
+            {
+                // A world TypeScript did not make stays recorded as missing.
+                var dir = replay.Into(placeholder);
+                if (Directory.Exists(dir))
+                {
+                    manifest[placeholder] = new JsonObject(Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories)
+                        .Select(path => (Name: Path.GetRelativePath(dir, path).Replace(Path.DirectorySeparatorChar, '/'), Hash: Hash(path)))
+                        .OrderBy(file => file.Name, StringComparer.Ordinal)
+                        .Select(file => KeyValuePair.Create(file.Name, (JsonNode?)file.Hash)));
+                }
+            }
+            GoldenUpdate.Write(Path.Combine("block21", "golden.json"), golden);
+            return;
+        }
         foreach (var (placeholder, files) in manifest)
         {
             var mismatch = CompareWorld(replay.Into(placeholder), (JsonObject)files!);
@@ -89,8 +105,18 @@ public class Block21ReplayTests : IDisposable
         {
             throw new InvalidDataException($"unknown trace line {kind}");
         }
-        return expected["stdout"]!.GetValue<string>() != replay.OutOf(output.Stdout) || expected["status"]!.GetValue<int>() != output.Status
-            ? $"request {index} ({kind}): the answer differs from TypeScript's: expected {Snip(expected["stdout"]!.GetValue<string>())} {expected["status"]}, got {Snip(replay.OutOf(output.Stdout))} {output.Status}"
+        if (GoldenUpdate.Enabled)
+        {
+            expected["stdout"] = replay.OutOf(output.Stdout);
+            expected["status"] = output.Status;
+            return null;
+        }
+        if (expected["status"]!.GetValue<int>() != output.Status)
+        {
+            return $"request {index} ({kind}): exits {output.Status}, expected {expected["status"]}";
+        }
+        return Meaning.Difference(expected["stdout"]!.GetValue<string>(), replay.OutOf(output.Stdout)) is { } difference
+            ? $"request {index} ({kind}): the answer differs: {difference}"
             : null;
     }
 
@@ -132,7 +158,7 @@ public class Block21ReplayTests : IDisposable
         return null;
     }
 
-    private static string Hash(string path) => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
+    private static string Hash(string path) => Meaning.FileDigest(path);
 
     // The placeholders of one replay: where its scratch directory and the scenario folder are, and how a recorded text becomes them.
     private sealed class Replay(string scratch, string root)

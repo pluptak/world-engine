@@ -32,15 +32,11 @@ public class ProcessGoldenTests
                 case "command":
                     var command = WorldJson.Read<Command>(row["command"]!.ToJsonString());
                     var result = Pipeline.Apply(snapshot, TestTemplates.RepoRegistry, Verbs, command);
-                    Assert.True(
-                        CanonicalJson.Serialize(row["result"]) == WorldJson.Write(PipelineShape.Of(result)),
-                        $"{name}: the result differs from TypeScript's");
+                    Meaning.Same(row["result"], WorldJson.Write(PipelineShape.Of(result)), $"{name}: the result differs from TypeScript's");
                     break;
                 case "start":
                     var started = Processes.StartProcesses(snapshot, TestTemplates.RepoRegistry);
-                    Assert.True(
-                        CanonicalJson.Serialize(row["result"]!["snapshot"]) == WorldJson.Write(started),
-                        $"{name}: the started world differs from TypeScript's");
+                    Meaning.Same(row["result"]!["snapshot"], WorldJson.Write(started), $"{name}: the started world differs from TypeScript's");
                     break;
                 case "validate":
                     var issues = SnapshotValidation.Validate(snapshot, TestTemplates.RepoRegistry);

@@ -1,6 +1,4 @@
 using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
@@ -81,6 +79,5 @@ public class VerbMatrixTests
             : line;
     }
 
-    private static string Hash8<T>(T value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(WorldJson.Write(value)))).ToLowerInvariant()[..12];
+    private static string Hash8<T>(T value) => Meaning.Digest(WorldJson.Write(value), 12);
 }

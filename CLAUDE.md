@@ -126,8 +126,9 @@ family file it links (`docs/verbs-*.md`).
 
 ## Tests
 
-xUnit with the engine's input snapshot compared by canonical JSON. The goldens replay recorded
-TypeScript answers (verb matrix, property traces, damaged worlds, template fuzz, beat shapes,
+xUnit. Goldens compare by meaning through `Meaning` (key order and null against absent do not count; a
+failure names the path), and bytes are checked only where they are the contract: the canonical writer and
+the store's own files against themselves. The goldens replay recorded TypeScript answers (verb matrix, property traces, damaged worlds, template fuzz, beat shapes,
 refine) and the `acceptance` and `scenario-*` sequences (`Block21ReplayTests`). `PropertyTraceTests`
 also runs the sequences on a store world. A test for a new behaviour sits beside the file it
 covers; a deliberate deviation from TypeScript has a test that names it (`plans/ts-sunset.md`).

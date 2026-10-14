@@ -37,7 +37,7 @@ public class GeometryTests
             ["push"] = Pushes(snapshot, positioned),
         };
 
-        Assert.Equal(CanonicalJson.Serialize(expected), WorldJson.Write(result));
+        Meaning.Same(expected, WorldJson.Write(result));
     }
 
     private static Dictionary<string, object?> Sweeps(Snapshot snapshot, List<string> ids)

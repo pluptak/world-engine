@@ -65,9 +65,7 @@ public class CarryTests
                 .ToDictionary(id => id, id => ItemRow(snapshot, id), StringComparer.Ordinal),
         };
 
-        Assert.True(
-            CanonicalJson.Serialize(expected) == WorldJson.Write(result),
-            $"{label}: holding and claiming differ from TypeScript's");
+        Meaning.Same(expected, WorldJson.Write(result), $"{label}: holding and claiming differ from TypeScript's");
     }
 
     [Fact]
@@ -103,12 +101,8 @@ public class CarryTests
                             var plain = Carry.Check(caps, carrierProps, item, Registry, otherHeld, Carry.Alternatives, 0);
                             var withHands = Carry.Check(caps, carrierProps, item, Registry, otherHeld, Carry.Alternatives, 80);
 
-                            Assert.True(
-                                CanonicalJson.Serialize(row["carry"]) == WorldJson.Write(VerdictJson(plain)),
-                                $"{label} row {index - 1}: the carry verdict differs from TypeScript's");
-                            Assert.True(
-                                CanonicalJson.Serialize(row["carry_hands_mass_80"]) == WorldJson.Write(VerdictJson(withHands)),
-                                $"{label} row {index - 1}: the carry verdict with hands' mass differs from TypeScript's");
+                            Meaning.Same(row["carry"], WorldJson.Write(VerdictJson(plain)), $"{label} row {index - 1}: the carry verdict differs from TypeScript's");
+                            Meaning.Same(row["carry_hands_mass_80"], WorldJson.Write(VerdictJson(withHands)), $"{label} row {index - 1}: the carry verdict with hands' mass differs from TypeScript's");
                         }
                     }
                 }

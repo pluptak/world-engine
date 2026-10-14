@@ -16,9 +16,7 @@ public class ReadOnlyGoldenTests
     {
         var entries = Catalog.Of(TestTemplates.RepoRegistry);
 
-        Assert.True(
-            CanonicalJson.Serialize(Golden["catalog"]) == WorldJson.Write(entries),
-            "the catalog differs from TypeScript's");
+        Meaning.Same(Golden["catalog"], WorldJson.Write(entries), "the catalog differs from TypeScript's");
     }
 
     [Fact]
@@ -26,22 +24,18 @@ public class ReadOnlyGoldenTests
     {
         var capabilities = Golden["capabilities"]!;
 
-        Assert.True(
-            CanonicalJson.Serialize(capabilities["engine"]) == WorldJson.Write(new Dictionary<string, object>
+        Meaning.Same(capabilities["engine"], WorldJson.Write(new Dictionary<string, object>
             {
                 ["relations"] = Capabilities.Relations,
                 ["senses"] = Capabilities.Senses,
                 ["computed_properties"] = Capabilities.ComputedProperties,
-            }),
-            "the engine's capabilities differ from TypeScript's");
+            }), "the engine's capabilities differ from TypeScript's");
 
         Assert.NotEmpty(capabilities["uncomputable"]!.AsArray());
         foreach (var row in capabilities["uncomputable"]!.AsArray())
         {
             var coverage = WorldJson.Read<Coverage>(row!["coverage"]!.ToJsonString());
-            Assert.True(
-                CanonicalJson.Serialize(row["result"]) == WorldJson.Write(Capabilities.Uncomputable(coverage)),
-                $"uncomputable for {row["coverage"]!.ToJsonString()} differs from TypeScript's");
+            Meaning.Same(row["result"], WorldJson.Write(Capabilities.Uncomputable(coverage)), $"uncomputable for {row["coverage"]!.ToJsonString()} differs from TypeScript's");
         }
     }
 
@@ -76,15 +70,13 @@ public class ReadOnlyGoldenTests
                 filter["entity"]?.GetValue<string>(),
                 filter["until_tick"]?.GetValue<long>());
 
-            Assert.True(
-                CanonicalJson.Serialize(row["result"]) == WorldJson.Write(found),
-                $"scheduled for {filter.ToJsonString()} differs from TypeScript's");
+            Meaning.Same(row["result"], WorldJson.Write(found), $"scheduled for {filter.ToJsonString()} differs from TypeScript's");
         }
 
         var cause = WorldJson.Read<ScheduledCause>(schedule["cause"]!.ToJsonString());
         var added = new Working(snapshot, "c1");
         Schedule.Add(added, cause);
-        Assert.True(CanonicalJson.Serialize(schedule["added"]) == WorldJson.Write(added.Snapshot), "withCause differs from TypeScript's");
+        Meaning.Same(schedule["added"], WorldJson.Write(added.Snapshot), "withCause differs from TypeScript's");
 
         var withoutEntity = snapshot with
         {
@@ -94,11 +86,11 @@ public class ReadOnlyGoldenTests
         };
         var pruned = new Working(withoutEntity, "c1");
         Schedule.Prune(pruned);
-        Assert.True(CanonicalJson.Serialize(schedule["pruned"]) == WorldJson.Write(pruned.Snapshot), "pruneSchedule differs from TypeScript's");
+        Meaning.Same(schedule["pruned"], WorldJson.Write(pruned.Snapshot), "pruneSchedule differs from TypeScript's");
 
         var emptied = new Working(snapshot, "c1");
         Schedule.Replace(emptied, []);
-        Assert.True(CanonicalJson.Serialize(schedule["emptied"]) == WorldJson.Write(emptied.Snapshot), "an emptied schedule differs from TypeScript's");
+        Meaning.Same(schedule["emptied"], WorldJson.Write(emptied.Snapshot), "an emptied schedule differs from TypeScript's");
     }
 
     private static string ReadFixture(string name) =>

@@ -35,14 +35,20 @@ in ordinal order and lists and maps compare by content, so equality is structura
 
 1. **`Value` and its codec.** Done: `Model/Value.cs`, `Json/ValueJson.cs` (registered in `WorldJson.Options`, reading a
    null member as absent and refusing a fraction or a null in a list), `CanonicalJson.Serialize(Value)`. No output moved.
-2. **Every golden regenerates from .NET.** Only 8 golden tests take `WORLD_ENGINE_UPDATE_GOLDENS`; about 20 others
-   (the CLI rows, init and restart, the store's files and `head.json`, stale, upgrade, trace, read-only rows, scenes, the
-   `acceptance` replay) compare against TypeScript's recording with no way to rewrite it, and the stored fixture worlds
-   carry a `templates_hash`. Each takes the switch through `GoldenUpdate`, so a block that moves output rewrites its
-   goldens in one run. Found by trying the null rule in block 1: it moved 59 tests, 25 of which nothing could regenerate.
+2. **Goldens compare meaning, not bytes.** They were built to prove the port reproduced TypeScript byte for byte; that
+   job is done, and now they pin the encoding (null against absent, key presence, file sizes in `head.json`, hashes of
+   canonical bytes), so a harmless rule moved 59 tests. One shared comparison reads both sides as values (key order and a
+   null member against an absent one do not count) and names the path of the first difference. The store's files compare
+   line by line as values, and `head.json` is checked against the files on disk rather than recorded sizes. The hashed
+   goldens (verb matrix, property trace) hash the normalized form, regenerated once. Bytes are checked only where they are
+   the contract, against the engine itself: the same commands written twice are the same files, `verify` reproduces them,
+   and the canonical writer's own tests. `GoldenUpdate` stays for a change that moves meaning. Done: `Meaning` (tests) holds the
+   comparison, the store harnesses use `Meaning.SameTree`, and the acceptance replay and the hashed goldens regenerate.
 3. **No null on the way out.** `CanonicalJson` writes through `Value`, so null members are left out everywhere and the
    `JsonIgnoreCondition.Never` fields go; readers that demanded a key be present (a resolved part's `parent`, an event
-   line's `cause_id`) stop doing so. The template hash moves with the templates' bytes.
+   line's `cause_id`) stop doing so. The template hash moves with the templates' bytes. A probe of this rule with block 2's
+   comparisons left 44 tests failing, nearly all on the moved `templates_hash`; the one change of meaning is that a spawned
+   entity no longer records a delta for a field it leaves empty (`contained_in` and `detached_from`, null to null).
 4. **The model holds `Value`.** `Entity.Props` and a template's `Props`, `WorldEvent.Data`, `Command.Args`, `ReasonData`,
    `Delta.From`/`To`, `Run.Slots`. `Prop<T>`, `Pipeline.Reason` and `Working` change under the verbs; `Working` detects a
    no-op by `Value` equality, and the codec turns a field's record into a `Value` for its delta. Verb code that reads args

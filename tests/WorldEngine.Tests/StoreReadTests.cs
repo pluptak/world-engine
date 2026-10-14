@@ -52,7 +52,7 @@ public class StoreReadTests : IDisposable
     {
         var snapshot = WorldFiles.ReadSnapshot(Path.Combine(Fixture, WorldFiles.CurrentSnapshot));
 
-        Assert.Equal(CanonicalJson.Serialize(Expected["snapshot"]), Canonical(snapshot));
+        Meaning.Same(Expected["snapshot"], Canonical(snapshot));
         Assert.Equal(Expected["snapshot"]!["templates_hash"]!.GetValue<string>(), snapshot.TemplatesHash);
     }
 
@@ -101,7 +101,7 @@ public class StoreReadTests : IDisposable
         Assert.Equal(expected.Count, log.Count);
         for (var index = 0; index < log.Count; index++)
         {
-            Assert.Equal(CanonicalJson.Serialize(expected[index]), Canonical(log[index]));
+            Meaning.Same(expected[index], Canonical(log[index]));
         }
         Assert.Equal(["ok", "refused", "ok", "ok", "ok"], log.Select(entry => entry.Status.ToString().ToLowerInvariant()));
     }
@@ -112,8 +112,8 @@ public class StoreReadTests : IDisposable
         var events = WorldFiles.ReadEvents(Fixture);
         var deltas = WorldFiles.ReadDeltas(Fixture);
 
-        Assert.Equal(CanonicalJson.Serialize(Expected["events"]), CanonicalJson.Serialize(new JsonArray([.. events.Select(e => (JsonNode?)JsonNode.Parse(WorldJson.Write(e)))])));
-        Assert.Equal(CanonicalJson.Serialize(Expected["deltas"]), CanonicalJson.Serialize(new JsonArray([.. deltas.Select(d => (JsonNode?)JsonNode.Parse(WorldJson.Write(d)))])));
+        Meaning.Same(Expected["events"], new JsonArray([.. events.Select(e => (JsonNode?)JsonNode.Parse(WorldJson.Write(e)))]));
+        Meaning.Same(Expected["deltas"], new JsonArray([.. deltas.Select(d => (JsonNode?)JsonNode.Parse(WorldJson.Write(d)))]));
     }
 
     [Fact]
@@ -169,10 +169,10 @@ public class StoreReadTests : IDisposable
         var fold = WorldReplay.ReplayFold(Fixture, WorldFiles.ReadTemplates(Fixture));
         var expected = Expected["fold"]!.AsObject();
 
-        Assert.Equal(CanonicalJson.Serialize(expected["snapshot"]), Canonical(fold.Snapshot));
-        Assert.Equal(CanonicalJson.Serialize(expected["events"]), Canonical(fold.Events));
-        Assert.Equal(CanonicalJson.Serialize(expected["deltas"]), Canonical(fold.Deltas));
-        Assert.Equal(CanonicalJson.Serialize(Expected["replay"]), Canonical(fold.Snapshot));
+        Meaning.Same(expected["snapshot"], Canonical(fold.Snapshot));
+        Meaning.Same(expected["events"], Canonical(fold.Events));
+        Meaning.Same(expected["deltas"], Canonical(fold.Deltas));
+        Meaning.Same(Expected["replay"], Canonical(fold.Snapshot));
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class StoreReadTests : IDisposable
         var snapshot = WorldReplay.TrustedSnapshot(Fixture, WorldFiles.ReadTemplates(Fixture));
 
         Assert.NotNull(snapshot);
-        Assert.Equal(CanonicalJson.Serialize(Expected["load"]), Canonical(snapshot));
+        Meaning.Same(Expected["load"], Canonical(snapshot));
     }
 
     [Fact]
@@ -209,8 +209,8 @@ public class StoreReadTests : IDisposable
         var (deltas, events) = WorldHistory.Since(Fixture, version, WorldFiles.ReadTemplates(Fixture));
         var expected = Expected["since"]![version.ToString()]!.AsObject();
 
-        Assert.Equal(CanonicalJson.Serialize(expected["deltas"]), Canonical(deltas));
-        Assert.Equal(CanonicalJson.Serialize(expected["events"]), Canonical(events));
+        Meaning.Same(expected["deltas"], Canonical(deltas));
+        Meaning.Same(expected["events"], Canonical(events));
     }
 
     [Theory]
@@ -222,7 +222,7 @@ public class StoreReadTests : IDisposable
     {
         var attempts = WorldHistory.Attempts(Fixture, version, WorldFiles.ReadTemplates(Fixture));
 
-        Assert.Equal(CanonicalJson.Serialize(Expected["attempts"]![version.ToString()]), Canonical(attempts));
+        Meaning.Same(Expected["attempts"]![version.ToString()], Canonical(attempts));
     }
 
     [Fact]
@@ -245,16 +245,10 @@ public class StoreReadTests : IDisposable
         var eventId = traces["event"]!.AsArray().Last()!["event_id"]!.GetValue<string>();
         var ids = Expected["ids"]!.AsObject();
 
-        Assert.Equal(CanonicalJson.Serialize(traces["event"]), Canonical(WorldHistory.TraceOf(Fixture, eventId, null, null, registry)));
-        Assert.Equal(
-            CanonicalJson.Serialize(traces["stone_contained_in"]),
-            Canonical(WorldHistory.TraceOf(Fixture, null, ids["stone"]!.GetValue<string>(), "contained_in", registry)));
-        Assert.Equal(
-            CanonicalJson.Serialize(traces["ann_spawn"]),
-            Canonical(WorldHistory.TraceOf(Fixture, null, ids["ann"]!.GetValue<string>(), "entity", registry)));
-        Assert.Equal(
-            CanonicalJson.Serialize(traces["hall_props"]),
-            Canonical(WorldHistory.TraceOf(Fixture, null, ids["hall"]!.GetValue<string>(), "props", registry)));
+        Meaning.Same(traces["event"], Canonical(WorldHistory.TraceOf(Fixture, eventId, null, null, registry)));
+        Meaning.Same(traces["stone_contained_in"], Canonical(WorldHistory.TraceOf(Fixture, null, ids["stone"]!.GetValue<string>(), "contained_in", registry)));
+        Meaning.Same(traces["ann_spawn"], Canonical(WorldHistory.TraceOf(Fixture, null, ids["ann"]!.GetValue<string>(), "entity", registry)));
+        Meaning.Same(traces["hall_props"], Canonical(WorldHistory.TraceOf(Fixture, null, ids["hall"]!.GetValue<string>(), "props", registry)));
     }
 
     [Fact]
@@ -282,7 +276,7 @@ public class StoreReadTests : IDisposable
                 : WorldHistory.QueryPerceive(Fixture, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, entity: row["entity"]!.GetValue<string>());
             var actual = new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = WorldJson.Name(answer.BasisCode) };
 
-            Assert.Equal(CanonicalJson.Serialize(row["answer"]), CanonicalJson.Serialize(actual));
+            Meaning.Same(row["answer"], actual);
         }
     }
 
@@ -308,8 +302,8 @@ public class StoreReadTests : IDisposable
         var (deltas, events) = WorldHistory.Since(Checkpointed, version, WorldFiles.ReadTemplates(Checkpointed));
         var expected = Expected["since"]![version.ToString()]!.AsObject();
 
-        Assert.Equal(CanonicalJson.Serialize(expected["deltas"]), Canonical(deltas));
-        Assert.Equal(CanonicalJson.Serialize(expected["events"]), Canonical(events));
+        Meaning.Same(expected["deltas"], Canonical(deltas));
+        Meaning.Same(expected["events"], Canonical(events));
     }
 
     [Fact]
@@ -335,7 +329,7 @@ public class StoreReadTests : IDisposable
                 : WorldHistory.QueryPerceive(Checkpointed, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, entity: row["entity"]!.GetValue<string>());
             var actual = new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = WorldJson.Name(answer.BasisCode) };
 
-            Assert.Equal(CanonicalJson.Serialize(row["answer"]), CanonicalJson.Serialize(actual));
+            Meaning.Same(row["answer"], actual);
         }
     }
 
@@ -351,8 +345,8 @@ public class StoreReadTests : IDisposable
 
         var (deltas, events) = WorldHistory.Since(scratch, 3, registry);
 
-        Assert.Equal(CanonicalJson.Serialize(Expected["since"]!["3"]!["events"]), Canonical(events));
-        Assert.Equal(CanonicalJson.Serialize(Expected["since"]!["3"]!["deltas"]), Canonical(deltas));
+        Meaning.Same(Expected["since"]!["3"]!["events"], Canonical(events));
+        Meaning.Same(Expected["since"]!["3"]!["deltas"], Canonical(deltas));
     }
 
     private static void CopyDirectory(string from, string to)

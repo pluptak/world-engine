@@ -36,9 +36,7 @@ public class RoundGoldenTests
                 "command" => Shape(Pipeline.Apply(snapshot, TestTemplates.RepoRegistry, Verbs, WorldJson.Read<Command>(row["command"]!.ToJsonString()))),
                 var kind => throw new InvalidDataException($"{name}: unknown row kind {kind}"),
             };
-            Assert.True(
-                CanonicalJson.Serialize(row["result"]) == CanonicalJson.Serialize(actual),
-                $"{name}: the result differs from TypeScript's");
+            Meaning.Same(row["result"], actual, $"{name}: the result differs from TypeScript's");
         }
     }
 

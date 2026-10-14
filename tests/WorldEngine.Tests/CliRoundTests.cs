@@ -39,9 +39,7 @@ public class CliRoundTests : IDisposable
             request["world"] = dir;
             var output = CliRunner.Run([], request.ToJsonString());
 
-            Assert.True(
-                row["stdout"]!.GetValue<string>() == output.Stdout,
-                $"row {index} ({request["op"]}): the answer differs from TypeScript's");
+            Meaning.Same(row["stdout"]!.GetValue<string>(), output.Stdout, $"row {index} ({request["op"]}): the answer differs from TypeScript's");
             Assert.Equal(row["status"]!.GetValue<int>(), output.Status);
         }
     }

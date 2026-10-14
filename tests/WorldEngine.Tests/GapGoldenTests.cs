@@ -29,9 +29,7 @@ public class GapGoldenTests
             var snapshot = WorldJson.Read<Snapshot>(row["snapshot"]!.ToJsonString());
             var command = WorldJson.Read<Command>(row["command"]!.ToJsonString());
             var result = Pipeline.Apply(snapshot, TestTemplates.Registry, Verbs, command);
-            Assert.True(
-                CanonicalJson.Serialize(row["result"]) == WorldJson.Write(PipelineShape.Of(result)),
-                $"{name}: the result differs from TypeScript's");
+            Meaning.Same(row["result"], WorldJson.Write(PipelineShape.Of(result)), $"{name}: the result differs from TypeScript's");
         }
     }
 }

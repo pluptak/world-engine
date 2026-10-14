@@ -28,9 +28,7 @@ public static class GoldenRows
                         row["result"] = JsonNode.Parse(WorldJson.Write(PipelineShape.Of(result)));
                         break;
                     }
-                    Assert.True(
-                        CanonicalJson.Serialize(row["result"]) == WorldJson.Write(PipelineShape.Of(result)),
-                        $"{name}: the result differs from TypeScript's");
+                    Meaning.Same(row["result"], WorldJson.Write(PipelineShape.Of(result)), $"{name}: the result differs from TypeScript's");
                     break;
                 case "validate":
                     var issues = SnapshotValidation.Validate(snapshot, TestTemplates.RepoRegistry);

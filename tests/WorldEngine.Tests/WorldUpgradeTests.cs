@@ -65,16 +65,7 @@ public class WorldUpgradeTests : IDisposable
 
     private static string Hash(IReadOnlyDictionary<string, Template> registry) => WorldReplay.HashOf(registry);
 
-    private static void AssertSameTree(string expected, string dir)
-    {
-        Assert.Equal(Files(expected), Files(dir));
-        foreach (var relative in Files(expected))
-        {
-            Assert.True(
-                File.ReadAllBytes(Path.Combine(expected, relative)).AsSpan().SequenceEqual(File.ReadAllBytes(Path.Combine(dir, relative))),
-                $"{relative} differs from the TypeScript store's");
-        }
-    }
+    private static void AssertSameTree(string expected, string dir) => Meaning.SameTree(expected, dir, "the TypeScript store's files");
 
     private static List<string> Files(string root) =>
         [.. Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)

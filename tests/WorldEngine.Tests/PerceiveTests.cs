@@ -43,9 +43,7 @@ public class PerceiveTests
                 .Select(entry => new Dictionary<string, object?> { ["event_id"] = entry.EventId, ["perceivers"] = entry.Perceivers })
                 .ToList();
 
-            Assert.True(
-                CanonicalJson.Serialize(row["perceivers"]) == WorldJson.Write(perceivers),
-                $"{label}: the perceivers differ from TypeScript's");
+            Meaning.Same(row["perceivers"], WorldJson.Write(perceivers), $"{label}: the perceivers differ from TypeScript's");
         }
     }
 

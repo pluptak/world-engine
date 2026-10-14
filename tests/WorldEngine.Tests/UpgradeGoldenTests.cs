@@ -26,9 +26,7 @@ public class UpgradeGoldenTests
                 "assert" => AssertOutcome(snapshot, registry),
                 var kind => throw new InvalidDataException($"{name}: unknown row kind {kind}"),
             };
-            Assert.True(
-                CanonicalJson.Serialize(row["result"]) == CanonicalJson.Serialize(actual),
-                $"{name}: the result differs from TypeScript's");
+            Meaning.Same(row["result"], actual, $"{name}: the result differs from TypeScript's");
         }
     }
 

@@ -71,7 +71,7 @@ public class EngineQueryTests
             ["resolve"] = resolve,
         };
 
-        Assert.Equal(CanonicalJson.Serialize(expected), WorldJson.Write(result));
+        Meaning.Same(expected, WorldJson.Write(result));
     }
 
     private static string ReadFixture(string name) =>

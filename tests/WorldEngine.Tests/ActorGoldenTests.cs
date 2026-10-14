@@ -23,9 +23,7 @@ public class ActorGoldenTests
             var name = step!["name"]!.GetValue<string>();
             var args = step["args"]!;
             var actual = Outcome(() => Step(world, views, step["op"]!.GetValue<string>(), args));
-            Assert.True(
-                CanonicalJson.Serialize(step["result"]) == CanonicalJson.Serialize(actual),
-                $"{name}: expected {step["result"]?.ToJsonString()}, got {actual?.ToJsonString()}");
+            Meaning.Same(step["result"], actual, $"{name}: expected {step["result"]?.ToJsonString()}, got {actual?.ToJsonString()}");
         }
     }
 

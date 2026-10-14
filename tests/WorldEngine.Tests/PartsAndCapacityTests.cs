@@ -39,7 +39,7 @@ public class PartsAndCapacityTests
             ["effective_part"] = partNames.ToDictionary(name => name, name => PartStates.Effective(template, entity, name)),
         };
 
-        Assert.Equal(CanonicalJson.Serialize(Golden[label]), WorldJson.Write(result));
+        Meaning.Same(Golden[label], WorldJson.Write(result));
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class PartsAndCapacityTests
                 ["damaged_at_max"] = PartStates.IsDefault(decl, new PartState(decl.MaxIntegrity, PartStatus.Damaged)),
             });
 
-        Assert.Equal(CanonicalJson.Serialize(Golden["is_default"]), WorldJson.Write(result));
+        Meaning.Same(Golden["is_default"], WorldJson.Write(result));
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class PartsAndCapacityTests
 
         var result = PartStates.With(Registry["human"], snapshot.Entities["e4"].Parts, changes);
 
-        Assert.Equal(CanonicalJson.Serialize(Golden["with_parts"]), WorldJson.Write(result));
+        Meaning.Same(Golden["with_parts"], WorldJson.Write(result));
     }
 
     private static string ReadFixture(string name) =>

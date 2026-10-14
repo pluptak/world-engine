@@ -32,9 +32,7 @@ public class EditTests
 
             var result = Pipeline.Apply(snapshot, Registry, Verbs, command);
 
-            Assert.True(
-                CanonicalJson.Serialize(row["result"]) == WorldJson.Write(PipelineShape.Of(result)),
-                $"{name}: the result differs from TypeScript's");
+            Meaning.Same(row["result"], WorldJson.Write(PipelineShape.Of(result)), $"{name}: the result differs from TypeScript's");
         }
     }
 

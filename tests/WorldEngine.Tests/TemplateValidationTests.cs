@@ -61,7 +61,7 @@ public class PropTests
     {
         var golden = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "fields.json"));
 
-        Assert.Equal(CanonicalJson.Serialize(JsonNode.Parse(golden)), WorldJson.Write(Prop.Table));
+        Meaning.Same(JsonNode.Parse(golden), WorldJson.Write(Prop.Table));
     }
 
     [Theory]

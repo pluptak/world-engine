@@ -1,5 +1,4 @@
 using System.IO.Compression;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
@@ -164,10 +163,9 @@ public class PropertyTraceTests
         return TemplateResolver.Resolve(declared);
     }
 
-    private static string Hash(JsonNode? value) => HashText(CanonicalJson.Serialize(value));
+    private static string Hash(JsonNode? value) => Meaning.Digest(value?.ToJsonString() ?? "null");
 
-    // WorldJson.Write is canonical already, so the snapshot's text is hashed as written.
-    private static string SnapshotHash(IWorld world) => HashText(WorldJson.Write(world.CurrentSnapshot()));
+    // The snapshot by meaning, so its encoding does not count.
+    private static string SnapshotHash(IWorld world) => Meaning.Digest(WorldJson.Write(world.CurrentSnapshot()));
 
-    private static string HashText(string text) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant();
 }

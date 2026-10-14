@@ -26,9 +26,7 @@ public class QueryGoldenTests
                 "at_event" => AtEvent(input),
                 var kind => throw new InvalidDataException($"{name}: unknown row kind {kind}"),
             };
-            Assert.True(
-                CanonicalJson.Serialize(row["result"]) == CanonicalJson.Serialize(actual),
-                $"{name}: expected {row["result"]}, got {actual.ToJsonString()}");
+            Meaning.Same(row["result"], actual, $"{name}: expected {row["result"]}, got {actual.ToJsonString()}");
         }
     }
 

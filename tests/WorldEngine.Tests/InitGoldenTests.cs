@@ -48,7 +48,7 @@ public class InitGoldenTests : IDisposable
                 continue;
             }
             var expected = row["stdout"]!.GetValue<string>().Replace("{DIR}", Escape(dir));
-            Assert.True(expected == output.Stdout, $"{name ?? string.Join(' ', argv)}: the answer differs from TypeScript's");
+            Meaning.Same(expected, output.Stdout, $"{name ?? string.Join(' ', argv)}: the answer differs from TypeScript's");
             if (name is not null && output.Status == 0)
             {
                 CompareFiles(Path.Combine(Fixtures, "init", name), dir, name);
@@ -88,7 +88,7 @@ public class InitGoldenTests : IDisposable
                 .Replace("{WORLD}", Escape(source))
                 .Replace("{TO}", Escape(restarted))
                 .Replace("{MISSING}", Escape(missing));
-            Assert.True(expected == output.Stdout, $"restart {request["to"]}: the answer differs from TypeScript's");
+            Meaning.Same(expected, output.Stdout, $"restart {request["to"]}: the answer differs from TypeScript's");
             Assert.Equal(row["status"]!.GetValue<int>(), output.Status);
         }
 
@@ -110,18 +110,11 @@ public class InitGoldenTests : IDisposable
     // A path as a canonical answer writes it: with its backslashes escaped.
     private static string Escape(string path) => path.Replace("\\", "\\\\");
 
-    // The world made in `actual` holds the same files as TypeScript's, each byte for byte.
+    // The world made in `actual` holds the same files as TypeScript's, each meaning the same.
     private static void CompareFiles(string expected, string actual, string name)
     {
         Assert.True(Directory.Exists(actual), $"{name}: no world was made at {actual}");
-        var expectedFiles = Files(expected);
-        Assert.Equal(expectedFiles, Files(actual));
-        foreach (var relative in expectedFiles)
-        {
-            Assert.True(
-                File.ReadAllBytes(Path.Combine(expected, relative)).SequenceEqual(File.ReadAllBytes(Path.Combine(actual, relative))),
-                $"{name}: {relative} differs from TypeScript's");
-        }
+        Meaning.SameTree(expected, actual, name);
     }
 
     private static List<string> Files(string root) =>

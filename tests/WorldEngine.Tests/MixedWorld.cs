@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
@@ -78,7 +76,7 @@ internal static class MixedWorld
         try
         {
             var snapshot = StoreWorld.Open(dir).CurrentSnapshot();
-            opened = new JsonObject { ["snapshot"] = Hash(Encoding.UTF8.GetBytes(WorldJson.Write(snapshot))) };
+            opened = new JsonObject { ["snapshot"] = Meaning.Digest(WorldJson.Write(snapshot)) };
         }
         catch (Exception error)
         {
@@ -87,14 +85,12 @@ internal static class MixedWorld
         var files = new JsonObject();
         foreach (var path in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).OrderBy(path => path, StringComparer.Ordinal))
         {
-            files[Path.GetRelativePath(dir, path).Replace(Path.DirectorySeparatorChar, '/')] = Hash(File.ReadAllBytes(path));
+            files[Path.GetRelativePath(dir, path).Replace(Path.DirectorySeparatorChar, '/')] = Meaning.FileDigest(path);
         }
         return new JsonObject { ["verify"] = first, ["open"] = opened, ["verify_after"] = VerifyOf(), ["files"] = files };
     }
 
     public static string CodeOf(Exception error) => error is WorldError world ? WorldJson.Name(world.Code) : "error";
-
-    public static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 
     public static void CopyDirectory(string from, string to)
     {

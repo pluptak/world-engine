@@ -32,12 +32,18 @@ internal static class GoldenUpdate
         throw new DirectoryNotFoundException("The source tree's Fixtures folder is not above the test run");
     }
 
-    // Writes a fixture in the layout it already has: indented when the file is, one line when it is.
+    // Writes a fixture in the layout it already has: indented as the file is, one line when it is.
     public static void Write(string fixture, JsonNode value)
     {
         var path = SourcePath(fixture);
-        var indented = File.Exists(path) && IsIndented(File.ReadAllText(path));
-        var text = value.ToJsonString(new JsonSerializerOptions { WriteIndented = indented, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+        var existing = File.Exists(path) ? File.ReadAllText(path) : "";
+        var indented = IsIndented(existing);
+        var text = value.ToJsonString(new JsonSerializerOptions
+        {
+            WriteIndented = indented,
+            IndentSize = indented ? IndentOf(existing) : 2,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        });
         File.WriteAllText(path, text + "\n");
     }
 
@@ -47,6 +53,14 @@ internal static class GoldenUpdate
         using var file = File.Create(SourcePath(fixture));
         using var zip = new GZipStream(file, CompressionLevel.SmallestSize);
         zip.Write(Encoding.UTF8.GetBytes(value.ToJsonString(new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping })));
+    }
+
+    // The width of the file's first indent, so a rewrite keeps its layout.
+    private static int IndentOf(string text)
+    {
+        var secondLine = text.Split('\n').Skip(1).FirstOrDefault() ?? "";
+        var width = secondLine.Length - secondLine.TrimStart(' ').Length;
+        return width > 0 ? width : 2;
     }
 
     private static bool IsIndented(string text)

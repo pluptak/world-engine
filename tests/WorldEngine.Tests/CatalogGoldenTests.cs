@@ -19,9 +19,7 @@ public class CatalogGoldenTests
             return;
         }
         var expected = GoldenRows.ReadRows("catalog-golden.expected.json");
-        Assert.True(
-            CanonicalJson.Serialize(expected) == CanonicalJson.Serialize(VerbRegistry.Catalog()),
-            "the catalog differs from TypeScript's");
+        Meaning.Same(expected, VerbRegistry.Catalog(), "the catalog differs from TypeScript's");
     }
 
     // A verb that needs a capacity refuses a body short of it with that capacity's own code, which the verb declares.

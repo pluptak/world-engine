@@ -71,16 +71,7 @@ public class StoreWorldTests : IDisposable
         Assert.Equal(["ok", "refused", "ok", "unresolved", "ok", "ok"], world.Attempts(0).Select(attempt => attempt.Status.ToString().ToLowerInvariant()));
     }
 
-    private static void AssertSameTree(string expected, string dir)
-    {
-        Assert.Equal(Files(expected), Files(dir));
-        foreach (var relative in Files(expected))
-        {
-            Assert.True(
-                File.ReadAllBytes(Path.Combine(expected, relative)).AsSpan().SequenceEqual(File.ReadAllBytes(Path.Combine(dir, relative))),
-                $"{relative} differs from the TypeScript World's");
-        }
-    }
+    private static void AssertSameTree(string expected, string dir) => Meaning.SameTree(expected, dir, "the TypeScript World's files");
 
     private static List<string> Files(string root) =>
         [.. Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)

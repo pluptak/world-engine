@@ -37,9 +37,15 @@ committing it: it is the list of everything the change did. The first update of 
 (keys sorted); that is the one large diff.
 
 Supported: `VerbMatrixTests`, `PropertyTraceTests` (the memory-world test), `TamperGoldenTests`, `TakeoverGoldenTests`,
-`TemplateFuzzTests`, the scripted rows (`MemoryGoldenTests`, `RefineGoldenTests`, `BeatShapesGoldenTests`) and the `command` and
-`validate` rows of `GoldenRows`. Not supported: the fixtures with a test of their own shape (the `cli-*`, `init`, `block21`, `store-*`,
-`contract-*` and similar); when a change breaks one, edit the fixture by hand from the failure message.
+`TemplateFuzzTests`, `Block21ReplayTests`, the scripted rows (`MemoryGoldenTests`, `RefineGoldenTests`, `BeatShapesGoldenTests`) and
+the `command` and `validate` rows of `GoldenRows`. Not supported: the fixtures with a test of their own shape (the `cli-*`, `init`,
+`store-*`, `contract-*` and similar); when a change breaks one, edit the fixture by hand from the failure message.
+
+Goldens compare by meaning (`tests/WorldEngine.Tests/Meaning.cs`): key order, and a null member against an absent one, do not
+count, and a failure names the path where the two part. A stored world's files compare as values, line by line for `.jsonl`; what
+`head.json` and a checkpoint say about other files' bytes is checked against the files instead. The hashes the verb matrix, the
+property traces, the tamper and takeover goldens and `block21/golden.json` keep are of that meaning (`Meaning.Digest`,
+`Meaning.FileDigest`), regenerated from .NET when they stopped being TypeScript's byte hashes.
 
 ## Fixtures with no generator
 

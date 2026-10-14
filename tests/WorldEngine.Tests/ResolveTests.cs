@@ -38,7 +38,7 @@ public class ResolveTests
             };
         }).ToList();
 
-        Assert.Equal(CanonicalJson.Serialize(expected), WorldJson.Write(result));
+        Meaning.Same(expected, WorldJson.Write(result));
     }
 
     [Fact]

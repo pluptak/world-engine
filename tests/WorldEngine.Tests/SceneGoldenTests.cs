@@ -32,9 +32,7 @@ public class SceneGoldenTests
                     ["ids"] = new JsonObject(resolved.Ids.Select(pair => KeyValuePair.Create(pair.Key, (JsonNode?)pair.Value))),
                 };
             });
-            Assert.True(
-                CanonicalJson.Serialize(row["result"]) == CanonicalJson.Serialize(actual),
-                $"{name}: the result differs from TypeScript's");
+            Meaning.Same(row["result"], actual, $"{name}: the result differs from TypeScript's");
         }
     }
 
@@ -55,9 +53,7 @@ public class SceneGoldenTests
                 ["status"] = "ok",
                 ["snapshot"] = JsonNode.Parse(WorldJson.Write(SceneBuilder.Build(snapshot, Registry, names, beats, run))),
             });
-            Assert.True(
-                CanonicalJson.Serialize(row["result"]) == CanonicalJson.Serialize(actual),
-                $"{name}: the result differs from TypeScript's");
+            Meaning.Same(row["result"], actual, $"{name}: the result differs from TypeScript's");
         }
     }
 

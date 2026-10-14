@@ -24,9 +24,7 @@ public class OptionsGoldenTests
                 input["actor"]!.GetValue<string>(),
                 input["refused"]!.GetValue<bool>(),
                 command => Pipeline.Apply(snapshot, TestTemplates.RepoRegistry, VerbRegistry.All, command)))));
-            Assert.True(
-                CanonicalJson.Serialize(row["result"]) == CanonicalJson.Serialize(actual),
-                $"{name}: the options differ from TypeScript's");
+            Meaning.Same(row["result"], actual, $"{name}: the options differ from TypeScript's");
         }
     }
 
