@@ -188,6 +188,9 @@ Places where .NET differs on purpose, found by the Phase 1 replays. Each has a t
   reader ignores it, so `verify` goes on and names `snapshot.json` as differing; .NET's reader refuses the file (`verify` answers an
   error, the CLI an invalid response). Both flag the corruption; the .NET failure is earlier and plainer. Left out of
   `tamper-golden` on purpose (the generator skips that flip).
+- A stored schedule cause of a kind the engine has no rule for: TypeScript reads it and `validateSnapshot` reports
+  `unknown_cause_kind`; .NET reads each kind into its own record, so the snapshot does not read (the code is gone).
+  `SnapshotValidationTests.A_cause_of_an_unknown_kind_does_not_read`.
 - A fractional number in a template declaration (a size of `1.5`, a mass, a part's integrity, a hold's inner size): TypeScript takes any
   finite number; .NET asks for a whole number (`must be an integer`), since the engine and the canonical form hold integers only.
   `template-fuzz` leaves fractions out of its values.

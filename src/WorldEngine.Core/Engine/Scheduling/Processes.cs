@@ -80,7 +80,7 @@ public static class Processes
     }
 
     private static bool IsPendingFor(ScheduledCause cause, string entity, string process) =>
-        cause.Kind == CauseKind.Process && cause.Entity == entity && cause.Process == process;
+        cause is ProcessCause running && running.Entity == entity && running.Process == process;
 
     // Brings one entity's schedule in line with its props: a process that can run and has nothing pending is scheduled
     // `every_ticks` from now, naming the event that made it so; a pending one that can no longer run is withdrawn, recording
@@ -101,7 +101,7 @@ public static class Processes
             {
                 if (TryAdd(snapshot.Tick, DelayOf(spec, entity), out var due))
                 {
-                    Schedule.Add(working, new ScheduledCause(due, CauseKind.Process, entityId, causeId, Process: spec.Id));
+                    Schedule.Add(working, new ProcessCause(due, entityId, causeId, spec.Id));
                 }
             }
             else if (!can && waiting)
@@ -128,7 +128,7 @@ public static class Processes
         }
         if (TryAdd(working.Snapshot.Tick, (long)after, out var due))
         {
-            Schedule.Add(working, new ScheduledCause(due, CauseKind.Close, entity.Id, causeId));
+            Schedule.Add(working, new CloseCause(due, entity.Id, causeId));
         }
     }
 
@@ -170,7 +170,7 @@ public static class Processes
     // One run: adjust the prop, clamped to its bounds, under a `changed` that names the event that set the process going. A
     // cause the world has overtaken does nothing. The next run is scheduled by the reconcile that follows the write, so a
     // process that reached its bound is not scheduled again.
-    public static void RunProcess(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause)
+    public static void RunProcess(Working working, IReadOnlyDictionary<string, Template> registry, ProcessCause cause)
     {
         if (!working.Snapshot.Entities.TryGetValue(cause.Entity, out var entity))
         {

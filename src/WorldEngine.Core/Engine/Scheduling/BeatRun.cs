@@ -13,7 +13,7 @@ public static partial class Beats
 
     // A watch (a repeating beat with `until_ran`) records nothing while its condition is false, and ends after the first run
     // whose action ran; a failed run is still recorded and the watch goes on (src/engine/beats.ts `runBeat`).
-    public static void Run(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause)
+    public static void Run(Working working, IReadOnlyDictionary<string, Template> registry, BeatCause cause)
     {
         var watch = cause.Repeat is JsonObject repeat && JsonReads.IsTrue(repeat["until_ran"]);
         if (cause.OnlyIf is not null && !Holds(cause.OnlyIf, working.Snapshot))
@@ -31,7 +31,7 @@ public static partial class Beats
                     Skipped(working, cause, ("reason", "failed"), ("code", failed.Code));
                     break;
                 case Done done:
-                    ScheduleFollowers(working, cause.Then as JsonArray, done.EventId);
+                    ScheduleFollowers(working, cause.Then, done.EventId);
                     if (watch)
                     {
                         return;
@@ -42,7 +42,7 @@ public static partial class Beats
         ScheduleNextRun(working, cause);
     }
 
-    private static void Skipped(Working working, ScheduledCause cause, params (string Key, string Value)[] data)
+    private static void Skipped(Working working, BeatCause cause, params (string Key, string Value)[] data)
     {
         var fields = new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["id"] = JsonValue.Create(cause.Id) };
         foreach (var (key, value) in data)
@@ -52,9 +52,9 @@ public static partial class Beats
         working.Emit(EventType.BeatSkipped, cause.Entity, fields, cause.CauseId);
     }
 
-    private static Fired Fire(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause)
+    private static Fired Fire(Working working, IReadOnlyDictionary<string, Template> registry, BeatCause cause)
     {
-        var action = (JsonObject)cause.Action!;
+        var action = cause.Action;
         if (JsonReads.Text(action["kind"]) == "sound")
         {
             var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["loud"] = JsonValue.Create(JsonReads.IsTrue(action["loud"])) };
@@ -65,7 +65,7 @@ public static partial class Beats
 
     // An edit runs under the beat's own cause, as the author's `edit` would, with the verb's own checks; a failure puts back
     // everything it wrote (the snapshot, the events and the deltas), and the snapshot-wide guard runs after it.
-    private static Fired FireEdit(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause, JsonObject action)
+    private static Fired FireEdit(Working working, IReadOnlyDictionary<string, Template> registry, BeatCause cause, JsonObject action)
     {
         var targetText = JsonReads.Text(action["target"]);
         Resolve.TargetAddress? target = null;
@@ -122,25 +122,15 @@ public static partial class Beats
             {
                 continue;
             }
-            Schedule.Add(
-                working,
-                new ScheduledCause(
-                    due,
-                    CauseKind.Beat,
-                    subject,
-                    parentEvent,
-                    Id: JsonReads.Text(child["id"]),
-                    Action: child["action"]!.DeepClone(),
-                    OnlyIf: child["only_if"]?.DeepClone(),
-                    Then: child["then"]?.DeepClone()));
+            Schedule.Add(working, CauseOf(child, due, subject, parentEvent));
         }
     }
 
     // The next run of a repeating beat, whatever this one did: it ran, was skipped by its condition, or was refused. It keeps the
     // id, and the cause of the run before it; the run after the last carries no repeat.
-    private static void ScheduleNextRun(Working working, ScheduledCause cause)
+    private static void ScheduleNextRun(Working working, BeatCause cause)
     {
-        if (cause.Repeat is not JsonObject repeat)
+        if (cause.Repeat is not { } repeat)
         {
             return;
         }

@@ -215,7 +215,6 @@ public enum Code
     UndeclaredProp,
     UnexpectedTarget,
     UnknownAnchor,
-    UnknownCauseKind,
     UnknownName,
     UnknownPart,
     UnknownTemplate,

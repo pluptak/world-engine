@@ -5,9 +5,9 @@ using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
-// What the world will do by itself (src/engine/schedule.ts, src/engine/pending.ts): the pending causes, in run order. The
-// `close` cause shuts a door or gate by itself; the `bleed` cause is a wound bleeding (`docs/bleeding.md`). The process,
-// beat and remaining kinds are refused.
+// What the world will do by itself (src/engine/schedule.ts, src/engine/pending.ts): the pending causes, in run order. A
+// `close` shuts a door or gate, a `bleed` is a wound bleeding (`docs/bleeding.md`), a `process` steps a template process
+// and a `beat` runs an authored beat.
 public static class Schedule
 {
     public static IReadOnlyList<ScheduledCause> Pending(Snapshot snapshot) => snapshot.Schedule ?? [];
@@ -58,26 +58,26 @@ public static class Schedule
     // already shut, the body already destroyed) does nothing and says nothing.
     public static void Run(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause)
     {
-        switch (cause.Kind)
+        switch (cause)
         {
-            case CauseKind.Close:
-                RunClose(working, registry, cause);
+            case CloseCause close:
+                RunClose(working, registry, close);
                 return;
-            case CauseKind.Bleed:
-                RunBleed(working, registry, cause);
+            case BleedCause bleed:
+                RunBleed(working, registry, bleed);
                 return;
-            case CauseKind.Process:
-                Processes.RunProcess(working, registry, cause);
+            case ProcessCause process:
+                Processes.RunProcess(working, registry, process);
                 return;
-            case CauseKind.Beat:
-                Beats.Run(working, registry, cause);
+            case BeatCause beat:
+                Beats.Run(working, registry, beat);
                 return;
             default:
-                throw new InvalidOperationException($"Unknown scheduled cause kind {cause.Kind}");
+                throw new InvalidOperationException($"No rule runs a {cause.Kind} cause");
         }
     }
 
-    private static void RunClose(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause)
+    private static void RunClose(Working working, IReadOnlyDictionary<string, Template> registry, CloseCause cause)
     {
         var entity = working.Snapshot.Entities.GetValueOrDefault(cause.Entity);
         if (entity is null || !entity.Props.Is(Prop.Openable) || !entity.Props.Is(Prop.Open))
@@ -91,7 +91,7 @@ public static class Schedule
     }
 
     // Each bleed names the one before it, back to the `detached` that opened the wound.
-    private static void RunBleed(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause)
+    private static void RunBleed(Working working, IReadOnlyDictionary<string, Template> registry, BleedCause cause)
     {
         var entity = working.Snapshot.Entities.GetValueOrDefault(cause.Entity);
         var rule = entity is null ? null : Bleeding(entity.Props);
@@ -102,7 +102,7 @@ public static class Schedule
         var harm = Harm.Apply(working, registry, entity.Id, rule.Value.Damage, cause.CauseId);
         if (harm is { Destroyed: false })
         {
-            ScheduleBleed(working, entity.Id, harm.EventId, (cause.Remaining ?? 0) - 1);
+            ScheduleBleed(working, entity.Id, harm.EventId, cause.Remaining - 1);
         }
     }
 
@@ -124,7 +124,7 @@ public static class Schedule
         var rule = Bleeding(entity.Props);
         if (rule is not null && remaining > 0 && TryAdd(working.Snapshot.Tick, rule.Value.Every, out var due))
         {
-            Add(working, new ScheduledCause(due, CauseKind.Bleed, entityId, causeId, remaining));
+            Add(working, new BleedCause(due, entityId, causeId, remaining));
         }
     }
 

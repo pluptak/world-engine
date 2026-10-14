@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
+using WorldEngine.Core.Model;
 using static WorldEngine.Contract.Shapes;
 
 namespace WorldEngine.Contract;

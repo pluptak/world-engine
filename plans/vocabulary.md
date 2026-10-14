@@ -13,11 +13,9 @@ template ids, entity names and other author data. Replacing those with constants
 
 ## Blocks
 
-Each block is independently pausable and ends with `dotnet test WorldEngine.slnx` green.
-
-1. **Scheduled causes as types.** `ScheduledCause` splits into `CloseCause`, `BleedCause`, `ProcessCause` and `BeatCause`
-   (polymorphic on `kind`), with the beat's action, condition and followers as records instead of `JsonNode`. The
-   kind-by-kind checks in `SnapshotValidation` and the `JsonNode` walking in `BeatConditions` go.
+All done. Left open, unplanned: a beat's condition, followers and repeat are still the JSON the author wrote, held to `Beats`'
+shape rules where a beat is made or read. Typing them needs a converter for the condition's key-told forms and moves the
+shape rules from the JSON onto the records; its action stays JSON, as it is an author's edit.
 
 ## Conventions (in place)
 
@@ -31,11 +29,11 @@ Each block is independently pausable and ends with `dotnet test WorldEngine.slnx
   vocabulary, since an edit refuses with the invariant it would break. A new code is one member there. Where a status
   stands in for a missing code (`ambiguous`), `Pipeline.ReasonName` gives the string.
 - A vocabulary a caller may extend stays a string with named constants: `Sense` (a request may name a sense the engine has
-  no rule for, which answers `engine_incapable`), `Capacity` (a template's parts may contribute any), `EventType` (a root
-  event is named for its verb, and verbs are a registry) and `CauseKind` (a stored snapshot may name another, reported as
-  `unknown_cause_kind`; the typed causes below settle it). A verb's required capacity maps to its `insufficient_*` code in
+  no rule for, which answers `engine_incapable`), `Capacity` (a template's parts may contribute any) and `EventType` (a root
+  event is named for its verb, and verbs are a registry). A verb's required capacity maps to its `insufficient_*` code in
   `Pipeline.Insufficient`, which `CatalogGoldenTests` holds to every verb's `refuses`.
-
+- A scheduled cause is one record per kind (`CloseCause`, `BleedCause`, `ProcessCause`, `BeatCause`), told apart in JSON by
+  `kind` (`CauseKind`); a stored cause of another kind does not read.
 - A verb's declarations are typed. `VerbSpec` holds its `ArgSpec`s and `refuses`, and names the lists the engine itself
   uses for carrying and striking (`Carry.Alternatives`, `AttackVerb.Modes`) rather than a copy; its duration is a
   `VerbDuration` on the verb (one tick when absent), which the pipeline times commands by and the catalog writes.

@@ -12,6 +12,8 @@ public static class WorldJson
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        // Canonical JSON sorts keys, so a stored cause's `kind` comes after fields that sort before it.
+        AllowOutOfOrderMetadataProperties = true,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) },
     };
 

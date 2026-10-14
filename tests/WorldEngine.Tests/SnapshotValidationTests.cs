@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
@@ -32,6 +33,18 @@ public class SnapshotValidationTests
 
             Assert.True(expected.SequenceEqual(actual), $"{name}: expected [{string.Join("; ", expected)}] but got [{string.Join("; ", actual)}]");
         }
+    }
+
+    // A deliberate deviation from TypeScript, which read such a cause and reported `unknown_cause_kind`: each kind is its own
+    // record, so a stored cause of a kind with no record does not read at all.
+    [Fact]
+    public void A_cause_of_an_unknown_kind_does_not_read()
+    {
+        var rows = JsonNode.Parse(ReadFixture("validate-golden.expected.json"))!.AsArray();
+        var snapshot = rows.Single(row => row!["name"]!.GetValue<string>() == "schedule_dangling")!["snapshot"]!.AsObject();
+        snapshot["schedule"]![0]!["kind"] = "wrong";
+
+        Assert.Throws<JsonException>(() => WorldJson.Read<Snapshot>(snapshot.ToJsonString()));
     }
 
     private static string Describe(string code, IReadOnlyList<string> path) => $"{code} {string.Join("/", path)}";

@@ -25,17 +25,21 @@ public static partial class Beats
     }
 
     // The beat a schedule_beat edit makes: due at its tick, about the entity its action names, caused by the edit's own event.
-    public static ScheduledCause CauseOf(JsonObject edit, string? causeId) =>
+    public static BeatCause CauseOf(JsonObject edit, string? causeId) =>
+        CauseOf(edit, JsonReads.SafeInt(edit["at_tick"])!.Value, ActionSubject((JsonObject)edit["action"]!)!, causeId);
+
+    // A beat cause from a body its shape rules have passed (a scene's, an edit's, a follower's): its id, a copy of its action,
+    // and its condition, followers and repeat when it has them.
+    public static BeatCause CauseOf(JsonObject body, long due, string subject, string? causeId) =>
         new(
-            JsonReads.SafeInt(edit["at_tick"])!.Value,
-            CauseKind.Beat,
-            ActionSubject((JsonObject)edit["action"]!)!,
+            due,
+            subject,
             causeId,
-            Id: JsonReads.Text(edit["id"]),
-            Action: edit["action"]!.DeepClone(),
-            OnlyIf: edit["only_if"]?.DeepClone(),
-            Then: edit["then"]?.DeepClone(),
-            Repeat: edit["repeat"]?.DeepClone());
+            JsonReads.Text(body["id"])!,
+            (JsonObject)body["action"]!.DeepClone(),
+            (JsonObject?)body["only_if"]?.DeepClone(),
+            (JsonArray?)body["then"]?.DeepClone(),
+            (JsonObject?)body["repeat"]?.DeepClone());
 
     // Every id the edit's beat would hold: its own, and its followers' and their followers', in order.
     public static List<string> EditIds(JsonObject edit)

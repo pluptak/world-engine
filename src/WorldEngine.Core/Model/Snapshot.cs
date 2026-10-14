@@ -8,23 +8,46 @@ namespace WorldEngine.Core.Model;
 
 public sealed record Pos(long X, long Y);
 
-// A cause the world will run by itself at `DueTick` (src/model.ts `ScheduledCause`). The `close` and `bleed` kinds are
-// ported; `bleed` names how many bleeds are still to come. The other kinds carry fields this record does not read, so a
-// stored one is refused when the snapshot is read.
-public sealed record ScheduledCause(
+// A cause the world will run by itself at `DueTick`, one record per kind; the stored `kind` says which, and a kind with no record
+// does not read. `CauseId` is the event that scheduled it, which the events it runs name as their cause.
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
+[JsonDerivedType(typeof(CloseCause), CauseKind.Close)]
+[JsonDerivedType(typeof(BleedCause), CauseKind.Bleed)]
+[JsonDerivedType(typeof(ProcessCause), CauseKind.Process)]
+[JsonDerivedType(typeof(BeatCause), CauseKind.Beat)]
+public abstract record ScheduledCause(long DueTick, string Entity, string? CauseId)
+{
+    [JsonIgnore]
+    public string Kind => this switch
+    {
+        CloseCause => CauseKind.Close,
+        BleedCause => CauseKind.Bleed,
+        ProcessCause => CauseKind.Process,
+        _ => CauseKind.Beat,
+    };
+}
+
+// A door or gate shutting by itself.
+public sealed record CloseCause(long DueTick, string Entity, string? CauseId) : ScheduledCause(DueTick, Entity, CauseId);
+
+// A wound's next bleed, and how many are still to come counting it.
+public sealed record BleedCause(long DueTick, string Entity, string? CauseId, long Remaining) : ScheduledCause(DueTick, Entity, CauseId);
+
+// The next step of a template process on its entity.
+public sealed record ProcessCause(long DueTick, string Entity, string? CauseId, string Process) : ScheduledCause(DueTick, Entity, CauseId);
+
+// An authored beat: its id, its action (an author's edit, or a sound), and optionally its condition, followers and repeat, kept as
+// the snapshot writes them and held to `Beats`' shape rules wherever one is made or read.
+public sealed record BeatCause(
     long DueTick,
-    string Kind,
     string Entity,
     string? CauseId,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Remaining = null,
-    // The process a `process` cause runs; absent on every other kind.
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Process = null,
-    // A `beat` cause's id, action, condition, followers and repeat, as the snapshot writes them; absent on every other kind.
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Id = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonNode? Action = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonNode? OnlyIf = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonNode? Then = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonNode? Repeat = null);
+    string Id,
+    JsonObject Action,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonObject? OnlyIf = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonArray? Then = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonObject? Repeat = null)
+    : ScheduledCause(DueTick, Entity, CauseId);
 
 public enum PartStatus
 {

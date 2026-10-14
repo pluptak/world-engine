@@ -46,7 +46,7 @@ public static partial class EditVerb
                 // Withdrawn at the source, recording nothing: the `edit` event is the record.
                 Schedule.Replace(
                     working,
-                    [.. Schedule.Pending(working.Snapshot).Where(cause => cause.Kind != CauseKind.Beat || cause.Id != cancelled.Id)]);
+                    [.. Schedule.Pending(working.Snapshot).Where(cause => cause is not BeatCause beat || beat.Id != cancelled.Id)]);
                 return;
             case RetimeBeatEdit moved:
                 TransitionRetime(working, moved);
@@ -113,7 +113,7 @@ public static partial class EditVerb
     private static void TransitionRetime(Working working, RetimeBeatEdit edit)
     {
         var list = Schedule.Pending(working.Snapshot).ToList();
-        var index = list.FindIndex(entry => entry.Kind == CauseKind.Beat && entry.Id == edit.Id);
+        var index = list.FindIndex(entry => entry is BeatCause beat && beat.Id == edit.Id);
         if (index < 0)
         {
             throw new InvalidOperationException("Edit changed after validation");

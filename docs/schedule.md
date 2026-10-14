@@ -26,8 +26,8 @@ moving its gate's occupants.
 one stored form:
 - empty (`empty_schedule`), not ahead of the clock
   (`schedule_not_ahead`), or out of due order (`schedule_unordered`).
-- on a missing entity (`schedule_dangling`) or of an unknown kind
-  (`unknown_cause_kind`).
+- on a missing entity (`schedule_dangling`). A cause of an unknown
+  kind does not read at all.
 - a bleed with none left (`bleed_not_remaining`).
 - a process with no id (`invalid_process`), or pending twice on one
   entity (`duplicate_process`).

@@ -155,13 +155,13 @@ public static partial class Beats
     }
 
     // What is wrong with a stored beat cause, or null: its shape, and that its action is about its own entity.
-    public static string? Invalid(ScheduledCause cause)
+    public static string? Invalid(BeatCause cause)
     {
         if (!ShapeOk(cause.Id, cause.Action, cause.OnlyIf, cause.Then, cause.Repeat))
         {
             return $"beat {cause.Id ?? "undefined"} is malformed";
         }
-        var subject = ActionSubject((JsonObject)cause.Action!);
+        var subject = ActionSubject(cause.Action);
         return subject == cause.Entity ? null : $"beat {cause.Id} is not about {cause.Entity}";
     }
 
@@ -169,12 +169,9 @@ public static partial class Beats
     public static List<string> PendingBeatIds(IEnumerable<ScheduledCause> causes)
     {
         var ids = new List<string>();
-        foreach (var cause in causes)
+        foreach (var beat in causes.OfType<BeatCause>())
         {
-            if (cause.Kind == CauseKind.Beat)
-            {
-                NodeIds(cause.Id ?? "undefined", cause.Then, ids);
-            }
+            NodeIds(beat.Id ?? "undefined", beat.Then, ids);
         }
         return ids;
     }

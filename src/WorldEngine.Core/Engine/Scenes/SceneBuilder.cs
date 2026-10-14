@@ -152,16 +152,7 @@ public static class SceneBuilder
             {
                 throw Refused(path, Code.TooManyBeats);
             }
-            var cause = new ScheduledCause(
-                atTick,
-                CauseKind.Beat,
-                subject,
-                null,
-                Id: Text(resolved["id"]),
-                Action: resolved["action"]!.DeepClone(),
-                OnlyIf: resolved["only_if"]?.DeepClone(),
-                Then: resolved["then"]?.DeepClone(),
-                Repeat: resolved["repeat"]?.DeepClone());
+            var cause = Beats.CauseOf(resolved, atTick, subject, null);
             next = AddCause(next, cause);
         }
         return next;

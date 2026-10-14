@@ -166,7 +166,7 @@ public static class OpenVerbs
         var closesAfter = props.Get(Prop.ClosesAfter);
         if (kind == Kind.Open && closesAfter is > 0 && TryAdd(working.Snapshot.Tick, closesAfter.Value, out var closeTick))
         {
-            Schedule.Add(working, new ScheduledCause(closeTick, CauseKind.Close, target.Id, eventId));
+            Schedule.Add(working, new CloseCause(closeTick, target.Id, eventId));
         }
     }
 
@@ -197,6 +197,6 @@ public static class OpenVerbs
         var eventId = working.Emit(EventType.Closing, target.Id, new Dictionary<string, JsonNode?>(), rootEventId);
         working.SetProps(target.Id, target.Props.With(Prop.Closing, true), eventId);
         Schedule.Cancel(working, CauseKind.Close, target.Id);
-        Schedule.Add(working, new ScheduledCause(working.Snapshot.Tick + shutTicks, CauseKind.Close, target.Id, eventId));
+        Schedule.Add(working, new CloseCause(working.Snapshot.Tick + shutTicks, target.Id, eventId));
     }
 }

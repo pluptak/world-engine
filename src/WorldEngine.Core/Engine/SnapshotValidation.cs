@@ -703,7 +703,7 @@ public static class SnapshotValidation
     }
 
     // What is pending is stored one way: no empty list, every cause still ahead of the clock, in due order, on an
-    // entity that exists, with the kind's own rule holding. Only the `close` and `bleed` kinds are ported.
+    // entity that exists, with the kind's own rule holding.
     private static List<SnapshotIssue> ScheduleIssues(Snapshot snapshot)
     {
         if (snapshot.Schedule is null)
@@ -721,10 +721,6 @@ public static class SnapshotValidation
         {
             var cause = snapshot.Schedule[index];
             var path = new[] { "schedule", index.ToString() };
-            if (cause.Kind is not (CauseKind.Close or CauseKind.Bleed or CauseKind.Process or CauseKind.Beat))
-            {
-                issues.Add(Issue(Code.UnknownCauseKind, path, cause.Kind));
-            }
             if (cause.DueTick <= snapshot.Tick)
             {
                 issues.Add(Issue(Code.ScheduleNotAhead, path, $"due {cause.DueTick} at tick {snapshot.Tick}"));
@@ -739,25 +735,25 @@ public static class SnapshotValidation
                 issues.Add(Issue(Code.ScheduleDangling, path, cause.Entity));
             }
             // A process runs at most once at a time on an entity: reconcile never schedules a second.
-            if (cause.Kind == CauseKind.Process)
+            switch (cause)
             {
-                var key = $"{cause.Entity}/{cause.Process ?? "undefined"}";
-                if (!running.Add(key))
-                {
-                    issues.Add(Issue(Code.DuplicateProcess, path, key));
-                }
-            }
-            if (cause.Kind == CauseKind.Bleed && !(cause.Remaining is { } remaining && remaining > 0))
-            {
-                issues.Add(Issue(Code.BleedNotRemaining, path, $"remaining {cause.Remaining?.ToString() ?? "null"}"));
-            }
-            if (cause.Kind == CauseKind.Process && string.IsNullOrEmpty(cause.Process))
-            {
-                issues.Add(Issue(Code.InvalidProcess, path, cause.Process ?? "undefined"));
-            }
-            if (cause.Kind == CauseKind.Beat && Beats.Invalid(cause) is { } broken)
-            {
-                issues.Add(Issue(Code.InvalidBeat, path, broken));
+                case ProcessCause process:
+                    var key = $"{process.Entity}/{process.Process ?? "undefined"}";
+                    if (!running.Add(key))
+                    {
+                        issues.Add(Issue(Code.DuplicateProcess, path, key));
+                    }
+                    if (string.IsNullOrEmpty(process.Process))
+                    {
+                        issues.Add(Issue(Code.InvalidProcess, path, process.Process ?? "undefined"));
+                    }
+                    break;
+                case BleedCause { Remaining: <= 0 } bleed:
+                    issues.Add(Issue(Code.BleedNotRemaining, path, $"remaining {bleed.Remaining}"));
+                    break;
+                case BeatCause beat when Beats.Invalid(beat) is { } broken:
+                    issues.Add(Issue(Code.InvalidBeat, path, broken));
+                    break;
             }
         }
         // Beats share one namespace of ids, their followers' included, and a bounded number of them.

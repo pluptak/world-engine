@@ -65,7 +65,7 @@ public static class Clock
         {
             return long.MaxValue;
         }
-        var waiting = Schedule.Pending(snapshot).Any(cause => cause.Kind == CauseKind.Beat && cause.Id == stop.Id && cause.DueTick == stop.DueTick);
+        var waiting = Schedule.Pending(snapshot).OfType<BeatCause>().Any(found => found.Id == stop.Id && found.DueTick == stop.DueTick);
         return waiting ? stop.DueTick - 1 : long.MaxValue;
     }
 
