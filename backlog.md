@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [The storage seam is an interface with no behaviour change](#the-storage-seam-is-an-interface-with-no-behaviour-change).
+None at present.
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -60,14 +60,3 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 - The limits in `docs/limits*.md`: none is worth a verb yet, except as listed in `plans/candidates.md`.
 
 ## Items
-
-### The storage seam is an interface with no behaviour change
-
-- **What:** `plans/storage-seam-design.md`, approach B, read for .NET. The .NET side already splits `IWorld`/`IWorldDriver`/`IWorldReads`
-  (Core) from `StoreWorld` (Store); this item is the `WorldStore` interface over primitives (snapshot, log, events and deltas,
-  checkpoints, templates, ids, and an exclusive turn) with the file code behind it and the memory world's record behind another, and one
-  driver over both. The design doc names TypeScript files; map them with `CLAUDE.md`'s layout.
-- Zero behaviour change: the same bytes on disk and the same CLI output. No SQLite code.
-- **Done when:** `dotnet test WorldEngine.slnx` passes with no test edit beyond names, and one new seam test shows the file and
-  memory drivers fold a scripted log identically.
-- **Depends on:** nothing.

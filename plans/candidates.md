@@ -40,6 +40,17 @@ Priorities there, then deleting it here in the same commit.
 - **`WORLD_AUTHOR`.** It keeps every permission at once, for tests and repair (`docs/roles.md`). Decided:
   it stays until every entry point checks the roles, since removing it now breaks tests and repair. Open:
   when, if ever, the roles replace it.
+- **A storage seam.** A `WorldStore` interface of storage primitives (snapshot, log, events and deltas,
+  checkpoints, templates, ids, an exclusive turn) with the file store and the memory world behind it and
+  one driver and one set of folds over both, so a second backend such as SQLite is one more store
+  (`plans/storage-seam-design.md`, approach B). Deferred by the maintainer after the .NET port: `Submission`,
+  `WorldReads`, `Trace`, `Projection` and the actor, player and director views already serve both worlds
+  from Core, what stays twice is `MemoryWorld` against the store's replay and history folds, conformance
+  tests already hold the two alike, and nothing asks for another backend.
+  Trigger: a real need for one (a world too large for files, several processes writing one world, a host
+  that requires a database).
+  Note: the design doc is written against the TypeScript (`src/api.ts`, `file-store.ts`, `npm run
+  check:changed`, the TS dependency list) and is re-read for .NET before promotion.
 
 The entries below come from three story genres (a magical world's curses, cyberpunk augmentation, a
 Face/Off swap). Each states the behaviour first and then one possible representation, which is a
