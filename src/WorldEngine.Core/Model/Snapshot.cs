@@ -21,7 +21,7 @@ public abstract record ScheduledCause(long DueTick, string Entity, string? Cause
 public sealed record CloseCause(long DueTick, string Entity, string? CauseId) : ScheduledCause(DueTick, Entity, CauseId);
 
 // A wound's next bleed, and how many are still to come counting it.
-public sealed record BleedCause(long DueTick, string Entity, string? CauseId, long Remaining) : ScheduledCause(DueTick, Entity, CauseId);
+public sealed record BleedCause(long DueTick, string Entity, string? CauseId, long Remaining, string? Part = null) : ScheduledCause(DueTick, Entity, CauseId);
 
 // The next step of a template process on its entity.
 public sealed record ProcessCause(long DueTick, string Entity, string? CauseId, string Process) : ScheduledCause(DueTick, Entity, CauseId);
@@ -54,8 +54,9 @@ public enum EntityStatus
     Destroyed,
 }
 
-// `Bound` is written only when true: a part tied by a rope takes no capacity (`docs/structure.md`).
-public sealed record PartState(long Integrity, PartStatus Status, bool? Bound = null);
+// `Bound` and `Incised` are written only when true: a tied part takes no capacity (`docs/structure.md`); an incised one is
+// open and bleeds (`docs/verbs-surgery.md`).
+public sealed record PartState(long Integrity, PartStatus Status, bool? Bound = null, bool? Incised = null);
 
 public sealed record Modifier(string Capacity, long Delta, long? ExpiresAtTick, string CauseId);
 

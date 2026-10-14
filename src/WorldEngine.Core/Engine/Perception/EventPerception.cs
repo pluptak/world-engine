@@ -90,6 +90,7 @@ public static class EventPerception
         ["wait"] = Silent,
         ["advance"] = Authored,
         [EventType.Changed] = Silent,
+        [EventType.Cut] = Audible,
         ["search"] = Silent,
         ["consume"] = Silent,
         [EventType.Consumed] = Silent,

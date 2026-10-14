@@ -1,0 +1,9 @@
+{
+  "id": "scalpel",
+  "size_cm": { "w": 12, "d": 2, "h": 1 },
+  "mass_g": 40,
+  "parts": [],
+  "props": { "cuts": true },
+  "break_products": [],
+  "break_residue": {}
+}

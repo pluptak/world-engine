@@ -18,10 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
-2. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
-3. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
-4. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
+1. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
+2. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
+3. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -75,37 +74,6 @@ naming a part of the target's template; unknown is `invalid_args`). Not a `<body
 detached part does not resolve (`Resolve.cs`, the part branch), and `install` and `staunch` must reach a stump.
 Each also requires the body within the actor's reach (`Reach.InReach`), else `out_of_reach` (existing code); an
 actor may work on its own body.
-
-### Wounds: a cut opens a part without severing it
-
-- **What:** a verb `cut`, target the body, `args.part`, that marks the part incised and starts a bleed that names the
-  part.
-- **Model:**
-  - `PartState` gains `bool? Incised` (`Model/Snapshot.cs`), written only when true; `PartStates` keeps treating a
-    state equal to the template default as absent (an incised part is never at default). Absent reads false, so
-    `schema_version` stays 5.
-  - `BleedCause` gains `string? Part`: the part the wound is in. `AttackVerb`'s severing passes the severed part to
-    `Schedule.StartBleeding` (new parameter), so every bleed names its part from now on.
-  - The `set_part` edit's `state` takes an optional `incised` (`EditParser`), so a scene can start with one.
-- **Verb rules** (`Verbs/SurgeryVerbs.cs`, new): one tick. Requires `manipulation` 50 and a held thing whose
-  template has the new prop `cuts` (definition, boolean); else refused with a new code `no_cutting_tool`. The part
-  must read intact or damaged (`PartStates.Effective`), else refused with a new code `part_unavailable`; already
-  incised is refused `already_incised`. The
-  transition sets `Incised` under the root `cut` event and calls `StartBleeding(working, body, part, rootEvent)`;
-  no integrity damage to the part. A body whose props declare no bleeding is incised and does not bleed.
-- **Registration:** `VerbRegistry`, `VerbSpecs` (`Args`: `part`), `Code.cs`, a `["cut"] =
-  Audible` row in `EventPerception`, `docs/verbs.md` index line to a new `docs/verbs-surgery.md`.
-- **Templates:** `templates/scalpel.json` (a small held thing with `cuts: true`); changes `templates_hash`.
-- **Files:** `Model/Snapshot.cs`, `Engine/Physics/PartStates.cs`, `Engine/Scheduling/Schedule.cs`,
-  `Verbs/AttackVerb.cs`, `Verbs/EditParser.cs`, `Verbs/SurgeryVerbs.cs`, the registration points,
-  `templates/scalpel.json`, `docs/verbs-surgery.md`, `docs/bleeding.md` (a bleed names its part).
-- **Tests:** a human holding a scalpel cuts another's `arm_l`: the arm stays attached and `intact`, its part state
-  reads `incised`, capacities unchanged, and the body takes `bleed_damage` every `bleed_every_ticks` for
-  `bleed_times`; the schedule's bleed names `arm_l`; a cut with no scalpel is refused `no_cutting_tool`; a second
-  cut `already_incised`. Goldens: any fixture holding a stored bleed gains `part` (regenerate with
-  `WORLD_ENGINE_UPDATE_GOLDENS=1`, read the diff: only `part` may appear).
-- **Done when:** as above.
-- **Depends on:** nothing.
 
 ### Treatment: stopping a bleed, closing an incision
 

@@ -319,7 +319,7 @@ public static class AttackVerb
                 damageEvent = working.Emit(EventType.Detached, target.Id, Pipeline.Reason(("part", partName)), rootEventId);
                 detachEvent = damageEvent;
                 DetachPart(working, registry, target.Id, partName, integrity, damageEvent);
-                Schedule.StartBleeding(working, target.Id, damageEvent);
+                Schedule.StartBleeding(working, target.Id, damageEvent, partName);
             }
             else if (integrity == 0)
             {

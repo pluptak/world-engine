@@ -9,7 +9,7 @@ namespace WorldEngine.Core.Engine;
 public static class PartStates
 {
     public static bool IsDefault(PartDecl decl, PartState state) =>
-        state.Status == PartStatus.Intact && state.Integrity == decl.MaxIntegrity && state.Bound is not true;
+        state.Status == PartStatus.Intact && state.Integrity == decl.MaxIntegrity && state.Bound is not true && state.Incised is not true;
 
     // The state of a declared part, stored or default; null for a part the template does not declare and the
     // entity does not store.

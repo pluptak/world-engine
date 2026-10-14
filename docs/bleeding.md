@@ -5,7 +5,9 @@ bleeds when its props declare `bleed_damage`, `bleed_every_ticks` and `bleed_tim
 integers; a human declares 5, 2 and 3. A template without them (a dog, a cat) never bleeds.
 
 **A wound.** When `attack` severs a part, the body gets a `bleed` cause due `bleed_every_ticks`
-after the `detached`, with `remaining: bleed_times`. Each bleed takes `bleed_damage` from the body's
+after the `detached`, with `remaining: bleed_times`. Every bleed names the part it is in:
+a severing names the severed part, a `cut` ([verbs-surgery.md](verbs-surgery.md)) the incised one.
+Each bleed takes `bleed_damage` from the body's
 own `integrity` under a `damaged` event caused by the cause before it, and schedules the next with
 one fewer left. The chain reads `detached` → `damaged` → `damaged` → `damaged`, and a trace of the
 body's `integrity` walks it. Every bleed falls during whichever command spans its tick, so a long

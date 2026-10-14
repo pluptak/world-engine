@@ -103,6 +103,10 @@
     "type": "id",
     "tier": "state"
   },
+  "cuts": {
+    "type": "boolean",
+    "tier": "definition"
+  },
   "deaf": {
     "type": "boolean",
     "tier": "state"

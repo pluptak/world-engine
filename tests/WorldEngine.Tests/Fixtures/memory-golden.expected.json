@@ -872,6 +872,7 @@
         }
       ],
       "needs_args": [
+        "cut",
         "move",
         "pour",
         "say",

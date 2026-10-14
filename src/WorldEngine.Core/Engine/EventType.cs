@@ -14,6 +14,7 @@ public static class EventType
     public const string Consumed = "consumed";
     public const string Damaged = "damaged";
     public const string Destroyed = "destroyed";
+    public const string Cut = "cut";
     public const string Detached = "detached";
     public const string Displaced = "displaced";
     public const string Doused = "doused";

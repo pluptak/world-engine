@@ -43,6 +43,7 @@ public static class Prop
     public static readonly Prop<bool> Container = Flag("container", Tier.Definition, requires: ["inner_w_cm", "inner_d_cm", "inner_h_cm"]);
     public static readonly Prop<string> ControlledBy = Id("controlled_by", Tier.State);
     public static readonly Prop<bool> Deaf = Flag("deaf", Tier.State);
+    public static readonly Prop<bool> Cuts = Flag("cuts", Tier.Definition);
     public static readonly Prop<string> DefaultHitPart = Text("default_hit_part", Tier.Definition);
     // The way a camera looks, in degrees counter-clockwise from +x, and the whole angle it sees (`docs/camera.md`).
     public static readonly Prop<long> FacingDeg = Integer("facing_deg", Tier.State, min: 0, max: 359, requires: ["camera"]);

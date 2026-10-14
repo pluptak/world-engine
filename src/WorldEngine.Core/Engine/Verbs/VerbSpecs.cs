@@ -61,6 +61,12 @@ public static class VerbSpecs
         ["light"] = new(
             Args: NoArgs,
             Refuses: [Code.TargetAttached, Code.NotALight, Code.ContainerClosed, Code.OutOfReach, Code.AlreadyBurning, Code.NoFuel, Code.InsufficientManipulation]),
+        ["cut"] = new(
+            Args: new Dictionary<string, ArgSpec>(StringComparer.Ordinal)
+            {
+                ["part"] = new(ArgKind.Token),
+            },
+            Refuses: [Code.TargetAttached, Code.OutOfReach, Code.NoCuttingTool, Code.PartUnavailable, Code.AlreadyIncised, Code.InsufficientManipulation]),
         ["lock"] = new(
             Args: NoArgs,
             Refuses: [Code.NotOpenable, Code.OutOfReach, Code.AlreadyLocked, Code.Closing, Code.NoKey, Code.InsufficientManipulation, Code.Disconnected, Code.Unpowered]),

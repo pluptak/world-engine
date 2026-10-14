@@ -111,6 +111,34 @@
     ]
   },
   {
+    "verb": "cut",
+    "requires_target": true,
+    "args": {
+      "part": {
+        "kind": "token"
+      }
+    },
+    "duration": {
+      "ticks": 1
+    },
+    "requires": [
+      {
+        "capacity": "manipulation",
+        "at_least": 50
+      }
+    ],
+    "carry_alternatives": [],
+    "attack_modes": [],
+    "refuses": [
+      "target_attached",
+      "out_of_reach",
+      "no_cutting_tool",
+      "part_unavailable",
+      "already_incised",
+      "insufficient_manipulation"
+    ]
+  },
+  {
     "verb": "douse",
     "requires_target": true,
     "args": {},

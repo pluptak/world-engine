@@ -33,6 +33,7 @@ This is the index: one line per verb, its rules in the family file it links to.
 - `switch_on`: switches a power link on ([verbs-power.md](verbs-power.md)).
 - `switch_off`: switches it off ([verbs-power.md](verbs-power.md)).
 - `attack`: strikes with the first mode the attacker can use ([verbs-combat.md](verbs-combat.md)).
+- `cut`: opens a part of a body without severing it ([verbs-surgery.md](verbs-surgery.md)).
 - `search`: looks under or behind a target ([verbs-sensing.md](verbs-sensing.md)).
 - `light`: sets a light source burning ([verbs-sensing.md](verbs-sensing.md)).
 - `douse`: puts it out ([verbs-sensing.md](verbs-sensing.md)).

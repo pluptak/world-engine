@@ -2718,6 +2718,7 @@
         }
       ],
       "needs_args": [
+        "cut",
         "move",
         "pour",
         "say",
@@ -3229,6 +3230,7 @@
         }
       ],
       "needs_args": [
+        "cut",
         "move",
         "pour",
         "say",

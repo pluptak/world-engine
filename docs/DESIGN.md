@@ -57,6 +57,7 @@ What is built, nothing aspirational, one concept per file:
 - [speech.md](speech.md): saying an opaque token at a volume, and who hears it.
 - [rng.md](rng.md): the world's dice, a seed in the snapshot, so chance replays exactly.
 - [bleeding.md](bleeding.md): a severed part's wound, bleeding by itself until its count runs out.
+- [verbs-surgery.md](verbs-surgery.md): `cut`, opening a part without severing it.
 - [time.md](time.md): the clock, what each verb takes, and what falls due as it advances.
 - [walking.md](walking.md): where an agent may walk: room bounds, barriers, and the destination.
 - [occupancy.md](occupancy.md): footprints, what stops a push, and where a fall lands.

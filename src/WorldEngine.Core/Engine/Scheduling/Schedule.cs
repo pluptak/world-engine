@@ -101,29 +101,30 @@ public static class Schedule
         var harm = Harm.Apply(working, registry, entity.Id, rule.Value.Damage, cause.CauseId);
         if (harm is { Destroyed: false })
         {
-            ScheduleBleed(working, entity.Id, harm.EventId, cause.Remaining - 1);
+            ScheduleBleed(working, entity.Id, harm.EventId, cause.Remaining - 1, cause.Part);
         }
     }
 
     // A lost part starts a wound of its own: the first bleed falls due `bleed_every_ticks` after the `detached` that opened
     // it, and two wounds bleed side by side (src/engine/schedule.ts `startBleeding`).
-    public static void StartBleeding(Working working, string entityId, string detachedEvent)
+    // The wound is in `part`: a severed part, or an incised one (`docs/bleeding.md`).
+    public static void StartBleeding(Working working, string entityId, string detachedEvent, string part)
     {
         var entity = working.Snapshot.Entities[entityId];
         if (Bleeding(entity.Props) is { } rule)
         {
-            ScheduleBleed(working, entityId, detachedEvent, rule.Times);
+            ScheduleBleed(working, entityId, detachedEvent, rule.Times, part);
         }
     }
 
     // The next bleed of a wound, due `bleed_every_ticks` on, while bleeds remain.
-    private static void ScheduleBleed(Working working, string entityId, string causeId, long remaining)
+    private static void ScheduleBleed(Working working, string entityId, string causeId, long remaining, string? part)
     {
         var entity = working.Snapshot.Entities[entityId];
         var rule = Bleeding(entity.Props);
         if (rule is not null && remaining > 0 && TryAdd(working.Snapshot.Tick, rule.Value.Every, out var due))
         {
-            Add(working, new BleedCause(due, entityId, causeId, remaining));
+            Add(working, new BleedCause(due, entityId, causeId, remaining, part));
         }
     }
 
