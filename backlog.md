@@ -21,10 +21,12 @@ Work top to bottom; take the first entry that is not blocked. Reorder here, nowh
 1. [Afflictions: the author lays a timed modifier](#afflictions-the-author-lays-a-timed-modifier).
 2. [Command provenance: a command says which agent issued it](#command-provenance-a-command-says-which-agent-issued-it).
 3. [Possession: a curse makes a body act only at another's word](#possession-a-curse-makes-a-body-act-only-at-anothers-word).
-4. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
-5. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
-6. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
-7. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
+4. [Blind and deaf: a body that cannot see, or cannot hear](#blind-and-deaf-a-body-that-cannot-see-or-cannot-hear).
+5. [Bound: a body or a part tied, taking what it gives](#bound-a-body-or-a-part-tied-taking-what-it-gives).
+6. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
+7. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
+8. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
+9. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -68,7 +70,7 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 ## Items
 
 Two chains, promoted from `plans/candidates.md` together: a magical curse (Afflictions → Command provenance →
-Possession) and a cyberpunk clinic (Wounds → Treatment → Sockets → Scheduled outcomes). Each item names the
+Possession, then the conditions Blind and deaf, and Bound) and a cyberpunk clinic (Wounds → Treatment → Sockets → Scheduled outcomes). Each item names the
 code it touches; where an item says "as X does", read X first and follow it. The shared registration points
 (`VerbRegistry.cs`, `VerbSpecs.cs`, `Model/Code.cs`, `EventPerception`'s table, the contract, `docs/verbs.md`)
 get one line or entry each; a new verb follows the `new-verb` skill (`.claude/skills/new-verb`).
@@ -155,7 +157,8 @@ actor may work on its own body.
   - `SnapshotValidation`: `possessed_by` and `possessor` join the dangling-reference loop beside `powered_by` and
     `controlled_by`; a `possessed_by` naming itself is refused like a control loop.
   - Ending it early is the author's `update_props` clearing `possessed_by`, or the link destroyed.
-- **Files:** `Engine/Prop.cs`, `Engine/Physics/Possession.cs` (new), `Engine/Pipeline.cs`,
+  - `Scenes/Forms.cs` `ArchitectProps` gains the three props, so `scenarios/curse.json` can set them.
+- **Files:** `Engine/Prop.cs`, `Engine/Physics/Possession.cs` (new), `Engine/Pipeline.cs`, `Scenes/Forms.cs`,
   `Engine/SnapshotValidation.cs`, `Model/Code.cs`, `templates/curse.json`, `docs/possession.md` (new, ≤ 40 lines,
   indexed in `docs/DESIGN.md`), `docs/fields.md`.
 - **Tests:** a scenario `scenarios/curse.json` (two humans and a curse linking them, `lapses_at` 5, a seed not needed):
@@ -165,6 +168,62 @@ actor may work on its own body.
 - **Non-goals:** sensing through the victim, breaking free by a roll, a `released` event.
 - **Done when:** as above.
 - **Depends on:** Command provenance.
+
+### Blind and deaf: a body that cannot see, or cannot hear
+
+- **What:** two state props an author sets, as `asleep` is (`docs/senses.md`): `blind` takes sight, `deaf` takes
+  hearing. Unlike `asleep`, neither refuses the body's commands: a blind body still acts on what it touches,
+  hears or smells.
+- **Props** (`Engine/Prop.cs`, `Flag(..., Tier.State)`, `docs/fields.md`): `blind`, `deaf`.
+- **Rules:** in both perception checks, `Perception.cs` (entity form) and `EventPerception.cs` (event form), right
+  after the `asleep` check and in the same shape: `blind` and the sense is sight → `false` with a new basis code
+  `blind`; `deaf` and the sense is hearing → `false` / `deaf`. Nothing else reads them. Their capacity is untouched,
+  so `capacity` still reports `sight` 100 for a blind body: the condition is not damage.
+- **Scenarios:** `Scenes/Forms.cs` `ArchitectProps` gains `Prop.Blind` and `Prop.Deaf`, beside `Prop.Asleep`.
+  A beat may set them (`set_props` / `update_props` are beat edits already), which is how a curse strikes later.
+- **Files:** `Engine/Prop.cs`, `Engine/Perception/Perception.cs`, `Engine/Perception/EventPerception.cs`,
+  `Model/Code.cs` (two members), `Scenes/Forms.cs`, `docs/senses.md` (two lines beside `asleep`),
+  `docs/senses-bases.md` (the two codes), `docs/fields.md`.
+- **Tests** (beside the `asleep` perception tests): in a lit room, a blind human does not see a stone in front
+  of it (`false` / `blind`) and still touches the one it holds; it hears another's `say`; a deaf human sees the
+  `say` and does not hear it (`false` / `deaf`); both still `move` and `take`; `observe` lists for a blind body
+  only what touch and smell give; set by a beat at tick 2, the `false` begins at tick 2.
+- **Non-goals:** partial blindness, a sense restored by a timer (an author or a beat clears the prop).
+- **Done when:** the tests pass, `dotnet test WorldEngine.slnx` and the deep run pass, and no existing golden moves.
+- **Depends on:** nothing.
+
+### Bound: a body or a part tied, taking what it gives
+
+- **What:** binding takes capacities the way losing a part does, and is undone by clearing it. Decided
+  (`plans/candidates.md` history): bound with no part named takes `moving` and `manipulation`; a bound part takes
+  only what that part, and the parts under it, contribute. A bound body still speaks and senses.
+- **Model:**
+  - Body-wide: a state prop `bound` (`Engine/Prop.cs`, `Flag`), in `ArchitectProps` beside `asleep`.
+  - One part: `PartState` gains `bool? Bound` (`Model/Snapshot.cs`), written only when true, absent read as false
+    (no schema change). The `set_part` edit's `state` takes an optional `bound` (`Verbs/EditParser.cs`); that is how
+    a scene or a beat binds a part, since a scenario does not write part state at tick 0. Wounds and Sockets add
+    their own optional fields to the same record and edit: whichever lands second adds beside the first.
+- **Rules** (`Engine/Physics/Capacities.cs`, `Structural`):
+  - A part that is bound, or has a bound ancestor (the `AncestorsAvailable` walk), contributes nothing.
+  - A body with `bound` reads `Structural` 0 for `moving` and `manipulation`, whatever its parts.
+  - Both are structural, so `Capacities.Of` follows, and modifiers still add on top as today, clamped to 0–100.
+  - What a bound part holds stays held: `Carry.PartAvailable` and the `in_part` rules do not read `Bound`. A bound
+    hand cannot take anything new, since its `manipulation` is gone.
+  - No event of its own: the change is an `edited` event, as `set_part` and `update_props` already record. No
+    `capability_changed` is emitted for it, as for any edit today.
+- **Files:** `Model/Snapshot.cs`, `Engine/Physics/PartStates.cs` (default check counts `Bound`),
+  `Engine/Physics/Capacities.cs`, `Engine/Prop.cs`, `Verbs/EditParser.cs`, `Scenes/Forms.cs`,
+  `docs/structure.md` (a bound part), `docs/state.md` (capacities), `docs/fields.md`, `docs/verbs-edit.md`
+  (`set_part` takes `bound`).
+- **Tests:** a human with `bound` reads `moving` 0 and `manipulation` 0, `sight` and `speech` 100; its `move` is
+  refused `insufficient_moving` and its `say` is accepted; `set_part` binding `hand_l` takes 50 `manipulation`
+  (hand 30 and thumb 20) and leaves the right hand's 50; the stone `hand_l` held stays in it; clearing the binding
+  (a `set_part` with no `bound`, or `update_props` dropping `bound`) restores every capacity; a beat binds the body
+  at tick 3; a store world folds alike.
+- **Non-goals:** `bind` and `untie` verbs and the rope they would need, struggling free, binding by a part's
+  name other than through `set_part`.
+- **Done when:** as above, and no existing golden moves.
+- **Depends on:** nothing.
 
 ### Wounds: a cut opens a part without severing it
 

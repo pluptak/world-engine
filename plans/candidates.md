@@ -13,19 +13,13 @@ Priorities there, then deleting it here in the same commit.
   staging cannot give. A camera's cone is built (`docs/camera.md`); a body's would also need a facing that
   changes as it moves or turns, and `turn` is out of scope. Open: who sets a body's facing, and
   whether hearing or touch ever reads it.
-- **Conditions.** `asleep` is built (`docs/senses.md`). Each other condition takes what it names, as
-  `asleep` takes sight and hearing. Decided by the maintainer:
-  - **Blind** takes sight; **deaf** takes hearing.
-  - **Bound** is a hierarchy. Bound with no limb named takes movement and manipulation. Bound on a
-    named part takes only what that part provides: bound legs take movement only. A bound part takes
-    the capacity its template already declares, so binding removes that part's contribution the way
-    damage does; no new mapping. A bound body can still speak; gagging stops speech, not binding.
+- **Conditions.** `asleep` and `unconscious` are built (`docs/senses.md`); blind, deaf and bound are
+  backlog items. Decided by the maintainer:
   - **Gagged** blocks speech down to sound: no message gets through. A gagged `say` is not refused. The
     speaker is told by a `garbled` line on its own hearing, so it knows others will hear or understand it
     poorly. The garble is a flag on the heard event, not scrambled words: hearers already get only a
     sound, and scrambling would make the engine produce text, which the no-prose rule forbids.
-  - Open for all: which scene needs which. Each is an item when a scene does. Unconscious is built
-    (`docs/senses.md`).
+  - Open: which scene needs it.
 - **A room going dark.** Decided: when a room goes dark, every sighted participant in it is blind until
   the light is back on. No per-participant condition: the unlit rule already makes sight false in a dark
   room, which is that blindness, and a condition would duplicate it and need upkeep as the light changes.
@@ -34,9 +28,6 @@ Priorities there, then deleting it here in the same commit.
 - **`wait` outside a run.** A running run already refuses `wait` (`round_only`, `src/engine/run.ts`).
   Decided: `wait` stays in worlds with no run, since the suite and single-agent worlds use it. Removing it
   would rewrite many tests for no gain.
-- **A successor's held items.** The successor's field names are settled (`docs/templates.md`). Decided:
-  the held items fall where the body lay, as a spent thing's products already do. Passing them to the
-  successor would move objects by a transfer nobody caused.
 - **`WORLD_AUTHOR`.** It keeps every permission at once, for tests and repair (`docs/roles.md`). Decided:
   it stays until every entry point checks the roles, since removing it now breaks tests and repair. Open:
   when, if ever, the roles replace it.
