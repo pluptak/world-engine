@@ -33,7 +33,7 @@ public static class SwitchVerbs
         {
             return Pipeline.Invalid("no_such_entity");
         }
-        if (!PropValues.IsTrue(entity.Props, "power_source") && PropValues.GetString(entity.Props, "powered_by") is null)
+        if (!entity.Props.Is(Prop.PowerSource) && entity.Props.Get(Prop.PoweredBy) is null)
         {
             return Pipeline.Refused("not_switchable");
         }
@@ -49,11 +49,11 @@ public static class SwitchVerbs
         }
 
         // Flipping a switch already that way would change nothing but the clock. A switch with no `on` is on.
-        if (on && !PropValues.IsFalse(entity.Props, "on"))
+        if (on && entity.Props.Get(Prop.On) != false)
         {
             return Pipeline.Refused("already_on");
         }
-        if (!on && PropValues.IsFalse(entity.Props, "on"))
+        if (!on && entity.Props.Get(Prop.On) == false)
         {
             return Pipeline.Refused("already_off");
         }
@@ -73,11 +73,9 @@ public static class SwitchVerbs
     // The snapshot with the entity's `on` prop taken away, so the walk is judged as a switch on would leave it.
     private static Snapshot WithoutOn(Snapshot snapshot, Entity entity)
     {
-        var props = new Dictionary<string, JsonNode?>(entity.Props, StringComparer.Ordinal);
-        props.Remove("on");
         var entities = new Dictionary<string, Entity>(snapshot.Entities, StringComparer.Ordinal)
         {
-            [entity.Id] = entity with { Props = props },
+            [entity.Id] = entity with { Props = entity.Props.Without(Prop.On) },
         };
         return snapshot with { Entities = entities };
     }
@@ -87,10 +85,6 @@ public static class SwitchVerbs
         var targetId = context.Target!.EntityId;
         var entity = working.Snapshot.Entities[targetId];
         var eventId = working.Emit("switched", targetId, Pipeline.Reason(("on", on)), rootEventId);
-        var props = new Dictionary<string, JsonNode?>(entity.Props, StringComparer.Ordinal)
-        {
-            ["on"] = JsonValue.Create(on),
-        };
-        working.SetProps(targetId, props, eventId);
+        working.SetProps(targetId, entity.Props.With(Prop.On, on), eventId);
     }
 }

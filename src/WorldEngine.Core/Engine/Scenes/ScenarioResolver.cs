@@ -15,7 +15,6 @@ public static class ScenarioResolver
     private static readonly Regex AllocatedId = new(@"^e[1-9][0-9]*\z", RegexOptions.CultureInvariant);
     private static readonly string[] ReferenceFields = ["location", "support", "contained_in", "concealed_by"];
     private static readonly string[] HolderFields = ["location", "support", "contained_in"];
-    private static readonly string[] ReferenceProps = ["from", "to", "opens", "powered_by", "controlled_by"];
 
     // Every name is known before any reference is read, so an entry may point forward. Ids follow next_seq in entry order.
     public static Resolved Resolve(JsonArray scenario, long nextSeq = 1)
@@ -93,7 +92,7 @@ public static class ScenarioResolver
                 {
                     copy[key] = value?.DeepClone();
                 }
-                foreach (var key in ReferenceProps)
+                foreach (var key in Prop.References)
                 {
                     if (Text(copy[key]) is { } name)
                     {

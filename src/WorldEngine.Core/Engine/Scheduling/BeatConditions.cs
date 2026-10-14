@@ -43,9 +43,9 @@ public static partial class Beats
         switch (op)
         {
             case "eq":
-                return PropFields.SameValue(have, want);
+                return Prop.SameValue(have, want);
             case "ne":
-                return !PropFields.SameValue(have, want);
+                return !Prop.SameValue(have, want);
             default:
                 return JsonReads.Number(have) is { } left
                     && JsonReads.Number(want) is { } right

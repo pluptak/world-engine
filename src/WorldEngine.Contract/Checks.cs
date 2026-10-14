@@ -79,7 +79,7 @@ public static class Checks
         ("entities", Req(Entries)),
         ("run", Opt(Obj(
             ("odds", Opt(List(Obj(
-                ("entity", Req(NonEmpty)), ("max", Req(Between(0, 100))), ("min", Req(Between(0, 100))), ("prop", Req(Const("jam_pct"))))))),
+                ("entity", Req(NonEmpty)), ("max", Req(Between(0, 100))), ("min", Req(Between(0, 100))), ("prop", Req(Const(Prop.JamPct))))))),
             ("pool", Opt(List(Record))),
             ("slots", Opt(List(Or(NonEmpty, List(NonEmpty))))),
             ("tick_limit", Opt(AtLeast(1)))))),

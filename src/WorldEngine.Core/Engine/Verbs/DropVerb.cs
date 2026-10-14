@@ -59,7 +59,7 @@ public static class DropVerb
         var snapshot = working.Snapshot;
         var holder = snapshot.Entities[holderId];
         var entity = snapshot.Entities[entityId];
-        var handHeight = PropValues.GetNumber(holder.Props, "hand_height_cm") ?? 0;
+        var handHeight = holder.Props.Get(Prop.HandHeightCm) ?? 0;
         // Where the holder is, through whatever carries it in turn: a carried agent drops from its carrier's place.
         var at = Geometry.EffectivePos(snapshot, holderId);
         var rest = holder.Location is not null && at is not null
@@ -103,7 +103,7 @@ public static class DropVerb
                 || entity.ContainedIn is not null
                 || entity.Pos is null
                 || entity.Status == EntityStatus.Destroyed
-                || !PropValues.IsTrue(entity.Props, "surface")
+                || !entity.Props.Is(Prop.Surface)
                 || template.SizeCm.H >= fromCm
                 || template.SizeCm.W < fallerTemplate.SizeCm.W
                 || template.SizeCm.D < fallerTemplate.SizeCm.D)

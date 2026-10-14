@@ -13,7 +13,6 @@ public static class SceneBuilder
     // Keys whose string value names an entity, and props whose string value names one (src/engine/scene.ts, src/scenario.ts).
     private static readonly HashSet<string> ReferenceKeys =
         ["entity", "target", "in", "room", "location", "support", "contained_in", "concealed_by"];
-    private static readonly HashSet<string> ReferenceProps = ["from", "to", "opens", "powered_by", "controlled_by"];
 
     // The scene's beats and run on the snapshot its spawns made, with names bound to ids. A null beats or run is absent from the
     // scene. The beats are schedule_beat bodies, and the pool beats are beat bodies with no tick.
@@ -79,7 +78,7 @@ public static class SceneBuilder
         var resolved = new JsonObject();
         foreach (var (key, value) in props)
         {
-            resolved[key] = Text(value) is { } name && ReferenceProps.Contains(key)
+            resolved[key] = Text(value) is { } name && Prop.References.Contains(key)
                 ? JsonValue.Create(Named(names, name, $"{path}.{key}"))
                 : value?.DeepClone();
         }
@@ -233,9 +232,7 @@ public static class SceneBuilder
             var path = $"run.odds[{index}]";
             var entity = Named(names, Text(entry["entity"]) ?? "", $"{path}.entity");
             if (!(snapshot.Entities.TryGetValue(entity, out var door)
-                && door.Props.TryGetValue("open", out var open)
-                && open is JsonValue flag
-                && flag.TryGetValue(out bool _)))
+                && door.Props.Get(Prop.Open) is not null))
             {
                 throw Refused($"{path}.entity", "not_a_door");
             }
@@ -244,7 +241,7 @@ public static class SceneBuilder
             {
                 throw Refused(path, "invalid_odds");
             }
-            result.Add(new Odds(entity, "jam_pct", min, max));
+            result.Add(new Odds(entity, Prop.JamPct, min, max));
         }
         return result;
     }

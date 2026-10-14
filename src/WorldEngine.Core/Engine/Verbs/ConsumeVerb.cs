@@ -43,23 +43,15 @@ public static class ConsumeVerb
         // Only a body that declares a hunger has one to lower.
         var actor = working.Snapshot.Entities[actorId];
         var nutrition = taken is SolidPlan solid ? solid.Nutrition : ((LiquidPlan)taken).Nutrition;
-        if (WholeNumber(actor.Props.GetValueOrDefault("hunger"), out var hunger))
+        if (actor.Props.Get(Prop.Hunger) is { } hunger)
         {
-            var actorProps = new Dictionary<string, JsonNode?>(actor.Props, StringComparer.Ordinal)
-            {
-                ["hunger"] = JsonValue.Create(Math.Max(0, hunger - nutrition)),
-            };
-            working.SetProps(actorId, actorProps, eaten);
+            working.SetProps(actorId, actor.Props.With(Prop.Hunger, Math.Max(0, hunger - nutrition)), eaten);
         }
 
         // A solid with a portion left goes on being there; its last portion, or one eaten whole, uses it up.
         if (taken is SolidPlan { Portions: > 1 } portioned)
         {
-            var props = new Dictionary<string, JsonNode?>(item.Props, StringComparer.Ordinal)
-            {
-                ["portions"] = JsonValue.Create(portioned.Portions!.Value - 1),
-            };
-            working.SetProps(item.Id, props, eaten);
+            working.SetProps(item.Id, item.Props.With(Prop.Portions, portioned.Portions!.Value - 1), eaten);
             return;
         }
         if (taken is SolidPlan)
@@ -71,13 +63,10 @@ public static class ConsumeVerb
         var liquid = (LiquidPlan)taken;
         var remaining = liquid.Available - liquid.Amount;
         // An emptied vessel declares no material at all, the way a poured or broken one does.
-        var vessel = new Dictionary<string, JsonNode?>(item.Props, StringComparer.Ordinal)
-        {
-            ["liquid_amount"] = JsonValue.Create(remaining),
-        };
+        var vessel = item.Props.With(Prop.LiquidAmount, remaining);
         if (remaining == 0)
         {
-            vessel["liquid_material"] = JsonValue.Create("");
+            vessel = vessel.With(Prop.LiquidMaterial, "");
         }
         working.SetProps(item.Id, vessel, eaten);
     }
@@ -154,12 +143,12 @@ public static class ConsumeVerb
     // argument is a whole positive number for a liquid (absent takes all of it) and is not taken by a solid.
     private static Choice PlanOf(Entity item, IReadOnlyDictionary<string, JsonNode?>? args)
     {
-        var material = PropValues.GetString(item.Props, "liquid_material");
+        var material = item.Props.Get(Prop.LiquidMaterial);
         if (!string.IsNullOrEmpty(material)
-            && WholeNumber(item.Props.GetValueOrDefault("liquid_amount"), out var available)
+            && item.Props.Get(Prop.LiquidAmount) is { } available
             && available > 0)
         {
-            if (!WholeNumber(item.Props.GetValueOrDefault("liquid_nutrition"), out var perHundred) || perHundred < 0)
+            if (item.Props.Get(Prop.LiquidNutrition) is not { } perHundred || perHundred < 0)
             {
                 return Refused(Status.Refused, "not_consumable");
             }
@@ -179,7 +168,7 @@ public static class ConsumeVerb
             return new Choice(item, new LiquidPlan(amount, available, material, amount * perHundred / 100), null);
         }
 
-        if (!WholeNumber(item.Props.GetValueOrDefault("nutrition"), out var nutrition) || nutrition <= 0)
+        if (item.Props.Get(Prop.Nutrition) is not { } nutrition || nutrition <= 0)
         {
             return Refused(Status.Refused, "not_consumable");
         }
@@ -188,11 +177,11 @@ public static class ConsumeVerb
         {
             return Refused(Status.Invalid, "invalid_args");
         }
-        if (!item.Props.TryGetValue("portions", out var portionsNode))
+        if (!item.Props.ContainsKey(Prop.Portions))
         {
             return new Choice(item, new SolidPlan(nutrition, null), null);
         }
-        if (!WholeNumber(portionsNode, out var portions) || portions <= 0)
+        if (item.Props.Get(Prop.Portions) is not { } portions || portions <= 0)
         {
             return Refused(Status.Refused, "not_consumable");
         }

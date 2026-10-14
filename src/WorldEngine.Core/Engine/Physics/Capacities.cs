@@ -46,7 +46,7 @@ public static class Capacities
         }
         var (entity, _) = EntityAndTemplate(snapshot, registry, entityId);
         // An unconscious body has no capacity; the structural sums are unchanged, so what it holds stays held.
-        if ((entity.Props.GetValueOrDefault("unconscious") as JsonValue)?.GetValueKind() is JsonValueKind.True)
+        if (entity.Props.Is(Prop.Unconscious))
         {
             return 0;
         }

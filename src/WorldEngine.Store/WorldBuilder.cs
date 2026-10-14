@@ -15,7 +15,7 @@ public static class WorldBuilder
     public static readonly Coverage DefaultCoverage = new(
         ["support", "contained_in", "attached_to", "status", "location", "near", "reachable"],
         [Sense.Sight, Sense.Hearing],
-        ["integrity", "residue", "pos", "open"]);
+        ["integrity", "residue", "pos", Prop.Open]);
 
     // The snapshot a scenario makes, and the ids its names gave. A scenario is a list of entries, or a scene with `entities`, `seed`,
     // `beats` and `run`; a list alone is a scene with none of the rest.

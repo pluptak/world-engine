@@ -46,7 +46,7 @@ public static class Physical
         Queue<LossRequest> queue)
     {
         var entity = working.Snapshot.Entities[entityId];
-        var threshold = PropValues.GetNumber(entity.Props, "break_fall_cm");
+        var threshold = entity.Props.Get(Prop.BreakFallCm);
         if (entity.Status is EntityStatus.Broken or EntityStatus.Destroyed || threshold is null || fallCm < threshold)
         {
             SpillVessel(working, entityId, causeId, fallCm, landing);
@@ -97,8 +97,8 @@ public static class Physical
 
         // The residue a break leaves: the template's own, and the liquid the thing held, on the surface it lands on.
         var residueAdds = new Dictionary<string, long>(template.BreakResidue, StringComparer.Ordinal);
-        var liquidMaterial = PropValues.GetString(entity.Props, "liquid_material");
-        var liquidAmount = PropValues.GetNumber(entity.Props, "liquid_amount");
+        var liquidMaterial = entity.Props.Get(Prop.LiquidMaterial);
+        var liquidAmount = entity.Props.Get(Prop.LiquidAmount);
         if (!string.IsNullOrEmpty(liquidMaterial) && liquidAmount is { } amount)
         {
             residueAdds[liquidMaterial] = residueAdds.GetValueOrDefault(liquidMaterial) + (long)amount;
@@ -110,16 +110,18 @@ public static class Physical
         }
 
         // The liquid is gone from the broken thing: its material and amount are cleared where they are written.
-        if (PropValues.IsString(entity.Props, "liquid_material") || PropValues.IsNumber(entity.Props, "liquid_amount"))
+        var hasMaterial = entity.Props.Get(Prop.LiquidMaterial) is not null;
+        var hasAmount = entity.Props.Get(Prop.LiquidAmount) is not null;
+        if (hasMaterial || hasAmount)
         {
-            var props = new Dictionary<string, JsonNode?>(entity.Props, StringComparer.Ordinal);
-            if (PropValues.IsString(entity.Props, "liquid_material"))
+            var props = entity.Props;
+            if (hasMaterial)
             {
-                props["liquid_material"] = JsonValue.Create("");
+                props = props.With(Prop.LiquidMaterial, "");
             }
-            if (PropValues.IsNumber(entity.Props, "liquid_amount"))
+            if (hasAmount)
             {
-                props["liquid_amount"] = JsonValue.Create(0L);
+                props = props.With(Prop.LiquidAmount, 0);
             }
             working.SetProps(entityId, props, brokenEvent);
         }
@@ -236,7 +238,7 @@ public static class Physical
         foreach (var id in new[] { obstacleId, moverId })
         {
             var entity = working.Snapshot.Entities[id];
-            var threshold = PropValues.GetNumber(entity.Props, "break_fall_cm");
+            var threshold = entity.Props.Get(Prop.BreakFallCm);
             if (entity.Status is EntityStatus.Broken or EntityStatus.Destroyed
                 || threshold is null
                 || impact < MassOf(working.Snapshot, registry, id) * threshold)
@@ -266,7 +268,7 @@ public static class Physical
             working.Snapshot.Entities.Keys
                 .Order(StringComparer.Ordinal)
                 .Where(id => working.Snapshot.Entities[id].Support == supportId
-                    && PropValues.IsTrue(working.Snapshot.Entities[id].Props, "topples"))
+                    && working.Snapshot.Entities[id].Props.Is(Prop.Topples))
                 .Select(id => new LossRequest(id, causeId, Displaced: true)));
         ProcessQueue(working, registry, queue);
     }
@@ -416,7 +418,7 @@ public static class Physical
             }
             var entity = working.Snapshot.Entities[id];
             var wasContent = entity.ContainedIn == targetId;
-            var wasRider = entity.Support == targetId && !PropValues.IsTrue(entity.Props, "topples");
+            var wasRider = entity.Support == targetId && !entity.Props.Is(Prop.Topples);
             if (!wasContent && !wasRider)
             {
                 continue;
@@ -482,13 +484,13 @@ public static class Physical
             return;
         }
         var entity = working.Snapshot.Entities[entityId];
-        var material = PropValues.GetString(entity.Props, "liquid_material");
-        var amount = PropValues.GetNumber(entity.Props, "liquid_amount");
+        var material = entity.Props.Get(Prop.LiquidMaterial);
+        var amount = entity.Props.Get(Prop.LiquidAmount);
         if (string.IsNullOrEmpty(material) || amount is null or <= 0)
         {
             return;
         }
-        if (PropValues.IsTrue(entity.Props, "openable") && !PropValues.IsTrue(entity.Props, "open"))
+        if (entity.Props.Is(Prop.Openable) && !entity.Props.Is(Prop.Open))
         {
             return;
         }
@@ -505,11 +507,6 @@ public static class Physical
         {
             Residue.Add(working, surface, new Dictionary<string, long> { [material] = (long)amount.Value }, spilledEvent);
         }
-        var props = new Dictionary<string, JsonNode?>(entity.Props, StringComparer.Ordinal)
-        {
-            ["liquid_material"] = JsonValue.Create(""),
-            ["liquid_amount"] = JsonValue.Create(0L),
-        };
-        working.SetProps(entityId, props, spilledEvent);
+        working.SetProps(entityId, entity.Props.With(Prop.LiquidMaterial, "").With(Prop.LiquidAmount, 0), spilledEvent);
     }
 }

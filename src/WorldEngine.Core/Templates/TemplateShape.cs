@@ -214,7 +214,7 @@ public static class TemplateShape
         foreach (var (name, node) in fields)
         {
             var at = $"{label}.{name}";
-            if (PropFields.Table.ContainsKey(name))
+            if (Prop.Table.ContainsKey(name))
             {
                 throw new FormatException($"{at} is a prop the engine declares");
             }
@@ -253,7 +253,7 @@ public static class TemplateShape
             }
             return;
         }
-        foreach (var dimension in new[] { "inner_w_cm", "inner_d_cm", "inner_h_cm" })
+        foreach (var dimension in new[] { Prop.InnerWCm.Name, Prop.InnerDCm.Name, Prop.InnerHCm.Name })
         {
             AssertNumber(holds[dimension], $"{holdsLabel}.{dimension}");
         }

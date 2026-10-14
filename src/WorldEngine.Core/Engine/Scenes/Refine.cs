@@ -16,7 +16,7 @@ public static class Refine
         template.Lineage?.Contains(ancestor) == true;
 
     private static bool IsStateProp(Template template, string name) =>
-        (PropFields.Table.TryGetValue(name, out var field) && field.Tier == Tier.State)
+        (Prop.Table.TryGetValue(name, out var field) && field.Tier == Tier.State)
         || (template.Fields is not null && template.Fields.TryGetValue(name, out var decl) && decl.Tier == "state");
 
     // The new preset's props, with the entity's state props the new preset declares laid over them. A state prop the new
@@ -49,15 +49,15 @@ public static class Refine
     // volume, truncated. Null when neither is given.
     private static double? LiquidCapacity(IReadOnlyDictionary<string, JsonNode?> props)
     {
-        var declared = JsonReads.Number(props.GetValueOrDefault("capacity_cm3"));
+        var declared = props.Get(Prop.CapacityCm3);
         if (declared is { } capacity && IsWhole(capacity) && capacity > 0)
         {
             return capacity;
         }
-        var width = JsonReads.Number(props.GetValueOrDefault("inner_w_cm"));
-        var depth = JsonReads.Number(props.GetValueOrDefault("inner_d_cm"));
-        var height = JsonReads.Number(props.GetValueOrDefault("inner_h_cm"));
-        return width is { } w && depth is { } d && height is { } h ? Math.Truncate(w * d * h) : null;
+        var width = props.Get(Prop.InnerWCm);
+        var depth = props.Get(Prop.InnerDCm);
+        var height = props.Get(Prop.InnerHCm);
+        return width is { } w && depth is { } d && height is { } h ? w * d * h : null;
     }
 
     // Why an entity cannot become `next` here, or null for ok. Contents that no longer fit their holder or its parts are the
@@ -91,7 +91,7 @@ public static class Refine
 
         var support = subject.Support is null ? null : snapshot.Entities.GetValueOrDefault(subject.Support);
         var supportTemplate = support is null ? null : registry.GetValueOrDefault(support.Template);
-        if (supportTemplate is not null && JsonReads.IsTrue(support!.Props.GetValueOrDefault("surface")))
+        if (supportTemplate is not null && support!.Props.Is(Prop.Surface))
         {
             var data = Fit.Misfit(footprint, [supportTemplate.SizeCm.W, supportTemplate.SizeCm.D]);
             if (data is { } misfit)
@@ -101,7 +101,7 @@ public static class Refine
         }
 
         // What stands on a surface has to keep a surface to stand on, and fit it.
-        if (JsonReads.IsTrue(subject.Props.GetValueOrDefault("surface")))
+        if (subject.Props.Is(Prop.Surface))
         {
             foreach (var id in snapshot.Entities.Keys.Order(StringComparer.Ordinal))
             {
@@ -110,7 +110,7 @@ public static class Refine
                 {
                     continue;
                 }
-                if (!JsonReads.IsTrue(props.GetValueOrDefault("surface")))
+                if (!props.Is(Prop.Surface))
                 {
                     return Pipeline.Refused("not_a_surface");
                 }
@@ -122,7 +122,7 @@ public static class Refine
             }
         }
 
-        var held = JsonReads.Number(props.GetValueOrDefault("liquid_amount"));
+        var held = props.Get(Prop.LiquidAmount);
         var capacity = LiquidCapacity(props);
         if (held is { } amount && capacity is { } limit && amount > limit)
         {

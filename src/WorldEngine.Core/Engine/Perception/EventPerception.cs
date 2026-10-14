@@ -180,14 +180,14 @@ public static class EventPerception
         }
         var data = eventRecord.Data;
         return eventRecord.Type is "broken" or "detached"
-            || (eventRecord.Type == "sounded" && PropValues.IsTrue(data, "loud"))
-            || (eventRecord.Type == "say" && PropValues.GetString(data, "volume") == "shout")
-            || (eventRecord.Type == "dropped" && PropValues.GetNumber(data, "fall_cm") is { } fall && fall >= 50);
+            || (eventRecord.Type == "sounded" && JsonReads.IsTrue(data.GetValueOrDefault("loud")))
+            || (eventRecord.Type == "say" && JsonReads.Text(data.GetValueOrDefault("volume")) == "shout")
+            || (eventRecord.Type == "dropped" && JsonReads.Number(data.GetValueOrDefault("fall_cm")) is { } fall && fall >= 50);
     }
 
     // The room an event happened in: the room its data names, else the subject's own.
     private static string? EventLocation(WorldEvent eventRecord, Entity fallback) =>
-        PropValues.GetString(eventRecord.Data, "location") ?? fallback.Location;
+        JsonReads.Text(eventRecord.Data.GetValueOrDefault("location")) ?? fallback.Location;
 
     // A door with no location is in either room it connects; treat it as in the observer's room if they're in one of them.
     private static string? TargetLocationForPerception(Entity target, string? targetLocation, string? observerLocation)
@@ -196,8 +196,8 @@ public static class EventPerception
         {
             return targetLocation;
         }
-        var from = PropValues.GetString(target.Props, "from");
-        var to = PropValues.GetString(target.Props, "to");
+        var from = target.Props.Get(Prop.From);
+        var to = target.Props.Get(Prop.To);
         if (from is not null && to is not null && observerLocation == from)
         {
             return from;
@@ -212,7 +212,7 @@ public static class EventPerception
     // Whether a subject holds a liquid or has residue spilled on it: what there is to smell.
     private static bool Smells(Entity subject)
     {
-        var material = PropValues.GetString(subject.Props, "liquid_material");
+        var material = subject.Props.Get(Prop.LiquidMaterial);
         return material is { Length: > 0 } || subject.Residue.Values.Any(amount => amount > 0);
     }
 
@@ -227,7 +227,7 @@ public static class EventPerception
     // the threshold of the speaker, anything louder the whole room. A speaker hears their own.
     private static bool HeardAtVolume(Snapshot snapshot, string listenerId, Entity speaker, WorldEvent? eventRecord)
     {
-        if (PropValues.GetString(eventRecord?.Data ?? new Dictionary<string, JsonNode?>(), "volume") != "whisper"
+        if (JsonReads.Text((eventRecord?.Data ?? new Dictionary<string, JsonNode?>()).GetValueOrDefault("volume")) != "whisper"
             || listenerId == speaker.Id)
         {
             return true;
@@ -256,7 +256,7 @@ public static class EventPerception
     // `say` by the agent an intercom it controls, heard in that intercom's room. Nothing crosses a door.
     private static bool HeardThroughIntercom(Snapshot snapshot, Entity observer, Entity subject, WorldEvent? eventRecord, SenseRule sense)
     {
-        foreach (var id in Power.Feeds(snapshot, observer.Id, "intercom"))
+        foreach (var id in Power.Feeds(snapshot, observer.Id, Prop.Intercom))
         {
             var device = snapshot.Entities[id];
             var where = TargetLocationForPerception(
@@ -273,7 +273,7 @@ public static class EventPerception
         }
         if (eventRecord?.Type == "say")
         {
-            foreach (var id in Power.Feeds(snapshot, subject.Id, "intercom"))
+            foreach (var id in Power.Feeds(snapshot, subject.Id, Prop.Intercom))
             {
                 var device = snapshot.Entities[id];
                 if (device.Location is not null
@@ -291,7 +291,7 @@ public static class EventPerception
         snapshot.Entities.Values
             .OrderBy(entity => entity.Id, StringComparer.Ordinal)
             .Any(entity => Resolve.IsDoor(entity)
-                && (!openOnly || PropValues.IsTrue(entity.Props, "open"))
+                && (!openOnly || entity.Props.Is(Prop.Open))
                 && Reach.DoorJoins(entity.Props, from, to));
 
     // Whether an observer senses an event by a sense (`perceive` with an event). `Value` is "true", "false" or "unknown";
@@ -322,17 +322,17 @@ public static class EventPerception
             return new Perception.Answer(Truth.False, "observer_destroyed");
         }
         // A body that runs on power senses nothing without it.
-        if (PropValues.GetString(observer.Props, "powered_by") is not null && !Power.Powered(snapshot, observer.Id))
+        if (observer.Props.Get(Prop.PoweredBy) is not null && !Power.Powered(snapshot, observer.Id))
         {
             return new Perception.Answer(Truth.False, "unpowered");
         }
         // A sleeping body sees and hears nothing; touch and smell are unchanged.
-        if (PropValues.IsTrue(observer.Props, "asleep") && sense is Sense.Sight or Sense.Hearing)
+        if (observer.Props.Is(Prop.Asleep) && sense is Sense.Sight or Sense.Hearing)
         {
             return new Perception.Answer(Truth.False, "asleep");
         }
         // An unconscious body takes every sense.
-        if (PropValues.IsTrue(observer.Props, "unconscious"))
+        if (observer.Props.Is(Prop.Unconscious))
         {
             return new Perception.Answer(Truth.False, "unconscious");
         }
@@ -355,7 +355,7 @@ public static class EventPerception
             return authored ? new Perception.Answer(Truth.False, "authored") : new Perception.Answer(Truth.False, "no_such_entity");
         }
         // A `found` event is where the search happened, not what was under it: it is read against the concealer.
-        var subject = eventRecord.Type == "found" && PropValues.GetString(eventRecord.Data, "concealer") is { } concealer
+        var subject = eventRecord.Type == "found" && JsonReads.Text(eventRecord.Data.GetValueOrDefault("concealer")) is { } concealer
             && snapshot.Entities.TryGetValue(concealer, out var concealerEntity)
                 ? concealerEntity
                 : named;
@@ -378,7 +378,7 @@ public static class EventPerception
                 return new Perception.Answer(Truth.False, "authored");
             }
             // A collision is felt by what was hit as much as by what moved.
-            var struck = eventRecord.Type == "collided" && PropValues.GetString(eventRecord.Data, "with") is { } with
+            var struck = eventRecord.Type == "collided" && JsonReads.Text(eventRecord.Data.GetValueOrDefault("with")) is { } with
                 ? snapshot.Entities.GetValueOrDefault(with)
                 : null;
             return TouchesBody(snapshot, registry, observer.Id, subject)
@@ -416,7 +416,7 @@ public static class EventPerception
         {
             return body;
         }
-        foreach (var camera in Power.Feeds(snapshot, observer.Id, "camera"))
+        foreach (var camera in Power.Feeds(snapshot, observer.Id, Prop.Camera))
         {
             var cameraEntity = snapshot.Entities[camera];
             var at = cameraEntity.Location;

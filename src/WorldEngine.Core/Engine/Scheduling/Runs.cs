@@ -73,7 +73,7 @@ public static class Runs
             string? next = null;
             foreach (var entity in snapshot.Entities.Values)
             {
-                if (JsonReads.Text(entity.Props.GetValueOrDefault("succeeds")) == current && (next is null || NumberAfter(entity.Id, next)))
+                if (entity.Props.Get(Prop.Succeeds) == current && (next is null || NumberAfter(entity.Id, next)))
                 {
                     next = entity.Id;
                 }

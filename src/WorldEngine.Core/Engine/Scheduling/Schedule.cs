@@ -80,16 +80,13 @@ public static class Schedule
     private static void RunClose(Working working, IReadOnlyDictionary<string, Template> registry, ScheduledCause cause)
     {
         var entity = working.Snapshot.Entities.GetValueOrDefault(cause.Entity);
-        if (entity is null || !PropValues.IsTrue(entity.Props, "openable") || !PropValues.IsTrue(entity.Props, "open"))
+        if (entity is null || !entity.Props.Is(Prop.Openable) || !entity.Props.Is(Prop.Open))
         {
             return;
         }
         var closed = working.Emit("closed", entity.Id, new Dictionary<string, JsonNode?>(), cause.CauseId);
         // A door on its way shut has `closing` no longer, once it is shut.
-        var props = new Dictionary<string, JsonNode?>(entity.Props, StringComparer.Ordinal);
-        props.Remove("closing");
-        props["open"] = JsonValue.Create(false);
-        working.SetProps(entity.Id, props, closed);
+        working.SetProps(entity.Id, entity.Props.Without(Prop.Closing).With(Prop.Open, false), closed);
         Gate.PushOccupantsAside(working, registry, entity.Id, closed);
     }
 
@@ -135,16 +132,11 @@ public static class Schedule
     // Any of the three missing or not a positive whole number, and it does not bleed.
     private static (long Damage, long Every, long Times)? Bleeding(IReadOnlyDictionary<string, JsonNode?> props)
     {
-        static long? Read(IReadOnlyDictionary<string, JsonNode?> props, string name)
-        {
-            var value = PropValues.GetNumber(props, name);
-            return value is { } number && IsWhole(number) && number > 0
-                ? (long)number
-                : null;
-        }
-        var damage = Read(props, "bleed_damage");
-        var every = Read(props, "bleed_every_ticks");
-        var times = Read(props, "bleed_times");
+        static long? Read(IReadOnlyDictionary<string, JsonNode?> props, Prop<long> prop) =>
+            props.Get(prop) is { } number && number > 0 ? number : null;
+        var damage = Read(props, Prop.BleedDamage);
+        var every = Read(props, Prop.BleedEveryTicks);
+        var times = Read(props, Prop.BleedTimes);
         return damage is null || every is null || times is null ? null : (damage.Value, every.Value, times.Value);
     }
 }

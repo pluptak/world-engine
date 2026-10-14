@@ -13,7 +13,7 @@ namespace WorldEngine.Core.Engine;
 public static class Projection
 {
     // The props a look reads as a level rather than a figure (src/engine/projection.ts `READ_AS_LEVEL`).
-    private static readonly string[] ReadAsLevel = ["liquid_amount", "fuel"];
+    private static readonly Prop<long>[] ReadAsLevel = [Prop.LiquidAmount, Prop.Fuel];
 
     // Quarters by sight; a gauge (`gauge_pct`) marks finer steps.
     private const double SightStepPct = 25;
@@ -221,7 +221,7 @@ public static class Projection
         var props = new JsonObject();
         foreach (var key in entity.Props.Keys.Order(StringComparer.Ordinal))
         {
-            if (snapshot.Coverage.Properties.Contains(key) && !ReadAsLevel.Contains(key))
+            if (snapshot.Coverage.Properties.Contains(key) && !ReadAsLevel.Any(prop => prop.Name == key))
             {
                 props[key] = entity.Props[key]?.DeepClone();
             }
@@ -229,7 +229,7 @@ public static class Projection
         inspection["props"] = props;
 
         // The amounts a look reads as a level: the gauge's step where the thing has one, else quarters.
-        var step = Number(entity.Props.GetValueOrDefault("gauge_pct")) ?? SightStepPct;
+        var step = entity.Props.Get(Prop.GaugePct) ?? SightStepPct;
         var levels = new JsonObject();
         foreach (var prop in ReadAsLevel)
         {
@@ -292,14 +292,14 @@ public static class Projection
 
     // What full is for an amount: a vessel's liquid capacity, or a light's fuel as its template declares it. Null when nothing
     // says, so the thing gives no level.
-    private static double? FullOf(Entity entity, IReadOnlyDictionary<string, Template> registry, string prop)
+    private static double? FullOf(Entity entity, IReadOnlyDictionary<string, Template> registry, Prop<long> prop)
     {
-        if (prop == "liquid_amount")
+        if (prop == Prop.LiquidAmount)
         {
             return PourVerb.LiquidCapacity(entity);
         }
         var declared = registry.TryGetValue(entity.Template, out var template)
-            ? Number(template.Props.GetValueOrDefault("fuel"))
+            ? template.Props.Get(Prop.Fuel)
             : null;
         return declared is { } fuel && fuel > 0 ? fuel : null;
     }

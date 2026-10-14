@@ -30,14 +30,14 @@ public static class PutVerb
             return [];
         }
         var others = nameable.Where(id => id != item.Id).ToList();
-        IEnumerable<JsonObject> Holding(string prop, string relation) =>
+        IEnumerable<JsonObject> Holding(Prop<bool> prop, string relation) =>
             others
-                .Where(id => context.Snapshot.Entities.TryGetValue(id, out var entity) && PropValues.IsTrue(entity.Props, prop))
+                .Where(id => context.Snapshot.Entities.TryGetValue(id, out var entity) && entity.Props.Is(prop))
                 .Select(destination => new JsonObject { ["relation"] = relation, ["destination"] = destination });
         var pockets = Carry.HolderLayout(context.Registry, actor.Template).Spaces
             .Where(space => space.Name != item.InPart)
             .Select(space => new JsonObject { ["relation"] = "in", ["destination"] = $"{actor.Id}.{space.Name}" });
-        return [.. Holding("surface", "on"), .. Holding("container", "in"), .. pockets];
+        return [.. Holding(Prop.Surface, "on"), .. Holding(Prop.Container, "in"), .. pockets];
     }
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
@@ -146,7 +146,7 @@ public static class PutVerb
 
         if (relation == "on")
         {
-            if (!PropValues.IsTrue(destination.Props, "surface"))
+            if (!destination.Props.Is(Prop.Surface))
             {
                 return Pipeline.Refused("not_a_surface");
             }
@@ -160,11 +160,11 @@ public static class PutVerb
             return TooLarge(Fit.Misfit([size.W, size.D], [footprint.W, footprint.D]));
         }
 
-        if (!PropValues.IsTrue(destination.Props, "container"))
+        if (!destination.Props.Is(Prop.Container))
         {
             return Pipeline.Refused("not_a_container");
         }
-        var shut = PropValues.IsTrue(destination.Props, "openable") && !PropValues.IsTrue(destination.Props, "open");
+        var shut = destination.Props.Is(Prop.Openable) && !destination.Props.Is(Prop.Open);
         var closed = shut ? destination.Id : Reach.ClosedEnclosure(snapshot, destination.Id);
         if (closed is not null)
         {

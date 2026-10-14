@@ -34,11 +34,11 @@ public static class Processes
         var actual = props.GetValueOrDefault(condition.Prop);
         if (condition.Op == "eq")
         {
-            return PropFields.SameValue(actual, condition.Value);
+            return Prop.SameValue(actual, condition.Value);
         }
         if (condition.Op == "ne")
         {
-            return !PropFields.SameValue(actual, condition.Value);
+            return !Prop.SameValue(actual, condition.Value);
         }
         if (condition.Op is not ("lt" or "lte" or "gt" or "gte"))
         {
@@ -117,9 +117,9 @@ public static class Processes
     // edited or refined into one. The `open` verb schedules its own first, so one already pending is left as it is.
     private static void ReconcileClose(Working working, Entity entity, string? causeId)
     {
-        if (!JsonReads.IsTrue(entity.Props.GetValueOrDefault("openable"))
-            || !JsonReads.IsTrue(entity.Props.GetValueOrDefault("open"))
-            || JsonReads.Number(entity.Props.GetValueOrDefault("closes_after")) is not { } after
+        if (!entity.Props.Is(Prop.Openable)
+            || !entity.Props.Is(Prop.Open)
+            || entity.Props.Get(Prop.ClosesAfter) is not { } after
             || !IsInt(after)
             || after <= 0
             || Schedule.Pending(working.Snapshot).Any(cause => cause.Kind == "close" && cause.Entity == entity.Id))
@@ -230,7 +230,7 @@ public static class Processes
         if (then.SetProp is { } set)
         {
             var current = entity.Props.GetValueOrDefault(set.Prop);
-            if (!PropFields.SameValue(current, set.Value))
+            if (!Prop.SameValue(current, set.Value))
             {
                 var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
                 {

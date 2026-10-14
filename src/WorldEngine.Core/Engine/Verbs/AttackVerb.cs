@@ -20,12 +20,12 @@ public static class AttackVerb
         Transition: Transition);
 
     // A fist needs hands, a bite a jaw; the damage of the mode used comes from the attacker's template.
-    private sealed record Mode(string Capacity, long AtLeast, string DamageProp, string CrossesGap);
+    private sealed record Mode(string Capacity, long AtLeast, Prop<long> DamageProp, string CrossesGap);
 
     private static readonly Mode[] Modes =
     [
-        new("manipulation", 1, "attack_damage", "limb"),
-        new("mouth_carry", 1, "bite_damage", "body"),
+        new("manipulation", 1, Prop.AttackDamage, "limb"),
+        new("mouth_carry", 1, Prop.BiteDamage, "body"),
     ];
 
     private sealed record Structure(string EntityId, string? PartName);
@@ -44,7 +44,7 @@ public static class AttackVerb
         var partName = target.Part;
         if (partName is null && template.Parts.Count > 0)
         {
-            partName = PropValues.GetString(template.Props, "default_hit_part");
+            partName = template.Props.Get(Prop.DefaultHitPart);
             if (partName is null)
             {
                 return null;
@@ -70,9 +70,9 @@ public static class AttackVerb
             }
             hadCapacity = true;
             var actor = context.Snapshot.Entities[context.Command.Actor];
-            if (PropValues.GetNumber(actor.Props, mode.DamageProp) is { } damage && Math.Floor(damage) == damage && damage > 0)
+            if (actor.Props.Get(mode.DamageProp) is { } damage && damage > 0)
             {
-                return new Choice(mode, (long)damage, "chosen");
+                return new Choice(mode, damage, "chosen");
             }
         }
         return new Choice(null, 0, hadCapacity ? "no_damage" : "no_capacity");

@@ -20,7 +20,10 @@ public static class Forms
     ];
 
     private static readonly HashSet<string> ArchitectProps =
-        ["open", "locked", "burning", "lit", "from", "to", "opens", "powered_by", "controlled_by", "facing_deg", "asleep", "unconscious"];
+        [
+            Prop.Open, Prop.Locked, Prop.Burning, Prop.Lit, Prop.From, Prop.To, Prop.Opens, Prop.PoweredBy, Prop.ControlledBy,
+            Prop.FacingDeg, Prop.Asleep, Prop.Unconscious,
+        ];
 
     // A percentage of what the preset holds, floored, except that one above 0 never comes to 0: a candle's 8 fuel at 10% is 1, so it
     // still lights.
@@ -56,7 +59,7 @@ public static class Forms
         if (overrides.ContainsKey("fuel_pct"))
         {
             var percent = WholePercent(overrides["fuel_pct"], index, "fuel_pct");
-            props["fuel"] = JsonValue.Create(Share(PresetInteger(template, "fuel", index, "fuel_pct"), percent));
+            props[Prop.Fuel] = JsonValue.Create(Share(PresetInteger(template, Prop.Fuel, index, "fuel_pct"), percent));
         }
         if (overrides.ContainsKey("liquid"))
         {
@@ -71,14 +74,14 @@ public static class Forms
             {
                 throw Fail("invalid_form", index, "liquid.material must be a non-empty string");
             }
-            var capacity = PresetInteger(template, "capacity_cm3", index, "liquid");
-            var name = Text(material) ?? Text(template.Props.GetValueOrDefault("liquid_material"));
+            var capacity = PresetInteger(template, Prop.CapacityCm3, index, "liquid");
+            var name = Text(material) ?? template.Props.Get(Prop.LiquidMaterial);
             if (percent > 0 && string.IsNullOrEmpty(name))
             {
                 throw Fail("no_liquid_material", index, $"liquid at {percent}% names no material and {template.Id} holds none");
             }
-            props["liquid_amount"] = JsonValue.Create(Share(capacity, percent));
-            props["liquid_material"] = JsonValue.Create(percent == 0 ? "" : name);
+            props[Prop.LiquidAmount] = JsonValue.Create(Share(capacity, percent));
+            props[Prop.LiquidMaterial] = JsonValue.Create(percent == 0 ? "" : name);
         }
         if (overrides.ContainsKey("condition"))
         {
@@ -93,13 +96,13 @@ public static class Forms
         }
         if (overrides.ContainsKey("hunger_pct"))
         {
-            PresetInteger(template, "hunger", index, "hunger_pct");
-            props["hunger"] = JsonValue.Create(WholePercent(overrides["hunger_pct"], index, "hunger_pct"));
+            PresetInteger(template, Prop.Hunger, index, "hunger_pct");
+            props[Prop.Hunger] = JsonValue.Create(WholePercent(overrides["hunger_pct"], index, "hunger_pct"));
         }
         if (overrides.ContainsKey("portions_pct"))
         {
             var percent = WholePercent(overrides["portions_pct"], index, "portions_pct");
-            props["portions"] = JsonValue.Create(Share(PresetInteger(template, "portions", index, "portions_pct"), percent));
+            props[Prop.Portions] = JsonValue.Create(Share(PresetInteger(template, Prop.Portions, index, "portions_pct"), percent));
         }
         if (props.Count > 0)
         {
@@ -158,9 +161,9 @@ public static class Forms
         return whole;
     }
 
-    private static long PresetInteger(Template template, string prop, int index, string form)
+    private static long PresetInteger(Template template, Prop<long> prop, int index, string form)
     {
-        if (SafeInt(template.Props.GetValueOrDefault(prop)) is not { } value)
+        if (template.Props.Get(prop) is not { } value)
         {
             throw Fail("form_not_applicable", index, $"{form} needs a template that declares {prop}, and {template.Id} does not");
         }

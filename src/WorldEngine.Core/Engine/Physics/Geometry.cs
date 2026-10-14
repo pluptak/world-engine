@@ -118,7 +118,7 @@ public static class Geometry
                 || other.Status == EntityStatus.Destroyed
                 // Rubble is passed over: what broke, and what declares itself debris.
                 || other.Status == EntityStatus.Broken
-                || IsTrue(other.Props.GetValueOrDefault("rubble"))
+                || other.Props.Is(Prop.Rubble)
                 || skip(otherId))
             {
                 continue;
@@ -229,8 +229,8 @@ public static class Geometry
             if (template is not null
                 && at is not null
                 && other.Support == room
-                && IsTrue(other.Props.GetValueOrDefault("barrier"))
-                && !IsTrue(other.Props.GetValueOrDefault("open")))
+                && other.Props.Is(Prop.Barrier)
+                && !other.Props.Is(Prop.Open))
             {
                 barriers.Add(new Box(id, at, template.SizeCm.W, template.SizeCm.D));
             }
@@ -240,7 +240,7 @@ public static class Geometry
         // The hand's line is a centimetre wide, so the seam where two sections meet is no way through.
         foreach (var id in Crossings(from, to, (1, 1), barriers))
         {
-            var gapCm = SafeIntegerAbove(RequireEntity(snapshot, id).Props.GetValueOrDefault("gap_cm"), 0);
+            var gapCm = Math.Max(RequireEntity(snapshot, id).Props.Get(Prop.GapCm) ?? 0, 0);
             if (size > gapCm)
             {
                 return new GapStop(id, size, gapCm);
@@ -270,10 +270,10 @@ public static class Geometry
                 || other.DetachedFrom is not null
                 || other.Status == EntityStatus.Destroyed
                 || other.Status == EntityStatus.Broken
-                || IsTrue(other.Props.GetValueOrDefault("rubble"))
+                || other.Props.Is(Prop.Rubble)
                 || template is null
-                || IsTrue(template.Props.GetValueOrDefault("abstract"))
-                || IsTrue(template.Props.GetValueOrDefault("scenery"))
+                || template.Props.Is(Prop.Abstract)
+                || template.Props.Is(Prop.Scenery)
                 || template.SizeCm.H < StepOverCm)
             {
                 continue;
@@ -334,17 +334,17 @@ public static class Geometry
         {
             var other = RequireEntity(snapshot, otherId);
             var template = registry.GetValueOrDefault(other.Template);
-            var barrier = IsTrue(other.Props.GetValueOrDefault("barrier"));
+            var barrier = other.Props.Is(Prop.Barrier);
             if (otherId == id
                 || template is null
                 || other.Support != mover.Support
                 || other.ContainedIn is not null
                 || other.Status == EntityStatus.Destroyed
                 || other.Status == EntityStatus.Broken
-                || IsTrue(other.Props.GetValueOrDefault("rubble"))
-                || IsTrue(template.Props.GetValueOrDefault("abstract"))
-                || IsTrue(template.Props.GetValueOrDefault("scenery"))
-                || (barrier && IsTrue(other.Props.GetValueOrDefault("open")))
+                || other.Props.Is(Prop.Rubble)
+                || template.Props.Is(Prop.Abstract)
+                || template.Props.Is(Prop.Scenery)
+                || (barrier && other.Props.Is(Prop.Open))
                 || (!barrier && template.SizeCm.H < StepOverCm))
             {
                 continue;
@@ -435,11 +435,5 @@ public static class Geometry
     {
         var template = RequireTemplate(registry, templateId);
         return (template.SizeCm.W, template.SizeCm.D);
-    }
-
-    // A prop that must be a whole number above `floor`, else `floor` itself.
-    private static long SafeIntegerAbove(JsonNode? value, long floor)
-    {
-        return JsonReads.SafeInt(value) is { } n && n > floor ? n : floor;
     }
 }

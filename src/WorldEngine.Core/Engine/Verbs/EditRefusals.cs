@@ -275,7 +275,7 @@ public static partial class EditVerb
         {
             return Refused("no_run");
         }
-        var odds = (run.Odds ?? []).FirstOrDefault(entry => entry.Entity == edit.Entity && entry.Prop == "jam_pct");
+        var odds = (run.Odds ?? []).FirstOrDefault(entry => entry.Entity == edit.Entity && entry.Prop == Prop.JamPct);
         if (odds is null)
         {
             return Refused("not_steerable");
@@ -388,13 +388,13 @@ public static partial class EditVerb
     internal static string? DefinitionWritten(Template template, IReadOnlyDictionary<string, JsonNode?> resulting)
     {
         bool IsDefinition(string name) =>
-            PropFields.Table.TryGetValue(name, out var field) && field.Tier == Tier.Definition
+            Prop.Table.TryGetValue(name, out var field) && field.Tier == Tier.Definition
             || template.Fields is not null && template.Fields.TryGetValue(name, out var declared) && declared.Tier == "definition";
 
         var names = template.Props.Keys.Concat(resulting.Keys).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal);
         foreach (var name in names)
         {
-            if (IsDefinition(name) && !PropFields.SameValue(template.Props.GetValueOrDefault(name), resulting.GetValueOrDefault(name)))
+            if (IsDefinition(name) && !Prop.SameValue(template.Props.GetValueOrDefault(name), resulting.GetValueOrDefault(name)))
             {
                 return name;
             }

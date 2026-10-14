@@ -285,7 +285,7 @@ public sealed class ActorWorld
             var mapped = new JsonObject();
             foreach (var (name, value) in props)
             {
-                mapped[name] = PropFields.Table.TryGetValue(name, out var field) && field.Type == PropType.Id
+                mapped[name] = Prop.Table.TryGetValue(name, out var field) && field.Type == PropType.Id
                     ? AliasValue(snapshot, value)
                     : value?.DeepClone();
             }

@@ -14,7 +14,7 @@ public static class Reach
         {
             throw new InvalidOperationException($"Unknown entity {id}");
         }
-        return PropValues.IsTrue(entity.Props, "agent") && entity.DetachedFrom is null && entity.Status != EntityStatus.Destroyed;
+        return entity.Props.Is(Prop.Agent) && entity.DetachedFrom is null && entity.Status != EntityStatus.Destroyed;
     }
 
     // The first container up the containment chain that is shut: what is inside it is out of the world until it opens.
@@ -32,7 +32,7 @@ public static class Reach
             {
                 throw new InvalidOperationException($"Unknown entity {current}");
             }
-            if (PropValues.IsTrue(entity.Props, "openable") && !PropValues.IsTrue(entity.Props, "open"))
+            if (entity.Props.Is(Prop.Openable) && !entity.Props.Is(Prop.Open))
             {
                 return current;
             }
@@ -48,8 +48,8 @@ public static class Reach
         {
             return false;
         }
-        var from = PropValues.GetString(props, "from");
-        var to = PropValues.GetString(props, "to");
+        var from = props.Get(Prop.From);
+        var to = props.Get(Prop.To);
         return (from == a && to == b) || (from == b && to == a);
     }
 
@@ -58,8 +58,8 @@ public static class Reach
     public static bool ReachedAsDoor(Snapshot snapshot, string actorId, Entity entity)
     {
         var here = snapshot.Entities.TryGetValue(actorId, out var actor) ? actor.Location : null;
-        var from = PropValues.GetString(entity.Props, "from");
-        var to = PropValues.GetString(entity.Props, "to");
+        var from = entity.Props.Get(Prop.From);
+        var to = entity.Props.Get(Prop.To);
         return here is not null
             && from is not null
             && to is not null
@@ -76,7 +76,7 @@ public static class Reach
         }
         var actorPos = Geometry.EffectivePos(snapshot, actorId);
         var targetPos = Geometry.EffectivePos(snapshot, targetId);
-        var reach = PropValues.GetNumber(actor.Props, "reach_cm");
+        var reach = actor.Props.Get(Prop.ReachCm);
         if (actorPos is null || targetPos is null || target.Location != actor.Location || reach is null)
         {
             return false;

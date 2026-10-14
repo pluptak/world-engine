@@ -65,27 +65,16 @@ public static class Catalog
         return found;
     }
 
-    // A prop that is a whole number that fits a long; null otherwise.
-    private static long? IntegerProp(Template template, string name)
-    {
-        var value = JsonReads.Number(template.Props.GetValueOrDefault(name));
-        return value is { } number && IsWhole(number)
-            ? (long)number
-            : null;
-    }
 
     private static CatalogForms FormsOf(Template template)
     {
-        long? fuelPct = IntegerProp(template, "fuel") is not null ? 100 : null;
+        long? fuelPct = template.Props.Get(Prop.Fuel) is not null ? 100 : null;
         CatalogLiquid? liquid = null;
         var approximate = new List<string>();
-        if (IntegerProp(template, "capacity_cm3") is { } capacity)
+        if (template.Props.Get(Prop.CapacityCm3) is { } capacity)
         {
-            var amount = IntegerProp(template, "liquid_amount") ?? 0;
-            var material = template.Props.GetValueOrDefault("liquid_material") is JsonValue value
-                && value.TryGetValue(out string? text) && text != ""
-                ? text
-                : null;
+            var amount = template.Props.Get(Prop.LiquidAmount) ?? 0;
+            var material = template.Props.Get(Prop.LiquidMaterial) is { Length: > 0 } text ? text : null;
             var pct = Math.Min(100, (long)Math.Floor((double)amount * 100 / capacity));
             liquid = new CatalogLiquid(material, pct);
             // Judged by what placing the listed pct stores, so the floor and the never-0 rule count.
@@ -95,7 +84,7 @@ public static class Catalog
             }
         }
         long? hungerPct = null;
-        if (IntegerProp(template, "hunger") is { } hunger)
+        if (template.Props.Get(Prop.Hunger) is { } hunger)
         {
             hungerPct = Math.Min(hunger, 100);
             if (hunger > 100)
@@ -103,7 +92,7 @@ public static class Catalog
                 approximate.Add("hunger_pct");
             }
         }
-        long? portionsPct = IntegerProp(template, "portions") is not null ? 100 : null;
+        long? portionsPct = template.Props.Get(Prop.Portions) is not null ? 100 : null;
         return new CatalogForms(
             fuelPct,
             liquid,
@@ -127,13 +116,13 @@ public static class Catalog
             template.Id,
             template.SizeCm,
             template.MassG,
-            JsonReads.IsTrue(template.Props.GetValueOrDefault("container")),
-            JsonReads.IsTrue(template.Props.GetValueOrDefault("surface")),
-            JsonReads.IsTrue(template.Props.GetValueOrDefault("openable")),
-            JsonReads.IsTrue(template.Props.GetValueOrDefault("barrier")),
-            JsonReads.IsTrue(template.Props.GetValueOrDefault("light_source")),
-            JsonReads.IsTrue(template.Props.GetValueOrDefault("agent")),
-            IntegerProp(template, "capacity_cm3"),
+            template.Props.Is(Prop.Container),
+            template.Props.Is(Prop.Surface),
+            template.Props.Is(Prop.Openable),
+            template.Props.Is(Prop.Barrier),
+            template.Props.Is(Prop.LightSource),
+            template.Props.Is(Prop.Agent),
+            template.Props.Get(Prop.CapacityCm3),
             [.. template.Parts.Select(part => part.Name)],
             capacities,
             [.. template.BreakProducts.Where(product => product.Count > 0).Select(product => product.Template).Distinct(StringComparer.Ordinal)],

@@ -29,7 +29,7 @@ public static class PourVerb
         if (source is null
             || source.ContainedIn != actor.Id
             || Carry.InSpacePart(context.Registry, actor, source)
-            || JsonReads.Text(source.Props.GetValueOrDefault("liquid_material")) is not { Length: > 0 })
+            || source.Props.Get(Prop.LiquidMaterial) is not { Length: > 0 })
         {
             return [];
         }
@@ -40,7 +40,7 @@ public static class PourVerb
         return [.. nameable
             .Where(id => id != source.Id
                 && context.Snapshot.Entities.TryGetValue(id, out var entity)
-                && (PropValues.IsTrue(entity.Props, "container") || PropValues.IsTrue(entity.Props, "surface") || entity.Template == TemplateIds.Room))
+                && (entity.Props.Is(Prop.Container) || entity.Props.Is(Prop.Surface) || entity.Template == TemplateIds.Room))
             .Select(destination => new JsonObject { ["destination"] = destination })];
     }
 
@@ -88,12 +88,12 @@ public static class PourVerb
             return Refused(Pipeline.Refused("not_in_hand"));
         }
 
-        var material = PropValues.GetString(source.Props, "liquid_material");
+        var material = source.Props.Get(Prop.LiquidMaterial);
         if (material is null || material.Length == 0)
         {
             return Refused(Pipeline.Refused("no_liquid"));
         }
-        var available = WholeNumber(source.Props, "liquid_amount");
+        var available = source.Props.Get(Prop.LiquidAmount);
         if (available is null || available < 0)
         {
             return Refused(Pipeline.Refused("no_liquid"));
@@ -151,15 +151,15 @@ public static class PourVerb
                 measure is null ? null : Pipeline.Reason(("distance_cm", measure.DistanceCm), ("reach_cm", measure.ReachCm))));
         }
 
-        var holds = PropValues.IsTrue(destination.Props, "container");
-        if (!holds && !PropValues.IsTrue(destination.Props, "surface") && destination.Template != TemplateIds.Room)
+        var holds = destination.Props.Is(Prop.Container);
+        if (!holds && !destination.Props.Is(Prop.Surface) && destination.Template != TemplateIds.Room)
         {
             return Refused(Pipeline.Refused("not_a_destination"));
         }
 
         // A container's own shutness hides its inside; anything else is hidden by whatever shut encloses it, and a
         // surface takes residue from above however shut the thing it stands on is.
-        var enclosure = holds && PropValues.IsTrue(destination.Props, "openable") && !PropValues.IsTrue(destination.Props, "open")
+        var enclosure = holds && destination.Props.Is(Prop.Openable) && !destination.Props.Is(Prop.Open)
             ? destination.Id
             : Reach.ClosedEnclosure(snapshot, destination.Id);
         if (enclosure is not null)
@@ -170,7 +170,7 @@ public static class PourVerb
         long held = 0;
         if (holds)
         {
-            var existing = PropValues.GetString(destination.Props, "liquid_material");
+            var existing = destination.Props.Get(Prop.LiquidMaterial);
             if (existing is not null && existing.Length > 0)
             {
                 if (existing != material)
@@ -196,33 +196,25 @@ public static class PourVerb
 
     private static (Pouring? Pour, Pipeline.Refusal? Refusal) Refused(Pipeline.Refusal refusal) => (null, refusal);
 
-    // A numeric prop that is a whole number, or null.
-    private static long? WholeNumber(IReadOnlyDictionary<string, JsonNode?> props, string key)
-    {
-        var value = PropValues.GetNumber(props, key);
-        return value is { } number && IsWhole(number)
-            ? (long)number
-            : null;
-    }
 
     // What a container holds of its liquid: its amount, when that is a positive whole number, else nothing.
     internal static long LiquidAmount(Entity entity) =>
-        WholeNumber(entity.Props, "liquid_amount") is { } amount && amount > 0 ? amount : 0;
+        entity.Props.Get(Prop.LiquidAmount) is { } amount && amount > 0 ? amount : 0;
 
     // A vessel that declares `capacity_cm3` holds that much; otherwise a container's liquid capacity is its inner volume,
     // and a destination that declares neither is unbounded here.
     internal static long? LiquidCapacity(Entity destination)
     {
-        if (WholeNumber(destination.Props, "capacity_cm3") is { } declared && declared > 0)
+        if (destination.Props.Get(Prop.CapacityCm3) is { } declared && declared > 0)
         {
             return declared;
         }
-        var width = PropValues.GetNumber(destination.Props, "inner_w_cm");
-        var depth = PropValues.GetNumber(destination.Props, "inner_d_cm");
-        var height = PropValues.GetNumber(destination.Props, "inner_h_cm");
+        var width = destination.Props.Get(Prop.InnerWCm);
+        var depth = destination.Props.Get(Prop.InnerDCm);
+        var height = destination.Props.Get(Prop.InnerHCm);
         return width is null || depth is null || height is null
             ? null
-            : (long)Math.Truncate(width.Value * depth.Value * height.Value);
+            : width * depth * height;
     }
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context) => PlanOf(context).Refusal;
@@ -237,25 +229,20 @@ public static class PourVerb
             rootEventId);
 
         var remaining = pour.Available - pour.Amount;
-        var sourceProps = new Dictionary<string, JsonNode?>(pour.Source.Props, StringComparer.Ordinal)
-        {
-            ["liquid_amount"] = JsonValue.Create(remaining),
-        };
+        var sourceProps = pour.Source.Props.With(Prop.LiquidAmount, remaining);
         // An emptied vessel declares no material at all, the way a broken one does.
         if (remaining == 0)
         {
-            sourceProps["liquid_material"] = JsonValue.Create("");
+            sourceProps = sourceProps.With(Prop.LiquidMaterial, "");
         }
         working.SetProps(pour.Source.Id, sourceProps, poured);
 
         if (pour.Holds)
         {
-            var destinationProps = new Dictionary<string, JsonNode?>(pour.Destination.Props, StringComparer.Ordinal)
-            {
-                ["liquid_material"] = JsonValue.Create(pour.Material),
-                ["liquid_amount"] = JsonValue.Create(pour.Held + pour.Amount),
-            };
-            working.SetProps(pour.Destination.Id, destinationProps, poured);
+            working.SetProps(
+                pour.Destination.Id,
+                pour.Destination.Props.With(Prop.LiquidMaterial, pour.Material).With(Prop.LiquidAmount, pour.Held + pour.Amount),
+                poured);
             return;
         }
         Residue.Add(working, pour.Destination.Id, new Dictionary<string, long> { [pour.Material] = pour.Amount }, poured);

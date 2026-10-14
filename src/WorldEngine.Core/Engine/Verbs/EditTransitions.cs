@@ -102,8 +102,8 @@ public static partial class EditVerb
     private static void TransitionSteer(Working working, SteerEdit edit)
     {
         var run = working.Snapshot.Run ?? throw new InvalidOperationException("Steer without a run after validation");
-        var steered = (run.Steered ?? []).Where(entry => !(entry.Entity == edit.Entity && entry.Prop == "jam_pct")).ToList();
-        steered.Add(new Steered(edit.Entity, "jam_pct", edit.Value));
+        var steered = (run.Steered ?? []).Where(entry => !(entry.Entity == edit.Entity && entry.Prop == Prop.JamPct)).ToList();
+        steered.Add(new Steered(edit.Entity, Prop.JamPct, edit.Value));
         working.SetRun(run with { Steered = steered });
     }
 

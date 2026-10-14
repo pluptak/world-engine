@@ -64,8 +64,8 @@ public static class SnapshotValidation
             issues.AddRange(ConcealmentIssues(snapshot, registry, reportedConcealLoops, id, path));
             issues.AddRange(HolderIssues(snapshot, registry, id, path));
             issues.AddRange(PropIssues(registry, entity, path));
-            issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => Str(entity.Props, "powered_by")), id, reportedPowerLoops, path, "power_loop"));
-            issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => Str(entity.Props, "controlled_by")), id, reportedControlLoops, path, "control_loop"));
+            issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => entity.Props.Get(Prop.PoweredBy)), id, reportedPowerLoops, path, "power_loop"));
+            issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => entity.Props.Get(Prop.ControlledBy)), id, reportedControlLoops, path, "control_loop"));
 
             // A room is where things are, never a thing somewhere: nothing holds, supports or hides it.
             if (entity.Template == TemplateIds.Room && (entity.Support is not null || entity.ContainedIn is not null || entity.ConcealedBy is not null))
@@ -151,10 +151,6 @@ public static class SnapshotValidation
 
     private static SnapshotIssue Issue(string code, IReadOnlyList<string> path, string message) =>
         new(code, path, message);
-
-    // The string a prop holds, or null when it holds anything else or nothing.
-    private static string? Str(IReadOnlyDictionary<string, JsonNode?> props, string key) =>
-        props.TryGetValue(key, out var node) && node is JsonValue value && value.TryGetValue(out string? text) ? text : null;
 
     // JavaScript's truthiness for a prop value: absent, null, false, zero and the empty string are false.
     private static bool Truthy(JsonNode? node)
@@ -361,12 +357,12 @@ public static class SnapshotValidation
     private static List<SnapshotIssue> CameraIssues(Snapshot snapshot, string id, IReadOnlyList<string> path)
     {
         var props = snapshot.Entities[id].Props;
-        var cone = PropValues.GetNumber(props, "cone_deg");
-        if (cone is null || cone >= Limits.FullCircleDegrees || PropValues.IsNumber(props, "facing_deg"))
+        var cone = props.Get(Prop.ConeDeg);
+        if (cone is null || cone >= Limits.FullCircleDegrees || props.Get(Prop.FacingDeg) is not null)
         {
             return [];
         }
-        return [Issue("camera_without_facing", [.. path, "props", "facing_deg"], "facing_deg")];
+        return [Issue("camera_without_facing", [.. path, "props", Prop.FacingDeg.Name], Prop.FacingDeg.Name)];
     }
 
     private static List<SnapshotIssue> ReferenceIssues(Snapshot snapshot, string id, IReadOnlyList<string> path)
@@ -392,47 +388,47 @@ public static class SnapshotValidation
             issues.Add(Issue("dangling_reference", [.. path, "concealed_by"], $"unknown entity {entity.ConcealedBy}"));
         }
         // Doors name the rooms they join in props: a side that names anything but a room is held to it.
-        if (Str(entity.Props, "from") is not null || Str(entity.Props, "to") is not null)
+        if (entity.Props.Get(Prop.From) is not null || entity.Props.Get(Prop.To) is not null)
         {
-            foreach (var side in new[] { "from", "to" })
+            foreach (var side in new[] { Prop.From, Prop.To })
             {
-                var reference = Str(entity.Props, side);
+                var reference = entity.Props.Get(side);
                 if (reference is null)
                 {
                     continue;
                 }
                 if (!snapshot.Entities.TryGetValue(reference, out var target))
                 {
-                    issues.Add(Issue("dangling_reference", [.. path, "props", side], $"unknown entity {reference}"));
+                    issues.Add(Issue("dangling_reference", [.. path, "props", side.Name], $"unknown entity {reference}"));
                 }
                 else if (target.Template != TemplateIds.Room)
                 {
-                    issues.Add(Issue("door_side_not_room", [.. path, "props", side], $"template {target.Template}"));
+                    issues.Add(Issue("door_side_not_room", [.. path, "props", side.Name], $"template {target.Template}"));
                 }
             }
         }
-        foreach (var link in new[] { "powered_by", "controlled_by" })
+        foreach (var link in new[] { Prop.PoweredBy, Prop.ControlledBy })
         {
-            var reference = Str(entity.Props, link);
+            var reference = entity.Props.Get(link);
             if (reference is not null && !snapshot.Entities.ContainsKey(reference))
             {
-                issues.Add(Issue("dangling_reference", [.. path, "props", link], $"unknown entity {reference}"));
+                issues.Add(Issue("dangling_reference", [.. path, "props", link.Name], $"unknown entity {reference}"));
             }
         }
         // A key's `opens` outlives the lock it names: an absent target is left alone, one that cannot be opened is not.
-        var opens = Str(entity.Props, "opens");
-        if (opens is not null && snapshot.Entities.TryGetValue(opens, out var openTarget) && !PropValues.IsTrue(openTarget.Props, "openable"))
+        var opens = entity.Props.Get(Prop.Opens);
+        if (opens is not null && snapshot.Entities.TryGetValue(opens, out var openTarget) && !openTarget.Props.Is(Prop.Openable))
         {
-            issues.Add(Issue("opens_target_not_openable", [.. path, "props", "opens"], opens));
+            issues.Add(Issue("opens_target_not_openable", [.. path, "props", Prop.Opens.Name], opens));
         }
         // A door is closing only while it is open with its shut pending.
-        if (PropValues.IsTrue(entity.Props, "closing"))
+        if (entity.Props.Is(Prop.Closing))
         {
-            var shutting = PropValues.IsTrue(entity.Props, "open")
+            var shutting = entity.Props.Is(Prop.Open)
                 && (snapshot.Schedule ?? []).Any(cause => cause.Kind == "close" && cause.Entity == entity.Id);
             if (!shutting)
             {
-                issues.Add(Issue("closing_without_close", [.. path, "props", "closing"], entity.Id));
+                issues.Add(Issue("closing_without_close", [.. path, "props", Prop.Closing.Name], entity.Id));
             }
         }
         return issues;
@@ -528,7 +524,7 @@ public static class SnapshotValidation
         IReadOnlyList<string> path)
     {
         var issues = new List<SnapshotIssue>();
-        PropFields.Table.TryGetValue(name, out var engine);
+        Prop.Table.TryGetValue(name, out var engine);
         var declaredType = engine?.Type;
         if (engine is null && template?.Fields is { } fields && fields.TryGetValue(name, out var field))
         {
@@ -536,7 +532,7 @@ public static class SnapshotValidation
         }
         if (engine is not null || declaredType is not null)
         {
-            if (declaredType is null || !PropFields.Matches(declaredType.Value, value))
+            if (declaredType is null || !Prop.Matches(declaredType.Value, value))
             {
                 issues.Add(Issue("wrong_prop_type", path, $"props.{name} must be {(declaredType is { } type ? WorldJson.Name(type) : "declared")}"));
             }
@@ -662,7 +658,7 @@ public static class SnapshotValidation
                     // A slot may be gone, which ends the run as a destroyed one does; one still in the world is an agent's body.
                     var body = snapshot.Entities.GetValueOrDefault(slot);
                     var repeated = !seen.Add(slot);
-                    if ((body is not null && !PropValues.IsTrue(body.Props, "agent")) || repeated)
+                    if ((body is not null && !body.Props.Is(Prop.Agent)) || repeated)
                     {
                         issues.Add(Issue("invalid_run", path, slot));
                     }

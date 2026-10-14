@@ -52,8 +52,7 @@ public static class Harm
         // the record of whose it is. The successor takes its template's own name, so the destroyed body and the one that took
         // over never share one.
         if (registry.TryGetValue(body.Template, out var template)
-            && template.Props.TryGetValue("successor", out var successor)
-            && successor is JsonValue { } value && value.TryGetValue<string>(out var successorTemplate))
+            && template.Props.Get(Prop.Successor) is { } successorTemplate)
         {
             var lands = Physical.PlaceInstead(working.Snapshot, registry, working.Snapshot.Entities[body.Id], successorTemplate);
             working.SpawnUnder(
@@ -64,7 +63,7 @@ public static class Harm
                     lands.Support,
                     lands.Pos,
                     lands.ContainedIn,
-                    Props: new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["succeeds"] = JsonValue.Create(body.Id) }),
+                    Props: new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { [Prop.Succeeds] = JsonValue.Create(body.Id) }),
                 eventId);
         }
         return new Hurt(eventId, true);

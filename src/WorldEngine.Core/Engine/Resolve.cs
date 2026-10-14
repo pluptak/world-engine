@@ -36,20 +36,20 @@ public static class Resolve
     // A door is known by its shape: anything with string `from` and `to` props joins the rooms they name.
     public static bool IsDoor(Entity? entity) =>
         entity is not null
-        && PropValues.IsString(entity.Props, "from")
-        && PropValues.IsString(entity.Props, "to");
+        && entity.Props.Get(Prop.From) is not null
+        && entity.Props.Get(Prop.To) is not null;
 
     // An abstract entity is a mark: nothing holds it, it holds nothing, and it is not addressable by an agent.
     public static bool IsAbstract(IReadOnlyDictionary<string, Template> registry, Entity? entity) =>
         entity is not null
         && registry.TryGetValue(entity.Template, out var template)
-        && PropValues.IsTrue(template.Props, "abstract");
+        && template.Props.Is(Prop.Abstract);
 
     // Scenery is perceived and named like anything, and acted on by nothing.
     public static bool IsScenery(IReadOnlyDictionary<string, Template> registry, Entity? entity) =>
         entity is not null
         && registry.TryGetValue(entity.Template, out var template)
-        && PropValues.IsTrue(template.Props, "scenery");
+        && template.Props.Is(Prop.Scenery);
 
     public static TargetResolution ResolveTarget(
         Snapshot snapshot,
@@ -122,9 +122,9 @@ public static class Resolve
         {
             return true;
         }
-        return PropValues.IsString(entity.Props, "from")
-            && PropValues.IsString(entity.Props, "to")
-            && (PropValues.GetString(entity.Props, "from") == location || PropValues.GetString(entity.Props, "to") == location);
+        return entity.Props.Get(Prop.From) is not null
+            && entity.Props.Get(Prop.To) is not null
+            && (entity.Props.Get(Prop.From) == location || entity.Props.Get(Prop.To) == location);
     }
 
     private static TargetResolution Found(string entityId, string? part) =>

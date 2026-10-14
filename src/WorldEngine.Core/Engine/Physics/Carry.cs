@@ -16,13 +16,13 @@ public static class Carry
         long? PerHand = null,
         long? AtLeast = null,
         long? MaxHands = null,
-        string? MassLimitProp = null,
+        Prop<long>? MassLimitProp = null,
         long? Holds = null);
 
     public static readonly IReadOnlyList<Alternative> Alternatives =
     [
-        new("manipulation", PerHand: 50, MassLimitProp: "hand_carry_limit_g"),
-        new("mouth_carry", AtLeast: 1, MaxHands: 1, MassLimitProp: "carry_limit_g", Holds: 1),
+        new("manipulation", PerHand: 50, MassLimitProp: Prop.HandCarryLimitG),
+        new("mouth_carry", AtLeast: 1, MaxHands: 1, MassLimitProp: Prop.CarryLimitG, Holds: 1),
     ];
 
     // The item a holder carries in one of its own parts. Grips hold one item each; a space holds what fits.
@@ -39,7 +39,7 @@ public static class Carry
         snapshot.Entities.Values.Count(entity => entity.ContainedIn == carrierId);
 
     private static long HandsOf(Entity item) =>
-        PropValues.GetNumber(item.Props, "hands_required") == 2 ? 2 : 1;
+        item.Props.Get(Prop.HandsRequired) == 2 ? 2 : 1;
 
     // The holder parts a template declares, in declaration order.
     // Whether an item fits a pocket (src/engine/carry.ts `spaceRefusal`): null when it does. An unknown part or item, or
@@ -300,7 +300,7 @@ public static class Carry
             // Hands hold at most their limit at once. Absent the prop there is no limit.
             if (alternative.MassLimitProp is { } limitProp && handsMassG is { } held)
             {
-                if (PropValues.GetNumber(carrierProps, limitProp) is { } limit)
+                if (carrierProps.Get(limitProp) is { } limit)
                 {
                     var each = registry.TryGetValue(item.Template, out var itemTemplate) ? itemTemplate.MassG : 0;
                     if (each + held > limit)
@@ -322,7 +322,7 @@ public static class Carry
         }
         if (alternative.MassLimitProp is { } prop)
         {
-            var limit = PropValues.GetNumber(carrierProps, prop);
+            var limit = carrierProps.Get(prop);
             if (limit is null || !registry.TryGetValue(item.Template, out var template) || template.MassG > limit)
             {
                 return new Failure(Kind.Weight, alternative.Capacity);

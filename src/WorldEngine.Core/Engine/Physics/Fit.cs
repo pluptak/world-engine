@@ -25,9 +25,9 @@ public static class Fit
     // The inside of a container, from its `inner_w_cm`, `inner_d_cm` and `inner_h_cm` props, or null when any is missing.
     public static double[]? InnerDimensions(IReadOnlyDictionary<string, JsonNode?> props)
     {
-        var width = PropValues.GetNumber(props, "inner_w_cm");
-        var depth = PropValues.GetNumber(props, "inner_d_cm");
-        var height = PropValues.GetNumber(props, "inner_h_cm");
+        var width = props.Get(Prop.InnerWCm);
+        var depth = props.Get(Prop.InnerDCm);
+        var height = props.Get(Prop.InnerHCm);
         return width is null || depth is null || height is null ? null : [width.Value, depth.Value, height.Value];
     }
 }

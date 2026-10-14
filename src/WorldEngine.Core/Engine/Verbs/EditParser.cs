@@ -79,7 +79,7 @@ public static partial class EditVerb
             case "steer":
             {
                 return Only(obj, "kind", "entity", "prop", "value") && Text(obj["entity"]) is { } entity
-                    && Text(obj["prop"]) == "jam_pct" && Int(obj["value"]) is { } value
+                    && Text(obj["prop"]) == Prop.JamPct && Int(obj["value"]) is { } value
                     ? new SteerEdit(entity, value)
                     : null;
             }

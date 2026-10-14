@@ -56,7 +56,7 @@ public static class Address
         }
         var actorPos = Geometry.EffectivePos(snapshot, actorId);
         var targetPos = Geometry.EffectivePos(snapshot, targetId);
-        var reach = PropValues.GetNumber(actor.Props, "reach_cm");
+        var reach = actor.Props.Get(Prop.ReachCm);
         if (actorPos is null || targetPos is null || target.Location != actor.Location || reach is null)
         {
             return null;

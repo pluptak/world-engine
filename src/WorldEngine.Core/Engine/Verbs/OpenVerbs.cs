@@ -50,7 +50,7 @@ public static class OpenVerbs
         {
             return (null, Pipeline.Invalid("no_such_entity"));
         }
-        if (!PropValues.IsTrue(entity.Props, "openable"))
+        if (!entity.Props.Is(Prop.Openable))
         {
             return (null, Pipeline.Refused("not_openable"));
         }
@@ -68,7 +68,7 @@ public static class OpenVerbs
     // Whether the actor carries a key that opens the target.
     private static bool CarriedKeyFor(Pipeline.CommandContext context, string targetId) =>
         context.Snapshot.Entities.Values.Any(entity =>
-            entity.ContainedIn == context.Command.Actor && PropValues.GetString(entity.Props, "opens") == targetId);
+            entity.ContainedIn == context.Command.Actor && entity.Props.Get(Prop.Opens) == targetId);
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context, Kind kind)
     {
@@ -81,28 +81,28 @@ public static class OpenVerbs
 
         // Opening what is open, shutting what is shut, locking what is locked or unlocking what is not would change nothing
         // but the clock. A door on its way shut is open still, so `open` is not a no-op for it: it stops the shut.
-        if (kind == Kind.Open && PropValues.IsTrue(target.Props, "open") && !PropValues.IsTrue(target.Props, "closing"))
+        if (kind == Kind.Open && target.Props.Is(Prop.Open) && !target.Props.Is(Prop.Closing))
         {
             return Pipeline.Refused("already_open");
         }
-        if (kind == Kind.Close && !PropValues.IsTrue(target.Props, "open"))
+        if (kind == Kind.Close && !target.Props.Is(Prop.Open))
         {
             return Pipeline.Refused("already_closed");
         }
-        if (kind == Kind.Lock && PropValues.IsTrue(target.Props, "locked"))
+        if (kind == Kind.Lock && target.Props.Is(Prop.Locked))
         {
             return Pipeline.Refused("already_locked");
         }
-        if (kind == Kind.Unlock && !PropValues.IsTrue(target.Props, "locked"))
+        if (kind == Kind.Unlock && !target.Props.Is(Prop.Locked))
         {
             return Pipeline.Refused("already_unlocked");
         }
-        if (kind == Kind.Open && PropValues.IsTrue(target.Props, "locked"))
+        if (kind == Kind.Open && target.Props.Is(Prop.Locked))
         {
             return Pipeline.Refused("locked");
         }
         // Until a door on its way shut has shut, neither a shut nor a lock can be made of it.
-        if (kind is Kind.Close or Kind.Lock && PropValues.IsTrue(target.Props, "closing"))
+        if (kind is Kind.Close or Kind.Lock && target.Props.Is(Prop.Closing))
         {
             return Pipeline.Refused("closing");
         }
@@ -119,14 +119,6 @@ public static class OpenVerbs
         return Pipeline.RequirementRefusal(context);
     }
 
-    // A whole number prop, or null.
-    private static long? WholeNumber(IReadOnlyDictionary<string, JsonNode?> props, string key)
-    {
-        var value = PropValues.GetNumber(props, key);
-        return value is { } number && IsWhole(number)
-            ? (long)number
-            : null;
-    }
 
     private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId, Kind kind)
     {
@@ -144,9 +136,7 @@ public static class OpenVerbs
 
         // Opening stops a shut on its way, and a shut that has come clears the window; a shut with `shut_ticks` opens the
         // window here instead, the shut a scheduled close caused by it.
-        var others = new Dictionary<string, JsonNode?>(target.Props, StringComparer.Ordinal);
-        others.Remove("closing");
-        var shutTicks = WholeNumber(target.Props, "shut_ticks");
+        var shutTicks = target.Props.Get(Prop.ShutTicks);
         if (kind == Kind.Close && shutTicks is > 0 && TryAdd(working.Snapshot.Tick, shutTicks.Value, out _))
         {
             StartClosing(working, target, shutTicks.Value, rootEventId);
@@ -155,15 +145,12 @@ public static class OpenVerbs
 
         var (prop, value, eventType) = kind switch
         {
-            Kind.Open => ("open", true, "opened"),
-            Kind.Close => ("open", false, "closed"),
-            Kind.Lock => ("locked", true, "locked"),
-            _ => ("locked", false, "unlocked"),
+            Kind.Open => (Prop.Open, true, "opened"),
+            Kind.Close => (Prop.Open, false, "closed"),
+            Kind.Lock => (Prop.Locked, true, "locked"),
+            _ => (Prop.Locked, false, "unlocked"),
         };
-        var props = new Dictionary<string, JsonNode?>(kind == Kind.Open ? others : new Dictionary<string, JsonNode?>(target.Props, StringComparer.Ordinal), StringComparer.Ordinal)
-        {
-            [prop] = JsonValue.Create(value),
-        };
+        var props = (kind == Kind.Open ? target.Props.Without(Prop.Closing) : target.Props).With(prop, value);
         var eventId = working.Emit(eventType, target.Id, new Dictionary<string, JsonNode?>(), rootEventId);
         working.SetProps(target.Id, props, eventId);
         if (kind == Kind.Close)
@@ -177,7 +164,7 @@ public static class OpenVerbs
         {
             Schedule.Cancel(working, "close", target.Id);
         }
-        var closesAfter = WholeNumber(props, "closes_after");
+        var closesAfter = props.Get(Prop.ClosesAfter);
         if (kind == Kind.Open && closesAfter is > 0 && TryAdd(working.Snapshot.Tick, closesAfter.Value, out var closeTick))
         {
             Schedule.Add(working, new ScheduledCause(closeTick, "close", target.Id, eventId));
@@ -188,8 +175,8 @@ public static class OpenVerbs
     // does nothing else. A hand never rolls. A director's steered odds (`docs/roles.md`) are in force over the template's value.
     private static bool Jams(Working working, Pipeline.CommandContext context, Entity target)
     {
-        var steered = working.Snapshot.Run?.Steered?.FirstOrDefault(entry => entry.Entity == target.Id && entry.Prop == "jam_pct");
-        var pct = steered is { } given ? given.Value : PropValues.GetNumber(target.Props, "jam_pct");
+        var steered = working.Snapshot.Run?.Steered?.FirstOrDefault(entry => entry.Entity == target.Id && entry.Prop == Prop.JamPct);
+        var pct = steered is { } given ? given.Value : target.Props.Get(Prop.JamPct);
         if (pct is null || pct <= 0 || !Remote.WorksRemotely(context, target))
         {
             return false;
@@ -209,11 +196,7 @@ public static class OpenVerbs
     private static void StartClosing(Working working, Entity target, long shutTicks, string? rootEventId)
     {
         var eventId = working.Emit("closing", target.Id, new Dictionary<string, JsonNode?>(), rootEventId);
-        var props = new Dictionary<string, JsonNode?>(target.Props, StringComparer.Ordinal)
-        {
-            ["closing"] = JsonValue.Create(true),
-        };
-        working.SetProps(target.Id, props, eventId);
+        working.SetProps(target.Id, target.Props.With(Prop.Closing, true), eventId);
         Schedule.Cancel(working, "close", target.Id);
         Schedule.Add(working, new ScheduledCause(working.Snapshot.Tick + shutTicks, "close", target.Id, eventId));
     }

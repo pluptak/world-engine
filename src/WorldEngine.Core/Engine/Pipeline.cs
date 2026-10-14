@@ -157,11 +157,11 @@ public static class Pipeline
         }
         // A sleeping body makes no command of its own; the world author may still act on it.
         var actor = snapshot.Entities.GetValueOrDefault(command.Actor);
-        if (!authored && actor is not null && PropValues.IsTrue(actor.Props, "asleep"))
+        if (!authored && actor is not null && actor.Props.Is(Prop.Asleep))
         {
             return Unchanged(snapshot, command, Status.Refused, reasonCode: "asleep");
         }
-        if (!authored && actor is not null && PropValues.IsTrue(actor.Props, "unconscious"))
+        if (!authored && actor is not null && actor.Props.Is(Prop.Unconscious))
         {
             return Unchanged(snapshot, command, Status.Refused, reasonCode: "unconscious");
         }

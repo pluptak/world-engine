@@ -9,7 +9,7 @@ namespace WorldEngine.Core.Templates;
 // the source (a file name, or "<file> (inherited)") standing where the TypeScript names it.
 public static class TemplateValidation
 {
-    private static readonly string[] SceneryForbids = ["agent", "surface", "container", "openable", "light_source", "barrier"];
+    private static readonly Prop<bool>[] SceneryForbids = [Prop.Agent, Prop.Surface, Prop.Container, Prop.Openable, Prop.LightSource, Prop.Barrier];
 
     // A declaration's own shape, before its parent is folded in (parseDecl). The typed reader catches wrong
     // JSON types; these are the rules a type cannot express.
@@ -70,7 +70,7 @@ public static class TemplateValidation
             foreach (var (name, field) in decl.Fields)
             {
                 var at = $"{source}.fields.{name}";
-                if (PropFields.Table.ContainsKey(name))
+                if (Prop.Table.ContainsKey(name))
                 {
                     throw new FormatException($"{at} is a prop the engine declares");
                 }
@@ -144,7 +144,7 @@ public static class TemplateValidation
     {
         PropType? TypeOf(string name)
         {
-            if (PropFields.Table.TryGetValue(name, out var field))
+            if (Prop.Table.TryGetValue(name, out var field))
             {
                 return field.Type;
             }
@@ -156,7 +156,7 @@ public static class TemplateValidation
         }
 
         // Scenery is acted on by nothing, so a prop that only matters to what acts on it is refused.
-        if (KindOf(template.Props.GetValueOrDefault("scenery")) is JsonValueKind.True)
+        if (template.Props.Is(Prop.Scenery))
         {
             foreach (var use in SceneryForbids)
             {
@@ -174,11 +174,11 @@ public static class TemplateValidation
             {
                 throw new FormatException($"{source} props.{name} is not a declared prop");
             }
-            if (!PropFields.Matches(type.Value, value))
+            if (!Prop.Matches(type.Value, value))
             {
                 throw new FormatException($"{source} props.{name} must be {(type == PropType.Integer ? "an" : "a")} {TypeWord(type.Value)}");
             }
-            var field = PropFields.Table.GetValueOrDefault(name);
+            var field = Prop.Table.GetValueOrDefault(name);
             var number = JsonReads.Number(value);
             if (field?.Min is { } least && number is { } low && low < least)
             {
@@ -231,7 +231,7 @@ public static class TemplateValidation
                 var prop = setProp.GetProperty("prop").GetString()!;
                 var value = JsonNode.Parse(setProp.GetProperty("value").GetRawText());
                 var type = TypeOf(prop)!.Value;
-                if (!PropFields.Matches(type, value))
+                if (!Prop.Matches(type, value))
                 {
                     throw new FormatException($"{at} sets {prop} to a value that is not {TypeWord(type)}");
                 }
@@ -276,7 +276,7 @@ public static class TemplateValidation
     {
         foreach (var id in registry.Keys.OrderBy(key => key, StringComparer.Ordinal))
         {
-            if (!registry[id].Props.TryGetValue("successor", out var successor))
+            if (!registry[id].Props.TryGetValue(Prop.Successor, out var successor))
             {
                 continue;
             }
@@ -286,7 +286,7 @@ public static class TemplateValidation
             var target = (successor as JsonValue)?.GetValueKind() is JsonValueKind.String
                 ? registry.GetValueOrDefault(named)
                 : null;
-            if (target is null || KindOf(target.Props.GetValueOrDefault("agent")) is not JsonValueKind.True)
+            if (target is null || !target.Props.Is(Prop.Agent))
             {
                 throw new FormatException($"{id} names successor {named}, which is not an agent template");
             }

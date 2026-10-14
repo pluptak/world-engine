@@ -37,8 +37,8 @@ public static class MoveVerb
             {
                 continue;
             }
-            if (JsonReads.Text(door.Props.GetValueOrDefault("from")) is not { } from
-                || JsonReads.Text(door.Props.GetValueOrDefault("to")) is not { } to)
+            if (door.Props.Get(Prop.From) is not { } from
+                || door.Props.Get(Prop.To) is not { } to)
             {
                 continue;
             }
@@ -124,8 +124,8 @@ public static class MoveVerb
         var resolved = (Resolve.Resolved)resolution;
         var door = resolved.Target.Part is null ? snapshot.Entities.GetValueOrDefault(resolved.Target.EntityId) : null;
         var here = snapshot.Entities[context.Command.Actor].Location;
-        var from = door is null ? null : PropValues.GetString(door.Props, "from");
-        var to = door is null ? null : PropValues.GetString(door.Props, "to");
+        var from = door is null ? null : door.Props.Get(Prop.From);
+        var to = door is null ? null : door.Props.Get(Prop.To);
         if (door is null || here is null || from is null || to is null || (from != here && to != here))
         {
             return (null, Pipeline.Invalid("invalid_location"));
@@ -135,7 +135,7 @@ public static class MoveVerb
         {
             return (null, Pipeline.Invalid("invalid_location"));
         }
-        return PropValues.IsTrue(door.Props, "open")
+        return door.Props.Is(Prop.Open)
             ? (far, null)
             : (null, Pipeline.Refused("no_open_door"));
     }
@@ -155,7 +155,7 @@ public static class MoveVerb
     {
         var from = context.Snapshot.Entities[context.Command.Actor].Location;
         return context.Snapshot.Entities.Values.Any(entity =>
-            Resolve.IsDoor(entity) && PropValues.IsTrue(entity.Props, "open") && Reach.DoorJoins(entity.Props, from, to));
+            Resolve.IsDoor(entity) && entity.Props.Is(Prop.Open) && Reach.DoorJoins(entity.Props, from, to));
     }
 
     // The agent that carries a held agent: the first agent up its containment chain, or, with none, the thing it sits in.

@@ -38,7 +38,7 @@ public static class LightVerbs
         {
             return Pipeline.Invalid("no_such_entity");
         }
-        if (!PropValues.IsTrue(light.Props, "light_source"))
+        if (!light.Props.Is(Prop.LightSource))
         {
             return Pipeline.Refused("not_a_light");
         }
@@ -54,17 +54,17 @@ public static class LightVerbs
 
         if (lit)
         {
-            if (PropValues.IsTrue(light.Props, "burning"))
+            if (light.Props.Is(Prop.Burning))
             {
                 return Pipeline.Refused("already_burning");
             }
             // A light with a `fuel` prop needs some; one that declares none burns on its own.
-            if (PropValues.GetNumber(light.Props, "fuel") is { } fuel && fuel <= 0)
+            if (light.Props.Get(Prop.Fuel) is { } fuel && fuel <= 0)
             {
                 return Pipeline.Refused("no_fuel");
             }
         }
-        else if (!PropValues.IsTrue(light.Props, "burning"))
+        else if (!light.Props.Is(Prop.Burning))
         {
             return Pipeline.Refused("not_burning");
         }
@@ -76,10 +76,6 @@ public static class LightVerbs
         var lightId = context.Target!.EntityId;
         var light = working.Snapshot.Entities[lightId];
         var eventId = working.Emit(lit ? "lit" : "doused", lightId, new Dictionary<string, JsonNode?>(), rootEventId);
-        var props = new Dictionary<string, JsonNode?>(light.Props, StringComparer.Ordinal)
-        {
-            ["burning"] = JsonValue.Create(lit),
-        };
-        working.SetProps(lightId, props, eventId);
+        working.SetProps(lightId, light.Props.With(Prop.Burning, lit), eventId);
     }
 }

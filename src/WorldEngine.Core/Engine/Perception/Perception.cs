@@ -45,17 +45,17 @@ public static class Perception
             return new Answer(Truth.False, "observer_destroyed");
         }
         // A body that runs on power senses nothing without it.
-        if (PropValues.GetString(observer.Props, "powered_by") is not null && !Power.Powered(snapshot, observer.Id))
+        if (observer.Props.Get(Prop.PoweredBy) is not null && !Power.Powered(snapshot, observer.Id))
         {
             return new Answer(Truth.False, "unpowered");
         }
         // A sleeping body sees and hears nothing; touch and smell are unchanged.
-        if (PropValues.IsTrue(observer.Props, "asleep") && sense is Sense.Sight or Sense.Hearing)
+        if (observer.Props.Is(Prop.Asleep) && sense is Sense.Sight or Sense.Hearing)
         {
             return new Answer(Truth.False, "asleep");
         }
         // An unconscious body takes every sense.
-        if (PropValues.IsTrue(observer.Props, "unconscious"))
+        if (observer.Props.Is(Prop.Unconscious))
         {
             return new Answer(Truth.False, "unconscious");
         }
@@ -102,7 +102,7 @@ public static class Perception
         {
             return body;
         }
-        foreach (var camera in Power.Feeds(snapshot, observer.Id, "camera"))
+        foreach (var camera in Power.Feeds(snapshot, observer.Id, Prop.Camera))
         {
             var cameraEntity = snapshot.Entities[camera];
             var at = cameraEntity.Location;
@@ -160,17 +160,17 @@ public static class Perception
         {
             return false;
         }
-        if (PropValues.IsTrue(room.Props, "lit"))
+        if (room.Props.Is(Prop.Lit))
         {
             return true;
         }
         return snapshot.Entities.Values.Any(entity =>
             entity.Location == roomId
-            && PropValues.IsTrue(entity.Props, "light_source")
+            && entity.Props.Is(Prop.LightSource)
             && entity.Status != EntityStatus.Destroyed
             && Reach.ClosedEnclosure(snapshot, entity.Id) is null
-            && (PropValues.IsTrue(entity.Props, "burning")
-                || (PropValues.GetString(entity.Props, "powered_by") is not null && Power.Powered(snapshot, entity.Id))));
+            && (entity.Props.Is(Prop.Burning)
+                || (entity.Props.Get(Prop.PoweredBy) is not null && Power.Powered(snapshot, entity.Id))));
     }
 
     // Whether an open door (or any door, when not `openOnly`) joins two rooms.
@@ -184,7 +184,7 @@ public static class Perception
                 {
                     return false;
                 }
-                if (openOnly && !PropValues.IsTrue(entity.Props, "open"))
+                if (openOnly && !entity.Props.Is(Prop.Open))
                 {
                     return false;
                 }
@@ -198,8 +198,8 @@ public static class Perception
         {
             return targetLocation;
         }
-        var from = PropValues.GetString(target.Props, "from");
-        var to = PropValues.GetString(target.Props, "to");
+        var from = target.Props.Get(Prop.From);
+        var to = target.Props.Get(Prop.To);
         if (from is not null && to is not null && observerLocation == from)
         {
             return from;
@@ -270,7 +270,7 @@ public static class Perception
     // What an entity offers the nose: a liquid it holds, or residue spilled on it.
     private static bool Smells(Entity subject)
     {
-        var material = PropValues.GetString(subject.Props, "liquid_material");
+        var material = subject.Props.Get(Prop.LiquidMaterial);
         if (!string.IsNullOrEmpty(material))
         {
             return true;
@@ -282,7 +282,7 @@ public static class Perception
     // hearing reaches its listener in the same room, so a device in the subject's room is enough.
     private static bool HeardThroughIntercom(Snapshot snapshot, Entity observer, Entity subject)
     {
-        foreach (var id in Power.Feeds(snapshot, observer.Id, "intercom"))
+        foreach (var id in Power.Feeds(snapshot, observer.Id, Prop.Intercom))
         {
             var device = snapshot.Entities[id];
             var where = TargetLocationForPerception(subject, subject.Location, device.Location);
@@ -298,12 +298,12 @@ public static class Perception
     // half the cone, the edge included. A camera with no cone sees its whole room.
     internal static bool InCone(Snapshot snapshot, Entity camera, string subjectId)
     {
-        var cone = PropValues.GetNumber(camera.Props, "cone_deg");
+        var cone = camera.Props.Get(Prop.ConeDeg);
         if (cone is null || cone >= Limits.FullCircleDegrees)
         {
             return true;
         }
-        var facing = PropValues.GetNumber(camera.Props, "facing_deg");
+        var facing = camera.Props.Get(Prop.FacingDeg);
         var from = Geometry.EffectivePos(snapshot, camera.Id);
         var to = Geometry.EffectivePos(snapshot, subjectId);
         if (facing is null || from is null)
