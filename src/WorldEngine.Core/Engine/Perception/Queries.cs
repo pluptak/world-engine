@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -148,7 +147,7 @@ public static class Queries
         if (!isRelation)
         {
             return relation == "integrity"
-                ? Perception.Answer.Of(PropertyMatches(true, JsonValue.Create(state.Integrity), obj, "integrity"), Code.PartState)
+                ? Perception.Answer.Of(PropertyMatches(true, state.Integrity, obj, "integrity"), Code.PartState)
                 : new Perception.Answer(Truth.False, Code.NotAPartField);
         }
         var attached = Attached(state);
@@ -183,19 +182,19 @@ public static class Queries
         return dx * dx + dy * dy <= NearThresholdCm * NearThresholdCm;
     }
 
-    // A property as the entity holds it, with `Defined` false when the entity has no such property at all. An absent position or
-    // a null prop is defined, and reads as null.
-    private static (bool Defined, JsonNode? Value) PropertyValue(Entity entity, string property) => property switch
+    // A property as the entity holds it, with `Defined` false when the entity has no such property at all. An absent position is
+    // defined, and reads as none.
+    private static (bool Defined, Value? Value) PropertyValue(Entity entity, string property) => property switch
     {
-        "integrity" => (true, JsonValue.Create(entity.Integrity)),
-        "residue" => (true, new JsonObject(entity.Residue.Select(pair => KeyValuePair.Create(pair.Key, (JsonNode?)JsonValue.Create(pair.Value))))),
-        "pos" => (true, entity.Pos is { } pos ? new JsonObject { ["x"] = JsonValue.Create(pos.X), ["y"] = JsonValue.Create(pos.Y) } : null),
-        _ => entity.Props.TryGetValue(property, out var value) ? (true, ValueJson.ToNode(value)) : (false, null),
+        "integrity" => (true, entity.Integrity),
+        "residue" => (true, Value.Of(entity.Residue.Select(pair => KeyValuePair.Create(pair.Key, (Value?)pair.Value)))),
+        "pos" => (true, entity.Pos is { } pos ? Value.Of([KeyValuePair.Create("x", (Value?)pos.X), KeyValuePair.Create("y", (Value?)pos.Y)]) : null),
+        _ => entity.Props.TryGetValue(property, out var value) ? (true, value) : (false, null),
     };
 
-    // Whether a defined value matches the object: a plain match, a number or boolean written as its text, an object written as
-    // its canonical JSON, or, for residue, a positive amount of the named material.
-    private static bool PropertyMatches(bool defined, JsonNode? value, string? obj, string property)
+    // Whether a defined value matches the object: a plain match, a number or boolean written as its text, a list or map written as
+    // its canonical JSON, or, for residue, a positive amount of the named material. An absent position matches `null`.
+    private static bool PropertyMatches(bool defined, Value? value, string? obj, string property)
     {
         if (!defined)
         {
@@ -205,35 +204,14 @@ public static class Queries
         {
             return true;
         }
-        if (property == "residue" && value is JsonObject residue)
+        return value switch
         {
-            return residue.TryGetPropertyValue(obj, out var amount)
-                && amount is JsonValue count
-                && JsonReads.Number(count) is { } quantity
-                && quantity > 0;
-        }
-        if (value is null)
-        {
-            return obj == "null";
-        }
-        if (value is JsonValue scalar)
-        {
-            if (scalar.TryGetValue(out string? text))
-            {
-                return text == obj;
-            }
-            if (JsonReads.Number(scalar) is { } number)
-            {
-                return NumberText(number) == obj;
-            }
-            return scalar.TryGetValue(out bool flag) && (flag ? "true" : "false") == obj;
-        }
-        return CanonicalJson.Serialize(value) == obj;
+            Value.Map residue when property == "residue" => residue.GetValueOrDefault(obj).AsInt() > 0,
+            null => obj == "null",
+            Value.Text text => text.Content == obj,
+            Value.Int number => number.Number.ToString(CultureInfo.InvariantCulture) == obj,
+            Value.Bool flag => (flag.Flag ? "true" : "false") == obj,
+            _ => CanonicalJson.Serialize(value) == obj,
+        };
     }
-
-    // A number as JavaScript writes it in a string: a whole number without a fraction.
-    private static string NumberText(double number) =>
-        Math.Floor(number) == number && Math.Abs(number) < 1e21
-            ? ((long)number).ToString(CultureInfo.InvariantCulture)
-            : number.ToString("R", CultureInfo.InvariantCulture);
 }

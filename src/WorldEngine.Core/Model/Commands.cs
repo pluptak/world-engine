@@ -1,7 +1,6 @@
 namespace WorldEngine.Core.Model;
 
 // What a command is, what the log records for it, and what the world answers (src/engine/command.ts, src/model.ts).
-// Command arguments and reason data are kept as JSON until the verbs that read them are ported.
 
 public enum Status
 {

@@ -1,5 +1,3 @@
-using System.Text.Json.Nodes;
-using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -14,12 +12,12 @@ public static class Options
     public sealed record ReadyOption(
         string Verb,
         string? Target = null,
-        JsonObject? Args = null);
+        Value.Map? Args = null);
 
     public sealed record BlockedOption(
         string Verb,
         string? Target,
-        JsonObject? Args,
+        Value.Map? Args,
         string ReasonCode);
 
     public sealed record Result(
@@ -88,7 +86,7 @@ public static class Options
                                 declared.Requires ?? []);
                             foreach (var args in suggest(context, targets))
                             {
-                                var tried = dry(command with { Args = ArgsOf(args) });
+                                var tried = dry(command with { Args = args });
                                 if (tried.Status == Status.Ok)
                                 {
                                     ready.Add(new ReadyOption(verb, target, args));
@@ -108,9 +106,9 @@ public static class Options
                     // A verb that acts on parts is also tried at each part of the body that is still on it, by name order.
                     if (declared.AimsAtParts && target is not null)
                     {
-                        var parts = (Projection.VisibleParts(snapshot, registry, actor, target)?.Select(part => part!.AsObject()) ?? [])
-                            .Where(part => part["status"]!.GetValue<string>() != "detached")
-                            .Select(part => part["name"]!.GetValue<string>())
+                        var parts = (Projection.VisibleParts(snapshot, registry, actor, target) ?? [])
+                            .Where(part => part.Status != PartStatus.Detached)
+                            .Select(part => part.Name)
                             .Order(StringComparer.Ordinal);
                         foreach (var part in parts)
                         {
@@ -139,7 +137,4 @@ public static class Options
 
     // The reason an attempt was refused with: its code, or its status where it has none.
     private static string ReasonOf(Pipeline.Result result) => Pipeline.ReasonName(result.ReasonCode, result.Status);
-
-    // A suggested arg set as a command's args (the options hold them as JSON).
-    private static Value.Map ArgsOf(JsonObject args) => (Value.Map)ValueJson.FromNode(args)!;
 }

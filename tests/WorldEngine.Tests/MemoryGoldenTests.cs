@@ -54,11 +54,11 @@ public class MemoryGoldenTests
             args["observe"]?.GetValue<bool>() ?? false)),
         "edit" => Shape(world.Edit(args["edit"]!.AsObject(), args["command_id"]?.GetValue<string>())),
         "beat" => new JsonArray([.. world.Beat([.. args["commands"]!.AsArray().Select(command => Read<Command>(command!))]).Select(result => (JsonNode?)Shape(result))]),
-        "observe" => world.Observe(
+        "observe" => Json(world.Observe(
             args["observer"]!.GetValue<string>(),
             args["since"]?.GetValue<long>(),
-            args["since_tick"]?.GetValue<long>()),
-        "inspect" => Projection.InspectEntity(world.CurrentSnapshot(), registry, [], args["observer"]!.GetValue<string>(), args["entity"]!.GetValue<string>()),
+            args["since_tick"]?.GetValue<long>())),
+        "inspect" => Json(Projection.InspectEntity(world.CurrentSnapshot(), registry, [], args["observer"]!.GetValue<string>(), args["entity"]!.GetValue<string>())),
         "since" => Since(world, args["version"]!.GetValue<long>()),
         "attempts" => Json(world.Attempts(args["version"]!.GetValue<long>())),
         "query" => Query(world, args),
@@ -185,7 +185,7 @@ public class MemoryGoldenTests
         shape["events"] = Json(result.Events);
         if (result.Observation is not null)
         {
-            shape["observation"] = result.Observation.DeepClone();
+            shape["observation"] = Json(result.Observation);
         }
         return shape;
     }

@@ -32,7 +32,7 @@ public abstract record Value
     }
 
     // Keys in ordinal order, so walking a map is deterministic and writing one needs no sort. A map reads as a dictionary, and
-    // `With` and `Without` give a changed copy.
+    // `With`, `Without` and `Only` give a changed copy.
     public sealed record Map(ImmutableSortedDictionary<string, Value> Fields) : Value, IReadOnlyDictionary<string, Value>
     {
         public static readonly Map Empty = new(ImmutableSortedDictionary.Create<string, Value>(StringComparer.Ordinal));
@@ -58,6 +58,9 @@ public abstract record Value
         public Map With(string key, Value? value) => value is null ? Without(key) : new(Fields.SetItem(key, value));
 
         public Map Without(string key) => Fields.ContainsKey(key) ? new(Fields.Remove(key)) : this;
+
+        // A copy with only the keys `keep` holds to.
+        public Map Only(Func<string, bool> keep) => new(Fields.RemoveRange(Fields.Keys.Where(key => !keep(key)).ToList()));
 
         public bool Equals(Map? other) =>
             other is not null

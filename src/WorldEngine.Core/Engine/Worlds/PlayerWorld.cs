@@ -1,5 +1,3 @@
-using System.Text.Json.Nodes;
-using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -10,53 +8,46 @@ namespace WorldEngine.Core.Engine;
 // no name. Results are as the handle's own callers read them, not the world's.
 public sealed class PlayerWorld(IWorld world, string handle)
 {
+    // What came of a submit, a withdraw or an idle.
+    public sealed record Answer(Status Status, Code? ReasonCode = null);
+
+    // A move held for the next round, as the view writes it: the body only where the slot holds several.
+    public sealed record Move(string? Body, string CommandId, string Verb, string? Target, Value.Map? Args);
 
     // A handle's slot: its root (the first body, which names it) and the bodies it drives now, in slot order.
     private sealed record Bound(string Root, IReadOnlyList<string> Bodies);
 
     // What any of the slot's bodies senses, once each.
-    public JsonObject Observe(long? sinceTick = null) => SlotView().Observe(sinceTick);
+    public ActorObservation Observe(long? sinceTick = null) => SlotView().Observe(sinceTick);
 
-    public JsonObject? Inspect(string entity) => SlotView().Inspect(entity);
+    public Projection.Inspection? Inspect(string entity) => SlotView().Inspect(entity);
 
     // One body's options: `body` names it when the slot holds several, and it is the body alone otherwise. A body that is out has none,
     // and says why (`body_out`).
-    public JsonObject Options(string? body = null, bool refused = false)
+    public ActorOptions Options(string? body = null, bool refused = false)
     {
         var (found, id) = NamedOf(body);
         if (BodyOut(world.CurrentSnapshot(), id))
         {
-            return new JsonObject
-            {
-                ["actor"] = ActorAlias.Of(found.Root, id),
-                ["ready"] = new JsonArray(),
-                ["needs_args"] = new JsonArray(),
-                ["reason_code"] = WorldJson.Name(Code.BodyOut),
-            };
+            return new ActorOptions(ActorAlias.Of(found.Root, id), [], [], ReasonCode: Code.BodyOut);
         }
         return new ActorWorld(world, id, found.Root, found.Bodies).OptionsOf(refused);
     }
 
     // Judged as a round's move, as the actor view judges any command, for the body it names.
-    public JsonObject Check(ActorCommand command, string? body = null)
+    public ActorVerdict Check(ActorCommand command, string? body = null)
     {
         var (found, id) = NamedOf(body);
         if (BodyOut(world.CurrentSnapshot(), id))
         {
-            return new JsonObject
-            {
-                ["status"] = "refused",
-                ["command_id"] = command.CommandId,
-                ["resolved_target"] = null,
-                ["reason_code"] = WorldJson.Name(Code.BodyOut),
-            };
+            return new ActorVerdict(Status.Refused, command.CommandId, ReasonCode: Code.BodyOut);
         }
         return new ActorWorld(world, id, found.Root, found.Bodies).Check(command);
     }
 
     // A move written as the view writes things: its own aliases or names, never a world id. Replaces the body's move, and any move held
     // for the body before a successor took it over.
-    public JsonObject Submit(ActorCommand move, string? body = null)
+    public Answer Submit(ActorCommand move, string? body = null)
     {
         // One snapshot for the whole submit: the binding, the body's state and the successor scan all read the world as it stands.
         var snapshot = world.CurrentSnapshot();
@@ -93,7 +84,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
     }
 
     // Drops the move for one body, or every move the handle holds.
-    public JsonObject Withdraw(string? body = null)
+    public Answer Withdraw(string? body = null)
     {
         var found = BoundOf();
         if (found is null)
@@ -122,7 +113,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
     }
 
     // Passes every round until the handle submits again, and drops any move (`docs/rounds.md`).
-    public JsonObject Idle()
+    public Answer Idle()
     {
         if (BoundOf() is null)
         {
@@ -134,43 +125,23 @@ public sealed class PlayerWorld(IWorld world, string handle)
 
     // The moves held for the next round, written as the view writes them: an id is the body's alias, and the actor is not said. A body
     // is named only where the slot holds several.
-    public JsonArray Pending()
+    public IReadOnlyList<Move> Pending()
     {
         var found = RequireBound();
         var snapshot = world.CurrentSnapshot();
-        JsonNode? Written(JsonNode? value)
-        {
-            var text = JsonReads.Text(value);
-            return text is not null && snapshot.Entities.ContainsKey(text.Split('.')[0])
-                ? JsonValue.Create(ActorAlias.Of(found.Root, text))
-                : value?.DeepClone();
-        }
+        Value Written(Value value) =>
+            value.AsText() is { } text && snapshot.Entities.ContainsKey(text.Split('.')[0]) ? ActorAlias.Of(found.Root, text) : value;
 
-        return new JsonArray([.. world.Pending.Moves(handle).Select(held =>
-        {
-            var body = Runs.LiveBodyOf(snapshot, held.Actor);
-            var written = new JsonObject();
-            if (found.Bodies.Count > 1)
-            {
-                written["body"] = ActorAlias.Of(found.Root, body);
-            }
-            written["command_id"] = held.CommandId;
-            written["verb"] = held.Verb;
-            if (held.Target is not null)
-            {
-                written["target"] = Written(JsonValue.Create(held.Target));
-            }
-            if (held.Args is not null)
-            {
-                var args = new JsonObject();
-                foreach (var (name, value) in held.Args)
-                {
-                    args[name] = ActorWorld.IsToken(held.Verb, name) ? ValueJson.ToNode(value) : Written(ValueJson.ToNode(value));
-                }
-                written["args"] = args;
-            }
-            return (JsonNode?)written;
-        })]);
+        return [.. world.Pending.Moves(handle).Select(held => new Move(
+            found.Bodies.Count > 1 ? ActorAlias.Of(found.Root, Runs.LiveBodyOf(snapshot, held.Actor)) : null,
+            held.CommandId,
+            held.Verb,
+            held.Target is null ? null : Written(held.Target).AsText(),
+            held.Args is null
+                ? null
+                : Value.Of(held.Args.Select(pair => KeyValuePair.Create(
+                    pair.Key,
+                    (Value?)(ActorWorld.IsToken(held.Verb, pair.Key) ? pair.Value : Written(pair.Value)))))))];
     }
 
     // The view that reads through every body of the slot, as the first of them still in the world.
@@ -217,7 +188,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
         return entity is null || entity.Status == EntityStatus.Destroyed;
     }
 
-    private static JsonObject Ok() => new() { ["status"] = "ok" };
+    private static Answer Ok() => new(Status.Ok);
 
-    private static JsonObject Refusal(Code reasonCode) => new() { ["status"] = "refused", ["reason_code"] = WorldJson.Name(reasonCode) };
+    private static Answer Refusal(Code reasonCode) => new(Status.Refused, reasonCode);
 }

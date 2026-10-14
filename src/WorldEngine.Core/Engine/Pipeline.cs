@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -35,7 +34,7 @@ public static class Pipeline
         bool OneTick = false,
         // The arg sets an option lists for a verb that needs args, given the actor's targets (src/engine/command.ts `suggest`).
         // Null when the verb suggests none.
-        Func<CommandContext, IReadOnlyList<string>, IReadOnlyList<JsonObject>>? Suggest = null,
+        Func<CommandContext, IReadOnlyList<string>, IReadOnlyList<Value.Map>>? Suggest = null,
         // Whether the verb takes args that no list holds, so it stays among the verbs that need args (`free_args`).
         bool FreeArgs = false,
         // Whether the verb is tried at each part of the body it names (`aims_at_parts`, used by `options`).
@@ -81,11 +80,10 @@ public static class Pipeline
     // A refusal of a command that names something the world does not hold or is malformed, with its reason code.
     public static Refusal Invalid(Code code) => new(Status.Invalid, code);
 
-    // The reason data of a refusal or event: named values, each a string, a number or a boolean.
-    // Reason data or an event's data, from pairs of a key and what code holds there (`Value.From`, or a JSON node); a null
-    // value leaves its key out.
+    // Reason data or an event's data, from pairs of a key and what code holds there (`Value.From`); a null value leaves its key
+    // out.
     public static Value.Map Reason(params (string Key, object? Value)[] pairs) =>
-        Value.Of(pairs.Select(pair => KeyValuePair.Create(pair.Key, pair.Value is JsonNode node ? ValueJson.FromNode(node) : Value.From(pair.Value))));
+        Value.Of(pairs.Select(pair => KeyValuePair.Create(pair.Key, Value.From(pair.Value))));
 
     // The refusal for an actor short of a required capacity (src/engine/carry.ts `capacityRefusal`): the code names the
     // verb's first requirement, and the data the first one unmet. Null when the actor meets them all.
@@ -118,8 +116,8 @@ public static class Pipeline
         Snapshot Snapshot,
         IReadOnlyList<Delta> Deltas,
         IReadOnlyList<WorldEvent> Events,
-        // With `observe`: what the actor could sense afterwards (the projection, as JSON).
-        JsonObject? Observation = null);
+        // With `observe`: what the actor could sense afterwards.
+        Projection.Observation? Observation = null);
 
     // The result of a command the front refuses, which leaves the snapshot as it was.
     public static Result Unchanged(

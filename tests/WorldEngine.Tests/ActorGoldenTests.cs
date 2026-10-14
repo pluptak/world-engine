@@ -51,11 +51,11 @@ public class ActorGoldenTests
         var target = views[viewName];
         return op switch
         {
-            "observe" => target.Observe(args["since_tick"]?.GetValue<long>()),
-            "inspect" => target.Inspect(args["entity"]!.GetValue<string>()),
-            "check" => target.Check(Read<ActorCommand>(args["command"]!)),
-            "command" => target.Apply(Read<ActorCommand>(args["command"]!)),
-            "options" => target.OptionsOf(args["refused"]?.GetValue<bool>() ?? false),
+            "observe" => WorldJson.Node(target.Observe(args["since_tick"]?.GetValue<long>())),
+            "inspect" => WorldJson.Node(target.Inspect(args["entity"]!.GetValue<string>())),
+            "check" => WorldJson.Node(target.Check(Read<ActorCommand>(args["command"]!))),
+            "command" => WorldJson.Node(target.Apply(Read<ActorCommand>(args["command"]!))),
+            "options" => WorldJson.Node(target.OptionsOf(args["refused"]?.GetValue<bool>() ?? false)),
             _ => throw new InvalidDataException($"unknown step {op}"),
         };
     }

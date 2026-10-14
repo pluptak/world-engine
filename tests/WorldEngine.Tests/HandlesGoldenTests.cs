@@ -33,19 +33,19 @@ public class HandlesGoldenTests
         {
             "snapshot" => Json(world.CurrentSnapshot()),
             "edit" => Shape(world.Edit(args["edit"]!.AsObject())),
-            "observe" => new PlayerWorld(world, handle!).Observe(args["since_tick"]?.GetValue<long>()),
-            "inspect" => new PlayerWorld(world, handle!).Inspect(args["entity"]!.GetValue<string>()),
-            "options" => new PlayerWorld(world, handle!).Options(args["body"]?.GetValue<string>(), args["refused"]?.GetValue<bool>() ?? false),
-            "check" => new PlayerWorld(world, handle!).Check(Read<ActorCommand>(args["command"]!)),
-            "submit" => new PlayerWorld(world, handle!).Submit(Read<ActorCommand>(args["move"]!), args["body"]?.GetValue<string>()),
-            "pending" => new PlayerWorld(world, handle!).Pending(),
-            "withdraw" => new PlayerWorld(world, handle!).Withdraw(args["body"]?.GetValue<string>()),
-            "idle" => new PlayerWorld(world, handle!).Idle(),
+            "observe" => Json(new PlayerWorld(world, handle!).Observe(args["since_tick"]?.GetValue<long>())),
+            "inspect" => Json(new PlayerWorld(world, handle!).Inspect(args["entity"]!.GetValue<string>())),
+            "options" => Json(new PlayerWorld(world, handle!).Options(args["body"]?.GetValue<string>(), args["refused"]?.GetValue<bool>() ?? false)),
+            "check" => Json(new PlayerWorld(world, handle!).Check(Read<ActorCommand>(args["command"]!))),
+            "submit" => Json(new PlayerWorld(world, handle!).Submit(Read<ActorCommand>(args["move"]!), args["body"]?.GetValue<string>())),
+            "pending" => Json(new PlayerWorld(world, handle!).Pending()),
+            "withdraw" => Json(new PlayerWorld(world, handle!).Withdraw(args["body"]?.GetValue<string>())),
+            "idle" => Json(new PlayerWorld(world, handle!).Idle()),
             "submitted" => Json(new DirectorWorld(world).Submitted()),
             "close_round" => RoundNode(new DirectorWorld(world).CloseRound()),
-            "close_rounds" => new DirectorWorld(world).CloseRounds(
+            "close_rounds" => Json(new DirectorWorld(world).CloseRounds(
                 args["max"]!.GetValue<int>(),
-                args["stop_before"]?.GetValue<string>()),
+                args["stop_before"]?.GetValue<string>())),
             "attempts" => Json(world.Attempts(args["version"]!.GetValue<long>())),
             _ => throw new InvalidDataException($"unknown step {op}"),
         };
@@ -97,7 +97,7 @@ public class HandlesGoldenTests
         shape["events"] = Json(result.Events);
         if (result.Observation is not null)
         {
-            shape["observation"] = result.Observation.DeepClone();
+            shape["observation"] = Json(result.Observation);
         }
         return shape;
     }

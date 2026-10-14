@@ -81,10 +81,10 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
     }
 
     // One observer's projection; with `since` or `sinceTick`, the events it sensed after that version or at that tick (`observe`).
-    public JsonObject Observe(string observer, long? since = null, long? sinceTick = null) =>
+    public Projection.Observation Observe(string observer, long? since = null, long? sinceTick = null) =>
         WorldReads.Observe(this, observer, since, sinceTick, tick => [.. WorldFiles.ReadEvents(dir).Where(@event => @event.Tick >= tick)]);
 
-    public JsonObject? Inspect(string observer, string entity) => WorldReads.Inspect(this, observer, entity);
+    public Projection.Inspection? Inspect(string observer, string entity) => WorldReads.Inspect(this, observer, entity);
 
     // The fact half of a query, judged on the current snapshot (`query` of a fact).
     public Perception.Answer QueryFact(string subject, string relation, string? obj) => Queries.Fact(CurrentSnapshot(), registry, subject, relation, obj);

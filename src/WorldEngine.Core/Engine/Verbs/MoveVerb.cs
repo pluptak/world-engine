@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using static WorldEngine.Core.Json.Integers;
 
@@ -21,7 +20,7 @@ public static class MoveVerb
     // The room on the far side of each doorway the actor can address, since reading the door gives both its ends, and its own
     // room when it stands on something, to step down: on the floor, moving there changes nothing (src/engine/verbs/move.ts
     // `suggest`). The position to walk to is free.
-    private static IReadOnlyList<JsonObject> Suggest(Pipeline.CommandContext context, IReadOnlyList<string> nameable)
+    private static IReadOnlyList<Value.Map> Suggest(Pipeline.CommandContext context, IReadOnlyList<string> nameable)
     {
         var actor = context.Snapshot.Entities[context.Command.Actor];
         var here = actor.Location;
@@ -54,7 +53,7 @@ public static class MoveVerb
             .Where(room => context.Snapshot.Entities.TryGetValue(room, out var entity)
                 && entity.Template == TemplateIds.Room
                 && !(room == here && OnFloor(actor)))
-            .Select(location => new JsonObject { ["location"] = location })];
+            .Select(location => Pipeline.Reason(("location", location)))];
     }
 
     // Where the command says to go. Exactly one of the three forms.

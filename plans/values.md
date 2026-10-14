@@ -57,9 +57,12 @@ in ordinal order and lists and maps compare by content, so equality is structura
    verb; the six golden rows that had a verb refuse one moved to `ChecksTests` and `EditTests`. Props are walked in key
    order, so a template with several bad props names the first by key (three template-fuzz cases). The edit parser still
    reads `args.edit` as JSON through a bridge until block 6. 39 Core files no longer import `System.Text.Json`.
-5. **Reads answer in records.** `Projection`, `WorldReads`, `ActorWorld`, `PlayerWorld`, `DirectorWorld`, `Options` and
-   `Trace` build typed records, as `Catalog` does, and `IWorld`/`IWorldReads` carry no `JsonObject`. A response whose
-   shape only mirrored TypeScript's construction may take the record's plainer shape.
+5. **Reads answer in records.** Done. An observation, an observed entity and its facts, a sensed event, an inspection, a
+   body's parts and a level are records of `Projection`; the actor view answers `ActorObservation`, `ActorVerdict` and
+   `ActorOptions`, a player handle `PlayerWorld.Answer` and `Move`, `close_rounds` `DirectorWorld.QuietRounds`, and the
+   verb catalog `VerbRegistry.CatalogEntry`. Options and a verb's suggestions hold args as `Value.Map`, and a query's
+   property match reads a `Value`. The CLI and the tests encode a record once (`WorldJson.Node`); no golden moved.
+   `IWorld.Edit` still takes the edit's JSON until block 6. 27 Core files still import `System.Text.Json`.
 6. **Requests and edits are typed.** `Contract/Shape.cs` checks a `Value`; `EditParser` turns it into the `WorldEdit`
    records it already builds, and `IWorld.Edit` takes those. A beat's action is stored as its `WorldEdit` (or a sound), not
    as the edit's JSON, so `BeatShape` stops re-checking stored actions. An edit that clears a field (`Given<T>` with no

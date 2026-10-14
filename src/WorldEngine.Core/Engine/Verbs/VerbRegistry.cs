@@ -1,6 +1,4 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
 
@@ -35,26 +33,31 @@ public static class VerbRegistry
         ["edit"] = EditVerb.Edit,
     };
 
-    // The catalog: every verb's declared shape, sorted by name, as the JSON the catalog returns.
-    public static JsonArray Catalog() => new([.. All.Keys
+    // One verb's declared shape, as the catalog lists it.
+    public sealed record CatalogEntry(
+        string Verb,
+        bool RequiresTarget,
+        IReadOnlyDictionary<string, ArgSpec> Args,
+        VerbDuration Duration,
+        IReadOnlyList<Pipeline.Requirement> Requires,
+        IReadOnlyList<Carry.Alternative> CarryAlternatives,
+        IReadOnlyList<AttackVerb.AttackMode> AttackModes,
+        IReadOnlyList<Code> Refuses);
+
+    // The catalog: every verb's declared shape, sorted by name.
+    public static IReadOnlyList<CatalogEntry> Catalog() => [.. All.Keys
         .Order(StringComparer.Ordinal)
-        .Select(name => (JsonNode?)Entry(name, All[name]))]);
-
-    private static JsonObject Entry(string name, Pipeline.VerbDecl decl)
-    {
-        var spec = VerbSpecs.ByVerb[name];
-        return new JsonObject
+        .Select(name =>
         {
-            ["verb"] = name,
-            ["requires_target"] = decl.RequiresTarget,
-            ["args"] = Node(spec.Args),
-            ["duration"] = Node(decl.Duration ?? VerbDuration.OneTick),
-            ["requires"] = Node(decl.Requires ?? []),
-            ["carry_alternatives"] = Node(spec.CarryAlternatives ?? []),
-            ["attack_modes"] = Node(spec.AttackModes ?? []),
-            ["refuses"] = Node(spec.Refuses),
-        };
-    }
-
-    private static JsonNode? Node<T>(T value) => JsonSerializer.SerializeToNode(value, WorldJson.Options);
+            var (decl, spec) = (All[name], VerbSpecs.ByVerb[name]);
+            return new CatalogEntry(
+                name,
+                decl.RequiresTarget,
+                spec.Args,
+                decl.Duration ?? VerbDuration.OneTick,
+                decl.Requires ?? [],
+                spec.CarryAlternatives ?? [],
+                spec.AttackModes ?? [],
+                spec.Refuses);
+        })];
 }

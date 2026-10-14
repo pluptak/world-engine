@@ -158,7 +158,7 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
     }
 
     // What one observer could sense now, and, with `since` or `sinceTick`, which events after that version or at that tick it sensed.
-    public JsonObject Observe(string observer, long? since = null, long? sinceTick = null) =>
+    public Projection.Observation Observe(string observer, long? since = null, long? sinceTick = null) =>
         WorldReads.Observe(this, observer, since, sinceTick, tick =>
         {
             // Events of the world this one was made from, at its starting tick, are not in its records.
@@ -170,7 +170,7 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
         });
 
     // One entity in detail, as the observer could sense it now; null when nothing of it is sensed.
-    public JsonObject? Inspect(string observer, string entity) => WorldReads.Inspect(this, observer, entity);
+    public Projection.Inspection? Inspect(string observer, string entity) => WorldReads.Inspect(this, observer, entity);
 
     public IReadOnlyDictionary<string, Template> Registry => registry;
 

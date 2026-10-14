@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using static WorldEngine.Core.Json.Integers;
 
@@ -21,7 +20,7 @@ public static class PourVerb
 
     // Each vessel, surface or room the actor can name, for the whole of what it holds in its hand: no `amount`, which pours
     // everything, so the offer never tells the figure (src/engine/verbs/pour.ts `suggest`).
-    private static IReadOnlyList<JsonObject> Suggest(Pipeline.CommandContext context, IReadOnlyList<string> nameable)
+    private static IReadOnlyList<Value.Map> Suggest(Pipeline.CommandContext context, IReadOnlyList<string> nameable)
     {
         var actor = context.Snapshot.Entities[context.Command.Actor];
         var source = context.Target is null ? null : context.Snapshot.Entities.GetValueOrDefault(context.Target.EntityId);
@@ -40,7 +39,7 @@ public static class PourVerb
             .Where(id => id != source.Id
                 && context.Snapshot.Entities.TryGetValue(id, out var entity)
                 && (entity.Props.Is(Prop.Container) || entity.Props.Is(Prop.Surface) || entity.Template == TemplateIds.Room))
-            .Select(destination => new JsonObject { ["destination"] = destination })];
+            .Select(destination => Pipeline.Reason(("destination", destination)))];
     }
 
     private sealed record Pouring(

@@ -1,8 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -14,6 +12,32 @@ public sealed record ActorCommand(
     string Verb,
     string? Target = null,
     Value.Map? Args = null);
+
+// What an actor senses: the world's projection with every id an alias, and the tick in place of a version.
+public sealed record ActorObservation(
+    string Observer,
+    long Tick,
+    IReadOnlyList<string> UnknownSenses,
+    IReadOnlyList<Projection.ObservedEntity> Entities,
+    IReadOnlyList<Projection.SensedEvent> Events);
+
+// What came of a command, as the actor could know it; an applied one carries what the actor sensed of it.
+public sealed record ActorVerdict(
+    Status Status,
+    string CommandId,
+    string? ResolvedTarget = null,
+    IReadOnlyList<string>? Candidates = null,
+    Code? ReasonCode = null,
+    Value.Map? ReasonData = null,
+    ActorObservation? Observation = null);
+
+// What an actor can try now; a body that is out has none, and says why.
+public sealed record ActorOptions(
+    string Actor,
+    IReadOnlyList<Options.ReadyOption> Ready,
+    IReadOnlyList<string> NeedsArgs,
+    IReadOnlyList<Options.BlockedOption>? Blocked = null,
+    Code? ReasonCode = null);
 
 // What an actor calls things by (src/actor-world.ts `aliasOf`): `x` and the first 12 hex digits of a hash of the view's key and the
 // id, with a part address keeping its part. Nothing is stored, and no count shows through.
@@ -68,10 +92,10 @@ public sealed class ActorWorld
     public string Actor => actor;
 
     // What it senses now, or since a tick (`since_tick`), merged over its bodies.
-    public JsonObject Observe(long? sinceTick = null) => ToActor(ObserveAll(sinceTick));
+    public ActorObservation Observe(long? sinceTick = null) => ToActor(ObserveAll(sinceTick));
 
     // One entity in detail, as one of its bodies senses it; null when none does.
-    public JsonObject? Inspect(string entity)
+    public Projection.Inspection? Inspect(string entity)
     {
         var id = Unalias(entity);
         foreach (var sense in Present())
@@ -86,35 +110,27 @@ public sealed class ActorWorld
     }
 
     // Judged as the world would judge it now, with nothing applied.
-    public JsonObject Check(ActorCommand command) => Verdict(world.Check(Decode(command)), ObserveAll());
+    public ActorVerdict Check(ActorCommand command) => VerdictOf(world.Check(Decode(command)), ObserveAll());
 
     // What it can try now, from what it can name, with the refusals if asked.
-    public JsonObject OptionsOf(bool refused = false)
+    public ActorOptions OptionsOf(bool refused = false)
     {
         var snapshot = world.CurrentSnapshot();
-        var options = JsonNode.Parse(WorldJson.Write(world.OptionsFor(actor, refused)))!.AsObject();
-        var output = new JsonObject
-        {
-            ["actor"] = ActorAlias.Of(key, options["actor"]!.GetValue<string>()),
-            ["ready"] = new JsonArray([.. options["ready"]!.AsArray().Select(option => (JsonNode?)OptionOut(option!.AsObject(), snapshot))]),
-            ["needs_args"] = options["needs_args"]!.DeepClone(),
-        };
-        if (options["blocked"] is JsonArray blocked)
-        {
-            output["blocked"] = new JsonArray([.. blocked.Select(option => (JsonNode?)OptionOut(option!.AsObject(), snapshot))]);
-        }
-        return output;
+        var options = world.OptionsFor(actor, refused);
+        return new ActorOptions(
+            Alias(options.Actor),
+            [.. options.Ready.Select(option => option with { Target = AliasOf(option.Target), Args = ArgsOut(snapshot, option.Args) })],
+            options.NeedsArgs,
+            options.Blocked?.Select(option => option with { Target = AliasOf(option.Target), Args = ArgsOut(snapshot, option.Args) }).ToList());
     }
 
     // Decided against the world as it is, and applied if accepted: an actor has no version to base a command on, so none is ever
     // preempted by what it could not see. The verdict carries what it sensed of its own command.
-    public JsonObject Apply(ActorCommand command)
+    public ActorVerdict Apply(ActorCommand command)
     {
         var result = world.Apply(Decode(command), observe: true);
         var observation = ObservedAfter(result);
-        var verdict = Verdict(result, observation);
-        verdict["observation"] = ToActor(observation);
-        return verdict;
+        return VerdictOf(result, observation) with { Observation = ToActor(observation) };
     }
 
     // An alias or a raw id of this view's command, read back to the world's ids as the view's own `check` reads them. Internal, as the
@@ -154,8 +170,14 @@ public sealed class ActorWorld
 
     private bool IsAddress(Snapshot snapshot, string value) => snapshot.Entities.ContainsKey(value.Split('.')[0]);
 
-    private JsonNode? AliasValue(Snapshot snapshot, JsonNode? value) =>
-        JsonReads.Text(value) is { } text && IsAddress(snapshot, text) ? JsonValue.Create(Alias(text)) : value?.DeepClone();
+    private string? AliasOf(string? id) => id is null ? null : Alias(id);
+
+    // A value that names an entity or a part of one, as its alias; any other value as it is.
+    private Value AliasValue(Snapshot snapshot, Value value) =>
+        value.AsText() is { } text && IsAddress(snapshot, text) ? Alias(text) : value;
+
+    private Value.Map? ArgsOut(Snapshot snapshot, Value.Map? args) =>
+        args is null ? null : Value.Of(args.Select(pair => KeyValuePair.Create(pair.Key, (Value?)AliasValue(snapshot, pair.Value))));
 
     // A word no name, alias or id in the world is: names are free text, so the first `nothing<n>` none of them is.
     private string Nothing()
@@ -207,48 +229,33 @@ public sealed class ActorWorld
     }
 
     // Built from the world's own projection of each body, the first body that senses an entity giving its facts.
-    private static JsonObject Merge(IReadOnlyList<JsonObject> parts, string observer)
+    private static Projection.Observation Merge(IReadOnlyList<Projection.Observation> parts, string observer)
     {
-        var entities = new List<JsonObject>();
+        var entities = new List<Projection.ObservedEntity>();
         var seenEntities = new HashSet<string>(StringComparer.Ordinal);
-        var events = new List<JsonObject>();
+        var events = new List<Projection.SensedEvent>();
         var seenEvents = new HashSet<string>(StringComparer.Ordinal);
         foreach (var part in parts)
         {
-            foreach (var entity in part["entities"]!.AsArray())
-            {
-                if (seenEntities.Add(entity!["id"]!.GetValue<string>()))
-                {
-                    entities.Add(entity.AsObject());
-                }
-            }
-            foreach (var @event in part["events"]!.AsArray())
-            {
-                if (seenEvents.Add(@event!["event_id"]!.GetValue<string>()))
-                {
-                    events.Add(@event.AsObject());
-                }
-            }
+            entities.AddRange(part.Entities.Where(entity => seenEntities.Add(entity.Id)));
+            events.AddRange(part.Events.Where(@event => seenEvents.Add(@event.EventId)));
         }
-        var ordered = events.OrderBy(@event => long.Parse(@event["event_id"]!.GetValue<string>()[2..])).ToList();
-        return new JsonObject
-        {
-            ["observer"] = observer,
-            ["version"] = JsonValue.Create(parts.Count == 0 ? 0L : parts.Max(part => part["version"]!.GetValue<long>())),
-            ["unknown_senses"] = parts.Count == 0 ? new JsonArray() : parts[0]["unknown_senses"]!.DeepClone(),
-            ["entities"] = new JsonArray([.. entities.Select(entity => (JsonNode?)entity.DeepClone())]),
-            ["events"] = new JsonArray([.. ordered.Select(@event => (JsonNode?)@event.DeepClone())]),
-        };
+        return new Projection.Observation(
+            observer,
+            parts.Count == 0 ? 0 : parts.Max(part => part.Version),
+            parts.Count == 0 ? [] : parts[0].UnknownSenses,
+            entities,
+            [.. events.OrderBy(@event => long.Parse(@event.EventId[2..]))]);
     }
 
     private List<string> Present() => [.. senses.Where(sense => world.EntityOf(sense) is not null)];
 
-    private JsonObject ObserveAll(long? sinceTick = null) =>
+    private Projection.Observation ObserveAll(long? sinceTick = null) =>
         Merge([.. Present().Select(sense => world.Observe(sense, sinceTick: sinceTick))], key);
 
     // What the bodies sense after a command, since the version it was applied to: the actor's own observation for its own body, and
     // each other body's since the same version.
-    private JsonObject ObservedAfter(Pipeline.Result result)
+    private Projection.Observation ObservedAfter(Pipeline.Result result)
     {
         var since = result.Status == Status.Ok ? result.Snapshot.Version - 1 : world.CurrentSnapshot().Version;
         return Merge(
@@ -258,73 +265,39 @@ public sealed class ActorWorld
             key);
     }
 
-    private JsonObject EntityOut(JsonObject entity)
-    {
-        var copy = entity.DeepClone().AsObject();
-        copy["id"] = Alias(copy["id"]!.GetValue<string>());
-        if (copy["facts"] is JsonObject facts)
-        {
-            foreach (var field in new[] { "location", "support", "contained_in" })
-            {
-                if (facts.ContainsKey(field))
-                {
-                    facts[field] = JsonReads.Text(facts[field]) is { } text ? JsonValue.Create(Alias(text)) : facts[field]?.DeepClone();
-                }
-            }
-        }
-        return copy;
-    }
+    private Projection.Facts? FactsOut(Projection.Facts? facts) => facts is null
+        ? null
+        : facts with { Location = AliasOf(facts.Location), Support = AliasOf(facts.Support), ContainedIn = AliasOf(facts.ContainedIn) };
 
-    private JsonObject InspectionOut(JsonObject inspection)
+    private Projection.ObservedEntity EntityOut(Projection.ObservedEntity entity) =>
+        entity with { Id = Alias(entity.Id), Facts = FactsOut(entity.Facts) };
+
+    private Projection.Inspection InspectionOut(Projection.Inspection inspection)
     {
         var snapshot = world.CurrentSnapshot();
-        var copy = EntityOut(inspection);
-        if (copy["props"] is JsonObject props)
+        return inspection with
         {
-            var mapped = new JsonObject();
-            foreach (var (name, value) in props)
-            {
-                mapped[name] = Prop.Table.TryGetValue(name, out var field) && field.Type == PropType.Id
-                    ? AliasValue(snapshot, value)
-                    : value?.DeepClone();
-            }
-            copy["props"] = mapped;
-        }
-        if (copy["holds"] is JsonArray holds)
-        {
-            var aliased = holds.Select(holder => Alias(JsonReads.Text(holder)!)).Order(StringComparer.Ordinal);
-            copy["holds"] = new JsonArray([.. aliased.Select(text => (JsonNode?)JsonValue.Create(text))]);
-        }
-        return copy;
-    }
-
-    private JsonObject OptionOut(JsonObject option, Snapshot snapshot)
-    {
-        var copy = option.DeepClone().AsObject();
-        if (JsonReads.Text(copy["target"]) is { } target)
-        {
-            copy["target"] = Alias(target);
-        }
-        if (copy["args"] is JsonObject args)
-        {
-            var mapped = new JsonObject();
-            foreach (var (name, value) in args)
-            {
-                mapped[name] = AliasValue(snapshot, value);
-            }
-            copy["args"] = mapped;
-        }
-        return copy;
+            Id = Alias(inspection.Id),
+            Facts = FactsOut(inspection.Facts),
+            Props = inspection.Props is null
+                ? null
+                : Value.Of(inspection.Props.Select(pair => KeyValuePair.Create(
+                    pair.Key,
+                    (Value?)(Prop.Table.TryGetValue(pair.Key, out var field) && field.Type == PropType.Id
+                        ? AliasValue(snapshot, pair.Value)
+                        : pair.Value)))),
+            Holds = inspection.Holds?.Select(Alias).Order(StringComparer.Ordinal).ToList(),
+        };
     }
 
     // A verdict as the actor could know it: what it named itself, its room and what it senses are the ids it may see; a reason
     // naming any other entity it could not name is left out.
-    private JsonObject Verdict(Pipeline.Result result, JsonObject view)
+    private ActorVerdict VerdictOf(Pipeline.Result result, Projection.Observation view)
     {
         var known = new HashSet<string>(StringComparer.Ordinal) { actor };
-        foreach (var entity in view["entities"]!.AsArray())
+        foreach (var entity in view.Entities)
         {
-            known.Add(entity!["id"]!.GetValue<string>());
+            known.Add(entity.Id);
         }
         if (world.EntityOf(actor)?.Location is { } room)
         {
@@ -339,70 +312,32 @@ public sealed class ActorWorld
             }
         }
         var snapshot = world.CurrentSnapshot();
-        var data = new List<KeyValuePair<string, JsonNode?>>();
-        foreach (var name in (result.ReasonData?.Keys ?? []).Order(StringComparer.Ordinal))
+        bool Told(string name)
         {
-            if (UntoldAmounts.Contains(name))
-            {
-                continue;
-            }
-            var value = result.ReasonData![name];
-            var text = value.AsText();
-            if (text is null || !snapshot.Entities.ContainsKey(text) || known.Contains(text) || Perception.Gropable(snapshot, actor, text))
-            {
-                data.Add(new KeyValuePair<string, JsonNode?>(name, ValueJson.ToNode(value)));
-            }
+            var text = result.ReasonData![name].AsText();
+            return !UntoldAmounts.Contains(name)
+                && (text is null || !snapshot.Entities.ContainsKey(text) || known.Contains(text) || Perception.Gropable(snapshot, actor, text));
         }
-        var output = new JsonObject
-        {
-            ["status"] = WorldJson.Name(result.Status),
-            ["command_id"] = result.CommandId,
-            ["resolved_target"] = result.ResolvedTarget is null ? null : (JsonNode)Alias(result.ResolvedTarget),
-        };
-        if (result.Candidates is not null)
-        {
-            output["candidates"] = new JsonArray([.. result.Candidates.Select(candidate => (JsonNode?)Alias(candidate))]);
-        }
-        if (result.ReasonCode is { } code)
-        {
-            output["reason_code"] = WorldJson.Name(code);
-        }
-        if (data.Count > 0)
-        {
-            output["reason_data"] = new JsonObject(data.Select(pair => KeyValuePair.Create(pair.Key, AliasValue(snapshot, pair.Value))));
-        }
-        return output;
+        var data = ArgsOut(snapshot, result.ReasonData?.Only(Told));
+        return new ActorVerdict(
+            result.Status,
+            result.CommandId,
+            AliasOf(result.ResolvedTarget),
+            result.Candidates?.Select(Alias).ToList(),
+            result.ReasonCode,
+            data is { Count: > 0 } ? data : null);
     }
 
     // Entities listed by alias in alias order, and events in the order they happened, which the actor could tell.
-    private JsonObject ToActor(JsonObject projection)
-    {
-        var snapshot = world.CurrentSnapshot();
-        var entities = projection["entities"]!.AsArray()
-            .Select(entity => EntityOut(entity!.AsObject()))
-            .OrderBy(entity => entity["id"]!.GetValue<string>(), StringComparer.Ordinal)
-            .Select(entity => (JsonNode?)entity)
-            .ToArray();
-        var events = projection["events"]!.AsArray().Select(@event =>
+    private ActorObservation ToActor(Projection.Observation projection) => new(
+        Alias(projection.Observer),
+        world.CurrentSnapshot().Tick,
+        projection.UnknownSenses,
+        [.. projection.Entities.Select(EntityOut).OrderBy(entity => entity.Id, StringComparer.Ordinal)],
+        [.. projection.Events.Select(@event => @event with
         {
-            var copy = @event!.DeepClone().AsObject();
-            copy["event_id"] = Alias(copy["event_id"]!.GetValue<string>());
-            foreach (var field in new[] { "entity", "heard_from" })
-            {
-                if (JsonReads.Text(copy[field]) is { } text)
-                {
-                    copy[field] = Alias(text);
-                }
-            }
-            return (JsonNode?)copy;
-        }).ToArray();
-        return new JsonObject
-        {
-            ["observer"] = Alias(projection["observer"]!.GetValue<string>()),
-            ["tick"] = JsonValue.Create(snapshot.Tick),
-            ["unknown_senses"] = projection["unknown_senses"]!.DeepClone(),
-            ["entities"] = new JsonArray(entities),
-            ["events"] = new JsonArray(events),
-        };
-    }
+            EventId = Alias(@event.EventId),
+            Entity = AliasOf(@event.Entity),
+            HeardFrom = AliasOf(@event.HeardFrom),
+        })]);
 }

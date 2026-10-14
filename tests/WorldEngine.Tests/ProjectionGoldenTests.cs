@@ -34,25 +34,23 @@ public class ProjectionGoldenTests
         }
     }
 
-    private static JsonNode Observe(JsonNode input) => new JsonArray(
-        [.. Projection.ObserveEntities(
-                WorldJson.Read<Snapshot>(input["snapshot"]!.ToJsonString()),
-                Registry,
-                [],
-                input["observer"]!.GetValue<string>())
-            .Select(entity => (JsonNode?)entity)]);
+    private static JsonNode? Observe(JsonNode input) => WorldJson.Node(Projection.ObserveEntities(
+        WorldJson.Read<Snapshot>(input["snapshot"]!.ToJsonString()),
+        Registry,
+        [],
+        input["observer"]!.GetValue<string>()));
 
-    private static JsonNode? Inspect(JsonNode input) => Projection.InspectEntity(
+    private static JsonNode? Inspect(JsonNode input) => WorldJson.Node(Projection.InspectEntity(
         WorldJson.Read<Snapshot>(input["snapshot"]!.ToJsonString()),
         Registry,
         [],
         input["observer"]!.GetValue<string>(),
-        input["entity"]!.GetValue<string>());
+        input["entity"]!.GetValue<string>()));
 
-    private static JsonNode Level(JsonNode input) => Projection.Level(
-        input["amount"]!.GetValue<double>(),
-        input["full"]!.GetValue<double>(),
-        input["step"]!.GetValue<double>());
+    private static JsonNode? Level(JsonNode input) => WorldJson.Node(Projection.Level(
+        input["amount"]!.GetValue<long>(),
+        input["full"]!.GetValue<long>(),
+        input["step"]!.GetValue<long>()));
 
     // A basis's answer as the golden writes it: the direction, or the error a basis the table does not know raises.
     private static JsonNode HeardFrom(JsonNode input)

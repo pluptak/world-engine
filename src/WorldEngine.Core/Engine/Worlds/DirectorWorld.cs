@@ -1,5 +1,4 @@
 using System.Text.Json.Nodes;
-using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -10,6 +9,9 @@ namespace WorldEngine.Core.Engine;
 // with those moves.
 public sealed class DirectorWorld(IWorld world)
 {
+    // What came of closing quiet rounds: how many closed, and why it stopped (`max`, `beat`, `heard`) or was refused.
+    public sealed record QuietRounds(Status Status, int Rounds, string? Stopped = null, string? ReasonCode = null);
+
     public Snapshot Current() => world.CurrentSnapshot();
 
     // An edit under the director's role (`by`), so the engine refuses what a director may not send.
@@ -47,7 +49,7 @@ public sealed class DirectorWorld(IWorld world)
 
     // Closes empty rounds while every live registered player is idle (`docs/rounds.md`), stopping after `max`, one round before the beat
     // `stopBefore` names, or at the first round a registered body senses an event of.
-    public JsonObject CloseRounds(int max, string? stopBefore = null)
+    public QuietRounds CloseRounds(int max, string? stopBefore = null)
     {
         var idle = world.Pending.Idlers().ToHashSet(StringComparer.Ordinal);
         var moving = world.Pending.Handles().ToHashSet(StringComparer.Ordinal);
@@ -59,36 +61,36 @@ public sealed class DirectorWorld(IWorld world)
         // Every live player must be idle: one that has a move, or has not passed, keeps the time as it is.
         if (liveHandles.Any(handle => !idle.Contains(handle) || moving.Contains(handle)))
         {
-            return Quiet("refused", rounds: 0, reasonCode: WorldJson.Name(Code.PlayersActive));
+            return new QuietRounds(Status.Refused, 0, ReasonCode: Pipeline.ReasonName(Code.PlayersActive, Status.Refused));
         }
         if (stopBefore is not null && PendingDue(stopBefore) is null)
         {
-            return Quiet("refused", rounds: 0, reasonCode: WorldJson.Name(Code.NoSuchBeat));
+            return new QuietRounds(Status.Refused, 0, ReasonCode: Pipeline.ReasonName(Code.NoSuchBeat, Status.Refused));
         }
         var rounds = 0;
         while (true)
         {
             if (rounds >= max)
             {
-                return Quiet("ok", rounds, stopped: "max");
+                return new QuietRounds(Status.Ok, rounds, "max");
             }
             var due = stopBefore is null ? null : PendingDue(stopBefore);
             // One tick short of the beat: the next round would be the one that falls it due.
             if (due is not null && world.CurrentSnapshot().Tick + 1 >= due)
             {
-                return Quiet("ok", rounds, stopped: "beat");
+                return new QuietRounds(Status.Ok, rounds, "beat");
             }
             var before = world.CurrentSnapshot();
             var closed = world.TakeRoundAs([]);
             if (closed.Status != Status.Ok || closed.Closing is null)
             {
-                return Quiet("refused", rounds, reasonCode: Pipeline.ReasonName(closed.ReasonCode, closed.Status));
+                return new QuietRounds(Status.Refused, rounds, ReasonCode: Pipeline.ReasonName(closed.ReasonCode, closed.Status));
             }
             rounds += 1;
             // A registered body that sensed anything the round made stops the quiet: no player sleeps through it.
             if (world.Heard(before, closed.Closing.Snapshot, closed.Closing.Events, LiveBodies()))
             {
-                return Quiet("ok", rounds, stopped: "heard");
+                return new QuietRounds(Status.Ok, rounds, "heard");
             }
         }
     }
@@ -108,20 +110,5 @@ public sealed class DirectorWorld(IWorld world)
     {
         var cause = world.Scheduled().OfType<BeatCause>().FirstOrDefault(found => found.Id == id);
         return cause?.DueTick;
-    }
-
-    private static JsonObject Quiet(string status, int rounds, string? stopped = null, string? reasonCode = null)
-    {
-        var output = new JsonObject { ["status"] = status };
-        if (reasonCode is not null)
-        {
-            output["reason_code"] = reasonCode;
-        }
-        output["rounds"] = rounds;
-        if (stopped is not null)
-        {
-            output["stopped"] = stopped;
-        }
-        return output;
     }
 }

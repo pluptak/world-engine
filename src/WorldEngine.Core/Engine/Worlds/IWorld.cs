@@ -11,9 +11,9 @@ public interface IWorld
 
     Entity? EntityOf(string id);
 
-    JsonObject Observe(string observer, long? since = null, long? sinceTick = null);
+    Projection.Observation Observe(string observer, long? since = null, long? sinceTick = null);
 
-    JsonObject? Inspect(string observer, string entity);
+    Projection.Inspection? Inspect(string observer, string entity);
 
     Pipeline.Result Check(Command command);
 

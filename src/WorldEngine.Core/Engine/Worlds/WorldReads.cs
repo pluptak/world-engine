@@ -1,9 +1,5 @@
-using System.Text.Json.Nodes;
-using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Engine.JsonReads;
-using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -25,7 +21,7 @@ public static class WorldReads
     }
 
     // The projection of one observer: its entities from the current snapshot, and each event it could sense by a covered sense.
-    public static JsonObject Observe(IWorldReads world, string observer, long? since, long? sinceTick, Func<long, List<WorldEvent>> fromTick)
+    public static Projection.Observation Observe(IWorldReads world, string observer, long? since, long? sinceTick, Func<long, List<WorldEvent>> fromTick)
     {
         var current = world.CurrentSnapshot();
         var registry = world.Registry;
@@ -51,7 +47,7 @@ public static class WorldReads
                 ? []
                 : world.Since(since.Value).Events;
 
-        var eventsSeen = new JsonArray();
+        var eventsSeen = new List<Projection.SensedEvent>();
         foreach (var @event in candidates)
         {
             var senses = new List<string>();
@@ -69,60 +65,39 @@ public static class WorldReads
             {
                 continue;
             }
-            var entry = new JsonObject
-            {
-                ["event_id"] = @event.EventId,
-                ["tick"] = @event.Tick,
-                ["type"] = @event.Type,
-                ["senses"] = Strings(senses),
-            };
+            var entry = new Projection.SensedEvent(@event.EventId, @event.Tick, @event.Type, senses);
             // One heard alone names where the sound came from and nobody; one heard alone from the next room names the door it came
             // through too. Anything sensed besides names its entity instead.
             if (senses is [Sense.Hearing])
             {
                 var from = Projection.HeardFrom(hearing!.Value);
-                entry["from"] = from;
-                if (from == "next_door" && Projection.HearingDoor(current, observer, @event) is { } door)
+                entry = entry with
                 {
-                    entry["heard_from"] = door;
-                }
+                    From = from,
+                    HeardFrom = from == "next_door" ? Projection.HearingDoor(current, observer, @event) : null,
+                };
             }
             else
             {
-                entry["entity"] = @event.Entity;
+                entry = entry with { Entity = @event.Entity };
             }
             if (@event.Type == "say" && senses.Contains(Sense.Hearing) && @event.Data.GetValueOrDefault("utterance").AsText() is { } utterance)
             {
-                entry["utterance"] = utterance;
-                entry["volume"] = VolumeText(@event.Data.GetValueOrDefault("volume"));
+                entry = entry with { Utterance = utterance, Volume = @event.Data.GetValueOrDefault("volume").AsText() };
             }
             eventsSeen.Add(entry);
         }
 
-        return new JsonObject
-        {
-            ["observer"] = observer,
-            ["version"] = current.Version,
-            ["unknown_senses"] = Strings(Capabilities.Senses.Where(sense => !covered.Contains(sense))),
-            ["entities"] = new JsonArray([.. Projection.ObserveEntities(current, registry, [], observer).Select(entity => (JsonNode?)entity)]),
-            ["events"] = eventsSeen,
-        };
+        return new Projection.Observation(
+            observer,
+            current.Version,
+            [.. Capabilities.Senses.Where(sense => !covered.Contains(sense))],
+            Projection.ObserveEntities(current, registry, [], observer),
+            eventsSeen);
     }
 
-
-    private static string VolumeText(Value? volume) => volume switch
-    {
-        null => "undefined",
-        Value.Text text => text.Content,
-        _ => CanonicalJson.Serialize(volume),
-    };
-
-    private static JsonArray Strings(IEnumerable<string> values) =>
-        new([.. values.Select(value => (JsonNode?)JsonValue.Create(value))]);
-
-
     // One entity in detail, as the observer could sense it now; null when nothing of it is sensed.
-    public static JsonObject? Inspect(IWorldReads world, string observer, string entity)
+    public static Projection.Inspection? Inspect(IWorldReads world, string observer, string entity)
     {
         var current = world.CurrentSnapshot();
         if (!current.Entities.ContainsKey(observer))

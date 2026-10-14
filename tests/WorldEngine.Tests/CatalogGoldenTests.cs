@@ -14,11 +14,11 @@ public class CatalogGoldenTests
     {
         if (GoldenUpdate.Enabled)
         {
-            GoldenUpdate.Write("catalog-golden.expected.json", VerbRegistry.Catalog());
+            GoldenUpdate.Write("catalog-golden.expected.json", WorldJson.Node(VerbRegistry.Catalog())!);
             return;
         }
         var expected = GoldenRows.ReadRows("catalog-golden.expected.json");
-        Meaning.Same(expected, VerbRegistry.Catalog(), "the catalog differs from TypeScript's");
+        Meaning.Same(expected, WorldJson.Node(VerbRegistry.Catalog()), "the catalog differs from TypeScript's");
     }
 
     // A verb that needs a capacity refuses a body short of it with that capacity's own code, which the verb declares.

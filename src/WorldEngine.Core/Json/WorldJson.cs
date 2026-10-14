@@ -34,6 +34,9 @@ public static class WorldJson
         node.Deserialize<T>(Options)
         ?? throw new JsonException($"Empty {typeof(T).Name}");
 
+    // A value as a JSON tree, for a caller that adds to it before it is written.
+    public static JsonNode? Node<T>(T value) => JsonSerializer.SerializeToNode(value, Options);
+
     public static string Write<T>(T value) =>
         CanonicalJson.Serialize(JsonSerializer.SerializeToNode(value, Options));
 }

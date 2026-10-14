@@ -172,11 +172,11 @@ public static class CliRunner
             case "check":
                 return Verdict(StoreWorld.Open(Required(world)).Check(CommandOf(request)));
             case "options":
-                return Node(StoreWorld.Open(Required(world)).OptionsFor(Text(request, "actor"), request["refused"] is { } refused && refused.GetValue<bool>()));
+                return Node(StoreWorld.Open(Required(world)).OptionsFor(Text(request, "actor"), request["refused"] is { } refused && refused.GetValue<bool>()))!;
             case "inspect":
-                return new JsonObject { ["inspection"] = StoreWorld.Open(Required(world)).Inspect(Text(request, "observer"), Text(request, "entity")) };
+                return new JsonObject { ["inspection"] = Node(StoreWorld.Open(Required(world)).Inspect(Text(request, "observer"), Text(request, "entity"))) };
             case "observe":
-                return StoreWorld.Open(Required(world)).Observe(Text(request, "observer"), JsonReads.SafeInt(request["since"]), JsonReads.SafeInt(request["since_tick"]));
+                return Node(StoreWorld.Open(Required(world)).Observe(Text(request, "observer"), JsonReads.SafeInt(request["since"]), JsonReads.SafeInt(request["since_tick"])))!;
             case "schedule":
                 {
                     var filter = request["filter"] as JsonObject ?? new JsonObject();
@@ -205,33 +205,33 @@ public static class CliRunner
                     return new JsonObject { ["snapshot_version"] = StoreWorld.Open(to).CurrentSnapshot().Version };
                 }
             case "verbs":
-                return new JsonObject { ["verbs"] = VerbRegistry.Catalog() };
+                return new JsonObject { ["verbs"] = Node(VerbRegistry.Catalog()) };
             case "capabilities":
                 return CapabilitiesOf();
             case "actor_observe":
-                return ActorOf(StoreWorld.Open(Required(world)), request).Observe(JsonReads.SafeInt(request["since_tick"]));
+                return Node(ActorOf(StoreWorld.Open(Required(world)), request).Observe(JsonReads.SafeInt(request["since_tick"])))!;
             case "actor_inspect":
-                return new JsonObject { ["inspection"] = ActorOf(StoreWorld.Open(Required(world)), request).Inspect(Text(request, "entity")) };
+                return new JsonObject { ["inspection"] = Node(ActorOf(StoreWorld.Open(Required(world)), request).Inspect(Text(request, "entity"))) };
             case "actor_options":
-                return ActorOf(StoreWorld.Open(Required(world)), request).OptionsOf(Flag(request["refused"]));
+                return Node(ActorOf(StoreWorld.Open(Required(world)), request).OptionsOf(Flag(request["refused"])))!;
             case "actor_check":
-                return ActorOf(StoreWorld.Open(Required(world)), request).Check(ActorCommandOf(request));
+                return Node(ActorOf(StoreWorld.Open(Required(world)), request).Check(ActorCommandOf(request)))!;
             case "actor_command":
-                return ActorOf(StoreWorld.Open(Required(world)), request).Apply(ActorCommandOf(request));
+                return Node(ActorOf(StoreWorld.Open(Required(world)), request).Apply(ActorCommandOf(request)))!;
             case "player_observe":
-                return PlayerOf(StoreWorld.Open(Required(world)), request).Observe(JsonReads.SafeInt(request["since_tick"]));
+                return Node(PlayerOf(StoreWorld.Open(Required(world)), request).Observe(JsonReads.SafeInt(request["since_tick"])))!;
             case "player_inspect":
-                return new JsonObject { ["inspection"] = PlayerOf(StoreWorld.Open(Required(world)), request).Inspect(Text(request, "entity")) };
+                return new JsonObject { ["inspection"] = Node(PlayerOf(StoreWorld.Open(Required(world)), request).Inspect(Text(request, "entity"))) };
             case "player_options":
-                return PlayerOf(StoreWorld.Open(Required(world)), request).Options(JsonReads.Text(request["body"]), Flag(request["refused"]));
+                return Node(PlayerOf(StoreWorld.Open(Required(world)), request).Options(JsonReads.Text(request["body"]), Flag(request["refused"])))!;
             case "player_check":
-                return PlayerOf(StoreWorld.Open(Required(world)), request).Check(MoveOf(request), MoveBody(request));
+                return Node(PlayerOf(StoreWorld.Open(Required(world)), request).Check(MoveOf(request), MoveBody(request)))!;
             case "player_submit":
-                return PlayerOf(StoreWorld.Open(Required(world)), request).Submit(MoveOf(request), MoveBody(request));
+                return Node(PlayerOf(StoreWorld.Open(Required(world)), request).Submit(MoveOf(request), MoveBody(request)))!;
             case "player_withdraw":
-                return PlayerOf(StoreWorld.Open(Required(world)), request).Withdraw(JsonReads.Text(request["body"]));
+                return Node(PlayerOf(StoreWorld.Open(Required(world)), request).Withdraw(JsonReads.Text(request["body"])))!;
             case "player_pending":
-                return new JsonObject { ["moves"] = PlayerOf(StoreWorld.Open(Required(world)), request).Pending() };
+                return new JsonObject { ["moves"] = Node(PlayerOf(StoreWorld.Open(Required(world)), request).Pending()) };
             case "director_submitted":
                 return new JsonObject { ["handles"] = Node(new DirectorWorld(StoreWorld.Open(Required(world))).Submitted()) };
             case "director_close_round":
@@ -315,7 +315,7 @@ public static class CliRunner
         }
         if (result.Observation is { } observation)
         {
-            answer["observation"] = observation.DeepClone();
+            answer["observation"] = Node(observation);
         }
         return answer;
     }

@@ -1,7 +1,6 @@
 namespace WorldEngine.Core.Model;
 
-// What happened in a transition (src/model.ts WorldEvent, Delta, Perceivers). An event's data is kept as JSON
-// until the events that read it are ported.
+// What happened in a transition (src/model.ts WorldEvent, Delta, Perceivers).
 
 // The batch form of perceive, per event: the agents that sensed it through each covered sense.
 public sealed record Perceivers(

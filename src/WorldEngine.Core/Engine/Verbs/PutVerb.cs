@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -20,7 +19,7 @@ public static class PutVerb
 
     // Where a held thing could go: on each surface and in each container the actor can name, then into each of its own pockets
     // other than the one the item is in (src/engine/verbs/put.ts `suggest`).
-    private static IReadOnlyList<JsonObject> Suggest(Pipeline.CommandContext context, IReadOnlyList<string> nameable)
+    private static IReadOnlyList<Value.Map> Suggest(Pipeline.CommandContext context, IReadOnlyList<string> nameable)
     {
         var actor = context.Snapshot.Entities[context.Command.Actor];
         var item = context.Target is null ? null : context.Snapshot.Entities.GetValueOrDefault(context.Target.EntityId);
@@ -29,13 +28,13 @@ public static class PutVerb
             return [];
         }
         var others = nameable.Where(id => id != item.Id).ToList();
-        IEnumerable<JsonObject> Holding(Prop<bool> prop, string relation) =>
+        IEnumerable<Value.Map> Holding(Prop<bool> prop, string relation) =>
             others
                 .Where(id => context.Snapshot.Entities.TryGetValue(id, out var entity) && entity.Props.Is(prop))
-                .Select(destination => new JsonObject { ["relation"] = relation, ["destination"] = destination });
+                .Select(destination => Pipeline.Reason(("relation", relation), ("destination", destination)));
         var pockets = Carry.HolderLayout(context.Registry, actor.Template).Spaces
             .Where(space => space.Name != item.InPart)
-            .Select(space => new JsonObject { ["relation"] = "in", ["destination"] = $"{actor.Id}.{space.Name}" });
+            .Select(space => Pipeline.Reason(("relation", "in"), ("destination", $"{actor.Id}.{space.Name}")));
         return [.. Holding(Prop.Surface, "on"), .. Holding(Prop.Container, "in"), .. pockets];
     }
 
