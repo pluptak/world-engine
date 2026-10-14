@@ -58,8 +58,10 @@ behaviour recorded from it; a change to .NET behaviour updates its goldens in th
   0..100). Same snapshot + same command ⇒ byte-identical output; compare with `CanonicalJson`.
 - **Pure core.** `Engine/` functions take a `Snapshot`, return a new one, never mutate the input,
   and never do I/O. I/O lives **only** in `WorldEngine.Store` and `WorldEngine.Cli`.
-- **`CanonicalJson` is the only snapshot serializer** in the project — sorted keys at every depth, no
-  whitespace. Reach for it (via `WorldJson`) instead of `System.Text.Json` directly on state.
+- **JSON is one encoding, and only `Core/Json` knows it.** The model, the contract, the store and the CLI read
+  and write `Value` (no null, whole numbers only) and records; text becomes one through `ValueJson` or
+  `WorldJson` and is written through `CanonicalJson` (sorted keys at every depth, no whitespace).
+  `System.Text.Json` anywhere else in `src` fails `BoundaryTests`.
 - **No prose crosses the boundary.** Outputs are statuses, deltas, events, and machine codes
   (`reason_code`, `basis_code`) — never sentences.
 - **The engine owns world state, never knowledge.** Do not model who knows/noticed/remembers anything.

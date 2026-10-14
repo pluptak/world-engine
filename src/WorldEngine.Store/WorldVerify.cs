@@ -1,6 +1,4 @@
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
@@ -51,7 +49,7 @@ public static class WorldVerify
             {
                 entries.Add(WorldFiles.ParseLogLine(log.Lines[index], index + 1));
             }
-            catch (Exception error) when (error is FormatException or System.Text.Json.JsonException or WorldError)
+            catch (Exception error) when (error is FormatException or WorldError)
             {
                 return Diverges(WorldFiles.Log, index + 1, "differs");
             }
@@ -220,9 +218,9 @@ public static class WorldVerify
         }
         try
         {
-            return JsonNode.Parse(text) is JsonObject value ? JsonReads.SafeInt(value["version"]) : null;
+            return (ValueJson.Parse(text) as Value.Map)?.GetValueOrDefault("version").AsInt();
         }
-        catch (JsonException)
+        catch (FormatException)
         {
             return null;
         }

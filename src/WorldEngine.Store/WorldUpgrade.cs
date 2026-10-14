@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -83,7 +82,12 @@ public static class WorldUpgrade
         // The set moved, so the snapshot is written at the current version under the new hash.
         WorldWriter.AtomicWrite(
             Path.Combine(dir, WorldFiles.Head),
-            WorldWriter.Canonical(HeadObject(head, frozen, folded.Snapshot.Version, new FileInfo(Path.Combine(dir, WorldFiles.Log)).Length)));
+            WorldWriter.Canonical(head with
+            {
+                TemplatesHash = frozen,
+                SnapshotVersion = folded.Snapshot.Version,
+                SnapshotLogBytes = new FileInfo(Path.Combine(dir, WorldFiles.Log)).Length,
+            }));
         return WorldSettle.Load(dir, registry);
     }
 
@@ -101,46 +105,9 @@ public static class WorldUpgrade
         WorldWriter.AtomicWrite(currentPath, WorldWriter.Canonical(snapshot with { TemplatesHash = hash }));
         var head = WorldFiles.ReadHead(dir);
         var stamped = head is null
-            ? new JsonObject
-            {
-                ["log_bytes"] = 0,
-                ["events_bytes"] = 0,
-                ["log_entries"] = 0,
-                ["ok_entries"] = 0,
-                ["templates_hash"] = hash,
-            }
-            : HeadObject(head, hash, head.SnapshotVersion, head.SnapshotLogBytes);
+            ? new WorldFiles.HeadFile(0, 0, 0, 0, hash, null, null, null, null)
+            : head with { TemplatesHash = hash };
         WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.Head), WorldWriter.Canonical(stamped));
-    }
-
-    // head.json with its fields, the hash and the snapshot it names (the spread in `settle` and `writeWorldTemplates`).
-    private static JsonObject HeadObject(WorldFiles.HeadFile head, string hash, long? snapshotVersion, long? snapshotLogBytes)
-    {
-        var value = new JsonObject
-        {
-            ["log_bytes"] = head.LogBytes,
-            ["events_bytes"] = head.EventsBytes,
-            ["log_entries"] = head.LogEntries,
-            ["ok_entries"] = head.OkEntries,
-            ["templates_hash"] = hash,
-        };
-        if (head.DeltasBytes is { } deltas)
-        {
-            value["deltas_bytes"] = deltas;
-        }
-        if (head.RoundsClosed is { } rounds)
-        {
-            value["rounds_closed"] = rounds;
-        }
-        if (snapshotVersion is { } version)
-        {
-            value["snapshot_version"] = version;
-        }
-        if (snapshotLogBytes is { } bytes)
-        {
-            value["snapshot_log_bytes"] = bytes;
-        }
-        return value;
     }
 
     // The snapshot at `version` as the log replays under `registry`, from initial.json; null when the replay fails or does not reach it.

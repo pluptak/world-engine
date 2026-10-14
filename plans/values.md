@@ -85,9 +85,14 @@ in ordinal order and lists and maps compare by content, so equality is structura
    row holding a fraction is checked to be one TypeScript refused, since the contract refuses it first. What is left in
    Core outside `Json/` is block 8's: `JsonReads`, the prop-key converter, and the attributes on the cause records and
    `ArgSpec`.
-8. **The store and the CLI encode only through the codec.** Log, head, checkpoint and pending lines become records; the
-   CLI parses its request once and writes its answer once. A test fails on `System.Text.Json` anywhere in Core outside
-   `Json/`, or in Contract; AGENTS.md gains the invariant.
+8. **The store and the CLI encode only through the codec.** Done, and further than planned: no project but the codec
+   (`Core/Json`) uses `System.Text.Json`, and `BoundaryTests` fails on it anywhere else in `src`. The codec reads text as a
+   `Value` (`ValueJson.Parse`, `TryParse`) or a record (`WorldJson.Read`, from text or a value) and reports bad input as a
+   `FormatException`; the prop-key converter and the cause `kind` are configured in `WorldJson` rather than as attributes on
+   the model, and `ArgSpec.Optional` is `true` or absent. The store writes head, format, checkpoint, lock and pending files
+   as records (`HeadFile`, `FormatFile`, `CheckpointFile`, the lock's holding, a pending entry) and reads them as values;
+   the CLI reads its request once as a value, checks it, and writes one value back. `JsonReads` is gone. No golden moved.
+   The reference host stays a JSON client of the CLI, as any outside caller is. AGENTS.md states the invariant.
 
 Each block leaves the suite green and may keep a bridge at its border for the blocks still to come; block 8 removes the
 last one. Blocks 4 and 5 are the large ones (about 300 references each).

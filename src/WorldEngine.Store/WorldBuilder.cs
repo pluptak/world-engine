@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -76,7 +75,7 @@ public static class WorldBuilder
     public static void Create(string dir, Snapshot initial, IReadOnlyDictionary<string, Template> registry, IReadOnlyDictionary<string, string> ids)
     {
         Directory.CreateDirectory(dir);
-        WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.Format), WorldWriter.Canonical(new JsonObject { ["schema_version"] = WorldFiles.SchemaVersion }));
+        WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.Format), WorldWriter.Canonical(new WorldFiles.FormatFile(WorldFiles.SchemaVersion)));
         WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.Templates), WorldWriter.Canonical(registry));
         WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.InitialSnapshot), WorldWriter.Canonical(initial));
         WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.CurrentSnapshot), WorldWriter.Canonical(initial));
@@ -89,18 +88,16 @@ public static class WorldBuilder
         WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.Deltas), string.Empty);
         WorldWriter.AtomicWrite(
             Path.Combine(dir, WorldFiles.Head),
-            WorldWriter.Canonical(new JsonObject
-            {
-                ["log_bytes"] = 0,
-                ["events_bytes"] = 0,
-                ["deltas_bytes"] = 0,
-                ["log_entries"] = 0,
-                ["ok_entries"] = 0,
-                ["rounds_closed"] = 0,
-                ["snapshot_version"] = initial.Version,
-                ["snapshot_log_bytes"] = 0,
-                ["templates_hash"] = WorldReplay.HashOf(registry),
-            }));
+            WorldWriter.Canonical(new WorldFiles.HeadFile(
+                LogBytes: 0,
+                EventsBytes: 0,
+                LogEntries: 0,
+                OkEntries: 0,
+                TemplatesHash: WorldReplay.HashOf(registry),
+                DeltasBytes: 0,
+                RoundsClosed: 0,
+                SnapshotVersion: initial.Version,
+                SnapshotLogBytes: 0)));
     }
 
     // A world made again from another's initial snapshot, its set and its names, at a directory no world holds (`restartWorld`).

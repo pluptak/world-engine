@@ -1,7 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
@@ -84,13 +82,13 @@ public static class WorldCheckpoints
     {
         try
         {
-            if (JsonNode.Parse(WorldIO.ReadAllText(path)) is not JsonObject value
-                || JsonReads.SafeInt(value["version"]) != version
-                || JsonReads.Text(value["templates_hash"]) != hash
-                || JsonReads.SafeInt(value["log_bytes"]) is not { } bytes
-                || JsonReads.SafeInt(value["log_lines"]) is not { } lines
-                || JsonReads.Text(value["log_sha256"]) is not { } logDigest
-                || JsonReads.Text(value["initial_sha256"]) != initialDigest)
+            if (ValueJson.Parse(WorldIO.ReadAllText(path)) is not Value.Map value
+                || value.GetValueOrDefault("version").AsInt() != version
+                || value.GetValueOrDefault("templates_hash").AsText() != hash
+                || value.GetValueOrDefault("log_bytes").AsInt() is not { } bytes
+                || value.GetValueOrDefault("log_lines").AsInt() is not { } lines
+                || value.GetValueOrDefault("log_sha256").AsText() is not { } logDigest
+                || value.GetValueOrDefault("initial_sha256").AsText() != initialDigest)
             {
                 return null;
             }
@@ -98,14 +96,14 @@ public static class WorldCheckpoints
             {
                 return null;
             }
-            var snapshot = WorldFiles.Checked(value["snapshot"], path);
+            var snapshot = WorldFiles.Checked(value.GetValueOrDefault("snapshot"), path);
             if (snapshot.Version != version || snapshot.NextSeq != nextSeq || snapshot.TemplatesHash != hash)
             {
                 return null;
             }
             return new Checkpoint(snapshot, bytes, lines);
         }
-        catch (Exception error) when (error is IOException or JsonException or FormatException or WorldError)
+        catch (Exception error) when (error is IOException or FormatException or WorldError)
         {
             return null;
         }
@@ -123,6 +121,16 @@ public static class WorldCheckpoints
             Directory.Delete(folder, recursive: true);
         }
     }
+
+    // A checkpoint file: the snapshot, bound to the log prefix that made it (its bytes, lines and digest) and to `initial.json`.
+    internal sealed record CheckpointFile(
+        long Version,
+        string TemplatesHash,
+        long LogBytes,
+        long LogLines,
+        string LogSha256,
+        string InitialSha256,
+        Snapshot Snapshot);
 
     internal static string Digest(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 }

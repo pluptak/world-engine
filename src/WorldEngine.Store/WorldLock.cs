@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using System.Globalization;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
@@ -112,12 +110,7 @@ public static class WorldLock
         {
             return null;
         }
-        var text = CanonicalJson.Serialize(new JsonObject
-        {
-            ["pid"] = Environment.ProcessId,
-            ["since_ms"] = NowMs(),
-            ["nonce"] = $"{Environment.ProcessId}-{Interlocked.Increment(ref _seq)}",
-        });
+        var text = WorldJson.Write(new Holding(Environment.ProcessId, NowMs(), $"{Environment.ProcessId}-{Interlocked.Increment(ref _seq)}"));
         try
         {
             using var writer = new StreamWriter(stream);
@@ -277,17 +270,20 @@ public static class WorldLock
     {
         try
         {
-            var value = JsonNode.Parse(text)?.AsObject();
-            var pid = value?["pid"] is JsonNode pidNode ? JsonReads.SafeInt(pidNode) : null;
-            var since = value?["since_ms"] is JsonNode sinceNode ? JsonReads.Number(sinceNode) : null;
-            var nonce = value?["nonce"] is JsonNode nonceNode ? JsonReads.Text(nonceNode) : null;
-            return pid is not null && since is not null ? new Owner((int)pid.Value, (long)since.Value, nonce ?? "") : null;
+            var value = ValueJson.Parse(text) as Value.Map;
+            var pid = value?.GetValueOrDefault("pid").AsInt();
+            var since = value?.GetValueOrDefault("since_ms").AsInt();
+            var nonce = value?.GetValueOrDefault("nonce").AsText();
+            return pid is not null && since is not null ? new Owner((int)pid.Value, since.Value, nonce ?? "") : null;
         }
-        catch (JsonException)
+        catch (FormatException)
         {
             return null;
         }
     }
+
+    // The lock file's bytes: the process that holds the turn, since when, and a nonce that tells one holding of it from the next.
+    private sealed record Holding(long Pid, long SinceMs, string Nonce);
 
     // Whether a process exists. No permission to signal it still means it exists.
     private static bool Alive(int pid)

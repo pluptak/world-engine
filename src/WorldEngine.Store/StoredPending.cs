@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -10,18 +9,18 @@ namespace WorldEngine.Store;
 // handle's moves, one per body, or its idle mark, and the list is rewritten whole with the handle's entry replaced.
 public sealed class StoredPending(string dir) : IPendingMoves
 {
+    // One handle's entry: its moves, or that it is idle. A list of entries, not a map by handle: a handle is any token, `__proto__`
+    // included.
+    private sealed record Entry(string Handle, IReadOnlyList<Command>? Moves = null, bool? Idle = null);
+
     private readonly string path = Path.Combine(dir, "pending.json");
 
-    public IReadOnlyList<Command> Moves(string handle) => MovesOf(Read().FirstOrDefault(entry => Handle(entry) == handle));
+    public IReadOnlyList<Command> Moves(string handle) => MovesOf(Read().FirstOrDefault(entry => entry.Handle == handle));
 
     public void Set(string handle, Command command) =>
-        Update(handle, current => new JsonObject
-        {
-            ["handle"] = handle,
-            ["moves"] = Written(MovesOf(current).Where(move => move.Actor != command.Actor).Append(command)),
-        });
+        Update(handle, current => new Entry(handle, [.. MovesOf(current).Where(move => move.Actor != command.Actor).Append(command)]));
 
-    public void SetIdle(string handle) => Update(handle, _ => new JsonObject { ["handle"] = handle, ["idle"] = true });
+    public void SetIdle(string handle) => Update(handle, _ => new Entry(handle, Idle: true));
 
     public void Clear(string handle, string? body = null) =>
         Update(handle, current =>
@@ -31,42 +30,29 @@ public sealed class StoredPending(string dir) : IPendingMoves
                 return null;
             }
             var moves = MovesOf(current).Where(move => move.Actor != body).ToList();
-            return moves.Count == 0 ? null : new JsonObject { ["handle"] = handle, ["moves"] = Written(moves) };
+            return moves.Count == 0 ? null : new Entry(handle, moves);
         });
 
     public IReadOnlyList<string> Handles() =>
-        [.. Read().Where(entry => MovesOf(entry).Count > 0).Select(Handle).Order(StringComparer.Ordinal)];
+        [.. Read().Where(entry => MovesOf(entry).Count > 0).Select(entry => entry.Handle).Order(StringComparer.Ordinal)];
 
     public IReadOnlyList<string> Idlers() =>
-        [.. Read().Where(entry => entry["idle"] is JsonValue idle && idle.GetValue<bool>()).Select(Handle).Order(StringComparer.Ordinal)];
+        [.. Read().Where(entry => entry.Idle == true).Select(entry => entry.Handle).Order(StringComparer.Ordinal)];
 
-    private static string Handle(JsonObject entry) => entry["handle"]!.GetValue<string>();
+    private static IReadOnlyList<Command> MovesOf(Entry? entry) => entry?.Moves ?? [];
 
-    private static IReadOnlyList<Command> MovesOf(JsonObject? entry) =>
-        entry?["moves"] is JsonArray moves
-            ? moves.Select(move => WorldJson.Read<Command>(move!)).ToList()
-            : [];
-
-    private static JsonArray Written(IEnumerable<Command> moves) =>
-        new([.. moves.Select(move => (JsonNode?)JsonNode.Parse(WorldJson.Write(move)))]);
-
-    // A list, not an object: a handle is any token, `__proto__` included.
-    private List<JsonObject> Read() =>
-        File.Exists(path) && JsonNode.Parse(WorldIO.ReadAllText(path)) is JsonArray entries
-            ? [.. entries.Select(entry => entry!.AsObject())]
-            : [];
+    private List<Entry> Read() => File.Exists(path) ? WorldJson.Read<List<Entry>>(WorldIO.ReadAllText(path)) : [];
 
     // Rewrites one handle's entry under the world's turn: `change` sees the entry as it is then, and returns the one to keep, or null to
     // keep none.
-    private void Update(string handle, Func<JsonObject?, JsonObject?> change)
+    private void Update(string handle, Func<Entry?, Entry?> change)
     {
         WorldLock.With(dir, () =>
         {
             var all = Read();
-            var next = change(all.FirstOrDefault(entry => Handle(entry) == handle));
-            var rest = all.Where(other => Handle(other) != handle).Cast<JsonNode>();
-            var kept = next is null ? rest : rest.Append(next);
-            WorldWriter.AtomicWrite(path, WorldWriter.Canonical(new JsonArray([.. kept.Select(node => node?.DeepClone())])));
+            var next = change(all.FirstOrDefault(entry => entry.Handle == handle));
+            var rest = all.Where(other => other.Handle != handle);
+            WorldWriter.AtomicWrite(path, WorldWriter.Canonical(next is null ? rest.ToList() : rest.Append(next).ToList()));
             return true;
         });
     }

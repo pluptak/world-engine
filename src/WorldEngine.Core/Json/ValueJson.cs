@@ -24,7 +24,41 @@ public static class ValueJson
 
     // A value read into a record as the world's JSON options read it; a member the record does not have, or a value of another
     // type, throws.
-    public static T Read<T>(Value value) => WorldJson.Read<T>(ToNode(value));
+    public static T Read<T>(Value value) => WorldJson.Read<T>(value);
+
+    // Whether the text is JSON at all, and the value it holds: none when it is null, or JSON that is no value (a fraction, a null in a
+    // list).
+    public static bool TryParse(string text, out Value? value)
+    {
+        JsonNode? node;
+        try
+        {
+            node = JsonNode.Parse(text);
+        }
+        catch (JsonException)
+        {
+            value = null;
+            return false;
+        }
+        if (!TryFromNode(node, out value))
+        {
+            value = null;
+        }
+        return true;
+    }
+
+    // A value from its text; text that is no JSON, or no value (a fraction, a null in a list), is a FormatException.
+    public static Value? Parse(string text)
+    {
+        try
+        {
+            return FromNode(JsonNode.Parse(text));
+        }
+        catch (JsonException error)
+        {
+            throw new FormatException(error.Message, error);
+        }
+    }
 
     // A value read into a record as the world's JSON options read it: false when it is not one (a member the record does not
     // have, or a value of another type).
@@ -33,10 +67,10 @@ public static class ValueJson
     {
         try
         {
-            read = ToNode(value).Deserialize<T>(WorldJson.Options);
-            return read is not null;
+            read = WorldJson.Read<T>(value);
+            return true;
         }
-        catch (JsonException)
+        catch (FormatException)
         {
             read = null;
             return false;

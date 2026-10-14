@@ -44,7 +44,7 @@ public class SnapshotValidationTests
         var snapshot = rows.Single(row => row!["name"]!.GetValue<string>() == "schedule_dangling")!["snapshot"]!.AsObject();
         snapshot["schedule"]![0]!["kind"] = "wrong";
 
-        Assert.Throws<JsonException>(() => WorldJson.Read<Snapshot>(snapshot.ToJsonString()));
+        Assert.Throws<FormatException>(() => WorldJson.Read<Snapshot>(snapshot.ToJsonString()));
     }
 
     private static string Describe(string code, IReadOnlyList<string> path) => $"{code} {string.Join("/", path)}";

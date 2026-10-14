@@ -1,6 +1,4 @@
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -113,7 +111,7 @@ public static class WorldReplay
                 }
             }
         }
-        catch (Exception error) when (error is WorldError or IOException or FormatException or JsonException)
+        catch (Exception error) when (error is WorldError or IOException or FormatException)
         {
             // Fall through to the full check, which settles the world or says why it cannot.
         }

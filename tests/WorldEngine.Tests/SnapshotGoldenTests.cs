@@ -13,6 +13,6 @@ public class SnapshotGoldenTests
         var golden = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "bottle.snapshot.json"));
         var withField = golden.Replace("\"tick\":", "\"not_a_field\":[],\"tick\":");
 
-        Assert.ThrowsAny<System.Text.Json.JsonException>(() => WorldJson.Read<Snapshot>(withField));
+        Assert.Throws<FormatException>(() => WorldJson.Read<Snapshot>(withField));
     }
 }

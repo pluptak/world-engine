@@ -1,22 +1,13 @@
-using System.Text.Json.Serialization;
-
 namespace WorldEngine.Core.Model;
 
 // The world's state (src/model.ts). Field names are the TypeScript names, in snake_case on the wire.
-// Schedule, run and event types are not yet ported.
 
 public sealed record Pos(long X, long Y);
 
 // A cause the world will run by itself at `DueTick`, one record per kind; the stored `kind` says which, and a kind with no record
-// does not read. `CauseId` is the event that scheduled it, which the events it runs name as their cause.
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
-[JsonDerivedType(typeof(CloseCause), CauseKind.Close)]
-[JsonDerivedType(typeof(BleedCause), CauseKind.Bleed)]
-[JsonDerivedType(typeof(ProcessCause), CauseKind.Process)]
-[JsonDerivedType(typeof(BeatCause), CauseKind.Beat)]
+// does not read (`WorldJson` writes the kind). `CauseId` is the event that scheduled it, which the events it runs name as their cause.
 public abstract record ScheduledCause(long DueTick, string Entity, string? CauseId)
 {
-    [JsonIgnore]
     public string Kind => this switch
     {
         CloseCause => CauseKind.Close,

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -22,7 +21,7 @@ if (root is null)
 }
 
 var registry = TemplateResolver.Resolve(TemplateDirectory.ReadDeclarations(Path.Combine(root, "templates")));
-var scenario = JsonNode.Parse("""
+var scenario = ValueJson.Parse("""
     [
       { "template": "room", "overrides": { "name": "room", "props": { "lit": true } } },
       { "template": "table", "overrides": { "name": "table", "location": "e1", "support": "e1", "pos": { "x": 30, "y": 0 } } },
@@ -34,7 +33,7 @@ var scenario = JsonNode.Parse("""
 var dir = Path.Combine(Path.GetTempPath(), "world-engine-bench-" + Guid.NewGuid().ToString("N"));
 try
 {
-    var made = WorldBuilder.Snapshot(ValueJson.FromNode(scenario)!, registry);
+    var made = WorldBuilder.Snapshot(scenario, registry);
     WorldBuilder.Create(dir, made.Snapshot, registry, made.Ids);
     var world = StoreWorld.Open(dir);
     const int commands = 10000;

@@ -1,6 +1,4 @@
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -44,6 +42,9 @@ public static class WorldFiles
         long? SnapshotVersion,
         long? SnapshotLogBytes);
 
+    // format.json: the schema the world's files are written in.
+    public sealed record FormatFile(long SchemaVersion);
+
     // Whether a directory holds a world at all: the marker `create` writes first.
     public static bool Exists(string dir) => Present(Path.Combine(dir, Format));
 
@@ -57,7 +58,7 @@ public static class WorldFiles
         var path = Path.Combine(dir, Templates);
         try
         {
-            var declared = ParseRegistry(JsonNode.Parse(WorldIO.ReadAllText(path)), Templates);
+            var declared = ParseRegistry(WorldIO.ReadAllText(path), Templates);
             return TemplateResolver.Resolve(declared);
         }
         catch (Exception error)
@@ -67,7 +68,7 @@ public static class WorldFiles
     }
 
     // A snapshot file, checked for the fields `load` relies on before it is taken as a snapshot (`readWorldSnapshot`).
-    public static Snapshot ReadSnapshot(string path) => Checked(JsonNode.Parse(WorldIO.ReadAllText(path)), path);
+    public static Snapshot ReadSnapshot(string path) => Checked(ValueJson.Parse(WorldIO.ReadAllText(path)), path);
 
     // head.json, or null when it is missing or does not carry what a head must (`readHead`).
     public static HeadFile? ReadHead(string dir)
@@ -110,7 +111,7 @@ public static class WorldFiles
     {
         try
         {
-            if (JsonNode.Parse(WorldIO.ReadAllText(path)) is not JsonObject value
+            if (ValueJson.Parse(WorldIO.ReadAllText(path)) is not Value.Map value
                 || !Number(value, "log_bytes", out var logBytes)
                 || !Number(value, "events_bytes", out var eventsBytes)
                 || !Number(value, "log_entries", out var logEntries)
@@ -130,7 +131,7 @@ public static class WorldFiles
                 Optional(value, "snapshot_version"),
                 Optional(value, "snapshot_log_bytes"));
         }
-        catch (JsonException)
+        catch (FormatException)
         {
             return null;
         }
@@ -163,14 +164,13 @@ public static class WorldFiles
         }
         try
         {
-            if (JsonNode.Parse(WorldIO.ReadAllText(path)) is not JsonObject value
-                || value.Any(pair => JsonReads.Text(pair.Value) is null))
+            if (ValueJson.Parse(WorldIO.ReadAllText(path)) is not Value.Map value || value.Values.Any(id => id is not Value.Text))
             {
                 throw new FormatException("ids.json is not a map of names to ids");
             }
-            return value.ToDictionary(pair => pair.Key, pair => JsonReads.Text(pair.Value)!, StringComparer.Ordinal);
+            return value.ToDictionary(pair => pair.Key, pair => pair.Value.AsText()!, StringComparer.Ordinal);
         }
-        catch (Exception error) when (error is JsonException or FormatException)
+        catch (FormatException error)
         {
             throw new WorldError(Code.InvalidIds, $"Unreadable name map at {path}: {error.Message}");
         }
@@ -192,27 +192,27 @@ public static class WorldFiles
 
     private static void AssertSchema(string dir)
     {
-        JsonNode? found = null;
+        Value? found = null;
         try
         {
-            found = (JsonNode.Parse(WorldIO.ReadAllText(Path.Combine(dir, Format))) as JsonObject)?["schema_version"];
+            found = (ValueJson.Parse(WorldIO.ReadAllText(Path.Combine(dir, Format))) as Value.Map)?.GetValueOrDefault("schema_version");
         }
-        catch (Exception error) when (error is IOException or JsonException)
+        catch (Exception error) when (error is IOException or FormatException)
         {
             // A world written before the marker existed has no file: the same refusal as a wrong number.
         }
-        if (JsonReads.SafeInt(found) != SchemaVersion)
+        if (found.AsInt() != SchemaVersion)
         {
             throw new WorldError(
                 Code.UnsupportedSchema,
-                $"World at {dir} has schema_version {found?.ToJsonString() ?? "null"}, this engine reads {SchemaVersion}");
+                $"World at {dir} has schema_version {(found is null ? "null" : CanonicalJson.Serialize(found))}, this engine reads {SchemaVersion}");
         }
     }
 
     // A template set as the world keeps it: an object from id to declaration, checked against its own id (`parseRegistry`).
-    private static DeclaredSet ParseRegistry(JsonNode? node, string source)
+    private static DeclaredSet ParseRegistry(string text, string source)
     {
-        if (WorldEngine.Store.Templates.TemplateDirectory.TemplateValue(node, source) is not Value.Map set)
+        if (WorldEngine.Store.Templates.TemplateDirectory.TemplateValue(text, source) is not Value.Map set)
         {
             throw new FormatException($"{source} must contain a template object");
         }
@@ -232,19 +232,19 @@ public static class WorldFiles
         return new DeclaredSet(decls, sources);
     }
 
-    public static Snapshot Checked(JsonNode? value, string path)
+    public static Snapshot Checked(Value? value, string path)
     {
-        if (value is not JsonObject snapshot
+        if (value is not Value.Map snapshot
             || Text(snapshot, "templates_hash") is null
             || !SafeInteger(snapshot, "version")
             || !SafeInteger(snapshot, "tick")
             || !SafeInteger(snapshot, "next_seq")
-            || snapshot["coverage"] is not JsonObject coverage
-            || coverage["relations"] is not JsonArray
-            || coverage["senses"] is not JsonArray
-            || coverage["properties"] is not JsonArray
-            || snapshot["entities"] is not JsonObject
-            || (snapshot.ContainsKey("schedule") && snapshot["schedule"] is not JsonArray))
+            || snapshot.GetValueOrDefault("coverage") is not Value.Map coverage
+            || coverage.GetValueOrDefault("relations") is not Value.List
+            || coverage.GetValueOrDefault("senses") is not Value.List
+            || coverage.GetValueOrDefault("properties") is not Value.List
+            || snapshot.GetValueOrDefault("entities") is not Value.Map
+            || (snapshot.ContainsKey("schedule") && snapshot["schedule"] is not Value.List))
         {
             throw new FormatException($"Invalid snapshot file {path}");
         }
@@ -254,7 +254,7 @@ public static class WorldFiles
     // The bytes through the last newline: a read that overlaps a writer's append takes no line the writer has not finished.
     private static byte[] WholeLines(byte[] bytes) => bytes[..(Array.LastIndexOf(bytes, (byte)'\n') + 1)];
 
-    // One record per non-empty line. A line that does not parse is named by its number, not by the parser's column.
+    // One record per non-empty line.
     private static List<T> ParseLines<T>(byte[] bytes, int firstLine, Func<string, int, T> parse)
     {
         var lines = Encoding.UTF8.GetString(bytes).Split('\n');
@@ -262,17 +262,9 @@ public static class WorldFiles
         for (var index = 0; index < lines.Length; index++)
         {
             var line = lines[index].EndsWith('\r') ? lines[index][..^1] : lines[index];
-            if (line.Length == 0)
-            {
-                continue;
-            }
-            try
+            if (line.Length != 0)
             {
                 records.Add(parse(line, firstLine + index));
-            }
-            catch (JsonException)
-            {
-                throw new FormatException($"Unparsable line {firstLine + index}");
             }
         }
         return records;
@@ -280,46 +272,45 @@ public static class WorldFiles
 
     public static Attempt ParseLogLine(string line, int lineNumber)
     {
-        var value = JsonNode.Parse(line) as JsonObject;
+        var value = Line(line, lineNumber);
         if (value is null
             || !Number(value, "based_on_version", out _)
             || !SafeInteger(value, "version")
             || Text(value, "status") is not { } status
             || !Statuses.Contains(status)
             || (value.ContainsKey("reason_code") && Text(value, "reason_code") is null)
-            || (value.ContainsKey("reason_data") && value["reason_data"] is not JsonObject)
-            || (value.ContainsKey("candidates") && value["candidates"] is not JsonArray)
-            || !value.ContainsKey("command")
-            || value["command"] is not JsonObject command
+            || (value.ContainsKey("reason_data") && value["reason_data"] is not Value.Map)
+            || (value.ContainsKey("candidates") && value["candidates"] is not Value.List)
+            || value.GetValueOrDefault("command") is not Value.Map command
             || Text(command, "command_id") is null
             || Text(command, "actor") is null
             || Text(command, "verb") is null)
         {
             throw new FormatException($"Invalid log entry at line {lineNumber}");
         }
-        return WorldJson.Read<Attempt>(line);
+        return Record<Attempt>(value, lineNumber);
     }
 
     private static WorldEvent ParseEventLine(string line, int lineNumber)
     {
-        var value = JsonNode.Parse(line) as JsonObject;
+        var value = Line(line, lineNumber);
         if (value is null
             || Text(value, "event_id") is null
-            || (value["cause_id"] is not null && Text(value, "cause_id") is null)
+            || (value.ContainsKey("cause_id") && Text(value, "cause_id") is null)
             || Text(value, "command_id") is null
             || !SafeInteger(value, "tick")
             || Text(value, "type") is null
             || Text(value, "entity") is null
-            || value["data"] is not JsonObject)
+            || value.GetValueOrDefault("data") is not Value.Map)
         {
             throw new FormatException($"Invalid event entry at line {lineNumber}");
         }
-        return WorldJson.Read<WorldEvent>(line);
+        return Record<WorldEvent>(value, lineNumber);
     }
 
     private static Delta ParseDeltaLine(string line, int lineNumber)
     {
-        var value = JsonNode.Parse(line) as JsonObject;
+        var value = Line(line, lineNumber);
         if (value is null
             || Text(value, "event_id") is null
             || Text(value, "entity") is null
@@ -327,20 +318,45 @@ public static class WorldFiles
         {
             throw new FormatException($"Invalid delta entry at line {lineNumber}");
         }
-        return WorldJson.Read<Delta>(line);
+        return Record<Delta>(value, lineNumber);
     }
 
-    // A count or size as head.json or a log line holds it: whole numbers only, so a fraction is refused, never truncated.
-    private static bool Number(JsonObject value, string key, out long number)
+    // A line as a value; one that does not parse is named by its number, not by the parser's column.
+    private static Value.Map? Line(string line, int lineNumber)
     {
-        var read = JsonReads.SafeInt(value[key]);
+        try
+        {
+            return ValueJson.Parse(line) as Value.Map;
+        }
+        catch (FormatException)
+        {
+            throw new FormatException($"Unparsable line {lineNumber}");
+        }
+    }
+
+    private static T Record<T>(Value.Map value, int lineNumber)
+    {
+        try
+        {
+            return WorldJson.Read<T>(value);
+        }
+        catch (FormatException)
+        {
+            throw new FormatException($"Unparsable line {lineNumber}");
+        }
+    }
+
+    // A count or size as head.json or a log line holds it: whole numbers only.
+    private static bool Number(Value.Map value, string key, out long number)
+    {
+        var read = value.GetValueOrDefault(key).AsInt();
         number = read ?? 0;
         return read is not null;
     }
 
-    private static long? Optional(JsonObject value, string key) => Number(value, key, out var number) ? number : null;
+    private static long? Optional(Value.Map value, string key) => Number(value, key, out var number) ? number : null;
 
-    private static string? Text(JsonObject value, string key) => JsonReads.Text(value[key]);
+    private static string? Text(Value.Map value, string key) => value.GetValueOrDefault(key).AsText();
 
-    private static bool SafeInteger(JsonObject value, string key) => JsonReads.SafeInt(value[key]) is not null;
+    private static bool SafeInteger(Value.Map value, string key) => value.GetValueOrDefault(key) is Value.Int;
 }

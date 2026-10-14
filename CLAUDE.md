@@ -40,9 +40,11 @@ Four projects in `src`, each referencing the ones above it: `WorldEngine.Core` (
 
 **Core** (`Model/`, `Json/`, `Templates/`, `Engine/`)
 
-- `Model/`: `Snapshot`, `Entity`, `WorldEvent`, `Delta`, `Command`, `Status`, coverage. `Json/`:
-  `CanonicalJson` (the one serializer: sorted keys, no whitespace, integers only within the
-  range `Integers` defines) and `WorldJson`, the reader/writer options every file and request goes through.
+- `Model/`: `Snapshot`, `Entity`, `WorldEvent`, `Delta`, `Command`, `Status`, coverage, and `Value`
+  (the engine's own value: bool, whole number, text, list, map; no null) that props, args and event
+  data hold. `Json/` is the codec and the only code that knows JSON (`BoundaryTests`): `ValueJson`
+  (text and nodes to `Value` and back), `WorldJson` (records, the options every file and request goes
+  through, the cause `kind`) and `CanonicalJson` (the one writer: sorted keys, no whitespace).
 - `Engine/Pipeline.cs` `Apply(snapshot, registry, verbs, command)` is the single transition entry. It
   looks up the verb, checks the actor, resolves the target (`Resolve.cs`: name, alias or
   `entity.part`, among what the actor can address) and runs the verb's preconditions. Only then does it

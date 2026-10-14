@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -67,18 +65,16 @@ public static class WorldSettle
         void WriteSettledHead(long snapshotVersion, long snapshotLogBytes) =>
             WorldWriter.AtomicWrite(
                 Path.Combine(dir, WorldFiles.Head),
-                WorldWriter.Canonical(new JsonObject
-                {
-                    ["log_bytes"] = logSize,
-                    ["events_bytes"] = new FileInfo(eventsPath).Length,
-                    ["deltas_bytes"] = new FileInfo(deltasPath).Length,
-                    ["log_entries"] = entries.Count,
-                    ["ok_entries"] = okEntries,
-                    ["rounds_closed"] = entries.Count(entry => entry.Round?.Close == true),
-                    ["snapshot_version"] = snapshotVersion,
-                    ["snapshot_log_bytes"] = snapshotLogBytes,
-                    ["templates_hash"] = frozen,
-                }));
+                WorldWriter.Canonical(new WorldFiles.HeadFile(
+                    LogBytes: logSize,
+                    EventsBytes: new FileInfo(eventsPath).Length,
+                    LogEntries: entries.Count,
+                    OkEntries: okEntries,
+                    TemplatesHash: frozen,
+                    DeltasBytes: new FileInfo(deltasPath).Length,
+                    RoundsClosed: entries.Count(entry => entry.Round?.Close == true),
+                    SnapshotVersion: snapshotVersion,
+                    SnapshotLogBytes: snapshotLogBytes)));
 
         // The deltas are appended after the events and before the snapshot, so with the snapshot at the log's version they are whole unless
         // the file is missing, was never kept, or is shorter than the head says, which no crash can do. Then they are rebuilt from the log.
@@ -113,7 +109,7 @@ public static class WorldSettle
                     return current;
                 }
             }
-            catch (Exception error) when (error is WorldError or FormatException or IOException or JsonException)
+            catch (Exception error) when (error is WorldError or FormatException or IOException)
             {
                 // A snapshot the log cannot be folded onto is rebuilt below, from the log alone.
             }

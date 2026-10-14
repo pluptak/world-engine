@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -75,29 +74,17 @@ public static class WorldWriter
         {
             AtomicWrite(Path.Combine(dir, WorldFiles.CurrentSnapshot), Canonical(result.Snapshot));
         }
-        var written = new JsonObject
-        {
-            ["log_bytes"] = logSize,
-            ["events_bytes"] = new FileInfo(eventsPath).Length,
-            ["deltas_bytes"] = new FileInfo(deltasPath).Length,
-            ["log_entries"] = (head?.LogEntries ?? 0) + 1,
-            ["ok_entries"] = (head?.OkEntries ?? 0) + (ok ? 1 : 0),
-            ["rounds_closed"] = (head?.RoundsClosed ?? 0) + (round?.Close == true ? 1 : 0),
-            ["snapshot_version"] = writesSnapshot ? result.Snapshot.Version : head?.SnapshotVersion ?? current.Version,
-            ["snapshot_log_bytes"] = writesSnapshot ? logSize : head?.SnapshotLogBytes ?? 0,
-            ["templates_hash"] = WorldReplay.HashOf(registry),
-        };
-        AtomicWrite(Path.Combine(dir, WorldFiles.Head), Canonical(written));
         var writtenHead = new WorldFiles.HeadFile(
-            logSize,
-            (long)written["events_bytes"]!,
-            (long)written["log_entries"]!,
-            (long)written["ok_entries"]!,
-            (string)written["templates_hash"]!,
-            (long)written["deltas_bytes"]!,
-            (long)written["rounds_closed"]!,
-            (long)written["snapshot_version"]!,
-            (long)written["snapshot_log_bytes"]!);
+            LogBytes: logSize,
+            EventsBytes: new FileInfo(eventsPath).Length,
+            LogEntries: (head?.LogEntries ?? 0) + 1,
+            OkEntries: (head?.OkEntries ?? 0) + (ok ? 1 : 0),
+            TemplatesHash: WorldReplay.HashOf(registry),
+            DeltasBytes: new FileInfo(deltasPath).Length,
+            RoundsClosed: (head?.RoundsClosed ?? 0) + (round?.Close == true ? 1 : 0),
+            SnapshotVersion: writesSnapshot ? result.Snapshot.Version : head?.SnapshotVersion ?? current.Version,
+            SnapshotLogBytes: writesSnapshot ? logSize : head?.SnapshotLogBytes ?? 0);
+        AtomicWrite(Path.Combine(dir, WorldFiles.Head), Canonical(writtenHead));
         WorldFiles.RememberHead(dir, writtenHead);
         WorldReplay.Remember(dir, registry, writtenHead, ok ? result.Snapshot : current);
 
@@ -158,16 +145,14 @@ public static class WorldWriter
 
     // The bytes of a checkpoint: the snapshot, bound to the log prefix that made it and to `initial.json`. `verify` builds the same text.
     internal static string CheckpointText(Snapshot snapshot, byte[] log, byte[] initial) =>
-        Canonical(new JsonObject
-        {
-            ["version"] = snapshot.Version,
-            ["templates_hash"] = snapshot.TemplatesHash,
-            ["log_bytes"] = log.Length,
-            ["log_lines"] = log.Count(bytes => bytes == (byte)'\n'),
-            ["log_sha256"] = WorldCheckpoints.Digest(log),
-            ["initial_sha256"] = WorldCheckpoints.Digest(initial),
-            ["snapshot"] = JsonNode.Parse(WorldJson.Write(snapshot)),
-        });
+        Canonical(new WorldCheckpoints.CheckpointFile(
+            snapshot.Version,
+            snapshot.TemplatesHash,
+            log.Length,
+            log.Count(bytes => bytes == (byte)'\n'),
+            WorldCheckpoints.Digest(log),
+            WorldCheckpoints.Digest(initial),
+            snapshot));
 
     // Replaces `path` with `text` through a temporary file (`atomicWrite`). Windows will not replace a file another process has open at
     // that instant, so the replacement is asked for again for a moment.

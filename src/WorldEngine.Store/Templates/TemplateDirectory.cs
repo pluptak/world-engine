@@ -1,4 +1,3 @@
-using System.Text.Json;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Templates;
 
@@ -21,7 +20,7 @@ public static class TemplateDirectory
         var sources = new Dictionary<string, string>();
         foreach (var (file, text) in texts.OrderBy(entry => entry.File, StringComparer.Ordinal))
         {
-            var value = TemplateValue(System.Text.Json.Nodes.JsonNode.Parse(text), file);
+            var value = TemplateValue(text, file);
             TemplateShape.Check(value, file);
             var decl = ValueJson.Read<TemplateDecl>(value!);
             if (decls.ContainsKey(decl.Id))
@@ -35,11 +34,11 @@ public static class TemplateDirectory
     }
 
     // A declaration as a value: a null in a list, or a number that is not whole, is refused with the source that holds it.
-    public static WorldEngine.Core.Model.Value? TemplateValue(System.Text.Json.Nodes.JsonNode? node, string source)
+    public static WorldEngine.Core.Model.Value? TemplateValue(string text, string source)
     {
         try
         {
-            return ValueJson.FromNode(node);
+            return ValueJson.Parse(text);
         }
         catch (FormatException error)
         {
