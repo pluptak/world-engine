@@ -33,14 +33,24 @@ public class VerbMatrixTests
             })
             .ToList();
         var total = cases.Count;
-        var answers = new string[total];
-        Parallel.For(0, total, index => answers[index] = Answer(cases[index].Snapshot, WorldJson.Read<Command>(cases[index].Row[0])));
+        var answers = new string?[total];
+        Parallel.For(0, total, index =>
+        {
+            if (Depth.Takes(index, 4))
+            {
+                answers[index] = Answer(cases[index].Snapshot, WorldJson.Read<Command>(cases[index].Row[0]));
+            }
+        });
 
         var differing = new List<string>();
         for (var index = 0; index < total; index++)
         {
             var (name, _, row) = cases[index];
             var actual = answers[index];
+            if (actual is null)
+            {
+                continue;
+            }
             if (GoldenUpdate.Enabled)
             {
                 row[1] = actual;

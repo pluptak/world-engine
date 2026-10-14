@@ -28,9 +28,13 @@ public class TemplateFuzzTests
         var rows = cases.Cast<JsonArray>().ToList();
 
         // The cases are independent, so they run in parallel; differences are reported in case order.
-        var answers = new string[rows.Count];
+        var answers = new string?[rows.Count];
         Parallel.For(0, rows.Count, index =>
         {
+            if (!Depth.Takes(index, 4))
+            {
+                return;
+            }
             var row = rows[index];
             var file = $"{row[0]!.GetValue<string>()}.json";
             var mutated = JsonNode.Parse(originals[file])!;
@@ -44,6 +48,10 @@ public class TemplateFuzzTests
         {
             var row = rows[index];
             var actual = answers[index];
+            if (actual is null)
+            {
+                continue;
+            }
             if (GoldenUpdate.Enabled)
             {
                 row[3] = actual;

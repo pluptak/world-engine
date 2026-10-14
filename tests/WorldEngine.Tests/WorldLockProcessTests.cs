@@ -32,23 +32,24 @@ public class WorldLockProcessTests : IDisposable
     public async Task Six_processes_writing_one_world_take_turns_and_every_command_is_logged_once()
     {
         var dir = NewWorld();
+        var commands = Depth.Count(deep: 20, sampled: 5);
         var kids = new[]
         {
-            Spawn("commands", dir, "a", 20),
-            Spawn("commands", dir, "b", 20),
-            Spawn("commands", dir, "c", 20),
-            Spawn("commands", dir, "d", 20),
-            Spawn("commands", dir, "e", 20),
-            Spawn("commands", dir, "f", 20),
-            Spawn("reads", dir, "g", 150),
-            Spawn("reads", dir, "h", 150),
+            Spawn("commands", dir, "a", commands),
+            Spawn("commands", dir, "b", commands),
+            Spawn("commands", dir, "c", commands),
+            Spawn("commands", dir, "d", commands),
+            Spawn("commands", dir, "e", commands),
+            Spawn("commands", dir, "f", commands),
+            Spawn("reads", dir, "g", Depth.Count(deep: 150, sampled: 40)),
+            Spawn("reads", dir, "h", Depth.Count(deep: 150, sampled: 40)),
         };
         var results = await Task.WhenAll(kids);
         Assert.All(results, result => Assert.True(result.Code == 0, $"child exited {result.Code}: {result.Output}"));
 
         var registry = WorldFiles.ReadTemplates(dir);
         var log = WorldFiles.ReadLog(dir);
-        Assert.Equal(120, log.Count);
+        Assert.Equal(6 * commands, log.Count);
         // Conflicting commands are refused, so not all are ok; the ones that are each follow the last.
         var accepted = log.Where(entry => entry.Status == Status.Ok).Select(entry => entry.Version).ToList();
         Assert.Equal(Enumerable.Range(0, accepted.Count).Select(index => (long)index), accepted);

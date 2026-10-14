@@ -16,7 +16,8 @@ source at the tag, and the .NET counterpart is in the layout below (mostly the s
 ## Commands
 
 ```bash
-dotnet test WorldEngine.slnx                       # the whole suite (about 40 s); the usual gate
+dotnet test WorldEngine.slnx                       # the whole suite, large goldens sampled (about 40 s)
+WORLD_ENGINE_DEEP=1 dotnet test WorldEngine.slnx   # every seed and row (about 2 min); once before a commit
 dotnet test dotnet --filter "FullyQualifiedName~HostRunTests"   # one class or a name fragment
 dotnet build WorldEngine.slnx                      # compile only
 dotnet run --project src/WorldEngine.Cli -- init data/w1 scenarios/bottle.json     # create a world

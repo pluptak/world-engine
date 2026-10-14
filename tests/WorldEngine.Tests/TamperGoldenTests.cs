@@ -53,11 +53,15 @@ public class TamperGoldenTests : IDisposable
         var found = new List<string>[cases.Count];
         Parallel.For(0, cases.Count, index =>
         {
+            found[index] = [];
+            if (!Depth.Takes(index, 3))
+            {
+                return;
+            }
             var node = cases[index]!;
             var dir = Path.Combine(scratch, $"c{index + 1}");
             MixedWorld.CopyDirectory(pristine, dir);
             Tamper(dir, node["file"]!.GetValue<string>(), (JsonObject)node["op"]!);
-            found[index] = [];
             if (GoldenUpdate.Enabled)
             {
                 node["observed"] = MixedWorld.Observe(dir);

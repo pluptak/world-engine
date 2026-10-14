@@ -35,7 +35,11 @@ behaviour recorded from it; a change to .NET behaviour updates its goldens in th
 
 ### Verification (before the commit)
 
-1. `dotnet test WorldEngine.slnx` passes (about 40 s). Use `--filter "FullyQualifiedName~<name>"` while working.
+1. While working, run only the classes the change touches (`--filter "FullyQualifiedName~<name>"`), and
+   build first: fixtures are copied at build time, so `--no-build` after a fixture edit tests the old one.
+   Before the commit, `dotnet test WorldEngine.slnx` (about 40 s, the large goldens sampled) and then
+   `WORLD_ENGINE_DEEP=1 dotnet test WorldEngine.slnx` (about 2 min, every seed and row) each pass once.
+   A golden update (`WORLD_ENGINE_UPDATE_GOLDENS=1`) runs once per change, filtered to the goldens it moves.
 2. Deliberately break one new test to confirm it can fail, then restore it.
 3. Read the staged diff: only this block's changes.
 

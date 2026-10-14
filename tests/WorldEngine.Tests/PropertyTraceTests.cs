@@ -28,6 +28,10 @@ public class PropertyTraceTests
         var failed = new string?[records.Count];
         Parallel.For(0, records.Count, index =>
         {
+            if (!Depth.Takes(index, 5))
+            {
+                return;
+            }
             var failures = new List<string>();
             Replay(new MemoryWorld(initial, registry, initial.TemplatesHash), records[index], failures);
             failed[index] = failures.FirstOrDefault();
@@ -54,7 +58,7 @@ public class PropertyTraceTests
         var scratch = Path.Combine(Path.GetTempPath(), "property-store-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var records = Records().Take(20).ToList();
+            var records = Records().Take(Depth.Count(deep: 20, sampled: 5)).ToList();
             var failed = new List<string>[records.Count];
             Parallel.For(0, records.Count, index =>
             {

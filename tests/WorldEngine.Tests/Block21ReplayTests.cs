@@ -43,7 +43,11 @@ public class Block21ReplayTests : IDisposable
         // Each request touches one world (the first folder under {TMP}), and no request reads another world, so the worlds replay in
         // parallel, each in its recorded order. Mismatches are reported in request order.
         var found = new string?[trace.Count];
-        var worlds = Enumerable.Range(0, trace.Count).GroupBy(index => WorldOf(trace[index])).ToList();
+        // A sampled run replays every other world, each whole: a world's requests build on one another.
+        var worlds = Enumerable.Range(0, trace.Count).GroupBy(index => WorldOf(trace[index]))
+            .Where((_, index) => Depth.Takes(index, 2))
+            .ToList();
+        var replayed = worlds.Select(world => world.Key).ToHashSet(StringComparer.Ordinal);
         Parallel.ForEach(worlds, world =>
         {
             foreach (var index in world)
@@ -70,7 +74,7 @@ public class Block21ReplayTests : IDisposable
             GoldenUpdate.Write(Path.Combine("block21", "golden.json"), golden);
             return;
         }
-        foreach (var (placeholder, files) in manifest)
+        foreach (var (placeholder, files) in manifest.Where(pair => replayed.Contains(WorldName(pair.Key))))
         {
             var mismatch = CompareWorld(replay.Into(placeholder), (JsonObject)files!);
             if (mismatch is not null)
@@ -121,10 +125,12 @@ public class Block21ReplayTests : IDisposable
     }
 
     // The world a request touches: the first folder after {TMP} in its recorded text.
-    private static string WorldOf(JsonObject line) =>
-        Regex.Match(line.ToJsonString(), @"\{TMP\}[\\/]+([^\\/""]+)") is { Success: true } match
+    private static string WorldOf(JsonObject line) => WorldName(line.ToJsonString());
+
+    private static string WorldName(string text) =>
+        Regex.Match(text, @"\{TMP\}[\\/]+([^\\/""]+)") is { Success: true } match
             ? match.Groups[1].Value
-            : throw new InvalidDataException($"a request names no world: {Snip(line.ToJsonString())}");
+            : throw new InvalidDataException($"a request names no world: {Snip(text)}");
 
     private static string Snip(string text) => text.Length > 240 ? text[..240] + "..." : text;
 
