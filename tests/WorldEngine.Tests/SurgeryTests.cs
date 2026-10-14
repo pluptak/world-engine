@@ -98,6 +98,15 @@ public class SurgeryTests : IDisposable
     }
 
     [Fact]
+    public void A_cut_targeting_a_part_address_is_refused()
+    {
+        var cut = Pipeline.Apply(Built(), Registry, Verbs, new Command("e-cut", Surgeon, "cut", $"{Patient}.arm_l", Args: Value.Map.Empty.With("part", "arm_l")));
+
+        Assert.Equal(Status.Refused, cut.Status);
+        Assert.Equal(Code.TargetAttached, cut.ReasonCode);
+    }
+
+    [Fact]
     public void The_bleed_runs_its_course_and_ends()
     {
         var cut = Pipeline.Apply(Built(), Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
@@ -105,6 +114,12 @@ public class SurgeryTests : IDisposable
 
         Assert.Equal(Status.Ok, later.Status);
         Assert.Empty((later.Snapshot.Schedule ?? []).OfType<BleedCause>());
+        Assert.Equal(85L, later.Snapshot.Entities[Patient].Integrity);
+
+        var second = Pipeline.Apply(later.Snapshot, Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Refused, second.Status);
+        Assert.Equal(Code.AlreadyIncised, second.ReasonCode);
     }
 
     [Fact]
