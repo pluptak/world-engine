@@ -15,16 +15,24 @@ public class BoundTests : IDisposable
         [
           { "id": "room", "template": "room", "overrides": { "name": "room", "props": { "lit": true } } },
           { "id": "human", "template": "human", "overrides": { "name": "human", "location": "room", "support": "room", "pos": { "x": 0, "y": 0 } } },
-          { "id": "bound", "template": "human", "overrides": { "name": "bound", "location": "room", "support": "room", "pos": { "x": 100, "y": 0 }, "props": { "bound": true } } }
+          { "id": "bound", "template": "human", "overrides": { "name": "bound", "location": "room", "support": "room", "pos": { "x": 100, "y": 0 }, "props": { "bound": true } } },
+          { "id": "pebble", "template": "stone", "overrides": { "name": "pebble", "location": "room", "support": "room", "pos": { "x": 20, "y": 0 } } },
+          { "id": "flint", "template": "stone", "overrides": { "name": "flint", "location": "room", "support": "room", "pos": { "x": 30, "y": 0 } } }
         ]
         """;
+
+    // The two stones beside the free human, as the builder numbers them after the bound one (e3).
+    private const string Pebble = "e4";
+    private const string Flint = "e5";
 
     private static IReadOnlyDictionary<string, Template> Registry => TestTemplates.Registry;
 
     private static IReadOnlyDictionary<string, Pipeline.VerbDecl> Verbs { get; } = new Dictionary<string, Pipeline.VerbDecl>
     {
         ["edit"] = EditVerb.Edit,
+        ["move"] = MoveVerb.Move,
         ["say"] = SayVerb.Say,
+        ["take"] = TakeVerb.Take,
     };
 
     private readonly string scratch = Path.Combine(Path.GetTempPath(), "bound-" + Guid.NewGuid().ToString("N"));
@@ -62,6 +70,43 @@ public class BoundTests : IDisposable
         Assert.Equal(Status.Ok, bound.Status);
         Assert.Equal(50L, Capacities.Of(bound.Snapshot, Registry, "e2", "manipulation"));
         Assert.Equal(100L, Capacities.Of(bound.Snapshot, Registry, "e2", "moving"));
+    }
+
+    [Fact]
+    public void A_bound_body_cannot_move()
+    {
+        var moved = Pipeline.Apply(Built(), Registry, Verbs, new Command("c1", "e3", "move", Args: Value.Map.Empty.With("to", Value.Map.Empty.With("x", 150L).With("y", 0L))));
+
+        Assert.Equal(Status.Refused, moved.Status);
+        Assert.Equal(Code.InsufficientMoving, moved.ReasonCode);
+    }
+
+    [Fact]
+    public void What_a_hand_holds_stays_held_when_it_is_bound()
+    {
+        var taken = Pipeline.Apply(Built(), Registry, Verbs, new Command("c1", "e2", "take", Pebble));
+        Assert.Equal(Status.Ok, taken.Status);
+        Assert.Equal("hand_l", taken.Snapshot.Entities[Pebble].InPart);
+
+        var bound = Pipeline.Apply(taken.Snapshot, Registry, Verbs, SetPart("e2", "hand_l", integrity: 100, status: "intact", bound: true));
+
+        Assert.Equal(Status.Ok, bound.Status);
+        Assert.Equal("e2", bound.Snapshot.Entities[Pebble].ContainedIn);
+        Assert.Equal("hand_l", bound.Snapshot.Entities[Pebble].InPart);
+    }
+
+    [Fact]
+    public void A_bound_hand_takes_nothing_new()
+    {
+        var bound = Pipeline.Apply(Built(), Registry, Verbs, SetPart("e2", "hand_l", integrity: 100, status: "intact", bound: true));
+
+        var first = Pipeline.Apply(bound.Snapshot, Registry, Verbs, new Command("c1", "e2", "take", Pebble));
+        Assert.Equal(Status.Ok, first.Status);
+        Assert.Equal("hand_r", first.Snapshot.Entities[Pebble].InPart);
+
+        var second = Pipeline.Apply(first.Snapshot, Registry, Verbs, new Command("c2", "e2", "take", Flint));
+        Assert.Equal(Status.Refused, second.Status);
+        Assert.Equal(Code.HandsFull, second.ReasonCode);
     }
 
     [Fact]
