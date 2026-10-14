@@ -24,6 +24,7 @@ public static partial class EditVerb
         Code.PosWithoutRoomSupport, Code.AnchorNotRoomSupported, Code.CircularPlacement, Code.OccupiedRoom, Code.UnknownPart,
         Code.NotARefinement, Code.TooLarge, Code.NotASurface, Code.LiquidExceedsCapacity, Code.IntegrityOutOfRange,
         Code.DetachedPartWithoutEntity, Code.PartAtDefault, Code.PartUnderDetached, Code.CoverageNotComputable,
+        Code.DoesNotFit,
         Code.LocationMismatch, Code.DanglingReference, Code.IdNotBelowNextSeq, Code.SupportOrContainmentCycle,
         Code.SupportAndContainedIn, Code.DoorSideNotRoom, Code.OpensTargetNotOpenable, Code.ConcealedByAbstract,
         Code.ConcealedByNotSameRoom, Code.ConcealedByCycle, Code.PowerLoop, Code.ControlLoop, Code.InPartHolderMismatch,
@@ -31,7 +32,7 @@ public static partial class EditVerb
         Code.PartContentsTooLarge, Code.ContainerContentsTooLarge, Code.InvalidTrait, Code.BeatInPast, Code.DuplicateBeat,
         Code.TooManyBeats, Code.NoSuchBeat, Code.InvalidBeat, Code.UndeclaredProp, Code.WrongPropType, Code.UnmetRequires, Code.NoRun,
         Code.RunNotRegistering, Code.RunNotRunning, Code.NoSuchSlot, Code.SlotTaken, Code.HandleTaken, Code.RoleForbidden,
-        Code.NoSuchPoolBeat, Code.NotSteerable, Code.OutOfRange,
+        Code.NoSuchPoolBeat, Code.NotSteerable, Code.OutOfRange, Code.UnknownCapacity,
     ];
 
     private static readonly HashSet<string> OverrideKeys =
@@ -68,6 +69,8 @@ public static partial class EditVerb
     private sealed record EndRunEdit : WorldEdit;
     private sealed record PropsEdit(string Kind, string Target, Value.Map Props) : WorldEdit;
     private sealed record SetPartEdit(string Target, string Part, PartState State) : WorldEdit;
+    // The author's timed modifier: `Amount` to a capacity of the target, until the first tick it no longer holds.
+    private sealed record AfflictEdit(string Target, string Capacity, long Amount, long Until) : WorldEdit;
 
     private static Pipeline.Refusal Invalid(Code code) => new(Status.Invalid, code);
 
@@ -122,7 +125,8 @@ public static partial class EditVerb
             RemoveEdit => RemoveRefusal(context.Snapshot, subject),
             PlaceEdit place => PlaceRefusal(context, place, subject),
             PropsEdit props => PropsRefusal(context, subject, props),
-            SetPartEdit part => PartRefusal(context.Registry, subject, part.Part),
+            AfflictEdit afflict => AfflictRefusal(context, subject, afflict),
+            SetPartEdit part => PartRefusal(context.Registry, subject, part.Part, part.State.Installed),
             RefineEdit refine => context.Registry.TryGetValue(refine.Template, out var next)
                 ? Refine.RefineRefusal(context.Snapshot, context.Registry, subject, next)
                 : Invalid(Code.UnknownTemplate),

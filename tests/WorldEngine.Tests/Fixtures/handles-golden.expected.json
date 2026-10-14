@@ -1202,6 +1202,8 @@
         }
       ],
       "needs_args": [
+        "extract",
+        "install",
         "move",
         "pour",
         "say"
@@ -1331,6 +1333,8 @@
         }
       ],
       "needs_args": [
+        "extract",
+        "install",
         "move",
         "pour",
         "say"

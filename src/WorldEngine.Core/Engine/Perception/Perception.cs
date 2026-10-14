@@ -53,6 +53,15 @@ public static class Perception
         {
             return new Answer(Truth.False, Code.Asleep);
         }
+        // A blind body sees nothing and a deaf one hears nothing; neither is damage, so the capacity still reads.
+        if (observer.Props.Is(Prop.Blind) && sense is Sense.Sight)
+        {
+            return new Answer(Truth.False, Code.Blind);
+        }
+        if (observer.Props.Is(Prop.Deaf) && sense is Sense.Hearing)
+        {
+            return new Answer(Truth.False, Code.Deaf);
+        }
         // An unconscious body takes every sense.
         if (observer.Props.Is(Prop.Unconscious))
         {

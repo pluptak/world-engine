@@ -74,10 +74,11 @@ public sealed class ActorWorld
 
     private readonly IWorld world;
     private readonly string actor;
+    private readonly string? via;
     private readonly string key;
     private readonly IReadOnlyList<string> senses;
 
-    public ActorWorld(IWorld world, string actor, string? key = null, IReadOnlyList<string>? senses = null)
+    public ActorWorld(IWorld world, string actor, string? via = null, string? key = null, IReadOnlyList<string>? senses = null)
     {
         if (world.EntityOf(actor) is null)
         {
@@ -85,6 +86,7 @@ public sealed class ActorWorld
         }
         this.world = world;
         this.actor = actor;
+        this.via = via;
         this.key = key ?? actor;
         this.senses = senses ?? [actor];
     }
@@ -158,7 +160,8 @@ public sealed class ActorWorld
             actor,
             command.Verb,
             Target: command.Target is null ? null : Read(command.Target),
-            Args: args);
+            Args: args,
+            Via: via);
     }
 
     // A `token` arg (what `say` says) is opaque text, passed as it is: never an alias, and never an id-shaped word rewritten.

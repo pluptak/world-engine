@@ -71,4 +71,65 @@ public class PartsAndCapacityTests
 
     private static string ReadFixture(string name) =>
         File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", name));
+
+    [Fact]
+    public void An_installed_part_contributes_from_its_installed_template()
+    {
+        var human = Registry["human"];
+        var robo = new Template(
+            "robo_arm_l",
+            human.SizeCm,
+            human.MassG,
+            [
+                new PartDecl("arm_l", null, new Dictionary<string, long>(), true, 100),
+                .. human.Parts.Where(part => part.Name is "hand_l" or "thumb_l").Select(part => part with
+                {
+                    Contributes = new Dictionary<string, long>(part.Name == "hand_l"
+                        ? new Dictionary<string, long> { ["manipulation"] = 40 }
+                        : new Dictionary<string, long>()),
+                }),
+            ],
+            Value.Map.Empty,
+            [],
+            new Dictionary<string, long>(),
+            Fits: "human.arm_l");
+        var registry = new Dictionary<string, Template>(StringComparer.Ordinal)
+        {
+            ["human"] = human,
+            ["robo_arm_l"] = robo,
+        };
+        var entity = new Entity(
+            Id: "e1",
+            Template: "human",
+            Name: "patient",
+            Aliases: [],
+            Location: null,
+            Support: null,
+            ContainedIn: null,
+            InPart: null,
+            ConcealedBy: null,
+            Pos: null,
+            DetachedFrom: null,
+            Integrity: 100,
+            Status: EntityStatus.Intact,
+            Parts: new Dictionary<string, PartState>(StringComparer.Ordinal)
+            {
+                ["arm_l"] = new PartState(100, PartStatus.Intact, Installed: "robo_arm_l"),
+            },
+            Residue: new Dictionary<string, long>(),
+            Modifiers: [],
+            Props: Value.Map.Empty,
+            Traits: null);
+        var snapshot = new Snapshot(
+            Version: 1,
+            Tick: 0,
+            NextSeq: 2,
+            TemplatesHash: "x",
+            Coverage: new Coverage([], [], []),
+            Entities: new Dictionary<string, Entity>(StringComparer.Ordinal) { ["e1"] = entity },
+            Rng: null);
+
+        Assert.Equal(90L, Capacities.Structural(snapshot, registry, "e1", "manipulation"));
+        Assert.Equal(90L, Capacities.Of(snapshot, registry, "e1", "manipulation"));
+    }
 }

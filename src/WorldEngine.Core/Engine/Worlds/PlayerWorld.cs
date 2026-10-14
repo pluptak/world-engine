@@ -31,7 +31,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
         {
             return new ActorOptions(ActorAlias.Of(found.Root, id), [], [], ReasonCode: Code.BodyOut);
         }
-        return new ActorWorld(world, id, found.Root, found.Bodies).OptionsOf(refused);
+        return new ActorWorld(world, id, key: found.Root, senses: found.Bodies).OptionsOf(refused);
     }
 
     // Judged as a round's move, as the actor view judges any command, for the body it names.
@@ -42,7 +42,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
         {
             return new ActorVerdict(Status.Refused, command.CommandId, ReasonCode: Code.BodyOut);
         }
-        return new ActorWorld(world, id, found.Root, found.Bodies).Check(command);
+        return new ActorWorld(world, id, key: found.Root, senses: found.Bodies).Check(command);
     }
 
     // A move written as the view writes things: its own aliases or names, never a world id. Replaces the body's move, and any move held
@@ -71,7 +71,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
             return Refusal(Code.BodyOut);
         }
         // The move is the body's own, read back from the view's aliases as the view's own `check` reads it.
-        var command = new ActorWorld(world, id, found.Root, found.Bodies).Decode(move);
+        var command = new ActorWorld(world, id, key: found.Root, senses: found.Bodies).Decode(move);
         foreach (var held in world.Pending.Moves(handle).ToList())
         {
             if (Runs.LiveBodyOf(snapshot, held.Actor) == id)
@@ -149,7 +149,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
     {
         var found = RequireBound();
         var first = found.Bodies.FirstOrDefault(body => world.EntityOf(body) is not null) ?? found.Bodies[0];
-        return new ActorWorld(world, first, found.Root, found.Bodies);
+        return new ActorWorld(world, first, key: found.Root, senses: found.Bodies);
     }
 
     private Bound RequireBound() => BoundOf() ?? throw new WorldError(Code.NotRegistered, $"No player is registered as {handle}");

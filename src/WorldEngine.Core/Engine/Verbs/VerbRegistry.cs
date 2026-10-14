@@ -31,6 +31,8 @@ public static class VerbRegistry
         ["wait"] = WaitVerb.Wait,
         ["advance"] = TimeVerbs.Advance,
         ["edit"] = EditVerb.Edit,
+        ["install"] = SocketVerbs.Install,
+        ["extract"] = SocketVerbs.Extract,
     };
 
     // One verb's declared shape, as the catalog lists it.

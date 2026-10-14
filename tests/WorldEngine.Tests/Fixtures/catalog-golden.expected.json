@@ -183,6 +183,7 @@
       "part_at_default",
       "part_under_detached",
       "coverage_not_computable",
+      "does_not_fit",
       "location_mismatch",
       "dangling_reference",
       "id_not_below_next_seq",
@@ -221,7 +222,34 @@
       "role_forbidden",
       "no_such_pool_beat",
       "not_steerable",
-      "out_of_range"
+      "out_of_range",
+      "unknown_capacity"
+    ]
+  },
+  {
+    "verb": "extract",
+    "requires_target": true,
+    "args": {
+      "part": {
+        "kind": "token"
+      }
+    },
+    "duration": {
+      "ticks": 1
+    },
+    "requires": [
+      {
+        "capacity": "manipulation",
+        "at_least": 50
+      }
+    ],
+    "carry_alternatives": [],
+    "attack_modes": [],
+    "refuses": [
+      "target_attached",
+      "out_of_reach",
+      "nothing_installed",
+      "insufficient_manipulation"
     ]
   },
   {
@@ -268,6 +296,37 @@
       "mouth_full",
       "hands_full",
       "unknown_part"
+    ]
+  },
+  {
+    "verb": "install",
+    "requires_target": true,
+    "args": {
+      "part": {
+        "kind": "token"
+      },
+      "item": {
+        "kind": "address"
+      }
+    },
+    "duration": {
+      "ticks": 1
+    },
+    "requires": [
+      {
+        "capacity": "manipulation",
+        "at_least": 50
+      }
+    ],
+    "carry_alternatives": [],
+    "attack_modes": [],
+    "refuses": [
+      "target_attached",
+      "out_of_reach",
+      "not_carried",
+      "socket_occupied",
+      "does_not_fit",
+      "insufficient_manipulation"
     ]
   },
   {

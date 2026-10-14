@@ -54,7 +54,9 @@ public enum EntityStatus
     Destroyed,
 }
 
-public sealed record PartState(long Integrity, PartStatus Status);
+// `Bound` is written only when true: a part tied by a rope takes no capacity (`docs/structure.md`).
+// `Installed` is the installable template filling a severed part (`docs/sockets.md`); absent for the body's own parts.
+public sealed record PartState(long Integrity, PartStatus Status, bool? Bound = null, string? Installed = null);
 
 public sealed record Modifier(string Capacity, long Delta, long? ExpiresAtTick, string CauseId);
 

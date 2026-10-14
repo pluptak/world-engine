@@ -12,8 +12,9 @@ bag indexed by a literal key fails `TemplateValidationTests`.
 - *definition*: the template author only, such as `openable`, `closes_after`, `barrier`, `gap_cm`,
   `reach_cm`, and the entity's `template`;
 - *state*: the world author, such as `open`, `locked`, `burning`, `fuel`, `liquid_amount`, a
-  door's `from`/`to`, a key's `opens`, `name`, placement, `integrity`, `status`, `detached_from`
-  and part state (a corpse or a severed limb is a state the world can reach);
+  door's `from`/`to`, a key's `opens`, `blind`, `deaf`, `bound`, `possessed_by`, `possessor`,
+  `lapses_at`, `name`, placement, `integrity`, `status`, `detached_from` and part state (a corpse
+  or a severed limb is a state the world can reach);
 - *derived*: the engine only: `id`, `location` and `modifiers`.
 
 A spawn (an edit's or a scenario's) writing a derived field as other than the engine derives it is

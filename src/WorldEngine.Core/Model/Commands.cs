@@ -38,7 +38,9 @@ public sealed record Command(
     Value.Map? Args = null,
     bool? Perceivers = null,
     bool? Round = null,
-    By? By = null);
+    By? By = null,
+    // The agent issuing a command for the body named by Actor; set only by an actor view (`docs/actor-view.md`).
+    string? Via = null);
 
 // A command as the log holds it: refused and invalid ones too, with the version it was decided at.
 public sealed record Attempt(

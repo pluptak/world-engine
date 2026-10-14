@@ -29,6 +29,8 @@ public static class Prop
     public static readonly Prop<long> BleedDamage = Integer("bleed_damage", Tier.Definition);
     public static readonly Prop<long> BleedEveryTicks = Integer("bleed_every_ticks", Tier.Definition);
     public static readonly Prop<long> BleedTimes = Integer("bleed_times", Tier.Definition);
+    public static readonly Prop<bool> Blind = Flag("blind", Tier.State);
+    public static readonly Prop<bool> Bound = Flag("bound", Tier.State);
     public static readonly Prop<long> BreakFallCm = Integer("break_fall_cm", Tier.Definition);
     public static readonly Prop<bool> Burning = Flag("burning", Tier.State, requires: ["light_source"]);
     public static readonly Prop<bool> Camera = Flag("camera", Tier.Definition);
@@ -40,6 +42,7 @@ public static class Prop
     public static readonly Prop<long> ConeDeg = Integer("cone_deg", Tier.Definition, min: 1, max: 360, requires: ["camera"]);
     public static readonly Prop<bool> Container = Flag("container", Tier.Definition, requires: ["inner_w_cm", "inner_d_cm", "inner_h_cm"]);
     public static readonly Prop<string> ControlledBy = Id("controlled_by", Tier.State);
+    public static readonly Prop<bool> Deaf = Flag("deaf", Tier.State);
     public static readonly Prop<string> DefaultHitPart = Text("default_hit_part", Tier.Definition);
     // The way a camera looks, in degrees counter-clockwise from +x, and the whole angle it sees (`docs/camera.md`).
     public static readonly Prop<long> FacingDeg = Integer("facing_deg", Tier.State, min: 0, max: 359, requires: ["camera"]);
@@ -87,6 +90,10 @@ public static class Prop
     public static readonly Prop<bool> Topples = Flag("topples", Tier.Definition);
     // An unconscious body takes every sense and capacity until an author's edit ends it (`docs/senses.md`).
     public static readonly Prop<bool> Unconscious = Flag("unconscious", Tier.State);
+    // A curse: the link names the agent in control of a body, and the first tick it no longer holds (absent: until the link goes).
+    public static readonly Prop<string> PossessedBy = Id("possessed_by", Tier.State);
+    public static readonly Prop<string> Possessor = Id("possessor", Tier.State);
+    public static readonly Prop<long> LapsesAt = Integer("lapses_at", Tier.State, min: 0);
 
     public static readonly IReadOnlyDictionary<string, PropField> Table =
         Declared.ToDictionary(row => row.Name, row => row.Field, StringComparer.Ordinal);

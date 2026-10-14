@@ -139,14 +139,28 @@ public static partial class EditVerb
                 }
                 return new PropsEdit(kind, target, props);
             }
+            case "afflict":
+            {
+                if (!Only(obj, "kind", "target", "capacity", "amount", "until") || Text(obj.GetValueOrDefault("target")) is not { } target
+                    || Text(obj.GetValueOrDefault("capacity")) is not { } capacity || Int(obj.GetValueOrDefault("amount")) is not { } amount
+                    || amount is 0 or < -100 or > 100 || Int(obj.GetValueOrDefault("until")) is not { } until)
+                {
+                    return null;
+                }
+                return new AfflictEdit(target, capacity, amount, until);
+            }
             case "set_part":
             {
                 if (!Only(obj, "kind", "target", "part", "state") || Text(obj.GetValueOrDefault("target")) is not { } target
                     || Text(obj.GetValueOrDefault("part")) is not { } part || obj.GetValueOrDefault("state") is not Value.Map state
-                    || Int(state.GetValueOrDefault("integrity")) is not { } integrity || Text(state.GetValueOrDefault("status")) is not { } status)
+                    || !state.Keys.All(key => key is "integrity" or "status" or "bound" or "installed")
+                    || Int(state.GetValueOrDefault("integrity")) is not { } integrity || Text(state.GetValueOrDefault("status")) is not { } status
+                    || (state.ContainsKey("bound") && state.GetValueOrDefault("bound") is not Value.Bool)
+                    || (state.GetValueOrDefault("installed") is { } installed && Text(installed) is null))
                 {
                     return null;
                 }
+                var bound = state.GetValueOrDefault("bound") is Value.Bool { Flag: true } ? true : (bool?)null;
                 var partStatus = status switch
                 {
                     "intact" => PartStatus.Intact,
@@ -155,7 +169,9 @@ public static partial class EditVerb
                     "destroyed" => PartStatus.Destroyed,
                     _ => (PartStatus?)null,
                 };
-                return partStatus is { } value ? new SetPartEdit(target, part, new PartState(integrity, value)) : null;
+                return partStatus is { } value
+                    ? new SetPartEdit(target, part, new PartState(integrity, value, bound, Text(state.GetValueOrDefault("installed"))))
+                    : null;
             }
             default:
                 return null;

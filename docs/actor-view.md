@@ -32,8 +32,8 @@ as written, never read back. The hash hides the count from a controller that rea
 from one that hashes candidate ids to decode them; a key would close that.
 
 The CLI has the same five as ops, each with `world` and `actor`: `actor_observe` (`since_tick?`),
-`actor_inspect` (`entity`), `actor_options` (`refused?`), `actor_check` (`command`) and
-`actor_command` (`command`); a `since` or `based_on_version` is `invalid_request`. Their `command`
+`actor_inspect` (`entity`), `actor_options` (`refused?`), `actor_check` (`command`, `via?`) and
+`actor_command` (`command`, `via?`); a `since` or `based_on_version` is `invalid_request`. Their `command`
 is `command_id`, `verb`, `target?` and `args?` only: one that names an `actor` or `perceivers` is
 `invalid_request`. `actor_command` answers `status`, `command_id`, `resolved_target`, `candidates?`,
 `reason_code?`, `reason_data?` and `observation`. A runtime allowed only these five ops learns no

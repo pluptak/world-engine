@@ -163,6 +163,22 @@ public static class Pipeline
         {
             return Unchanged(snapshot, command, Status.Refused, reasonCode: fault.ReasonCode, reasonData: fault.ReasonData);
         }
+        // A command sent for another agent is the body's controller's to send, and no one else's.
+        if (command.Via is { } via)
+        {
+            if (!snapshot.Entities.ContainsKey(via))
+            {
+                return Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.NoSuchActor);
+            }
+            if (!Reach.IsAgent(snapshot, via))
+            {
+                return Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.NotAnAgent);
+            }
+            if (Power.Controller(snapshot, command.Actor) != via && Possession.Holder(snapshot, command.Actor) != via)
+            {
+                return Unchanged(snapshot, command, Status.Refused, reasonCode: Code.NotController);
+            }
+        }
         // A sleeping body makes no command of its own; the world author may still act on it.
         var actor = snapshot.Entities.GetValueOrDefault(command.Actor);
         if (!authored && actor is not null && actor.Props.Is(Prop.Asleep))
@@ -172,6 +188,11 @@ public static class Pipeline
         if (!authored && actor is not null && actor.Props.Is(Prop.Unconscious))
         {
             return Unchanged(snapshot, command, Status.Refused, reasonCode: Code.Unconscious);
+        }
+        // A possessed body acts only at its possessor's word, sent with `via`.
+        if (!authored && Possession.Holder(snapshot, command.Actor) is { } holder && command.Via != holder)
+        {
+            return Unchanged(snapshot, command, Status.Refused, reasonCode: Code.Possessed);
         }
 
         if (command.Target is not null)

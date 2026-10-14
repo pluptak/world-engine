@@ -49,7 +49,13 @@ public static class VerbSpecs
             {
                 ["edit"] = new(ArgKind.WorldEdit),
             },
-            Refuses: [Code.DerivedField, Code.FieldNotEditable, Code.RoomPlaced, Code.ConflictingPlacement, Code.RoomSupportWithoutPos, Code.PosWithoutRoomSupport, Code.AnchorNotRoomSupported, Code.CircularPlacement, Code.OccupiedRoom, Code.UnknownPart, Code.NotARefinement, Code.TooLarge, Code.NotASurface, Code.LiquidExceedsCapacity, Code.IntegrityOutOfRange, Code.DetachedPartWithoutEntity, Code.PartAtDefault, Code.PartUnderDetached, Code.CoverageNotComputable, Code.LocationMismatch, Code.DanglingReference, Code.IdNotBelowNextSeq, Code.SupportOrContainmentCycle, Code.SupportAndContainedIn, Code.DoorSideNotRoom, Code.OpensTargetNotOpenable, Code.ConcealedByAbstract, Code.ConcealedByNotSameRoom, Code.ConcealedByCycle, Code.PowerLoop, Code.ControlLoop, Code.InPartHolderMismatch, Code.InPartUnknownPart, Code.InPartUnavailable, Code.GripOccupied, Code.ClosingWithoutClose, Code.CameraWithoutFacing, Code.PartContentsTooLarge, Code.ContainerContentsTooLarge, Code.InvalidTrait, Code.BeatInPast, Code.DuplicateBeat, Code.TooManyBeats, Code.NoSuchBeat, Code.InvalidBeat, Code.UndeclaredProp, Code.WrongPropType, Code.UnmetRequires, Code.NoRun, Code.RunNotRegistering, Code.RunNotRunning, Code.NoSuchSlot, Code.SlotTaken, Code.HandleTaken, Code.RoleForbidden, Code.NoSuchPoolBeat, Code.NotSteerable, Code.OutOfRange]),
+            Refuses: [Code.DerivedField, Code.FieldNotEditable, Code.RoomPlaced, Code.ConflictingPlacement, Code.RoomSupportWithoutPos, Code.PosWithoutRoomSupport, Code.AnchorNotRoomSupported, Code.CircularPlacement, Code.OccupiedRoom, Code.UnknownPart, Code.NotARefinement, Code.TooLarge, Code.NotASurface, Code.LiquidExceedsCapacity, Code.IntegrityOutOfRange, Code.DetachedPartWithoutEntity, Code.PartAtDefault, Code.PartUnderDetached, Code.CoverageNotComputable, Code.DoesNotFit, Code.LocationMismatch, Code.DanglingReference, Code.IdNotBelowNextSeq, Code.SupportOrContainmentCycle, Code.SupportAndContainedIn, Code.DoorSideNotRoom, Code.OpensTargetNotOpenable, Code.ConcealedByAbstract, Code.ConcealedByNotSameRoom, Code.ConcealedByCycle, Code.PowerLoop, Code.ControlLoop, Code.InPartHolderMismatch, Code.InPartUnknownPart, Code.InPartUnavailable, Code.GripOccupied, Code.ClosingWithoutClose, Code.CameraWithoutFacing, Code.PartContentsTooLarge, Code.ContainerContentsTooLarge, Code.InvalidTrait, Code.BeatInPast, Code.DuplicateBeat, Code.TooManyBeats, Code.NoSuchBeat, Code.InvalidBeat, Code.UndeclaredProp, Code.WrongPropType, Code.UnmetRequires, Code.NoRun, Code.RunNotRegistering, Code.RunNotRunning, Code.NoSuchSlot, Code.SlotTaken, Code.HandleTaken, Code.RoleForbidden, Code.NoSuchPoolBeat, Code.NotSteerable, Code.OutOfRange, Code.UnknownCapacity]),
+        ["extract"] = new(
+            Args: new Dictionary<string, ArgSpec>(StringComparer.Ordinal)
+            {
+                ["part"] = new(ArgKind.Token),
+            },
+            Refuses: [Code.TargetAttached, Code.OutOfReach, Code.NothingInstalled, Code.InsufficientManipulation]),
         ["give"] = new(
             Args: new Dictionary<string, ArgSpec>(StringComparer.Ordinal)
             {
@@ -58,6 +64,13 @@ public static class VerbSpecs
             },
             Refuses: [Code.NotCarried, Code.NotInHand, Code.CannotGiveToSelf, Code.NotAnActor, Code.CircularPlacement, Code.OutOfReach, Code.TooBigForGap, Code.InsufficientManipulation, Code.TwoHandsRequired, Code.TooHeavy, Code.MouthFull, Code.HandsFull, Code.UnknownPart],
             CarryAlternatives: Carry.Alternatives),
+        ["install"] = new(
+            Args: new Dictionary<string, ArgSpec>(StringComparer.Ordinal)
+            {
+                ["part"] = new(ArgKind.Token),
+                ["item"] = new(ArgKind.Address),
+            },
+            Refuses: [Code.TargetAttached, Code.OutOfReach, Code.NotCarried, Code.SocketOccupied, Code.DoesNotFit, Code.InsufficientManipulation]),
         ["light"] = new(
             Args: NoArgs,
             Refuses: [Code.TargetAttached, Code.NotALight, Code.ContainerClosed, Code.OutOfReach, Code.AlreadyBurning, Code.NoFuel, Code.InsufficientManipulation]),

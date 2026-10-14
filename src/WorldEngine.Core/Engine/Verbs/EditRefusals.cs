@@ -14,6 +14,7 @@ public static partial class EditVerb
         PropsEdit props => props.Target,
         SetPartEdit part => part.Target,
         RefineEdit refine => refine.Target,
+        AfflictEdit afflict => afflict.Target,
         _ => throw new InvalidOperationException("Edit has no target"),
     };
 
@@ -348,13 +349,38 @@ public static partial class EditVerb
         return DefinitionWritten(template, resulting) is null ? null : Refused(Code.FieldNotEditable);
     }
 
-    private static Pipeline.Refusal? PartRefusal(IReadOnlyDictionary<string, Template> registry, Entity subject, string part)
+    // An affliction lands on a capacity the body has, and holds from a tick still to come. A body with no parts has none.
+    private static Pipeline.Refusal? AfflictRefusal(Pipeline.CommandContext context, Entity subject, AfflictEdit edit)
+    {
+        if (edit.Until <= context.Snapshot.Tick)
+        {
+            return Invalid(Code.InvalidTick);
+        }
+        var capacities = Capacities.All(context.Snapshot, context.Registry, subject.Id);
+        return capacities is not null && capacities.ContainsKey(edit.Capacity) ? null : Refused(Code.UnknownCapacity);
+    }
+
+    // A part the template declares, and an install it names that fits it as `install` judges it (`docs/sockets.md`).
+    private static Pipeline.Refusal? PartRefusal(IReadOnlyDictionary<string, Template> registry, Entity subject, string part, string? installed)
     {
         if (!registry.TryGetValue(subject.Template, out var template))
         {
             return Invalid(Code.UnknownTemplate);
         }
-        return template.Parts.Any(decl => decl.Name == part) ? null : Refused(Code.UnknownPart);
+        if (!template.Parts.Any(decl => decl.Name == part))
+        {
+            return Refused(Code.UnknownPart);
+        }
+        if (installed is null)
+        {
+            return null;
+        }
+        if (!registry.TryGetValue(installed, out var installable))
+        {
+            return Invalid(Code.UnknownTemplate);
+        }
+        var companion = $"{subject.Template}.{part}";
+        return installed == companion || installable.Fits == companion ? null : Refused(Code.DoesNotFit);
     }
 
     // The definition prop a write changes, or null. An entity stores a copy of its template's props, so repeating a

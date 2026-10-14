@@ -56,7 +56,9 @@ The companion rule is read off the resolved set too: a detachable part, inherite
 a template named `<template>.<part>`. A child that declares no `parts` of its own gets each from its
 parent's, as a template extending it (`pupil.arm_l` extends `human.arm_l`, and so on down the
 parts), unless it declares one; a child that declares `parts` needs its companions written, and one
-that declares `"parts": []` inherits nothing and needs none.
+that declares `"parts": []` inherits nothing and needs none. An installable template declares
+top-level `fits`, the companion it stands in for, with the same part names, parents and `holds`
+([sockets.md](sockets.md)).
 A part may also declare `holds`: `{ "kind": "grip" }` holds one item (hands, and the jaws that
 keep the mouth rules), while `{ "kind": "space", "inner_*_cm": … }` holds what fits, like a chest
 (`human` pockets one). Holds travel with the part list a child replaces as a whole.

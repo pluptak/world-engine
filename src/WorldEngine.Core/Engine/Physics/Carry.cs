@@ -116,6 +116,23 @@ public static class Carry
         return true;
     }
 
+    // A part tied, or under a tied one. Holding reads nothing of this: a bound part keeps what it holds.
+    private static bool PartBound(IReadOnlyDictionary<string, Template> registry, Entity holder, string partName)
+    {
+        var template = registry[holder.Template];
+        var parents = template.Parts.ToDictionary(part => part.Name, part => part.Parent, StringComparer.Ordinal);
+        string? current = partName;
+        while (current is not null)
+        {
+            if (PartStates.State(template, holder, current)?.Bound is true)
+            {
+                return true;
+            }
+            current = parents.GetValueOrDefault(current);
+        }
+        return false;
+    }
+
     // Everything the holder carries that names one of its parts, in id order.
     public static IReadOnlyList<HeldItem> HeldInParts(Snapshot snapshot, string holderId) =>
         [.. snapshot.Entities.Keys.Order(StringComparer.Ordinal)
@@ -175,8 +192,11 @@ public static class Carry
         var packed = PackGrips(
             grips,
             [.. HeldInParts(snapshot, holderId).Where(held => held.Id != exclude && grips.Contains(held.InPart))]);
-        // An unpackable holder is refused, never written through: every grip reads full.
-        var full = packed ?? grips.ToHashSet(StringComparer.Ordinal);
+        // An unpackable holder is refused, never written through: every grip reads full. A bound grip keeps what it holds
+        // and takes nothing new, so it reads full too (`docs/structure.md`).
+        var full = (packed ?? grips.ToHashSet(StringComparer.Ordinal))
+            .Concat(grips.Where(grip => PartBound(registry, holder, grip)))
+            .ToHashSet(StringComparer.Ordinal);
         var hands = HandsOf(item);
         var freeCount = grips.Count(grip => !full.Contains(grip));
         if (named is not null)

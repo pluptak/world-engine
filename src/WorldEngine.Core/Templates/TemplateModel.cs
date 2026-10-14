@@ -58,7 +58,9 @@ public sealed record TemplateDecl(
     IReadOnlyDictionary<string, FieldDecl>? Fields = null,
     IReadOnlyList<string>? Lineage = null,
     bool? Catalog = null,
-    long? MaxIntegrity = null);
+    long? MaxIntegrity = null,
+    // The companion template this one stands in for (`human.arm_l`), when it is installable (`docs/sockets.md`).
+    string? Fits = null);
 
 // A resolved template: no `extends` left, every field present or absent by the rules of src/templates.ts.
 public sealed record Template(
@@ -76,7 +78,9 @@ public sealed record Template(
     bool? Catalog = null,
     long? MaxIntegrity = null,
     IReadOnlyList<ProcessSpec>? Processes = null,
-    IReadOnlyDictionary<string, FieldDecl>? Fields = null);
+    IReadOnlyDictionary<string, FieldDecl>? Fields = null,
+    // The companion template this one stands in for, resolved with the set (`docs/sockets.md`).
+    string? Fits = null);
 
 // The declarations of one set, with where each came from (a file name, for the messages that name it).
 public sealed record DeclaredSet(

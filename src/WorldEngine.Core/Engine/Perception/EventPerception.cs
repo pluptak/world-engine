@@ -87,6 +87,8 @@ public static class EventPerception
         ["push"] = Audible,
         ["pull"] = Audible,
         ["attack"] = Audible,
+        ["install"] = Audible,
+        ["extract"] = Audible,
         ["wait"] = Silent,
         ["advance"] = Authored,
         [EventType.Changed] = Silent,
@@ -105,6 +107,8 @@ public static class EventPerception
         [EventType.Damaged] = Audible,
         [EventType.Destroyed] = Audible,
         [EventType.Detached] = Audible,
+        [EventType.Installed] = Audible,
+        [EventType.Extracted] = Audible,
         [EventType.CapabilityChanged] = Silent,
         [EventType.Opened] = Audible,
         [EventType.Closed] = Audible,
@@ -329,6 +333,15 @@ public static class EventPerception
         if (observer.Props.Is(Prop.Asleep) && sense is Sense.Sight or Sense.Hearing)
         {
             return new Perception.Answer(Truth.False, Code.Asleep);
+        }
+        // A blind body sees nothing and a deaf one hears nothing; neither is damage, so the capacity still reads.
+        if (observer.Props.Is(Prop.Blind) && sense is Sense.Sight)
+        {
+            return new Perception.Answer(Truth.False, Code.Blind);
+        }
+        if (observer.Props.Is(Prop.Deaf) && sense is Sense.Hearing)
+        {
+            return new Perception.Answer(Truth.False, Code.Deaf);
         }
         // An unconscious body takes every sense.
         if (observer.Props.Is(Prop.Unconscious))
