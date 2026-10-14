@@ -1,10 +1,11 @@
 # Limits
 
-What `scenarios/inn.json` could not say, and what the engine did instead. One line per
-limit: what was wanted, what happens, and the step in `tests/scenario-inn.test.ts` that
-shows it. Step letters are the command ids the script uses. Nothing here is a proposal.
-What the workshop's physics cannot say is in [limits-workshop.md](limits-workshop.md); what time-driven
-change in the camp cannot is in [limits-camp.md](limits-camp.md); what beats and speech cannot, in
+What `scenarios/inn.json` could not say, and what the engine did instead. One line per limit: what
+was wanted, what happens, and the step of the inn script that shows it. Step letters are the command
+ids the script uses. The scripts of these limits files are TypeScript's (tag `ts-final`);
+`Block21ReplayTests` replays their commands. Nothing here is a proposal. What the workshop's physics
+cannot say is in [limits-workshop.md](limits-workshop.md); what time-driven change in the camp
+cannot is in [limits-camp.md](limits-camp.md); what beats and speech cannot, in
 [limits-watch.md](limits-watch.md); what a controller cannot decide from inside, in
 [limits-actor.md](limits-actor.md).
 
@@ -24,4 +25,4 @@ change in the camp cannot is in [limits-camp.md](limits-camp.md); what beats and
 - Silence is by event type, not by care: a `take` is silent whether it is a careful lift or a
   clumsy grab, and a `move` is heard however softly it is made.
 - A `beat` is an ordered batch against one base, not simultaneous action: no initiative, and no
-  tie-break for two agents acting in the same instant (`tests/beat.test.ts`).
+  tie-break for two agents acting in the same instant (the `beat` rows of `MemoryGoldenTests`).

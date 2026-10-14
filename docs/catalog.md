@@ -1,9 +1,9 @@
 # The catalogue
 
-What the architect may place, before any world exists. `catalog(registry?)` (`src/api.ts`, from
-`src/engine/catalog.ts`) answers for the shipped templates or a given set, `World.catalog()` for a
-world's own, and the CLI's `{ "op": "catalog" }` for either (`world` names one; absent, the shipped
-set). Entries are by template id, `{ catalog: [...] }`, the same every time.
+What the architect may place, before any world exists. `Catalog.Of(registry)`
+(`Core/Engine/Worlds/Catalog.cs`) answers for a set, a world's `CatalogEntries()` for its own, and
+the CLI's `{ "op": "catalog" }` for either (`world` names one; absent, the shipped set). Entries are
+by template id, `{ catalog: [...] }`, the same every time.
 
 **Offered:** every template but the companion of a detachable part (`human.hand_l`, found by the
 part, not by the dot) and the bases that declare `"catalog": false`. That key is a template's own

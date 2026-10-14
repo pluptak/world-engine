@@ -6,8 +6,8 @@ sets it. Every verb takes one tick, except `wait` and the author's `advance`
 (`args.ticks`; `advance` is time with no agent acting), and `edit`, which takes none.
 
 An ok command resolves at the tick it starts: its preconditions and transition read
-the snapshot as it was given. Then the pipeline advances the clock (`advanceClock`
-in `src/engine/clock.ts`) through every tick in that span that has something due,
+the snapshot as it was given. Then the pipeline advances the clock (`Clock.Advance`
+in `Clock.cs`) through every tick in that span that has something due,
 and ends at start + duration. What falls due here is a modifier's expiry, processed
 in tick, entity, capacity, cause and declaration order. Each
 expiry emits `capability_changed` after the command's own events, caused by the event that made the
@@ -22,7 +22,7 @@ fell due for an expiry, so a five-tick `wait` from tick 1 that ends a stun shows
 `capability_changed` at 3. Within a command, ticks never go back.
 
 An attack's modifier expires three ticks after the tick of the blow, and the blow takes one of
-them. `tests/clock.test.ts` is the spec.
+them. The `clock-modifiers` rows of `VerbGoldenTests` are the spec.
 
 The rest of what falls due is in [schedule.md](schedule.md). What time does not do: agents do not
 act in parallel, and two commands in a beat never share a tick. A round's moves do share one

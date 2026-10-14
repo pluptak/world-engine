@@ -13,9 +13,9 @@ form a tree whose roots are commands, and a root id needs no field of its own: i
 walk.
 
 **Deltas.** Every delta names the event it happened under (`event_id`), so a field's current value
-leads to an event too: `trace({ entity, field })` starts from the last delta of that field (an
-entity's spawn for one never changed) and `trace({ event_id })` from an event. Both return the chain
-root first.
+leads to an event too: `TraceOf` (the CLI's `trace` op) with an `entity` and `field` starts from
+the last delta of that field (an entity's spawn for one never changed), and with an `event_id` from
+that event. Both return the chain root first.
 
 **Across commands.** A parent need not be in the same command. When a modifier expires, during
 whichever command spans its tick ([time.md](time.md)), its `capability_changed` names the event
@@ -32,4 +32,5 @@ from a store world's `log.jsonl` or a memory world's own record ([api-options.md
 
 What it does not do: an event has one parent, never several (`causes: [...]` waits for a scenario
 that needs a conjunction), and nothing says which conditions were necessary or sufficient.
-`checkCauseChain` in the property test walks every event in the history to a root.
+TypeScript's property test walked every event of its random runs to a root; the property traces
+(`PropertyTraceTests`) replay those runs.

@@ -1,7 +1,8 @@
 # Inspecting one entity
 
-`world.inspect(observer, entity)` is one entity of the observer's projection
-([projection.md](projection.md)) in more detail, or `null` when the observer senses nothing of it:
+`Inspect(observer, entity)` is one entity of the observer's projection
+([projection.md](projection.md)) in more detail, or none when the observer senses nothing of it
+(the CLI's answer then has no `inspection`):
 
 - the same senses and facts, and `reachable` where coverage declares it;
 - with sight or touch, the covered props (`open` by default; an amount as `levels`);
@@ -16,6 +17,6 @@
 
 The CLI's `inspect` op takes `observer` and `entity`.
 
-`command(c, { observe: true })` attaches `observation`, the actor's projection after the command
+`Apply(command, observe: true)` attaches `observation`, the actor's projection after the command
 with `since` the version it was applied to: its own events as the actor sensed them, none if it
 was refused. The CLI's `command` op takes `observe` alike.

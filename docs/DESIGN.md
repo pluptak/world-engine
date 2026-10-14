@@ -1,6 +1,7 @@
 # Design
 
-These docs describe behaviour. Where one names a `src/…ts` or `tests/…ts` file, that is the TypeScript source the engine was ported from; `CLAUDE.md` maps it to the .NET code under `dotnet/`.
+These docs describe behaviour and name the .NET code and tests that hold it. The measurements and
+the limits files' scripts are the TypeScript engine's, kept at the git tag `ts-final`.
 
 What is built, nothing aspirational, one concept per file:
 
@@ -30,13 +31,16 @@ What is built, nothing aspirational, one concept per file:
 - [scenery.md](scenery.md): what is seen but no verb reaches.
 - [provenance.md](provenance.md): what `cause_id` records, how `trace` walks it, and its limits.
 - [schedule.md](schedule.md): the causes the world runs by itself, by kind, and how they run.
-- [schedule-api.md](schedule-api.md): reading that schedule through `World.schedule`, filtered.
-- [scenario.md](scenario.md): a scene: the entities, the seed, the beats queued at creation and the run's limits.
-- [run.md](run.md): a run made from a scene: registering, running, ended, and the limit and the slots that end it.
+- [schedule-api.md](schedule-api.md): reading that schedule through `Scheduled`, filtered.
+- [scenario.md](scenario.md): a scene: the entities, the seed, the beats queued at creation and the
+  run's limits.
+- [run.md](run.md): a run made from a scene: registering, running, ended, and the limit and the
+  slots that end it.
 - [restart.md](restart.md): a run played again from its own world.
 - [roles.md](roles.md): the author, director and player roles.
 - [roles-levers.md](roles-levers.md): the pool, the odds, idling, and closing quiet rounds.
-- [rounds.md](rounds.md): a round: every move decided against one world, in an order no caller picks, one tick.
+- [rounds.md](rounds.md): a round: every move decided against one world, in an order no caller
+  picks, one tick.
 - [host.md](host.md): a reference host that plays a run through the JSON ops, dropping late answers.
 - [processes.md](processes.md): declaring a prop that changes by itself, and reconciling it.
 - [processes-then.md](processes-then.md): what the run that reaches the bound does.
@@ -45,7 +49,8 @@ What is built, nothing aspirational, one concept per file:
 - [beats.md](beats.md): authoring a scheduled intervention; its order, storage, and tests.
 - [beats-actions.md](beats-actions.md): what runs at the due tick: actions, conditions, failure.
 - [beats-chains.md](beats-chains.md): followers after a run, and repeats.
-- [beats-watch.md](beats-watch.md): a beat's `all` condition and watches, which keep watch until their action has run.
+- [beats-watch.md](beats-watch.md): a beat's `all` condition and watches, which keep watch until
+  their action has run.
 - [measurements.md](measurements.md): what a read costs as the log grows.
 - [measurements-commands.md](measurements-commands.md): what a command costs as the world grows.
 - [measurements-writers.md](measurements-writers.md): what writers' turns cost.
@@ -59,26 +64,32 @@ What is built, nothing aspirational, one concept per file:
 - [persistence-derived.md](persistence-derived.md): checkpoints and deltas, derived from the log.
 - [persistence-verify.md](persistence-verify.md): verifying a world, and upgrading its templates.
 - [locking.md](locking.md): writers' turns.
-- [locking-crash.md](locking-crash.md): a stale lock taken over, and a dead writer's leftovers swept.
+- [locking-crash.md](locking-crash.md): a stale lock taken over, and a dead writer's leftovers
+  swept.
 - [perception.md](perception.md): queries, perception, and coverage.
 - [senses.md](senses.md): the sense table both queries and tests read.
 - [senses-bases.md](senses-bases.md): the basis codes a perception answers with.
 - [projection.md](projection.md), [actor-view.md](actor-view.md): observation; one actor's side.
 - [projection-inspect.md](projection-inspect.md): one entity in detail; a command's observation.
 - [liquids.md](liquids.md): liquid in props, and the `pour` verb.
-- [forms.md](forms.md): the architect's percentages and conditions in a scenario, and `capacity_cm3`.
+- [forms.md](forms.md): the architect's percentages and conditions in a scenario, and
+  `capacity_cm3`.
 - [catalog.md](catalog.md): the presets an architect may place, with their forms and defaults.
 - [refine.md](refine.md): the `refine` edit, an entity becoming a more specific preset.
 - [limits.md](limits.md): what the inn scenario could not express.
 - [limits-workshop.md](limits-workshop.md): what occupancy, impact and landing cannot express.
 - [limits-camp.md](limits-camp.md): what light, processes and eating cannot express.
-- [limits-watch.md](limits-watch.md), [limits-actor.md](limits-actor.md): the watch, outside and in, and the cell, in.
+- [limits-watch.md](limits-watch.md), [limits-actor.md](limits-actor.md): the watch, outside and in,
+  and the cell, in.
 - [power.md](power.md): `powered_by`, `controlled_by`, and openables run by a controller.
 - [door-window.md](door-window.md): a door with `shut_ticks` is closing for a while before it shuts.
-- [intercom.md](intercom.md): a device that carries its room's sound to its controller, and the controller's speech into the room.
-- [integrity.md](integrity.md): a template with no parts may declare `max_integrity`, the most it can take.
+- [intercom.md](intercom.md): a device that carries its room's sound to its controller, and the
+  controller's speech into the room.
+- [integrity.md](integrity.md): a template with no parts may declare `max_integrity`, the most it
+  can take.
 - [jam.md](jam.md): a device with `jam_pct` may jam the remote command its controller sends.
-- [manipulator.md](manipulator.md): an arm with a gripper, run by a controller over its control walk.
+- [manipulator.md](manipulator.md): an arm with a gripper, run by a controller over its control
+  walk.
 - [camera.md](camera.md): a camera's sight, lent to the agent its feed reaches, within its cone.
 - [panel.md](panel.md): a panel a subject at it works a device through, as its controller does.
 - [limits-lab.md](limits-lab.md): the underground lab, with today's mechanics.

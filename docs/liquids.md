@@ -20,7 +20,7 @@ a `gauge_pct` the vessel declares; a thing with no full gives none. The figure s
   actor's own room is the floor) and able to take liquid: a `container`, a `surface`, or the room
   itself. Anything else is `not_a_destination`, a part address included.
 - A container destination takes the liquid into its own `liquid_material` and `liquid_amount`, on
-  top of what it already holds; a surface or the floor takes it as residue through `addResidue`. A
+  top of what it already holds; a surface or the floor takes it as residue through `Residue.Add`. A
   shut destination, or one inside a shut container, is `container_closed`.
 - It needs `manipulation`, and pours only whole positive integers: an `args.amount` above what the
   source holds is `insufficient_liquid`, and anything else is `invalid_args`.
@@ -33,7 +33,7 @@ the source's props (amount lowered, material cleared when empty) and either the 
 or its residue under that event.
 
 A vessel that falls or tips without breaking spills instead of pouring: all of its liquid onto its
-landing as residue through `addResidue`, under one `spilled` event on the vessel with
+landing as residue through `Residue.Add`, under one `spilled` event on the vessel with
 `{material, amount, to}`, caused by the `dropped` event. A break releases through its own path
 alone — the threshold check does one or the other, never both — and a shut vessel keeps its
 liquid. A spill is all or nothing: no amount is asked for and none is kept.

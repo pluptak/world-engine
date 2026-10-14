@@ -2,7 +2,7 @@
 
 What `scenarios/workshop.json` and the occupancy, impact and landing it drove could not say, and
 what the engine does instead. One line per limit, with the test that shows it: `W` is
-`tests/scenario-workshop.test.ts`, `O` occupancy, `I` impact, `L` landing, `P` projection, `B`
+the workshop script, `O` occupancy, `I` impact, `L` landing, `P` projection, `B`
 the bottle scenario. Nothing here is a proposal.
 
 - A footprint has no height: a stone pushed at a table stops at its edge rather than passing

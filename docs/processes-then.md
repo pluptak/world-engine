@@ -9,14 +9,14 @@ such bound is refused when the templates load). Exactly one of:
   snuffs itself: `edited` → `changed` (fuel 0) → `changed` (burning false).
 - `{ damage: { amount } }`: takes integrity under a `damaged`, or a `destroyed` that sets the status
   when none is left and drops what the body held, each fall caused by the
-  `destroyed`. It is the same function a bleed uses (`hurt` in `src/engine/harm.ts`), so a
+  `destroyed`. It is the same function a bleed uses (`hurt` in `Harm.cs`), so a
   body that starves out reads like one that bled out.
-- `{ remove: true }`: a `removed` under the run, the author's removal (`removeEntity` in
-  `src/engine/verbs/edit.ts`): what it hid is uncovered and what it held or
+- `{ remove: true }`: a `removed` under the run, the author's removal (`Physical.RemoveEntity` in
+  `EditVerb.cs`): what it hid is uncovered and what it held or
   carried is let go. A room someone is in is not removed, as for the author, and the
   `then` does nothing. Whatever else was scheduled on a removed entity goes with it.
 - `{ spent: true }`: the entity is used up, which is a removal that leaves what its template says it
-  leaves (`spendEntity` in `src/resolvers/physical.ts`, [templates.md](templates.md)): a `spent`
+  leaves (`Physical.SpendEntity` in `Physical.cs`, [templates.md](templates.md)): a `spent`
   event under the run, then each of its `spent_products` spawned where it stood, every `spawned`
   caused by `spent`, its `spent_residue` added to the surface they went to, and the entity removed
   under `spent`. It stood on a support: they are set there; in a container: inside it; in an

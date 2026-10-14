@@ -7,7 +7,7 @@ An entry writes placement (`location`, `support`, `contained_in`, `in_part`, `co
 definition included, is `field_not_editable` (`modifiers` stays `derived_field`); an edit is the
 world author's and writes any state. The forms are accepted in a scenario entry only (`edit`
 refuses them as `invalid_args`) and are converted once, before any rule reads the entry
-(`src/engine/forms.ts`).
+(`Forms.cs`).
 
 **The architect only sets the scene up.** It writes state as it places an entity and never after
 tick 0; every later change is the world author's. One entry is one entity of one template, and

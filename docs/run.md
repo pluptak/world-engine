@@ -29,10 +29,10 @@ edit that leaves none of its slots' live bodies alive (`docs/templates.md`). A r
 or one still registering, never ends this way.
 
 **The end.** What is still scheduled is dropped with nothing recorded, since no time passes again;
-modifiers stay as they were. The end is in the snapshot's `run.ended`, and `validateSnapshot`
+modifiers stay as they were. The end is in the snapshot's `run.ended`, and `SnapshotValidation`
 refuses an ended run that still schedules anything. A run that ended can be played again from its
 own world ([restart.md](restart.md)).
 
 **Not in it.** Rounds, roles and handles, the director's levers ([roles.md](roles.md)), who may
 start or end a run (the author, for now), and successors keeping a slot alive. Tests:
-`tests/run.test.ts`, `tests/restart.test.ts`.
+`RunGoldenTests`, and the `restart` rows of `InitGoldenTests`.

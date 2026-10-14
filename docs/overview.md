@@ -9,9 +9,10 @@ The promises and the decisions that bound them are in [thesis.md](thesis.md).
 **One example**, `scenarios/bottle.json` (`e2` table, `e3` bottle, `e4` pusher, `e5` stone):
 
 ```bash
-npm run world -- init data/w1 scenarios/bottle.json
+dotnet run --project src/WorldEngine.Cli -- init data/w1 scenarios/bottle.json
 echo '{"op":"command","world":"data/w1","command":{"command_id":"c1","actor":"e4",
-  "verb":"push","target":"e2","args":{"dir":"+x","distance_cm":200}}}' | npm run world --silent
+  "verb":"push","target":"e2","args":{"dir":"+x","distance_cm":200}}}' \
+  | dotnet run --project src/WorldEngine.Cli
 ```
 
 The table slides 29 cm and stops at the stone, and the response chains the consequences by
@@ -29,8 +30,9 @@ template may `extends` another (`wine_bottle` extends `bottle`). Actions check c
 `manipulation`, never parts, so a severed hand changes what an agent can do with no special case.
 
 **Scale and non-goals.** Built for room-sized scenes (tens of entities; geometry is pairwise,
-there is no spatial index) at about 5 ms per command on a few entities and about 10 ms at 500
-(see [measurements-commands.md](measurements-commands.md)). Damage and impact are fixed arithmetic;
+there is no spatial index): under 2 ms per stored command on a few entities
+(`tools/WorldEngine.Bench`); [measurements-commands.md](measurements-commands.md) has the
+TypeScript engine's figures, 500 entities included. Damage and impact are fixed arithmetic;
 chance exists only as the world's seeded dice, which a template process rolls and which replay
 exactly ([rng.md](rng.md)). A `beat` is an ordered batch, not simultaneous action
 ([limits.md](limits.md)). What is out of scope is in `backlog.md`.

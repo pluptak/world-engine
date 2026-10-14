@@ -15,7 +15,7 @@ camera on the device sees it, and one without learns only that its command was `
 **No seed.** A world with no seed refuses a jamming device's remote command `no_seed`, as any roll.
 
 The lab's exit door jams a quarter of the time, and `scenarios/lab.json` is seeded so its steps
-replay; the lab's step K finds the seed's first jam (`tests/scenario-lab.test.ts`).
+replay; the lab script's step K finds the seed's first jam (`Block21ReplayTests`).
 
 Not in it: wear, a jam that persists, jams for cameras or the arm, telling the controller why, and
 repair.

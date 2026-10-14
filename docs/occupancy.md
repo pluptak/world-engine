@@ -5,9 +5,9 @@ along y, centred on its position, axis-aligned. Two footprints overlap when `2·
 `2·|Δy| < d₁ + d₂`, compared on doubled coordinates so odd sizes stay integral. Touching edges do
 not overlap. Height plays no part: a stone does not pass under a table.
 
-Overlap is a legal state, not a `validateSnapshot` rule: scenarios may place a dog under a table,
+Overlap is a legal state, not a `SnapshotValidation` rule: scenarios may place a dog under a table,
 and an agent's `move` is checked at its destination and against barriers ([walking.md](walking.md)).
-The only motion that sweeps is `push` and `pull` (`sweep` in `src/engine/geometry.ts`).
+The only motion that sweeps is `push` and `pull` (`Geometry.Slide`).
 
 A pushed entity meets only what stands on the same support, uncontained, not destroyed, not
 broken, not declaring `rubble: true` (the glass shard does) and not abstract: rubble is passed

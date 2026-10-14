@@ -9,9 +9,8 @@ Priorities section of `backlog.md`; `plans/candidates.md` is unplanned gaps, not
 
 The engine is the .NET one: `src/` (the four projects), `tests/`, `tools/` and `WorldEngine.slnx` at the root. The
 TypeScript engine it was ported from is gone from the tree and lives at the git tag `ts-final` (`plans/ts-sunset.md`).
-`docs/` describes behaviour and is the specification; where a doc names a `src/…ts` or `tests/…ts` file, that is the TypeScript
-source at the tag, and the .NET counterpart is in the layout below (mostly the same names: `pipeline.ts` is `Pipeline.cs`,
-`verbs/pour.ts` is `PourVerb.cs`).
+`docs/` describes behaviour and is the specification, naming the .NET code and tests; its measurements and the limits files'
+scripts are the TypeScript engine's, kept at the tag.
 
 ## Commands
 
@@ -97,7 +96,7 @@ Four projects in `src`, each referencing the ones above it: `WorldEngine.Core` (
 
 **Contract** (`src/WorldEngine.Contract`): `Checks`, the shape of each op's request and of a scenario
 and a coverage file, built from the combinators in `Shape.cs`. **Cli** (`src/WorldEngine.Cli`):
-`CliRunner.Run(args, input)` reads one request, checks its shape, dispatches to one `World` operation,
+`CliRunner.Run(args, input)` reads one request, checks its shape, dispatches to one world operation,
 and answers `{status:"invalid", issues}` with exit code 2 on failure. `init <dir>
 <scenario.json>` builds a world; the ops are listed in `docs/api.md`.
 

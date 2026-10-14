@@ -18,7 +18,7 @@ command -> actor -> target -> preconditions -> transition -> clock
 - Any status but `ok` changes nothing.
 - `ok` moves `tick` by the verb's duration ([time.md](time.md)).
 - `ok` bumps `version`.
-- A verb may declare `validateResult`. It refuses a result
+- A verb may declare `ValidateResult`. It refuses a result
   that breaks an invariant.
 - Pure core: a transition takes a snapshot and returns a new one.
 - I/O stays outside the engine.

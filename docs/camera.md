@@ -3,11 +3,12 @@
 A camera is a thing in a room whose sight is the sight of the agent its feed reaches: the lab's
 terminal watching the corridor from the server room. It is placed like anything else (no mounting,
 no height), seen, taken if it fits, and destroyed like anything else; `templates/camera.json`
-declares `camera: true` (definition). `tests/camera.test.ts` is the spec.
+declares `camera: true` (definition). `EngineQueryTests` (a camera on a generator) and the verb
+matrix are the spec.
 
 **The feed.** A camera feeds the agent at the end of its `controlled_by` walk, over the same two
 links a door has ([power.md](power.md)), while the camera is not `destroyed` and the walk carries
-a command: every link to the agent intact and powered. `feeds` in `src/engine/power.ts` lists the
+a command: every link to the agent intact and powered. `Power.Feeds` lists the
 cameras feeding an observer, in id order.
 
 **Sight.** `perceive` answers from the observer's own body first. Only when that sight is false at
@@ -25,11 +26,9 @@ camera as it was before or after the event's command.
 **Cone.** A camera with a `cone_deg` below 360 (a template's definition;
 `templates/narrow_camera.json` is 60, facing 0 until set) sees only within half that angle either
 side of its `facing_deg`, which is state: a scenario or `update_props` sets it, in degrees
-counter-clockwise from +x. The edge is in. A subject at the camera's own spot, or with no
-position, is seen as now.
-A cone with no facing is refused at creation (`camera_without_facing`). The test is `inCone` in
-`src/engine/query.ts`, with a float tolerance of 1e-9 so an edge exact in whole centimetres holds.
-`tests/camera-cone.test.ts` is its spec.
+counter-clockwise from +x. The edge is in. A subject at the camera's own spot, or with no position,
+is seen as now. A cone with no facing is refused at creation (`camera_without_facing`). The test is
+`Perception.InCone`, with a float tolerance of 1e-9 so an edge exact in whole centimetres holds.
 
 Not modelled: sound, a camera that moves or turns (there is no `turn` verb), delay and recording, a
 human watching a feed, and anything telling a subject it is watched beyond seeing the camera.

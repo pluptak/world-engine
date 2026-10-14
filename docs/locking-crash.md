@@ -21,9 +21,9 @@ What the writer left half done is settled by `load`'s repair, since the log is t
 ([persistence.md](persistence.md)). A lock with no owner written, its maker having died between
 creating and filling it, is judged by the file's age.
 
-**Every write of a submit.** `tests/submit-crash.test.ts` stops a submit after each of its writes (the
-log line, events, deltas, snapshot, head, checkpoint), over seven commands with snapshot.json every 3
-and a checkpoint every 2. Each stop must open to the state the uninterrupted run gives, and verify.
+**Every write of a submit.** `TamperGoldenTests` damages a stored world one file at a time (a line
+dropped or doubled, a file cut, emptied or gone) and checks what opening and `verify` make of it,
+against the TypeScript store, whose own test stopped a submit after each of its writes.
 
 **Temporaries** are named for the process (`snapshot.json.<pid>.tmp`). Windows will not replace a
 file another process has open at that instant, so a replacement refused that way is asked again

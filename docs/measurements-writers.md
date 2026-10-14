@@ -1,5 +1,8 @@
 # Store: writers' turns
 
+*Measured on the TypeScript engine (tag `ts-final`); the commands and files named are its. The .NET
+store's benchmark is `tools/WorldEngine.Bench`.*
+
 Four processes of fifty `take` and `drop` each on one four-entity world
 ([locking.md](locking.md)): before the lock three of the four died with `EPERM` on the
 rename of `snapshot.json.tmp`, a name every writer shared, and the log held 57 accepted

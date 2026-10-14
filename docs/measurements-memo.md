@@ -1,5 +1,8 @@
 # Measurements: the frozen memo
 
+*Measured on the TypeScript engine (tag `ts-final`); the commands and files named are its. The .NET
+store's benchmark is `tools/WorldEngine.Bench`.*
+
 The current snapshot a store process keeps is deep-frozen when it is kept (`rememberCurrent`,
 `src/store/file-store.ts`), so a caller that changes a snapshot it was given throws instead of
 changing what the next read sees. Only objects not yet frozen are walked, so a command pays for what

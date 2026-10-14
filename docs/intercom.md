@@ -2,11 +2,11 @@
 
 An intercom is the hearing counterpart of a camera ([camera.md](camera.md)): a device in a room that
 carries the room's sound to the agent its feed reaches, and that agent's `say` into the room.
-`templates/intercom.json` declares `intercom: true` (definition). `tests/intercom.test.ts` is the
-spec.
+`templates/intercom.json` declares `intercom: true` (definition). `EngineQueryTests` and
+`PerceiveTests` are the spec.
 
 **The feed.** An intercom feeds the agent at the end of its `controlled_by` walk, under the same
-rule as a camera: not `destroyed`, and the walk carries a command (`feeds` in `src/engine/power.ts`,
+rule as a camera: not `destroyed`, and the walk carries a command (`feeds` in `Power.cs`,
 kind `intercom`).
 
 **Listening.** For `hearing`, when the observer's own answer is false, each intercom feeding it is
