@@ -1,0 +1,6 @@
+[
+  { "id": "room", "template": "room", "overrides": { "name": "room", "props": { "lit": true } } },
+  { "id": "curser", "template": "human", "overrides": { "name": "curser", "location": "room", "support": "room", "pos": { "x": -200, "y": 0 } } },
+  { "id": "victim", "template": "human", "overrides": { "name": "victim", "location": "room", "support": "room", "pos": { "x": 200, "y": 0 }, "props": { "possessed_by": "curse" } } },
+  { "id": "curse", "template": "curse", "overrides": { "name": "curse", "location": "room", "support": "room", "pos": { "x": 0, "y": 0 }, "props": { "possessor": "curser", "lapses_at": 5 } } }
+]

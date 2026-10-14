@@ -174,7 +174,7 @@ public static class Pipeline
             {
                 return Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.NotAnAgent);
             }
-            if (Power.Controller(snapshot, command.Actor) != via)
+            if (Power.Controller(snapshot, command.Actor) != via && Possession.Holder(snapshot, command.Actor) != via)
             {
                 return Unchanged(snapshot, command, Status.Refused, reasonCode: Code.NotController);
             }
@@ -188,6 +188,11 @@ public static class Pipeline
         if (!authored && actor is not null && actor.Props.Is(Prop.Unconscious))
         {
             return Unchanged(snapshot, command, Status.Refused, reasonCode: Code.Unconscious);
+        }
+        // A possessed body acts only at its possessor's word, sent with `via`.
+        if (!authored && Possession.Holder(snapshot, command.Actor) is { } holder && command.Via != holder)
+        {
+            return Unchanged(snapshot, command, Status.Refused, reasonCode: Code.Possessed);
         }
 
         if (command.Target is not null)

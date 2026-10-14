@@ -178,6 +178,7 @@ public enum Code
     PartState,
     PartUnderDetached,
     PlayersActive,
+    Possessed,
     PosWithoutRoomSupport,
     PowerLoop,
     PropertyState,

@@ -90,6 +90,10 @@ public static class Prop
     public static readonly Prop<bool> Topples = Flag("topples", Tier.Definition);
     // An unconscious body takes every sense and capacity until an author's edit ends it (`docs/senses.md`).
     public static readonly Prop<bool> Unconscious = Flag("unconscious", Tier.State);
+    // A curse: the link names the agent in control of a body, and the first tick it no longer holds (absent: until the link goes).
+    public static readonly Prop<string> PossessedBy = Id("possessed_by", Tier.State);
+    public static readonly Prop<string> Possessor = Id("possessor", Tier.State);
+    public static readonly Prop<long> LapsesAt = Integer("lapses_at", Tier.State, min: 0);
 
     public static readonly IReadOnlyDictionary<string, PropField> Table =
         Declared.ToDictionary(row => row.Name, row => row.Field, StringComparer.Ordinal);

@@ -189,6 +189,11 @@
       "openable"
     ]
   },
+  "lapses_at": {
+    "type": "integer",
+    "tier": "state",
+    "min": 0
+  },
   "light_source": {
     "type": "boolean",
     "tier": "definition"
@@ -242,6 +247,14 @@
   "panel": {
     "type": "boolean",
     "tier": "definition"
+  },
+  "possessed_by": {
+    "type": "id",
+    "tier": "state"
+  },
+  "possessor": {
+    "type": "id",
+    "tier": "state"
   },
   "successor": {
     "type": "string",

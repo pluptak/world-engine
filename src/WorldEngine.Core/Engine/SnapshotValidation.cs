@@ -65,6 +65,10 @@ public static class SnapshotValidation
             issues.AddRange(PropIssues(registry, entity, path));
             issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => entity.Props.Get(Prop.PoweredBy)), id, reportedPowerLoops, path, Code.PowerLoop));
             issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => entity.Props.Get(Prop.ControlledBy)), id, reportedControlLoops, path, Code.ControlLoop));
+            if (entity.Props.Get(Prop.PossessedBy) == id)
+            {
+                issues.Add(Issue(Code.ControlLoop, [.. path, "props", Prop.PossessedBy.Name], id));
+            }
 
             // A room is where things are, never a thing somewhere: nothing holds, supports or hides it.
             if (entity.Template == TemplateIds.Room && (entity.Support is not null || entity.ContainedIn is not null || entity.ConcealedBy is not null))
@@ -397,7 +401,7 @@ public static class SnapshotValidation
                 }
             }
         }
-        foreach (var link in new[] { Prop.PoweredBy, Prop.ControlledBy })
+        foreach (var link in new[] { Prop.PoweredBy, Prop.ControlledBy, Prop.PossessedBy, Prop.Possessor })
         {
             var reference = entity.Props.Get(link);
             if (reference is not null && !snapshot.Entities.ContainsKey(reference))

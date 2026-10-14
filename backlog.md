@@ -18,11 +18,10 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Possession: a curse makes a body act only at another's word](#possession-a-curse-makes-a-body-act-only-at-anothers-word).
-2. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
-3. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
-4. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
-5. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
+1. [Wounds: a cut opens a part without severing it](#wounds-a-cut-opens-a-part-without-severing-it).
+2. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
+3. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
+4. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -76,43 +75,6 @@ naming a part of the target's template; unknown is `invalid_args`). Not a `<body
 detached part does not resolve (`Resolve.cs`, the part branch), and `install` and `staunch` must reach a stump.
 Each also requires the body within the actor's reach (`Reach.InReach`), else `out_of_reach` (existing code); an
 actor may work on its own body.
-
-### Possession: a curse makes a body act only at another's word
-
-- **What:** a body can be possessed through a link entity, and while the possession holds the body's own commands
-  are refused and the possessor's (sent with `Via`) pass. A separate mechanism from `controlled_by`: that walk
-  requires power from every link, the body included (`Power.FaultOn`), so a curse on a human would always be
-  `unpowered`. Devices keep `controlled_by` unchanged.
-- **Props** (`Engine/Prop.cs` and its table, `docs/fields.md`):
-  - `possessed_by` (state, id) on the body: the link.
-  - `possessor` (state, id) on the link: the agent in control.
-  - `lapses_at` (state, integer, min 0) on the link: the first tick the possession no longer holds; absent, it
-    holds until the link goes.
-- **A new template** `templates/curse.json`: `abstract: true` like `templates/anchor.json`, no parts. Adding it
-  changes `templates_hash` (existing stored worlds need `upgrade`; say so in the commit message).
-- **Rules:**
-  - `Possession.Holder(snapshot, body)` (new, `Engine/Physics/Possession.cs`): the possessor's id when the body's
-    `possessed_by` names an existing, not destroyed link whose `possessor` is an existing, not destroyed agent and
-    whose `lapses_at` is absent or greater than `snapshot.Tick`; else null. Derived each time: no event and no state
-    change when it lapses.
-  - `Pipeline.Screen`, after the `unconscious` check (so an asleep or unconscious victim stays refused for
-    everyone): with a holder, a command whose `Via` is not the holder is refused with a new code `possessed`.
-  - Provenance's `not_controller` check accepts `Via == Possession.Holder(...)` as well as the controller.
-  - The command runs on the body's capacities; the possessor's own state is not read.
-  - `SnapshotValidation`: `possessed_by` and `possessor` join the dangling-reference loop beside `powered_by` and
-    `controlled_by`; a `possessed_by` naming itself is refused like a control loop.
-  - Ending it early is the author's `update_props` clearing `possessed_by`, or the link destroyed.
-  - `Scenes/Forms.cs` `ArchitectProps` gains the three props, so `scenarios/curse.json` can set them.
-- **Files:** `Engine/Prop.cs`, `Engine/Physics/Possession.cs` (new), `Engine/Pipeline.cs`, `Scenes/Forms.cs`,
-  `Engine/SnapshotValidation.cs`, `Model/Code.cs`, `templates/curse.json`, `docs/possession.md` (new, ≤ 40 lines,
-  indexed in `docs/DESIGN.md`), `docs/fields.md`.
-- **Tests:** a scenario `scenarios/curse.json` (two humans and a curse linking them, `lapses_at` 5, a seed not needed):
-  the victim's own `move` is refused `possessed`; the curser's `move` for it via `actorWorld(victim, via: curser)`
-  is accepted; at tick 5 the victim's own `move` is accepted and the curser's refused `not_controller`; a removed
-  curse with `possessed_by` still naming it is refused as a dangling reference; a store world folds alike.
-- **Non-goals:** sensing through the victim, breaking free by a roll, a `released` event.
-- **Done when:** as above.
-- **Depends on:** Command provenance.
 
 ### Wounds: a cut opens a part without severing it
 
