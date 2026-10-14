@@ -34,12 +34,12 @@ public static class CliRunner
             }
             catch (JsonException)
             {
-                return Invalid("invalid_json");
+                return Invalid(Code.InvalidJson);
             }
             // A request the contract refuses is answered as invalid, and nothing is run for it (`RequestSchema`).
             if (parsed is not JsonObject request || !Checks.IsRequest(request))
             {
-                return Invalid("invalid_request");
+                return Invalid(Code.InvalidRequest);
             }
             var answer = Dispatch(request);
             // An answer whose own status is invalid exits 2, whichever op gave it, as the TypeScript CLI does.
@@ -52,7 +52,7 @@ public static class CliRunner
         catch (Exception)
         {
             // Anything else is the engine's own fault, which the TypeScript CLI answers the same way (`errorIssues`).
-            return Invalid("internal_error");
+            return Invalid(Code.InternalError);
         }
     }
 
@@ -62,20 +62,20 @@ public static class CliRunner
     {
         if (args.Count != 3 && args.Count != 4)
         {
-            return Invalid("invalid_init_args");
+            return Invalid(Code.InvalidInitArgs);
         }
         var scenarioText = ReadFile(args[2]);
         if (scenarioText is null)
         {
-            return Invalid("no_such_scenario");
+            return Invalid(Code.NoSuchScenario);
         }
         if (!TryParse(scenarioText, out var scenario))
         {
-            return Invalid("invalid_scenario_json");
+            return Invalid(Code.InvalidScenarioJson);
         }
         if (!Checks.IsScenario(scenario))
         {
-            return Invalid("invalid_scenario");
+            return Invalid(Code.InvalidScenario);
         }
         Coverage? coverage = null;
         if (args.Count == 4)
@@ -83,15 +83,15 @@ public static class CliRunner
             var coverageText = ReadFile(args[3]);
             if (coverageText is null)
             {
-                return Invalid("no_such_coverage");
+                return Invalid(Code.NoSuchCoverage);
             }
             if (!TryParse(coverageText, out var coverageJson))
             {
-                return Invalid("invalid_coverage_json");
+                return Invalid(Code.InvalidCoverageJson);
             }
             if (!Checks.IsCoverage(coverageJson))
             {
-                return Invalid("invalid_coverage");
+                return Invalid(Code.InvalidCoverage);
             }
             coverage = WorldJson.Read<Coverage>(coverageJson!);
         }
@@ -155,7 +155,7 @@ public static class CliRunner
             case "edit":
                 return Answer(
                     StoreWorld.Open(Required(world)).Edit(
-                        request["edit"] as JsonObject ?? throw new WorldError("invalid_edit", "The request names no edit"),
+                        request["edit"] as JsonObject ?? throw new WorldError(Code.InvalidEdit, "The request names no edit"),
                         JsonReads.Text(request["command_id"]),
                         Flag(request["perceivers"]),
                         null,
@@ -189,9 +189,9 @@ public static class CliRunner
                     };
                 }
             case "query":
-                return Query(StoreWorld.Open(Required(world)), request["query"] as JsonObject ?? throw new WorldError("invalid_query", "The request names no query"));
+                return Query(StoreWorld.Open(Required(world)), request["query"] as JsonObject ?? throw new WorldError(Code.InvalidQuery, "The request names no query"));
             case "trace":
-                return Trace(StoreWorld.Open(Required(world)), request["query"] as JsonObject ?? throw new WorldError("invalid_query", "The request names no query"));
+                return Trace(StoreWorld.Open(Required(world)), request["query"] as JsonObject ?? throw new WorldError(Code.InvalidQuery, "The request names no query"));
             case "catalog":
                 return new JsonObject
                 {
@@ -239,12 +239,12 @@ public static class CliRunner
             case "director_edit":
                 return Answer(
                     new DirectorWorld(StoreWorld.Open(Required(world))).Edit(
-                        request["edit"] as JsonObject ?? throw new WorldError("invalid_edit", "The request names no edit"),
+                        request["edit"] as JsonObject ?? throw new WorldError(Code.InvalidEdit, "The request names no edit"),
                         JsonReads.Text(request["command_id"]),
                         Flag(request["perceivers"])),
                     Flag(request["include_snapshot"]));
             default:
-                throw new WorldError("invalid_op", $"Unknown op {op}");
+                throw new WorldError(Code.InvalidOp, $"Unknown op {op}");
         }
     }
 
@@ -292,7 +292,7 @@ public static class CliRunner
         }
         if (result.ReasonCode is { } reason)
         {
-            verdict["reason_code"] = reason;
+            verdict["reason_code"] = WorldJson.Name(reason);
         }
         if (result.ReasonData is { } data)
         {
@@ -353,7 +353,7 @@ public static class CliRunner
         var answer = new JsonObject { ["status"] = Node(outcome.Status) };
         if (outcome.ReasonCode is { } reason)
         {
-            answer["reason_code"] = reason;
+            answer["reason_code"] = WorldJson.Name(reason);
         }
         if (outcome.Number is { } number)
         {
@@ -368,7 +368,7 @@ public static class CliRunner
     }
 
     private static List<Command> Commands(JsonNode? node) =>
-        [.. (node as JsonArray ?? throw new WorldError("invalid_request", "The request names no commands")).Select(item => WorldJson.Read<Command>(item!))];
+        [.. (node as JsonArray ?? throw new WorldError(Code.InvalidRequest, "The request names no commands")).Select(item => WorldJson.Read<Command>(item!))];
 
     private static bool Flag(JsonNode? node) => node is JsonValue value && value.TryGetValue(out bool flag) && flag;
 
@@ -380,24 +380,24 @@ public static class CliRunner
             Text(query, "sense"),
             JsonReads.Text(query["event_id"]),
             JsonReads.Text(query["entity"]))),
-        var kind => throw new WorldError("invalid_query", $"Unknown query {kind}"),
+        var kind => throw new WorldError(Code.InvalidQuery, $"Unknown query {kind}"),
     };
 
-    private static JsonObject Answer(Perception.Answer answer) => new() { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = answer.BasisCode };
+    private static JsonObject Answer(Perception.Answer answer) => new() { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = WorldJson.Name(answer.BasisCode) };
 
     private static JsonObject Trace(StoreWorld world, JsonObject query) =>
         new() { ["events"] = Node(world.TraceOf(JsonReads.Text(query["event_id"]), JsonReads.Text(query["entity"]), JsonReads.Text(query["field"]))) };
 
     private static Command CommandOf(JsonObject request) =>
-        WorldJson.Read<Command>(request["command"] ?? throw new WorldError("invalid_command", "The request names no command"));
+        WorldJson.Read<Command>(request["command"] ?? throw new WorldError(Code.InvalidCommand, "The request names no command"));
 
     // A controller's command as an actor sends it: its id, verb, target and args, never an actor or `perceivers` (`ActorCommand`).
     private static ActorCommand ActorCommandOf(JsonObject request) =>
-        ActorCommandFrom(request["command"] as JsonObject ?? throw new WorldError("invalid_command", "The request names no command"));
+        ActorCommandFrom(request["command"] as JsonObject ?? throw new WorldError(Code.InvalidCommand, "The request names no command"));
 
     // A player's move: a command the view writes, with the body it is for when the slot holds several (`PlayerMove`).
     private static ActorCommand MoveOf(JsonObject request) =>
-        ActorCommandFrom(request["move"] as JsonObject ?? throw new WorldError("invalid_move", "The request names no move"));
+        ActorCommandFrom(request["move"] as JsonObject ?? throw new WorldError(Code.InvalidMove, "The request names no move"));
 
     private static string? MoveBody(JsonObject request) => JsonReads.Text((request["move"] as JsonObject)?["body"]);
 
@@ -417,12 +417,12 @@ public static class CliRunner
     private static PlayerWorld PlayerOf(StoreWorld world, JsonObject request) => new(world, Text(request, "handle"));
 
     private static string Text(JsonObject request, string name) =>
-        JsonReads.Text(request[name]) ?? throw new WorldError("invalid_request", $"The request names no {name}");
+        JsonReads.Text(request[name]) ?? throw new WorldError(Code.InvalidRequest, $"The request names no {name}");
 
-    private static string Required(string? world) => world ?? throw new WorldError("invalid_world", "The request names no world");
+    private static string Required(string? world) => world ?? throw new WorldError(Code.InvalidWorld, "The request names no world");
 
     private static long Version(JsonObject request) =>
-        JsonReads.SafeInt(request["version"]) ?? throw new WorldError("invalid_version", "The request names no version");
+        JsonReads.SafeInt(request["version"]) ?? throw new WorldError(Code.InvalidVersion, "The request names no version");
 
     private static JsonNode? Node<T>(T value) => JsonNode.Parse(WorldJson.Write(value));
 
@@ -431,12 +431,12 @@ public static class CliRunner
     // A refused world call: its code, then each rule it broke, as `errorIssues` writes them.
     private static CliOutput Invalid(WorldError error)
     {
-        var issues = new JsonArray(new JsonObject { ["code"] = error.Code, ["message"] = error.Code, ["path"] = new JsonArray() });
+        var issues = new JsonArray(new JsonObject { ["code"] = WorldJson.Name(error.Code), ["message"] = WorldJson.Name(error.Code), ["path"] = new JsonArray() });
         foreach (var rule in error.Issues)
         {
             issues.Add(new JsonObject
             {
-                ["code"] = rule.Code,
+                ["code"] = WorldJson.Name(rule.Code),
                 ["message"] = rule.Message,
                 ["path"] = new JsonArray([.. rule.Path.Select(part => (JsonNode?)JsonValue.Create(part))]),
             });
@@ -445,13 +445,5 @@ public static class CliRunner
     }
 
     // A refused request: the status and the one issue its code names, as `invalidFromIssues` writes it.
-    private static CliOutput Invalid(string code)
-    {
-        var failure = new JsonObject
-        {
-            ["status"] = "invalid",
-            ["issues"] = new JsonArray(new JsonObject { ["code"] = code, ["message"] = code, ["path"] = new JsonArray() }),
-        };
-        return new CliOutput(Line(failure), 2);
-    }
+    private static CliOutput Invalid(Code code) => Invalid(new WorldError(code, WorldJson.Name(code)));
 }

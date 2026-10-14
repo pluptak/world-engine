@@ -75,7 +75,7 @@ public class VerbMatrixTests
             return $"throw|{error.Message}";
         }
         var reasonData = result.ReasonData is null ? "null" : WorldJson.Write(result.ReasonData);
-        var line = string.Join('|', result.Status.ToString().ToLowerInvariant(), result.ReasonCode ?? "", result.ResolvedTarget ?? "", reasonData);
+        var line = string.Join('|', result.Status.ToString().ToLowerInvariant(), result.ReasonCode is { } code ? WorldJson.Name(code) : "", result.ResolvedTarget ?? "", reasonData);
         return result.Status == Status.Ok
             ? $"{line}|{Hash8(result.Snapshot)}|{Hash8(result.Events)}|{Hash8(result.Deltas)}"
             : line;

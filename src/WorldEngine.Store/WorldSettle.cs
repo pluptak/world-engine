@@ -17,7 +17,7 @@ public static class WorldSettle
     {
         if (!WorldFiles.Exists(dir))
         {
-            throw new WorldError("no_such_world", $"No world at {dir}");
+            throw new WorldError(Code.NoSuchWorld, $"No world at {dir}");
         }
         return WorldReplay.TrustedSnapshot(dir, registry) ?? WorldLock.With(dir, () => Settle(dir, registry, setIsTheWorlds));
     }
@@ -42,13 +42,13 @@ public static class WorldSettle
             // Only the set in the world's own file may take the world over; a registry handed in is a claim about the set, refused when it fails.
             if (!setIsTheWorlds)
             {
-                throw new WorldError("templates_changed", "Template hash mismatch");
+                throw new WorldError(Code.TemplatesChanged, "Template hash mismatch");
             }
             return WorldUpgrade.Takeover(dir, registry, snapshot, initial, head);
         }
         if (snapshot.TemplatesHash != frozen || initial.TemplatesHash != frozen)
         {
-            throw new WorldError("templates_changed", "Template hash mismatch");
+            throw new WorldError(Code.TemplatesChanged, "Template hash mismatch");
         }
 
         // With the turn held no append is under way, so a log that ends inside a line was cut off, and settling past it would let the next

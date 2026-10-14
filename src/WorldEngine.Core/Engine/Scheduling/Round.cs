@@ -13,7 +13,7 @@ public static class Round
     // round applies, in the order it applies them. A round refused or invalid before it starts has no moves in either.
     public sealed record Plan(
         Status Status,
-        string? ReasonCode,
+        Code? ReasonCode,
         IReadOnlyDictionary<int, Pipeline.Result> Early,
         IReadOnlyList<int> Order);
 
@@ -31,11 +31,11 @@ public static class Round
         var actors = moves.Select(move => move.Actor).ToList();
         if (actors.Distinct(StringComparer.Ordinal).Count() != actors.Count)
         {
-            return new Plan(Status.Invalid, "duplicate_actor", new Dictionary<int, Pipeline.Result>(), []);
+            return new Plan(Status.Invalid, Code.DuplicateActor, new Dictionary<int, Pipeline.Result>(), []);
         }
         if (moves.Count >= 2 && snapshot.Rng is null)
         {
-            return new Plan(Status.Refused, "no_seed", new Dictionary<int, Pipeline.Result>(), []);
+            return new Plan(Status.Refused, Code.NoSeed, new Dictionary<int, Pipeline.Result>(), []);
         }
         var early = new Dictionary<int, Pipeline.Result>();
         var passing = new List<int>();
@@ -44,7 +44,7 @@ public static class Round
             var move = moves[index];
             if (!IsRoundMove(verbs, move.Verb))
             {
-                early[index] = Pipeline.Unchanged(snapshot, move, Status.Invalid, reasonCode: "not_a_round_move");
+                early[index] = Pipeline.Unchanged(snapshot, move, Status.Invalid, reasonCode: Code.NotARoundMove);
                 continue;
             }
             // Checked as a move of the round, which takes no time: the same verdict a move gets when it is applied.
@@ -67,7 +67,7 @@ public static class Round
     // closing tick. A round refused before it starts has no number and no results.
     public sealed record Outcome(
         Status Status,
-        string? ReasonCode,
+        Code? ReasonCode,
         long? Number,
         IReadOnlyList<Pipeline.Result> Results,
         Pipeline.Result? Closing);

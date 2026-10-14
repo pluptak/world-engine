@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 using WorldEngine.Store;
 
 namespace WorldEngine.Tests;
@@ -131,7 +132,7 @@ public class StoreReadTests : IDisposable
 
         var error = Assert.Throws<WorldError>(() => WorldFiles.ReadTemplates(scratch));
 
-        Assert.Equal("no_such_world", error.Code);
+        Assert.Equal(Code.NoSuchWorld, error.Code);
     }
 
     [Fact]
@@ -142,7 +143,7 @@ public class StoreReadTests : IDisposable
 
         var error = Assert.Throws<WorldError>(() => WorldFiles.ReadEvents(scratch));
 
-        Assert.Equal("unsupported_schema", error.Code);
+        Assert.Equal(Code.UnsupportedSchema, error.Code);
     }
 
     [Fact]
@@ -230,10 +231,10 @@ public class StoreReadTests : IDisposable
         var registry = WorldFiles.ReadTemplates(Fixture);
         var errors = Expected["errors"]!.AsObject();
 
-        Assert.Equal(errors["since_future"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.Since(Fixture, 5, registry)).Code);
-        Assert.Equal(errors["attempts_future"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.Attempts(Fixture, 5, registry)).Code);
-        Assert.Equal(errors["since_negative"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.Since(Fixture, -1, registry)).Code);
-        Assert.Equal(errors["attempts_negative"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.Attempts(Fixture, -1, registry)).Code);
+        Assert.Equal(errors["since_future"]!.GetValue<string>(), WorldJson.Name(Assert.Throws<WorldError>(() => WorldHistory.Since(Fixture, 5, registry)).Code));
+        Assert.Equal(errors["attempts_future"]!.GetValue<string>(), WorldJson.Name(Assert.Throws<WorldError>(() => WorldHistory.Attempts(Fixture, 5, registry)).Code));
+        Assert.Equal(errors["since_negative"]!.GetValue<string>(), WorldJson.Name(Assert.Throws<WorldError>(() => WorldHistory.Since(Fixture, -1, registry)).Code));
+        Assert.Equal(errors["attempts_negative"]!.GetValue<string>(), WorldJson.Name(Assert.Throws<WorldError>(() => WorldHistory.Attempts(Fixture, -1, registry)).Code));
     }
 
     [Fact]
@@ -263,9 +264,9 @@ public class StoreReadTests : IDisposable
         var errors = Expected["trace_errors"]!.AsObject();
         var stone = Expected["ids"]!["stone"]!.GetValue<string>();
 
-        Assert.Equal(errors["event"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.TraceOf(Fixture, "ev999", null, null, registry)).Code);
-        Assert.Equal(errors["entity"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.TraceOf(Fixture, null, "nobody", "props", registry)).Code);
-        Assert.Equal(errors["field"]!.GetValue<string>(), Assert.Throws<WorldError>(() => WorldHistory.TraceOf(Fixture, null, stone, "bogus", registry)).Code);
+        Assert.Equal(errors["event"]!.GetValue<string>(), WorldJson.Name(Assert.Throws<WorldError>(() => WorldHistory.TraceOf(Fixture, "ev999", null, null, registry)).Code));
+        Assert.Equal(errors["entity"]!.GetValue<string>(), WorldJson.Name(Assert.Throws<WorldError>(() => WorldHistory.TraceOf(Fixture, null, "nobody", "props", registry)).Code));
+        Assert.Equal(errors["field"]!.GetValue<string>(), WorldJson.Name(Assert.Throws<WorldError>(() => WorldHistory.TraceOf(Fixture, null, stone, "bogus", registry)).Code));
     }
 
     [Fact]
@@ -279,7 +280,7 @@ public class StoreReadTests : IDisposable
             var answer = row["event_id"] is { } eventId
                 ? WorldHistory.QueryPerceive(Fixture, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, eventId: eventId.GetValue<string>())
                 : WorldHistory.QueryPerceive(Fixture, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, entity: row["entity"]!.GetValue<string>());
-            var actual = new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = answer.BasisCode };
+            var actual = new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = WorldJson.Name(answer.BasisCode) };
 
             Assert.Equal(CanonicalJson.Serialize(row["answer"]), CanonicalJson.Serialize(actual));
         }
@@ -332,7 +333,7 @@ public class StoreReadTests : IDisposable
             var answer = row["event_id"] is { } eventId
                 ? WorldHistory.QueryPerceive(Checkpointed, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, eventId: eventId.GetValue<string>())
                 : WorldHistory.QueryPerceive(Checkpointed, Expected["ids"]!["ann"]!.GetValue<string>(), sense, registry, entity: row["entity"]!.GetValue<string>());
-            var actual = new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = answer.BasisCode };
+            var actual = new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = WorldJson.Name(answer.BasisCode) };
 
             Assert.Equal(CanonicalJson.Serialize(row["answer"]), CanonicalJson.Serialize(actual));
         }

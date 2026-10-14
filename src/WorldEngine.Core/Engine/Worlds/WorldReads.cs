@@ -18,7 +18,7 @@ public static class WorldReads
         {
             return Round.IsRoundMove(VerbRegistry.All, command.Verb)
                 ? Submission.ResolveSubmission(snapshot, registry, VerbRegistry.All, command with { Round = true }, snapshot.Version, _ => null)
-                : Pipeline.Unchanged(snapshot, command, Status.Invalid, reasonCode: "not_a_round_move");
+                : Pipeline.Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.NotARoundMove);
         }
         return Submission.ResolveSubmission(snapshot, registry, VerbRegistry.All, command, snapshot.Version, _ => null);
     }
@@ -30,17 +30,17 @@ public static class WorldReads
         var registry = world.Registry;
         if (!current.Entities.ContainsKey(observer))
         {
-            throw new WorldError("no_such_entity", $"Unknown observer {observer}");
+            throw new WorldError(Code.NoSuchEntity, $"Unknown observer {observer}");
         }
         if (sinceTick is { } tick)
         {
             if (since is not null)
             {
-                throw new WorldError("invalid_tick", "Observe since a version or since a tick, not both");
+                throw new WorldError(Code.InvalidTick, "Observe since a version or since a tick, not both");
             }
             if (tick < 0)
             {
-                throw new WorldError("invalid_tick", $"Invalid tick {tick}");
+                throw new WorldError(Code.InvalidTick, $"Invalid tick {tick}");
             }
         }
         var covered = Capabilities.Senses.Where(sense => current.Coverage.Senses.Contains(sense)).ToList();
@@ -54,7 +54,7 @@ public static class WorldReads
         foreach (var @event in candidates)
         {
             var senses = new List<string>();
-            var hearing = string.Empty;
+            Code? hearing = null;
             foreach (var sense in covered)
             {
                 var answer = world.PerceiveAtEvent(observer, sense, @event.EventId);
@@ -79,7 +79,7 @@ public static class WorldReads
             // through too. Anything sensed besides names its entity instead.
             if (senses is [Sense.Hearing])
             {
-                var from = Projection.HeardFrom(hearing);
+                var from = Projection.HeardFrom(hearing!.Value);
                 entry["from"] = from;
                 if (from == "next_door" && Projection.HearingDoor(current, observer, @event) is { } door)
                 {
@@ -126,7 +126,7 @@ public static class WorldReads
         var current = world.CurrentSnapshot();
         if (!current.Entities.ContainsKey(observer))
         {
-            throw new WorldError("no_such_entity", $"Unknown observer {observer}");
+            throw new WorldError(Code.NoSuchEntity, $"Unknown observer {observer}");
         }
         return Projection.InspectEntity(current, world.Registry, [], observer, entity);
     }
@@ -152,6 +152,6 @@ public static class WorldReads
     public static bool IsFlagged(Command command) => command.Round == true || command.By is not null;
 
     public static Pipeline.Result RoundFlagged(Snapshot snapshot, Command command) =>
-        Pipeline.Unchanged(snapshot, command, Status.Invalid, reasonCode: "invalid_args");
+        Pipeline.Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.InvalidArgs);
 
 }

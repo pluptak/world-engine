@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Store;
 
@@ -92,7 +93,7 @@ public static class WorldLock
             }
             if (NowMs() >= deadline)
             {
-                throw new WorldError("store_busy", $"World at {dir} is being written by another process");
+                throw new WorldError(Code.StoreBusy, $"World at {dir} is being written by another process");
             }
             Thread.Sleep(wait);
         }

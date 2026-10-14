@@ -128,16 +128,16 @@ public static class MoveVerb
         var to = door is null ? null : door.Props.Get(Prop.To);
         if (door is null || here is null || from is null || to is null || (from != here && to != here))
         {
-            return (null, Pipeline.Invalid("invalid_location"));
+            return (null, Pipeline.Invalid(Code.InvalidLocation));
         }
         var far = from == here ? to : from;
         if (snapshot.Entities.GetValueOrDefault(far)?.Template != TemplateIds.Room)
         {
-            return (null, Pipeline.Invalid("invalid_location"));
+            return (null, Pipeline.Invalid(Code.InvalidLocation));
         }
         return door.Props.Is(Prop.Open)
             ? (far, null)
-            : (null, Pipeline.Refused("no_open_door"));
+            : (null, Pipeline.Refused(Code.NoOpenDoor));
     }
 
     // The destination with any door resolved away: through a door is a move to the room beyond it (`via`).
@@ -183,7 +183,7 @@ public static class MoveVerb
         var asked = DestinationOf(context.Command.Args);
         if (asked is null)
         {
-            return Pipeline.Invalid("invalid_args");
+            return Pipeline.Invalid(Code.InvalidArgs);
         }
         var snapshot = context.Snapshot;
         var actor = snapshot.Entities[context.Command.Actor];
@@ -192,7 +192,7 @@ public static class MoveVerb
         {
             return new Pipeline.Refusal(
                 Status.Refused,
-                "being_carried",
+                Code.BeingCarried,
                 Pipeline.Reason(("carrier", CarrierOf(snapshot, actor))));
         }
         var moving = Capacities.Of(snapshot, context.Registry, actor.Id, "moving") ?? 0;
@@ -200,7 +200,7 @@ public static class MoveVerb
         {
             return new Pipeline.Refusal(
                 Status.Refused,
-                "insufficient_moving",
+                Code.InsufficientMoving,
                 Pipeline.Reason(("capacity", "moving"), ("have", moving), ("need", 1L)));
         }
 
@@ -214,12 +214,12 @@ public static class MoveVerb
             var location = snapshot.Entities.GetValueOrDefault(room.Id);
             if (location is null || location.Template != TemplateIds.Room || !NameableRoom(context, room.Id))
             {
-                return Pipeline.Invalid("invalid_location");
+                return Pipeline.Invalid(Code.InvalidLocation);
             }
             // Through a door, the door named is the one that was judged open; by room, any open door will do.
             if (!walk.Via && room.Id != actor.Location && !HasOpenDoor(context, room.Id))
             {
-                return Pipeline.Refused("no_open_door");
+                return Pipeline.Refused(Code.NoOpenDoor);
             }
         }
         return RefusedBy(StopFor(context, walk.To!));
@@ -261,8 +261,8 @@ public static class MoveVerb
     private static Pipeline.Refusal? RefusedBy(Geometry.WalkStop? stop) => stop switch
     {
         null => null,
-        Geometry.Blocked blocked => Pipeline.Refused("blocked", Pipeline.Reason(("with", blocked.With))),
-        _ => Pipeline.Refused("out_of_bounds"),
+        Geometry.Blocked blocked => Pipeline.Refused(Code.Blocked, Pipeline.Reason(("with", blocked.With))),
+        _ => Pipeline.Refused(Code.OutOfBounds),
     };
 
     private static void Transition(Working working, Pipeline.CommandContext context, string? rootEventId)

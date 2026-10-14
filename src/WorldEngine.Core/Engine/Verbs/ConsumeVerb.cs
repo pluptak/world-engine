@@ -102,16 +102,16 @@ public static class ConsumeVerb
         var target = context.Target;
         if (target is null)
         {
-            return Refused(Status.Invalid, "missing_target");
+            return Refused(Status.Invalid, Code.MissingTarget);
         }
         if (target.Part is not null)
         {
-            return Refused(Status.Refused, "not_consumable");
+            return Refused(Status.Refused, Code.NotConsumable);
         }
         var snapshot = context.Snapshot;
         if (!snapshot.Entities.TryGetValue(target.EntityId, out var item))
         {
-            return Refused(Status.Invalid, "no_such_entity");
+            return Refused(Status.Invalid, Code.NoSuchEntity);
         }
 
         var chosen = PlanOf(item, context.Command.Args);
@@ -122,7 +122,7 @@ public static class ConsumeVerb
         var enclosure = Reach.ClosedEnclosure(snapshot, item.Id);
         if (enclosure is not null)
         {
-            return Refused(Status.Refused, "container_closed", Pipeline.Reason(("enclosure", enclosure)));
+            return Refused(Status.Refused, Code.ContainerClosed, Pipeline.Reason(("enclosure", enclosure)));
         }
 
         // What the actor carries is in reach by being carried, in a hand or a pocket; anything else is measured from
@@ -134,7 +134,7 @@ public static class ConsumeVerb
         }
         if (MouthBusy(context, item.Id))
         {
-            return Refused(Status.Refused, "mouth_full");
+            return Refused(Status.Refused, Code.MouthFull);
         }
         return chosen;
     }
@@ -150,19 +150,19 @@ public static class ConsumeVerb
         {
             if (item.Props.Get(Prop.LiquidNutrition) is not { } perHundred || perHundred < 0)
             {
-                return Refused(Status.Refused, "not_consumable");
+                return Refused(Status.Refused, Code.NotConsumable);
             }
             var requested = args is not null && args.ContainsKey("amount");
             long amount = available;
             if (requested && (!WholeNumber(args!["amount"], out amount) || amount <= 0))
             {
-                return Refused(Status.Invalid, "invalid_args");
+                return Refused(Status.Invalid, Code.InvalidArgs);
             }
             if (amount > available)
             {
                 return Refused(
                     Status.Refused,
-                    "insufficient_liquid",
+                    Code.InsufficientLiquid,
                     Pipeline.Reason(("requested", amount), ("available", available)));
             }
             return new Choice(item, new LiquidPlan(amount, available, material, amount * perHundred / 100), null);
@@ -170,12 +170,12 @@ public static class ConsumeVerb
 
         if (item.Props.Get(Prop.Nutrition) is not { } nutrition || nutrition <= 0)
         {
-            return Refused(Status.Refused, "not_consumable");
+            return Refused(Status.Refused, Code.NotConsumable);
         }
         // A solid thing is eaten whole, or a portion at a time: an amount of it means nothing.
         if (args is not null && args.ContainsKey("amount"))
         {
-            return Refused(Status.Invalid, "invalid_args");
+            return Refused(Status.Invalid, Code.InvalidArgs);
         }
         if (!item.Props.ContainsKey(Prop.Portions))
         {
@@ -183,7 +183,7 @@ public static class ConsumeVerb
         }
         if (item.Props.Get(Prop.Portions) is not { } portions || portions <= 0)
         {
-            return Refused(Status.Refused, "not_consumable");
+            return Refused(Status.Refused, Code.NotConsumable);
         }
         return new Choice(item, new SolidPlan(nutrition, portions), null);
     }
@@ -211,6 +211,6 @@ public static class ConsumeVerb
         return number is not null;
     }
 
-    private static Choice Refused(Status status, string reasonCode, IReadOnlyDictionary<string, JsonNode?>? reasonData = null) =>
+    private static Choice Refused(Status status, Code reasonCode, IReadOnlyDictionary<string, JsonNode?>? reasonData = null) =>
         new(null, null, new Pipeline.Refusal(status, reasonCode, reasonData));
 }

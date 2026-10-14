@@ -112,7 +112,7 @@ reads; a template declares a prop no code reads under `fields`.
 
 One bullet per area; extend an area by appending to its own bullet only. A new verb or refusal code
 also touches the shared registration points, one line each: `VerbRegistry.cs`, `VerbSpecs.cs`,
-`WorldError` codes, the contract, and one line in the `docs/verbs.md` index, whose rules go in the
+`Model/Code.cs`, the contract, and one line in the `docs/verbs.md` index, whose rules go in the
 family file it links (`docs/verbs-*.md`).
 
 - **Relations and perception:** `SnapshotValidation.cs`, `Model/Snapshot.cs` (`Entity`), `Perception/`,

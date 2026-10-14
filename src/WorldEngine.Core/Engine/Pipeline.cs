@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Json.Integers;
@@ -58,15 +59,22 @@ public static class Pipeline
     // candidates.
     public sealed record Refusal(
         Status Status,
-        string? ReasonCode,
+        Code? ReasonCode,
         IReadOnlyDictionary<string, JsonNode?>? ReasonData = null,
         IReadOnlyList<string>? Candidates = null);
 
     // A refusal of a command that is well formed but cannot be done now, with its reason code (and data, when it has some).
-    public static Refusal Refused(string code, IReadOnlyDictionary<string, JsonNode?>? data = null) => new(Status.Refused, code, data);
+    public static Refusal Refused(Code code, IReadOnlyDictionary<string, JsonNode?>? data = null) => new(Status.Refused, code, data);
+
+    // The refusal of a body short of a capacity: `insufficient_manipulation` for `manipulation`.
+    public static Code Insufficient(string capacity) => WorldJson.Parse<Code>($"insufficient_{capacity}");
+
+    // What a log or a skipped beat names as the reason: the code, or the status where there is none (`ambiguous`).
+    public static string ReasonName(Code? reasonCode, Status status) =>
+        reasonCode is { } code ? WorldJson.Name(code) : WorldJson.Name(status);
 
     // A refusal of a command that names something the world does not hold or is malformed, with its reason code.
-    public static Refusal Invalid(string code) => new(Status.Invalid, code);
+    public static Refusal Invalid(Code code) => new(Status.Invalid, code);
 
     // The reason data of a refusal or event: named values, each a string, a number or a boolean.
     public static IReadOnlyDictionary<string, JsonNode?> Reason(params (string Key, object Value)[] pairs) =>
@@ -95,7 +103,7 @@ public static class Pipeline
             ["have"] = JsonValue.Create(Have(caps, unmet.Capacity)),
             ["need"] = JsonValue.Create(unmet.AtLeast),
         };
-        return new Refusal(Status.Refused, $"insufficient_{context.Requires[0].Capacity}", data);
+        return new Refusal(Status.Refused, Insufficient(context.Requires[0].Capacity), data);
     }
 
     public sealed record Result(
@@ -103,7 +111,7 @@ public static class Pipeline
         string CommandId,
         string? ResolvedTarget,
         IReadOnlyList<string>? Candidates,
-        string? ReasonCode,
+        Code? ReasonCode,
         IReadOnlyDictionary<string, JsonNode?>? ReasonData,
         Snapshot Snapshot,
         IReadOnlyList<Delta> Deltas,
@@ -117,7 +125,7 @@ public static class Pipeline
         Command command,
         Status status,
         string? resolvedTarget = null,
-        string? reasonCode = null,
+        Code? reasonCode = null,
         IReadOnlyList<string>? candidates = null,
         IReadOnlyDictionary<string, JsonNode?>? reasonData = null) =>
         new(status, command.CommandId, resolvedTarget, candidates, reasonCode, reasonData, snapshot, [], []);
@@ -131,17 +139,17 @@ public static class Pipeline
     {
         if (!verbs.TryGetValue(command.Verb, out var verb))
         {
-            return Unchanged(snapshot, command, Status.Invalid, reasonCode: "unknown_verb");
+            return Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.UnknownVerb);
         }
 
         var authored = command.Actor == Resolve.WorldAuthor && verb.AuthorOnly;
         if (!authored && !snapshot.Entities.ContainsKey(command.Actor))
         {
-            return Unchanged(snapshot, command, Status.Invalid, reasonCode: "no_such_actor");
+            return Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.NoSuchActor);
         }
         if (!authored && !Reach.IsAgent(snapshot, command.Actor))
         {
-            return Unchanged(snapshot, command, Status.Invalid, reasonCode: "not_an_agent");
+            return Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.NotAnAgent);
         }
         // A run's state takes some commands (`docs/run.md`). The world's, not a verb's, so no verb declares it.
         if (Runs.RunRefusal(snapshot, command.Verb, authored, command.Round == true) is { } runCode)
@@ -159,11 +167,11 @@ public static class Pipeline
         var actor = snapshot.Entities.GetValueOrDefault(command.Actor);
         if (!authored && actor is not null && actor.Props.Is(Prop.Asleep))
         {
-            return Unchanged(snapshot, command, Status.Refused, reasonCode: "asleep");
+            return Unchanged(snapshot, command, Status.Refused, reasonCode: Code.Asleep);
         }
         if (!authored && actor is not null && actor.Props.Is(Prop.Unconscious))
         {
-            return Unchanged(snapshot, command, Status.Refused, reasonCode: "unconscious");
+            return Unchanged(snapshot, command, Status.Refused, reasonCode: Code.Unconscious);
         }
 
         if (command.Target is not null)
@@ -179,7 +187,7 @@ public static class Pipeline
                     // Nothing an agent does reaches scenery; the world author's edits may still change it.
                     if (!authored && Resolve.IsScenery(registry, snapshot.Entities[resolved.Target.EntityId]))
                     {
-                        return Unchanged(snapshot, command, Status.Refused, resolved.Target.Address, "scenery");
+                        return Unchanged(snapshot, command, Status.Refused, resolved.Target.Address, Code.Scenery);
                     }
                     return null;
             }
@@ -229,7 +237,7 @@ public static class Pipeline
               ?? throw new InvalidOperationException($"Verb {command.Verb} accepted a command without a duration");
         if (!TryAdd(snapshot.Tick, duration, out _))
         {
-            return Unchanged(snapshot, command, Status.Invalid, reasonCode: "clock_overflow");
+            return Unchanged(snapshot, command, Status.Invalid, reasonCode: Code.ClockOverflow);
         }
         // The clock never passes a running run's limit: a command that would is cut at it (`docs/run.md`).
         var left = Runs.TicksLeft(snapshot);
@@ -262,7 +270,7 @@ public static class Pipeline
         {
             // A roll in a world with no seed, wherever in the command it fell: the whole command is refused and nothing is kept. The code
             // belongs to the world, not to a verb, so no verb declares it.
-            return Unchanged(snapshot, command, Status.Refused, resolvedTarget: target?.Address, reasonCode: "no_seed");
+            return Unchanged(snapshot, command, Status.Refused, resolvedTarget: target?.Address, reasonCode: Code.NoSeed);
         }
         if (verb.ValidateResult?.Invoke(context with { Snapshot = working.Snapshot }) is { } validation)
         {
@@ -313,9 +321,9 @@ public static class Pipeline
         {
             return;
         }
-        if (!VerbSpecs.ByVerb.TryGetValue(verb, out var spec) || refusal.ReasonCode is null || !spec.Refuses.Contains(refusal.ReasonCode))
+        if (!VerbSpecs.ByVerb.TryGetValue(verb, out var spec) || refusal.ReasonCode is null || !spec.Refuses.Contains(refusal.ReasonCode.Value))
         {
-            throw new InvalidOperationException($"Verb {verb} refused with undeclared code {refusal.ReasonCode}");
+            throw new InvalidOperationException($"Verb {verb} refused with undeclared code {(refusal.ReasonCode is { } code ? WorldJson.Name(code) : "none")}");
         }
     }
 

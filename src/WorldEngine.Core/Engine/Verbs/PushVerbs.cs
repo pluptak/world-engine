@@ -75,22 +75,22 @@ public static class PushVerbs
         var move = MovementOf(context);
         if (move is null)
         {
-            return Pipeline.Invalid("invalid_args");
+            return Pipeline.Invalid(Code.InvalidArgs);
         }
         var target = context.Target;
         if (target is null)
         {
-            return Pipeline.Invalid("missing_target");
+            return Pipeline.Invalid(Code.MissingTarget);
         }
         if (target.Part is not null)
         {
-            return Pipeline.Refused("target_attached");
+            return Pipeline.Refused(Code.TargetAttached);
         }
         var snapshot = context.Snapshot;
         var actorId = context.Command.Actor;
         if (!snapshot.Entities.TryGetValue(target.EntityId, out var entity))
         {
-            return Pipeline.Invalid("no_such_entity");
+            return Pipeline.Invalid(Code.NoSuchEntity);
         }
         if (Address.OutOfReach(snapshot, actorId, entity.Id) is { } reach)
         {
@@ -101,12 +101,12 @@ public static class PushVerbs
         {
             return new Pipeline.Refusal(
                 Status.Refused,
-                "insufficient_moving",
+                Code.InsufficientMoving,
                 Pipeline.Reason(("capacity", "moving"), ("have", moving), ("need", 1L)));
         }
         if (entity.ContainedIn is not null)
         {
-            return Pipeline.Refused("target_carried");
+            return Pipeline.Refused(Code.TargetCarried);
         }
         // A push slides a footprint across a room's floor; a cup on a table moves by `take` and `put`.
         var support = entity.Support is null ? null : snapshot.Entities.GetValueOrDefault(entity.Support);
@@ -114,22 +114,22 @@ public static class PushVerbs
         {
             return new Pipeline.Refusal(
                 Status.Refused,
-                "not_on_floor",
+                Code.NotOnFloor,
                 entity.Support is null ? null : Pipeline.Reason(("support", entity.Support)));
         }
         if (!context.Registry.TryGetValue(entity.Template, out var template))
         {
-            return Pipeline.Invalid("unknown_template");
+            return Pipeline.Invalid(Code.UnknownTemplate);
         }
         var force = moving * 10;
         if (template.MassG > force * 20)
         {
-            return Pipeline.Refused("too_heavy");
+            return Pipeline.Refused(Code.TooHeavy);
         }
         var path = Swept(context, entity.Id, move, reverse);
         if (move.DistanceCm > 0 && path.Distance == 0 && path.Obstacle is { } obstacle)
         {
-            return Pipeline.Refused("blocked", Pipeline.Reason(("with", obstacle)));
+            return Pipeline.Refused(Code.Blocked, Pipeline.Reason(("with", obstacle)));
         }
         return null;
     }

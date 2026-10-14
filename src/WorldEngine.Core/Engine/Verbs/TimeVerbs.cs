@@ -77,15 +77,15 @@ public static class TimeVerbs
         var command = context.Command;
         if (command.Actor != Resolve.WorldAuthor)
         {
-            return Pipeline.Invalid("invalid_author");
+            return Pipeline.Invalid(Code.InvalidAuthor);
         }
         if (Ticks(command) is null)
         {
-            return Pipeline.Invalid("invalid_args");
+            return Pipeline.Invalid(Code.InvalidArgs);
         }
         if (Listed(command) is not { } ids)
         {
-            return Pipeline.Invalid("invalid_args");
+            return Pipeline.Invalid(Code.InvalidArgs);
         }
         foreach (var id in ids)
         {
@@ -94,24 +94,24 @@ public static class TimeVerbs
             {
                 return new Pipeline.Refusal(
                     Status.Invalid,
-                    watcher?.Status == EntityStatus.Destroyed ? "observer_destroyed" : "no_such_actor");
+                    watcher?.Status == EntityStatus.Destroyed ? Code.ObserverDestroyed : Code.NoSuchActor);
             }
         }
         if (command.Args is not null && command.Args.TryGetValue("stop_before", out var stop))
         {
             if (stop is not JsonValue value || !value.TryGetValue(out string? id) || !Beats.IsBeatId(id))
             {
-                return Pipeline.Invalid("invalid_args");
+                return Pipeline.Invalid(Code.InvalidArgs);
             }
             var cause = Schedule.Pending(context.Snapshot).FirstOrDefault(entry => entry.Kind == "beat" && entry.Id == id);
             if (cause is null)
             {
-                return Pipeline.Refused("no_such_beat");
+                return Pipeline.Refused(Code.NoSuchBeat);
             }
             // The beat falls due at the very next tick: there is no time to run up to it, so nothing passes.
             if (cause.DueTick <= context.Snapshot.Tick + 1)
             {
-                return Pipeline.Refused("beat_not_ahead");
+                return Pipeline.Refused(Code.BeatNotAhead);
             }
         }
         return null;

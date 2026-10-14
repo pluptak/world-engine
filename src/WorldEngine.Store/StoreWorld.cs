@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -32,7 +33,7 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
     {
         if (!WorldFiles.Exists(dir))
         {
-            throw new WorldError("no_such_world", $"No world at {dir}");
+            throw new WorldError(Code.NoSuchWorld, $"No world at {dir}");
         }
         // A world that opens is a world whose snapshot holds together. The set comes from the world's own file, which is what lets the
         // load settle a moved set (an upgrade a crash cut short) rather than refuse it (`storeWorld` in src/api.ts).
@@ -41,7 +42,7 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
         var issues = SnapshotValidation.Validate(opened, registry);
         if (issues.Count > 0)
         {
-            throw new WorldError("invalid_snapshot", $"Snapshot violates {issues[0].Code} ({issues.Count} issue(s))") { Issues = issues };
+            throw new WorldError(Code.InvalidSnapshot, $"Snapshot violates {WorldJson.Name(issues[0].Code)} ({issues.Count} issue(s))") { Issues = issues };
         }
         return new StoreWorld(dir, registry, snapshotEvery, checkpointEvery);
     }
@@ -107,7 +108,7 @@ public sealed class StoreWorld : IWorld, IWorldDriver, IWorldReads
     {
         if (!byAllowed && !moves.All(move => move.By is null))
         {
-            return new Round.Outcome(Status.Invalid, "invalid_args", null, [], null);
+            return new Round.Outcome(Status.Invalid, Code.InvalidArgs, null, [], null);
         }
         var start = CurrentSnapshot();
         var plan = Round.PlanRound(start, registry, VerbRegistry.All, moves);

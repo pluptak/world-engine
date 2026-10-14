@@ -33,7 +33,7 @@ public class FormsGoldenTests
             }
             catch (WorldError thrown)
             {
-                actual = $"{thrown.Code}: {thrown.Message}";
+                actual = $"{WorldJson.Name(thrown.Code)}: {thrown.Message}";
             }
             var expected = row["error"] is JsonObject error
                 ? $"{error["code"]!.GetValue<string>()}: {error["message"]!.GetValue<string>()}"

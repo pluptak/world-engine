@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Json.Integers;
@@ -42,12 +43,12 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
     {
         if (snapshot.TemplatesHash != templatesHash)
         {
-            throw new WorldError("templates_changed", "Template hash mismatch");
+            throw new WorldError(Code.TemplatesChanged, "Template hash mismatch");
         }
         var issues = SnapshotValidation.Validate(snapshot, registry);
         if (issues.Count > 0)
         {
-            throw new WorldError("invalid_snapshot", $"Snapshot violates {issues[0].Code} ({issues.Count} issue(s))");
+            throw new WorldError(Code.InvalidSnapshot, $"Snapshot violates {WorldJson.Name(issues[0].Code)} ({issues.Count} issue(s))");
         }
         this.registry = registry;
         this.templatesHash = templatesHash;
@@ -163,7 +164,7 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
             // Events of the world this one was made from, at its starting tick, are not in its records.
             if (firstVersion > 0 && tick <= initial.Tick)
             {
-                throw new WorldError("history_unavailable", $"No records at tick {tick} or before {initial.Tick}");
+                throw new WorldError(Code.HistoryUnavailable, $"No records at tick {tick} or before {initial.Tick}");
             }
             return [.. events.Where(@event => @event.Tick >= tick)];
         });
@@ -188,11 +189,11 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
             || events.Any(@event => @event.Entity == entity);
         if (!known)
         {
-            throw new WorldError("no_such_entity", $"No such entity {entity}");
+            throw new WorldError(Code.NoSuchEntity, $"No such entity {entity}");
         }
         if (!Trace.ValidEntityFields.Contains(field!))
         {
-            throw new WorldError("no_such_field", $"No such field {field}");
+            throw new WorldError(Code.NoSuchField, $"No such field {field}");
         }
         if (field != "entity")
         {
@@ -200,7 +201,7 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
             var hasSpawn = allDeltas.Any(delta => delta.Entity == entity && delta.Field == "entity");
             if (!hasDelta && !hasSpawn && initial.Entities.ContainsKey(entity!))
             {
-                throw new WorldError("history_unavailable", $"No history for {entity}.{field} before this memory world was created");
+                throw new WorldError(Code.HistoryUnavailable, $"No history for {entity}.{field} before this memory world was created");
             }
         }
         return Trace.TraceField(events, allDeltas, entity!, field!);
@@ -233,7 +234,7 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
     {
         if (!byAllowed && !moves.All(move => move.By is null))
         {
-            return new Round.Outcome(Status.Invalid, "invalid_args", null, [], null);
+            return new Round.Outcome(Status.Invalid, Code.InvalidArgs, null, [], null);
         }
         var start = current;
         var plan = Round.PlanRound(start, registry, VerbRegistry.All, moves);
@@ -275,7 +276,7 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
         EventPerception.SensedBy(before, after, registry, events, events, observers);
 
     // A memory world keeps no log to replay, so it cannot verify one.
-    public void Verify() => throw new WorldError("history_unavailable", "A memory world keeps no log to replay");
+    public void Verify() => throw new WorldError(Code.HistoryUnavailable, "A memory world keeps no log to replay");
 
     // The snapshots either side of the command that produced an event, and the events up to and including it.
     private (Snapshot Before, Snapshot After, List<WorldEvent> Events)? SnapshotAtEvent(string eventId)
@@ -298,15 +299,15 @@ public sealed class MemoryWorld : IWorld, IWorldDriver, IWorldReads
     {
         if (version < 0)
         {
-            throw new WorldError("invalid_version", $"Invalid version {version}");
+            throw new WorldError(Code.InvalidVersion, $"Invalid version {version}");
         }
         if (version < firstVersion)
         {
-            throw new WorldError("history_unavailable", $"No records before version {firstVersion}");
+            throw new WorldError(Code.HistoryUnavailable, $"No records before version {firstVersion}");
         }
         if (version > current.Version)
         {
-            throw new WorldError("future_version", $"Version {version} is ahead of {current.Version}");
+            throw new WorldError(Code.FutureVersion, $"Version {version} is ahead of {current.Version}");
         }
     }
 

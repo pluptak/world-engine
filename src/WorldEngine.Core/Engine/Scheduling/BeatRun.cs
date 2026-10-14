@@ -103,8 +103,7 @@ public static partial class Beats
         return new Done(working.Events.Count > mark.Events ? working.Events[mark.Events].EventId : cause.CauseId);
     }
 
-    private static string CodeOf(Pipeline.Refusal refusal) =>
-        refusal.ReasonCode ?? WorldJson.Name(refusal.Status);
+    private static string CodeOf(Pipeline.Refusal refusal) => Pipeline.ReasonName(refusal.ReasonCode, refusal.Status);
 
     // Each follower is scheduled `delay_ticks` after its parent ran, with the parent's event as its cause. One whose subject is
     // gone, or whose due tick is out of range, is not scheduled.

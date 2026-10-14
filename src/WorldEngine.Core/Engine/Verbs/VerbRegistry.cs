@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Json;
 
 namespace WorldEngine.Core.Engine;
 
@@ -55,7 +56,7 @@ public static class VerbRegistry
                 })]),
             ["carry_alternatives"] = JsonNode.Parse(spec.CarryAlternatives),
             ["attack_modes"] = JsonNode.Parse(spec.AttackModes),
-            ["refuses"] = new JsonArray([.. spec.Refuses.Select(code => (JsonNode?)code)]),
+            ["refuses"] = new JsonArray([.. spec.Refuses.Select(code => (JsonNode?)WorldJson.Name(code))]),
         };
     }
 }

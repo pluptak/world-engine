@@ -47,7 +47,7 @@ public class ProcessGoldenTests
                     var expected = row["issues"]!.AsArray()
                         .Select(issue => (Code: issue!["code"]!.GetValue<string>(), Path: string.Join("/", issue["path"]!.AsArray().Select(part => part!.GetValue<string>()))))
                         .ToList();
-                    Assert.Equal(expected, issues.Select(issue => (issue.Code, Path: string.Join("/", issue.Path))).ToList());
+                    Assert.Equal(expected, issues.Select(issue => (WorldJson.Name(issue.Code), Path: string.Join("/", issue.Path))).ToList());
                     break;
                 default:
                     throw new InvalidDataException($"{name}: unknown row kind");

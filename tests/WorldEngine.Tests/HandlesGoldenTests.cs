@@ -59,7 +59,7 @@ public class HandlesGoldenTests
         var shape = new JsonObject { ["status"] = outcome.Status.ToString().ToLowerInvariant() };
         if (outcome.ReasonCode is not null)
         {
-            shape["reason_code"] = outcome.ReasonCode;
+            shape["reason_code"] = WorldJson.Name(outcome.ReasonCode.Value);
         }
         if (outcome.Number is not null)
         {
@@ -88,7 +88,7 @@ public class HandlesGoldenTests
         }
         if (result.ReasonCode is not null)
         {
-            shape["reason_code"] = result.ReasonCode;
+            shape["reason_code"] = WorldJson.Name(result.ReasonCode.Value);
         }
         if (result.ReasonData is not null)
         {
@@ -116,7 +116,7 @@ public class HandlesGoldenTests
         }
         catch (WorldError error)
         {
-            return new JsonObject { ["status"] = "error", ["code"] = error.Code, ["message"] = error.Message };
+            return new JsonObject { ["status"] = "error", ["code"] = WorldJson.Name(error.Code), ["message"] = error.Message };
         }
     }
 }

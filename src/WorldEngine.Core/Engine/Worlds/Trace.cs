@@ -21,7 +21,7 @@ public static class Trace
         var byId = events.ToDictionary(@event => @event.EventId, StringComparer.Ordinal);
         if (!byId.TryGetValue(startEventId, out var start))
         {
-            throw new WorldError("no_such_event", $"No such event {startEventId}");
+            throw new WorldError(Code.NoSuchEvent, $"No such event {startEventId}");
         }
         var leafFirst = new List<WorldEvent> { start };
         var current = start;
@@ -29,7 +29,7 @@ public static class Trace
         {
             if (!byId.TryGetValue(causeId, out var parent))
             {
-                throw new WorldError("no_such_event", $"No such event {causeId}");
+                throw new WorldError(Code.NoSuchEvent, $"No such event {causeId}");
             }
             leafFirst.Add(parent);
             current = parent;
@@ -69,7 +69,7 @@ public static class Trace
     {
         if (!ValidEntityFields.Contains(field))
         {
-            throw new WorldError("no_such_field", $"No such field {field}");
+            throw new WorldError(Code.NoSuchField, $"No such field {field}");
         }
         if (FieldEventId(deltas, entity, field) is { } start)
         {

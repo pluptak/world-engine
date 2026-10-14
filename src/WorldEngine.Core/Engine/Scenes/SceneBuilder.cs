@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Engine.JsonReads;
@@ -27,10 +28,10 @@ public static class SceneBuilder
         return run is null ? withBeats : SceneRun(withBeats, registry, names, run);
     }
 
-    private static WorldError Refused(string path, string rule) => new("invalid_scenario", $"{path}: {rule}");
+    private static WorldError Refused(string path, Code rule) => new(Code.InvalidScenario, $"{path}: {WorldJson.Name(rule)}");
 
     private static string Named(IReadOnlyDictionary<string, string> names, string name, string path) =>
-        names.TryGetValue(name, out var id) ? id : throw Refused(path, "no_such_entity");
+        names.TryGetValue(name, out var id) ? id : throw Refused(path, Code.NoSuchEntity);
 
     // The body with every name it reads replaced by the id it names, wherever it holds one: an action's target, a condition's
     // entity or room, a follower's action and condition.
@@ -97,7 +98,7 @@ public static class SceneBuilder
         var subject = Beats.ActionSubject(action);
         if (subject is null || !snapshot.Entities.ContainsKey(subject))
         {
-            throw Refused(path, "no_such_entity");
+            throw Refused(path, Code.NoSuchEntity);
         }
         if (Beats.PropRefusal(snapshot, registry, action) is { } code)
         {
@@ -126,30 +127,30 @@ public static class SceneBuilder
             var path = $"beats[{index}]";
             if (beats[index] is not JsonObject body)
             {
-                throw Refused(path, "invalid_beat");
+                throw Refused(path, Code.InvalidBeat);
             }
             var resolved = (JsonObject)ResolveBody(body, names, path)!;
             resolved["kind"] = JsonValue.Create("schedule_beat");
             if (!Beats.ParseScheduleBeat(resolved))
             {
-                throw Refused(path, "invalid_beat");
+                throw Refused(path, Code.InvalidBeat);
             }
             var atTick = SafeInt(resolved["at_tick"])!.Value;
             if (atTick < 1)
             {
-                throw Refused(path, "beat_in_past");
+                throw Refused(path, Code.BeatInPast);
             }
             var subject = SubjectOf(next, registry, (JsonObject)resolved["action"]!, resolved["then"] as JsonArray, path);
             foreach (var id in Beats.EditIds(resolved))
             {
                 if (!taken.Add(id))
                 {
-                    throw Refused(path, "duplicate_beat");
+                    throw Refused(path, Code.DuplicateBeat);
                 }
             }
             if (taken.Count > Beats.MaxBeats)
             {
-                throw Refused(path, "too_many_beats");
+                throw Refused(path, Code.TooManyBeats);
             }
             var cause = new ScheduledCause(
                 atTick,
@@ -182,7 +183,7 @@ public static class SceneBuilder
             var path = $"run.pool[{index}]";
             if (bodies[index] is not JsonObject body || body.ContainsKey("at_tick"))
             {
-                throw Refused(path, "invalid_beat");
+                throw Refused(path, Code.InvalidBeat);
             }
             var resolved = (JsonObject)ResolveBody(body, names, path)!;
             // The tick is a placeholder the shape check needs; a pool beat is played at a tick the director names.
@@ -190,14 +191,14 @@ public static class SceneBuilder
             resolved["kind"] = JsonValue.Create("schedule_beat");
             if (!Beats.ParseScheduleBeat(resolved))
             {
-                throw Refused(path, "invalid_beat");
+                throw Refused(path, Code.InvalidBeat);
             }
             SubjectOf(snapshot, registry, (JsonObject)resolved["action"]!, resolved["then"] as JsonArray, path);
             foreach (var id in Beats.EditIds(resolved))
             {
                 if (!used.Add(id))
                 {
-                    throw Refused(path, "duplicate_beat");
+                    throw Refused(path, Code.DuplicateBeat);
                 }
             }
             var entry = new JsonObject
@@ -234,12 +235,12 @@ public static class SceneBuilder
             if (!(snapshot.Entities.TryGetValue(entity, out var door)
                 && door.Props.Get(Prop.Open) is not null))
             {
-                throw Refused($"{path}.entity", "not_a_door");
+                throw Refused($"{path}.entity", Code.NotADoor);
             }
             if (SafeInt(entry["min"]) is not { } min || SafeInt(entry["max"]) is not { } max
                 || !InRange(min) || !InRange(max) || min > max)
             {
-                throw Refused(path, "invalid_odds");
+                throw Refused(path, Code.InvalidOdds);
             }
             result.Add(new Odds(entity, Prop.JamPct, min, max));
         }
@@ -258,15 +259,15 @@ public static class SceneBuilder
         var oddsNode = run["odds"] as JsonArray;
         if (tickNode is null && slotsNode is null && poolNode is null && oddsNode is null)
         {
-            throw Refused("run", "empty_run");
+            throw Refused("run", Code.EmptyRun);
         }
         if (tickNode is not null && (SafeInt(tickNode) is not { } limit || limit < 1))
         {
-            throw Refused("run.tick_limit", "invalid_run");
+            throw Refused("run.tick_limit", Code.InvalidRun);
         }
         if (slotsNode is { Count: 0 })
         {
-            throw Refused("run.slots", "invalid_run");
+            throw Refused("run.slots", Code.InvalidRun);
         }
 
         // A slot is one id, or a list of several named bodies; a list of one is stored as its id.
@@ -280,21 +281,21 @@ public static class SceneBuilder
             List<string?> members = entry is JsonArray list ? [.. list.Select(Text)] : [Text(entry)];
             if (members.Count == 0)
             {
-                throw Refused(path, "invalid_run");
+                throw Refused(path, Code.InvalidRun);
             }
             var ids = new List<string>(members.Count);
             for (var member = 0; member < members.Count; member++)
             {
-                var name = members[member] ?? throw Refused(path, "invalid_run");
+                var name = members[member] ?? throw Refused(path, Code.InvalidRun);
                 var memberPath = group ? $"{path}[{member}]" : path;
                 var id = Named(names, name, memberPath);
                 if (!Reach.IsAgent(snapshot, id))
                 {
-                    throw Refused(memberPath, "not_an_agent");
+                    throw Refused(memberPath, Code.NotAnAgent);
                 }
                 if (bodies.Contains(id))
                 {
-                    throw Refused(memberPath, "duplicate_slot");
+                    throw Refused(memberPath, Code.DuplicateSlot);
                 }
                 bodies.Add(id);
                 ids.Add(id);

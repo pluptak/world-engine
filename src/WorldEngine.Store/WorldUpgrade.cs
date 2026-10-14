@@ -19,7 +19,7 @@ public static class WorldUpgrade
         var missing = TemplateResolver.MissingCompanions(target);
         if (missing.Count > 0)
         {
-            throw new WorldError("invalid_templates", $"Missing detached part template {missing[0]}");
+            throw new WorldError(Code.InvalidTemplates, $"Missing detached part template {missing[0]}");
         }
         return WorldLock.With(dir, () =>
         {
@@ -32,7 +32,7 @@ public static class WorldUpgrade
                 || WorldWriter.Canonical(replayed.Events) != WorldWriter.Canonical(WorldFiles.ReadEvents(dir))
                 || WorldWriter.Canonical(replayed.Deltas) != WorldWriter.Canonical(WorldFiles.ReadDeltas(dir)))
             {
-                throw new WorldError("replay_diverges", $"History replays to version {replayed.Snapshot.Version}, not {current.Version}");
+                throw new WorldError(Code.ReplayDiverges, $"History replays to version {replayed.Snapshot.Version}, not {current.Version}");
             }
             WriteTemplates(dir, target);
             return WorldSettle.Load(dir, target);
@@ -62,7 +62,7 @@ public static class WorldUpgrade
             {
                 throw Upgrade.LostError(lost);
             }
-            throw new WorldError("templates_changed", "Template hash mismatch");
+            throw new WorldError(Code.TemplatesChanged, "Template hash mismatch");
         }
         // The stored snapshot is judged at its own version, since it may lag the log: it must be the replay there.
         var atStored = ReplayToVersion(dir, snapshot.Version, registry);
@@ -73,7 +73,7 @@ public static class WorldUpgrade
             || (head.DeltasBytes is not null && File.Exists(deltasPath)
                 && WorldWriter.Canonical(folded.Deltas) != WorldWriter.Canonical(WorldFiles.ReadDeltas(dir))))
         {
-            throw new WorldError("templates_changed", "Template hash mismatch");
+            throw new WorldError(Code.TemplatesChanged, "Template hash mismatch");
         }
         WorldCheckpoints.Drop(dir);
         WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.InitialSnapshot), WorldWriter.Canonical(initial with { TemplatesHash = frozen }));

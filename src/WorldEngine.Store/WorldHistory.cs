@@ -28,7 +28,7 @@ public static class WorldHistory
             var result = Pipeline.Apply(snapshot, registry, VerbRegistry.All, entry.Command);
             if (result.Status != Status.Ok)
             {
-                throw new WorldError("replay_diverges", $"Accepted command failed during replay at line {line}");
+                throw new WorldError(Code.ReplayDiverges, $"Accepted command failed during replay at line {line}");
             }
             // Collected by the version the command was applied to, as the TypeScript store does.
             if (snapshot.Version >= version)
@@ -69,7 +69,7 @@ public static class WorldHistory
             || events.Any(@event => @event.Entity == entity);
         if (!known)
         {
-            throw new WorldError("no_such_entity", $"No such entity {entity}");
+            throw new WorldError(Code.NoSuchEntity, $"No such entity {entity}");
         }
         return WorldEngine.Core.Engine.Trace.TraceField(events, deltas, entity!, field!);
     }
@@ -140,12 +140,12 @@ public static class WorldHistory
     {
         if (version < 0)
         {
-            throw new WorldError("invalid_version", $"Invalid version {version}");
+            throw new WorldError(Code.InvalidVersion, $"Invalid version {version}");
         }
         var current = Current(dir, registry);
         if (version > current.Version)
         {
-            throw new WorldError("future_version", $"Version {version} is ahead of {current.Version}");
+            throw new WorldError(Code.FutureVersion, $"Version {version} is ahead of {current.Version}");
         }
     }
 

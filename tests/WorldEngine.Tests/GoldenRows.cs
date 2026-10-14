@@ -38,7 +38,7 @@ public static class GoldenRows
                     {
                         row["issues"] = new JsonArray([.. issues.Select(issue => (JsonNode?)new JsonObject
                         {
-                            ["code"] = issue.Code,
+                            ["code"] = WorldJson.Name(issue.Code),
                             ["path"] = new JsonArray([.. issue.Path.Select(part => (JsonNode?)JsonValue.Create(part))]),
                             ["message"] = issue.Message,
                         })]);
@@ -50,7 +50,7 @@ public static class GoldenRows
                             Path: string.Join("/", issue["path"]!.AsArray().Select(part => part!.GetValue<string>())),
                             Message: issue["message"]!.GetValue<string>()))
                         .ToList();
-                    Assert.Equal(expected, issues.Select(issue => (issue.Code, Path: string.Join("/", issue.Path), issue.Message)).ToList());
+                    Assert.Equal(expected, issues.Select(issue => (WorldJson.Name(issue.Code), Path: string.Join("/", issue.Path), issue.Message)).ToList());
                     break;
                 default:
                     throw new InvalidDataException($"{name}: unknown row kind");

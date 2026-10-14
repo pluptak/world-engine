@@ -15,10 +15,10 @@ template ids, entity names and other author data. Replacing those with constants
 
 Each block is independently pausable and ends with `dotnet test WorldEngine.slnx` green.
 
-1. **Codes.** `ReasonCode` and `BasisCode` enums (`WorldJson` names enum members in snake_case, so they need no
-   attributes). `VerbSpec.Refuses` is a `ReasonCode` list, `Attempt.ReasonCode`, `WorldError.Code` and
-   `Answer.BasisCode` are typed, and the runtime check that a refusal is declared by its verb stays. Schedule cause kinds, capacity names the engine reads, and event types the
-   engine compares become enums or constants in the same pass.
+1. **Cause kinds, capacities and event types.** The schedule's cause kinds (`close`, `bleed`, `process`, `beat`), the
+   capacity names the engine reads (`manipulation`, `moving`, `speech`, `mouth_carry`) and the event types it compares
+   (`sounded`, `moved`, `say`, …) become enums or named constants by the rule below. With capacities typed,
+   `Pipeline.Insufficient` maps a capacity to its `insufficient_*` code by a switch instead of parsing the name.
 2. **Typed verb specs.** `VerbSpec` holds records, not JSON text: `Args` as a map of `ArgSpec`, `Duration`,
    `CarryAlternative`, `AttackMode`. The catalog serializes them; its golden is regenerated.
 3. **Scheduled causes as types.** `ScheduledCause` splits into `CloseCause`, `BleedCause`, `ProcessCause` and `BeatCause`
@@ -33,6 +33,9 @@ Each block is independently pausable and ends with `dotnet test WorldEngine.slnx
   `props.Is(Prop.Open)` and `props.Get(Prop.LiquidAmount)` (`long?`); writes are `props.With(...)` and `Without(...)`, a copy
   for `Working.SetProps`. A props bag indexed by a literal key fails `PropTests`. A word that is also a reason code, an event
   type or a reason-data key (`"locked"`, `"lit"`, `"to"`) is that vocabulary's, not the prop's.
+- Every machine code is a member of `Code` (`Model/Code.cs`): reason, basis, invariant and refused-input codes are one
+  vocabulary, since an edit refuses with the invariant it would break. A new code is one member there. Where a status
+  stands in for a missing code (`ambiguous`), `Pipeline.ReasonName` gives the string.
 - A vocabulary a caller may extend stays a string with named constants and one list: `Sense` (a request may name a sense the
   engine has no rule for, which answers `engine_incapable`).
 

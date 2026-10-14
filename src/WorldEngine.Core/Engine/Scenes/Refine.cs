@@ -72,18 +72,18 @@ public static class Refine
     {
         if (!DescendsFrom(next, subject.Template))
         {
-            return Pipeline.Refused("not_a_refinement");
+            return Pipeline.Refused(Code.NotARefinement);
         }
         if (RefinedParts(subject, next) is null)
         {
-            return Pipeline.Refused("unknown_part");
+            return Pipeline.Refused(Code.UnknownPart);
         }
         // A part cannot be sounder than the new preset lets it be.
         foreach (var (name, state) in subject.Parts)
         {
             if (state.Integrity > next.Parts.First(part => part.Name == name).MaxIntegrity)
             {
-                return Pipeline.Refused("integrity_out_of_range");
+                return Pipeline.Refused(Code.IntegrityOutOfRange);
             }
         }
         var props = RefinedProps(subject, next);
@@ -112,7 +112,7 @@ public static class Refine
                 }
                 if (!props.Is(Prop.Surface))
                 {
-                    return Pipeline.Refused("not_a_surface");
+                    return Pipeline.Refused(Code.NotASurface);
                 }
                 if (registry.GetValueOrDefault(rider.Template) is { } riderTemplate
                     && Fit.Misfit(new double[] { riderTemplate.SizeCm.W, riderTemplate.SizeCm.D }, footprint) is { } data)
@@ -128,12 +128,12 @@ public static class Refine
         {
             return new Pipeline.Refusal(
                 Status.Refused,
-                "liquid_exceeds_capacity",
+                Code.LiquidExceedsCapacity,
                 Pipeline.Reason(("held", amount), ("capacity", limit)));
         }
         return null;
     }
 
     private static Pipeline.Refusal TooLarge((double ItemCm, double SpaceCm) misfit) =>
-        new(Status.Refused, "too_large", Pipeline.Reason(("item_cm", misfit.ItemCm), ("space_cm", misfit.SpaceCm)));
+        new(Status.Refused, Code.TooLarge, Pipeline.Reason(("item_cm", misfit.ItemCm), ("space_cm", misfit.SpaceCm)));
 }

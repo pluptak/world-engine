@@ -25,12 +25,12 @@ public class CatalogGoldenTests
         var snapshot = WorldJson.Read<Snapshot>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "edit-base.snapshot.json")));
         var undeclared = WaitVerb.Wait with
         {
-            Preconditions = _ => new Pipeline.Refusal(Status.Refused, "not_declared"),
+            Preconditions = _ => new Pipeline.Refusal(Status.Refused, Code.Locked),
         };
         var verbs = new Dictionary<string, Pipeline.VerbDecl> { ["wait"] = undeclared };
         var command = new Command("c1", "e4", "wait", Args: new Dictionary<string, JsonNode?> { ["ticks"] = JsonValue.Create(1L) });
 
         var error = Assert.Throws<InvalidOperationException>(() => Pipeline.Apply(snapshot, TestTemplates.RepoRegistry, verbs, command));
-        Assert.Equal("Verb wait refused with undeclared code not_declared", error.Message);
+        Assert.Equal("Verb wait refused with undeclared code locked", error.Message);
     }
 }

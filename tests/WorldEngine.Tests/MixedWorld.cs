@@ -92,7 +92,7 @@ internal static class MixedWorld
         return new JsonObject { ["verify"] = first, ["open"] = opened, ["verify_after"] = VerifyOf(), ["files"] = files };
     }
 
-    public static string CodeOf(Exception error) => error is WorldError world ? world.Code : "error";
+    public static string CodeOf(Exception error) => error is WorldError world ? WorldJson.Name(world.Code) : "error";
 
     public static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 

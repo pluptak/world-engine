@@ -27,7 +27,7 @@ public class SnapshotValidationTests
                 .Select(issue => Describe(issue!["code"]!.GetValue<string>(), [.. issue["path"]!.AsArray().Select(part => part!.GetValue<string>())]))
                 .ToList();
             var actual = SnapshotValidation.Validate(snapshot, Registry)
-                .Select(issue => Describe(issue.Code, issue.Path))
+                .Select(issue => Describe(WorldJson.Name(issue.Code), issue.Path))
                 .ToList();
 
             Assert.True(expected.SequenceEqual(actual), $"{name}: expected [{string.Join("; ", expected)}] but got [{string.Join("; ", actual)}]");

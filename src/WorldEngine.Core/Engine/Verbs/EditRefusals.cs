@@ -25,24 +25,24 @@ public static partial class EditVerb
         var fields = edit.Fields;
         if (!context.Registry.TryGetValue(edit.Template, out var template))
         {
-            return Invalid("unknown_template");
+            return Invalid(Code.UnknownTemplate);
         }
         if (fields.Support is not null && fields.ContainedIn is not null)
         {
-            return Refused("conflicting_placement");
+            return Refused(Code.ConflictingPlacement);
         }
         if (Missing(snapshot, edit.Location?.Value) || Missing(snapshot, fields.Support) || Missing(snapshot, fields.ContainedIn))
         {
-            return Invalid("no_such_entity");
+            return Invalid(Code.NoSuchEntity);
         }
         var (located, location) = SpawnLocation(snapshot, edit);
         if (!located)
         {
-            return Invalid("invalid_location");
+            return Invalid(Code.InvalidLocation);
         }
         if (location is not null && snapshot.Entities[location].Template != TemplateIds.Room)
         {
-            return Invalid("invalid_location");
+            return Invalid(Code.InvalidLocation);
         }
         // A location the chain does not give is a derived field written as something else; so is any modifier, since
         // every modifier is caused by an event.
@@ -50,11 +50,11 @@ public static partial class EditVerb
             && Placements.DerivedLocationOf(snapshot, fields.Support, fields.ContainedIn, out var derived)
             && derived != given.Value)
         {
-            return Refused("derived_field");
+            return Refused(Code.DerivedField);
         }
         if (edit.HasModifiers)
         {
-            return Refused("derived_field");
+            return Refused(Code.DerivedField);
         }
         // The definitions the spawn would carry are the template's, with the override's props merged over them.
         var carried = new Dictionary<string, JsonNode?>(template.Props, StringComparer.Ordinal);
@@ -64,29 +64,29 @@ public static partial class EditVerb
         }
         if (DefinitionWritten(template, carried) is not null)
         {
-            return Refused("field_not_editable");
+            return Refused(Code.FieldNotEditable);
         }
         if (fields.Support is not null && snapshot.Entities.GetValueOrDefault(fields.Support)?.Template == TemplateIds.Room)
         {
             if (fields.Pos is null)
             {
-                return Refused("room_support_without_pos");
+                return Refused(Code.RoomSupportWithoutPos);
             }
         }
         else if (fields.Pos is not null)
         {
-            return Refused("pos_without_room_support");
+            return Refused(Code.PosWithoutRoomSupport);
         }
         if (fields.DetachedFrom is { } origin)
         {
             if (!snapshot.Entities.TryGetValue(origin.Entity, out var owner)
                 || !context.Registry.TryGetValue(owner.Template, out var ownerTemplate))
             {
-                return Invalid("no_such_entity");
+                return Invalid(Code.NoSuchEntity);
             }
             if (!ownerTemplate.Parts.Any(part => part.Name == origin.Part))
             {
-                return Refused("unknown_part");
+                return Refused(Code.UnknownPart);
             }
         }
         return null;
@@ -112,7 +112,7 @@ public static partial class EditVerb
         {
             return null;
         }
-        return snapshot.Entities.Values.Any(entity => entity.Location == subject.Id) ? Refused("occupied_room") : null;
+        return snapshot.Entities.Values.Any(entity => entity.Location == subject.Id) ? Refused(Code.OccupiedRoom) : null;
     }
 
     // Nothing is both held and supported: setting one relation clears the other, and asking for both is refused.
@@ -148,19 +148,19 @@ public static partial class EditVerb
         // An anchor says where the entity is, so it cannot sit beside a holder the author also named.
         if (edit.Support?.Value is not null || edit.ContainedIn?.Value is not null)
         {
-            refusal = Refused("conflicting_placement");
+            refusal = Refused(Code.ConflictingPlacement);
             return edit;
         }
         if (!snapshot.Entities.TryGetValue(offset.Anchor, out var anchor))
         {
-            refusal = Invalid("no_such_entity");
+            refusal = Invalid(Code.NoSuchEntity);
             return edit;
         }
         var room = anchor.Support is null ? null : snapshot.Entities.GetValueOrDefault(anchor.Support);
         var at = room?.Template == TemplateIds.Room ? Geometry.EffectivePos(snapshot, anchor.Id) : null;
         if (at is not { } basePos)
         {
-            refusal = Refused("anchor_not_room_supported");
+            refusal = Refused(Code.AnchorNotRoomSupported);
             return edit;
         }
         return edit with
@@ -180,25 +180,25 @@ public static partial class EditVerb
         }
         if (NormalizedPlacement(subject, edit) is not { } placement)
         {
-            return Refused("conflicting_placement");
+            return Refused(Code.ConflictingPlacement);
         }
         if (Missing(context.Snapshot, placement.Support) || Missing(context.Snapshot, placement.Contained))
         {
-            return Invalid("no_such_entity");
+            return Invalid(Code.NoSuchEntity);
         }
         if (placement.Support is not null && Address.WouldLoop(context.Snapshot, edit.Target, placement.Support))
         {
-            return Refused("circular_placement");
+            return Refused(Code.CircularPlacement);
         }
         if (placement.Contained is not null && Address.WouldLoop(context.Snapshot, edit.Target, placement.Contained))
         {
-            return Refused("circular_placement");
+            return Refused(Code.CircularPlacement);
         }
         if (placement.Support is not null && context.Snapshot.Entities[placement.Support].Template == TemplateIds.Room)
         {
-            return placement.Pos is null ? Refused("room_support_without_pos") : null;
+            return placement.Pos is null ? Refused(Code.RoomSupportWithoutPos) : null;
         }
-        return placement.Pos is not null ? Refused("pos_without_room_support") : null;
+        return placement.Pos is not null ? Refused(Code.PosWithoutRoomSupport) : null;
     }
 
     // Whether the role a command was sent under may send this kind of edit (src/engine/verbs/edit.ts `roleMay`): the author
@@ -214,13 +214,13 @@ public static partial class EditVerb
         var run = snapshot.Run;
         if (run is null)
         {
-            return Refused("no_run");
+            return Refused(Code.NoRun);
         }
         if (start)
         {
-            return run.State == "registering" ? null : Refused("run_not_registering");
+            return run.State == "registering" ? null : Refused(Code.RunNotRegistering);
         }
-        return run.State == "running" ? null : Refused("run_not_running");
+        return run.State == "running" ? null : Refused(Code.RunNotRunning);
     }
 
     // A registration binds a handle to one of a registering run's slots, named by its first body: one slot per handle, one
@@ -230,22 +230,22 @@ public static partial class EditVerb
         var run = snapshot.Run;
         if (run is null)
         {
-            return Refused("no_run");
+            return Refused(Code.NoRun);
         }
         if (run.State != "registering")
         {
-            return Refused("run_not_registering");
+            return Refused(Code.RunNotRegistering);
         }
         if (!Runs.SlotRoots(snapshot).Contains(edit.Slot))
         {
-            return Refused("no_such_slot");
+            return Refused(Code.NoSuchSlot);
         }
         var players = run.Players ?? [];
         if (players.Any(player => player.Slot == edit.Slot))
         {
-            return Refused("slot_taken");
+            return Refused(Code.SlotTaken);
         }
-        return players.Any(player => player.Handle == edit.Handle) ? Refused("handle_taken") : null;
+        return players.Any(player => player.Handle == edit.Handle) ? Refused(Code.HandleTaken) : null;
     }
 
     // A pool beat is played once, at a tick ahead of the clock, under an id nothing pending already carries.
@@ -254,17 +254,17 @@ public static partial class EditVerb
         var run = snapshot.Run;
         if (run is null)
         {
-            return Refused("no_run");
+            return Refused(Code.NoRun);
         }
         if (!(run.Pool ?? []).Any(beat => PoolId(beat) == edit.Id))
         {
-            return Refused("no_such_pool_beat");
+            return Refused(Code.NoSuchPoolBeat);
         }
         if (edit.AtTick <= snapshot.Tick)
         {
-            return Refused("beat_in_past");
+            return Refused(Code.BeatInPast);
         }
-        return Beats.PendingBeatIds(Schedule.Pending(snapshot)).Contains(edit.Id) ? Refused("duplicate_beat") : null;
+        return Beats.PendingBeatIds(Schedule.Pending(snapshot)).Contains(edit.Id) ? Refused(Code.DuplicateBeat) : null;
     }
 
     // A door's odds are steered only where the scene gave a range, and within it.
@@ -273,14 +273,14 @@ public static partial class EditVerb
         var run = snapshot.Run;
         if (run is null)
         {
-            return Refused("no_run");
+            return Refused(Code.NoRun);
         }
         var odds = (run.Odds ?? []).FirstOrDefault(entry => entry.Entity == edit.Entity && entry.Prop == Prop.JamPct);
         if (odds is null)
         {
-            return Refused("not_steerable");
+            return Refused(Code.NotSteerable);
         }
-        return edit.Value < odds.Min || edit.Value > odds.Max ? Refused("out_of_range") : null;
+        return edit.Value < odds.Min || edit.Value > odds.Max ? Refused(Code.OutOfRange) : null;
     }
 
     // The id a pool beat's body names, or null when it names none.
@@ -292,7 +292,7 @@ public static partial class EditVerb
         ScheduleBeatEdit scheduled => ScheduleBeatRefusal(context, scheduled.Beat),
         CancelBeatEdit cancelled => Schedule.Pending(context.Snapshot).Any(cause => cause.Kind == "beat" && cause.Id == cancelled.Id)
             ? null
-            : Refused("no_such_beat"),
+            : Refused(Code.NoSuchBeat),
         RetimeBeatEdit moved => RetimeBeatRefusal(context, moved),
         _ => throw new InvalidOperationException("Unknown beat edit"),
     };
@@ -305,14 +305,14 @@ public static partial class EditVerb
         var subject = Beats.ActionSubject((JsonObject)beat["action"]!);
         if (subject is null || !snapshot.Entities.ContainsKey(subject))
         {
-            return Invalid("no_such_entity");
+            return Invalid(Code.NoSuchEntity);
         }
         foreach (var condition in Beats.EditConditions(beat))
         {
             if (condition is JsonObject { } obj && obj.ContainsKey("all")
                 && Beats.ConditionSubjects(condition).Any(id => !snapshot.Entities.ContainsKey(id)))
             {
-                return Invalid("no_such_entity");
+                return Invalid(Code.NoSuchEntity);
             }
         }
         foreach (var action in Beats.EditActions(beat))
@@ -324,19 +324,19 @@ public static partial class EditVerb
         }
         if (Int(beat["at_tick"]) is not { } atTick)
         {
-            return Invalid("invalid_args");
+            return Invalid(Code.InvalidArgs);
         }
         if (atTick <= snapshot.Tick)
         {
-            return Refused("beat_in_past");
+            return Refused(Code.BeatInPast);
         }
         var ids = Beats.EditIds(beat);
         var taken = Beats.PendingBeatIds(Schedule.Pending(snapshot));
         if (ids.Distinct(StringComparer.Ordinal).Count() != ids.Count || ids.Any(id => taken.Contains(id)))
         {
-            return Refused("duplicate_beat");
+            return Refused(Code.DuplicateBeat);
         }
-        return ids.Count + taken.Count > Beats.MaxBeats ? Refused("too_many_beats") : null;
+        return ids.Count + taken.Count > Beats.MaxBeats ? Refused(Code.TooManyBeats) : null;
     }
 
     // Whether the beat may be moved now (src/engine/verbs/edit.ts retimeBeatRefusal): it is pending, nothing it would write is
@@ -346,7 +346,7 @@ public static partial class EditVerb
         var cause = Schedule.Pending(context.Snapshot).FirstOrDefault(entry => entry.Kind == "beat" && entry.Id == edit.Id);
         if (cause is null)
         {
-            return Refused("no_such_beat");
+            return Refused(Code.NoSuchBeat);
         }
         // A beat queued with a write to a definition is not moved to a tick where it would be skipped: the same refusal a
         // schedule gives.
@@ -358,29 +358,29 @@ public static partial class EditVerb
                 return Refused(code);
             }
         }
-        return edit.AtTick <= context.Snapshot.Tick ? Refused("beat_in_past") : null;
+        return edit.AtTick <= context.Snapshot.Tick ? Refused(Code.BeatInPast) : null;
     }
 
     private static Pipeline.Refusal? PropsRefusal(Pipeline.CommandContext context, Entity subject, PropsEdit edit)
     {
         if (!context.Registry.TryGetValue(subject.Template, out var template))
         {
-            return Invalid("unknown_template");
+            return Invalid(Code.UnknownTemplate);
         }
         // `set_props` replaces every prop, so it must carry the template's definitions along; `update_props` merges.
         IReadOnlyDictionary<string, JsonNode?> resulting = edit.Kind == "set_props"
             ? edit.Props
             : Merge(subject.Props, edit.Props);
-        return DefinitionWritten(template, resulting) is null ? null : Refused("field_not_editable");
+        return DefinitionWritten(template, resulting) is null ? null : Refused(Code.FieldNotEditable);
     }
 
     private static Pipeline.Refusal? PartRefusal(IReadOnlyDictionary<string, Template> registry, Entity subject, string part)
     {
         if (!registry.TryGetValue(subject.Template, out var template))
         {
-            return Invalid("unknown_template");
+            return Invalid(Code.UnknownTemplate);
         }
-        return template.Parts.Any(decl => decl.Name == part) ? null : Refused("unknown_part");
+        return template.Parts.Any(decl => decl.Name == part) ? null : Refused(Code.UnknownPart);
     }
 
     // The definition prop a write changes, or null. An entity stores a copy of its template's props, so repeating a
@@ -419,9 +419,9 @@ public static partial class EditVerb
         {
             return null;
         }
-        if (first.Code == "support_or_containment_cycle")
+        if (first.Code == Code.SupportOrContainmentCycle)
         {
-            return Refused("circular_placement");
+            return Refused(Code.CircularPlacement);
         }
         // An undeclared code is the pipeline's to catch (`AssertDeclared`), as in TypeScript; a beat's edit asks this too, and treats any
         // refusal as a failed beat.

@@ -34,11 +34,11 @@ public static class ScenarioResolver
             }
             if (name.Length == 0 || AllocatedId.IsMatch(name))
             {
-                throw new WorldError("invalid_name", $"Invalid scenario name {name} at entry {index}");
+                throw new WorldError(Code.InvalidName, $"Invalid scenario name {name} at entry {index}");
             }
             if (ids.ContainsKey(name))
             {
-                throw new WorldError("duplicate_name", $"Duplicate scenario name {name} at entry {index}");
+                throw new WorldError(Code.DuplicateName, $"Duplicate scenario name {name} at entry {index}");
             }
             ids[name] = allocated[index];
         }
@@ -46,7 +46,7 @@ public static class ScenarioResolver
         // A declared name, else a literal id this scenario allocates.
         string? Known(string value) => ids.TryGetValue(value, out var named) ? named : allocated.Contains(value) ? value : null;
         string Reference(string value, int index) =>
-            Known(value) ?? throw new WorldError("unknown_name", $"Unknown name {value} at entry {index}");
+            Known(value) ?? throw new WorldError(Code.UnknownName, $"Unknown name {value} at entry {index}");
 
         var mapped = new List<JsonObject>(scenario.Count);
         for (var index = 0; index < scenario.Count; index++)
@@ -128,11 +128,11 @@ public static class ScenarioResolver
             // An anchor says where the entity is, so it cannot sit beside a holder the author also named.
             if (HolderFields.Any(field => overrides[field] is not null))
             {
-                throw new WorldError("conflicting_placement", $"Entry {index} names a holder and an anchor position");
+                throw new WorldError(Code.ConflictingPlacement, $"Entry {index} names a holder and an anchor position");
             }
             var anchorName = Text(written!["anchor"]) ?? "";
             var anchorId = Known(anchorName)
-                ?? throw new WorldError("unknown_anchor", $"Unknown anchor {anchorName} at entry {index}");
+                ?? throw new WorldError(Code.UnknownAnchor, $"Unknown anchor {anchorName} at entry {index}");
             var anchor = byId.GetValueOrDefault(anchorId);
             var anchorOverrides = anchor?["overrides"] as JsonObject;
             var room = Text(anchorOverrides?["support"]);
@@ -141,7 +141,7 @@ public static class ScenarioResolver
             // An anchor is a fixed point: it stands in a room, and its own position is not another anchor.
             if (anchor is null || room is null || roomTemplate != TemplateIds.Room || !IsPos(origin))
             {
-                throw new WorldError("anchor_not_room_supported", $"Anchor {anchorName} at entry {index} is not a fixed point in a room");
+                throw new WorldError(Code.AnchorNotRoomSupported, $"Anchor {anchorName} at entry {index} is not a fixed point in a room");
             }
             // The offset becomes a stored pos and the anchor's room the holder. The anchor is not recorded: the entity is simply in
             // that room at that position, exactly as if it had been written there.

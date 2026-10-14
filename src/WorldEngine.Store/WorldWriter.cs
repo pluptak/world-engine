@@ -30,7 +30,7 @@ public static class WorldWriter
     {
         if (!WorldFiles.Exists(dir))
         {
-            throw new WorldError("no_such_world", $"No world at {dir}");
+            throw new WorldError(Code.NoSuchWorld, $"No world at {dir}");
         }
         return WorldLock.With(dir, () => SubmitLocked(dir, registry, command, basedOn, round, decided, snapshotEvery, checkpointEvery));
     }
@@ -139,7 +139,7 @@ public static class WorldWriter
             var result = Pipeline.Apply(snapshot, registry, VerbRegistry.All, entry.Command);
             if (result.Status != Status.Ok)
             {
-                throw new WorldError("replay_diverges", $"Accepted command failed during replay at line {line}");
+                throw new WorldError(Code.ReplayDiverges, $"Accepted command failed during replay at line {line}");
             }
             snapshot = result.Snapshot;
         }

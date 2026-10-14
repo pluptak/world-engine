@@ -43,7 +43,7 @@ public class WorldStaleTests : IDisposable
             var command = WorldJson.Read<Command>(item!["command"]!.ToJsonString());
             var basedOn = item["based_on"] is { } value ? value.GetValue<long>() : (long?)null;
             var result = WorldWriter.Submit(dir, registry, command, basedOn, snapshotEvery: 2, checkpointEvery: 2);
-            statuses.Add(result.Status.ToString().ToLowerInvariant() + (result.ReasonCode is null ? "" : ":" + result.ReasonCode));
+            statuses.Add(result.Status.ToString().ToLowerInvariant() + (result.ReasonCode is { } code ? ":" + WorldJson.Name(code) : ""));
         }
 
         Assert.Equal(

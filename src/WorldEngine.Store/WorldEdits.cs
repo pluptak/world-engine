@@ -23,7 +23,7 @@ public static class WorldEdits
     {
         if (!WorldFiles.Exists(dir))
         {
-            throw new WorldError("no_such_world", $"No world at {dir}");
+            throw new WorldError(Code.NoSuchWorld, $"No world at {dir}");
         }
         return WorldLock.With(dir, () =>
         {

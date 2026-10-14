@@ -62,7 +62,7 @@ public static class WorldFiles
         }
         catch (Exception error)
         {
-            throw new WorldError("invalid_templates", $"Unreadable template set at {path}: {error.Message}");
+            throw new WorldError(Code.InvalidTemplates, $"Unreadable template set at {path}: {error.Message}");
         }
     }
 
@@ -172,7 +172,7 @@ public static class WorldFiles
         }
         catch (Exception error) when (error is JsonException or FormatException)
         {
-            throw new WorldError("invalid_ids", $"Unreadable name map at {path}: {error.Message}");
+            throw new WorldError(Code.InvalidIds, $"Unreadable name map at {path}: {error.Message}");
         }
     }
 
@@ -185,7 +185,7 @@ public static class WorldFiles
             .ToList();
         if (missing.Count > 0)
         {
-            throw new WorldError("no_such_world", $"No world at {dir}: missing {string.Join(", ", missing)}");
+            throw new WorldError(Code.NoSuchWorld, $"No world at {dir}: missing {string.Join(", ", missing)}");
         }
         AssertSchema(dir);
     }
@@ -204,7 +204,7 @@ public static class WorldFiles
         if (JsonReads.SafeInt(found) != SchemaVersion)
         {
             throw new WorldError(
-                "unsupported_schema",
+                Code.UnsupportedSchema,
                 $"World at {dir} has schema_version {found?.ToJsonString() ?? "null"}, this engine reads {SchemaVersion}");
         }
     }

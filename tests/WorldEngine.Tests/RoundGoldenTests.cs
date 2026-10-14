@@ -50,7 +50,7 @@ public class RoundGoldenTests
         var result = new JsonObject { ["status"] = plan.Status.ToString().ToLowerInvariant() };
         if (plan.ReasonCode is not null)
         {
-            result["reason_code"] = plan.ReasonCode;
+            result["reason_code"] = WorldJson.Name(plan.ReasonCode.Value);
         }
         result["early"] = new JsonArray([.. plan.Early
             .OrderBy(entry => entry.Key)

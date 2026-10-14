@@ -87,7 +87,7 @@ public class MemoryGoldenTests
         var shape = new JsonObject { ["status"] = outcome.Status.ToString().ToLowerInvariant() };
         if (outcome.ReasonCode is not null)
         {
-            shape["reason_code"] = outcome.ReasonCode;
+            shape["reason_code"] = WorldJson.Name(outcome.ReasonCode.Value);
         }
         if (outcome.Number is not null)
         {
@@ -149,7 +149,7 @@ public class MemoryGoldenTests
                 args["sense"]!.GetValue<string>(),
                 args["event_id"]?.GetValue<string>(),
                 args["entity"]?.GetValue<string>());
-        return new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = answer.BasisCode };
+        return new JsonObject { ["value"] = WorldJson.Name(answer.Value), ["basis_code"] = WorldJson.Name(answer.BasisCode) };
     }
 
     private static JsonNode Trace(MemoryWorld world, JsonNode args) =>
@@ -176,7 +176,7 @@ public class MemoryGoldenTests
         }
         if (result.ReasonCode is not null)
         {
-            shape["reason_code"] = result.ReasonCode;
+            shape["reason_code"] = WorldJson.Name(result.ReasonCode.Value);
         }
         if (result.ReasonData is not null)
         {
@@ -207,7 +207,7 @@ public class MemoryGoldenTests
         }
         if (result.ReasonCode is not null)
         {
-            verdict["reason_code"] = result.ReasonCode;
+            verdict["reason_code"] = WorldJson.Name(result.ReasonCode.Value);
         }
         if (result.ReasonData is not null)
         {
@@ -228,7 +228,7 @@ public class MemoryGoldenTests
         }
         catch (WorldError error)
         {
-            return new JsonObject { ["status"] = "error", ["code"] = error.Code, ["message"] = error.Message };
+            return new JsonObject { ["status"] = "error", ["code"] = WorldJson.Name(error.Code), ["message"] = error.Message };
         }
     }
 

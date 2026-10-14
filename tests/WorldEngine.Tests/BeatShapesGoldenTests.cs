@@ -1,3 +1,5 @@
+using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 namespace WorldEngine.Tests;
 
 // The shape rules for a scheduled beat against TypeScript's (Fixtures/beat-shapes-golden.expected.json, from
@@ -22,6 +24,6 @@ public class BeatShapesGoldenTests
              "only_if":{"entity":"e5","prop":"fuel","op":"eq","value":1.5}}
             """)!.AsObject();
         var result = world.Edit(edit);
-        Assert.Equal(("invalid", "invalid_args"), (result.Status.ToString().ToLowerInvariant(), result.ReasonCode));
+        Assert.Equal((Status.Invalid, (Code?)Code.InvalidArgs), (result.Status, result.ReasonCode));
     }
 }

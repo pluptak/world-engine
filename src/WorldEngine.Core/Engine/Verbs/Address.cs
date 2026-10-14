@@ -28,7 +28,7 @@ public static class Address
     // `addressEntity`). A part is never such an entity; it is refused with `partReasonCode`.
     public sealed record Addressed(Entity? Entity, Pipeline.Refusal? Failure);
 
-    public static Addressed AddressEntity(Pipeline.CommandContext context, string text, string partReasonCode)
+    public static Addressed AddressEntity(Pipeline.CommandContext context, string text, Code partReasonCode)
     {
         var resolution = Resolve.ResolveTarget(context.Snapshot, context.Registry, context.Command.Actor, text);
         switch (resolution)
@@ -42,7 +42,7 @@ public static class Address
             case Resolve.Resolved resolved:
                 return context.Snapshot.Entities.TryGetValue(resolved.Target.EntityId, out var entity)
                     ? new Addressed(entity, null)
-                    : new Addressed(null, Pipeline.Invalid("no_such_entity"));
+                    : new Addressed(null, Pipeline.Invalid(Code.NoSuchEntity));
             default:
                 throw new InvalidOperationException("Unknown resolution");
         }
@@ -77,7 +77,7 @@ public static class Address
         var measure = ReachData(snapshot, actorId, targetId);
         return new Pipeline.Refusal(
             Status.Refused,
-            "out_of_reach",
+            Code.OutOfReach,
             measure is null ? null : Pipeline.Reason(("distance_cm", measure.DistanceCm), ("reach_cm", measure.ReachCm)));
     }
 
@@ -95,7 +95,7 @@ public static class Address
             ? null
             : new Pipeline.Refusal(
                 Status.Refused,
-                "too_big_for_gap",
+                Code.TooBigForGap,
                 Pipeline.Reason(("with", stop.With), ("size_cm", stop.SizeCm), ("gap_cm", stop.GapCm)));
     }
 

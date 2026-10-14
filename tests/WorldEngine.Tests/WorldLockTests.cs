@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
+using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 using WorldEngine.Store;
 
 namespace WorldEngine.Tests;
@@ -42,7 +44,7 @@ public class WorldLockTests : IDisposable
 
         var error = Assert.Throws<WorldError>(() => WorldLock.With(dir, () => 1, timeoutMs: 150));
 
-        Assert.Equal("store_busy", error.Code);
+        Assert.Equal(Code.StoreBusy, error.Code);
         Assert.True(started.ElapsedMilliseconds >= 150, "waited out the timeout");
         Assert.True(started.ElapsedMilliseconds < 3000, "gave up at the timeout asked for");
         Assert.True(File.Exists(LockPath), "a lock that is not stale is left to its holder");
@@ -73,7 +75,7 @@ public class WorldLockTests : IDisposable
 
         var error = Assert.Throws<WorldError>(() => WorldLock.With(dir, () => 1, timeoutMs: 150));
 
-        Assert.Equal("store_busy", error.Code);
+        Assert.Equal(Code.StoreBusy, error.Code);
         Assert.True(File.Exists(LockPath));
     }
 
@@ -200,7 +202,7 @@ public class WorldLockTests : IDisposable
         using (new FileStream($"{LockPath}.takeover", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 1, FileOptions.DeleteOnClose))
         {
             var error = Assert.Throws<WorldError>(() => WorldLock.With(dir, () => 1, timeoutMs: 150));
-            Assert.Equal("store_busy", error.Code);
+            Assert.Equal(Code.StoreBusy, error.Code);
             Assert.True(File.Exists(LockPath), "the stale lock is left while another takeover is under way");
         }
 

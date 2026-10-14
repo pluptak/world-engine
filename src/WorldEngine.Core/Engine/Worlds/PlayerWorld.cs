@@ -31,7 +31,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
                 ["actor"] = ActorAlias.Of(found.Root, id),
                 ["ready"] = new JsonArray(),
                 ["needs_args"] = new JsonArray(),
-                ["reason_code"] = "body_out",
+                ["reason_code"] = WorldJson.Name(Code.BodyOut),
             };
         }
         return new ActorWorld(world, id, found.Root, found.Bodies).OptionsOf(refused);
@@ -48,7 +48,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
                 ["status"] = "refused",
                 ["command_id"] = command.CommandId,
                 ["resolved_target"] = null,
-                ["reason_code"] = "body_out",
+                ["reason_code"] = WorldJson.Name(Code.BodyOut),
             };
         }
         return new ActorWorld(world, id, found.Root, found.Bodies).Check(command);
@@ -63,21 +63,21 @@ public sealed class PlayerWorld(IWorld world, string handle)
         var player = snapshot.Run?.Players?.FirstOrDefault(entry => entry.Handle == handle);
         if (player is null)
         {
-            return Refusal("not_registered");
+            return Refusal(Code.NotRegistered);
         }
         if (snapshot.Run?.State != "running")
         {
-            return Refusal("run_not_running");
+            return Refusal(Code.RunNotRunning);
         }
         var found = new Bound(player.Slot, Runs.DriverBodies(snapshot, player.Slot));
         var id = BodyNamed(found, body);
         if (id is null)
         {
-            return Refusal(body is null ? "body_required" : "not_a_body");
+            return Refusal(body is null ? Code.BodyRequired : Code.NotABody);
         }
         if (BodyOut(snapshot, id))
         {
-            return Refusal("body_out");
+            return Refusal(Code.BodyOut);
         }
         // The move is the body's own, read back from the view's aliases as the view's own `check` reads it.
         var command = new ActorWorld(world, id, found.Root, found.Bodies).Decode(move);
@@ -98,7 +98,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
         var found = BoundOf();
         if (found is null)
         {
-            return Refusal("not_registered");
+            return Refusal(Code.NotRegistered);
         }
         if (body is null)
         {
@@ -108,7 +108,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
         var id = BodyNamed(found, body);
         if (id is null)
         {
-            return Refusal("not_a_body");
+            return Refusal(Code.NotABody);
         }
         var snapshot = world.CurrentSnapshot();
         foreach (var held in world.Pending.Moves(handle).ToList())
@@ -126,7 +126,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
     {
         if (BoundOf() is null)
         {
-            return Refusal("not_registered");
+            return Refusal(Code.NotRegistered);
         }
         world.Pending.SetIdle(handle);
         return Ok();
@@ -181,7 +181,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
         return new ActorWorld(world, first, found.Root, found.Bodies);
     }
 
-    private Bound RequireBound() => BoundOf() ?? throw new WorldError("not_registered", $"No player is registered as {handle}");
+    private Bound RequireBound() => BoundOf() ?? throw new WorldError(Code.NotRegistered, $"No player is registered as {handle}");
 
     private Bound? BoundOf()
     {
@@ -206,7 +206,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
         var found = RequireBound();
         var id = BodyNamed(found, body);
         return id is null
-            ? throw new WorldError(body is null ? "body_required" : "not_a_body", $"No body {body ?? ""} is driven by {handle}")
+            ? throw new WorldError(body is null ? Code.BodyRequired : Code.NotABody, $"No body {body ?? ""} is driven by {handle}")
             : (found, id);
     }
 
@@ -219,5 +219,5 @@ public sealed class PlayerWorld(IWorld world, string handle)
 
     private static JsonObject Ok() => new() { ["status"] = "ok" };
 
-    private static JsonObject Refusal(string reasonCode) => new() { ["status"] = "refused", ["reason_code"] = reasonCode };
+    private static JsonObject Refusal(Code reasonCode) => new() { ["status"] = "refused", ["reason_code"] = WorldJson.Name(reasonCode) };
 }

@@ -20,11 +20,11 @@ public static class Projection
 
     // Where a heard sound came from, by the basis of the hearing that is true: the observer's own room, or through a doorway.
     // Any other basis for a true hearing is a rule this table does not know.
-    public static string HeardFrom(string basis) => basis switch
+    public static string HeardFrom(Code basis) => basis switch
     {
-        "same_location" => "here",
-        "adjacent_loud_event" => "next_door",
-        "intercom" => "intercom",
+        Code.SameLocation => "here",
+        Code.AdjacentLoudEvent => "next_door",
+        Code.Intercom => "intercom",
         _ => throw new InvalidOperationException($"Hearing is true with basis {basis}"),
     };
 

@@ -57,7 +57,7 @@ public sealed class ActorWorld
     {
         if (world.EntityOf(actor) is null)
         {
-            throw new WorldError("no_such_entity", $"Unknown actor {actor}");
+            throw new WorldError(Code.NoSuchEntity, $"Unknown actor {actor}");
         }
         this.world = world;
         this.actor = actor;
@@ -364,9 +364,9 @@ public sealed class ActorWorld
         {
             output["candidates"] = new JsonArray([.. result.Candidates.Select(candidate => (JsonNode?)Alias(candidate))]);
         }
-        if (result.ReasonCode is not null)
+        if (result.ReasonCode is { } code)
         {
-            output["reason_code"] = result.ReasonCode;
+            output["reason_code"] = WorldJson.Name(code);
         }
         if (data.Count > 0)
         {

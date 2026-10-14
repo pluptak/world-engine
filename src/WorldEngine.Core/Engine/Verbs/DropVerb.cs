@@ -21,25 +21,25 @@ public static class DropVerb
         var target = context.Target;
         if (target is null)
         {
-            return Pipeline.Invalid("missing_target");
+            return Pipeline.Invalid(Code.MissingTarget);
         }
         if (target.Part is not null)
         {
-            return Pipeline.Refused("not_carried");
+            return Pipeline.Refused(Code.NotCarried);
         }
         if (!context.Snapshot.Entities.TryGetValue(target.EntityId, out var entity))
         {
-            return Pipeline.Invalid("no_such_entity");
+            return Pipeline.Invalid(Code.NoSuchEntity);
         }
         var actor = context.Snapshot.Entities[context.Command.Actor];
         if (entity.ContainedIn != actor.Id)
         {
-            return Pipeline.Refused("not_carried");
+            return Pipeline.Refused(Code.NotCarried);
         }
         // A drop leaves from a grip; what sits in a space part (pocket) is taken out first.
         if (Carry.InSpacePart(context.Registry, actor, entity))
         {
-            return Pipeline.Refused("not_in_hand");
+            return Pipeline.Refused(Code.NotInHand);
         }
         return null;
     }

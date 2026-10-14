@@ -156,14 +156,14 @@ public static class Power
 
 public abstract record RemoteFault
 {
-    public abstract string ReasonCode { get; }
+    public abstract Code ReasonCode { get; }
 
     public abstract IReadOnlyDictionary<string, JsonNode?> ReasonData { get; }
 }
 
 public sealed record Disconnected(string At) : RemoteFault
 {
-    public override string ReasonCode => "disconnected";
+    public override Code ReasonCode => Code.Disconnected;
 
     public override IReadOnlyDictionary<string, JsonNode?> ReasonData =>
         new Dictionary<string, JsonNode?> { ["at"] = At };
@@ -171,7 +171,7 @@ public sealed record Disconnected(string At) : RemoteFault
 
 public sealed record Unpowered(string At, string Cut) : RemoteFault
 {
-    public override string ReasonCode => "unpowered";
+    public override Code ReasonCode => Code.Unpowered;
 
     public override IReadOnlyDictionary<string, JsonNode?> ReasonData =>
         new Dictionary<string, JsonNode?> { ["at"] = At, ["cut"] = Cut };

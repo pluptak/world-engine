@@ -11,12 +11,12 @@ public static class Runs
     // What the run's state refuses, or null. An ended run takes no command and no edit. One still registering takes no
     // command but an edit: its edits are how the author sets it going. A running one takes an agent's command and the
     // author's advance only in a round (`docs/rounds.md`), so a lone one is `round_only`.
-    public static string? RunRefusal(Snapshot snapshot, string verb, bool authored, bool round)
+    public static Code? RunRefusal(Snapshot snapshot, string verb, bool authored, bool round)
     {
         var state = snapshot.Run?.State;
         if (state == "ended")
         {
-            return "run_ended";
+            return Code.RunEnded;
         }
         if (verb == "edit")
         {
@@ -24,9 +24,9 @@ public static class Runs
         }
         if (state == "registering")
         {
-            return "run_not_running";
+            return Code.RunNotRunning;
         }
-        return state == "running" && !round && (!authored || verb == "advance") ? "round_only" : null;
+        return state == "running" && !round && (!authored || verb == "advance") ? Code.RoundOnly : null;
     }
 
     // The ticks a running run may still pass before its limit, or null when no limit applies.

@@ -39,7 +39,7 @@ public class OptionsGoldenTests
         }
         catch (WorldError error)
         {
-            return new JsonObject { ["status"] = "error", ["code"] = error.Code, ["message"] = error.Message };
+            return new JsonObject { ["status"] = "error", ["code"] = WorldJson.Name(error.Code), ["message"] = error.Message };
         }
     }
 }

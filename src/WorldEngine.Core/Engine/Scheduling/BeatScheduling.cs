@@ -102,7 +102,7 @@ public static partial class Beats
 
     // The code of the first prop a set_props or update_props action would write that its subject's template refuses, or null
     // (src/engine/validate.ts beatPropRefusal). A missing subject is judged where the beat is scheduled, not here.
-    public static string? PropRefusal(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, JsonObject action)
+    public static Code? PropRefusal(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, JsonObject action)
     {
         var kind = JsonReads.Text(action["kind"]);
         if (kind is not ("set_props" or "update_props") || !snapshot.Entities.TryGetValue(JsonReads.Text(action["target"])!, out var subject))
@@ -130,7 +130,7 @@ public static partial class Beats
         {
             resulting[name] = value?.DeepClone();
         }
-        return EditVerb.DefinitionWritten(template, resulting) is null ? null : "field_not_editable";
+        return EditVerb.DefinitionWritten(template, resulting) is null ? null : Code.FieldNotEditable;
     }
 
 }

@@ -9,7 +9,7 @@ using static WorldEngine.Core.Json.Integers;
 namespace WorldEngine.Core.Engine;
 
 // A rule a snapshot breaks: its code, the path to the field, and a detail (src/engine/validate.ts `SnapshotIssue`).
-public sealed record SnapshotIssue(string Code, IReadOnlyList<string> Path, string Message);
+public sealed record SnapshotIssue(Code Code, IReadOnlyList<string> Path, string Message);
 
 // The snapshot invariants (src/engine/validate.ts `validateSnapshot`), for the rules the .NET engine has ported.
 // Issues come in TypeScript's order, so the first one is the same code either side.
@@ -35,11 +35,11 @@ public static class SnapshotValidation
         // Coverage chooses among what the engine computes; a name it has no rule for is refused rather than answered.
         foreach (var name in snapshot.Coverage.Relations.Order(StringComparer.Ordinal).Where(name => !ComputedRelations.Contains(name)))
         {
-            issues.Add(Issue("coverage_not_computable", ["coverage", "relations", name], name));
+            issues.Add(Issue(Code.CoverageNotComputable, ["coverage", "relations", name], name));
         }
         foreach (var name in snapshot.Coverage.Senses.Order(StringComparer.Ordinal).Where(name => !Sense.All.Contains(name)))
         {
-            issues.Add(Issue("coverage_not_computable", ["coverage", "senses", name], name));
+            issues.Add(Issue(Code.CoverageNotComputable, ["coverage", "senses", name], name));
         }
 
         foreach (var id in snapshot.Entities.Keys.Order(StringComparer.Ordinal))
@@ -50,11 +50,11 @@ public static class SnapshotValidation
             var numeric = Regex.Match(id, @"^e(\d+)$");
             if (numeric.Success && double.Parse(numeric.Groups[1].Value, CultureInfo.InvariantCulture) >= snapshot.NextSeq)
             {
-                issues.Add(Issue("id_not_below_next_seq", path, $"next_seq {snapshot.NextSeq}"));
+                issues.Add(Issue(Code.IdNotBelowNextSeq, path, $"next_seq {snapshot.NextSeq}"));
             }
             if (!registry.ContainsKey(entity.Template))
             {
-                issues.Add(Issue("unknown_template", [.. path, "template"], entity.Template));
+                issues.Add(Issue(Code.UnknownTemplate, [.. path, "template"], entity.Template));
             }
             issues.AddRange(IntegrityIssues(snapshot, registry, id, path));
             issues.AddRange(CameraIssues(snapshot, id, path));
@@ -64,19 +64,19 @@ public static class SnapshotValidation
             issues.AddRange(ConcealmentIssues(snapshot, registry, reportedConcealLoops, id, path));
             issues.AddRange(HolderIssues(snapshot, registry, id, path));
             issues.AddRange(PropIssues(registry, entity, path));
-            issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => entity.Props.Get(Prop.PoweredBy)), id, reportedPowerLoops, path, "power_loop"));
-            issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => entity.Props.Get(Prop.ControlledBy)), id, reportedControlLoops, path, "control_loop"));
+            issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => entity.Props.Get(Prop.PoweredBy)), id, reportedPowerLoops, path, Code.PowerLoop));
+            issues.AddRange(LoopIssues(LinkLoop(snapshot, id, entity => entity.Props.Get(Prop.ControlledBy)), id, reportedControlLoops, path, Code.ControlLoop));
 
             // A room is where things are, never a thing somewhere: nothing holds, supports or hides it.
             if (entity.Template == TemplateIds.Room && (entity.Support is not null || entity.ContainedIn is not null || entity.ConcealedBy is not null))
             {
-                issues.Add(Issue("room_placed", path, $"support {entity.Support} contained_in {entity.ContainedIn}"));
+                issues.Add(Issue(Code.RoomPlaced, path, $"support {entity.Support} contained_in {entity.ContainedIn}"));
             }
 
             // One entity sits in one place: on something or inside something, never both.
             if (entity.Support is not null && entity.ContainedIn is not null)
             {
-                issues.Add(Issue("support_and_contained_in", path, $"support {entity.Support} contained_in {entity.ContainedIn}"));
+                issues.Add(Issue(Code.SupportAndContainedIn, path, $"support {entity.Support} contained_in {entity.ContainedIn}"));
             }
 
             // A missing link already has its issue; the rules below read chains, so they stay out of the way.
@@ -90,19 +90,19 @@ public static class SnapshotValidation
                     id,
                     reportedLoops,
                     path,
-                    "support_or_containment_cycle"));
+                    Code.SupportOrContainmentCycle));
 
                 var support = entity.Support is null ? null : snapshot.Entities.GetValueOrDefault(entity.Support);
                 if (support?.Template == TemplateIds.Room)
                 {
                     if (entity.Pos is null)
                     {
-                        issues.Add(Issue("room_support_without_pos", path, $"support {entity.Support}"));
+                        issues.Add(Issue(Code.RoomSupportWithoutPos, path, $"support {entity.Support}"));
                     }
                 }
                 else if (entity.Pos is not null)
                 {
-                    issues.Add(Issue("pos_without_room_support", path, $"support {entity.Support ?? "null"}"));
+                    issues.Add(Issue(Code.PosWithoutRoomSupport, path, $"support {entity.Support ?? "null"}"));
                 }
 
                 // Location is derived state: the room at the end of the support or containment chain.
@@ -111,7 +111,7 @@ public static class SnapshotValidation
                     if (Placements.DerivedLocationOf(snapshot, entity.Support, entity.ContainedIn, out var expected)
                         && entity.Location != expected)
                     {
-                        issues.Add(Issue("location_mismatch", path, $"location {entity.Location ?? "null"}"));
+                        issues.Add(Issue(Code.LocationMismatch, path, $"location {entity.Location ?? "null"}"));
                     }
                 }
             }
@@ -122,19 +122,19 @@ public static class SnapshotValidation
                 var state = entity.Parts[part];
                 if (state.Status == PartStatus.Detached && !AccountedFor(snapshot, registry, spawned, id, part))
                 {
-                    issues.Add(Issue("detached_part_without_entity", [.. path, "parts", part], "detached"));
+                    issues.Add(Issue(Code.DetachedPartWithoutEntity, [.. path, "parts", part], "detached"));
                 }
                 // A part at its template default is never stored, so each state has one stored form.
                 var decl = template?.Parts.FirstOrDefault(candidate => candidate.Name == part);
                 if (decl is not null && PartStates.IsDefault(decl, state))
                 {
-                    issues.Add(Issue("part_at_default", [.. path, "parts", part], "default"));
+                    issues.Add(Issue(Code.PartAtDefault, [.. path, "parts", part], "default"));
                 }
                 // A severed subtree is stored as its root alone; below it, state lives on the severed entity.
                 if (state.Status != PartStatus.Detached
                     && PartStates.Effective(template, entity, part)?.Status == PartStatus.Detached)
                 {
-                    issues.Add(Issue("part_under_detached", [.. path, "parts", part], WorldJson.Name(state.Status)));
+                    issues.Add(Issue(Code.PartUnderDetached, [.. path, "parts", part], WorldJson.Name(state.Status)));
                 }
             }
         }
@@ -144,12 +144,12 @@ public static class SnapshotValidation
         issues.AddRange(RunIssues(snapshot));
         if (snapshot.Rng is { } rng && !Rng.IsState(rng))
         {
-            issues.Add(Issue("invalid_rng", ["rng"], rng.ToString()));
+            issues.Add(Issue(Code.InvalidRng, ["rng"], rng.ToString()));
         }
         return issues;
     }
 
-    private static SnapshotIssue Issue(string code, IReadOnlyList<string> path, string message) =>
+    private static SnapshotIssue Issue(Code code, IReadOnlyList<string> path, string message) =>
         new(code, path, message);
 
     // JavaScript's truthiness for a prop value: absent, null, false, zero and the empty string are false.
@@ -199,7 +199,7 @@ public static class SnapshotValidation
         string id,
         HashSet<string> reported,
         IReadOnlyList<string> path,
-        string code)
+        Code code)
     {
         if (loop is null)
         {
@@ -292,7 +292,7 @@ public static class SnapshotValidation
         {
             return [];
         }
-        return [Issue("container_contents_too_large", [.. path, "contained_in"], $"holder {holder.Id}")];
+        return [Issue(Code.ContainerContentsTooLarge, [.. path, "contained_in"], $"holder {holder.Id}")];
     }
 
     // Traits describe and nothing reads them: at most 16 keys, each a key pattern and an utterance-shaped token.
@@ -306,18 +306,18 @@ public static class SnapshotValidation
         var keys = entity.Traits.Keys.Order(StringComparer.Ordinal).ToList();
         if (keys.Count == 0 || keys.Count > MaxTraits)
         {
-            return [Issue("invalid_trait", at, keys.Count == 0 ? "empty" : $"{keys.Count} traits")];
+            return [Issue(Code.InvalidTrait, at, keys.Count == 0 ? "empty" : $"{keys.Count} traits")];
         }
         var issues = new List<SnapshotIssue>();
         foreach (var key in keys)
         {
             if (!TraitKey.IsMatch(key))
             {
-                issues.Add(Issue("invalid_trait", [.. at, key], "key"));
+                issues.Add(Issue(Code.InvalidTrait, [.. at, key], "key"));
             }
             else if (!SayVerb.Utterance.IsMatch(entity.Traits[key]))
             {
-                issues.Add(Issue("invalid_trait", [.. at, key], "token"));
+                issues.Add(Issue(Code.InvalidTrait, [.. at, key], "token"));
             }
         }
         return issues;
@@ -333,21 +333,21 @@ public static class SnapshotValidation
         var issues = new List<SnapshotIssue>();
         if (entity.Integrity < 0 || entity.Integrity > Limits.MaxIntegrity)
         {
-            issues.Add(Issue("integrity_out_of_range", [.. path, "integrity"], $"integrity {entity.Integrity}"));
+            issues.Add(Issue(Code.IntegrityOutOfRange, [.. path, "integrity"], $"integrity {entity.Integrity}"));
         }
         // A partless thing is no higher than its template's `max_integrity`, which is 100 when it declares none.
         if (registry.TryGetValue(entity.Template, out var template)
             && template.Parts.Count == 0
             && entity.Integrity > (template.MaxIntegrity ?? Limits.MaxIntegrity))
         {
-            issues.Add(Issue("integrity_out_of_range", [.. path, "integrity"], $"integrity {entity.Integrity}"));
+            issues.Add(Issue(Code.IntegrityOutOfRange, [.. path, "integrity"], $"integrity {entity.Integrity}"));
         }
         foreach (var part in entity.Parts.Keys.Order(StringComparer.Ordinal))
         {
             var value = entity.Parts[part].Integrity;
             if (value < 0 || value > 100)
             {
-                issues.Add(Issue("integrity_out_of_range", [.. path, "parts", part, "integrity"], $"integrity {value}"));
+                issues.Add(Issue(Code.IntegrityOutOfRange, [.. path, "parts", part, "integrity"], $"integrity {value}"));
             }
         }
         return issues;
@@ -362,7 +362,7 @@ public static class SnapshotValidation
         {
             return [];
         }
-        return [Issue("camera_without_facing", [.. path, "props", Prop.FacingDeg.Name], Prop.FacingDeg.Name)];
+        return [Issue(Code.CameraWithoutFacing, [.. path, "props", Prop.FacingDeg.Name], Prop.FacingDeg.Name)];
     }
 
     private static List<SnapshotIssue> ReferenceIssues(Snapshot snapshot, string id, IReadOnlyList<string> path)
@@ -372,20 +372,20 @@ public static class SnapshotValidation
         // detached_from is history, not a live link, so it is not checked here.
         if (entity.Support is not null && !snapshot.Entities.ContainsKey(entity.Support))
         {
-            issues.Add(Issue("dangling_reference", [.. path, "support"], $"unknown entity {entity.Support}"));
+            issues.Add(Issue(Code.DanglingReference, [.. path, "support"], $"unknown entity {entity.Support}"));
         }
         if (entity.ContainedIn is not null && !snapshot.Entities.ContainsKey(entity.ContainedIn))
         {
-            issues.Add(Issue("dangling_reference", [.. path, "contained_in"], $"unknown entity {entity.ContainedIn}"));
+            issues.Add(Issue(Code.DanglingReference, [.. path, "contained_in"], $"unknown entity {entity.ContainedIn}"));
         }
         if (entity.Location is not null && !snapshot.Entities.ContainsKey(entity.Location))
         {
-            issues.Add(Issue("dangling_reference", [.. path, "location"], $"unknown entity {entity.Location}"));
+            issues.Add(Issue(Code.DanglingReference, [.. path, "location"], $"unknown entity {entity.Location}"));
         }
         // A concealer is present or nothing is hidden.
         if (entity.ConcealedBy is not null && !snapshot.Entities.ContainsKey(entity.ConcealedBy))
         {
-            issues.Add(Issue("dangling_reference", [.. path, "concealed_by"], $"unknown entity {entity.ConcealedBy}"));
+            issues.Add(Issue(Code.DanglingReference, [.. path, "concealed_by"], $"unknown entity {entity.ConcealedBy}"));
         }
         // Doors name the rooms they join in props: a side that names anything but a room is held to it.
         if (entity.Props.Get(Prop.From) is not null || entity.Props.Get(Prop.To) is not null)
@@ -399,11 +399,11 @@ public static class SnapshotValidation
                 }
                 if (!snapshot.Entities.TryGetValue(reference, out var target))
                 {
-                    issues.Add(Issue("dangling_reference", [.. path, "props", side.Name], $"unknown entity {reference}"));
+                    issues.Add(Issue(Code.DanglingReference, [.. path, "props", side.Name], $"unknown entity {reference}"));
                 }
                 else if (target.Template != TemplateIds.Room)
                 {
-                    issues.Add(Issue("door_side_not_room", [.. path, "props", side.Name], $"template {target.Template}"));
+                    issues.Add(Issue(Code.DoorSideNotRoom, [.. path, "props", side.Name], $"template {target.Template}"));
                 }
             }
         }
@@ -412,14 +412,14 @@ public static class SnapshotValidation
             var reference = entity.Props.Get(link);
             if (reference is not null && !snapshot.Entities.ContainsKey(reference))
             {
-                issues.Add(Issue("dangling_reference", [.. path, "props", link.Name], $"unknown entity {reference}"));
+                issues.Add(Issue(Code.DanglingReference, [.. path, "props", link.Name], $"unknown entity {reference}"));
             }
         }
         // A key's `opens` outlives the lock it names: an absent target is left alone, one that cannot be opened is not.
         var opens = entity.Props.Get(Prop.Opens);
         if (opens is not null && snapshot.Entities.TryGetValue(opens, out var openTarget) && !openTarget.Props.Is(Prop.Openable))
         {
-            issues.Add(Issue("opens_target_not_openable", [.. path, "props", Prop.Opens.Name], opens));
+            issues.Add(Issue(Code.OpensTargetNotOpenable, [.. path, "props", Prop.Opens.Name], opens));
         }
         // A door is closing only while it is open with its shut pending.
         if (entity.Props.Is(Prop.Closing))
@@ -428,7 +428,7 @@ public static class SnapshotValidation
                 && (snapshot.Schedule ?? []).Any(cause => cause.Kind == "close" && cause.Entity == entity.Id);
             if (!shutting)
             {
-                issues.Add(Issue("closing_without_close", [.. path, "props", Prop.Closing.Name], entity.Id));
+                issues.Add(Issue(Code.ClosingWithoutClose, [.. path, "props", Prop.Closing.Name], entity.Id));
             }
         }
         return issues;
@@ -450,13 +450,13 @@ public static class SnapshotValidation
         var issues = new List<SnapshotIssue>();
         if (Resolve.IsAbstract(registry, entity) || Resolve.IsAbstract(registry, concealer))
         {
-            issues.Add(Issue("concealed_by_abstract", path, entity.ConcealedBy));
+            issues.Add(Issue(Code.ConcealedByAbstract, path, entity.ConcealedBy));
         }
         if (entity.Location is null || entity.Location != concealer.Location)
         {
-            issues.Add(Issue("concealed_by_not_same_room", path, $"{entity.Location ?? "null"} {concealer.Location ?? "null"}"));
+            issues.Add(Issue(Code.ConcealedByNotSameRoom, path, $"{entity.Location ?? "null"} {concealer.Location ?? "null"}"));
         }
-        issues.AddRange(LoopIssues(LinkLoop(snapshot, id, next => next.ConcealedBy), id, reportedLoops, path, "concealed_by_cycle"));
+        issues.AddRange(LoopIssues(LinkLoop(snapshot, id, next => next.ConcealedBy), id, reportedLoops, path, Code.ConcealedByCycle));
         return issues;
     }
 
@@ -471,7 +471,7 @@ public static class SnapshotValidation
         {
             return entity.InPart is null
                 ? []
-                : [Issue("in_part_holder_mismatch", [.. path, "in_part"], $"in_part {entity.InPart}")];
+                : [Issue(Code.InPartHolderMismatch, [.. path, "in_part"], $"in_part {entity.InPart}")];
         }
         // A missing holder already has its dangling_reference; the rules below read the other end.
         if (!snapshot.Entities.TryGetValue(entity.ContainedIn, out var holder))
@@ -484,19 +484,19 @@ public static class SnapshotValidation
         {
             return declared.Count == 0
                 ? []
-                : [Issue("in_part_holder_mismatch", [.. path, "in_part"], $"holder {entity.ContainedIn}")];
+                : [Issue(Code.InPartHolderMismatch, [.. path, "in_part"], $"holder {entity.ContainedIn}")];
         }
         if (declared.Count == 0)
         {
-            return [Issue("in_part_holder_mismatch", [.. path, "in_part"], $"in_part {entity.InPart}")];
+            return [Issue(Code.InPartHolderMismatch, [.. path, "in_part"], $"in_part {entity.InPart}")];
         }
         if (!declared.Contains(entity.InPart))
         {
-            return [Issue("in_part_unknown_part", [.. path, "in_part"], entity.InPart)];
+            return [Issue(Code.InPartUnknownPart, [.. path, "in_part"], entity.InPart)];
         }
         if (!Carry.PartAvailable(snapshot, registry, entity.ContainedIn, entity.InPart))
         {
-            return [Issue("in_part_unavailable", [.. path, "in_part"], entity.InPart)];
+            return [Issue(Code.InPartUnavailable, [.. path, "in_part"], entity.InPart)];
         }
         return [];
     }
@@ -534,20 +534,20 @@ public static class SnapshotValidation
         {
             if (declaredType is null || !Prop.Matches(declaredType.Value, value))
             {
-                issues.Add(Issue("wrong_prop_type", path, $"props.{name} must be {(declaredType is { } type ? WorldJson.Name(type) : "declared")}"));
+                issues.Add(Issue(Code.WrongPropType, path, $"props.{name} must be {(declaredType is { } type ? WorldJson.Name(type) : "declared")}"));
             }
         }
         else
         {
-            issues.Add(Issue("undeclared_prop", path, $"props.{name} is not a declared prop"));
+            issues.Add(Issue(Code.UndeclaredProp, path, $"props.{name} is not a declared prop"));
         }
         if (engine?.Min is { } min && JsonReads.Number(value) is { } number && number < min)
         {
-            issues.Add(Issue("wrong_prop_type", path, $"props.{name} must be at least {min}"));
+            issues.Add(Issue(Code.WrongPropType, path, $"props.{name} must be at least {min}"));
         }
         if (engine?.Requires is { } requires && requires.Any(required => template is null || !Truthy(template.Props.GetValueOrDefault(required))))
         {
-            issues.Add(Issue("unmet_requires", path, $"props.{name} requires {string.Join(", ", requires)}"));
+            issues.Add(Issue(Code.UnmetRequires, path, $"props.{name} requires {string.Join(", ", requires)}"));
         }
         return issues;
     }
@@ -585,7 +585,7 @@ public static class SnapshotValidation
             var gripHeld = Carry.HeldInParts(snapshot, holderId).Where(item => grips.Contains(item.InPart)).ToList();
             if (Carry.PackGrips(grips, gripHeld) is null)
             {
-                issues.Add(Issue("grip_occupied", ["entities", holderId], $"holder {holderId}"));
+                issues.Add(Issue(Code.GripOccupied, ["entities", holderId], $"holder {holderId}"));
             }
             foreach (var (spaceName, inner) in layout.Spaces)
             {
@@ -603,7 +603,7 @@ public static class SnapshotValidation
                     });
                 if (oversized is not null)
                 {
-                    issues.Add(Issue("part_contents_too_large", ["entities", oversized.Id, "in_part"], spaceName));
+                    issues.Add(Issue(Code.PartContentsTooLarge, ["entities", oversized.Id, "in_part"], spaceName));
                     break;
                 }
             }
@@ -627,17 +627,17 @@ public static class SnapshotValidation
         var issues = new List<SnapshotIssue>();
         if (run.TickLimit is null && run.Slots is null && run.Pool is null && run.Odds is null)
         {
-            issues.Add(Issue("invalid_run", ["run"], "neither tick_limit nor slots"));
+            issues.Add(Issue(Code.InvalidRun, ["run"], "neither tick_limit nor slots"));
         }
         if (run.TickLimit is { } limit && limit < 1)
         {
-            issues.Add(Issue("invalid_run", ["run", "tick_limit"], limit.ToString(CultureInfo.InvariantCulture)));
+            issues.Add(Issue(Code.InvalidRun, ["run", "tick_limit"], limit.ToString(CultureInfo.InvariantCulture)));
         }
         if (run.Slots is { } slots)
         {
             if (slots.Count == 0)
             {
-                issues.Add(Issue("invalid_run", ["run", "slots"], "empty"));
+                issues.Add(Issue(Code.InvalidRun, ["run", "slots"], "empty"));
             }
             // Each body is named once across the slots; a slot of several is a list of them, never empty.
             var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -647,7 +647,7 @@ public static class SnapshotValidation
                 var members = Runs.SlotMembers(entry);
                 if (members.Count == 0)
                 {
-                    issues.Add(Issue("invalid_run", ["run", "slots", index.ToString(CultureInfo.InvariantCulture)], "empty"));
+                    issues.Add(Issue(Code.InvalidRun, ["run", "slots", index.ToString(CultureInfo.InvariantCulture)], "empty"));
                 }
                 for (var member = 0; member < members.Count; member++)
                 {
@@ -660,7 +660,7 @@ public static class SnapshotValidation
                     var repeated = !seen.Add(slot);
                     if ((body is not null && !body.Props.Is(Prop.Agent)) || repeated)
                     {
-                        issues.Add(Issue("invalid_run", path, slot));
+                        issues.Add(Issue(Code.InvalidRun, path, slot));
                     }
                 }
             }
@@ -675,29 +675,29 @@ public static class SnapshotValidation
             var known = roots.Contains(player.Slot);
             if (!known || handles.Contains(player.Handle) || bound.Contains(player.Slot))
             {
-                issues.Add(Issue("invalid_run", ["run", "players", index.ToString(CultureInfo.InvariantCulture)], player.Handle));
+                issues.Add(Issue(Code.InvalidRun, ["run", "players", index.ToString(CultureInfo.InvariantCulture)], player.Handle));
             }
             handles.Add(player.Handle);
             bound.Add(player.Slot);
         }
         if (!RunStates.Contains(run.State))
         {
-            issues.Add(Issue("invalid_run", ["run", "state"], run.State));
+            issues.Add(Issue(Code.InvalidRun, ["run", "state"], run.State));
         }
         if (run.State == "ended")
         {
             if (run.Ended is null || !RunReasons.Contains(run.Ended.Reason))
             {
-                issues.Add(Issue("invalid_run", ["run", "ended"], "no reason"));
+                issues.Add(Issue(Code.InvalidRun, ["run", "ended"], "no reason"));
             }
             if (snapshot.Schedule is { Count: > 0 })
             {
-                issues.Add(Issue("invalid_run", ["run", "ended"], "schedule after the end"));
+                issues.Add(Issue(Code.InvalidRun, ["run", "ended"], "schedule after the end"));
             }
         }
         else if (run.Ended is not null)
         {
-            issues.Add(Issue("invalid_run", ["run", "ended"], "not ended"));
+            issues.Add(Issue(Code.InvalidRun, ["run", "ended"], "not ended"));
         }
         return issues;
     }
@@ -712,7 +712,7 @@ public static class SnapshotValidation
         }
         if (snapshot.Schedule.Count == 0)
         {
-            return [Issue("empty_schedule", ["schedule"], "empty")];
+            return [Issue(Code.EmptySchedule, ["schedule"], "empty")];
         }
         var issues = new List<SnapshotIssue>();
         var previous = long.MinValue;
@@ -723,20 +723,20 @@ public static class SnapshotValidation
             var path = new[] { "schedule", index.ToString() };
             if (cause.Kind is not ("close" or "bleed" or "process" or "beat"))
             {
-                issues.Add(Issue("unknown_cause_kind", path, cause.Kind));
+                issues.Add(Issue(Code.UnknownCauseKind, path, cause.Kind));
             }
             if (cause.DueTick <= snapshot.Tick)
             {
-                issues.Add(Issue("schedule_not_ahead", path, $"due {cause.DueTick} at tick {snapshot.Tick}"));
+                issues.Add(Issue(Code.ScheduleNotAhead, path, $"due {cause.DueTick} at tick {snapshot.Tick}"));
             }
             else if (cause.DueTick < previous)
             {
-                issues.Add(Issue("schedule_unordered", path, $"due {cause.DueTick} after {previous}"));
+                issues.Add(Issue(Code.ScheduleUnordered, path, $"due {cause.DueTick} after {previous}"));
             }
             previous = Math.Max(previous, cause.DueTick);
             if (!snapshot.Entities.ContainsKey(cause.Entity))
             {
-                issues.Add(Issue("schedule_dangling", path, cause.Entity));
+                issues.Add(Issue(Code.ScheduleDangling, path, cause.Entity));
             }
             // A process runs at most once at a time on an entity: reconcile never schedules a second.
             if (cause.Kind == "process")
@@ -744,20 +744,20 @@ public static class SnapshotValidation
                 var key = $"{cause.Entity}/{cause.Process ?? "undefined"}";
                 if (!running.Add(key))
                 {
-                    issues.Add(Issue("duplicate_process", path, key));
+                    issues.Add(Issue(Code.DuplicateProcess, path, key));
                 }
             }
             if (cause.Kind == "bleed" && !(cause.Remaining is { } remaining && remaining > 0))
             {
-                issues.Add(Issue("bleed_not_remaining", path, $"remaining {cause.Remaining?.ToString() ?? "null"}"));
+                issues.Add(Issue(Code.BleedNotRemaining, path, $"remaining {cause.Remaining?.ToString() ?? "null"}"));
             }
             if (cause.Kind == "process" && string.IsNullOrEmpty(cause.Process))
             {
-                issues.Add(Issue("invalid_process", path, cause.Process ?? "undefined"));
+                issues.Add(Issue(Code.InvalidProcess, path, cause.Process ?? "undefined"));
             }
             if (cause.Kind == "beat" && Beats.Invalid(cause) is { } broken)
             {
-                issues.Add(Issue("invalid_beat", path, broken));
+                issues.Add(Issue(Code.InvalidBeat, path, broken));
             }
         }
         // Beats share one namespace of ids, their followers' included, and a bounded number of them.
@@ -767,12 +767,12 @@ public static class SnapshotValidation
         {
             if (!seen.Add(id))
             {
-                issues.Add(Issue("duplicate_beat", ["schedule"], id));
+                issues.Add(Issue(Code.DuplicateBeat, ["schedule"], id));
             }
         }
         if (ids.Count > Beats.MaxBeats)
         {
-            issues.Add(Issue("too_many_beats", ["schedule"], ids.Count.ToString()));
+            issues.Add(Issue(Code.TooManyBeats, ["schedule"], ids.Count.ToString()));
         }
         return issues;
     }

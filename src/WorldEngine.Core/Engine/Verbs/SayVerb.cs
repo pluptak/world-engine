@@ -30,7 +30,7 @@ public static class SayVerb
         var utterance = Text(args, "utterance");
         if (utterance is null || !Utterance.IsMatch(utterance) || VolumeOf(args) is null)
         {
-            return Pipeline.Invalid("invalid_args");
+            return Pipeline.Invalid(Code.InvalidArgs);
         }
         return Pipeline.RequirementRefusal(context);
     }

@@ -54,22 +54,22 @@ public static class Carry
         var holder = snapshot.Entities.GetValueOrDefault(holderId);
         if (holder is null || !registry.TryGetValue(holder.Template, out var template))
         {
-            return Pipeline.Refused("unknown_part");
+            return Pipeline.Refused(Code.UnknownPart);
         }
         var space = HolderLayout(registry, template.Id).Spaces.FirstOrDefault(candidate => candidate.Name == part);
         if (space.Name is null)
         {
-            return Pipeline.Refused("unknown_part");
+            return Pipeline.Refused(Code.UnknownPart);
         }
         if (!registry.TryGetValue(item.Template, out var itemTemplate))
         {
-            return Pipeline.Refused("too_large");
+            return Pipeline.Refused(Code.TooLarge);
         }
         var size = itemTemplate.SizeCm;
         var fit = Fit.Misfit([size.W, size.D, size.H], [.. space.Inner.Select(value => (double)value)]);
         return fit is null
             ? null
-            : Pipeline.Refused("too_large", Pipeline.Reason(("item_cm", fit.Value.ItemCm), ("space_cm", fit.Value.SpaceCm)));
+            : Pipeline.Refused(Code.TooLarge, Pipeline.Reason(("item_cm", fit.Value.ItemCm), ("space_cm", fit.Value.SpaceCm)));
     }
 
     public static Layout HolderLayout(IReadOnlyDictionary<string, Template> registry, string templateId)
@@ -169,7 +169,7 @@ public static class Carry
     {
         if (!snapshot.Entities.TryGetValue(holderId, out var holder) || !registry.ContainsKey(holder.Template))
         {
-            return new GripRefused("unknown_part", null);
+            return new GripRefused(Code.UnknownPart, null);
         }
         var grips = HolderLayout(registry, holder.Template).Grips
             .Where(grip => PartAvailable(snapshot, registry, holderId, grip))
@@ -185,12 +185,12 @@ public static class Carry
         {
             if (!grips.Contains(named))
             {
-                return new GripRefused("unknown_part", null);
+                return new GripRefused(Code.UnknownPart, null);
             }
             var second = hands > 1 ? GripSecondary(grips, named) : named;
             if (full.Contains(named) || second is null || full.Contains(second))
             {
-                return new GripRefused("hands_full", Data(("free", 0), ("need", hands)));
+                return new GripRefused(Code.HandsFull, Data(("free", 0), ("need", hands)));
             }
             return new GripFound(named);
         }
@@ -203,14 +203,14 @@ public static class Carry
             });
             if (primary is null)
             {
-                return new GripRefused("hands_full", Data(("free", freeCount), ("need", hands)));
+                return new GripRefused(Code.HandsFull, Data(("free", freeCount), ("need", hands)));
             }
             return new GripFound(primary);
         }
         var free = grips.FirstOrDefault(grip => !full.Contains(grip));
         if (free is null)
         {
-            return new GripRefused("hands_full", Data(("free", 0), ("need", hands)));
+            return new GripRefused(Code.HandsFull, Data(("free", 0), ("need", hands)));
         }
         return new GripFound(free);
     }
@@ -346,7 +346,7 @@ public static class Carry
         IReadOnlyList<Alternative> alternatives,
         long? handsMassG = null)
     {
-        (string Code, int Rank, IReadOnlyDictionary<string, JsonNode?>? Data)? worst = null;
+        (Code Code, int Rank, IReadOnlyDictionary<string, JsonNode?>? Data)? worst = null;
         foreach (var alternative in alternatives)
         {
             var failure = AlternativeFailure(caps, carrierProps, item, registry, otherHeld, alternative, handsMassG);
@@ -362,7 +362,7 @@ public static class Carry
             }
         }
         return worst is null
-            ? new CarryVerdict(false, "uncarryable", null)
+            ? new CarryVerdict(false, Code.Uncarryable, null)
             : new CarryVerdict(false, worst.Value.Code, worst.Value.Data);
     }
 
@@ -387,12 +387,12 @@ public static class Carry
         return null;
     }
 
-    private static string FailureCode(Failure failure) => failure.Kind switch
+    private static Code FailureCode(Failure failure) => failure.Kind switch
     {
-        Kind.Capacity => $"insufficient_{failure.Capacity}",
-        Kind.Hands => "two_hands_required",
-        Kind.Weight => "too_heavy",
-        _ => "mouth_full",
+        Kind.Capacity => Pipeline.Insufficient(failure.Capacity!),
+        Kind.Hands => Code.TwoHandsRequired,
+        Kind.Weight => Code.TooHeavy,
+        _ => Code.MouthFull,
     };
 
     // Whether the item is in a space part (a pocket, not a grip) of the holder.
@@ -408,15 +408,15 @@ public static class Carry
         {
             if (raw is null || raw.GetValueKind() != JsonValueKind.String || raw.GetValue<string>().Length == 0)
             {
-                return new GripInvalid("invalid_args");
+                return new GripInvalid(Code.InvalidArgs);
             }
             named = raw.GetValue<string>();
         }
         return ClaimGrip(context.Snapshot, context.Registry, holderId, item, named, item.Id) switch
         {
             GripFound found => new GripPlaced(found.Part),
-            GripRefused { ReasonCode: "hands_full" } full => new GripBlocked("hands_full", full.ReasonData),
-            _ => new GripBlocked("unknown_part", null),
+            GripRefused { ReasonCode: Code.HandsFull } full => new GripBlocked(Code.HandsFull, full.ReasonData),
+            _ => new GripBlocked(Code.UnknownPart, null),
         };
     }
 
@@ -425,17 +425,17 @@ public static class Carry
 }
 
 // The verdict of `Carry.Check`: `Ok`, or the refusal code and its data.
-public sealed record CarryVerdict(bool Ok, string? ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData);
+public sealed record CarryVerdict(bool Ok, Code? ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData);
 
 // The result of `Carry.ClaimGrip`: the grip the item lands in, or the refusal.
 public abstract record GripClaim;
 public sealed record GripFound(string Part) : GripClaim;
-public sealed record GripRefused(string ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData) : GripClaim;
+public sealed record GripRefused(Code ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData) : GripClaim;
 
 // The grip a take or give lands in (src/engine/carry.ts `gripPlacement`): the `part` argument, or the lowest free grip,
 // once the capacity checks have run. The item itself is left out of the packing, so taking it from its own grip is
 // the same grip again.
 public abstract record GripPlacement;
 public sealed record GripPlaced(string Part) : GripPlacement;
-public sealed record GripBlocked(string ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData) : GripPlacement;
-public sealed record GripInvalid(string ReasonCode) : GripPlacement;
+public sealed record GripBlocked(Code ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData) : GripPlacement;
+public sealed record GripInvalid(Code ReasonCode) : GripPlacement;

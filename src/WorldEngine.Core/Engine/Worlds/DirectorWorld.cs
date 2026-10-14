@@ -59,11 +59,11 @@ public sealed class DirectorWorld(IWorld world)
         // Every live player must be idle: one that has a move, or has not passed, keeps the time as it is.
         if (liveHandles.Any(handle => !idle.Contains(handle) || moving.Contains(handle)))
         {
-            return Quiet("refused", rounds: 0, reasonCode: "players_active");
+            return Quiet("refused", rounds: 0, reasonCode: WorldJson.Name(Code.PlayersActive));
         }
         if (stopBefore is not null && PendingDue(stopBefore) is null)
         {
-            return Quiet("refused", rounds: 0, reasonCode: "no_such_beat");
+            return Quiet("refused", rounds: 0, reasonCode: WorldJson.Name(Code.NoSuchBeat));
         }
         var rounds = 0;
         while (true)
@@ -82,7 +82,7 @@ public sealed class DirectorWorld(IWorld world)
             var closed = world.TakeRoundAs([]);
             if (closed.Status != Status.Ok || closed.Closing is null)
             {
-                return Quiet("refused", rounds, reasonCode: closed.ReasonCode ?? WorldJson.Name(closed.Status));
+                return Quiet("refused", rounds, reasonCode: Pipeline.ReasonName(closed.ReasonCode, closed.Status));
             }
             rounds += 1;
             // A registered body that sensed anything the round made stops the quiet: no player sleeps through it.

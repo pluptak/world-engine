@@ -20,20 +20,20 @@ public static partial class EditVerb
 
     // The refusal codes this verb may answer with (src/engine/verbs/edit.ts `refuses`). A validation code outside them is
     // a verb bug, which TypeScript throws on and so does this.
-    private static readonly HashSet<string> Refuses =
+    private static readonly HashSet<Code> Refuses =
     [
-        "derived_field", "field_not_editable", "room_placed", "conflicting_placement", "room_support_without_pos",
-        "pos_without_room_support", "anchor_not_room_supported", "circular_placement", "occupied_room", "unknown_part",
-        "not_a_refinement", "too_large", "not_a_surface", "liquid_exceeds_capacity", "integrity_out_of_range",
-        "detached_part_without_entity", "part_at_default", "part_under_detached", "coverage_not_computable",
-        "location_mismatch", "dangling_reference", "id_not_below_next_seq", "support_or_containment_cycle",
-        "support_and_contained_in", "door_side_not_room", "opens_target_not_openable", "concealed_by_abstract",
-        "concealed_by_not_same_room", "concealed_by_cycle", "power_loop", "control_loop", "in_part_holder_mismatch",
-        "in_part_unknown_part", "in_part_unavailable", "grip_occupied", "closing_without_close", "camera_without_facing",
-        "part_contents_too_large", "container_contents_too_large", "invalid_trait", "beat_in_past", "duplicate_beat",
-        "too_many_beats", "no_such_beat", "invalid_beat", "undeclared_prop", "wrong_prop_type", "unmet_requires", "no_run",
-        "run_not_registering", "run_not_running", "no_such_slot", "slot_taken", "handle_taken", "role_forbidden",
-        "no_such_pool_beat", "not_steerable", "out_of_range",
+        Code.DerivedField, Code.FieldNotEditable, Code.RoomPlaced, Code.ConflictingPlacement, Code.RoomSupportWithoutPos,
+        Code.PosWithoutRoomSupport, Code.AnchorNotRoomSupported, Code.CircularPlacement, Code.OccupiedRoom, Code.UnknownPart,
+        Code.NotARefinement, Code.TooLarge, Code.NotASurface, Code.LiquidExceedsCapacity, Code.IntegrityOutOfRange,
+        Code.DetachedPartWithoutEntity, Code.PartAtDefault, Code.PartUnderDetached, Code.CoverageNotComputable,
+        Code.LocationMismatch, Code.DanglingReference, Code.IdNotBelowNextSeq, Code.SupportOrContainmentCycle,
+        Code.SupportAndContainedIn, Code.DoorSideNotRoom, Code.OpensTargetNotOpenable, Code.ConcealedByAbstract,
+        Code.ConcealedByNotSameRoom, Code.ConcealedByCycle, Code.PowerLoop, Code.ControlLoop, Code.InPartHolderMismatch,
+        Code.InPartUnknownPart, Code.InPartUnavailable, Code.GripOccupied, Code.ClosingWithoutClose, Code.CameraWithoutFacing,
+        Code.PartContentsTooLarge, Code.ContainerContentsTooLarge, Code.InvalidTrait, Code.BeatInPast, Code.DuplicateBeat,
+        Code.TooManyBeats, Code.NoSuchBeat, Code.InvalidBeat, Code.UndeclaredProp, Code.WrongPropType, Code.UnmetRequires, Code.NoRun,
+        Code.RunNotRegistering, Code.RunNotRunning, Code.NoSuchSlot, Code.SlotTaken, Code.HandleTaken, Code.RoleForbidden,
+        Code.NoSuchPoolBeat, Code.NotSteerable, Code.OutOfRange,
     ];
 
     private static readonly HashSet<string> OverrideKeys =
@@ -71,52 +71,52 @@ public static partial class EditVerb
     private sealed record PropsEdit(string Kind, string Target, IReadOnlyDictionary<string, JsonNode?> Props) : WorldEdit;
     private sealed record SetPartEdit(string Target, string Part, PartState State) : WorldEdit;
 
-    private static Pipeline.Refusal Invalid(string code) => new(Status.Invalid, code);
+    private static Pipeline.Refusal Invalid(Code code) => new(Status.Invalid, code);
 
-    private static Pipeline.Refusal Refused(string code) => new(Status.Refused, code);
+    private static Pipeline.Refusal Refused(Code code) => new(Status.Refused, code);
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
     {
         var command = context.Command;
         if (command.Actor != Resolve.WorldAuthor)
         {
-            return Invalid("invalid_author");
+            return Invalid(Code.InvalidAuthor);
         }
         var edit = Parse(command.Args);
         if (edit is null)
         {
-            return Invalid("invalid_args");
+            return Invalid(Code.InvalidArgs);
         }
         if (command.By is { } by && !RoleMay(by, edit))
         {
-            return Refused("role_forbidden");
+            return Refused(Code.RoleForbidden);
         }
         switch (edit)
         {
             case SpawnEdit spawn:
-                return context.Target is not null ? Invalid("unexpected_target") : SpawnRefusal(context, spawn);
+                return context.Target is not null ? Invalid(Code.UnexpectedTarget) : SpawnRefusal(context, spawn);
             case SetSeedEdit:
-                return context.Target is null ? null : Invalid("unexpected_target");
+                return context.Target is null ? null : Invalid(Code.UnexpectedTarget);
             case StartRunEdit:
-                return context.Target is null ? RunEditRefusal(context.Snapshot, start: true) : Invalid("unexpected_target");
+                return context.Target is null ? RunEditRefusal(context.Snapshot, start: true) : Invalid(Code.UnexpectedTarget);
             case EndRunEdit:
-                return context.Target is null ? RunEditRefusal(context.Snapshot, start: false) : Invalid("unexpected_target");
+                return context.Target is null ? RunEditRefusal(context.Snapshot, start: false) : Invalid(Code.UnexpectedTarget);
             case RegisterEdit register:
-                return context.Target is null ? RegisterRefusal(context.Snapshot, register) : Invalid("unexpected_target");
+                return context.Target is null ? RegisterRefusal(context.Snapshot, register) : Invalid(Code.UnexpectedTarget);
             case PlayBeatEdit play:
-                return context.Target is null ? PlayRefusal(context.Snapshot, play) : Invalid("unexpected_target");
+                return context.Target is null ? PlayRefusal(context.Snapshot, play) : Invalid(Code.UnexpectedTarget);
             case SteerEdit steer:
-                return context.Target is null ? SteerRefusal(context.Snapshot, steer) : Invalid("unexpected_target");
+                return context.Target is null ? SteerRefusal(context.Snapshot, steer) : Invalid(Code.UnexpectedTarget);
         }
         // The beats name no target of their own: they are scheduled, cancelled or moved as a whole.
         if (edit is ScheduleBeatEdit or CancelBeatEdit or RetimeBeatEdit)
         {
-            return context.Target is not null ? Invalid("unexpected_target") : BeatRefusal(context, edit);
+            return context.Target is not null ? Invalid(Code.UnexpectedTarget) : BeatRefusal(context, edit);
         }
         var targetId = TargetOf(edit);
         if (context.Target is null || context.Target.Part is not null || context.Target.EntityId != targetId)
         {
-            return Invalid("mismatched_target");
+            return Invalid(Code.MismatchedTarget);
         }
         var subject = context.Snapshot.Entities[targetId];
         return edit switch
@@ -127,7 +127,7 @@ public static partial class EditVerb
             SetPartEdit part => PartRefusal(context.Registry, subject, part.Part),
             RefineEdit refine => context.Registry.TryGetValue(refine.Template, out var next)
                 ? Refine.RefineRefusal(context.Snapshot, context.Registry, subject, next)
-                : Invalid("unknown_template"),
+                : Invalid(Code.UnknownTemplate),
             _ => throw new InvalidOperationException("Unknown edit"),
         };
     }

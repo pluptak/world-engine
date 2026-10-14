@@ -73,7 +73,7 @@ public class SceneGoldenTests
             return new JsonObject
             {
                 ["status"] = "error",
-                ["code"] = error.Code,
+                ["code"] = WorldJson.Name(error.Code),
                 ["message"] = error.Message,
             };
         }

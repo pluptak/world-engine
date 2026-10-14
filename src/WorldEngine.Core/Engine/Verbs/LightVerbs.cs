@@ -26,26 +26,26 @@ public static class LightVerbs
         var target = context.Target;
         if (target is null)
         {
-            return Pipeline.Invalid("missing_target");
+            return Pipeline.Invalid(Code.MissingTarget);
         }
         // A part is not a thing to light, only the entity that declares it.
         if (target.Part is not null)
         {
-            return Pipeline.Refused("target_attached");
+            return Pipeline.Refused(Code.TargetAttached);
         }
         var snapshot = context.Snapshot;
         if (!snapshot.Entities.TryGetValue(target.EntityId, out var light))
         {
-            return Pipeline.Invalid("no_such_entity");
+            return Pipeline.Invalid(Code.NoSuchEntity);
         }
         if (!light.Props.Is(Prop.LightSource))
         {
-            return Pipeline.Refused("not_a_light");
+            return Pipeline.Refused(Code.NotALight);
         }
         var enclosure = Reach.ClosedEnclosure(snapshot, light.Id);
         if (enclosure is not null)
         {
-            return Pipeline.Refused("container_closed", Pipeline.Reason(("enclosure", enclosure)));
+            return Pipeline.Refused(Code.ContainerClosed, Pipeline.Reason(("enclosure", enclosure)));
         }
         if (Address.OutOfReach(snapshot, context.Command.Actor, light.Id) is { } reach)
         {
@@ -56,17 +56,17 @@ public static class LightVerbs
         {
             if (light.Props.Is(Prop.Burning))
             {
-                return Pipeline.Refused("already_burning");
+                return Pipeline.Refused(Code.AlreadyBurning);
             }
             // A light with a `fuel` prop needs some; one that declares none burns on its own.
             if (light.Props.Get(Prop.Fuel) is { } fuel && fuel <= 0)
             {
-                return Pipeline.Refused("no_fuel");
+                return Pipeline.Refused(Code.NoFuel);
             }
         }
         else if (!light.Props.Is(Prop.Burning))
         {
-            return Pipeline.Refused("not_burning");
+            return Pipeline.Refused(Code.NotBurning);
         }
         return Pipeline.RequirementRefusal(context);
     }

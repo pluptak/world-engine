@@ -18,6 +18,10 @@ public static class WorldJson
     public static string Name<T>(T value)
         where T : struct, Enum => JsonNamingPolicy.SnakeCaseLower.ConvertName(value.ToString());
 
+    // The member a snake_case name stands for; a name with no member throws.
+    public static T Parse<T>(string name)
+        where T : struct, Enum => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(name), Options);
+
     public static T Read<T>(string json) =>
         JsonSerializer.Deserialize<T>(json, Options)
         ?? throw new JsonException($"Empty {typeof(T).Name}");

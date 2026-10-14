@@ -43,18 +43,18 @@ public static class WorldBuilder
             var written = entry["overrides"] as JsonObject ?? new JsonObject();
             if (DerivedFieldWritten(snapshot, written) is { } derived)
             {
-                throw new WorldError("derived_field", $"Scenario entry {index} writes the derived field {derived}");
+                throw new WorldError(Code.DerivedField, $"Scenario entry {index} writes the derived field {derived}");
             }
             if (Forms.ArchitectWrites(written) is { } unwritable)
             {
-                throw new WorldError("field_not_editable", $"Scenario entry {index} writes {unwritable}, which the architect may not");
+                throw new WorldError(Code.FieldNotEditable, $"Scenario entry {index} writes {unwritable}, which the architect may not");
             }
             // A form is converted to the one stored value before any rule reads the entry; an unknown template is left to spawn's refusal.
             var overrides = registry.TryGetValue(template, out var known) && Forms.HasForms(written)
                 ? Forms.Apply(known, written, index)
                 : written;
             var parsed = EditVerb.ParseOverrides(template, overrides)
-                ?? throw new WorldError("invalid_scenario", $"Scenario entry {index} does not describe an entity");
+                ?? throw new WorldError(Code.InvalidScenario, $"Scenario entry {index} does not describe an entity");
             // A scenario's spawn keeps the location as written, and an omitted one is none: the chain is not derived here (a location the
             // chain gives must be written, and the snapshot check refuses one that is not, as spawn in src/engine/spawn.ts does).
             var location = parsed.Location?.Value;
@@ -66,7 +66,7 @@ public static class WorldBuilder
         var issues = SnapshotValidation.Validate(snapshot, registry);
         if (issues.Count > 0)
         {
-            throw new WorldError("invalid_snapshot", $"Snapshot violates {issues[0].Code} ({issues.Count} issue(s))") { Issues = issues };
+            throw new WorldError(Code.InvalidSnapshot, $"Snapshot violates {WorldJson.Name(issues[0].Code)} ({issues.Count} issue(s))") { Issues = issues };
         }
         return new Made(snapshot, resolved.Ids);
     }
@@ -108,13 +108,13 @@ public static class WorldBuilder
     {
         if (!WorldFiles.Exists(from))
         {
-            throw new WorldError("no_such_world", $"No world at {from}");
+            throw new WorldError(Code.NoSuchWorld, $"No world at {from}");
         }
         var initial = WorldFiles.ReadSnapshot(Path.Combine(from, WorldFiles.InitialSnapshot));
         var templates = WorldFiles.ReadTemplates(from);
         if (WorldFiles.HoldsAny(to))
         {
-            throw new WorldError("world_exists", $"A world is already at {to}");
+            throw new WorldError(Code.WorldExists, $"A world is already at {to}");
         }
         Create(to, initial, templates, WorldFiles.ReadIds(from));
     }

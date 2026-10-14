@@ -40,7 +40,7 @@ public static class Options
     {
         if (!snapshot.Entities.ContainsKey(actor))
         {
-            throw new WorldError("no_such_entity", $"Unknown actor {actor}");
+            throw new WorldError(Code.NoSuchEntity, $"Unknown actor {actor}");
         }
         var ready = new List<ReadyOption>();
         var needsArgs = new List<string>();
@@ -70,7 +70,7 @@ public static class Options
                     {
                         ready.Add(new ReadyOption(verb, target));
                     }
-                    else if (outcome.Status == Status.Invalid && outcome.ReasonCode == "invalid_args")
+                    else if (outcome.Status == Status.Invalid && outcome.ReasonCode == Code.InvalidArgs)
                     {
                         if (declared.Suggest is null || declared.FreeArgs)
                         {
@@ -139,7 +139,7 @@ public static class Options
     }
 
     // The reason an attempt was refused with: its code, or its status where it has none.
-    private static string ReasonOf(Pipeline.Result result) => result.ReasonCode ?? WorldJson.Name(result.Status);
+    private static string ReasonOf(Pipeline.Result result) => Pipeline.ReasonName(result.ReasonCode, result.Status);
 
     // A suggested arg set as a command's args (the options hold them as JSON).
     private static Dictionary<string, JsonNode?>? ArgsOf(JsonObject args) =>

@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using System.Text.Json;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -60,9 +61,9 @@ public class ProjectionGoldenTests
     {
         try
         {
-            return new JsonObject { ["value"] = Projection.HeardFrom(input["basis"]!.GetValue<string>()) };
+            return new JsonObject { ["value"] = Projection.HeardFrom(WorldJson.Parse<Code>(input["basis"]!.GetValue<string>())) };
         }
-        catch (InvalidOperationException)
+        catch (Exception error) when (error is InvalidOperationException or JsonException)
         {
             return new JsonObject { ["error"] = "TypeError" };
         }

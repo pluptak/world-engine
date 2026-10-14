@@ -36,36 +36,36 @@ public static class GiveVerb
         var destinationText = Address.AddressText(context, "destination");
         if (destinationText is null)
         {
-            return Pipeline.Invalid("invalid_args");
+            return Pipeline.Invalid(Code.InvalidArgs);
         }
 
         var target = context.Target;
         if (target is null)
         {
-            return Pipeline.Invalid("missing_target");
+            return Pipeline.Invalid(Code.MissingTarget);
         }
         if (target.Part is not null)
         {
-            return Pipeline.Refused("not_carried");
+            return Pipeline.Refused(Code.NotCarried);
         }
 
         var snapshot = context.Snapshot;
         var actorId = context.Command.Actor;
         if (!snapshot.Entities.TryGetValue(target.EntityId, out var item))
         {
-            return Pipeline.Invalid("no_such_entity");
+            return Pipeline.Invalid(Code.NoSuchEntity);
         }
         if (item.ContainedIn != actorId)
         {
-            return Pipeline.Refused("not_carried");
+            return Pipeline.Refused(Code.NotCarried);
         }
         // An item in a pocket is taken out of it before it is given.
         if (Carry.InSpacePart(context.Registry, snapshot.Entities[actorId], item))
         {
-            return Pipeline.Refused("not_in_hand");
+            return Pipeline.Refused(Code.NotInHand);
         }
 
-        var address = Address.AddressEntity(context, destinationText, "not_an_actor");
+        var address = Address.AddressEntity(context, destinationText, Code.NotAnActor);
         if (address.Failure is { } failure)
         {
             return failure;
@@ -74,15 +74,15 @@ public static class GiveVerb
 
         if (recipient.Id == actorId)
         {
-            return Pipeline.Refused("cannot_give_to_self");
+            return Pipeline.Refused(Code.CannotGiveToSelf);
         }
         if (!Reach.IsAgent(snapshot, recipient.Id))
         {
-            return Pipeline.Refused("not_an_actor");
+            return Pipeline.Refused(Code.NotAnActor);
         }
         if (Address.WouldLoop(snapshot, item.Id, recipient.Id))
         {
-            return Pipeline.Refused("circular_placement");
+            return Pipeline.Refused(Code.CircularPlacement);
         }
         if (Address.OutOfReach(snapshot, actorId, recipient.Id) is { } reach)
         {
@@ -103,7 +103,7 @@ public static class GiveVerb
             Carry.HandsHeldMass(snapshot, context.Registry, recipient.Id, item.Id));
         if (!carry.Ok)
         {
-            return new Pipeline.Refusal(Status.Refused, carry.ReasonCode ?? "uncarryable", carry.ReasonData);
+            return new Pipeline.Refusal(Status.Refused, carry.ReasonCode ?? Code.Uncarryable, carry.ReasonData);
         }
         switch (Carry.PlaceInGrip(context, recipient.Id, item))
         {
@@ -124,7 +124,7 @@ public static class GiveVerb
         var destinationText = Address.AddressText(context, "destination")!;
         var current = context with { Snapshot = working.Snapshot };
 
-        var address = Address.AddressEntity(current, destinationText, "not_an_actor");
+        var address = Address.AddressEntity(current, destinationText, Code.NotAnActor);
         if (address.Entity is not { } recipient)
         {
             throw new InvalidOperationException("Give destination changed after validation");

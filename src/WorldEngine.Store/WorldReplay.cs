@@ -51,7 +51,7 @@ public static class WorldReplay
             var result = Pipeline.Apply(snapshot, registry, VerbRegistry.All, entry.Command);
             if (result.Status != Status.Ok)
             {
-                throw new WorldError("replay_diverges", $"Accepted command failed during replay at line {index + 1}");
+                throw new WorldError(Code.ReplayDiverges, $"Accepted command failed during replay at line {index + 1}");
             }
             events.AddRange(result.Events);
             deltas.AddRange(result.Deltas);
@@ -198,7 +198,7 @@ public static class WorldReplay
     {
         if (snapshotHash != frozen)
         {
-            throw new WorldError("templates_changed", "Template hash mismatch");
+            throw new WorldError(Code.TemplatesChanged, "Template hash mismatch");
         }
     }
 

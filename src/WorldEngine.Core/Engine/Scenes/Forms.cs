@@ -66,19 +66,19 @@ public static class Forms
             var liquid = overrides["liquid"];
             if (liquid is null || !IsLiquidShape(liquid))
             {
-                throw Fail("invalid_form", index, "liquid must be { material?, pct }");
+                throw Fail(Code.InvalidForm, index, "liquid must be { material?, pct }");
             }
             var percent = WholePercent(Member(liquid, "pct"), index, "liquid.pct");
             var material = Member(liquid, "material");
             if (material is not null && (Text(material) is not { } text || text == ""))
             {
-                throw Fail("invalid_form", index, "liquid.material must be a non-empty string");
+                throw Fail(Code.InvalidForm, index, "liquid.material must be a non-empty string");
             }
             var capacity = PresetInteger(template, Prop.CapacityCm3, index, "liquid");
             var name = Text(material) ?? template.Props.Get(Prop.LiquidMaterial);
             if (percent > 0 && string.IsNullOrEmpty(name))
             {
-                throw Fail("no_liquid_material", index, $"liquid at {percent}% names no material and {template.Id} holds none");
+                throw Fail(Code.NoLiquidMaterial, index, $"liquid at {percent}% names no material and {template.Id} holds none");
             }
             props[Prop.LiquidAmount] = JsonValue.Create(Share(capacity, percent));
             props[Prop.LiquidMaterial] = JsonValue.Create(percent == 0 ? "" : name);
@@ -88,7 +88,7 @@ public static class Forms
             var condition = Text(overrides["condition"]);
             if (condition is not ("intact" or "damaged"))
             {
-                throw Fail("invalid_form", index, "condition must be intact or damaged");
+                throw Fail(Code.InvalidForm, index, "condition must be intact or damaged");
             }
             // Intact is the template's whole integrity, damaged half of it: 100 and 50 for a thing with no max.
             var whole = template.MaxIntegrity ?? Limits.MaxIntegrity;
@@ -156,7 +156,7 @@ public static class Forms
     {
         if (SafeInt(value) is not { } whole || whole < 0 || whole > 100)
         {
-            throw Fail("invalid_form", index, $"{form} must be a whole number from 0 to 100");
+            throw Fail(Code.InvalidForm, index, $"{form} must be a whole number from 0 to 100");
         }
         return whole;
     }
@@ -165,11 +165,11 @@ public static class Forms
     {
         if (template.Props.Get(prop) is not { } value)
         {
-            throw Fail("form_not_applicable", index, $"{form} needs a template that declares {prop}, and {template.Id} does not");
+            throw Fail(Code.FormNotApplicable, index, $"{form} needs a template that declares {prop}, and {template.Id} does not");
         }
         return value;
     }
 
-    private static WorldError Fail(string code, int index, string what) =>
+    private static WorldError Fail(Code code, int index, string what) =>
         new(code, $"Scenario entry {index}: {what}");
 }

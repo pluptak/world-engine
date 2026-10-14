@@ -35,35 +35,35 @@ public static class Queries
                 // Existence is modelled, so a bad object is false rather than unknown, and only the basis says which way it failed.
                 if (obj is null)
                 {
-                    return new Perception.Answer(Truth.False, "no_object");
+                    return new Perception.Answer(Truth.False, Code.NoObject);
                 }
                 if (!snapshot.Entities.TryGetValue(obj, out var other))
                 {
-                    return new Perception.Answer(Truth.False, "no_such_entity");
+                    return new Perception.Answer(Truth.False, Code.NoSuchEntity);
                 }
-                return Perception.Answer.Of(NearValue(snapshot, entity, other), "derived_near");
+                return Perception.Answer.Of(NearValue(snapshot, entity, other), Code.DerivedNear);
             }
             // Whether the subject could lay a hand on the object now, by the rule every verb that reaches applies.
             if (relation == "reachable")
             {
                 if (obj is null)
                 {
-                    return new Perception.Answer(Truth.False, "no_object");
+                    return new Perception.Answer(Truth.False, Code.NoObject);
                 }
                 if (!snapshot.Entities.ContainsKey(obj))
                 {
-                    return new Perception.Answer(Truth.False, "no_such_entity");
+                    return new Perception.Answer(Truth.False, Code.NoSuchEntity);
                 }
-                return Perception.Answer.Of(Reach.InReach(snapshot, entity.Id, obj), "derived_reach");
+                return Perception.Answer.Of(Reach.InReach(snapshot, entity.Id, obj), Code.DerivedReach);
             }
-            return Perception.Answer.Of(RelationValue(registry, entity, relation, obj), "relation_state");
+            return Perception.Answer.Of(RelationValue(registry, entity, relation, obj), Code.RelationState);
         }
         if (snapshot.Coverage.Properties.Contains(relation))
         {
             var (defined, value) = PropertyValue(entity, relation);
-            return Perception.Answer.Of(PropertyMatches(defined, value, obj, relation), "property_state");
+            return Perception.Answer.Of(PropertyMatches(defined, value, obj, relation), Code.PropertyState);
         }
-        return new Perception.Answer(Truth.Unknown, "uncovered_category");
+        return new Perception.Answer(Truth.Unknown, Code.UncoveredCategory);
     }
 
     // Whether an observer senses an event at either end of its command: true before or after, else the answer after
@@ -131,33 +131,33 @@ public static class Queries
         var separator = subject.LastIndexOf('.');
         if (separator <= 0 || !snapshot.Entities.TryGetValue(subject[..separator], out var entity))
         {
-            return new Perception.Answer(Truth.False, "no_such_entity");
+            return new Perception.Answer(Truth.False, Code.NoSuchEntity);
         }
         registry.TryGetValue(entity.Template, out var template);
         var state = PartStates.Effective(template, entity, subject[(separator + 1)..]);
         if (state is null)
         {
-            return new Perception.Answer(Truth.False, "no_such_part");
+            return new Perception.Answer(Truth.False, Code.NoSuchPart);
         }
         var isRelation = snapshot.Coverage.Relations.Contains(relation);
         if (!isRelation && !snapshot.Coverage.Properties.Contains(relation))
         {
-            return new Perception.Answer(Truth.Unknown, "uncovered_category");
+            return new Perception.Answer(Truth.Unknown, Code.UncoveredCategory);
         }
         // A part is not an entity: of the relations only its status and what it is attached to mean anything, and of the
         // properties only its integrity is read.
         if (!isRelation)
         {
             return relation == "integrity"
-                ? Perception.Answer.Of(PropertyMatches(true, JsonValue.Create(state.Integrity), obj, "integrity"), "part_state")
-                : new Perception.Answer(Truth.False, "not_a_part_field");
+                ? Perception.Answer.Of(PropertyMatches(true, JsonValue.Create(state.Integrity), obj, "integrity"), Code.PartState)
+                : new Perception.Answer(Truth.False, Code.NotAPartField);
         }
         var attached = Attached(state);
         return relation switch
         {
-            "status" => Perception.Answer.Of(obj is null || WorldJson.Name(state.Status) == obj, "part_state"),
-            "attached_to" => Perception.Answer.Of(attached && (obj is null || obj == entity.Id), "part_state"),
-            _ => new Perception.Answer(Truth.False, "not_a_part_field"),
+            "status" => Perception.Answer.Of(obj is null || WorldJson.Name(state.Status) == obj, Code.PartState),
+            "attached_to" => Perception.Answer.Of(attached && (obj is null || obj == entity.Id), Code.PartState),
+            _ => new Perception.Answer(Truth.False, Code.NotAPartField),
         };
     }
 

@@ -21,11 +21,11 @@ public static class Submission
     {
         if (basedOn < 0)
         {
-            return InvalidResult(current, command, "invalid_version");
+            return InvalidResult(current, command, Code.InvalidVersion);
         }
         if (basedOn > current.Version)
         {
-            return InvalidResult(current, command, "future_version");
+            return InvalidResult(current, command, Code.FutureVersion);
         }
 
         var result = AcceptedResult(current, registry, command, Pipeline.Apply(current, registry, verbs, command));
@@ -57,7 +57,7 @@ public static class Submission
     }
 
     // The result of a command the world refuses to take at all: nothing changed, and the rule it broke is its reason.
-    public static Pipeline.Result InvalidResult(Snapshot snapshot, Command command, string reasonCode) =>
+    public static Pipeline.Result InvalidResult(Snapshot snapshot, Command command, Code reasonCode) =>
         Pipeline.Unchanged(snapshot, command, Status.Invalid, reasonCode: reasonCode);
 
     // The log's record of a submission (`attemptOf`): the command, the version it was based on and decided at, and what it said.

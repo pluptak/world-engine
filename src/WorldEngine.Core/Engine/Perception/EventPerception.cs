@@ -29,45 +29,45 @@ public static class EventPerception
 
     // One sense in one situation: `Same` decides the observer's own room, `Door` decides across a doorway, and `Basis` is
     // what a false answer says when nothing about where the observer stands is wrong.
-    private sealed record SenseRule(SameRule Same, DoorRule Door, string Basis);
+    private sealed record SenseRule(SameRule Same, DoorRule Door, Code Basis);
 
     // The row of the sense table for an event type. Touch reads the body, not the room, and is either felt or not.
     private sealed record EventSenses(SenseRule Hearing, SenseRule Smell, bool TouchesBody);
 
     private static readonly EventSenses Audible = new(
-        new SenseRule(SameRule.Always, DoorRule.Loud, "odourless"),
-        new SenseRule(SameRule.Never, DoorRule.Never, "odourless"),
+        new SenseRule(SameRule.Always, DoorRule.Loud, Code.Odourless),
+        new SenseRule(SameRule.Never, DoorRule.Never, Code.Odourless),
         TouchesBody: true);
 
     // The world author's own work: nobody senses it, and `Basis` says why.
     private static readonly EventSenses Authored = new(
-        new SenseRule(SameRule.Never, DoorRule.Never, "authored"),
-        new SenseRule(SameRule.Never, DoorRule.Never, "authored"),
+        new SenseRule(SameRule.Never, DoorRule.Never, Code.Authored),
+        new SenseRule(SameRule.Never, DoorRule.Never, Code.Authored),
         TouchesBody: false);
 
     private static readonly EventSenses Sounded = new(
         Audible.Hearing,
-        new SenseRule(SameRule.Never, DoorRule.Never, "odourless"),
+        new SenseRule(SameRule.Never, DoorRule.Never, Code.Odourless),
         TouchesBody: false);
 
     private static readonly EventSenses Say = new(
-        new SenseRule(SameRule.Volume, DoorRule.Loud, "too_far"),
-        new SenseRule(SameRule.Never, DoorRule.Never, "odourless"),
+        new SenseRule(SameRule.Volume, DoorRule.Loud, Code.TooFar),
+        new SenseRule(SameRule.Never, DoorRule.Never, Code.Odourless),
         TouchesBody: true);
 
     private static readonly EventSenses Pour = new(
         Audible.Hearing,
-        new SenseRule(SameRule.Always, DoorRule.Never, "odourless"),
+        new SenseRule(SameRule.Always, DoorRule.Never, Code.Odourless),
         TouchesBody: true);
 
     private static readonly EventSenses Silent = new(
-        new SenseRule(SameRule.Never, DoorRule.Never, "quiet"),
+        new SenseRule(SameRule.Never, DoorRule.Never, Code.Quiet),
         Audible.Smell,
         TouchesBody: true);
 
     private static readonly EventSenses Broken = new(
         Audible.Hearing,
-        new SenseRule(SameRule.Odorous, DoorRule.Loud, "odourless"),
+        new SenseRule(SameRule.Odorous, DoorRule.Loud, Code.Odourless),
         TouchesBody: true);
 
     // The rows of the sense table, keyed by every event type the engine emits (src/engine/query.ts `EVENT_SENSES`). A type
@@ -306,45 +306,45 @@ public static class EventPerception
     {
         if (!snapshot.Entities.TryGetValue(observerId, out var observer))
         {
-            return new Perception.Answer(Truth.False, "no_such_entity");
+            return new Perception.Answer(Truth.False, Code.NoSuchEntity);
         }
         if (!Sense.All.Contains(sense))
         {
-            return new Perception.Answer(Truth.Unknown, "engine_incapable");
+            return new Perception.Answer(Truth.Unknown, Code.EngineIncapable);
         }
         if (!snapshot.Coverage.Senses.Contains(sense))
         {
-            return new Perception.Answer(Truth.Unknown, "uncovered_sense");
+            return new Perception.Answer(Truth.Unknown, Code.UncoveredSense);
         }
         // A destroyed body senses nothing, whatever its parts.
         if (observer.Status == EntityStatus.Destroyed)
         {
-            return new Perception.Answer(Truth.False, "observer_destroyed");
+            return new Perception.Answer(Truth.False, Code.ObserverDestroyed);
         }
         // A body that runs on power senses nothing without it.
         if (observer.Props.Get(Prop.PoweredBy) is not null && !Power.Powered(snapshot, observer.Id))
         {
-            return new Perception.Answer(Truth.False, "unpowered");
+            return new Perception.Answer(Truth.False, Code.Unpowered);
         }
         // A sleeping body sees and hears nothing; touch and smell are unchanged.
         if (observer.Props.Is(Prop.Asleep) && sense is Sense.Sight or Sense.Hearing)
         {
-            return new Perception.Answer(Truth.False, "asleep");
+            return new Perception.Answer(Truth.False, Code.Asleep);
         }
         // An unconscious body takes every sense.
         if (observer.Props.Is(Prop.Unconscious))
         {
-            return new Perception.Answer(Truth.False, "unconscious");
+            return new Perception.Answer(Truth.False, Code.Unconscious);
         }
         if ((Capacities.Of(snapshot, registry, observer.Id, sense) ?? 0) == 0)
         {
-            return new Perception.Answer(Truth.False, "no_sense_capacity");
+            return new Perception.Answer(Truth.False, Code.NoSenseCapacity);
         }
 
         var eventRecord = events.FirstOrDefault(candidate => candidate.EventId == eventId);
         if (eventRecord is null)
         {
-            return new Perception.Answer(Truth.False, "no_such_event");
+            return new Perception.Answer(Truth.False, Code.NoSuchEvent);
         }
 
         // What the world writes is not something that happened in front of anybody: no sense reports it.
@@ -352,7 +352,7 @@ public static class EventPerception
         if (!snapshot.Entities.TryGetValue(eventRecord.Entity, out var named))
         {
             // A `removed` event names an entity no longer there to be sensed; what made it is that the world wrote it.
-            return authored ? new Perception.Answer(Truth.False, "authored") : new Perception.Answer(Truth.False, "no_such_entity");
+            return authored ? new Perception.Answer(Truth.False, Code.Authored) : new Perception.Answer(Truth.False, Code.NoSuchEntity);
         }
         // A `found` event is where the search happened, not what was under it: it is read against the concealer.
         var subject = eventRecord.Type == "found" && JsonReads.Text(eventRecord.Data.GetValueOrDefault("concealer")) is { } concealer
@@ -362,11 +362,11 @@ public static class EventPerception
         // An abstract entity exists and is not a thing to be sensed.
         if (Resolve.IsAbstract(registry, subject))
         {
-            return new Perception.Answer(Truth.False, "abstract");
+            return new Perception.Answer(Truth.False, Code.Abstract);
         }
         if (authored)
         {
-            return new Perception.Answer(Truth.False, "authored");
+            return new Perception.Answer(Truth.False, Code.Authored);
         }
         var rule = SensesFor(eventRecord, events);
         // Touch reads the body instead of the room: the table says which classes can be felt at all, and the body rule says
@@ -375,7 +375,7 @@ public static class EventPerception
         {
             if (!rule.TouchesBody)
             {
-                return new Perception.Answer(Truth.False, "authored");
+                return new Perception.Answer(Truth.False, Code.Authored);
             }
             // A collision is felt by what was hit as much as by what moved.
             var struck = eventRecord.Type == "collided" && JsonReads.Text(eventRecord.Data.GetValueOrDefault("with")) is { } with
@@ -383,23 +383,23 @@ public static class EventPerception
                 : null;
             return TouchesBody(snapshot, registry, observer.Id, subject)
                 || (struck is not null && TouchesBody(snapshot, registry, observer.Id, struck))
-                ? new Perception.Answer(Truth.True, "own_body")
-                : new Perception.Answer(Truth.False, "not_touching");
+                ? new Perception.Answer(Truth.True, Code.OwnBody)
+                : new Perception.Answer(Truth.False, Code.NotTouching);
         }
         // A sound is heard, never seen, wherever the observer stands.
         if (sense == Sense.Sight && eventRecord.Type == "sounded")
         {
-            return new Perception.Answer(Truth.False, "unseen");
+            return new Perception.Answer(Truth.False, Code.Unseen);
         }
         // What is hidden under or behind something is not seen, by anybody, until the relation is broken.
         if (sense == Sense.Sight && subject.ConcealedBy is not null)
         {
-            return new Perception.Answer(Truth.False, "concealed");
+            return new Perception.Answer(Truth.False, Code.Concealed);
         }
         // A shut container hides what is inside it, however deep; hearing and smell do not care.
         if (sense == Sense.Sight && Reach.ClosedEnclosure(snapshot, subject.Id) is not null)
         {
-            return new Perception.Answer(Truth.False, "enclosed");
+            return new Perception.Answer(Truth.False, Code.Enclosed);
         }
 
         // The body's own answer from where it stands; then, for sight it does not have, each camera that feeds it.
@@ -407,10 +407,10 @@ public static class EventPerception
         // What the body cannot hear, an intercom may carry; a `quiet` hand act is not carried.
         if (sense == Sense.Hearing
             && body.Value == Truth.False
-            && body.BasisCode != "quiet"
+            && body.BasisCode != Code.Quiet
             && HeardThroughIntercom(snapshot, observer, subject, eventRecord, rule.Hearing))
         {
-            return new Perception.Answer(Truth.True, "intercom");
+            return new Perception.Answer(Truth.True, Code.Intercom);
         }
         if (sense != Sense.Sight || body.Value == Truth.True)
         {
@@ -423,7 +423,7 @@ public static class EventPerception
             var where = TargetLocationForPerception(subject, EventLocation(eventRecord, subject), at);
             if (at is not null && at == where && Perception.IsLit(snapshot, at) && Perception.InCone(snapshot, cameraEntity, subject.Id))
             {
-                return new Perception.Answer(Truth.True, "camera");
+                return new Perception.Answer(Truth.True, Code.Camera);
             }
         }
         return body;
@@ -443,14 +443,14 @@ public static class EventPerception
         var targetLocation = TargetLocationForPerception(subject, EventLocation(eventRecord, subject), observerLocation);
         if (observerLocation is null || targetLocation is null)
         {
-            return new Perception.Answer(Truth.False, "not_perceptible");
+            return new Perception.Answer(Truth.False, Code.NotPerceptible);
         }
         var crossesDoors = sense is Sense.Hearing or Sense.Smell;
         // A `moved` the hands caused is as silent as the act behind it: footsteps stay audible, and the door never carries
         // what the room itself does not hear.
         if (sense == Sense.Hearing && eventRecord.Type == "moved" && HandCaused(eventRecord, events))
         {
-            return new Perception.Answer(Truth.False, "quiet");
+            return new Perception.Answer(Truth.False, Code.Quiet);
         }
         var senseRow = sense == Sense.Hearing ? rule.Hearing : rule.Smell;
         if (observerLocation == targetLocation)
@@ -461,14 +461,14 @@ public static class EventPerception
                     || (senseRow.Same == SameRule.Odorous && Smells(subject))
                     || (senseRow.Same == SameRule.Volume && HeardAtVolume(snapshot, observer.Id, subject, eventRecord)))
                 {
-                    return new Perception.Answer(Truth.True, "same_location");
+                    return new Perception.Answer(Truth.True, Code.SameLocation);
                 }
                 return new Perception.Answer(Truth.False, senseRow.Basis);
             }
             // Sight: the room is lit or it is not.
             return Perception.IsLit(snapshot, observerLocation)
-                ? new Perception.Answer(Truth.True, "same_location_lit")
-                : new Perception.Answer(Truth.False, "location_unlit");
+                ? new Perception.Answer(Truth.True, Code.SameLocationLit)
+                : new Perception.Answer(Truth.False, Code.LocationUnlit);
         }
 
         if (sense == Sense.Sight)
@@ -476,15 +476,15 @@ public static class EventPerception
             var connected = ConnectedByDoor(snapshot, observerLocation, targetLocation, openOnly: true);
             var bothLit = Perception.IsLit(snapshot, observerLocation) && Perception.IsLit(snapshot, targetLocation);
             return connected && bothLit
-                ? new Perception.Answer(Truth.True, "adjacent_open_door_lit")
-                : new Perception.Answer(Truth.False, connected ? "location_unlit" : "not_perceptible");
+                ? new Perception.Answer(Truth.True, Code.AdjacentOpenDoorLit)
+                : new Perception.Answer(Truth.False, connected ? Code.LocationUnlit : Code.NotPerceptible);
         }
         // Across a doorway, a sound is heard only when it is loud.
         return ConnectedByDoor(snapshot, observerLocation, targetLocation, openOnly: false)
             && senseRow.Door == DoorRule.Loud
             && LoudEvent(eventRecord)
-            ? new Perception.Answer(Truth.True, "adjacent_loud_event")
-            : new Perception.Answer(Truth.False, "not_perceptible");
+            ? new Perception.Answer(Truth.True, Code.AdjacentLoudEvent)
+            : new Perception.Answer(Truth.False, Code.NotPerceptible);
     }
 
     // Each event of a command, with who could sense it by each covered sense, from either end of the command

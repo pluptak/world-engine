@@ -30,7 +30,7 @@ public static class WorldVerify
     {
         if (!WorldFiles.Exists(dir))
         {
-            throw new WorldError("no_such_world", $"No world at {dir}");
+            throw new WorldError(Code.NoSuchWorld, $"No world at {dir}");
         }
         return WorldLock.With(dir, () => VerifyLocked(dir, registry));
     }
@@ -40,7 +40,7 @@ public static class WorldVerify
         var initial = WorldFiles.ReadSnapshot(Path.Combine(dir, WorldFiles.InitialSnapshot));
         if (initial.TemplatesHash != WorldReplay.HashOf(registry))
         {
-            throw new WorldError("templates_changed", "Template hash mismatch");
+            throw new WorldError(Code.TemplatesChanged, "Template hash mismatch");
         }
 
         var log = StoredLines(TextOrNull(Path.Combine(dir, WorldFiles.Log)));

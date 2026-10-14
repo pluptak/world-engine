@@ -50,7 +50,7 @@ public sealed record Attempt(
     long BasedOnVersion,
     long Version,
     Status Status,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ReasonCode = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Code? ReasonCode = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyDictionary<string, JsonNode?>? ReasonData = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? Candidates = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] RoundMark? Round = null,

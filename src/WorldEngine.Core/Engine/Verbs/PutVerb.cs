@@ -46,26 +46,26 @@ public static class PutVerb
         var destinationText = Address.AddressText(context, "destination");
         if (relation is null || destinationText is null)
         {
-            return Pipeline.Invalid("invalid_args");
+            return Pipeline.Invalid(Code.InvalidArgs);
         }
 
         var target = context.Target;
         if (target is null)
         {
-            return Pipeline.Invalid("missing_target");
+            return Pipeline.Invalid(Code.MissingTarget);
         }
         if (target.Part is not null)
         {
-            return Pipeline.Refused("not_carried");
+            return Pipeline.Refused(Code.NotCarried);
         }
         var snapshot = context.Snapshot;
         if (!snapshot.Entities.TryGetValue(target.EntityId, out var item))
         {
-            return Pipeline.Invalid("no_such_entity");
+            return Pipeline.Invalid(Code.NoSuchEntity);
         }
         if (item.ContainedIn != context.Command.Actor)
         {
-            return Pipeline.Refused("not_carried");
+            return Pipeline.Refused(Code.NotCarried);
         }
         // Placing into a container needs hands; setting onto a surface does not.
         if (relation == "in" && Pipeline.RequirementRefusal(context) is { } capacity)
@@ -86,7 +86,7 @@ public static class PutVerb
                 return StowRefusal(context, item, relation, part.Target.EntityId, part.Target.Part!);
         }
 
-        var address = Address.AddressEntity(context, destinationText, "not_a_surface");
+        var address = Address.AddressEntity(context, destinationText, Code.NotASurface);
         return address.Failure ?? PlacementRefusal(context, item, address.Entity!, relation);
     }
 
@@ -116,7 +116,7 @@ public static class PutVerb
             : context.Registry.GetValueOrDefault(holder.Template)?.Parts.FirstOrDefault(decl => decl.Name == part)?.Holds;
         if (holderId != context.Command.Actor || holds?.Kind != HoldKind.Space || relation != "in")
         {
-            return Pipeline.Refused("not_a_surface");
+            return Pipeline.Refused(Code.NotASurface);
         }
         return Carry.SpaceRefusal(snapshot, context.Registry, holderId, part, item);
     }
@@ -133,7 +133,7 @@ public static class PutVerb
         var actorId = context.Command.Actor;
         if (Address.WouldLoop(snapshot, item.Id, destination.Id))
         {
-            return Pipeline.Refused("circular_placement");
+            return Pipeline.Refused(Code.CircularPlacement);
         }
         if (Address.OutOfReach(snapshot, actorId, destination.Id) is { } reach)
         {
@@ -148,12 +148,12 @@ public static class PutVerb
         {
             if (!destination.Props.Is(Prop.Surface))
             {
-                return Pipeline.Refused("not_a_surface");
+                return Pipeline.Refused(Code.NotASurface);
             }
             var enclosure = Reach.ClosedEnclosure(snapshot, destination.Id);
             if (enclosure is not null)
             {
-                return Pipeline.Refused("container_closed", Pipeline.Reason(("enclosure", enclosure)));
+                return Pipeline.Refused(Code.ContainerClosed, Pipeline.Reason(("enclosure", enclosure)));
             }
             var size = context.Registry[item.Template].SizeCm;
             var footprint = context.Registry[destination.Template].SizeCm;
@@ -162,19 +162,19 @@ public static class PutVerb
 
         if (!destination.Props.Is(Prop.Container))
         {
-            return Pipeline.Refused("not_a_container");
+            return Pipeline.Refused(Code.NotAContainer);
         }
         var shut = destination.Props.Is(Prop.Openable) && !destination.Props.Is(Prop.Open);
         var closed = shut ? destination.Id : Reach.ClosedEnclosure(snapshot, destination.Id);
         if (closed is not null)
         {
-            return Pipeline.Refused("container_closed", Pipeline.Reason(("enclosure", closed)));
+            return Pipeline.Refused(Code.ContainerClosed, Pipeline.Reason(("enclosure", closed)));
         }
         // No inner dimensions to report a space against, so the refusal carries no data.
         var inner = Fit.InnerDimensions(destination.Props);
         if (inner is null)
         {
-            return Pipeline.Refused("too_large");
+            return Pipeline.Refused(Code.TooLarge);
         }
         var itemSize = context.Registry[item.Template].SizeCm;
         return TooLarge(Fit.Misfit([itemSize.W, itemSize.D, itemSize.H], inner));
@@ -183,7 +183,7 @@ public static class PutVerb
     // A thing that overflows a space or a surface is refused `too_large`, naming the dimensions that overflowed.
     private static Pipeline.Refusal? TooLarge((double ItemCm, double SpaceCm)? misfit) =>
         misfit is { } data
-            ? Pipeline.Refused("too_large", Pipeline.Reason(("item_cm", data.ItemCm), ("space_cm", data.SpaceCm)))
+            ? Pipeline.Refused(Code.TooLarge, Pipeline.Reason(("item_cm", data.ItemCm), ("space_cm", data.SpaceCm)))
             : null;
 
     // The placement the verb makes (src/engine/verbs/put.ts `transition`): a pocket is the holder's, else the item
@@ -210,7 +210,7 @@ public static class PutVerb
             return;
         }
 
-        var address = Address.AddressEntity(current, destinationText, "not_a_surface");
+        var address = Address.AddressEntity(current, destinationText, Code.NotASurface);
         if (address.Entity is not { } destination)
         {
             throw new InvalidOperationException("Put destination changed after validation");

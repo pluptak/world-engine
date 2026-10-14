@@ -44,22 +44,22 @@ public static class OpenVerbs
         var target = context.Target;
         if (target is null)
         {
-            return (null, Pipeline.Invalid("missing_target"));
+            return (null, Pipeline.Invalid(Code.MissingTarget));
         }
         if (!context.Snapshot.Entities.TryGetValue(target.EntityId, out var entity))
         {
-            return (null, Pipeline.Invalid("no_such_entity"));
+            return (null, Pipeline.Invalid(Code.NoSuchEntity));
         }
         if (!entity.Props.Is(Prop.Openable))
         {
-            return (null, Pipeline.Refused("not_openable"));
+            return (null, Pipeline.Refused(Code.NotOpenable));
         }
         if (!Remote.WorksRemotely(context, entity) && !Remote.DeviceInReach(context, entity))
         {
             var measure = Address.ReachData(context.Snapshot, context.Command.Actor, entity.Id);
             return (null, new Pipeline.Refusal(
                 Status.Refused,
-                "out_of_reach",
+                Code.OutOfReach,
                 measure is null ? null : Pipeline.Reason(("distance_cm", measure.DistanceCm), ("reach_cm", measure.ReachCm))));
         }
         return (entity, null);
@@ -83,28 +83,28 @@ public static class OpenVerbs
         // but the clock. A door on its way shut is open still, so `open` is not a no-op for it: it stops the shut.
         if (kind == Kind.Open && target.Props.Is(Prop.Open) && !target.Props.Is(Prop.Closing))
         {
-            return Pipeline.Refused("already_open");
+            return Pipeline.Refused(Code.AlreadyOpen);
         }
         if (kind == Kind.Close && !target.Props.Is(Prop.Open))
         {
-            return Pipeline.Refused("already_closed");
+            return Pipeline.Refused(Code.AlreadyClosed);
         }
         if (kind == Kind.Lock && target.Props.Is(Prop.Locked))
         {
-            return Pipeline.Refused("already_locked");
+            return Pipeline.Refused(Code.AlreadyLocked);
         }
         if (kind == Kind.Unlock && !target.Props.Is(Prop.Locked))
         {
-            return Pipeline.Refused("already_unlocked");
+            return Pipeline.Refused(Code.AlreadyUnlocked);
         }
         if (kind == Kind.Open && target.Props.Is(Prop.Locked))
         {
-            return Pipeline.Refused("locked");
+            return Pipeline.Refused(Code.Locked);
         }
         // Until a door on its way shut has shut, neither a shut nor a lock can be made of it.
         if (kind is Kind.Close or Kind.Lock && target.Props.Is(Prop.Closing))
         {
-            return Pipeline.Refused("closing");
+            return Pipeline.Refused(Code.Closing);
         }
         if (Remote.WorksRemotely(context, target))
         {
@@ -114,7 +114,7 @@ public static class OpenVerbs
         }
         if (kind is Kind.Lock or Kind.Unlock && !CarriedKeyFor(context, target.Id))
         {
-            return Pipeline.Refused("no_key");
+            return Pipeline.Refused(Code.NoKey);
         }
         return Pipeline.RequirementRefusal(context);
     }

@@ -36,7 +36,7 @@ public static class Upgrade
     }
 
     public static WorldError LostError(LostField lost) =>
-        new("templates_lost_field", $"Entity {lost.Entity} ({lost.Template}) uses {lost.Field}");
+        new(Code.TemplatesLostField, $"Entity {lost.Entity} ({lost.Template}) uses {lost.Field}");
 
     // What an entity uses that the registry no longer gives, or null. A part is in use when it has stored state or something
     // sits in it; a product must still be spawnable.

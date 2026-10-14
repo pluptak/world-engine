@@ -64,43 +64,43 @@ public static class PourVerb
         var target = context.Target;
         if (destinationText is null)
         {
-            return Refused(Pipeline.Invalid("invalid_args"));
+            return Refused(Pipeline.Invalid(Code.InvalidArgs));
         }
         if (target is null)
         {
-            return Refused(Pipeline.Invalid("missing_target"));
+            return Refused(Pipeline.Invalid(Code.MissingTarget));
         }
         if (target.Part is not null)
         {
-            return Refused(Pipeline.Refused("not_carried"));
+            return Refused(Pipeline.Refused(Code.NotCarried));
         }
         if (!snapshot.Entities.TryGetValue(target.EntityId, out var source))
         {
-            return Refused(Pipeline.Invalid("no_such_entity"));
+            return Refused(Pipeline.Invalid(Code.NoSuchEntity));
         }
         if (source.ContainedIn != actorId)
         {
-            return Refused(Pipeline.Refused("not_carried"));
+            return Refused(Pipeline.Refused(Code.NotCarried));
         }
         // A vessel in a pocket is taken out before it is poured from.
         if (Carry.InSpacePart(context.Registry, actor, source))
         {
-            return Refused(Pipeline.Refused("not_in_hand"));
+            return Refused(Pipeline.Refused(Code.NotInHand));
         }
 
         var material = source.Props.Get(Prop.LiquidMaterial);
         if (material is null || material.Length == 0)
         {
-            return Refused(Pipeline.Refused("no_liquid"));
+            return Refused(Pipeline.Refused(Code.NoLiquid));
         }
         var available = source.Props.Get(Prop.LiquidAmount);
         if (available is null || available < 0)
         {
-            return Refused(Pipeline.Refused("no_liquid"));
+            return Refused(Pipeline.Refused(Code.NoLiquid));
         }
         if (available == 0)
         {
-            return Refused(Pipeline.Refused("nothing_to_pour"));
+            return Refused(Pipeline.Refused(Code.NothingToPour));
         }
 
         // An absent amount pours everything; a present one is a whole positive integer, so no pour rounds or quietly
@@ -111,7 +111,7 @@ public static class PourVerb
         {
             if (args["amount"] is not JsonValue json || !json.TryGetValue(out long named) || named <= 0)
             {
-                return Refused(Pipeline.Invalid("invalid_args"));
+                return Refused(Pipeline.Invalid(Code.InvalidArgs));
             }
             requested = named;
         }
@@ -119,7 +119,7 @@ public static class PourVerb
         {
             return Refused(new Pipeline.Refusal(
                 Status.Refused,
-                "insufficient_liquid",
+                Code.InsufficientLiquid,
                 Pipeline.Reason(("requested", requested), ("available", available.Value))));
         }
         if (Pipeline.RequirementRefusal(context) is { } capacity)
@@ -127,7 +127,7 @@ public static class PourVerb
             return Refused(capacity);
         }
 
-        var address = Address.AddressEntity(context, destinationText, "not_a_destination");
+        var address = Address.AddressEntity(context, destinationText, Code.NotADestination);
         if (address.Failure is { } failure)
         {
             return Refused(failure);
@@ -135,7 +135,7 @@ public static class PourVerb
         var destination = address.Entity!;
         if (destination.Id == source.Id)
         {
-            return Refused(Pipeline.Refused("cannot_pour_into_self"));
+            return Refused(Pipeline.Refused(Code.CannotPourIntoSelf));
         }
         // The floor has no position of its own, so reaching it is being in the room; anything else is measured from
         // where the actor stands.
@@ -147,14 +147,14 @@ public static class PourVerb
             var measure = Address.ReachData(snapshot, actorId, destination.Id);
             return Refused(new Pipeline.Refusal(
                 Status.Refused,
-                "out_of_reach",
+                Code.OutOfReach,
                 measure is null ? null : Pipeline.Reason(("distance_cm", measure.DistanceCm), ("reach_cm", measure.ReachCm))));
         }
 
         var holds = destination.Props.Is(Prop.Container);
         if (!holds && !destination.Props.Is(Prop.Surface) && destination.Template != TemplateIds.Room)
         {
-            return Refused(Pipeline.Refused("not_a_destination"));
+            return Refused(Pipeline.Refused(Code.NotADestination));
         }
 
         // A container's own shutness hides its inside; anything else is hidden by whatever shut encloses it, and a
@@ -164,7 +164,7 @@ public static class PourVerb
             : Reach.ClosedEnclosure(snapshot, destination.Id);
         if (enclosure is not null)
         {
-            return Refused(Pipeline.Refused("container_closed", Pipeline.Reason(("enclosure", enclosure))));
+            return Refused(Pipeline.Refused(Code.ContainerClosed, Pipeline.Reason(("enclosure", enclosure))));
         }
 
         long held = 0;
@@ -177,7 +177,7 @@ public static class PourVerb
                 {
                     return Refused(new Pipeline.Refusal(
                         Status.Refused,
-                        "incompatible_liquid",
+                        Code.IncompatibleLiquid,
                         Pipeline.Reason(("material", material), ("held_material", existing))));
                 }
                 held = LiquidAmount(destination);
@@ -186,7 +186,7 @@ public static class PourVerb
             {
                 return Refused(new Pipeline.Refusal(
                     Status.Refused,
-                    "container_full",
+                    Code.ContainerFull,
                     Pipeline.Reason(("requested", requested), ("held", held), ("capacity", limit))));
             }
         }
