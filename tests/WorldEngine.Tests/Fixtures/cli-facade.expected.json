@@ -20,7 +20,7 @@
       "actor": "e2",
       "refused": false
     },
-    "stdout": "{\"actor\":\"e2\",\"needs_args\":[\"cut\",\"move\",\"pour\",\"say\",\"wait\"],\"ready\":[{\"target\":\"e3\",\"verb\":\"attack\"},{\"target\":\"e4\",\"verb\":\"attack\"},{\"target\":\"e4\",\"verb\":\"light\"},{\"target\":\"e3\",\"verb\":\"pull\"},{\"target\":\"e4\",\"verb\":\"pull\"},{\"target\":\"e3\",\"verb\":\"push\"},{\"target\":\"e3\",\"verb\":\"search\"},{\"target\":\"e4\",\"verb\":\"search\"},{\"target\":\"e3\",\"verb\":\"take\"},{\"target\":\"e4\",\"verb\":\"take\"}],\"version\":4}\n",
+    "stdout": "{\"actor\":\"e2\",\"needs_args\":[\"cut\",\"move\",\"pour\",\"say\",\"staunch\",\"suture\",\"wait\"],\"ready\":[{\"target\":\"e3\",\"verb\":\"attack\"},{\"target\":\"e4\",\"verb\":\"attack\"},{\"target\":\"e4\",\"verb\":\"light\"},{\"target\":\"e3\",\"verb\":\"pull\"},{\"target\":\"e4\",\"verb\":\"pull\"},{\"target\":\"e3\",\"verb\":\"push\"},{\"target\":\"e3\",\"verb\":\"search\"},{\"target\":\"e4\",\"verb\":\"search\"},{\"target\":\"e3\",\"verb\":\"take\"},{\"target\":\"e4\",\"verb\":\"take\"}],\"version\":4}\n",
     "status": 0
   },
   {

@@ -2722,6 +2722,8 @@
         "move",
         "pour",
         "say",
+        "staunch",
+        "suture",
         "wait"
       ],
       "blocked": [
@@ -3234,6 +3236,8 @@
         "move",
         "pour",
         "say",
+        "staunch",
+        "suture",
         "wait"
       ]
     }

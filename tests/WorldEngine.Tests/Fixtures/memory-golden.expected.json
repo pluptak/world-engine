@@ -876,6 +876,8 @@
         "move",
         "pour",
         "say",
+        "staunch",
+        "suture",
         "wait"
       ],
       "ready": [

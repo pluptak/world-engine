@@ -34,6 +34,9 @@ public class SurgeryTests : IDisposable
     private static IReadOnlyDictionary<string, Pipeline.VerbDecl> Verbs { get; } = new Dictionary<string, Pipeline.VerbDecl>
     {
         ["cut"] = SurgeryVerbs.Cut,
+        ["staunch"] = SurgeryVerbs.Staunch,
+        ["suture"] = SurgeryVerbs.Suture,
+        ["attack"] = AttackVerb.Attack,
         ["wait"] = WaitVerb.Wait,
     };
 
@@ -136,8 +139,91 @@ public class SurgeryTests : IDisposable
         Assert.True(world.Verify().Ok);
     }
 
+    [Fact]
+    public void Staunching_an_arm_stops_its_bleed_and_leaves_the_hands()
+    {
+        var snapshot = Built();
+        snapshot = Pipeline.Apply(snapshot, Registry, Verbs, Cut(Surgeon, Patient, "arm_l")).Snapshot;
+        for (var index = 0; index < 3; index++)
+        {
+            var struck = Pipeline.Apply(snapshot, Registry, Verbs, new Command($"s{index}", Surgeon, "attack", $"{Patient}.hand_l"));
+            Assert.Equal(Status.Ok, struck.Status);
+            snapshot = struck.Snapshot;
+        }
+
+        var staunched = Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Ok, staunched.Status);
+        var bleed = Assert.Single((staunched.Snapshot.Schedule ?? []).OfType<BleedCause>());
+        Assert.Equal("hand_l", bleed.Part);
+        var quiet = Pipeline.Apply(staunched.Snapshot, Registry, Verbs, new Command("e-wait", Surgeon, "wait", Args: Value.Map.Empty.With("ticks", 12L)));
+        Assert.Empty((quiet.Snapshot.Schedule ?? []).OfType<BleedCause>());
+        Assert.Equal(75L, quiet.Snapshot.Entities[Patient].Integrity);
+    }
+
+    [Fact]
+    public void Suturing_clears_the_incision_and_leaves_the_bleed()
+    {
+        var cut = Pipeline.Apply(Built(), Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+
+        var sutured = Pipeline.Apply(cut.Snapshot, Registry, Verbs, Suture("t1", Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Ok, sutured.Status);
+        Assert.False(sutured.Snapshot.Entities[Patient].Parts.ContainsKey("arm_l"));
+        var bleed = Assert.Single((sutured.Snapshot.Schedule ?? []).OfType<BleedCause>());
+        Assert.Equal("arm_l", bleed.Part);
+    }
+
+    [Fact]
+    public void Treatment_refusals_change_nothing()
+    {
+        var snapshot = Built();
+        foreach (var result in new[]
+        {
+            Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_r")),
+            Pipeline.Apply(snapshot, Registry, Verbs, Suture("t2", Surgeon, Patient, "arm_r")),
+        })
+        {
+            Assert.Equal(Status.Refused, result.Status);
+            Assert.Equal(WorldJson.Write(snapshot), WorldJson.Write(result.Snapshot));
+        }
+        Assert.Equal(Code.NotBleeding, Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_r")).ReasonCode);
+        Assert.Equal(Code.NotIncised, Pipeline.Apply(snapshot, Registry, Verbs, Suture("t2", Surgeon, Patient, "arm_r")).ReasonCode);
+        Assert.Equal(Code.InvalidArgs, Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t3", Surgeon, Patient, "elbow")).ReasonCode);
+
+        var severed = snapshot;
+        for (var index = 0; index < 3; index++)
+        {
+            severed = Pipeline.Apply(severed, Registry, Verbs, new Command($"s{index}", Surgeon, "attack", $"{Patient}.hand_l")).Snapshot;
+        }
+        var sutured = Pipeline.Apply(severed, Registry, Verbs, Suture("t4", Surgeon, Patient, "hand_l"));
+        Assert.Equal(Status.Refused, sutured.Status);
+        Assert.Equal(Code.NotIncised, sutured.ReasonCode);
+    }
+
+    [Fact]
+    public void A_partless_bleed_is_never_staunched()
+    {
+        var snapshot = Built() with
+        {
+            Schedule = new List<ScheduledCause> { new BleedCause(DueTick: 5, Entity: Patient, CauseId: null, Remaining: 3) },
+        };
+
+        var staunched = Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Refused, staunched.Status);
+        Assert.Equal(Code.NotBleeding, staunched.ReasonCode);
+        Assert.Equal(WorldJson.Write(snapshot), WorldJson.Write(staunched.Snapshot));
+    }
+
     private static Snapshot Built() => WorldBuilder.Snapshot(ValueJson.FromNode(JsonNode.Parse(Scene))!, Registry).Snapshot;
 
     private static Command Cut(string actor, string target, string part) =>
         new("e-cut", actor, "cut", target, Args: Value.Map.Empty.With("part", part));
+
+    private static Command Staunch(string id, string actor, string target, string part) =>
+        new(id, actor, "staunch", target, Args: Value.Map.Empty.With("part", part));
+
+    private static Command Suture(string id, string actor, string target, string part) =>
+        new(id, actor, "suture", target, Args: Value.Map.Empty.With("part", part));
 }

@@ -1205,7 +1205,9 @@
         "cut",
         "move",
         "pour",
-        "say"
+        "say",
+        "staunch",
+        "suture"
       ]
     }
   },
@@ -1335,7 +1337,9 @@
         "cut",
         "move",
         "pour",
-        "say"
+        "say",
+        "staunch",
+        "suture"
       ],
       "blocked": [
         {

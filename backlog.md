@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Treatment: stopping a bleed, closing an incision](#treatment-stopping-a-bleed-closing-an-incision).
-2. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
-3. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
+1. [Sockets: install a limb or an implant into a severed part, and reattach](#sockets-install-a-limb-or-an-implant-into-a-severed-part-and-reattach).
+2. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -74,22 +73,6 @@ naming a part of the target's template; unknown is `invalid_args`). Not a `<body
 detached part does not resolve (`Resolve.cs`, the part branch), and `install` and `staunch` must reach a stump.
 Each also requires the body within the actor's reach (`Reach.InReach`), else `out_of_reach` (existing code); an
 actor may work on its own body.
-
-### Treatment: stopping a bleed, closing an incision
-
-- **What:** two verbs in `Verbs/SurgeryVerbs.cs`, target the body, `args.part`, one tick, `manipulation` 50, no tool:
-  - `staunch`: removes every `BleedCause` of that body whose `Part` is the part, from the schedule. Refused
-    `not_bleeding` (new) when there is none.
-  - `suture`: clears `Incised` on the part. Refused `not_incised` (new) when it is not incised. It does not stop a
-    bleed: a severing bleeds with no incision, and an incision may be closed before or after staunching.
-- **Rules:** a bleed with no `Part` (none after Wounds; kept for a world stored before it) is never staunched. The
-  removal is recorded under the root `staunch` event (`Working.SetSchedule`).
-- **Registration:** as Wounds; rows `["staunch"] = Audible`, `["suture"] = Audible`; `docs/verbs-surgery.md`.
-- **Tests:** two wounds on one body (a cut arm and a severed hand): `staunch` on the arm stops its bleed (no
-  `damaged` from its chain after the staunch) and the hand's bleeds on to its count; `suture` clears the incision
-  and leaves any remaining bleed; the refusals change nothing.
-- **Done when:** as above.
-- **Depends on:** Wounds.
 
 ### Sockets: install a limb or an implant into a severed part, and reattach
 

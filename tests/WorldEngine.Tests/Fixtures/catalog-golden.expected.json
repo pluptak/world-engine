@@ -593,6 +593,58 @@
     ]
   },
   {
+    "verb": "staunch",
+    "requires_target": true,
+    "args": {
+      "part": {
+        "kind": "token"
+      }
+    },
+    "duration": {
+      "ticks": 1
+    },
+    "requires": [
+      {
+        "capacity": "manipulation",
+        "at_least": 50
+      }
+    ],
+    "carry_alternatives": [],
+    "attack_modes": [],
+    "refuses": [
+      "target_attached",
+      "out_of_reach",
+      "not_bleeding",
+      "insufficient_manipulation"
+    ]
+  },
+  {
+    "verb": "suture",
+    "requires_target": true,
+    "args": {
+      "part": {
+        "kind": "token"
+      }
+    },
+    "duration": {
+      "ticks": 1
+    },
+    "requires": [
+      {
+        "capacity": "manipulation",
+        "at_least": 50
+      }
+    ],
+    "carry_alternatives": [],
+    "attack_modes": [],
+    "refuses": [
+      "target_attached",
+      "out_of_reach",
+      "not_incised",
+      "insufficient_manipulation"
+    ]
+  },
+  {
     "verb": "switch_off",
     "requires_target": true,
     "args": {},

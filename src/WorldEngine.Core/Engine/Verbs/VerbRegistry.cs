@@ -19,6 +19,8 @@ public static class VerbRegistry
         ["light"] = LightVerbs.Light,
         ["douse"] = LightVerbs.Douse,
         ["cut"] = SurgeryVerbs.Cut,
+        ["staunch"] = SurgeryVerbs.Staunch,
+        ["suture"] = SurgeryVerbs.Suture,
         ["open"] = OpenVerbs.Open,
         ["close"] = OpenVerbs.Close,
         ["lock"] = OpenVerbs.Lock,

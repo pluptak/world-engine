@@ -91,6 +91,8 @@ public static class EventPerception
         ["advance"] = Authored,
         [EventType.Changed] = Silent,
         [EventType.Cut] = Audible,
+        ["staunch"] = Audible,
+        ["suture"] = Audible,
         ["search"] = Silent,
         ["consume"] = Silent,
         [EventType.Consumed] = Silent,

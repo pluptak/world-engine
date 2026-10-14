@@ -67,6 +67,18 @@ public static class VerbSpecs
                 ["part"] = new(ArgKind.Token),
             },
             Refuses: [Code.TargetAttached, Code.OutOfReach, Code.NoCuttingTool, Code.PartUnavailable, Code.AlreadyIncised, Code.InsufficientManipulation]),
+        ["staunch"] = new(
+            Args: new Dictionary<string, ArgSpec>(StringComparer.Ordinal)
+            {
+                ["part"] = new(ArgKind.Token),
+            },
+            Refuses: [Code.TargetAttached, Code.OutOfReach, Code.NotBleeding, Code.InsufficientManipulation]),
+        ["suture"] = new(
+            Args: new Dictionary<string, ArgSpec>(StringComparer.Ordinal)
+            {
+                ["part"] = new(ArgKind.Token),
+            },
+            Refuses: [Code.TargetAttached, Code.OutOfReach, Code.NotIncised, Code.InsufficientManipulation]),
         ["lock"] = new(
             Args: NoArgs,
             Refuses: [Code.NotOpenable, Code.OutOfReach, Code.AlreadyLocked, Code.Closing, Code.NoKey, Code.InsufficientManipulation, Code.Disconnected, Code.Unpowered]),

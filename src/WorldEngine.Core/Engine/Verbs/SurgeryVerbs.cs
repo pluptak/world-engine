@@ -15,28 +15,61 @@ public static class SurgeryVerbs
         Requires: [new Pipeline.Requirement(Capacity.Manipulation, 50)],
         Transition: Transition);
 
-    private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
+    public static Pipeline.VerbDecl Staunch { get; } = new(
+        RequiresTarget: true,
+        AuthorOnly: false,
+        Preconditions: StaunchPreconditions,
+        OneTick: true,
+        Requires: [new Pipeline.Requirement(Capacity.Manipulation, 50)],
+        Transition: StaunchTransition);
+
+    public static Pipeline.VerbDecl Suture { get; } = new(
+        RequiresTarget: true,
+        AuthorOnly: false,
+        Preconditions: SuturePreconditions,
+        OneTick: true,
+        Requires: [new Pipeline.Requirement(Capacity.Manipulation, 50)],
+        Transition: SutureTransition);
+
+    private sealed record Socket(Entity Body, Template Template, string Part);
+
+    // The body the command names and the part its args name: a part address is no body, and an unknown
+    // part is no arg.
+    private static (Socket? Socket, Pipeline.Refusal? Failure) Common(Pipeline.CommandContext context)
     {
         var target = context.Target;
         if (target is null)
         {
-            return Pipeline.Invalid(Code.MissingTarget);
+            return (null, Pipeline.Invalid(Code.MissingTarget));
         }
         if (target.Part is not null)
         {
-            return Pipeline.Refused(Code.TargetAttached);
+            return (null, Pipeline.Refused(Code.TargetAttached));
         }
-        var snapshot = context.Snapshot;
-        if (!snapshot.Entities.TryGetValue(target.EntityId, out var body))
+        if (!context.Snapshot.Entities.TryGetValue(target.EntityId, out var body))
         {
-            return Pipeline.Invalid(Code.NoSuchEntity);
+            return (null, Pipeline.Invalid(Code.NoSuchEntity));
         }
-        var template = context.Registry[body.Template];
+        if (!context.Registry.TryGetValue(body.Template, out var template))
+        {
+            return (null, Pipeline.Invalid(Code.UnknownTemplate));
+        }
         if (PartNamed(context) is not { } part || template.Parts.All(decl => decl.Name != part))
         {
-            return Pipeline.Invalid(Code.InvalidArgs);
+            return (null, Pipeline.Invalid(Code.InvalidArgs));
         }
-        if (Address.OutOfReach(snapshot, context.Command.Actor, body.Id) is { } reach)
+        return (new Socket(body, template, part), null);
+    }
+
+    private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
+    {
+        var (socket, failure) = Common(context);
+        if (failure is not null || socket is null)
+        {
+            return failure;
+        }
+        var snapshot = context.Snapshot;
+        if (Address.OutOfReach(snapshot, context.Command.Actor, socket.Body.Id) is { } reach)
         {
             return reach;
         }
@@ -44,12 +77,12 @@ public static class SurgeryVerbs
         {
             return Pipeline.Refused(Code.NoCuttingTool);
         }
-        var state = PartStates.Effective(template, body, part);
+        var state = PartStates.Effective(socket.Template, socket.Body, socket.Part);
         if (state is null || state.Status is not (PartStatus.Intact or PartStatus.Damaged))
         {
             return Pipeline.Refused(Code.PartUnavailable);
         }
-        if (PartStates.State(template, body, part)?.Incised is true)
+        if (PartStates.State(socket.Template, socket.Body, socket.Part)?.Incised is true)
         {
             return Pipeline.Refused(Code.AlreadyIncised);
         }
@@ -71,6 +104,70 @@ public static class SurgeryVerbs
             }),
             rootEventId!);
         Schedule.StartBleeding(working, body.Id, rootEventId!, part);
+    }
+
+    private static Pipeline.Refusal? StaunchPreconditions(Pipeline.CommandContext context)
+    {
+        var (socket, failure) = Common(context);
+        if (failure is not null || socket is null)
+        {
+            return failure;
+        }
+        if (Address.OutOfReach(context.Snapshot, context.Command.Actor, socket.Body.Id) is { } reach)
+        {
+            return reach;
+        }
+        var bleeding = (context.Snapshot.Schedule ?? []).OfType<BleedCause>()
+            .Any(cause => cause.Entity == socket.Body.Id && cause.Part == socket.Part);
+        if (!bleeding)
+        {
+            return Pipeline.Refused(Code.NotBleeding);
+        }
+        return Pipeline.RequirementRefusal(context);
+    }
+
+    private static Pipeline.Refusal? SuturePreconditions(Pipeline.CommandContext context)
+    {
+        var (socket, failure) = Common(context);
+        if (failure is not null || socket is null)
+        {
+            return failure;
+        }
+        if (Address.OutOfReach(context.Snapshot, context.Command.Actor, socket.Body.Id) is { } reach)
+        {
+            return reach;
+        }
+        if (PartStates.State(socket.Template, socket.Body, socket.Part)?.Incised is not true)
+        {
+            return Pipeline.Refused(Code.NotIncised);
+        }
+        return Pipeline.RequirementRefusal(context);
+    }
+
+    // Every bleed of the part leaves the schedule; a bleed that names no part is never staunched. The
+    // removal is the root `staunch` event's, through the schedule the world holds.
+    private static void StaunchTransition(Working working, Pipeline.CommandContext context, string? rootEventId)
+    {
+        var bodyId = context.Target!.EntityId;
+        var part = PartNamed(context)!;
+        working.SetSchedule([.. (working.Snapshot.Schedule ?? [])
+            .Where(cause => cause is not BleedCause bleed || bleed.Entity != bodyId || bleed.Part != part)]);
+    }
+
+    // The incision closes; any bleed runs on. An entry back at its default leaves the record.
+    private static void SutureTransition(Working working, Pipeline.CommandContext context, string? rootEventId)
+    {
+        var body = working.Snapshot.Entities[context.Target!.EntityId];
+        var part = PartNamed(context)!;
+        var template = context.Registry[body.Template];
+        var state = PartStates.State(template, body, part)!;
+        working.SetParts(
+            body.Id,
+            PartStates.With(template, body.Parts, new Dictionary<string, PartState>(StringComparer.Ordinal)
+            {
+                [part] = state with { Incised = null },
+            }),
+            rootEventId!);
     }
 
     private static string? PartNamed(Pipeline.CommandContext context) =>

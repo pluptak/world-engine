@@ -15,3 +15,10 @@ A body whose props declare no bleeding is incised and does not bleed. A cut is
 audible.
 
 `set_part` with `incised` in its `state` starts a scene with a wound already open.
+
+**Staunches and sutures.** `staunch` takes the body and `args.part` and removes every
+bleed of that part from the schedule, recorded under the root `staunch` event; with
+none it is refused `not_bleeding`, and a bleed that names no part is never staunched.
+`suture` clears `incised` on the part, refused `not_incised` when it is not incised;
+it does not stop a bleed. Both need `manipulation` 50 and no tool, and both are
+audible.
