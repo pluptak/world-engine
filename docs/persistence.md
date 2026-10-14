@@ -1,7 +1,8 @@
 # Commands and persistence
 
-The CLI is a JSON adapter over `World`: one request on stdin, one method, one response. Zod
-validates that boundary, and a failure becomes `{status:"invalid", issues}` with exit code 2.
+The CLI is a JSON adapter over `World`: one request on stdin, one method, one response. The request
+is read as a value and checked by the contract (`Checks`), and a failure becomes
+`{status:"invalid", issues}` with exit code 2.
 `init` builds a world from a scenario of spawn specs, and takes an optional third argument, a
 coverage file, so a world can declare the categories it answers from the first command.
 

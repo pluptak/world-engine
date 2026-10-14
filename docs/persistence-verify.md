@@ -32,3 +32,8 @@ A world loads the template set it was created with, so editing `templates/` reac
 `upgradeTemplates` moves a live world to a new set and refuses if a template lost a field an entity
 uses (a part counts only with stored state or something in it), or if the log no longer replays to
 the stored snapshot and event stream.
+
+**Why the files stay canonical JSON.** The store relies on their bytes: `head.json` counts them,
+repair and checkpoints work by byte offset, `verify` names the first byte that differs, and
+`templates_hash` is SHA-256 of the set's canonical bytes. Only the codec (`Core/Json`) knows JSON;
+the engine, store and CLI read and write values and records.
