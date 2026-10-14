@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
 namespace WorldEngine.Core.Engine;
@@ -30,7 +31,7 @@ public sealed record ProcessSpec(
 }
 
 // The condition a process runs under: a prop, a comparison, and the value compared with.
-public sealed record ProcessWhile(string Prop, string Op, JsonNode? Value);
+public sealed record ProcessWhile(string Prop, string Op, Value? Value);
 
 // What a run does to the entity: one prop moved by `by`, clamped to its bounds.
 public sealed record ProcessEffect(ProcessAdjust AdjustProp);
@@ -49,6 +50,6 @@ public sealed record ProcessThen(
     bool? Spent = null,
     JsonNode? Remove = null);
 
-public sealed record ProcessSetProp(string Prop, JsonNode? Value);
+public sealed record ProcessSetProp(string Prop, Value? Value);
 
 public sealed record ProcessDamage(long Amount);

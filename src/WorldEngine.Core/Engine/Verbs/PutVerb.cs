@@ -92,11 +92,7 @@ public static class PutVerb
     // The relation the verb places by, when the command names one of its two.
     private static string? RelationOf(Pipeline.CommandContext context)
     {
-        var args = context.Command.Args;
-        return args is not null && args.TryGetValue("relation", out var value) && value is JsonValue json
-            && json.TryGetValue(out string? text) && text is "on" or "in"
-            ? text
-            : null;
+        return context.Command.Args?.GetValueOrDefault("relation").AsText() is { } relation && relation is "on" or "in" ? relation : null;
     }
 
     // Stowing into the actor's own pocket: it must be a space part, the relation is `in`, and the item must fit it the

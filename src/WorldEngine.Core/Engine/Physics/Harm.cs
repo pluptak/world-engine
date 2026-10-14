@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -63,7 +62,7 @@ public static class Harm
                     lands.Support,
                     lands.Pos,
                     lands.ContainedIn,
-                    Props: new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { [Prop.Succeeds] = JsonValue.Create(body.Id) }),
+                    Props: Value.Map.Empty.With(Prop.Succeeds, body.Id)),
                 eventId);
         }
         return new Hurt(eventId, true);

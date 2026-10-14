@@ -31,12 +31,33 @@ public abstract record Value
         }
     }
 
-    // Keys in ordinal order, so walking a map is deterministic and writing one needs no sort.
-    public sealed record Map(ImmutableSortedDictionary<string, Value> Fields) : Value
+    // Keys in ordinal order, so walking a map is deterministic and writing one needs no sort. A map reads as a dictionary, and
+    // `With` and `Without` give a changed copy.
+    public sealed record Map(ImmutableSortedDictionary<string, Value> Fields) : Value, IReadOnlyDictionary<string, Value>
     {
         public static readonly Map Empty = new(ImmutableSortedDictionary.Create<string, Value>(StringComparer.Ordinal));
 
-        public Value? this[string key] => Fields.GetValueOrDefault(key);
+        public Value this[string key] => Fields[key];
+
+        public IEnumerable<string> Keys => Fields.Keys;
+
+        public IEnumerable<Value> Values => Fields.Values;
+
+        public int Count => Fields.Count;
+
+        public bool ContainsKey(string key) => Fields.ContainsKey(key);
+
+        public bool TryGetValue(string key, [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out Value value) =>
+            Fields.TryGetValue(key, out value);
+
+        public IEnumerator<KeyValuePair<string, Value>> GetEnumerator() => Fields.GetEnumerator();
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        // A copy with the key set; a null value takes it away, since a map holds no null.
+        public Map With(string key, Value? value) => value is null ? Without(key) : new(Fields.SetItem(key, value));
+
+        public Map Without(string key) => Fields.ContainsKey(key) ? new(Fields.Remove(key)) : this;
 
         public bool Equals(Map? other) =>
             other is not null
@@ -63,9 +84,34 @@ public abstract record Value
 
     public static List Of(IEnumerable<Value> items) => new([.. items]);
 
+    // A value from what code holds: a string, a whole number (a double too, when it is whole), a flag, a list of strings, or a
+    // value already; null is none.
+    public static Value? From(object? value) => value switch
+    {
+        null => null,
+        Value already => already,
+        string text => text,
+        bool flag => flag,
+        long number => number,
+        int number => (long)number,
+        double number when Math.Floor(number) == number && Math.Abs(number) < 9_223_372_036_854_775_807.0 => (long)number,
+        IEnumerable<string> texts => Of(texts.Select(text => (Value)text)),
+        _ => throw new ArgumentException($"No value for a {value.GetType().Name}", nameof(value)),
+    };
+
     // A map of the given fields; a null value leaves its key out.
     public static Map Of(IEnumerable<KeyValuePair<string, Value?>> fields) =>
         new(fields
             .Where(pair => pair.Value is not null)
             .ToImmutableSortedDictionary(pair => pair.Key, pair => pair.Value!, StringComparer.Ordinal));
+}
+
+// Typed reads of a value that may be absent: null (or false) when it is absent or another kind.
+public static class ValueReads
+{
+    public static string? AsText(this Value? value) => value is Value.Text text ? text.Content : null;
+
+    public static long? AsInt(this Value? value) => value is Value.Int number ? number.Number : null;
+
+    public static bool IsTrue(this Value? value) => value is Value.Bool { Flag: true };
 }

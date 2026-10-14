@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -153,22 +152,13 @@ public static class SnapshotValidation
         new(code, path, message);
 
     // JavaScript's truthiness for a prop value: absent, null, false, zero and the empty string are false.
-    private static bool Truthy(JsonNode? node)
+    private static bool Truthy(Value? value) => value switch
     {
-        if (node is not JsonValue value)
-        {
-            return false;
-        }
-        if (value.TryGetValue(out bool flag))
-        {
-            return flag;
-        }
-        if (value.TryGetValue(out string? text))
-        {
-            return text.Length > 0;
-        }
-        return JsonReads.Number(value) is { } number && number != 0;
-    }
+        Value.Bool flag => flag.Flag,
+        Value.Text text => text.Content.Length > 0,
+        Value.Int number => number.Number != 0,
+        _ => false,
+    };
 
     // The ids that close a loop along the relation the caller names, or null: a dangling reference cannot close one.
     private static List<string>? LinkLoop(Snapshot snapshot, string id, Func<Entity, string?> next)
@@ -520,7 +510,7 @@ public static class SnapshotValidation
     internal static List<SnapshotIssue> PropValueIssues(
         Template? template,
         string name,
-        JsonNode? value,
+        Value? value,
         IReadOnlyList<string> path)
     {
         var issues = new List<SnapshotIssue>();
@@ -541,7 +531,7 @@ public static class SnapshotValidation
         {
             issues.Add(Issue(Code.UndeclaredProp, path, $"props.{name} is not a declared prop"));
         }
-        if (engine?.Min is { } min && JsonReads.Number(value) is { } number && number < min)
+        if (engine?.Min is { } min && value is Value.Int { Number: var number } && number < min)
         {
             issues.Add(Issue(Code.WrongPropType, path, $"props.{name} must be at least {min}"));
         }
@@ -652,7 +642,7 @@ public static class SnapshotValidation
                 for (var member = 0; member < members.Count; member++)
                 {
                     var slot = members[member];
-                    IReadOnlyList<string> path = entry is JsonArray
+                    IReadOnlyList<string> path = entry is Value.List
                         ? ["run", "slots", index.ToString(CultureInfo.InvariantCulture), member.ToString(CultureInfo.InvariantCulture)]
                         : ["run", "slots", index.ToString(CultureInfo.InvariantCulture)];
                     // A slot may be gone, which ends the run as a destroyed one does; one still in the world is an agent's body.

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Templates;
 
@@ -76,7 +77,7 @@ public sealed record Template(
     Dimensions SizeCm,
     long MassG,
     IReadOnlyList<PartDecl> Parts,
-    IReadOnlyDictionary<string, JsonNode?> Props,
+    Value.Map Props,
     IReadOnlyList<Product> BreakProducts,
     IReadOnlyDictionary<string, long> BreakResidue,
     IReadOnlyList<Product>? SpentProducts = null,

@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -19,7 +18,7 @@ public static class Spawn
         DetachedFrom? DetachedFrom = null,
         // The rest of an override (src/engine/spawn.ts `copyOverrides`): props merge onto the template's, the others replace
         // the blank field. Null is "not given", which is the blank field itself.
-        IReadOnlyDictionary<string, JsonNode?>? Props = null,
+        Value.Map? Props = null,
         IReadOnlyList<string>? Aliases = null,
         IReadOnlyDictionary<string, string>? Traits = null,
         string? ConcealedBy = null,
@@ -46,10 +45,10 @@ public static class Spawn
             throw new InvalidOperationException($"Entity id {id} already exists");
         }
         // An override's props merge onto the template's, so a spawn names only what it changes.
-        var props = new Dictionary<string, JsonNode?>(template.Props, StringComparer.Ordinal);
-        foreach (var (name, value) in overrides.Props ?? new Dictionary<string, JsonNode?>())
+        var props = template.Props;
+        foreach (var (name, value) in overrides.Props ?? Value.Map.Empty)
         {
-            props[name] = value?.DeepClone();
+            props = props.With(name, value);
         }
 
         // Every field at its default (`blankFields` in spawn.ts), then the template's own.

@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Templates;
 
@@ -168,7 +170,7 @@ public static class TemplateResolver
             SizeCm: decl.SizeCm!,
             MassG: decl.MassG!.Value,
             Parts: CopyParts(decl.Parts!),
-            Props: CopyProps(decl.Props!),
+            Props: PropsOf(decl.Props!),
             BreakProducts: CopyProducts(decl.BreakProducts!),
             BreakResidue: new Dictionary<string, long>(decl.BreakResidue!),
             SpentProducts: NonEmptyProducts(decl.SpentProducts),
@@ -189,10 +191,10 @@ public static class TemplateResolver
         {
             fields[name] = field;
         }
-        var props = CopyProps(parent.Props);
-        foreach (var (name, value) in decl.Props ?? new Dictionary<string, JsonNode?>())
+        var props = parent.Props;
+        foreach (var (name, value) in PropsOf(decl.Props ?? new Dictionary<string, JsonNode?>()))
         {
-            props[name] = value?.DeepClone();
+            props = props.With(name, value);
         }
 
         return new Template(
@@ -268,8 +270,9 @@ public static class TemplateResolver
             Contributes = new Dictionary<string, long>(part.Contributes),
         })];
 
-    private static Dictionary<string, JsonNode?> CopyProps(IReadOnlyDictionary<string, JsonNode?> props) =>
-        props.ToDictionary(pair => pair.Key, pair => pair.Value?.DeepClone());
+    // A declaration's props as values: a null one is no prop.
+    private static Value.Map PropsOf(IReadOnlyDictionary<string, JsonNode?> props) =>
+        Value.Of(props.Select(pair => KeyValuePair.Create(pair.Key, ValueJson.FromNode(pair.Value))));
 
     private static List<Product> CopyProducts(IReadOnlyList<Product> products) => [.. products];
 

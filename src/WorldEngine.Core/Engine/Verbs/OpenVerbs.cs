@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using static WorldEngine.Core.Json.Integers;
 
@@ -129,7 +128,7 @@ public static class OpenVerbs
         var target = entity!;
         if (Jams(working, context, target))
         {
-            working.Emit(EventType.Jammed, target.Id, new Dictionary<string, JsonNode?> { ["verb"] = JsonValue.Create(KindName(kind)) }, rootEventId);
+            working.Emit(EventType.Jammed, target.Id, Pipeline.Reason(("verb", KindName(kind))), rootEventId);
             return;
         }
 
@@ -150,7 +149,7 @@ public static class OpenVerbs
             _ => (Prop.Locked, false, EventType.Unlocked),
         };
         var props = (kind == Kind.Open ? target.Props.Without(Prop.Closing) : target.Props).With(prop, value);
-        var eventId = working.Emit(eventType, target.Id, new Dictionary<string, JsonNode?>(), rootEventId);
+        var eventId = working.Emit(eventType, target.Id, Value.Map.Empty, rootEventId);
         working.SetProps(target.Id, props, eventId);
         if (kind == Kind.Close)
         {
@@ -194,7 +193,7 @@ public static class OpenVerbs
     // The window a door with `shut_ticks` opens: a `closing` event, and the shut a scheduled close caused by it.
     private static void StartClosing(Working working, Entity target, long shutTicks, string? rootEventId)
     {
-        var eventId = working.Emit(EventType.Closing, target.Id, new Dictionary<string, JsonNode?>(), rootEventId);
+        var eventId = working.Emit(EventType.Closing, target.Id, Value.Map.Empty, rootEventId);
         working.SetProps(target.Id, target.Props.With(Prop.Closing, true), eventId);
         Schedule.Cancel(working, CauseKind.Close, target.Id);
         Schedule.Add(working, new CloseCause(working.Snapshot.Tick + shutTicks, target.Id, eventId));

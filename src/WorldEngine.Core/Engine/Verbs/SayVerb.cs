@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WorldEngine.Core.Model;
 
@@ -35,33 +34,25 @@ public static class SayVerb
     }
 
     // The speaker's event carries the token, its volume (normal when none is named), and the addressee when there is one.
-    private static (string Entity, IReadOnlyDictionary<string, JsonNode?> Data) RootEvent(Pipeline.CommandContext context)
+    private static (string Entity, Value.Map Data) RootEvent(Pipeline.CommandContext context)
     {
-        var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
-        {
-            ["utterance"] = JsonValue.Create(Text(context.Command.Args, "utterance")),
-            ["volume"] = JsonValue.Create(VolumeOf(context.Command.Args) ?? "normal"),
-        };
-        if (context.Target is { } target)
-        {
-            data["to"] = JsonValue.Create(target.EntityId);
-        }
+        var data = Pipeline.Reason(
+            ("utterance", Text(context.Command.Args, "utterance")),
+            ("volume", VolumeOf(context.Command.Args) ?? "normal"),
+            ("to", context.Target?.EntityId));
         return (context.Command.Actor, data);
     }
 
     // The volume the command names, normal when it names none; null when it names one the verb does not know.
-    private static string? VolumeOf(IReadOnlyDictionary<string, JsonNode?>? args)
+    private static string? VolumeOf(Value.Map? args)
     {
-        if (args is null || !args.TryGetValue("volume", out var node) || node is null)
+        if (args?.GetValueOrDefault("volume") is not { } node)
         {
             return "normal";
         }
-        return node is JsonValue json && json.TryGetValue(out string? volume) && Volumes.Contains(volume) ? volume : null;
+        return node.AsText() is { } volume && Volumes.Contains(volume) ? volume : null;
     }
 
     // An argument that is a string, or null when it is absent or not one.
-    private static string? Text(IReadOnlyDictionary<string, JsonNode?>? args, string key) =>
-        args is not null && args.TryGetValue(key, out var value) && value is JsonValue json && json.TryGetValue(out string? text)
-            ? text
-            : null;
+    private static string? Text(Value.Map? args, string key) => args?.GetValueOrDefault(key).AsText();
 }

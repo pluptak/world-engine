@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -74,7 +73,7 @@ public static class LightVerbs
     {
         var lightId = context.Target!.EntityId;
         var light = working.Snapshot.Entities[lightId];
-        var eventId = working.Emit(lit ? EventType.Lit : EventType.Doused, lightId, new Dictionary<string, JsonNode?>(), rootEventId);
+        var eventId = working.Emit(lit ? EventType.Lit : EventType.Doused, lightId, Value.Map.Empty, rootEventId);
         working.SetProps(lightId, light.Props.With(Prop.Burning, lit), eventId);
     }
 }

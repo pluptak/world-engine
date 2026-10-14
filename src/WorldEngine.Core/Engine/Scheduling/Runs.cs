@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -88,8 +87,8 @@ public static class Runs
     }
 
     // The bodies a slot holds, in the order the scene named them: one id, or the list a slot of several is stored as.
-    public static IReadOnlyList<string> SlotMembers(JsonNode entry) =>
-        entry is JsonArray array ? array.Select(member => member!.GetValue<string>()).ToList() : [entry.GetValue<string>()];
+    public static IReadOnlyList<string> SlotMembers(Value entry) =>
+        entry is Value.List list ? [.. list.Items.Select(member => member.AsText()!)] : [entry.AsText()!];
 
     // The first body of each slot: the id a registration names the slot by (`docs/roles.md`). A slot with no body names nothing
     // a registration could name, so it is left out (src/engine/run.ts has it as undefined, which no id equals).

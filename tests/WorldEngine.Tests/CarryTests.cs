@@ -72,11 +72,11 @@ public class CarryTests
     public void Synthetic_carry_verdicts_match_TypeScript()
     {
         var expected = Golden["synthetic"]!.AsArray();
-        var shapes = new Dictionary<string, (string Template, Dictionary<string, JsonNode?> Props)>(StringComparer.Ordinal)
+        var shapes = new Dictionary<string, (string Template, Value.Map Props)>(StringComparer.Ordinal)
         {
-            ["bottle_500g"] = ("bottle", []),
-            ["book_two_handed"] = ("book", new() { ["hands_required"] = JsonValue.Create(2.0) }),
-            ["heavy_bars"] = ("bars", []),
+            ["bottle_500g"] = ("bottle", Value.Map.Empty),
+            ["book_two_handed"] = ("book", Value.Map.Empty.With("hands_required", 2L)),
+            ["heavy_bars"] = ("bars", Value.Map.Empty),
         };
         var stone = Base.Entities["e15"];
         var index = 0;
@@ -95,8 +95,8 @@ public class CarryTests
                             var row = expected[index++]!;
                             var caps = new Dictionary<string, long> { ["manipulation"] = manipulation, ["mouth_carry"] = mouth };
                             var carrierProps = limit is null
-                                ? new Dictionary<string, JsonNode?>()
-                                : new Dictionary<string, JsonNode?> { ["hand_carry_limit_g"] = JsonValue.Create((double)limit.Value), ["carry_limit_g"] = JsonValue.Create((double)limit.Value) };
+                                ? Value.Map.Empty
+                                : Value.Map.Empty.With("hand_carry_limit_g", limit.Value).With("carry_limit_g", limit.Value);
 
                             var plain = Carry.Check(caps, carrierProps, item, Registry, otherHeld, Carry.Alternatives, 0);
                             var withHands = Carry.Check(caps, carrierProps, item, Registry, otherHeld, Carry.Alternatives, 80);

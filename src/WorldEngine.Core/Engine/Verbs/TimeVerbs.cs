@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -19,8 +18,7 @@ public static class TimeVerbs
     // The beat `stop_before` names, as it is pending in the snapshot the command is decided against, or null.
     private static Clock.StopBeat? StopBeatOf(Command command, Snapshot snapshot)
     {
-        if (command.Args is null || !command.Args.TryGetValue("stop_before", out var node) || node is not JsonValue value
-            || !value.TryGetValue(out string? id))
+        if (command.Args?.GetValueOrDefault("stop_before").AsText() is not { } id)
         {
             return null;
         }
@@ -39,14 +37,14 @@ public static class TimeVerbs
         {
             return [];
         }
-        if (node is not JsonArray array || array.Count == 0)
+        if (node is not Value.List { Items.Length: > 0 } array)
         {
             return null;
         }
-        var ids = new List<string>(array.Count);
-        foreach (var element in array)
+        var ids = new List<string>(array.Items.Length);
+        foreach (var element in array.Items)
         {
-            if (element is not JsonValue value || !value.TryGetValue(out string? id) || id.Length == 0)
+            if (element.AsText() is not { Length: > 0 } id)
             {
                 return null;
             }
@@ -82,7 +80,7 @@ public static class TimeVerbs
         }
         if (command.Args is not null && command.Args.TryGetValue("stop_before", out var stop))
         {
-            if (stop is not JsonValue value || !value.TryGetValue(out string? id) || !Beats.IsBeatId(id))
+            if (stop.AsText() is not { } id || !Beats.IsBeatId(id))
             {
                 return Pipeline.Invalid(Code.InvalidArgs);
             }

@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
 
@@ -23,7 +23,7 @@ public static class Fit
     }
 
     // The inside of a container, from its `inner_w_cm`, `inner_d_cm` and `inner_h_cm` props, or null when any is missing.
-    public static double[]? InnerDimensions(IReadOnlyDictionary<string, JsonNode?> props)
+    public static double[]? InnerDimensions(IReadOnlyDictionary<string, Value> props)
     {
         var width = props.Get(Prop.InnerWCm);
         var depth = props.Get(Prop.InnerDCm);

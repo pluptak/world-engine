@@ -1,4 +1,3 @@
-using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -19,5 +18,5 @@ public sealed record VerbDuration(
     public long? For(Command command) => Ticks ?? ArgTicks(command, Arg!);
 
     public static long? ArgTicks(Command command, string arg) =>
-        JsonReads.SafeInt(command.Args?.GetValueOrDefault(arg)) is > 0 and var ticks ? ticks : null;
+        command.Args?.GetValueOrDefault(arg).AsInt() is > 0 and var ticks ? ticks : null;
 }

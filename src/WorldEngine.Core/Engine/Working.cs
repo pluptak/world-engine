@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -31,15 +29,14 @@ public sealed class Working(Snapshot snapshot, string commandId)
     public List<Delta> Deltas { get; } = [];
 
     // Allocates the next event id, stamps it with the working tick, and returns its id for the events it causes.
-    public string Emit(string type, string entity, IReadOnlyDictionary<string, JsonNode?> data, string? causeId)
+    public string Emit(string type, string entity, Value.Map data, string? causeId)
     {
         if (!Snapshot.Entities.ContainsKey(entity) && entity != Resolve.WorldAuthor)
         {
             throw new InvalidOperationException($"Cannot emit an event for unknown entity {entity}");
         }
         var eventId = $"ev{Snapshot.NextSeq}";
-        var copy = data.ToDictionary(entry => entry.Key, entry => entry.Value?.DeepClone());
-        Events.Add(new WorldEvent(eventId, causeId, commandId, Snapshot.Tick, type, entity, copy));
+        Events.Add(new WorldEvent(eventId, causeId, commandId, Snapshot.Tick, type, entity, data));
         Snapshot = Snapshot with { NextSeq = Snapshot.NextSeq + 1 };
         return eventId;
     }
@@ -48,9 +45,9 @@ public sealed class Working(Snapshot snapshot, string commandId)
     public void SetModifiers(string entityId, IReadOnlyList<Modifier> modifiers, string eventId)
     {
         var entity = Snapshot.Entities[entityId];
-        var from = JsonSerializer.SerializeToNode(entity.Modifiers, WorldJson.Options);
-        var to = JsonSerializer.SerializeToNode(modifiers, WorldJson.Options);
-        if (JsonNode.DeepEquals(from, to))
+        var from = ValueJson.Of(entity.Modifiers);
+        var to = ValueJson.Of(modifiers);
+        if (Equals(from, to))
         {
             return;
         }
@@ -80,7 +77,7 @@ public sealed class Working(Snapshot snapshot, string commandId)
         {
             return;
         }
-        Deltas.Add(new Delta(eventId, entityId, field, current is null ? null : JsonValue.Create(current), value is null ? null : JsonValue.Create(value)));
+        Deltas.Add(new Delta(eventId, entityId, field, Value.From(current), Value.From(value)));
         var entities = new Dictionary<string, Entity>(Snapshot.Entities, StringComparer.Ordinal) { [entityId] = updated };
         Snapshot = Snapshot with { Entities = entities };
     }
@@ -97,8 +94,8 @@ public sealed class Working(Snapshot snapshot, string commandId)
             eventId,
             entityId,
             "pos",
-            entity.Pos is null ? null : JsonSerializer.SerializeToNode(entity.Pos, WorldJson.Options),
-            pos is null ? null : JsonSerializer.SerializeToNode(pos, WorldJson.Options)));
+            entity.Pos is null ? null : ValueJson.Of(entity.Pos),
+            pos is null ? null : ValueJson.Of(pos)));
         var entities = new Dictionary<string, Entity>(Snapshot.Entities, StringComparer.Ordinal) { [entityId] = entity with { Pos = pos } };
         Snapshot = Snapshot with { Entities = entities };
     }
@@ -115,7 +112,7 @@ public sealed class Working(Snapshot snapshot, string commandId)
     public void SetStatus(string entityId, EntityStatus status, string eventId) =>
         Update(entityId, "status", status, eventId, entity => entity with { Status = status });
 
-    public void SetProps(string entityId, IReadOnlyDictionary<string, JsonNode?> props, string eventId) =>
+    public void SetProps(string entityId, Value.Map props, string eventId) =>
         Update(entityId, "props", props, eventId, entity => entity with { Props = props });
 
     public void SetResidue(string entityId, IReadOnlyDictionary<string, long> residue, string eventId) =>
@@ -139,14 +136,14 @@ public sealed class Working(Snapshot snapshot, string commandId)
             created.Id,
             "entity",
             null,
-            JsonSerializer.SerializeToNode(Snapshot.Entities[created.Id], WorldJson.Options)));
+            ValueJson.Of(Snapshot.Entities[created.Id])));
         return (created.Id, spawnedEvent);
     }
 
     // Records an entity's removal as one delta on the field "entity" under `eventId`, from the entity as it was to nothing.
     // The entity stays in the snapshot until `DropEntity`, so what a removal does first can still read it.
     public void RecordEntityRemoval(string entityId, Entity former, string eventId) =>
-        Deltas.Add(new Delta(eventId, entityId, "entity", JsonSerializer.SerializeToNode(former, WorldJson.Options), null));
+        Deltas.Add(new Delta(eventId, entityId, "entity", ValueJson.Of(former), null));
 
     // Takes an entity out of the snapshot (no delta: `RecordEntityRemoval` records it).
     public void DropEntity(string entityId)
@@ -160,9 +157,9 @@ public sealed class Working(Snapshot snapshot, string commandId)
     private void Update<T>(string entityId, string field, T value, string eventId, Func<Entity, Entity> apply)
     {
         var entity = Snapshot.Entities[entityId];
-        var from = JsonSerializer.SerializeToNode(FieldOf(entity, field), WorldJson.Options);
-        var to = JsonSerializer.SerializeToNode(value, WorldJson.Options);
-        if (JsonNode.DeepEquals(from, to))
+        var from = ValueJson.Of(FieldOf(entity, field));
+        var to = ValueJson.Of(value);
+        if (Equals(from, to))
         {
             return;
         }

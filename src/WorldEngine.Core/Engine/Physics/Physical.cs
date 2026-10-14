@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -74,7 +73,7 @@ public static class Physical
             .Where(id => working.Snapshot.Entities[id].ContainedIn == entityId)
             .ToList();
 
-        var brokenEvent = working.Emit(EventType.Broken, entityId, new Dictionary<string, JsonNode?>(), causeId);
+        var brokenEvent = working.Emit(EventType.Broken, entityId, Value.Map.Empty, causeId);
         working.SetStatus(entityId, EntityStatus.Broken, brokenEvent);
 
         var landingSurface = landing.Support is null ? null : working.Snapshot.Entities.GetValueOrDefault(landing.Support);
@@ -168,7 +167,7 @@ public static class Physical
             return false;
         }
 
-        var spentEvent = working.Emit(EventType.Spent, entityId, new Dictionary<string, JsonNode?>(), causeId);
+        var spentEvent = working.Emit(EventType.Spent, entityId, Value.Map.Empty, causeId);
         var at = Placements.PlacementOf(working.Snapshot, entity);
         foreach (var product in template.SpentProducts ?? [])
         {
@@ -212,7 +211,7 @@ public static class Physical
             return false;
         }
 
-        var removedEvent = working.Emit(EventType.Removed, targetId, new Dictionary<string, JsonNode?>(), causeId);
+        var removedEvent = working.Emit(EventType.Removed, targetId, Value.Map.Empty, causeId);
         working.RecordEntityRemoval(targetId, doomed, removedEvent);
         // What the removed thing was hiding is uncovered rather than orphaned: it stays where it was.
         Concealment.RevealConcealed(working, targetId, removedEvent);
@@ -311,7 +310,7 @@ public static class Physical
         var dropCause = request.Cause;
         if (request.Displaced)
         {
-            dropCause = working.Emit(EventType.Displaced, entity.Id, new Dictionary<string, JsonNode?>(), request.Cause);
+            dropCause = working.Emit(EventType.Displaced, entity.Id, Value.Map.Empty, request.Cause);
         }
         var dropped = working.Emit(EventType.Dropped, entity.Id, Pipeline.Reason(("fall_cm", fallCm)), dropCause);
 
@@ -496,12 +495,7 @@ public static class Physical
         }
 
         var surface = landing.Support ?? landing.Location;
-        var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
-        {
-            ["material"] = JsonValue.Create(material),
-            ["amount"] = JsonValue.Create(amount.Value),
-            ["to"] = surface is null ? null : JsonValue.Create(surface),
-        };
+        var data = Pipeline.Reason(("material", material), ("amount", amount.Value), ("to", surface));
         var spilledEvent = working.Emit(EventType.Spilled, entityId, data, droppedEventId);
         if (surface is not null)
         {

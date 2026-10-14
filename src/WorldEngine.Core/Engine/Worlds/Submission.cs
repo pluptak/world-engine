@@ -68,7 +68,7 @@ public static class Submission
             Resolve.WorldAuthor,
             "edit",
             Target: JsonReads.Text(edit["target"]),
-            Args: new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["edit"] = edit.DeepClone() },
+            Args: EditVerb.EditArgs(edit),
             Perceivers: perceivers ? true : null,
             By: by);
 
@@ -79,7 +79,7 @@ public static class Submission
             version,
             result.Status,
             result.ReasonCode,
-            result.ReasonData is null ? null : new Dictionary<string, JsonNode?>(result.ReasonData, StringComparer.Ordinal),
+            result.ReasonData,
             result.Candidates,
             round,
             command.By);

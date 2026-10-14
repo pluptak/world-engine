@@ -44,12 +44,7 @@ public static partial class Beats
 
     private static void Skipped(Working working, BeatCause cause, params (string Key, string Value)[] data)
     {
-        var fields = new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["id"] = JsonValue.Create(cause.Id) };
-        foreach (var (key, value) in data)
-        {
-            fields[key] = JsonValue.Create(value);
-        }
-        working.Emit(EventType.BeatSkipped, cause.Entity, fields, cause.CauseId);
+        working.Emit(EventType.BeatSkipped, cause.Entity, Pipeline.Reason([("id", cause.Id), .. data.Select(pair => (pair.Key, (object?)pair.Value))]), cause.CauseId);
     }
 
     private static Fired Fire(Working working, IReadOnlyDictionary<string, Template> registry, BeatCause cause)
@@ -57,7 +52,7 @@ public static partial class Beats
         var action = cause.Action;
         if (JsonReads.Text(action["kind"]) == "sound")
         {
-            var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["loud"] = JsonValue.Create(JsonReads.IsTrue(action["loud"])) };
+            var data = Pipeline.Reason(("loud", JsonReads.IsTrue(action["loud"])));
             return new Done(working.Emit(EventType.Sounded, JsonReads.Text(action["entity"])!, data, cause.CauseId));
         }
         return FireEdit(working, registry, cause, action);
@@ -83,7 +78,7 @@ public static partial class Beats
             Resolve.WorldAuthor,
             "edit",
             targetText,
-            new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["edit"] = action.DeepClone() });
+            EditVerb.EditArgs(action));
         var context = new Pipeline.CommandContext(working.Snapshot, registry, command, target, EditVerb.Edit.Requires ?? []);
         if (EditVerb.Edit.Preconditions?.Invoke(context) is { } refused)
         {

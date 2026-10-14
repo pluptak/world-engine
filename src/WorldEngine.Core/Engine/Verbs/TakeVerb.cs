@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -109,7 +108,7 @@ public static class TakeVerb
             throw new InvalidOperationException("Take grip changed after validation");
         }
 
-        var moved = working.Emit(EventType.Moved, targetId, new Dictionary<string, JsonNode?>(), rootEventId);
+        var moved = working.Emit(EventType.Moved, targetId, Value.Map.Empty, rootEventId);
         working.SetRelation(targetId, "contained_in", actorId, moved);
         working.SetRelation(targetId, "in_part", grip.Part, moved);
         working.SetRelation(targetId, "support", null, moved);

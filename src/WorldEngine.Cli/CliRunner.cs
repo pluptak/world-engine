@@ -1,8 +1,8 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using WorldEngine.Core.Engine;
 using WorldEngine.Contract;
+using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -326,12 +326,12 @@ public static class CliRunner
         foreach (var delta in deltas)
         {
             response.Add(Node(delta));
-            if (delta.Field == "entity" && delta.To is JsonObject entity)
+            if (delta.Field == "entity" && delta.To is Value.Map entity)
             {
                 // A field the new entity leaves empty has no delta: it was nothing and is nothing.
                 foreach (var field in new[] { "support", "contained_in", "location", "detached_from", "pos" })
                 {
-                    if (entity[field] is not null)
+                    if (entity.GetValueOrDefault(field) is { } value)
                     {
                         response.Add(new JsonObject
                         {
@@ -339,7 +339,7 @@ public static class CliRunner
                             ["entity"] = delta.Entity,
                             ["field"] = field,
                             ["from"] = null,
-                            ["to"] = entity[field]?.DeepClone(),
+                            ["to"] = ValueJson.ToNode(value),
                         });
                     }
                 }
@@ -408,7 +408,7 @@ public static class CliRunner
             Text(command, "command_id"),
             Text(command, "verb"),
             JsonReads.Text(command["target"]),
-            command["args"] is JsonObject args ? args.ToDictionary(pair => pair.Key, pair => pair.Value?.DeepClone(), StringComparer.Ordinal) : null);
+            ValueJson.FromNode(command["args"]) as Value.Map);
     }
 
     // The view of the body the request names, as `actorWorld` builds it over the world.

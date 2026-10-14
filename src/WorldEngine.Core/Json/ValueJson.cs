@@ -19,6 +19,24 @@ public static class ValueJson
         _ => throw new NotSupportedException($"Cannot read {node.GetType().Name}"),
     };
 
+    // A record as a value, as the world's JSON options write it: how a delta holds the field it changed.
+    public static Value? Of<T>(T value) => FromNode(JsonSerializer.SerializeToNode(value, WorldJson.Options));
+
+    // A node read as a value when it can be one; false for a fraction or a null in a list.
+    public static bool TryFromNode(JsonNode? node, out Value? value)
+    {
+        try
+        {
+            value = FromNode(node);
+            return true;
+        }
+        catch (FormatException)
+        {
+            value = null;
+            return false;
+        }
+    }
+
     public static JsonNode? ToNode(Value? value) => value switch
     {
         null => null,
@@ -51,15 +69,30 @@ public static class ValueJson
         }
     }
 
-    // Registered in `WorldJson.Options`, so any record holding a `Value` reads and writes it.
-    public sealed class Converter : JsonConverter<Value>
+    // Registered in `WorldJson.Options`, so any record holding a `Value`, or one kind of it (a `Value.Map` of props), reads and
+    // writes it. A value of another kind than the field declares does not read.
+    public sealed class Converter : JsonConverterFactory
     {
-        public override bool HandleNull => false;
+        public override bool CanConvert(Type typeToConvert) => typeof(Value).IsAssignableFrom(typeToConvert);
 
-        public override Value? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-            FromNode(JsonNode.Parse(ref reader));
+        public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options) =>
+            (JsonConverter)Activator.CreateInstance(typeof(Of<>).MakeGenericType(typeToConvert))!;
 
-        public override void Write(Utf8JsonWriter writer, Value value, JsonSerializerOptions options) =>
-            (ToNode(value) ?? throw new JsonException("A value is never null")).WriteTo(writer);
+        private sealed class Of<T> : JsonConverter<T>
+            where T : Value
+        {
+            public override bool HandleNull => false;
+
+            public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+                FromNode(JsonNode.Parse(ref reader)) switch
+                {
+                    null => null,
+                    T value => value,
+                    var other => throw new JsonException($"Expected {typeof(T).Name}, read {other.GetType().Name}"),
+                };
+
+            public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options) =>
+                (ToNode(value) ?? throw new JsonException("A value is never null")).WriteTo(writer);
+        }
     }
 }

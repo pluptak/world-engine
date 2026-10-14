@@ -55,9 +55,22 @@ public class EditTests
     public void A_malformed_clear_is_invalid_args(string edit)
     {
         var snapshot = WorldJson.Read<Snapshot>(ReadFixture("edit-base.snapshot.json"));
-        var command = new Command("c1", "world", "edit", Args: new Dictionary<string, JsonNode?> { ["edit"] = JsonNode.Parse(edit) });
+        var command = new Command("c1", "world", "edit", Args: Value.Map.Empty.With("edit", ValueJson.FromNode(JsonNode.Parse(edit))));
 
         var result = Pipeline.Apply(snapshot, Registry, Verbs, command);
+
+        Assert.Equal(Status.Invalid, result.Status);
+        Assert.Equal(Code.InvalidArgs, result.ReasonCode);
+    }
+
+    // An edit that holds a fraction is no edit the engine can hold, so the author's edit of it is refused as malformed.
+    [Fact]
+    public void An_edit_holding_a_fraction_is_invalid_args()
+    {
+        var snapshot = WorldJson.Read<Snapshot>(ReadFixture("edit-base.snapshot.json"));
+        var edit = JsonNode.Parse("""{"kind":"spawn","template":"stone","overrides":{"residue":{"wine":1.5}}}""")!.AsObject();
+
+        var result = Pipeline.Apply(snapshot, Registry, Verbs, Submission.EditCommand(edit, "c1"));
 
         Assert.Equal(Status.Invalid, result.Status);
         Assert.Equal(Code.InvalidArgs, result.ReasonCode);

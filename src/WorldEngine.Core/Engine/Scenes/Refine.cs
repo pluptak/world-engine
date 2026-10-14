@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Json.Integers;
@@ -21,18 +19,10 @@ public static class Refine
 
     // The new preset's props, with the entity's state props the new preset declares laid over them. A state prop the new
     // preset does not declare is dropped with the field it belonged to.
-    public static Dictionary<string, JsonNode?> RefinedProps(Entity subject, Template next)
-    {
-        var props = new Dictionary<string, JsonNode?>(next.Props, StringComparer.Ordinal);
-        foreach (var (name, value) in subject.Props)
-        {
-            if (IsStateProp(next, name) && next.Props.ContainsKey(name))
-            {
-                props[name] = value?.DeepClone();
-            }
-        }
-        return props;
-    }
+    public static Value.Map RefinedProps(Entity subject, Template next) =>
+        subject.Props
+            .Where(pair => IsStateProp(next, pair.Key) && next.Props.ContainsKey(pair.Key))
+            .Aggregate(next.Props, (props, pair) => props.With(pair.Key, pair.Value));
 
     // The stored part state under the new preset's defaults: a part that now sits at its default is not stored. Null when a
     // stored part is one the new preset has no part of.
@@ -47,7 +37,7 @@ public static class Refine
 
     // The liquid a container holds at most: its declared capacity when that is a positive whole number, else its inner
     // volume, truncated. Null when neither is given.
-    private static double? LiquidCapacity(IReadOnlyDictionary<string, JsonNode?> props)
+    private static double? LiquidCapacity(IReadOnlyDictionary<string, Value> props)
     {
         var declared = props.Get(Prop.CapacityCm3);
         if (declared is { } capacity && IsWhole(capacity) && capacity > 0)

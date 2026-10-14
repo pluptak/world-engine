@@ -1,5 +1,3 @@
-using System.Text.Json.Nodes;
-
 namespace WorldEngine.Core.Model;
 
 // What happened in a transition (src/model.ts WorldEvent, Delta, Perceivers). An event's data is kept as JSON
@@ -20,7 +18,7 @@ public sealed record WorldEvent(
     long Tick,
     string Type,
     string Entity,
-    IReadOnlyDictionary<string, JsonNode?> Data,
+    Value.Map Data,
     Perceivers? Perceivers = null);
 
 // One field of one entity changing, as an event set it: `from` and `to` are whatever the field held.
@@ -28,5 +26,5 @@ public sealed record Delta(
     string EventId,
     string Entity,
     string Field,
-    JsonNode? From,
-    JsonNode? To);
+    Value? From,
+    Value? To);

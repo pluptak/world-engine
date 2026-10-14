@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -23,11 +22,7 @@ public static class Concealment
         {
             // The event names whatever was doing the hiding, which for the mover is not itself.
             var concealer = working.Snapshot.Entities[id].ConcealedBy;
-            var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
-            {
-                ["concealer"] = concealer is null ? null : JsonValue.Create(concealer),
-            };
-            var revealed = working.Emit(EventType.Revealed, id, data, causeEventId);
+            var revealed = working.Emit(EventType.Revealed, id, Pipeline.Reason(("concealer", concealer)), causeEventId);
             working.SetRelation(id, "concealed_by", null, revealed);
         }
     }

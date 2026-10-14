@@ -36,7 +36,7 @@ public static class Projection
         {
             return null;
         }
-        var target = @event.Data.TryGetValue("location", out var location) && Text(location) is { } named ? named : subject.Location;
+        var target = @event.Data.GetValueOrDefault("location").AsText() ?? subject.Location;
         var here = observer.Location;
         if (here is null || target is null || here == target)
         {
@@ -238,7 +238,7 @@ public static class Projection
         {
             if (snapshot.Coverage.Properties.Contains(key) && !ReadAsLevel.Any(prop => prop.Name == key))
             {
-                props[key] = entity.Props[key]?.DeepClone();
+                props[key] = ValueJson.ToNode(entity.Props[key]);
             }
         }
         inspection["props"] = props;
@@ -249,7 +249,7 @@ public static class Projection
         foreach (var prop in ReadAsLevel)
         {
             if (snapshot.Coverage.Properties.Contains(prop)
-                && Number(entity.Props.GetValueOrDefault(prop)) is { } amount
+                && entity.Props.GetValueOrDefault(prop) is Value.Int { Number: var amount }
                 && FullOf(entity, registry, prop) is { } full)
             {
                 levels[prop] = Level(amount, full, step);

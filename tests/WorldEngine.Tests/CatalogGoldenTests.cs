@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -44,7 +43,7 @@ public class CatalogGoldenTests
             Preconditions = _ => new Pipeline.Refusal(Status.Refused, Code.Locked),
         };
         var verbs = new Dictionary<string, Pipeline.VerbDecl> { ["wait"] = undeclared };
-        var command = new Command("c1", "e4", "wait", Args: new Dictionary<string, JsonNode?> { ["ticks"] = JsonValue.Create(1L) });
+        var command = new Command("c1", "e4", "wait", Args: Value.Map.Empty.With("ticks", 1L));
 
         var error = Assert.Throws<InvalidOperationException>(() => Pipeline.Apply(snapshot, TestTemplates.RepoRegistry, verbs, command));
         Assert.Equal("Verb wait refused with undeclared code locked", error.Message);

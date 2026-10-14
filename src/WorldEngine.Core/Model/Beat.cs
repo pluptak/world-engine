@@ -13,7 +13,7 @@ public sealed record BeatCondition(
     bool? Occupied = null,
     string? Prop = null,
     string? Op = null,
-    JsonNode? Value = null);
+    Value? Value = null);
 
 // A beat that runs again every so many ticks, so many times after the first; a watch (`until_ran`) stops after the first run
 // whose action ran.

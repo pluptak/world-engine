@@ -13,7 +13,7 @@ public sealed record ActorCommand(
     string CommandId,
     string Verb,
     string? Target = null,
-    IReadOnlyDictionary<string, JsonNode?>? Args = null);
+    Value.Map? Args = null);
 
 // What an actor calls things by (src/actor-world.ts `aliasOf`): `x` and the first 12 hex digits of a hash of the view's key and the
 // id, with a part address keeping its part. Nothing is stored, and no count shows through.
@@ -132,12 +132,11 @@ public sealed class ActorWorld
             return UnaliasIn(snapshot, table, text);
         }
 
-        var args = command.Args?.ToDictionary(
-            pair => pair.Key,
-            pair => (JsonNode?)(JsonReads.Text(pair.Value) is { } text && !IsToken(command.Verb, pair.Key)
-                ? JsonValue.Create(Read(text))
-                : pair.Value?.DeepClone()),
-            StringComparer.Ordinal);
+        var args = command.Args is null
+            ? null
+            : Value.Of(command.Args.Select(pair => KeyValuePair.Create(
+                pair.Key,
+                (Value?)(pair.Value.AsText() is { } text && !IsToken(command.Verb, pair.Key) ? Read(text) : pair.Value))));
         return new Command(
             command.CommandId,
             actor,
@@ -348,10 +347,10 @@ public sealed class ActorWorld
                 continue;
             }
             var value = result.ReasonData![name];
-            var text = JsonReads.Text(value);
+            var text = value.AsText();
             if (text is null || !snapshot.Entities.ContainsKey(text) || known.Contains(text) || Perception.Gropable(snapshot, actor, text))
             {
-                data.Add(new KeyValuePair<string, JsonNode?>(name, value));
+                data.Add(new KeyValuePair<string, JsonNode?>(name, ValueJson.ToNode(value)));
             }
         }
         var output = new JsonObject

@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -68,7 +66,7 @@ public static partial class EditVerb
     private sealed record SteerEdit(string Entity, long Value) : WorldEdit;
     private sealed record StartRunEdit : WorldEdit;
     private sealed record EndRunEdit : WorldEdit;
-    private sealed record PropsEdit(string Kind, string Target, IReadOnlyDictionary<string, JsonNode?> Props) : WorldEdit;
+    private sealed record PropsEdit(string Kind, string Target, Value.Map Props) : WorldEdit;
     private sealed record SetPartEdit(string Target, string Part, PartState State) : WorldEdit;
 
     private static Pipeline.Refusal Invalid(Code code) => new(Status.Invalid, code);

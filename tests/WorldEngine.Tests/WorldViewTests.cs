@@ -67,10 +67,10 @@ public class WorldViewTests : IDisposable
         var history = (IWorldReads)world;
         var (deltas, events) = history.Since(0);
         answers.Add(Text(world.Heard(start, world.CurrentSnapshot(), events, ["e2"])));
-        answers.Add(Text(world.Apply(new Command("observed", "e2", "say", Args: new Dictionary<string, JsonNode?> { ["utterance"] = "again" }), null, observe: true)));
+        answers.Add(Text(world.Apply(new Command("observed", "e2", "say", Args: Value.Map.Empty.With("utterance", "again")), null, observe: true)));
         // One move a round, since the scenario has one actor; each round is numbered from the close before it.
         answers.Add(Text(world.TakeRoundAs([new Command("r1", "e2", "take", Target: "stone")])));
-        answers.Add(Text(world.TakeRoundAs([new Command("r2", "e2", "say", Args: new Dictionary<string, JsonNode?> { ["utterance"] = "round" })])));
+        answers.Add(Text(world.TakeRoundAs([new Command("r2", "e2", "say", Args: Value.Map.Empty.With("utterance", "round"))])));
         answers.Add(Text(world.TakeRoundAs([new Command("r3", "e2", "drop", Target: "stone")])));
         answers.Add(Text(world.CurrentSnapshot()));
         (deltas, events) = history.Since(0);

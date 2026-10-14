@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -19,13 +18,9 @@ public static class Processes
         return [.. template.Processes.Select(ProcessSpec.From)];
     }
 
-    // Whether a number read from a prop is whole; false when the prop is no number.
-    private static bool IsInt(double? value) =>
-        value is { } number && IsWhole(number);
-
     // The condition under which a process runs, read from the entity's props as they are now. `eq` and `ne` compare any
     // primitive strictly; the ordering ops need numbers on both sides, and an absent or non-numeric prop satisfies none.
-    private static bool WhileHolds(ProcessSpec spec, IReadOnlyDictionary<string, JsonNode?> props)
+    private static bool WhileHolds(ProcessSpec spec, IReadOnlyDictionary<string, Value> props)
     {
         if (spec.While is not { } condition)
         {
@@ -44,9 +39,9 @@ public static class Processes
         {
             throw new InvalidOperationException($"Unknown while op {condition.Op}");
         }
-        return JsonReads.Number(actual) is { } have
-            && JsonReads.Number(condition.Value) is { } want
-            && OrderOps.Holds(condition.Op, have, want);
+        return actual is Value.Int have
+            && condition.Value is Value.Int want
+            && OrderOps.Holds(condition.Op, have.Number, want.Number);
     }
 
     // A process can run when its condition holds and the prop it adjusts is an integer not yet at the bound it is moving
@@ -54,12 +49,12 @@ public static class Processes
     private static bool Runnable(ProcessSpec spec, Entity entity)
     {
         var adjust = spec.Effect.AdjustProp;
-        var value = JsonReads.Number(entity.Props.GetValueOrDefault(adjust.Prop));
-        if (entity.Status == EntityStatus.Destroyed || !IsInt(value) || !WhileHolds(spec, entity.Props))
+        if (entity.Status == EntityStatus.Destroyed
+            || entity.Props.GetValueOrDefault(adjust.Prop) is not Value.Int { Number: var current }
+            || !WhileHolds(spec, entity.Props))
         {
             return false;
         }
-        var current = (long)value!.Value;
         if (adjust.By < 0 && adjust.Min is { } min && current <= min)
         {
             return false;
@@ -75,8 +70,9 @@ public static class Processes
     // when the run is scheduled, so a run already pending keeps the delay it was given.
     private static long DelayOf(ProcessSpec spec, Entity entity)
     {
-        var rate = spec.EveryTicksProp is { } prop ? JsonReads.Number(entity.Props.GetValueOrDefault(prop)) : null;
-        return IsInt(rate) && rate >= 1 ? (long)rate!.Value : spec.EveryTicks;
+        return spec.EveryTicksProp is { } prop && entity.Props.GetValueOrDefault(prop) is Value.Int { Number: >= 1 } rate
+            ? rate.Number
+            : spec.EveryTicks;
     }
 
     private static bool IsPendingFor(ScheduledCause cause, string entity, string process) =>
@@ -120,13 +116,12 @@ public static class Processes
         if (!entity.Props.Is(Prop.Openable)
             || !entity.Props.Is(Prop.Open)
             || entity.Props.Get(Prop.ClosesAfter) is not { } after
-            || !IsInt(after)
             || after <= 0
             || Schedule.Pending(working.Snapshot).Any(cause => cause.Kind == CauseKind.Close && cause.Entity == entity.Id))
         {
             return;
         }
-        if (TryAdd(working.Snapshot.Tick, (long)after, out var due))
+        if (TryAdd(working.Snapshot.Tick, after, out var due))
         {
             Schedule.Add(working, new CloseCause(due, entity.Id, causeId));
         }
@@ -189,7 +184,7 @@ public static class Processes
             return;
         }
         var adjust = spec.Effect.AdjustProp;
-        var from = (long)JsonReads.Number(entity.Props[adjust.Prop])!.Value;
+        var from = ((Value.Int)entity.Props[adjust.Prop]).Number;
         var moved = from + adjust.By;
         var to = adjust.By < 0
             ? Math.Max(moved, adjust.Min ?? long.MinValue)
@@ -203,8 +198,7 @@ public static class Processes
             entity.Id,
             Pipeline.Reason(("prop", adjust.Prop), ("from", from), ("to", to), ("process", spec.Id)),
             cause.CauseId);
-        var props = new Dictionary<string, JsonNode?>(entity.Props, StringComparer.Ordinal) { [adjust.Prop] = JsonValue.Create(to) };
-        working.SetProps(entity.Id, props, eventId);
+        working.SetProps(entity.Id, entity.Props.With(adjust.Prop, to), eventId);
         var reached = adjust.By < 0 ? adjust.Min == to : adjust.Max == to;
         if (reached && spec.Then is { } then)
         {
@@ -232,16 +226,9 @@ public static class Processes
             var current = entity.Props.GetValueOrDefault(set.Prop);
             if (!Prop.SameValue(current, set.Value))
             {
-                var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
-                {
-                    ["prop"] = JsonValue.Create(set.Prop),
-                    ["from"] = current?.DeepClone(),
-                    ["to"] = set.Value?.DeepClone(),
-                    ["process"] = JsonValue.Create(spec.Id),
-                };
+                var data = Pipeline.Reason(("prop", set.Prop), ("from", current), ("to", set.Value), ("process", spec.Id));
                 var eventId = working.Emit(EventType.Changed, entityId, data, causeId);
-                var props = new Dictionary<string, JsonNode?>(entity.Props, StringComparer.Ordinal) { [set.Prop] = set.Value?.DeepClone() };
-                working.SetProps(entityId, props, eventId);
+                working.SetProps(entityId, entity.Props.With(set.Prop, set.Value), eventId);
             }
         }
         else if (then.Damage is { } damage)

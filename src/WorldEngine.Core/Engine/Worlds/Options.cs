@@ -141,6 +141,5 @@ public static class Options
     private static string ReasonOf(Pipeline.Result result) => Pipeline.ReasonName(result.ReasonCode, result.Status);
 
     // A suggested arg set as a command's args (the options hold them as JSON).
-    private static Dictionary<string, JsonNode?>? ArgsOf(JsonObject args) =>
-        args.ToDictionary(pair => pair.Key, pair => pair.Value?.DeepClone(), StringComparer.Ordinal);
+    private static Value.Map ArgsOf(JsonObject args) => (Value.Map)ValueJson.FromNode(args)!;
 }

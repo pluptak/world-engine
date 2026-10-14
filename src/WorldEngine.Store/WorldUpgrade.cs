@@ -204,10 +204,10 @@ public static class WorldUpgrade
                 return before;
             }
             if (entry.Command.Verb != "edit"
-                || entry.Command.Args?.GetValueOrDefault("edit") is not JsonObject edit
-                || edit["kind"]?.GetValue<string>() != "set_part"
-                || edit["target"]?.GetValue<string>() is not { } target
-                || edit["part"]?.GetValue<string>() is not { } part)
+                || entry.Command.Args?.GetValueOrDefault("edit") is not Value.Map edit
+                || edit.GetValueOrDefault("kind").AsText() != "set_part"
+                || edit.GetValueOrDefault("target").AsText() is not { } target
+                || edit.GetValueOrDefault("part").AsText() is not { } part)
             {
                 return null;
             }

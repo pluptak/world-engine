@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Json.Integers;
@@ -70,31 +69,16 @@ public static class ConsumeVerb
         working.SetProps(item.Id, vessel, eaten);
     }
 
-    private static Dictionary<string, JsonNode?> ConsumedData(Plan taken) => taken switch
+    private static Value.Map ConsumedData(Plan taken) => taken switch
     {
         SolidPlan solid => SolidData(solid),
-        LiquidPlan liquid => new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
-        {
-            ["nutrition"] = JsonValue.Create(liquid.Nutrition),
-            ["material"] = JsonValue.Create(liquid.Material),
-            ["amount"] = JsonValue.Create(liquid.Amount),
-        },
+        LiquidPlan liquid => Pipeline.Reason(("nutrition", liquid.Nutrition), ("material", liquid.Material), ("amount", liquid.Amount)),
         _ => throw new InvalidOperationException("Unknown consume plan"),
     };
 
     // A solid's `consumed` event names the portions left, when it has portions at all.
-    private static Dictionary<string, JsonNode?> SolidData(SolidPlan solid)
-    {
-        var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
-        {
-            ["nutrition"] = JsonValue.Create(solid.Nutrition),
-        };
-        if (solid.Portions is { } portions)
-        {
-            data["portions_left"] = JsonValue.Create(portions - 1);
-        }
-        return data;
-    }
+    private static Value.Map SolidData(SolidPlan solid) =>
+        Pipeline.Reason(("nutrition", solid.Nutrition), ("portions_left", solid.Portions - 1));
 
     private static Choice Planned(Pipeline.CommandContext context)
     {
@@ -140,7 +124,7 @@ public static class ConsumeVerb
 
     // What the item gives: a liquid when it holds some with a material, else a solid that declares nutrition. The amount
     // argument is a whole positive number for a liquid (absent takes all of it) and is not taken by a solid.
-    private static Choice PlanOf(Entity item, IReadOnlyDictionary<string, JsonNode?>? args)
+    private static Choice PlanOf(Entity item, Value.Map? args)
     {
         var material = item.Props.Get(Prop.LiquidMaterial);
         if (!string.IsNullOrEmpty(material)
@@ -203,13 +187,13 @@ public static class ConsumeVerb
     }
 
     // A whole number, as the engine reads a count: a JSON number with no fraction.
-    private static bool WholeNumber(JsonNode? node, out long value)
+    private static bool WholeNumber(Value node, out long value)
     {
-        var number = JsonReads.SafeInt(node);
+        var number = node.AsInt();
         value = number ?? 0;
         return number is not null;
     }
 
-    private static Choice Refused(Status status, Code reasonCode, IReadOnlyDictionary<string, JsonNode?>? reasonData = null) =>
+    private static Choice Refused(Status status, Code reasonCode, Value.Map? reasonData = null) =>
         new(null, null, new Pipeline.Refusal(status, reasonCode, reasonData));
 }

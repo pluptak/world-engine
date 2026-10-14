@@ -82,25 +82,26 @@ public static partial class Beats
         }
         registry.TryGetValue(subject.Template, out var template);
         var written = action["props"] as JsonObject ?? new JsonObject();
-        foreach (var (name, value) in written)
+        var props = Value.Map.Empty;
+        foreach (var (name, node) in written)
         {
+            // A value that cannot be a prop's (a fraction) is of no prop's type.
+            if (!ValueJson.TryFromNode(node, out var value))
+            {
+                return Code.WrongPropType;
+            }
             if (SnapshotValidation.PropValueIssues(template, name, value, []).FirstOrDefault() is { } first)
             {
                 return first.Code;
             }
+            props = props.With(name, value);
         }
         if (template is null)
         {
             return null;
         }
         // Whether the write changes a definition depends only on the template and the props written.
-        var resulting = kind == "set_props"
-            ? new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
-            : new Dictionary<string, JsonNode?>(subject.Props, StringComparer.Ordinal);
-        foreach (var (name, value) in written)
-        {
-            resulting[name] = value?.DeepClone();
-        }
+        var resulting = props.Aggregate(kind == "set_props" ? Value.Map.Empty : subject.Props, (merged, pair) => merged.With(pair.Key, pair.Value));
         return EditVerb.DefinitionWritten(template, resulting) is null ? null : Code.FieldNotEditable;
     }
 

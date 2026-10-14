@@ -88,7 +88,7 @@ public sealed record Entity(
     IReadOnlyDictionary<string, long> Residue,
     IReadOnlyList<Modifier> Modifiers,
     // Each value is a number, a string or a boolean.
-    IReadOnlyDictionary<string, JsonNode?> Props,
+    Value.Map Props,
     IReadOnlyDictionary<string, string>? Traits);
 
 public sealed record Coverage(
@@ -115,7 +115,7 @@ public sealed record Snapshot(
 public sealed record Run(
     string State,
     long? TickLimit = null,
-    IReadOnlyList<JsonNode>? Slots = null,
+    IReadOnlyList<Value>? Slots = null,
     IReadOnlyList<PoolBeat>? Pool = null,
     IReadOnlyList<Odds>? Odds = null,
     IReadOnlyList<Player>? Players = null,

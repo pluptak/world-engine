@@ -25,12 +25,12 @@ public static class Checks
     private static readonly (string, Field) IncludeSnapshot = ("include_snapshot", Opt(Bool));
 
     private static readonly Shape Command = Obj(
-        ("actor", Req(Text)), ("args", Opt(Record)), ("command_id", Req(Text)), ("perceivers", Opt(Bool)), ("target", Opt(Text)), ("verb", Req(Text)));
+        ("actor", Req(Text)), ("args", Opt(Args)), ("command_id", Req(Text)), ("perceivers", Opt(Bool)), ("target", Opt(Text)), ("verb", Req(Text)));
 
-    private static readonly Shape ActorCommand = Obj(("args", Opt(Record)), ("command_id", Req(Text)), ("target", Opt(Text)), ("verb", Req(Text)));
+    private static readonly Shape ActorCommand = Obj(("args", Opt(Args)), ("command_id", Req(Text)), ("target", Opt(Text)), ("verb", Req(Text)));
 
     private static readonly Shape Move = Obj(
-        ("args", Opt(Record)), ("body", Opt(NonEmpty)), ("command_id", Req(Text)), ("target", Opt(Text)), ("verb", Req(Text)));
+        ("args", Opt(Args)), ("body", Opt(NonEmpty)), ("command_id", Req(Text)), ("target", Opt(Text)), ("verb", Req(Text)));
 
     // An edit is an object that names its kind; each kind's own members are checked by the edit itself.
     private static readonly Shape Edit = node => node is JsonObject record && JsonReads.Text(record["kind"]) is not null;

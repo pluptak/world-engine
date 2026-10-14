@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -132,7 +130,7 @@ public static partial class EditVerb
             throw new InvalidOperationException("Edit placement changed after validation");
         }
         var placement = NormalizedPlacement(subject, edit) ?? throw new InvalidOperationException("Edit placement changed after validation");
-        var placed = working.Emit(EventType.Placed, edit.Target, new Dictionary<string, JsonNode?>(), rootEventId);
+        var placed = working.Emit(EventType.Placed, edit.Target, Value.Map.Empty, rootEventId);
         if (subject.Support is not null && placement.Support is null && placement.Contained is null)
         {
             Physical.PropagateSupportLoss(working, context.Registry, edit.Target, placed);
@@ -173,8 +171,8 @@ public static partial class EditVerb
     {
         var subject = context.Snapshot.Entities[edit.Target];
         var edited = working.Emit(EventType.Edited, edit.Target, Pipeline.Reason(("field", "props")), rootEventId);
-        IReadOnlyDictionary<string, JsonNode?> basis = edit.Kind == "update_props" ? subject.Props : new Dictionary<string, JsonNode?>();
-        working.SetProps(edit.Target, Merge(basis, edit.Props), edited);
+        var basis = edit.Kind == "update_props" ? subject.Props : Value.Map.Empty;
+        working.SetProps(edit.Target, edit.Props.Aggregate(basis, (merged, change) => merged.With(change.Key, change.Value)), edited);
     }
 
     private static void TransitionPart(Working working, Pipeline.CommandContext context, SetPartEdit edit, string? rootEventId)

@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -18,14 +17,14 @@ public static class WaitVerb
 
     // Whether the wait ends at the first tick the waiter could sense something.
     private static bool Sensed(Command command) =>
-        command.Args is not null && command.Args.TryGetValue("until", out var until) && until is JsonValue json && json.TryGetValue(out string? text) && text == "sensed";
+        command.Args?.GetValueOrDefault("until").AsText() == "sensed";
 
     private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
     {
         var args = context.Command.Args;
         if (args is not null && args.TryGetValue("until", out var until))
         {
-            if (until is not JsonValue json || !json.TryGetValue(out string? text) || text != "sensed")
+            if (until.AsText() != "sensed")
             {
                 return Pipeline.Invalid(Code.InvalidArgs);
             }

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Json.Integers;
@@ -11,12 +12,16 @@ public static partial class EditVerb
 {
     // Reads the `edit` argument (src/engine/verbs/edit.ts `parseEdit`): null when it is not a well-formed edit.
     // Whether a JSON object reads as an edit, the action of a beat (src/engine/beats.ts parseAction).
-    internal static bool ParsesAsEdit(JsonObject action) =>
-        Parse(new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["edit"] = action.DeepClone() }) is not null;
+    internal static bool ParsesAsEdit(JsonObject action) => Parse(EditArgs(action)) is not null;
 
-    private static WorldEdit? Parse(IReadOnlyDictionary<string, JsonNode?>? args)
+    // An edit as a command's args; an edit that cannot be a value (a fraction in it) is no edit, and parses as none.
+    internal static Value.Map EditArgs(JsonObject edit) =>
+        ValueJson.TryFromNode(edit, out var value) ? Value.Map.Empty.With("edit", value) : Value.Map.Empty;
+
+    // The edit is still read as JSON (plans/values.md, block 6 types it).
+    private static WorldEdit? Parse(Value.Map? args)
     {
-        if (args is null || !args.TryGetValue("edit", out var node) || node is not JsonObject obj || Text(obj["kind"]) is not { } kind)
+        if (ValueJson.ToNode(args?.GetValueOrDefault("edit")) is not JsonObject obj || Text(obj["kind"]) is not { } kind)
         {
             return null;
         }
@@ -136,7 +141,7 @@ public static partial class EditVerb
                 {
                     return null;
                 }
-                return new PropsEdit(kind, target, props.ToDictionary(pair => pair.Key, pair => pair.Value?.DeepClone(), StringComparer.Ordinal));
+                return new PropsEdit(kind, target, PropsOf(props));
             }
             case "set_part":
             {
@@ -258,16 +263,14 @@ public static partial class EditVerb
             overrides.ContainsKey("modifiers") && overrides["modifiers"] is JsonArray { Count: > 0 });
     }
 
-    // A map of props, each a number, a string or a boolean; null when it is not one.
-    private static Dictionary<string, JsonNode?>? Props(JsonObject overrides)
+    // A map of props, each a whole number, a string or a boolean; null when it is not one.
+    private static Value.Map? Props(JsonObject overrides)
     {
         if (!overrides.TryGetPropertyValue("props", out var node))
         {
             return null;
         }
-        return node is JsonObject props && props.All(pair => IsPrimitive(pair.Value))
-            ? props.ToDictionary(pair => pair.Key, pair => pair.Value?.DeepClone(), StringComparer.Ordinal)
-            : null;
+        return node is JsonObject props && props.All(pair => IsPrimitive(pair.Value)) ? PropsOf(props) : null;
     }
 
     // A list of strings; null when it is not one.
@@ -478,6 +481,11 @@ public static partial class EditVerb
     private static bool IsAnchor(JsonObject obj) =>
         obj.All(pair => pair.Key is "anchor" or "dx" or "dy") && Text(obj["anchor"]) is not null && Int(obj["dx"]) is not null && Int(obj["dy"]) is not null;
 
+    // A prop's value: a string, a boolean or a whole number (a fraction is none).
     private static bool IsPrimitive(JsonNode? node) =>
-        node is JsonValue value && (value.GetValueKind() is JsonValueKind.String or JsonValueKind.True or JsonValueKind.False or JsonValueKind.Number);
+        node is JsonValue value
+        && (value.GetValueKind() is JsonValueKind.String or JsonValueKind.True or JsonValueKind.False || Int(node) is not null);
+
+    private static Value.Map PropsOf(JsonObject props) =>
+        Value.Of(props.Select(pair => KeyValuePair.Create(pair.Key, ValueJson.FromNode(pair.Value))));
 }

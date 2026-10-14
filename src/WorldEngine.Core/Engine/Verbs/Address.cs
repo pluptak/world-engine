@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -17,11 +16,7 @@ public static class Address
     // The text a verb's address argument names (src/engine/verbs/address.ts `addressText`): a non-empty string, else null.
     public static string? AddressText(Pipeline.CommandContext context, string name)
     {
-        var args = context.Command.Args;
-        return args is not null && args.TryGetValue(name, out var value) && value is JsonValue json
-            && json.TryGetValue(out string? text) && !string.IsNullOrEmpty(text)
-            ? text
-            : null;
+        return context.Command.Args?.GetValueOrDefault(name).AsText() is { Length: > 0 } text ? text : null;
     }
 
     // What an address names: the entity it resolves to, or the refusal that stopped it (src/engine/verbs/address.ts

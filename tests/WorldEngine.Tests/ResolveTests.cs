@@ -78,7 +78,7 @@ public class ResolveTests
         var snapshot = Bottle();
         var mark = new Entity(
             "e7", "anchor", "mark", [], "e1", null, null, null, null, null, null, 100, EntityStatus.Intact,
-            new Dictionary<string, PartState>(), new Dictionary<string, long>(), [], new Dictionary<string, JsonNode?>(), null);
+            new Dictionary<string, PartState>(), new Dictionary<string, long>(), [], Value.Map.Empty, null);
         var entities = new Dictionary<string, Entity>(snapshot.Entities, StringComparer.Ordinal) { ["e7"] = mark };
         var withMark = snapshot with { Entities = entities };
 
@@ -101,7 +101,7 @@ public class ResolveTests
     public void Doors_are_known_by_their_from_and_to_props()
     {
         var snapshot = Bottle();
-        var door = snapshot.Entities["e5"] with { Props = new Dictionary<string, JsonNode?> { ["from"] = "e1", ["to"] = "e8" } };
+        var door = snapshot.Entities["e5"] with { Props = Value.Map.Empty.With("from", "e1").With("to", "e8") };
 
         Assert.True(IsDoor(door));
         Assert.False(IsDoor(snapshot.Entities["e5"]));

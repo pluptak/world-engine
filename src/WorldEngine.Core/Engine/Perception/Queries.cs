@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -191,7 +190,7 @@ public static class Queries
         "integrity" => (true, JsonValue.Create(entity.Integrity)),
         "residue" => (true, new JsonObject(entity.Residue.Select(pair => KeyValuePair.Create(pair.Key, (JsonNode?)JsonValue.Create(pair.Value))))),
         "pos" => (true, entity.Pos is { } pos ? new JsonObject { ["x"] = JsonValue.Create(pos.X), ["y"] = JsonValue.Create(pos.Y) } : null),
-        _ => entity.Props.TryGetValue(property, out var value) ? (true, value) : (false, null),
+        _ => entity.Props.TryGetValue(property, out var value) ? (true, ValueJson.ToNode(value)) : (false, null),
     };
 
     // Whether a defined value matches the object: a plain match, a number or boolean written as its text, an object written as

@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using static WorldEngine.Core.Json.Integers;
 
@@ -31,7 +30,7 @@ public static class PushVerbs
         var distance = 30L;
         if (args is not null && args.TryGetValue("distance_cm", out var raw))
         {
-            if (raw is not JsonValue json || !json.TryGetValue(out long named) || named < 0)
+            if (raw.AsInt() is not { } named || named < 0)
             {
                 return null;
             }
@@ -40,7 +39,7 @@ public static class PushVerbs
         var direction = "+x";
         if (args is not null && args.TryGetValue("dir", out var dirNode))
         {
-            if (dirNode is not JsonValue dirJson || !dirJson.TryGetValue(out string? named) || !Directions.Contains(named))
+            if (dirNode.AsText() is not { } named || !Directions.Contains(named))
             {
                 return null;
             }

@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -139,12 +138,10 @@ public static class Clock
         var firstEvent = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var entry in expiring)
         {
-            var data = new Dictionary<string, JsonNode?>
-            {
-                ["capacity"] = entry.Modifier.Capacity,
-                ["from"] = Level(before[entry.Entity], entry.Modifier.Capacity),
-                ["to"] = Level(after[entry.Entity], entry.Modifier.Capacity),
-            };
+            var data = Pipeline.Reason(
+                ("capacity", entry.Modifier.Capacity),
+                ("from", Level(before[entry.Entity], entry.Modifier.Capacity)),
+                ("to", Level(after[entry.Entity], entry.Modifier.Capacity)));
             var eventId = working.Emit(EventType.CapabilityChanged, entry.Entity, data, entry.Modifier.CauseId);
             firstEvent.TryAdd(entry.Entity, eventId);
         }

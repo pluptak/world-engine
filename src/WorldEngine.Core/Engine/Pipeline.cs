@@ -22,7 +22,7 @@ public static class Pipeline
         VerbDuration? Duration = null,
         IReadOnlyList<Requirement>? Requires = null,
         Action<Working, CommandContext, string?>? Transition = null,
-        Func<CommandContext, (string Entity, IReadOnlyDictionary<string, JsonNode?> Data)>? RootEvent = null,
+        Func<CommandContext, (string Entity, Value.Map Data)>? RootEvent = null,
         Func<Command, IReadOnlyList<string>>? WakeOn = null,
         // Judges the snapshot the transition and the clock left (src/engine/pipeline.ts `validateResult`): a refusal
         // returns the input snapshot unchanged. Null when the verb has no such check.
@@ -59,11 +59,11 @@ public static class Pipeline
     public sealed record Refusal(
         Status Status,
         Code? ReasonCode,
-        IReadOnlyDictionary<string, JsonNode?>? ReasonData = null,
+        Value.Map? ReasonData = null,
         IReadOnlyList<string>? Candidates = null);
 
     // A refusal of a command that is well formed but cannot be done now, with its reason code (and data, when it has some).
-    public static Refusal Refused(Code code, IReadOnlyDictionary<string, JsonNode?>? data = null) => new(Status.Refused, code, data);
+    public static Refusal Refused(Code code, Value.Map? data = null) => new(Status.Refused, code, data);
 
     // The refusal of a body short of a capacity: `insufficient_manipulation` for `manipulation`.
     public static Code Insufficient(string capacity) => capacity switch
@@ -82,8 +82,10 @@ public static class Pipeline
     public static Refusal Invalid(Code code) => new(Status.Invalid, code);
 
     // The reason data of a refusal or event: named values, each a string, a number or a boolean.
-    public static IReadOnlyDictionary<string, JsonNode?> Reason(params (string Key, object Value)[] pairs) =>
-        pairs.ToDictionary(pair => pair.Key, pair => (JsonNode?)JsonValue.Create(pair.Value), StringComparer.Ordinal);
+    // Reason data or an event's data, from pairs of a key and what code holds there (`Value.From`, or a JSON node); a null
+    // value leaves its key out.
+    public static Value.Map Reason(params (string Key, object? Value)[] pairs) =>
+        Value.Of(pairs.Select(pair => KeyValuePair.Create(pair.Key, pair.Value is JsonNode node ? ValueJson.FromNode(node) : Value.From(pair.Value))));
 
     // The refusal for an actor short of a required capacity (src/engine/carry.ts `capacityRefusal`): the code names the
     // verb's first requirement, and the data the first one unmet. Null when the actor meets them all.
@@ -102,12 +104,7 @@ public static class Pipeline
         {
             return null;
         }
-        var data = new Dictionary<string, JsonNode?>(StringComparer.Ordinal)
-        {
-            ["capacity"] = JsonValue.Create(unmet.Capacity),
-            ["have"] = JsonValue.Create(Have(caps, unmet.Capacity)),
-            ["need"] = JsonValue.Create(unmet.AtLeast),
-        };
+        var data = Reason(("capacity", unmet.Capacity), ("have", Have(caps, unmet.Capacity)), ("need", unmet.AtLeast));
         return new Refusal(Status.Refused, Insufficient(context.Requires[0].Capacity), data);
     }
 
@@ -117,7 +114,7 @@ public static class Pipeline
         string? ResolvedTarget,
         IReadOnlyList<string>? Candidates,
         Code? ReasonCode,
-        IReadOnlyDictionary<string, JsonNode?>? ReasonData,
+        Value.Map? ReasonData,
         Snapshot Snapshot,
         IReadOnlyList<Delta> Deltas,
         IReadOnlyList<WorldEvent> Events,
@@ -132,7 +129,7 @@ public static class Pipeline
         string? resolvedTarget = null,
         Code? reasonCode = null,
         IReadOnlyList<string>? candidates = null,
-        IReadOnlyDictionary<string, JsonNode?>? reasonData = null) =>
+        Value.Map? reasonData = null) =>
         new(status, command.CommandId, resolvedTarget, candidates, reasonCode, reasonData, snapshot, [], []);
 
     // The front's verdict on a command: a refusal result, or null when the command goes on to its verb.
@@ -205,15 +202,6 @@ public static class Pipeline
         return null;
     }
 
-    // Whether a value holds a null member anywhere (a null in a list is not one: it is kept, for whatever refuses it).
-    private static bool HoldsNull(JsonNode? node) => node switch
-    {
-        null => true,
-        JsonObject record => record.Any(pair => HoldsNull(pair.Value)),
-        JsonArray list => list.Any(item => item is not null && HoldsNull(item)),
-        _ => false,
-    };
-
     // The whole transition of a command the front lets through, for the verbs ported so far. The run gate decides with the
     // front; preconditions decide next; then the root event, the verb's effects, the clock (cut at a run's limit), the run's
     // finish. A round's move is judged here as a command with the round flag, which the run gate and the clock read.
@@ -223,11 +211,6 @@ public static class Pipeline
         IReadOnlyDictionary<string, VerbDecl> verbs,
         Command command)
     {
-        // A null arg is an absent one, as the log that replays this command holds it.
-        if (command.Args is { } args && args.Values.Any(HoldsNull))
-        {
-            command = command with { Args = args.Where(pair => pair.Value is not null).ToDictionary(pair => pair.Key, pair => JsonReads.WithoutNulls(pair.Value)) };
-        }
         if (Screen(snapshot, registry, verbs, command) is { } screened)
         {
             return screened;
@@ -266,7 +249,7 @@ public static class Pipeline
         var working = new Working(snapshot, command.CommandId);
         // The root event sits on the target when there is one, else on the actor, unless the verb names its own entity and data.
         var (rootEntity, rootData) = verb.RootEvent?.Invoke(context)
-            ?? (target?.EntityId ?? command.Actor, new Dictionary<string, JsonNode?>());
+            ?? (target?.EntityId ?? command.Actor, Value.Map.Empty);
         var rootEventId = working.Emit(command.Verb, rootEntity, rootData, null);
         try
         {

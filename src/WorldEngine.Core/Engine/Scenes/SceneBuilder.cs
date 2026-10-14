@@ -243,7 +243,7 @@ public static class SceneBuilder
         }
 
         // A slot is one id, or a list of several named bodies; a list of one is stored as its id.
-        var slots = new List<JsonNode>();
+        var slots = new List<Value>();
         var bodies = new List<string>();
         for (var index = 0; slotsNode is not null && index < slotsNode.Count; index++)
         {
@@ -272,9 +272,7 @@ public static class SceneBuilder
                 bodies.Add(id);
                 ids.Add(id);
             }
-            slots.Add(ids.Count == 1
-                ? (JsonNode)JsonValue.Create(ids[0])!
-                : new JsonArray([.. ids.Select(id => (JsonNode?)JsonValue.Create(id))]));
+            slots.Add(ids.Count == 1 ? ids[0] : Value.Of(ids.Select(id => (Value)id)));
         }
 
         var pool = poolNode is null

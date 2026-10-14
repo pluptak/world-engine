@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -274,7 +272,7 @@ public static class Carry
 
     private static Failure? AlternativeFailure(
         IReadOnlyDictionary<string, long>? caps,
-        IReadOnlyDictionary<string, JsonNode?> carrierProps,
+        IReadOnlyDictionary<string, Value> carrierProps,
         Entity item,
         IReadOnlyDictionary<string, Template> registry,
         long otherHeld,
@@ -339,14 +337,14 @@ public static class Carry
     // the first declared alternative; a capacity shortfall also reports what it had and what it needed.
     public static CarryVerdict Check(
         IReadOnlyDictionary<string, long>? caps,
-        IReadOnlyDictionary<string, JsonNode?> carrierProps,
+        IReadOnlyDictionary<string, Value> carrierProps,
         Entity item,
         IReadOnlyDictionary<string, Template> registry,
         long otherHeld,
         IReadOnlyList<Alternative> alternatives,
         long? handsMassG = null)
     {
-        (Code Code, int Rank, IReadOnlyDictionary<string, JsonNode?>? Data)? worst = null;
+        (Code Code, int Rank, Value.Map? Data)? worst = null;
         foreach (var alternative in alternatives)
         {
             var failure = AlternativeFailure(caps, carrierProps, item, registry, otherHeld, alternative, handsMassG);
@@ -370,7 +368,7 @@ public static class Carry
     public static string? LostCarry(
         IReadOnlyDictionary<string, long>? before,
         IReadOnlyDictionary<string, long>? after,
-        IReadOnlyDictionary<string, JsonNode?> carrierProps,
+        IReadOnlyDictionary<string, Value> carrierProps,
         Entity item,
         IReadOnlyDictionary<string, Template> registry,
         IReadOnlyList<Alternative> alternatives)
@@ -406,11 +404,11 @@ public static class Carry
         string? named = null;
         if (context.Command.Args is { } args && args.TryGetValue("part", out var raw))
         {
-            if (raw is null || raw.GetValueKind() != JsonValueKind.String || raw.GetValue<string>().Length == 0)
+            if (raw.AsText() is not { Length: > 0 } part)
             {
                 return new GripInvalid(Code.InvalidArgs);
             }
-            named = raw.GetValue<string>();
+            named = part;
         }
         return ClaimGrip(context.Snapshot, context.Registry, holderId, item, named, item.Id) switch
         {
@@ -420,22 +418,22 @@ public static class Carry
         };
     }
 
-    private static IReadOnlyDictionary<string, JsonNode?> Data(params (string Key, object Value)[] pairs) =>
+    private static Value.Map Data(params (string Key, object? Value)[] pairs) =>
         Pipeline.Reason(pairs);
 }
 
 // The verdict of `Carry.Check`: `Ok`, or the refusal code and its data.
-public sealed record CarryVerdict(bool Ok, Code? ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData);
+public sealed record CarryVerdict(bool Ok, Code? ReasonCode, Value.Map? ReasonData);
 
 // The result of `Carry.ClaimGrip`: the grip the item lands in, or the refusal.
 public abstract record GripClaim;
 public sealed record GripFound(string Part) : GripClaim;
-public sealed record GripRefused(Code ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData) : GripClaim;
+public sealed record GripRefused(Code ReasonCode, Value.Map? ReasonData) : GripClaim;
 
 // The grip a take or give lands in (src/engine/carry.ts `gripPlacement`): the `part` argument, or the lowest free grip,
 // once the capacity checks have run. The item itself is left out of the packing, so taking it from its own grip is
 // the same grip again.
 public abstract record GripPlacement;
 public sealed record GripPlaced(string Part) : GripPlacement;
-public sealed record GripBlocked(Code ReasonCode, IReadOnlyDictionary<string, JsonNode?>? ReasonData) : GripPlacement;
+public sealed record GripBlocked(Code ReasonCode, Value.Map? ReasonData) : GripPlacement;
 public sealed record GripInvalid(Code ReasonCode) : GripPlacement;

@@ -1,8 +1,9 @@
 using System.Text.Json.Nodes;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
-using static WorldEngine.Core.Json.Integers;
 using static WorldEngine.Core.Engine.JsonReads;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -90,7 +91,7 @@ public static class WorldReads
             {
                 entry["entity"] = @event.Entity;
             }
-            if (@event.Type == "say" && senses.Contains(Sense.Hearing) && Text(@event.Data.GetValueOrDefault("utterance")) is { } utterance)
+            if (@event.Type == "say" && senses.Contains(Sense.Hearing) && @event.Data.GetValueOrDefault("utterance").AsText() is { } utterance)
             {
                 entry["utterance"] = utterance;
                 entry["volume"] = VolumeText(@event.Data.GetValueOrDefault("volume"));
@@ -109,11 +110,11 @@ public static class WorldReads
     }
 
 
-    private static string VolumeText(JsonNode? volume) => volume switch
+    private static string VolumeText(Value? volume) => volume switch
     {
         null => "undefined",
-        JsonValue value when value.TryGetValue(out string? text) => text,
-        _ => volume.ToJsonString(),
+        Value.Text text => text.Content,
+        _ => CanonicalJson.Serialize(volume),
     };
 
     private static JsonArray Strings(IEnumerable<string> values) =>

@@ -19,6 +19,8 @@ internal static class Shapes
     public static readonly Shape Number = node => JsonReads.Number(node) is not null;
     public static readonly Shape Int = node => JsonReads.Number(node) is { } number && Integers.IsWhole(number);
     public static readonly Shape Record = node => node is JsonObject;
+    // A command's args: a record the engine can hold as a value, so no fraction and no null in a list anywhere in it.
+    public static readonly Shape Args = node => node is JsonObject && ValueJson.TryFromNode(node, out _);
 
     public static Shape Between(long low, long high) =>
         node => JsonReads.Number(node) is { } number && Integers.IsWhole(number) && number >= low && number <= high;

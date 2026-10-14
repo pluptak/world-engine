@@ -66,7 +66,7 @@ public static class MoveVerb
 
     private sealed record ThroughDoor(string Text) : Destination;
 
-    private static Destination? DestinationOf(IReadOnlyDictionary<string, JsonNode?>? args)
+    private static Destination? DestinationOf(Value.Map? args)
     {
         if (args is null)
         {
@@ -81,9 +81,9 @@ public static class MoveVerb
         }
         if (hasTo && !hasLocation)
         {
-            return args["to"] is JsonObject to
-                && to["x"] is JsonValue x && x.TryGetValue(out long px)
-                && to["y"] is JsonValue y && y.TryGetValue(out long py)
+            return args["to"] is Value.Map to
+                && to.GetValueOrDefault("x").AsInt() is { } px
+                && to.GetValueOrDefault("y").AsInt() is { } py
                     ? new AtPosition(new Pos(px, py))
                     : null;
         }
@@ -94,8 +94,7 @@ public static class MoveVerb
         return null;
     }
 
-    private static string? Text(IReadOnlyDictionary<string, JsonNode?> args, string key) =>
-        args.TryGetValue(key, out var value) && value is JsonValue json && json.TryGetValue(out string? text) ? text : null;
+    private static string? Text(Value.Map args, string key) => args.GetValueOrDefault(key).AsText();
 
     // The rooms an agent can name: its own, and those a doorway of its own room leads to, open or shut. Any other room id
     // answers as one that does not exist, so `move` cannot be used to map the world.
@@ -270,7 +269,7 @@ public static class MoveVerb
         var walk = WalkTo(context, DestinationOf(context.Command.Args)!);
         var to = walk.To!;
         var from = Geometry.EffectivePos(working.Snapshot, actorId);
-        var movedEvent = working.Emit(EventType.Moved, actorId, new Dictionary<string, JsonNode?>(), rootEventId);
+        var movedEvent = working.Emit(EventType.Moved, actorId, Value.Map.Empty, rootEventId);
         var room = to is AtPosition ? context.Snapshot.Entities[actorId].Location! : ((InRoom)to).Id;
         working.SetRelation(actorId, "location", room, movedEvent);
         working.SetRelation(actorId, "support", room, movedEvent);

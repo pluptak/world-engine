@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using WorldEngine.Store.Templates;
 
@@ -78,13 +79,7 @@ public class PropTests
     [Fact]
     public void A_typed_read_gives_the_value_only_when_it_has_the_type()
     {
-        var props = new Dictionary<string, JsonNode?>
-        {
-            ["on"] = JsonValue.Create(false),
-            ["fuel"] = JsonNode.Parse("3.5"),
-            ["hunger"] = JsonValue.Create(7L),
-            ["from"] = JsonValue.Create(1L),
-        };
+        var props = Value.Map.Empty.With("on", false).With("fuel", "3").With("hunger", 7L).With("from", 1L);
 
         Assert.False(props.Is(Prop.On));
         Assert.Equal(false, props.Get(Prop.On));
@@ -97,12 +92,11 @@ public class PropTests
     [Fact]
     public void A_write_copies_the_props_and_leaves_the_original()
     {
-        var props = new Dictionary<string, JsonNode?> { ["closing"] = JsonValue.Create(true) };
+        var props = Value.Map.Empty.With(Prop.Closing, true);
 
         var shut = props.Without(Prop.Closing).With(Prop.Open, false);
 
-        Assert.Equal("""{"open":false}""", CanonicalJson.Serialize(new JsonObject(shut.Select(pair =>
-            KeyValuePair.Create(pair.Key, pair.Value?.DeepClone())))));
+        Assert.Equal("""{"open":false}""", CanonicalJson.Serialize(shut));
         Assert.True(props.Is(Prop.Closing));
     }
 

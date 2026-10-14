@@ -33,9 +33,9 @@ public static partial class Beats
             case "ne":
                 return !Prop.SameValue(have, want);
             default:
-                return JsonReads.Number(have) is { } left
-                    && JsonReads.Number(want) is { } right
-                    && OrderOps.Holds(condition.Op!, left, right);
+                return have is Value.Int left
+                    && want is Value.Int right
+                    && OrderOps.Holds(condition.Op!, left.Number, right.Number);
         }
     }
 

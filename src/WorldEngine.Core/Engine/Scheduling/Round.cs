@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -100,7 +99,7 @@ public static class Round
                 $"round-{number}-close",
                 Resolve.WorldAuthor,
                 "advance",
-                Args: new Dictionary<string, JsonNode?>(StringComparer.Ordinal) { ["ticks"] = JsonValue.Create(1L) },
+                Args: Value.Map.Empty.With("ticks", 1L),
                 Round: true,
                 By: closingBy),
             null,

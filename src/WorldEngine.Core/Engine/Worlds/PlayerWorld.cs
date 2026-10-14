@@ -165,7 +165,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
                 var args = new JsonObject();
                 foreach (var (name, value) in held.Args)
                 {
-                    args[name] = ActorWorld.IsToken(held.Verb, name) ? value?.DeepClone() : Written(value);
+                    args[name] = ActorWorld.IsToken(held.Verb, name) ? ValueJson.ToNode(value) : Written(ValueJson.ToNode(value));
                 }
                 written["args"] = args;
             }

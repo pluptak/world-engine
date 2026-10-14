@@ -108,7 +108,7 @@ public static class PourVerb
         var args = context.Command.Args;
         if (args is not null && args.ContainsKey("amount"))
         {
-            if (args["amount"] is not JsonValue json || !json.TryGetValue(out long named) || named <= 0)
+            if (args["amount"].AsInt() is not { } named || named <= 0)
             {
                 return Refused(Pipeline.Invalid(Code.InvalidArgs));
             }

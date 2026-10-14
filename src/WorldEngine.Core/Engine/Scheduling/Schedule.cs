@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using static WorldEngine.Core.Json.Integers;
@@ -84,7 +83,7 @@ public static class Schedule
         {
             return;
         }
-        var closed = working.Emit(EventType.Closed, entity.Id, new Dictionary<string, JsonNode?>(), cause.CauseId);
+        var closed = working.Emit(EventType.Closed, entity.Id, Value.Map.Empty, cause.CauseId);
         // A door on its way shut has `closing` no longer, once it is shut.
         working.SetProps(entity.Id, entity.Props.Without(Prop.Closing).With(Prop.Open, false), closed);
         Gate.PushOccupantsAside(working, registry, entity.Id, closed);
@@ -130,9 +129,9 @@ public static class Schedule
 
     // A body's bleeding, read from its props when each bleed runs: so much integrity every so many ticks, so many times.
     // Any of the three missing or not a positive whole number, and it does not bleed.
-    private static (long Damage, long Every, long Times)? Bleeding(IReadOnlyDictionary<string, JsonNode?> props)
+    private static (long Damage, long Every, long Times)? Bleeding(IReadOnlyDictionary<string, Value> props)
     {
-        static long? Read(IReadOnlyDictionary<string, JsonNode?> props, Prop<long> prop) =>
+        static long? Read(IReadOnlyDictionary<string, Value> props, Prop<long> prop) =>
             props.Get(prop) is { } number && number > 0 ? number : null;
         var damage = Read(props, Prop.BleedDamage);
         var every = Read(props, Prop.BleedEveryTicks);

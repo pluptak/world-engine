@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -180,14 +179,14 @@ public static class EventPerception
         }
         var data = eventRecord.Data;
         return eventRecord.Type is EventType.Broken or EventType.Detached
-            || (eventRecord.Type == EventType.Sounded && JsonReads.IsTrue(data.GetValueOrDefault("loud")))
-            || (eventRecord.Type == "say" && JsonReads.Text(data.GetValueOrDefault("volume")) == "shout")
-            || (eventRecord.Type == EventType.Dropped && JsonReads.Number(data.GetValueOrDefault("fall_cm")) is { } fall && fall >= 50);
+            || (eventRecord.Type == EventType.Sounded && data.GetValueOrDefault("loud").IsTrue())
+            || (eventRecord.Type == "say" && data.GetValueOrDefault("volume").AsText() == "shout")
+            || (eventRecord.Type == EventType.Dropped && data.GetValueOrDefault("fall_cm").AsInt() is { } fall && fall >= 50);
     }
 
     // The room an event happened in: the room its data names, else the subject's own.
     private static string? EventLocation(WorldEvent eventRecord, Entity fallback) =>
-        JsonReads.Text(eventRecord.Data.GetValueOrDefault("location")) ?? fallback.Location;
+        eventRecord.Data.GetValueOrDefault("location").AsText() ?? fallback.Location;
 
     // A door with no location is in either room it connects; treat it as in the observer's room if they're in one of them.
     private static string? TargetLocationForPerception(Entity target, string? targetLocation, string? observerLocation)
@@ -227,7 +226,7 @@ public static class EventPerception
     // the threshold of the speaker, anything louder the whole room. A speaker hears their own.
     private static bool HeardAtVolume(Snapshot snapshot, string listenerId, Entity speaker, WorldEvent? eventRecord)
     {
-        if (JsonReads.Text((eventRecord?.Data ?? new Dictionary<string, JsonNode?>()).GetValueOrDefault("volume")) != "whisper"
+        if (eventRecord?.Data.GetValueOrDefault("volume").AsText() != "whisper"
             || listenerId == speaker.Id)
         {
             return true;
@@ -355,7 +354,7 @@ public static class EventPerception
             return authored ? new Perception.Answer(Truth.False, Code.Authored) : new Perception.Answer(Truth.False, Code.NoSuchEntity);
         }
         // A `found` event is where the search happened, not what was under it: it is read against the concealer.
-        var subject = eventRecord.Type == EventType.Found && JsonReads.Text(eventRecord.Data.GetValueOrDefault("concealer")) is { } concealer
+        var subject = eventRecord.Type == EventType.Found && eventRecord.Data.GetValueOrDefault("concealer").AsText() is { } concealer
             && snapshot.Entities.TryGetValue(concealer, out var concealerEntity)
                 ? concealerEntity
                 : named;
@@ -378,7 +377,7 @@ public static class EventPerception
                 return new Perception.Answer(Truth.False, Code.Authored);
             }
             // A collision is felt by what was hit as much as by what moved.
-            var struck = eventRecord.Type == EventType.Collided && JsonReads.Text(eventRecord.Data.GetValueOrDefault("with")) is { } with
+            var struck = eventRecord.Type == EventType.Collided && eventRecord.Data.GetValueOrDefault("with").AsText() is { } with
                 ? snapshot.Entities.GetValueOrDefault(with)
                 : null;
             return TouchesBody(snapshot, registry, observer.Id, subject)

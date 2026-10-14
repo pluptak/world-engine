@@ -13,7 +13,8 @@ verb catalog and `ENGINE_CAPABILITIES` what the engine computes; the CLI answers
 **The CLI checks a request before it runs it.** Each op has a shape (`Checks` in
 `WorldEngine.Contract`): its members, their types, no member beyond them. A request that does not
 fit is answered `{ status: "invalid", issues }` with `invalid_request` and exit code 2, and nothing
-is run for it. The inside of an edit, a command's `args` or a prop is read by the engine, which
+is run for it. A command's `args` hold whole numbers only, and no null in a list; a fraction there
+does not fit. Otherwise the inside of an edit, `args` or a prop is read by the engine, which
 refuses with its own codes. Store worlds share a directory, so handles see
 each other; memory worlds hold their own. A missing directory, a changed hash, or a bad
 version is a `WorldError` with a code.

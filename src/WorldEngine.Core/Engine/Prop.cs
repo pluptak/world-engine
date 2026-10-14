@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
 
@@ -118,36 +118,28 @@ public static class Prop
         [.. Declared.Where(row => row.Field.Type == PropType.Id).Select(row => row.Name)];
 
     // True only when the prop holds `true`; absent or anything else is not.
-    public static bool Is(this IReadOnlyDictionary<string, JsonNode?> props, Prop<bool> prop) =>
-        JsonReads.IsTrue(props.GetValueOrDefault(prop.Name));
+    public static bool Is(this IReadOnlyDictionary<string, Value> props, Prop<bool> prop) =>
+        props.GetValueOrDefault(prop.Name) is Value.Bool { Flag: true };
 
     // The flag, or null when the prop is absent or not a boolean (`on` reads absent as on).
-    public static bool? Get(this IReadOnlyDictionary<string, JsonNode?> props, Prop<bool> prop) =>
-        props.GetValueOrDefault(prop.Name) is JsonValue value && value.TryGetValue(out bool flag) ? flag : null;
+    public static bool? Get(this IReadOnlyDictionary<string, Value> props, Prop<bool> prop) =>
+        props.GetValueOrDefault(prop.Name) is Value.Bool flag ? flag.Flag : null;
 
-    // The whole number that fits a long, or null.
-    public static long? Get(this IReadOnlyDictionary<string, JsonNode?> props, Prop<long> prop) =>
-        JsonReads.SafeInt(props.GetValueOrDefault(prop.Name));
+    // The whole number, or null.
+    public static long? Get(this IReadOnlyDictionary<string, Value> props, Prop<long> prop) =>
+        props.GetValueOrDefault(prop.Name) is Value.Int number ? number.Number : null;
 
-    public static string? Get(this IReadOnlyDictionary<string, JsonNode?> props, Prop<string> prop) =>
-        JsonReads.Text(props.GetValueOrDefault(prop.Name));
+    public static string? Get(this IReadOnlyDictionary<string, Value> props, Prop<string> prop) =>
+        props.GetValueOrDefault(prop.Name) is Value.Text text ? text.Content : null;
 
     // A copy of the props with one prop set or taken away: a transition writes it through `Working.SetProps`.
-    public static Dictionary<string, JsonNode?> With(this IReadOnlyDictionary<string, JsonNode?> props, Prop<bool> prop, bool value) =>
-        Copy(props, prop.Name, JsonValue.Create(value));
+    public static Value.Map With(this Value.Map props, Prop<bool> prop, bool value) => props.With(prop.Name, value);
 
-    public static Dictionary<string, JsonNode?> With(this IReadOnlyDictionary<string, JsonNode?> props, Prop<long> prop, long value) =>
-        Copy(props, prop.Name, JsonValue.Create(value));
+    public static Value.Map With(this Value.Map props, Prop<long> prop, long value) => props.With(prop.Name, value);
 
-    public static Dictionary<string, JsonNode?> With(this IReadOnlyDictionary<string, JsonNode?> props, Prop<string> prop, string value) =>
-        Copy(props, prop.Name, JsonValue.Create(value));
+    public static Value.Map With(this Value.Map props, Prop<string> prop, string value) => props.With(prop.Name, value);
 
-    public static Dictionary<string, JsonNode?> Without<T>(this IReadOnlyDictionary<string, JsonNode?> props, Prop<T> prop)
-    {
-        var copy = new Dictionary<string, JsonNode?>(props, StringComparer.Ordinal);
-        copy.Remove(prop.Name);
-        return copy;
-    }
+    public static Value.Map Without<T>(this Value.Map props, Prop<T> prop) => props.Without(prop.Name);
 
     // Whether a prop value (a JSON number, string or boolean) holds the type. An integer is a whole number that fits a long.
     public static bool Matches(PropType type, JsonNode? value)
@@ -163,13 +155,19 @@ public static class Prop
 
     // Strict equality of two props (`===` in TypeScript): an absent prop equals nothing, and two values are the same when they
     // read the same.
+    public static bool SameValue(Value? left, Value? right) => Equals(left, right);
+
     public static bool SameValue(JsonNode? left, JsonNode? right) =>
         left is null || right is null
             ? left is null && right is null
             : JsonNode.DeepEquals(left, right);
 
-    private static Dictionary<string, JsonNode?> Copy(IReadOnlyDictionary<string, JsonNode?> props, string name, JsonNode? value) =>
-        new(props, StringComparer.Ordinal) { [name] = value };
+    public static bool Matches(PropType type, Value? value) => type switch
+    {
+        PropType.Boolean => value is Value.Bool,
+        PropType.Integer => value is Value.Int,
+        _ => value is Value.Text,
+    };
 
     private static Prop<bool> Flag(string name, Tier tier, IReadOnlyList<string>? requires = null) =>
         Declare<bool>(name, new(PropType.Boolean, tier, requires));

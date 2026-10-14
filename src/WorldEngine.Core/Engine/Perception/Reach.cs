@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Engine;
@@ -42,7 +41,7 @@ public static class Reach
     }
 
     // Whether a door's props join the two rooms, in either order. A missing room joins nothing.
-    public static bool DoorJoins(IReadOnlyDictionary<string, JsonNode?> props, string? a, string? b)
+    public static bool DoorJoins(IReadOnlyDictionary<string, Value> props, string? a, string? b)
     {
         if (a is null || b is null)
         {

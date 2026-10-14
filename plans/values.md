@@ -50,10 +50,13 @@ in ordinal order and lists and maps compare by content, so equality is structura
    `clear` (`place`, a `spawn`'s overrides), and an observed entity lists the relations it may not show in `hidden`, so
    "not shown" is never read as "none". A spawned entity no longer records a delta for a field it leaves empty, a null
    arg reads as absent (`consume` with `amount: null` eats it all), and the fixture worlds were rewritten without nulls.
-4. **The model holds `Value`.** `Entity.Props` and a template's `Props`, `WorldEvent.Data`, `Command.Args`, `ReasonData`,
-   `Delta.From`/`To`, `Run.Slots`. `Prop<T>`, `Pipeline.Reason` and `Working` change under the verbs; `Working` detects a
-   no-op by `Value` equality, and the codec turns a field's record into a `Value` for its delta. Verb code that reads args
-   or data directly reads `Value` patterns (`args["amount"] is Value.Int(var n)`). Fractions are refused at the reader.
+4. **The model holds `Value`.** Done. Entity and resolved template props, event data, `reason_data`, a command's args, a
+   delta's `from`/`to`, a process's `while` and `set_prop` values, a beat condition's value and a run's slots are `Value`
+   (`Value.Map` reads as a dictionary); `Prop<T>`, `Pipeline.Reason` and `Working` changed under the verbs, and a delta's
+   field is read through `ValueJson.Of`. A fraction in args is refused by the contract (`Shape.Args`) and never reaches a
+   verb; the six golden rows that had a verb refuse one moved to `ChecksTests` and `EditTests`. Props are walked in key
+   order, so a template with several bad props names the first by key (three template-fuzz cases). The edit parser still
+   reads `args.edit` as JSON through a bridge until block 6. 39 Core files no longer import `System.Text.Json`.
 5. **Reads answer in records.** `Projection`, `WorldReads`, `ActorWorld`, `PlayerWorld`, `DirectorWorld`, `Options` and
    `Trace` build typed records, as `Catalog` does, and `IWorld`/`IWorldReads` carry no `JsonObject`. A response whose
    shape only mirrored TypeScript's construction may take the record's plainer shape.

@@ -1,7 +1,8 @@
 using System.Text.Json;
-using WorldEngine.Core.Model;
 using System.Text.Json.Nodes;
 using WorldEngine.Core.Engine;
+using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
 
 namespace WorldEngine.Core.Templates;
 
@@ -179,7 +180,7 @@ public static class TemplateValidation
                 throw new FormatException($"{source} props.{name} must be {(type == PropType.Integer ? "an" : "a")} {TypeWord(type.Value)}");
             }
             var field = Prop.Table.GetValueOrDefault(name);
-            var number = JsonReads.Number(value);
+            var number = (value as Value.Int)?.Number;
             if (field?.Min is { } least && number is { } low && low < least)
             {
                 throw new FormatException($"{source} props.{name} must be at least {least}");
@@ -280,12 +281,8 @@ public static class TemplateValidation
             {
                 continue;
             }
-            var named = (successor as JsonValue)?.GetValueKind() is JsonValueKind.String
-                ? successor!.GetValue<string>()
-                : successor?.ToJsonString() ?? "null";
-            var target = (successor as JsonValue)?.GetValueKind() is JsonValueKind.String
-                ? registry.GetValueOrDefault(named)
-                : null;
+            var named = successor is Value.Text text ? text.Content : CanonicalJson.Serialize(successor);
+            var target = successor is Value.Text ? registry.GetValueOrDefault(named) : null;
             if (target is null || !target.Props.Is(Prop.Agent))
             {
                 throw new FormatException($"{id} names successor {named}, which is not an agent template");

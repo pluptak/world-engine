@@ -1,5 +1,3 @@
-using System.Text.Json.Nodes;
-
 namespace WorldEngine.Core.Model;
 
 // What a command is, what the log records for it, and what the world answers (src/engine/command.ts, src/model.ts).
@@ -38,7 +36,7 @@ public sealed record Command(
     string Actor,
     string Verb,
     string? Target = null,
-    IReadOnlyDictionary<string, JsonNode?>? Args = null,
+    Value.Map? Args = null,
     bool? Perceivers = null,
     bool? Round = null,
     By? By = null);
@@ -50,7 +48,7 @@ public sealed record Attempt(
     long Version,
     Status Status,
     Code? ReasonCode = null,
-    IReadOnlyDictionary<string, JsonNode?>? ReasonData = null,
+    Value.Map? ReasonData = null,
     IReadOnlyList<string>? Candidates = null,
     RoundMark? Round = null,
     By? By = null);

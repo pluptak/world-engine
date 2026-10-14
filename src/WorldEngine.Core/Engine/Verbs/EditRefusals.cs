@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 
@@ -57,12 +55,7 @@ public static partial class EditVerb
             return Refused(Code.DerivedField);
         }
         // The definitions the spawn would carry are the template's, with the override's props merged over them.
-        var carried = new Dictionary<string, JsonNode?>(template.Props, StringComparer.Ordinal);
-        foreach (var (name, value) in fields.Props ?? new Dictionary<string, JsonNode?>())
-        {
-            carried[name] = value;
-        }
-        if (DefinitionWritten(template, carried) is not null)
+        if (DefinitionWritten(template, Merge(template.Props, fields.Props ?? Value.Map.Empty)) is not null)
         {
             return Refused(Code.FieldNotEditable);
         }
@@ -351,9 +344,7 @@ public static partial class EditVerb
             return Invalid(Code.UnknownTemplate);
         }
         // `set_props` replaces every prop, so it must carry the template's definitions along; `update_props` merges.
-        IReadOnlyDictionary<string, JsonNode?> resulting = edit.Kind == "set_props"
-            ? edit.Props
-            : Merge(subject.Props, edit.Props);
+        var resulting = edit.Kind == "set_props" ? edit.Props : Merge(subject.Props, edit.Props);
         return DefinitionWritten(template, resulting) is null ? null : Refused(Code.FieldNotEditable);
     }
 
@@ -368,7 +359,7 @@ public static partial class EditVerb
 
     // The definition prop a write changes, or null. An entity stores a copy of its template's props, so repeating a
     // definition is no change; writing a different one, or dropping one, is.
-    internal static string? DefinitionWritten(Template template, IReadOnlyDictionary<string, JsonNode?> resulting)
+    internal static string? DefinitionWritten(Template template, IReadOnlyDictionary<string, Value> resulting)
     {
         bool IsDefinition(string name) =>
             Prop.Table.TryGetValue(name, out var field) && field.Tier == Tier.Definition
@@ -385,15 +376,8 @@ public static partial class EditVerb
         return null;
     }
 
-    private static Dictionary<string, JsonNode?> Merge(IReadOnlyDictionary<string, JsonNode?> basis, IReadOnlyDictionary<string, JsonNode?> changes)
-    {
-        var merged = new Dictionary<string, JsonNode?>(basis, StringComparer.Ordinal);
-        foreach (var (name, value) in changes)
-        {
-            merged[name] = value?.DeepClone();
-        }
-        return merged;
-    }
+    private static Value.Map Merge(Value.Map basis, Value.Map changes) =>
+        changes.Aggregate(basis, (merged, change) => merged.With(change.Key, change.Value));
 
     private static Pipeline.Refusal? ValidateResult(Pipeline.CommandContext context)
     {
