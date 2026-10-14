@@ -15,7 +15,7 @@ public sealed record Pos(long X, long Y);
 [JsonDerivedType(typeof(BleedCause), CauseKind.Bleed)]
 [JsonDerivedType(typeof(ProcessCause), CauseKind.Process)]
 [JsonDerivedType(typeof(BeatCause), CauseKind.Beat)]
-public abstract record ScheduledCause(long DueTick, string Entity, string? CauseId)
+public abstract record ScheduledCause(long DueTick, string Entity, [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? CauseId)
 {
     [JsonIgnore]
     public string Kind => this switch
@@ -44,9 +44,9 @@ public sealed record BeatCause(
     string? CauseId,
     string Id,
     JsonObject Action,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BeatCondition? OnlyIf = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<BeatFollower>? Then = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BeatRepeat? Repeat = null)
+    BeatCondition? OnlyIf = null,
+    IReadOnlyList<BeatFollower>? Then = null,
+    BeatRepeat? Repeat = null)
     : ScheduledCause(DueTick, Entity, CauseId);
 
 public enum PartStatus
@@ -66,7 +66,7 @@ public enum EntityStatus
 
 public sealed record PartState(long Integrity, PartStatus Status);
 
-public sealed record Modifier(string Capacity, long Delta, long? ExpiresAtTick, string CauseId);
+public sealed record Modifier(string Capacity, long Delta, [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] long? ExpiresAtTick, string CauseId);
 
 public sealed record DetachedFrom(string Entity, string Part);
 
@@ -75,13 +75,13 @@ public sealed record Entity(
     string Template,
     string Name,
     IReadOnlyList<string> Aliases,
-    string? Location,
-    string? Support,
-    string? ContainedIn,
-    string? InPart,
-    string? ConcealedBy,
-    Pos? Pos,
-    DetachedFrom? DetachedFrom,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? Location,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? Support,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? ContainedIn,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? InPart,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? ConcealedBy,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] Pos? Pos,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] DetachedFrom? DetachedFrom,
     long Integrity,
     EntityStatus Status,
     IReadOnlyDictionary<string, PartState> Parts,
@@ -89,7 +89,6 @@ public sealed record Entity(
     IReadOnlyList<Modifier> Modifiers,
     // Each value is a number, a string or a boolean.
     IReadOnlyDictionary<string, JsonNode?> Props,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     IReadOnlyDictionary<string, string>? Traits);
 
 public sealed record Coverage(
@@ -105,26 +104,23 @@ public sealed record Snapshot(
     Coverage Coverage,
     IReadOnlyDictionary<string, Entity> Entities,
     // The dice's 32-bit state; absent in a world never given a seed.
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     long? Rng,
     // What the world will do by itself, in run order; absent when nothing is pending (src/engine/pending.ts).
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     IReadOnlyList<ScheduledCause>? Schedule = null,
     // The run a scene made, absent when the world has none (src/model.ts `run`).
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Run? Run = null);
 
 // A run's state and what it holds (src/model.ts `Run`, docs/run.md). A slot is one body id, or a list of several, as the
 // snapshot stores it, so it is kept as JSON. A pool beat is a beat body with no tick, held as its JSON.
 public sealed record Run(
     string State,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? TickLimit = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<JsonNode>? Slots = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<PoolBeat>? Pool = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<Odds>? Odds = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<Player>? Players = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<Steered>? Steered = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] RunEnd? Ended = null);
+    long? TickLimit = null,
+    IReadOnlyList<JsonNode>? Slots = null,
+    IReadOnlyList<PoolBeat>? Pool = null,
+    IReadOnlyList<Odds>? Odds = null,
+    IReadOnlyList<Player>? Players = null,
+    IReadOnlyList<Steered>? Steered = null,
+    RunEnd? Ended = null);
 
 // The range a director may steer a device's odds within, as the scene gave it.
 public sealed record Odds(string Entity, string Prop, long Min, long Max);

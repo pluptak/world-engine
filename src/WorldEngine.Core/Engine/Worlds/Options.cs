@@ -1,5 +1,4 @@
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
@@ -14,13 +13,13 @@ public static class Options
     // A command an actor could issue now, to be sent as it is: the verb, its target, and the args a verb that needs some suggested.
     public sealed record ReadyOption(
         string Verb,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Target = null,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonObject? Args = null);
+        string? Target = null,
+        JsonObject? Args = null);
 
     public sealed record BlockedOption(
         string Verb,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Target,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonObject? Args,
+        string? Target,
+        JsonObject? Args,
         string ReasonCode);
 
     public sealed record Result(
@@ -28,7 +27,7 @@ public static class Options
         long Version,
         IReadOnlyList<ReadyOption> Ready,
         IReadOnlyList<string> NeedsArgs,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<BlockedOption>? Blocked = null);
+        IReadOnlyList<BlockedOption>? Blocked = null);
 
     // The options an actor has. `refused` also lists what each refused attempt was refused with.
     public static Result List(

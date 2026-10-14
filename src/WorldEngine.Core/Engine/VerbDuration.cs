@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 
@@ -7,8 +6,8 @@ namespace WorldEngine.Core.Engine;
 // How long a command of a verb lasts: so many ticks, or as many as a whole positive arg names (`wait`'s `ticks`). The catalog
 // writes it as declared, `{"ticks":1}` or `{"arg":"ticks"}`.
 public sealed record VerbDuration(
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Ticks = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Arg = null)
+    long? Ticks = null,
+    string? Arg = null)
 {
     public static readonly VerbDuration OneTick = new(Ticks: 1);
 

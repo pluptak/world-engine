@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Templates;
 
@@ -12,11 +11,11 @@ namespace WorldEngine.Core.Engine;
 public sealed record ProcessSpec(
     string Id,
     long EveryTicks,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? EveryTicksProp,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ProcessWhile? While,
+    string? EveryTicksProp,
+    ProcessWhile? While,
     ProcessEffect Effect,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? ChancePct,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ProcessThen? Then)
+    long? ChancePct,
+    ProcessThen? Then)
 {
     private static readonly ConditionalWeakTable<ProcessDecl, ProcessSpec> Parsed = new();
 
@@ -39,16 +38,16 @@ public sealed record ProcessEffect(ProcessAdjust AdjustProp);
 public sealed record ProcessAdjust(
     string Prop,
     long By,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Min = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Max = null);
+    long? Min = null,
+    long? Max = null);
 
 // What a process does once, on reaching its bound. Exactly one of the forms is given; `remove` is named so a template that
 // uses it parses, and is refused when it runs.
 public sealed record ProcessThen(
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ProcessSetProp? SetProp = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ProcessDamage? Damage = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? Spent = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonNode? Remove = null);
+    ProcessSetProp? SetProp = null,
+    ProcessDamage? Damage = null,
+    bool? Spent = null,
+    JsonNode? Remove = null);
 
 public sealed record ProcessSetProp(string Prop, JsonNode? Value);
 

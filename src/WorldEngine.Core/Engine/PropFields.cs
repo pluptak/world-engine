@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace WorldEngine.Core.Engine;
 
 // The shape of a row of the engine's prop table (`Prop.Table`).
@@ -22,7 +20,7 @@ public enum Tier
 public sealed record PropField(
     PropType Type,
     Tier Tier,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? Requires = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Min = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Max = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? Divides = null);
+    IReadOnlyList<string>? Requires = null,
+    long? Min = null,
+    long? Max = null,
+    long? Divides = null);

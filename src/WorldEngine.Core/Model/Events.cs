@@ -16,18 +16,18 @@ public sealed record Perceivers(
 
 public sealed record WorldEvent(
     string EventId,
-    string? CauseId,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? CauseId,
     string CommandId,
     long Tick,
     string Type,
     string Entity,
     IReadOnlyDictionary<string, JsonNode?> Data,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Perceivers? Perceivers = null);
+    Perceivers? Perceivers = null);
 
 // One field of one entity changing, as an event set it: `from` and `to` are whatever the field held.
 public sealed record Delta(
     string EventId,
     string Entity,
     string Field,
-    JsonNode? From,
-    JsonNode? To);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] JsonNode? From,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] JsonNode? To);

@@ -10,15 +10,15 @@ namespace WorldEngine.Core.Engine;
 // template set alone, so a caller can read it before any world exists.
 public static class Catalog
 {
-    public sealed record CatalogLiquid(string? Material, long Pct);
+    public sealed record CatalogLiquid([property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? Material, long Pct);
 
     public sealed record CatalogForms(
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? FuelPct,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CatalogLiquid? Liquid,
+        long? FuelPct,
+        CatalogLiquid? Liquid,
         string Condition,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? HungerPct,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? PortionsPct,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? Approximate);
+        long? HungerPct,
+        long? PortionsPct,
+        IReadOnlyList<string>? Approximate);
 
     public sealed record CatalogEntry(
         string Template,
@@ -30,7 +30,7 @@ public static class Catalog
         bool Barrier,
         bool LightSource,
         bool Agent,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? CapacityCm3,
+        long? CapacityCm3,
         IReadOnlyList<string> Parts,
         IReadOnlyDictionary<string, long> Capacities,
         IReadOnlyList<string> BreaksInto,
