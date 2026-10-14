@@ -1,7 +1,7 @@
 # Backlog
 
-One item = one small block: plan it, build it, `npm run check`, review the diff, commit. Each item
-keeps every invariant in AGENTS.md (determinism, pure core, `canonicalJson`, no prose,
+One item = one small block: plan it, build it, `WORLD_ENGINE_DEEP=1 dotnet test WorldEngine.slnx`, review
+the diff, commit. Each item keeps every invariant in AGENTS.md (determinism, pure core, `CanonicalJson`, no prose,
 coverage-governed `"unknown"`). Delete an item in the same commit that ships it — git history
 records it; `docs/` describes what is built (index: `docs/DESIGN.md`).
 Measurements and test results live in `docs/measurements.md`, not here; an item quotes a number only
