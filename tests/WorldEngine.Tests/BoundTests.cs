@@ -29,6 +29,7 @@ public class BoundTests : IDisposable
 
     private static IReadOnlyDictionary<string, Pipeline.VerbDecl> Verbs { get; } = new Dictionary<string, Pipeline.VerbDecl>
     {
+        ["attack"] = AttackVerb.Attack,
         ["edit"] = EditVerb.Edit,
         ["move"] = MoveVerb.Move,
         ["say"] = SayVerb.Say,
@@ -107,6 +108,19 @@ public class BoundTests : IDisposable
         var second = Pipeline.Apply(first.Snapshot, Registry, Verbs, new Command("c2", "e2", "take", Flint));
         Assert.Equal(Status.Refused, second.Status);
         Assert.Equal(Code.HandsFull, second.ReasonCode);
+    }
+
+    [Fact]
+    public void A_blow_to_a_bound_hand_leaves_it_bound()
+    {
+        var bound = Pipeline.Apply(Built(), Registry, Verbs, SetPart("e2", "hand_l", integrity: 100, status: "intact", bound: true));
+        var struck = Pipeline.Apply(bound.Snapshot, Registry, Verbs, new Command("c1", "e2", "attack", "e2.hand_l"));
+
+        Assert.Equal(Status.Ok, struck.Status);
+        var state = PartStates.State(Registry["human"], struck.Snapshot.Entities["e2"], "hand_l")!;
+        Assert.Equal(PartStatus.Damaged, state.Status);
+        Assert.True(state.Bound);
+        Assert.Equal(50L, Capacities.Structural(struck.Snapshot, Registry, "e2", "manipulation"));
     }
 
     [Fact]

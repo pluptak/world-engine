@@ -126,6 +126,20 @@ public class SurgeryTests : IDisposable
     }
 
     [Fact]
+    public void A_blow_to_an_incised_part_leaves_it_incised()
+    {
+        var cut = Pipeline.Apply(Built(), Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+        var struck = Pipeline.Apply(cut.Snapshot, Registry, Verbs, new Command("s1", Surgeon, "attack", $"{Patient}.arm_l"));
+
+        Assert.Equal(Status.Ok, struck.Status);
+        var state = PartStates.State(Registry["human"], struck.Snapshot.Entities[Patient], "arm_l")!;
+        Assert.Equal(PartStatus.Damaged, state.Status);
+        Assert.True(state.Incised);
+        Assert.Equal(Code.AlreadyIncised, Pipeline.Apply(struck.Snapshot, Registry, Verbs, Cut(Surgeon, Patient, "arm_l")).ReasonCode);
+        Assert.Equal(Status.Ok, Pipeline.Apply(struck.Snapshot, Registry, Verbs, Suture("t1", Surgeon, Patient, "arm_l")).Status);
+    }
+
+    [Fact]
     public void A_store_world_folds_the_cut_alike()
     {
         var made = WorldBuilder.Snapshot(ValueJson.FromNode(JsonNode.Parse(Scene))!, Registry);

@@ -343,7 +343,8 @@ public static class AttackVerb
                     target.Id,
                     PartStates.With(template, target.Parts, new Dictionary<string, PartState>(StringComparer.Ordinal)
                     {
-                        [partName] = new PartState(integrity, PartStatus.Damaged),
+                        // A blow leaves a tie or an incision as it found it.
+                        [partName] = state with { Integrity = integrity, Status = PartStatus.Damaged },
                     }),
                     damageEvent);
                 // A blow that bruises a part takes from the capacity it contributes (its first, by name).
