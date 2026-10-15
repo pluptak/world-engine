@@ -249,6 +249,47 @@ public static class CliRunner
                     TemplateLibrary.Delete(library, id);
                     return Obj(("id", id));
                 }
+            case "world_add":
+                {
+                    var scenario = request.GetValueOrDefault("scenario")
+                        ?? throw new WorldError(Code.InvalidRequest, "The request names no scenario");
+                    if (!Checks.IsScenario(scenario))
+                    {
+                        throw new WorldError(Code.InvalidScenario, "The scenario is no list of entries or scene");
+                    }
+                    var name = Text(request, "name");
+                    return Obj(("name", name), ("revision", WorldLibrary.Add(Text(request, "library"), name, scenario)));
+                }
+            case "world_edit":
+                {
+                    var scenario = request.GetValueOrDefault("scenario")
+                        ?? throw new WorldError(Code.InvalidRequest, "The request names no scenario");
+                    if (!Checks.IsScenario(scenario))
+                    {
+                        throw new WorldError(Code.InvalidScenario, "The scenario is no list of entries or scene");
+                    }
+                    var name = Text(request, "name");
+                    return Obj(("name", name), ("revision", WorldLibrary.Edit(Text(request, "library"), name, scenario)));
+                }
+            case "world_get":
+                {
+                    var library = Text(request, "library");
+                    var name = Text(request, "name");
+                    var revision = Int(request, "revision");
+                    var data = WorldLibrary.Get(library, name, revision);
+                    revision ??= WorldLibrary.List(library).Single(entry => entry.Name == name).Revisions[^1];
+                    return Obj(
+                        ("name", name),
+                        ("revision", revision),
+                        ("scenario", data.Scenario),
+                        ("manifest", data.Manifest));
+                }
+            case "world_list":
+                return Obj(("worlds", Value.Of(
+                    WorldLibrary.List(Text(request, "library"))
+                        .Select(entry => (Value)Obj(
+                            ("name", entry.Name),
+                            ("revisions", Value.Of(entry.Revisions.Select(number => (Value)number))))))));
             default:
                 throw new WorldError(Code.InvalidOp, $"Unknown op {op}");
         }

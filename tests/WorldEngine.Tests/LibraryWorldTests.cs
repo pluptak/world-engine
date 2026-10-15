@@ -1,3 +1,4 @@
+using WorldEngine.Cli;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -152,5 +153,68 @@ public class LibraryWorldTests : IDisposable
     {
         var lib = CopyTemplatesToTemp();
         Assert.Equal(Code.InvalidWorld, Assert.Throws<WorldError>(() => WorldLibrary.Add(lib, "Lab", LabScenario())).Code);
+    }
+
+    private static System.Text.Json.Nodes.JsonNode LabRequest(string lib, string op, string name, System.Text.Json.Nodes.JsonNode? scenario = null, int? revision = null)
+    {
+        var request = new System.Text.Json.Nodes.JsonObject { ["op"] = op, ["library"] = lib, ["name"] = name };
+        if (scenario is not null)
+        {
+            request["scenario"] = scenario;
+        }
+        if (revision is not null)
+        {
+            request["revision"] = revision.Value;
+        }
+        return request;
+    }
+
+    [Fact]
+    public void Each_request_through_cli_runner()
+    {
+        var lib = CopyTemplatesToTemp();
+        var lab = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(RepoRoot(), "scenarios", "lab.json")))!;
+
+        var added = CliRunner.Run([], LabRequest(lib, "world_add", "lab", lab.DeepClone()).ToJsonString());
+        Assert.Equal(0, added.Status);
+        Assert.Equal(1, System.Text.Json.Nodes.JsonNode.Parse(added.Stdout)!["revision"]!.GetValue<int>());
+
+        var got = CliRunner.Run([], LabRequest(lib, "world_get", "lab").ToJsonString());
+        Assert.Equal(0, got.Status);
+        var answered = System.Text.Json.Nodes.JsonNode.Parse(got.Stdout)!;
+        Assert.True(answered["scenario"]!["entities"]!.AsArray().Count > 0);
+        Assert.NotNull(answered["manifest"]!["templates"]!["human"]);
+
+        var badShape = CliRunner.Run([], LabRequest(lib, "world_add", "bad", System.Text.Json.Nodes.JsonNode.Parse("""[{"id":"x"}]""")!).ToJsonString());
+        Assert.Equal(2, badShape.Status);
+        Assert.Contains("invalid_scenario", badShape.Stdout);
+        Assert.False(Directory.Exists(Path.Combine(lib, "worlds", "bad")));
+
+        var badTemplate = CliRunner.Run([], LabRequest(lib, "world_add", "bad", System.Text.Json.Nodes.JsonNode.Parse("""[{"template":"nope"}]""")!).ToJsonString());
+        Assert.Equal(2, badTemplate.Status);
+        Assert.Contains("internal_error", badTemplate.Stdout);
+        Assert.False(Directory.Exists(Path.Combine(lib, "worlds", "bad")));
+
+        var taken = CliRunner.Run([], LabRequest(lib, "world_add", "lab", lab.DeepClone()).ToJsonString());
+        Assert.Equal(2, taken.Status);
+        Assert.Contains("world_exists", taken.Stdout);
+
+        var edited = CliRunner.Run([], LabRequest(lib, "world_edit", "lab", lab.DeepClone()).ToJsonString());
+        Assert.Equal(0, edited.Status);
+        Assert.Equal(2, System.Text.Json.Nodes.JsonNode.Parse(edited.Stdout)!["revision"]!.GetValue<int>());
+
+        var listed = CliRunner.Run([], new System.Text.Json.Nodes.JsonObject { ["op"] = "world_list", ["library"] = lib }.ToJsonString());
+        Assert.Equal(0, listed.Status);
+        var entry = System.Text.Json.Nodes.JsonNode.Parse(listed.Stdout)!["worlds"]!.AsArray()
+            .Single(node => node!["name"]!.GetValue<string>() == "lab");
+        Assert.Equal([1, 2], entry!["revisions"]!.AsArray().Select(node => node!.GetValue<int>()));
+
+        var missing = CliRunner.Run([], LabRequest(lib, "world_get", "nope").ToJsonString());
+        Assert.Equal(2, missing.Status);
+        Assert.Contains("no_such_world", missing.Stdout);
+
+        var missingRev = CliRunner.Run([], LabRequest(lib, "world_get", "lab", revision: 7).ToJsonString());
+        Assert.Equal(2, missingRev.Status);
+        Assert.Contains("no_such_revision", missingRev.Stdout);
     }
 }

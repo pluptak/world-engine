@@ -18,9 +18,8 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Library worlds: a scenario and a manifest, by revision](#library-worlds-a-scenario-and-a-manifest-by-revision).
-2. [Runs from a world revision, linked to the library](#runs-from-a-world-revision-linked-to-the-library).
-3. [Identity by appearance: a body seen is named by the face it wears](#identity-by-appearance-a-body-seen-is-named-by-the-face-it-wears).
+1. [Runs from a world revision, linked to the library](#runs-from-a-world-revision-linked-to-the-library).
+2. [Identity by appearance: a body seen is named by the face it wears](#identity-by-appearance-a-body-seen-is-named-by-the-face-it-wears).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -78,36 +77,6 @@ happens as soon as a template is written for a story rather than for the engine,
 suite never writes the repository's `templates/`: every library test copies it to a temp folder first, since
 the goldens pin it. Every write takes the library's turn, `WorldLock.With(<library>/templates/.revisions, ...)`,
 so two writers never interleave; reads take none.
-
-### Library worlds: a scenario and a manifest, by revision
-
-- **What:** `WorldLibrary` (`Library/WorldLibrary.cs`, new): a library world is a scenario and the template
-  revisions it is pinned to, kept by revision; a world is added, edited (a new revision), listed and read.
-- **Layout:** `worlds/<name>/<n>/scenario.json` (the scenario as given) and `worlds/<name>/<n>/manifest.json`
-  (`{ templates: { <id>: <revision> } }`), `n` from 1. A name is an id-like token (lower letters, digits, `_`
-  and `-`), else `invalid_world` (existing).
-- **Rules:**
-  - **Pinning.** A manifest pins every id of the latest set, each `Record`ed first, not only the scene's
-    templates: an author's `spawn` or a beat may name any template in a run, and a closure of the scene's
-    templates would miss them.
-  - `TemplateLibrary.Resolve(library, manifest)` (new): the registry from the named revision files
-    (`TemplateDirectory.ReadDeclarations` over their texts, then `TemplateResolver.Resolve`), so a world's set
-    is the same however the latest set moves on. An unrecorded revision is `no_such_revision`.
-  - **Add** `{ name, scenario }`: `world_exists` (existing) when the name is taken; the scenario checked as
-    `init` checks it (`Checks.IsScenario`, then `WorldBuilder.Snapshot` against the pinned set, the snapshot
-    discarded), else its existing refusal and nothing written; writes revision 1. **Edit** `{ name, scenario }`:
-    the same checks, a new revision pinned to the latest set; `no_such_world` (existing) for an unknown name.
-  - **Get** `{ name, revision? }` (latest by default): the scenario and the manifest. **List**: each name with
-    its revisions.
-- **CLI:** `world_add`, `world_edit`, `world_get`, `world_list`, each with `library`.
-- **Files:** `Library/WorldLibrary.cs` (new), `Library/TemplateLibrary.cs` (`Resolve`), `Contract/Checks.cs`,
-  `Cli/CliRunner.cs`, `docs/library.md`, `docs/api.md`.
-- **Tests** (`LibraryWorldTests`): adding `scenarios/lab.json` writes revision 1 pinning every latest id; after
-  a new `human` revision the world's resolved set still hashes (`TemplateHash`) as the set did at the add, and
-  `world_edit` writes revision 2 pinning the new `human`; an invalid scenario is refused with nothing written;
-  a taken name is `world_exists`; each request through `CliRunner`.
-- **Done when:** as above.
-- **Depends on:** Template library.
 
 ### Runs from a world revision, linked to the library
 

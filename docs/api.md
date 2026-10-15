@@ -42,4 +42,9 @@ changed hash, or a bad version is a `WorldError` with a code.
   `template_get { id, revision? }` answers `{ template }`, else `unknown_template`
   or `no_such_revision`; `template_put { template }` answers `{ revision }`, else
   `invalid_templates`; `template_delete { id }` answers `{ id }`, else
-  `unknown_template` or `invalid_templates`.
+  `unknown_template` or `invalid_templates`. Its worlds are four more:
+  `world_add { name, scenario }` answers `{ name, revision }`, else `world_exists`,
+  `invalid_world`, `invalid_scenario` or `invalid_templates`; `world_edit` the same,
+  else `no_such_world`; `world_get { name, revision? }` answers `{ name, revision,
+  scenario, manifest }`, else `no_such_world` or `no_such_revision`; `world_list`
+  answers `{ worlds: [{ name, revisions }] }`.
