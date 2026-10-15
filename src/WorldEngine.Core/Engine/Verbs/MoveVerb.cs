@@ -3,8 +3,8 @@ using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
-// The move verb (src/engine/verbs/move.ts): an agent walks to a position in its room, into a room by id, or through a
-// door named like a target. Being carried, having no means to move, a shut door, a room it cannot name, a wall or a
+// The move verb (src/engine/verbs/move.ts): an agent walks to a position in its room, into a room by id, through a
+// door named like a target, or toward a thing named like one until their footprints touch. Being carried, having no means to move, a shut door, a room it cannot name, a wall or a
 // barrier on the way, and a walk out of the room are refused. The walker and all it holds move with it.
 public static class MoveVerb
 {
@@ -65,6 +65,8 @@ public static class MoveVerb
 
     private sealed record ThroughDoor(string Text) : Destination;
 
+    private sealed record Toward(string Text) : Destination;
+
     private static Destination? DestinationOf(Value.Map? args)
     {
         if (args is null)
@@ -74,6 +76,10 @@ public static class MoveVerb
         var hasTo = args.ContainsKey("to");
         var hasLocation = args.ContainsKey("location");
 
+        if (args.ContainsKey("toward"))
+        {
+            return args.Count == 1 && Text(args, "toward") is { Length: > 0 } thing ? new Toward(thing) : null;
+        }
         if (args.ContainsKey("through"))
         {
             return !hasTo && !hasLocation && Text(args, "through") is { Length: > 0 } door ? new ThroughDoor(door) : null;
@@ -137,9 +143,59 @@ public static class MoveVerb
             : (null, Pipeline.Refused(Code.NoOpenDoor));
     }
 
-    // The destination with any door resolved away: through a door is a move to the room beyond it (`via`).
+    // The spot a walk toward a named thing stops at. The thing is named as any target is. What stands on or in something
+    // is approached by what stands on the floor under it (a key on a table, by the table; a held one, by its holder);
+    // that must be in the actor's room, or a door of it. Touching it already, or holding it, is already_there.
+    private static (Pos? Spot, Pipeline.Refusal? Failure) TowardSpot(Pipeline.CommandContext context, string text)
+    {
+        var snapshot = context.Snapshot;
+        var actor = snapshot.Entities[context.Command.Actor];
+        switch (Resolve.ResolveTarget(snapshot, context.Registry, actor.Id, text))
+        {
+            case Resolve.Unresolved:
+                return (null, new Pipeline.Refusal(Status.Unresolved, null));
+            case Resolve.Ambiguous ambiguous:
+                return (null, new Pipeline.Refusal(Status.Ambiguous, null, Candidates: ambiguous.Candidates));
+            case Resolve.Resolved resolved:
+                var here = actor.Location;
+                var anchor = snapshot.Entities.GetValueOrDefault(resolved.Target.EntityId);
+                for (var steps = 0; anchor is not null && steps < 64; steps += 1)
+                {
+                    if (anchor.Id == actor.Id)
+                    {
+                        return (null, Pipeline.Refused(Code.AlreadyThere));
+                    }
+                    if (anchor.ContainedIn is null && (anchor.Support is null || anchor.Support == here))
+                    {
+                        break;
+                    }
+                    anchor = snapshot.Entities.GetValueOrDefault(anchor.ContainedIn ?? anchor.Support!);
+                }
+                var standsHere = anchor is not null && (anchor.Location == here
+                    || (Resolve.IsDoor(anchor) && (anchor.Props.Get(Prop.From) == here || anchor.Props.Get(Prop.To) == here)));
+                var from = Geometry.EffectivePos(snapshot, actor.Id);
+                var at = anchor is null ? null : Geometry.EffectivePos(snapshot, anchor.Id);
+                if (!standsHere || anchor!.Template == TemplateIds.Room || from is null || at is null)
+                {
+                    return (null, Pipeline.Invalid(Code.InvalidLocation));
+                }
+                var spot = Geometry.ApproachSpot(
+                    from, Geometry.Footprint(context.Registry, actor.Template), at, Geometry.Footprint(context.Registry, anchor.Template));
+                return spot is null ? (null, Pipeline.Refused(Code.AlreadyThere)) : (spot, null);
+            default:
+                throw new InvalidOperationException("Unexpected resolution");
+        }
+    }
+
+    // The destination with any door or thing resolved away: through a door is a move to the room beyond it (`via`), toward
+    // a thing a move to the spot beside it.
     private static (Destination? To, bool Via, Pipeline.Refusal? Failure) WalkTo(Pipeline.CommandContext context, Destination asked)
     {
+        if (asked is Toward toward)
+        {
+            var (spot, refusal) = TowardSpot(context, toward.Text);
+            return refusal is null ? (new AtPosition(spot!), false, null) : (null, false, refusal);
+        }
         if (asked is not ThroughDoor door)
         {
             return (asked, false, null);

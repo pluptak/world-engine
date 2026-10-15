@@ -18,6 +18,7 @@ public enum Code
     AlreadyOff,
     AlreadyOn,
     AlreadyOpen,
+    AlreadyThere,
     AlreadyUnlocked,
     AnchorNotRoomSupported,
     Asleep,

@@ -6,8 +6,11 @@ An agent moving itself, and moving what stands in a room. Walking rules are in
 - `move`: needs `moving`; `args.to` a position, `args.location` a room through an open door, or `args.through`
   a door of the agent's room, named like a target (`unresolved` or `ambiguous` as any name is), which takes it
   to the room on the other side: a shut one is `no_open_door`, anything but a door of its room
-  `invalid_location`, and the landing is judged as for `location`. Exactly one of the three, else
-  `invalid_args`. It refuses
+  `invalid_location`, and the landing is judged as for `location`. `args.toward` names a thing
+  like a target and walks straight at it until the footprints touch: what stands on or in
+  something is approached by what is on the floor under it, which must be in the agent's room
+  (else `invalid_location`). Touching it already, or holding it, is `already_there`: the approach
+  is done, nothing is in the way. Exactly one of the four, else `invalid_args`. It refuses
   `blocked` and `out_of_bounds` ([walking.md](walking.md)), and `being_carried` (naming the carrier)
   for an agent held by another, which keeps its senses, speech and hands; emits `moved`, carrying
   what it holds, and uncovers what it or anything it carries was hiding. An agent standing on

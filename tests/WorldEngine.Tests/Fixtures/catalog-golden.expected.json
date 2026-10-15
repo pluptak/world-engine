@@ -420,6 +420,9 @@
       },
       "through": {
         "kind": "address"
+      },
+      "toward": {
+        "kind": "address"
       }
     },
     "duration": {
@@ -432,6 +435,7 @@
       "being_carried",
       "insufficient_moving",
       "no_open_door",
+      "already_there",
       "blocked",
       "out_of_bounds"
     ]

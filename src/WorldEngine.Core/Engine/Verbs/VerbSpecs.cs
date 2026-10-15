@@ -101,8 +101,9 @@ public static class VerbSpecs
                 ["to"] = new(ArgKind.Pos),
                 ["location"] = new(ArgKind.Room),
                 ["through"] = new(ArgKind.Address),
+                ["toward"] = new(ArgKind.Address),
             },
-            Refuses: [Code.BeingCarried, Code.InsufficientMoving, Code.NoOpenDoor, Code.Blocked, Code.OutOfBounds]),
+            Refuses: [Code.BeingCarried, Code.InsufficientMoving, Code.NoOpenDoor, Code.AlreadyThere, Code.Blocked, Code.OutOfBounds]),
         ["open"] = new(
             Args: NoArgs,
             Refuses: [Code.NotOpenable, Code.OutOfReach, Code.AlreadyOpen, Code.Locked, Code.Disconnected, Code.Unpowered]),

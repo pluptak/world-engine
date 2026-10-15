@@ -428,7 +428,29 @@ public static class Geometry
             ? template
             : throw new InvalidOperationException($"Unknown template {templateId}");
 
-    private static (long W, long D) Footprint(IReadOnlyDictionary<string, Template> registry, string templateId)
+    // Where a walk straight toward a thing stops: the first spot on the way where the two footprints touch, or null when
+    // they touch or overlap already. Touching is judged to the centimetre, as an odd width cannot be met on whole ones.
+    public static Pos? ApproachSpot(Pos from, (long W, long D) mover, Pos at, (long W, long D) target)
+    {
+        var dx = at.X - from.X;
+        var dy = at.Y - from.Y;
+        var spanX = mover.W + target.W;
+        var spanY = mover.D + target.D;
+        if (2 * Math.Abs(dx) <= spanX + 2 && 2 * Math.Abs(dy) <= spanY + 2)
+        {
+            return null;
+        }
+        // The axis whose edges meet first (the smaller span / 2|d|), stopped half a span short of the target's centre,
+        // rounded away so the footprints never overlap; the other axis keeps the line's slope.
+        var alongX = dx != 0 && (dy == 0 || spanX * Math.Abs(dy) <= spanY * Math.Abs(dx));
+        var (d, other, span) = alongX ? (dx, dy, spanX) : (dy, dx, spanY);
+        var back = (span + 1) / 2;
+        var otherBack = other * back / Math.Abs(d);
+        var along = Math.Sign(d) * back;
+        return alongX ? new Pos(at.X - along, at.Y - otherBack) : new Pos(at.X - otherBack, at.Y - along);
+    }
+
+    public static (long W, long D) Footprint(IReadOnlyDictionary<string, Template> registry, string templateId)
     {
         var template = RequireTemplate(registry, templateId);
         return (template.SizeCm.W, template.SizeCm.D);
