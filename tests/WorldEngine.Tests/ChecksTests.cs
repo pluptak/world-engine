@@ -20,6 +20,11 @@ public class ChecksTests
     [InlineData("""{"op":"query","world":"w","query":{"kind":"fact","subject":"e1","relation":"near"}}""")]
     [InlineData("""{"op":"trace","world":"w","query":{"entity":"e1","field":"pos"}}""")]
     [InlineData("""{"op":"player_submit","world":"w","handle":"h","move":{"command_id":"c","verb":"wait"}}""")]
+    [InlineData("""{"op":"template_list","library":"/tmp/lib"}""")]
+    [InlineData("""{"op":"template_get","library":"/tmp/lib","id":"bottle"}""")]
+    [InlineData("""{"op":"template_get","library":"/tmp/lib","id":"bottle","revision":1}""")]
+    [InlineData("""{"op":"template_put","library":"/tmp/lib","template":{"id":"werewolf","extends":"human"}}""")]
+    [InlineData("""{"op":"template_delete","library":"/tmp/lib","id":"wine_bottle"}""")]
     public void A_request_of_the_shape_of_its_op_is_accepted(string json) => Assert.True(Checks.IsRequest(Parse(json)));
 
     [Theory]
@@ -41,6 +46,10 @@ public class ChecksTests
     [InlineData("""{"op":"edit","world":"w","edit":{"kind":"schedule_beat","id":"b","at_tick":5,"action":{"kind":"sound","entity":"e3"},"only_if":{"entity":"e5","prop":"fuel","op":"eq","value":1.5}}}""")]
     [InlineData("""{"op":"schedule","world":"w","filter":{"kind":"tomorrow"}}""")]
     [InlineData("""{"op":"query","world":"w","query":{"kind":"fact","subject":"e1"}}""")]
+    [InlineData("""{"op":"template_get","library":"/tmp/lib"}""")]
+    [InlineData("""{"op":"template_get","library":"/tmp/lib","id":"bottle","revision":0}""")]
+    [InlineData("""{"op":"template_put","library":"/tmp/lib"}""")]
+    [InlineData("""{"op":"template_list","library":"/tmp/lib","extra":1}""")]
     public void A_request_that_does_not_fit_its_op_is_refused(string json) => Assert.False(Checks.IsRequest(Parse(json)));
 
     [Fact]

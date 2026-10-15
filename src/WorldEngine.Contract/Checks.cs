@@ -129,5 +129,9 @@ public static class Checks
         ["player_pending"] = Obj(Op("player_pending"), World, ("handle", Req(NonEmpty))),
         ["director_submitted"] = Obj(Op("director_submitted"), World),
         ["director_close_round"] = Obj(Op("director_close_round"), World),
+        ["template_list"] = Obj(Op("template_list"), ("library", Req(NonEmpty))),
+        ["template_get"] = Obj(Op("template_get"), ("library", Req(NonEmpty)), ("id", Req(NonEmpty)), ("revision", Opt(AtLeast(1)))),
+        ["template_put"] = Obj(Op("template_put"), ("library", Req(NonEmpty)), ("template", Req(Record))),
+        ["template_delete"] = Obj(Op("template_delete"), ("library", Req(NonEmpty)), ("id", Req(NonEmpty))),
     };
 }

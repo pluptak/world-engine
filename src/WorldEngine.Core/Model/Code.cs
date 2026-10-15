@@ -141,6 +141,7 @@ public enum Code
     NoSuchField,
     NoSuchPart,
     NoSuchPoolBeat,
+    NoSuchRevision,
     NoSuchScenario,
     NoSuchSlot,
     NoSuchWorld,
