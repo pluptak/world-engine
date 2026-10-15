@@ -104,14 +104,20 @@ public static class Runs
         return [.. members.Select(member => LiveBodyOf(snapshot, member)).Distinct(StringComparer.Ordinal)];
     }
 
-    // After an ok command or edit: a running run that has reached its limit ends for that reason, and one whose slots are
-    // all destroyed or gone ends for no live players. A run with no slots never ends the second way. A registering run
-    // never ends by itself: the author may still be fixing its scene.
+    // After an ok command or edit: a running run whose `end_when` holds ends for that, before its limit is read, so reaching
+    // the end on the last tick counts; one that has reached its limit ends for that reason, and one whose slots are all
+    // destroyed or gone ends for no live players. A run with no slots never ends the last way. A registering run never ends
+    // by itself: the author may still be fixing its scene.
     public static void FinishRun(Working working)
     {
         var run = working.Snapshot.Run;
         if (run is null || run.State != "running")
         {
+            return;
+        }
+        if (run.EndWhen is { } end && Beats.Holds(end, working.Snapshot))
+        {
+            EndRun(working, "end_when");
             return;
         }
         if (run.TickLimit is { } limit && working.Snapshot.Tick >= limit)

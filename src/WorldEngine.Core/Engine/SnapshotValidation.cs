@@ -607,7 +607,7 @@ public static class SnapshotValidation
 
     // The run states and why one ends, as the snapshot stores them (src/engine/validate.ts).
     private static readonly HashSet<string> RunStates = ["registering", "running", "ended"];
-    private static readonly HashSet<string> RunReasons = ["director", "tick_limit", "no_live_players"];
+    private static readonly HashSet<string> RunReasons = ["director", "end_when", "tick_limit", "no_live_players"];
 
     // A run as stored: a positive tick limit, or the agents that are its slots, each named once, or both, and its state. An
     // ended run has its reason and its tick, and nothing still scheduled (`docs/run.md`).
@@ -626,6 +626,10 @@ public static class SnapshotValidation
         if (run.TickLimit is { } limit && limit < 1)
         {
             issues.Add(Issue(Code.InvalidRun, ["run", "tick_limit"], limit.ToString(CultureInfo.InvariantCulture)));
+        }
+        if (run.EndWhen is { } end && !Beats.IsCondition(end))
+        {
+            issues.Add(Issue(Code.InvalidRun, ["run", "end_when"], "malformed"));
         }
         if (run.Slots is { } slots)
         {

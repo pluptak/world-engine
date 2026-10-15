@@ -79,6 +79,7 @@ public static class Checks
         ("beats", Opt(List(Record))),
         ("entities", Req(Entries)),
         ("run", Opt(Obj(
+            ("end_when", Opt(Record)),
             ("odds", Opt(List(Obj(
                 ("entity", Req(NonEmpty)), ("max", Req(Between(0, 100))), ("min", Req(Between(0, 100))), ("prop", Req(Const(Prop.JamPct))))))),
             ("pool", Opt(List(Record))),

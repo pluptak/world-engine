@@ -196,6 +196,7 @@ public static class SceneBuilder
         var slotsNode = run.GetValueOrDefault("slots") as Value.List;
         var poolNode = run.GetValueOrDefault("pool") as Value.List;
         var oddsNode = run.GetValueOrDefault("odds") as Value.List;
+        var endNode = run.GetValueOrDefault("end_when");
         if (tickNode is null && slotsNode is null && poolNode is null && oddsNode is null)
         {
             throw Refused("run", Code.EmptyRun);
@@ -246,6 +247,10 @@ public static class SceneBuilder
             ? null
             : ScenePool(snapshot, registry, names, poolNode, Beats.PendingBeatIds(Schedule.Pending(snapshot)));
         var odds = oddsNode is null ? null : SceneOdds(snapshot, names, oddsNode);
+        // The end condition names its entities and rooms by scenario id, as a beat's condition does.
+        var endWhen = endNode is null
+            ? null
+            : Beats.ConditionOf(ResolveBody(endNode, names, "run.end_when")) ?? throw Refused("run.end_when", Code.InvalidRun);
         return snapshot with
         {
             Run = new Run(
@@ -253,7 +258,8 @@ public static class SceneBuilder
                 TickLimit: tickNode.AsInt(),
                 Slots: slotsNode is null ? null : slots,
                 Pool: pool,
-                Odds: odds),
+                Odds: odds,
+                EndWhen: endWhen),
         };
     }
 

@@ -10,7 +10,9 @@ A scenario file is a list of entries, or a scene: `{ seed?, entities, beats?, ru
   as in [beats.md](beats.md)). `at_tick` is from 1, and an entity in an action, a condition or a
   follower is named by its scenario id. They are queued at creation with no `cause_id`, since
   no event set them going, as for a process the initial state started.
-- `run`: `{ tick_limit?, slots?, pool?, odds? }`. `pool`: beat bodies with no `at_tick`, each with
+- `run`: `{ tick_limit?, slots?, pool?, odds?, end_when? }`. `end_when`: one condition in a beat's
+  forms, its entities and rooms named by scenario id, that ends the run ([run.md](run.md)); a
+  malformed one is `invalid_run`. `pool`: beat bodies with no `at_tick`, each with
   an `id` unique among the beats and the pool, which the director plays (`play_beat`,
   [roles.md](roles.md)). `odds`: `{ entity, prop: "jam_pct", min, max }` for a door, a whole range
   from 0 to 100 the director may steer it within. A run needs one of the four keys. The rest of the

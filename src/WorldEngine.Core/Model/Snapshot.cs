@@ -119,7 +119,9 @@ public sealed record Run(
     IReadOnlyList<Odds>? Odds = null,
     IReadOnlyList<Player>? Players = null,
     IReadOnlyList<Steered>? Steered = null,
-    RunEnd? Ended = null);
+    RunEnd? Ended = null,
+    // A condition, in a beat's forms, that ends the run when it holds after an ok command or edit.
+    BeatCondition? EndWhen = null);
 
 // The range a director may steer a device's odds within, as the scene gave it.
 public sealed record Odds(string Entity, string Prop, long Min, long Max);

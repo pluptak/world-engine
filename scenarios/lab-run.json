@@ -401,6 +401,10 @@
   ],
   "run": {
     "tick_limit": 60,
+    "end_when": {
+      "room": "outside",
+      "occupied": true
+    },
     "slots": [
       "ann",
       "bob",

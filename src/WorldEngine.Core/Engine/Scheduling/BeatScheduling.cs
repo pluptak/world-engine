@@ -27,6 +27,13 @@ public static partial class Beats
             : null;
     }
 
+    // A condition read into its record, or null when it is not one of the forms a beat may hold.
+    public static BeatCondition? ConditionOf(Value value) =>
+        ValueJson.TryRead(value, out BeatCondition? condition) && condition is not null && ConditionOk(condition) ? condition : null;
+
+    // Whether a stored condition is one of the forms a beat may hold.
+    public static bool IsCondition(BeatCondition condition) => ConditionOk(condition);
+
     // A pool beat from a beat a schedule_beat would make: as it holds it, less the tick.
     public static PoolBeat PoolBeatOf(BeatCause beat) => new(beat.Id, beat.Action, beat.OnlyIf, beat.Then, beat.Repeat);
 
