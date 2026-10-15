@@ -82,9 +82,12 @@ first, and **Non-goals** what its first version leaves out.
   Decided: part state the new class does not declare is refused, as `refine` refuses it; a beat's
   refused class change is recorded `beat_skipped { reason: "failed" }` and its watch goes on, as a
   refused edit's does.
-  Open: whether a class is the whole body's or a part's (one cyber-arm), TBD; whether a class ever goes
-  back, and so whether `becomes` is wanted at all, TBD. Both are decided together when a scene promotes
-  this entry.
+  Decided: the classes a body may change into are the architect's, prepared before the story as
+  templates and listed on the body's template (`becomes`); during a run only a listed change can
+  happen, one of several when several are listed (`human` lists `human_with_bionic_arm` and
+  `human_with_bionic_leg`, and the trigger decides which). A class is always the whole body's template,
+  so a changed part is a class of its own. A class goes back only when the architect lists the way
+  back.
 - **Identity by appearance.** Behaviour: what an observer recognises a body by comes from what it
   senses, so a body wearing another's face is, to someone who only sees it, the other. Today an actor
   names every other thing by an alias hashed from the observer and the entity's id
@@ -105,7 +108,6 @@ first, and **Non-goals** what its first version leaves out.
   observation of the seeing observer contains B's id.
   Decided: touch and smell see through a disguise (the alias from the id, as today). Requirement, not a
   choice: the omniscient record (`trace`, `since`, `perceivers`) keeps naming by id.
-  Open: which identity an observer is given when it both sees and hears a body whose face and voice
-  disagree. Preferred first: report the seen appearance and the heard voice apart, and choose one alias
-  only if addressing needs one; then sight is the default, written as a policy of its own. How many
-  goldens the alias change rewrites is an estimate for the promotion, not a question.
+  Decided: the face only for now. `appearance` is the one token; `voice` is left out, so a body only heard
+  keeps the alias from its id, and a face and a voice never disagree. Voice comes later if a scene needs
+  it. How many goldens the alias change rewrites is an estimate for the promotion, not a question.
