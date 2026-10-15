@@ -22,11 +22,12 @@ public static class WorldFiles
     public const string Deltas = "deltas.jsonl";
     public const string Head = "head.json";
     public const string Templates = "templates.json";
+    public const string Manifest = "manifest.json";
     public const string Ids = "ids.json";
     public const string Format = "format.json";
 
     private static readonly string[] AllNames =
-        [CurrentSnapshot, InitialSnapshot, Log, Events, Deltas, Head, Templates, Ids, Format];
+        [CurrentSnapshot, InitialSnapshot, Log, Events, Deltas, Head, Templates, Manifest, Ids, Format];
 
     private static readonly string[] Statuses = ["ok", "refused", "ambiguous", "unresolved", "preempted", "invalid"];
 
@@ -51,20 +52,81 @@ public static class WorldFiles
     // Whether any file a world keeps is in the directory, whole or not.
     public static bool HoldsAny(string dir) => AllNames.Any(name => Present(Path.Combine(dir, name)));
 
-    // The set this world was created with, read from its own copy (`readWorldTemplates`).
+    // The set this world was created with, read from its own copy (`readWorldTemplates`). A linked
+    // run keeps `manifest.json` instead, resolved through the library three above it. A run with
+    // neither file is `invalid_templates`; anywhere else the missing set is no world, as today.
     public static IReadOnlyDictionary<string, Template> ReadTemplates(string dir)
     {
+        var setPath = Path.Combine(dir, Templates);
+        var manifestPath = Path.Combine(dir, Manifest);
+        if (!File.Exists(setPath) && !File.Exists(manifestPath) && !IsRunDir(dir))
+        {
+            AssertWorldExists(dir);
+        }
+        if (!File.Exists(setPath) && !File.Exists(manifestPath))
+        {
+            throw new WorldError(Code.InvalidTemplates, $"World at {dir} has neither {Templates} nor {Manifest}");
+        }
         AssertWorldExists(dir);
-        var path = Path.Combine(dir, Templates);
+        if (File.Exists(setPath))
+        {
+            try
+            {
+                var declared = ParseRegistry(WorldIO.ReadAllText(setPath), Templates);
+                return TemplateResolver.Resolve(declared);
+            }
+            catch (Exception error)
+            {
+                throw new WorldError(Code.InvalidTemplates, $"Unreadable template set at {setPath}: {error.Message}");
+            }
+        }
         try
         {
-            var declared = ParseRegistry(WorldIO.ReadAllText(path), Templates);
-            return TemplateResolver.Resolve(declared);
+            var manifest = ValueJson.Parse(WorldIO.ReadAllText(manifestPath)) as Value.Map
+                ?? throw new FormatException("manifest.json must pin each template to a revision");
+            return Library.TemplateLibrary.Resolve(FindLibrary(dir), ManifestPins(manifest));
+        }
+        catch (WorldError error) when (error.Code is Code.UnknownTemplate or Code.NoSuchRevision)
+        {
+            throw new WorldError(Code.InvalidTemplates, error.Message);
+        }
+        catch (WorldError)
+        {
+            throw;
         }
         catch (Exception error)
         {
-            throw new WorldError(Code.InvalidTemplates, $"Unreadable template set at {path}: {error.Message}");
+            throw new WorldError(Code.InvalidTemplates, $"Unreadable template set at {manifestPath}: {error.Message}");
         }
+    }
+
+    // The library a linked run belongs to: three above `<library>/runs/<world>/<run>`.
+    internal static string FindLibrary(string dir)
+    {
+        if (!IsRunDir(dir))
+        {
+            throw new WorldError(Code.InvalidTemplates, $"Run at {dir} names no library");
+        }
+        return Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetFullPath(dir))))!;
+    }
+
+    private static bool IsRunDir(string dir)
+    {
+        var run = Path.GetFullPath(dir);
+        var world = Path.GetDirectoryName(run);
+        var runs = world is null ? null : Path.GetDirectoryName(world);
+        return runs is not null
+            && string.Equals(Path.GetFileName(runs), "runs", StringComparison.Ordinal);
+    }
+
+    private static IReadOnlyDictionary<string, long> ManifestPins(Value.Map manifest)
+    {
+        if (manifest.GetValueOrDefault("templates") is not Value.Map templates
+            || templates.Values.Any(pin => pin.AsInt() is null or < 1))
+        {
+            throw new FormatException("manifest.json must pin each template to a revision");
+        }
+        return templates.ToDictionary(pair => pair.Key, pair => pair.Value.AsInt()!.Value, StringComparer.Ordinal);
     }
 
     // A snapshot file, checked for the fields `load` relies on before it is taken as a snapshot (`readWorldSnapshot`).
@@ -180,9 +242,13 @@ public static class WorldFiles
 
     private static void AssertWorldExists(string dir)
     {
-        var missing = new[] { CurrentSnapshot, InitialSnapshot, Log, Events, Templates }
+        var missing = new[] { CurrentSnapshot, InitialSnapshot, Log, Events }
             .Where(name => !Present(Path.Combine(dir, name)))
             .ToList();
+        if (!Present(Path.Combine(dir, Templates)) && !Present(Path.Combine(dir, Manifest)))
+        {
+            missing.Add($"{Templates} or {Manifest}");
+        }
         if (missing.Count > 0)
         {
             throw new WorldError(Code.NoSuchWorld, $"No world at {dir}: missing {string.Join(", ", missing)}");

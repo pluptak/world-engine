@@ -290,6 +290,40 @@ public static class CliRunner
                         .Select(entry => (Value)Obj(
                             ("name", entry.Name),
                             ("revisions", Value.Of(entry.Revisions.Select(number => (Value)number))))))));
+            case "run_plan":
+                return RunLibrary.Plan(Text(request, "library"), Text(request, "world"), Int(request, "revision"));
+            case "run_start":
+                {
+                    var started = RunLibrary.Start(
+                        Text(request, "library"),
+                        Text(request, "world"),
+                        Int(request, "revision"),
+                        Text(request, "run"),
+                        request.GetValueOrDefault("use") as Value.Map);
+                    return Obj(("run", started.Dir), ("snapshot_version", started.SnapshotVersion));
+                }
+            case "run_list":
+                return Obj(("runs", Value.Of(
+                    RunLibrary.List(Text(request, "library"), Text(request, "world"))
+                        .Select(entry => (Value)Obj(
+                            ("run", entry.Run),
+                            ("world_revision", entry.WorldRevision))))));
+            case "world_delete":
+                {
+                    var library = Text(request, "library");
+                    var name = Text(request, "name");
+                    WorldLibrary.Delete(library, name);
+                    return Obj(("name", name));
+                }
+            case "template_revision_delete":
+                {
+                    var library = Text(request, "library");
+                    var id = Text(request, "id");
+                    var revision = Int(request, "revision")
+                        ?? throw new WorldError(Code.InvalidRequest, "The request names no revision");
+                    TemplateLibrary.DeleteRevision(library, id, revision);
+                    return Obj(("id", id), ("revision", revision));
+                }
             default:
                 throw new WorldError(Code.InvalidOp, $"Unknown op {op}");
         }

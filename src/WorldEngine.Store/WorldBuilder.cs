@@ -74,9 +74,21 @@ public static class WorldBuilder
     // logs, and the head (`create`). A directory holding any of them is not refused here; `restart` refuses it.
     public static void Create(string dir, Snapshot initial, IReadOnlyDictionary<string, Template> registry, IReadOnlyDictionary<string, string> ids)
     {
+        CreateCore(dir, initial, ids, WorldReplay.HashOf(registry));
+        WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.Templates), WorldWriter.Canonical(registry));
+    }
+
+    // A linked run's files: the manifest instead of the set, resolved through the library on every open.
+    public static void Create(string dir, Snapshot initial, IReadOnlyDictionary<string, string> ids, Value.Map manifest)
+    {
+        CreateCore(dir, initial, ids, initial.TemplatesHash);
+        WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.Manifest), CanonicalJson.Serialize(manifest));
+    }
+
+    private static void CreateCore(string dir, Snapshot initial, IReadOnlyDictionary<string, string> ids, string templatesHash)
+    {
         Directory.CreateDirectory(dir);
         WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.Format), WorldWriter.Canonical(new WorldFiles.FormatFile(WorldFiles.SchemaVersion)));
-        WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.Templates), WorldWriter.Canonical(registry));
         WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.InitialSnapshot), WorldWriter.Canonical(initial));
         WorldWriter.AtomicWrite(Path.Combine(dir, WorldFiles.CurrentSnapshot), WorldWriter.Canonical(initial));
         if (ids.Count > 0)
@@ -93,7 +105,7 @@ public static class WorldBuilder
                 EventsBytes: 0,
                 LogEntries: 0,
                 OkEntries: 0,
-                TemplatesHash: WorldReplay.HashOf(registry),
+                TemplatesHash: templatesHash,
                 DeltasBytes: 0,
                 RoundsClosed: 0,
                 SnapshotVersion: initial.Version,
@@ -101,6 +113,8 @@ public static class WorldBuilder
     }
 
     // A world made again from another's initial snapshot, its set and its names, at a directory no world holds (`restartWorld`).
+    // A linked run is made again with its manifest, inside that library's `runs/<world>/`; anywhere else the copy
+    // would not find its revisions (`outside_library`).
     public static void Restart(string from, string to)
     {
         if (!WorldFiles.Exists(from))
@@ -108,12 +122,41 @@ public static class WorldBuilder
             throw new WorldError(Code.NoSuchWorld, $"No world at {from}");
         }
         var initial = WorldFiles.ReadSnapshot(Path.Combine(from, WorldFiles.InitialSnapshot));
+        var ids = WorldFiles.ReadIds(from);
+        var manifestPath = Path.Combine(from, WorldFiles.Manifest);
+        if (File.Exists(manifestPath))
+        {
+            Value.Map manifest;
+            try
+            {
+                manifest = ValueJson.Parse(WorldIO.ReadAllText(manifestPath)) as Value.Map
+                    ?? throw new FormatException("manifest.json must pin each template to a revision");
+            }
+            catch (Exception error) when (error is FormatException or IOException or UnauthorizedAccessException)
+            {
+                throw new WorldError(Code.InvalidTemplates, $"Unreadable template set at {manifestPath}: {error.Message}");
+            }
+            var library = WorldFiles.FindLibrary(from);
+            var world = manifest.GetValueOrDefault("world").AsText()
+                ?? Path.GetFileName(Path.GetDirectoryName(Path.GetFullPath(from)));
+            var home = Path.GetFullPath(Path.Combine(library, "runs", world ?? ""));
+            if (!string.Equals(Path.GetDirectoryName(Path.GetFullPath(to)), home, StringComparison.Ordinal))
+            {
+                throw new WorldError(Code.OutsideLibrary, $"Restart of a linked run stays in {home}");
+            }
+            if (WorldFiles.HoldsAny(to))
+            {
+                throw new WorldError(Code.WorldExists, $"A world is already at {to}");
+            }
+            Create(to, initial, ids, manifest);
+            return;
+        }
         var templates = WorldFiles.ReadTemplates(from);
         if (WorldFiles.HoldsAny(to))
         {
             throw new WorldError(Code.WorldExists, $"A world is already at {to}");
         }
-        Create(to, initial, templates, WorldFiles.ReadIds(from));
+        Create(to, initial, templates, ids);
     }
 
     // The first thing a scenario entry writes that the engine would derive instead (`derivedFieldWritten`): a location the chain does not

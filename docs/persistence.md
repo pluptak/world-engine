@@ -13,6 +13,7 @@ A world directory holds:
   `log.jsonl` that version was reached at, and the accepted commands after it are folded onto it on
   open;
 - `templates.json`, the resolved template set the world was created with;
+- `manifest.json`, in a linked run instead of the set: its world revision and pins;
 - `format.json`, `{"schema_version": 5}` (5 since the schedule can hold a `bleed`): a world with
   another number, or none, is refused `unsupported_schema` instead of being read;
 - `ids.json`, when the scenario named anything;

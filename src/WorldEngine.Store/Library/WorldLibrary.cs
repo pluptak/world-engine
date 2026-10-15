@@ -116,6 +116,42 @@ public static class WorldLibrary
         return WorldLock.With(root, () => EditLocked(library, name, scenario));
     }
 
+    // Deletes a world and its runs. Each run's turn is taken first, so a run
+    // being written refuses `store_busy` with nothing deleted.
+    public static void Delete(string library, string name)
+    {
+        CheckName(name);
+        var root = TemplateLibrary.RevisionsRoot(library);
+        Directory.CreateDirectory(root);
+        WorldLock.With(root, () =>
+        {
+            DeleteLocked(library, name);
+            return true;
+        });
+    }
+
+    private static void DeleteLocked(string library, string name)
+    {
+        if (!Directory.Exists(WorldDir(library, name)) || ReadWorldRevisions(library, name).Count == 0)
+        {
+            throw new WorldError(Code.NoSuchWorld, $"No world {name}");
+        }
+        var runs = Path.Combine(library, "runs", name);
+        if (Directory.Exists(runs))
+        {
+            foreach (var run in Directory.GetDirectories(runs)
+                .Order(StringComparer.Ordinal))
+            {
+                WorldLock.With(run, () => true);
+            }
+        }
+        Directory.Delete(WorldDir(library, name), recursive: true);
+        if (Directory.Exists(runs))
+        {
+            Directory.Delete(runs, recursive: true);
+        }
+    }
+
     private static long AddLocked(string library, string name, Value scenario)
     {
         if (Directory.Exists(WorldDir(library, name)))
@@ -222,7 +258,7 @@ public static class WorldLibrary
         return found;
     }
 
-    private static IReadOnlyDictionary<string, long> ManifestPins(Value.Map manifest)
+    internal static IReadOnlyDictionary<string, long> ManifestPins(Value.Map manifest)
     {
         if (manifest.GetValueOrDefault("templates") is not Value.Map templates
             || templates.Values.Any(pin => pin.AsInt() is null or < 1))

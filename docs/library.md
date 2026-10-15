@@ -52,3 +52,13 @@ Worlds:
 Every write takes the turn `WorldLock.With(<library>/templates/.revisions)`.
 Reads take none. Tests copy `templates/` to a temp folder; the suite never
 writes the repository's own.
+
+Runs:
+
+- `runs/<world>/<run>/` is an ordinary world directory whose `templates.json`
+  is replaced by `manifest.json`: `{ world, world_revision, templates }`.
+- `RunLibrary` plans, starts and lists them: `run_plan { world, revision? }`
+  answers `{ world, revision, newer, added }`; `run_start` answers `{ run,
+  snapshot_version }`; `run_list { world }` answers each run with its revision.
+- A run is played by every existing request with `world: <library>/runs/<world>/<run>`.
+- Deleting a world deletes its runs; a template revision nothing pins may be deleted.

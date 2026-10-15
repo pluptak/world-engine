@@ -137,5 +137,20 @@ public static class Checks
         ["world_edit"] = Obj(Op("world_edit"), ("library", Req(NonEmpty)), ("name", Req(NonEmpty)), ("scenario", Req(Or(List(_ => true), Record)))),
         ["world_get"] = Obj(Op("world_get"), ("library", Req(NonEmpty)), ("name", Req(NonEmpty)), ("revision", Opt(AtLeast(1)))),
         ["world_list"] = Obj(Op("world_list"), ("library", Req(NonEmpty))),
+        ["run_plan"] = Obj(Op("run_plan"), ("library", Req(NonEmpty)), ("world", Req(NonEmpty)), ("revision", Opt(AtLeast(1)))),
+        ["run_start"] = Obj(
+            Op("run_start"),
+            ("library", Req(NonEmpty)),
+            ("world", Req(NonEmpty)),
+            ("revision", Opt(AtLeast(1))),
+            ("run", Req(NonEmpty)),
+            ("use", Opt(Record))),
+        ["run_list"] = Obj(Op("run_list"), ("library", Req(NonEmpty)), ("world", Req(NonEmpty))),
+        ["world_delete"] = Obj(Op("world_delete"), ("library", Req(NonEmpty)), ("name", Req(NonEmpty))),
+        ["template_revision_delete"] = Obj(
+            Op("template_revision_delete"),
+            ("library", Req(NonEmpty)),
+            ("id", Req(NonEmpty)),
+            ("revision", Req(AtLeast(1)))),
     };
 }

@@ -47,4 +47,11 @@ changed hash, or a bad version is a `WorldError` with a code.
   `invalid_world`, `invalid_scenario` or `invalid_templates`; `world_edit` the same,
   else `no_such_world`; `world_get { name, revision? }` answers `{ name, revision,
   scenario, manifest }`, else `no_such_world` or `no_such_revision`; `world_list`
-  answers `{ worlds: [{ name, revisions }] }`.
+  answers `{ worlds: [{ name, revisions }] }`. Runs from a world revision are five
+  more: `run_plan { world, revision? }` answers `{ world, revision, newer, added }`;
+  `run_start { world, revision?, run, use? }` answers `{ run, snapshot_version }`,
+  else `world_exists`, `invalid_templates` or `no_such_revision`;
+  `run_list { world }` answers `{ runs: [{ run, world_revision }] }`;
+  `world_delete { name }` answers `{ name }`, else `no_such_world`;
+  `template_revision_delete { id, revision }` answers `{ id, revision }`, else
+  `revision_in_use`, `unknown_template` or `no_such_revision`.

@@ -8,7 +8,8 @@ new run would not be the same run ([api.md](api.md)).
 
 - its `initial.json`: the scene as it was built, the run registering, the beats queued, the seed;
 - its frozen `templates.json`, so a `templates/` directory that changed since the first world was
-  made cannot reach the restart.
+  made cannot reach the restart. A linked run restarts with its manifest instead, inside its
+  library's `runs/<world>/`; anywhere else is refused `outside_library`.
 
 Nothing of the old world's log, pending moves or checkpoints is carried, and the old world is not
 touched, so the same registration and the same moves give the same log, line for line. The new

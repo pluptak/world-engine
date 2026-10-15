@@ -274,6 +274,106 @@ public static class TemplateLibrary
         });
     }
 
+    // Deletes one recorded revision, refused while any world revision's or run's
+    // manifest pins it, or it is the revision the latest file records.
+    public static void DeleteRevision(string library, string id, long revision)
+    {
+        CheckRequestId(id);
+        var revs = RevisionsDir(library);
+        Directory.CreateDirectory(revs);
+        WorldLock.With(revs, () =>
+        {
+            DeleteRevisionLocked(library, id, revision);
+            return true;
+        });
+    }
+
+    private static void DeleteRevisionLocked(string library, string id, long revision)
+    {
+        var recorded = ReadRevisions(library, id);
+        if (!File.Exists(LatestPath(library, id)) && recorded.Count == 0)
+        {
+            throw new WorldError(Code.UnknownTemplate, $"Unknown template {id}");
+        }
+        if (!recorded.Contains(revision))
+        {
+            throw new WorldError(Code.NoSuchRevision, $"No revision {revision} of template {id}");
+        }
+        if (IsPinned(library, id, revision) || LatestRecorded(library, id) == revision)
+        {
+            throw new WorldError(Code.RevisionInUse, $"Revision {revision} of template {id} is in use");
+        }
+        File.Delete(RevisionPath(library, id, revision));
+    }
+
+    // Whether any world revision's or run's manifest pins the revision. A
+    // manifest that cannot be read fails closed: it may pin it.
+    private static bool IsPinned(string library, string id, long revision)
+    {
+        foreach (var root in new[] { Path.Combine(library, "worlds"), Path.Combine(library, "runs") })
+        {
+            if (!Directory.Exists(root))
+            {
+                continue;
+            }
+            foreach (var path in Directory.EnumerateFiles(root, "manifest.json", SearchOption.AllDirectories)
+                .Order(StringComparer.Ordinal))
+            {
+                Value.Map manifest;
+                try
+                {
+                    manifest = ValueJson.Parse(WorldIO.ReadAllText(path)) as Value.Map
+                        ?? throw new FormatException("manifest.json must pin each template to a revision");
+                    if (manifest.GetValueOrDefault("templates") is not Value.Map templates
+                        || templates.Values.Any(pin => pin.AsInt() is null or < 1))
+                    {
+                        throw new FormatException("manifest.json must pin each template to a revision");
+                    }
+                }
+                catch (Exception error) when (error is FormatException or IOException or UnauthorizedAccessException)
+                {
+                    throw new WorldError(Code.InvalidWorld, $"Unreadable manifest at {path}: {error.Message}");
+                }
+                if (manifest.GetValueOrDefault("templates") is Value.Map pins
+                    && pins.GetValueOrDefault(id).AsInt() == revision)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // The revision the latest file records, or -1 when the latest file holds
+    // unrecorded changes. Read-only: unlike `RecordLocked` it writes nothing.
+    private static long LatestRecorded(string library, string id)
+    {
+        var latestPath = LatestPath(library, id);
+        if (!File.Exists(latestPath))
+        {
+            return 0;
+        }
+        var recorded = ReadRevisions(library, id);
+        if (recorded.Count == 0)
+        {
+            return 0;
+        }
+        string canonical;
+        string highest;
+        try
+        {
+            canonical = CanonicalJson.Serialize(ValueJson.Parse(WorldIO.ReadAllText(latestPath)));
+            highest = WorldIO.ReadAllText(RevisionPath(library, id, recorded[^1]));
+        }
+        catch (FormatException error)
+        {
+            throw new WorldError(Code.InvalidTemplates, $"Unreadable template {id}: {error.Message}");
+        }
+        return string.Equals(CanonicalJson.Serialize(ValueJson.Parse(highest)), canonical, StringComparison.Ordinal)
+            ? recorded[^1]
+            : -1;
+    }
+
     private static void DeleteLocked(string library, string id)
     {
         var latestPath = LatestPath(library, id);

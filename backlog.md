@@ -18,8 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Runs from a world revision, linked to the library](#runs-from-a-world-revision-linked-to-the-library).
-2. [Identity by appearance: a body seen is named by the face it wears](#identity-by-appearance-a-body-seen-is-named-by-the-face-it-wears).
+1. [Identity by appearance: a body seen is named by the face it wears](#identity-by-appearance-a-body-seen-is-named-by-the-face-it-wears).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -77,51 +76,6 @@ happens as soon as a template is written for a story rather than for the engine,
 suite never writes the repository's `templates/`: every library test copies it to a temp folder first, since
 the goldens pin it. Every write takes the library's turn, `WorldLock.With(<library>/templates/.revisions, ...)`,
 so two writers never interleave; reads take none.
-
-### Runs from a world revision, linked to the library
-
-- **What:** a run is a store world made from one world revision, linked to its template revisions by a
-  manifest instead of a copied `templates.json`; the caller lists the newer revisions first and chooses.
-  Deleting a world deletes its runs, and a template revision nothing names may be deleted.
-- **Layout:** `runs/<world>/<run>/`, an ordinary world directory (`docs/persistence.md`) whose `templates.json`
-  is replaced by `manifest.json`: `{ world, world_revision, templates: { <id>: <revision> } }`.
-- **Rules:**
-  - `WorldFiles.ReadTemplates(dir)`: `templates.json` when present, as today; else `manifest.json`, resolved by
-    `TemplateLibrary.Resolve` with the library found by the layout (the directory three above the run). The
-    hash, `verify`, checkpoints and every world request are unchanged, since they read the resolved set.
-    `manifest.json` joins `WorldFiles.AllNames`. A world with neither is `invalid_templates`.
-  - **Plan** `{ world, revision? }` (latest by default): `{ world, revision, newer: [{ template, pinned, latest }],
-    added: [id...] }`, the pinned templates with a higher recorded or latest revision (each `Record`ed) and the
-    latest ids the manifest does not pin.
-  - **Start** `{ world, revision?, run, use? }`: `use` maps an id to a revision number or `"latest"`; the manifest
-    with `use` applied (an added id is pinned too) is resolved and validated, else `invalid_templates`
-    (`no_such_revision` for an unrecorded one); the scenario is built with it (`WorldBuilder.Snapshot`) and
-    created by a `WorldBuilder.Create` overload that writes the manifest instead of the set. `world_exists` when
-    the run is there. A fresh run has no log, so there is no lost-field check (`UpgradeTemplates`).
-  - **List runs** `{ world }`: each run with its `world_revision`.
-  - `WorldBuilder.Restart` from a linked run copies its manifest; `to` outside that library's
-    `runs/<world>/` is refused `outside_library` (new), since the copy would not find its revisions.
-  - **Delete a world** `{ name }`: takes each run's `WorldLock` (`store_busy` while one is held) and removes
-    `worlds/<name>/` and `runs/<name>/`.
-  - **Delete a template revision** `{ id, revision }`: refused `revision_in_use` (new) while any world
-    revision's or run's manifest pins it, or it is the latest's recorded revision.
-- **CLI:** `run_plan`, `run_start` (answers the run's directory and `snapshot_version`), `run_list`,
-  `world_delete`, `template_revision_delete`, each with `library`; a run is then played by every existing request
-  with `world: <library>/runs/<world>/<run>`.
-- **Files:** `Library/RunLibrary.cs` (new), `Library/WorldLibrary.cs` (delete), `Library/TemplateLibrary.cs`
-  (revision delete, the pin scan), `Store/WorldFiles.cs`, `Store/WorldBuilder.cs`, `Model/Code.cs`
-  (`revision_in_use`, `outside_library`), `Contract/Checks.cs`, `Cli/CliRunner.cs`, `docs/library.md`,
-  `docs/persistence.md` (one line for `manifest.json`), `docs/restart.md` (one line), `docs/api.md`.
-- **Tests** (`LibraryRunTests`): a run started from the lab world has the snapshot and `templates_hash` that
-  `init` of the scenario with the same set gives; commands on it reopen and `verify` passes; after a new `human`
-  revision `run_plan` lists it, a second run with `use: { human: "latest" }` hashes as the new set, and the first
-  still verifies; deleting `human` revision 1 is `revision_in_use`, and after `world_delete` (both runs gone) it
-  succeeds; a restart within the library keeps the manifest, one outside is `outside_library`; each request
-  through `CliRunner`.
-- **Non-goals:** exporting a run with its revisions copied in, deleting a single run, moving a run between
-  libraries, a run changing its template revisions once started.
-- **Done when:** as above, and every existing golden is unchanged except the catalog golden's new codes.
-- **Depends on:** Library worlds.
 
 ### Identity by appearance: a body seen is named by the face it wears
 
