@@ -111,7 +111,7 @@ public static class Checks
             Op("schedule"),
             World,
             ("filter", Opt(Obj(
-                ("entity", Opt(Text)), ("kind", Opt(OneOfText(CauseKind.Close, CauseKind.Bleed, CauseKind.Process, CauseKind.Beat))), ("until_tick", Opt(Int)))))),
+                ("entity", Opt(Text)), ("kind", Opt(OneOfText(CauseKind.Close, CauseKind.Bleed, CauseKind.Process, CauseKind.Beat, CauseKind.Outcome))), ("until_tick", Opt(Int)))))),
         ["verbs"] = Obj(Op("verbs")),
         ["capabilities"] = Obj(Op("capabilities")),
         ["catalog"] = Obj(Op("catalog"), ("world", Opt(NonEmpty))),

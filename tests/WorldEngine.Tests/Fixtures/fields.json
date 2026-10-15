@@ -300,6 +300,31 @@
       "openable"
     ]
   },
+  "success_pct": {
+    "type": "integer",
+    "tier": "definition",
+    "min": 0,
+    "max": 100,
+    "requires": [
+      "outcome_ticks"
+    ]
+  },
+  "outcome_ticks": {
+    "type": "integer",
+    "tier": "definition",
+    "min": 1,
+    "requires": [
+      "success_pct"
+    ]
+  },
+  "failure_damage": {
+    "type": "integer",
+    "tier": "definition",
+    "min": 0,
+    "requires": [
+      "outcome_ticks"
+    ]
+  },
   "surface": {
     "type": "boolean",
     "tier": "definition"

@@ -82,6 +82,11 @@ public static class Prop
     public static readonly Prop<bool> Rubble = Flag("rubble", Tier.Definition);
     public static readonly Prop<bool> Scenery = Flag("scenery", Tier.Definition);
     public static readonly Prop<long> ShutTicks = Integer("shut_ticks", Tier.Definition, min: 1, requires: ["openable"]);
+    // An installable whose install is an attempt: the dice decide it `outcome_ticks` later, succeeding under `success_pct`, a
+    // failure costing the body `failure_damage` (`docs/sockets.md`).
+    public static readonly Prop<long> SuccessPct = Integer("success_pct", Tier.Definition, min: 0, max: 100, requires: ["outcome_ticks"]);
+    public static readonly Prop<long> OutcomeTicks = Integer("outcome_ticks", Tier.Definition, min: 1, requires: ["success_pct"]);
+    public static readonly Prop<long> FailureDamage = Integer("failure_damage", Tier.Definition, min: 0, requires: ["outcome_ticks"]);
     // A body that is destroyed leaves an agent of this template where it lay (`docs/templates.md`).
     public static readonly Prop<string> Successor = Text("successor", Tier.Definition);
     // The body a successor took over from: a history reference, never a link that must still be there.

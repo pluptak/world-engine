@@ -5,8 +5,8 @@ using static WorldEngine.Core.Json.Integers;
 namespace WorldEngine.Core.Engine;
 
 // What the world will do by itself (src/engine/schedule.ts, src/engine/pending.ts): the pending causes, in run order. A
-// `close` shuts a door or gate, a `bleed` is a wound bleeding (`docs/bleeding.md`), a `process` steps a template process
-// and a `beat` runs an authored beat.
+// `close` shuts a door or gate, a `bleed` is a wound bleeding (`docs/bleeding.md`), a `process` steps a template process,
+// a `beat` runs an authored beat and an `outcome` decides an attempted install (`docs/sockets.md`).
 public static class Schedule
 {
     public static IReadOnlyList<ScheduledCause> Pending(Snapshot snapshot) => snapshot.Schedule ?? [];
@@ -39,11 +39,12 @@ public static class Schedule
         }
     }
 
-    // A cause whose entity is gone has nothing left to act on; it goes with the entity.
+    // A cause whose entity is gone has nothing left to act on; it goes with the entity, and an outcome with its item too.
     public static void Prune(Working working)
     {
         var list = Pending(working.Snapshot);
-        var kept = list.Where(entry => working.Snapshot.Entities.ContainsKey(entry.Entity)).ToList();
+        var kept = list.Where(entry => working.Snapshot.Entities.ContainsKey(entry.Entity)
+            && (entry is not OutcomeCause outcome || working.Snapshot.Entities.ContainsKey(outcome.Item))).ToList();
         if (kept.Count != list.Count)
         {
             Replace(working, kept);
@@ -70,6 +71,9 @@ public static class Schedule
                 return;
             case BeatCause beat:
                 Beats.Run(working, registry, beat);
+                return;
+            case OutcomeCause outcome:
+                SocketVerbs.RunOutcome(working, registry, outcome);
                 return;
             default:
                 throw new InvalidOperationException($"No rule runs a {cause.Kind} cause");

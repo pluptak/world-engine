@@ -19,4 +19,18 @@ root, and emits `extracted { part, entity }`. Both need `manipulation` 50.
 `contributes` from the installed template; holding (grips) is unchanged. A severing
 attack spawns the installed template when one is set.
 
+**Attempts.** An installable that declares `outcome_ticks` (at least 1) and `success_pct`
+(0 to 100), with `failure_damage` optional (0 when absent), makes `install` an attempt
+(`OutcomeTests`). `install` runs every check above, then emits `outcome_scheduled
+{ part, item }` and schedules an `outcome` cause on the body `outcome_ticks` on
+([schedule.md](schedule.md)); the item stays where it is. A world with no seed refuses it
+`no_seed` unless `success_pct` is 100. When the cause falls due:
+- the body or the item gone, the cause went with it and nothing is emitted;
+- the item out of the body's reach, or the stump no longer detached, emits
+  `outcome_failed { part, item, reason }` with `out_of_reach` or `socket_occupied`;
+- otherwise one roll of the world's dice, none at 100: under `success_pct` emits
+  `outcome_succeeded { part, item }` and installs as above, caused by it; else
+  `outcome_failed` with `roll`, and the body takes `failure_damage` caused by it.
+The odds read nothing but `success_pct`. The three events are silent. `robo_arm_l` is an attempt.
+
 No nested sockets, no rejection or wear, no power or hacking of an installed part.

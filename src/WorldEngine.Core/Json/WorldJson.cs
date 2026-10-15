@@ -41,6 +41,7 @@ public static class WorldJson
                     new JsonDerivedType(typeof(CloseCause), CauseKind.Close),
                     new JsonDerivedType(typeof(BleedCause), CauseKind.Bleed),
                     new JsonDerivedType(typeof(ProcessCause), CauseKind.Process),
+                    new JsonDerivedType(typeof(OutcomeCause), CauseKind.Outcome),
                     new JsonDerivedType(typeof(BeatCause), CauseKind.Beat),
                 },
             };

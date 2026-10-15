@@ -742,6 +742,17 @@ public static class SnapshotValidation
                         issues.Add(Issue(Code.InvalidProcess, path, process.Process ?? "undefined"));
                     }
                     break;
+                // An outcome names its item and its stump as well as its body, and each must be there.
+                case OutcomeCause outcome:
+                    if (outcome.Item is null || !snapshot.Entities.ContainsKey(outcome.Item))
+                    {
+                        issues.Add(Issue(Code.ScheduleDangling, [.. path, "item"], outcome.Item ?? "undefined"));
+                    }
+                    if (string.IsNullOrEmpty(outcome.Part))
+                    {
+                        issues.Add(Issue(Code.ScheduleDangling, [.. path, "part"], outcome.Part ?? "undefined"));
+                    }
+                    break;
                 case BleedCause { Remaining: <= 0 } bleed:
                     issues.Add(Issue(Code.BleedNotRemaining, path, $"remaining {bleed.Remaining}"));
                     break;

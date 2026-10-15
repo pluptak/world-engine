@@ -6,5 +6,6 @@ public static class CauseKind
     public const string Beat = "beat";
     public const string Bleed = "bleed";
     public const string Close = "close";
+    public const string Outcome = "outcome";
     public const string Process = "process";
 }

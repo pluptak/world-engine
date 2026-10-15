@@ -18,7 +18,7 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Scheduled outcomes: an install decided later, by the dice](#scheduled-outcomes-an-install-decided-later-by-the-dice).
+Nothing is promoted.
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -61,48 +61,4 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 ## Items
 
-Two chains, promoted from `plans/candidates.md` together: a magical curse (Afflictions → Command provenance →
-Possession, then the conditions Blind and deaf, and Bound) and a cyberpunk clinic (Wounds → Treatment → Sockets → Scheduled outcomes). Each item names the
-code it touches; where an item says "as X does", read X first and follow it. The shared registration points
-(`VerbRegistry.cs`, `VerbSpecs.cs`, `Model/Code.cs`, `EventPerception`'s table, the contract, `docs/verbs.md`)
-get one line or entry each; a new verb follows the `new-verb` skill (`.claude/skills/new-verb`).
-
-Every surgery and socket verb below takes the **body as its target and the part in `args.part`** (an `ArgSpec`
-naming a part of the target's template; unknown is `invalid_args`). Not a `<body>.<part>` address: an address of a
-detached part does not resolve (`Resolve.cs`, the part branch), and `install` and `staunch` must reach a stump.
-Each also requires the body within the actor's reach (`Reach.InReach`), else `out_of_reach` (existing code); an
-actor may work on its own body.
-
-### Scheduled outcomes: an install decided later, by the dice
-
-- **What:** an installable template may declare that installing it is an attempt: `install` then schedules an
-  outcome instead of installing, and the world's dice decide it at a due tick. Between the two, anything may
-  happen: the patient attacked, the implant taken away.
-- **Props** (definition, on the installable template): `success_pct` (integer 0–100), `outcome_ticks` (integer ≥ 1),
-  `failure_damage` (integer ≥ 0, default 0). A template with `outcome_ticks` is an attempt; one without installs at
-  once, as Sockets.
-- **Model:** a fifth cause `OutcomeCause(DueTick, Entity = body, CauseId, Part, Item, Actor)` in
-  `Model/Snapshot.cs` with its `CauseKind.Outcome`, its `Kind` arm, its `Schedule.Run` case, its stored shape in the
-  contract and `SnapshotValidation` (dangling body or item refused, as other causes are).
-- **Rules:**
-  - `install` of an attempt template runs every check Sockets runs, then emits `outcome_scheduled { part, item }`
-    (new `EventType`, `Silent`) and adds the cause; the item stays where it is (in the actor's hand). A world with
-    no seed refuses it `no_seed` unless `success_pct` is 100.
-  - At the due tick: the body or the item gone, the cause is pruned and emits nothing (as a beat's subject gone).
-    Otherwise the part must still be detached and the item within the body's reach (`Reach.InReach(body, item)`);
-    if not, `outcome_failed { reason: "out_of_reach" | "socket_occupied" }`. Else one roll (`Working.Random()`, not
-    drawn at 100): under `success_pct` emits `outcome_succeeded` and performs Sockets' install transition caused by
-    it; otherwise `outcome_failed { reason: "roll" }` and `failure_damage` to the body's integrity through
-    `Harm.Apply`, caused by it. Both new `EventType`s are `Silent`.
-  - The odds read nothing but `success_pct`.
-- **Files:** `Model/Snapshot.cs`, `Model/CauseKind.cs`, `Engine/Scheduling/Schedule.cs`, `Engine/Prop.cs`,
-  `Verbs/SocketVerbs.cs`, `Engine/SnapshotValidation.cs`, `Engine/EventType.cs`, `EventPerception`, the contract's
-  stored schedule shape, `docs/schedule.md` (five kinds), `docs/sockets.md`, `templates/robo_arm_l.json` (gains
-  the three props; hash changes again).
-- **Tests:** with a fixed seed, an attempt at 50 resolves the same on a memory world, a store world and a replay; a
-  surgery at 100 needs no seed; an attack on the patient during the pending ticks lands before the outcome and both
-  are in `trace` in order; the implant dropped in another room before the due tick fails `out_of_reach`; the
-  implant removed by the author prunes the cause with no event; `trace` of the installed part reads `install` →
-  `outcome_scheduled` → `outcome_succeeded`.
-- **Done when:** as above.
-- **Depends on:** Sockets.
+None: the curse and clinic chains promoted from `plans/candidates.md` have shipped.

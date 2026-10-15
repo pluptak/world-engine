@@ -1,5 +1,6 @@
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using static WorldEngine.Core.Json.Integers;
 
 namespace WorldEngine.Core.Engine;
 
@@ -117,9 +118,8 @@ public static class SocketVerbs
         return Pipeline.RequirementRefusal(context);
     }
 
-    // The item is absorbed into the body's part state: its subtree's states written from the item's parts,
-    // as `DetachPart` copied them out, in reverse. The root reads intact at the item's integrity, and keeps
-    // the installable's id unless the item is the companion itself.
+    // An installable that declares `outcome_ticks` makes the install an attempt: the item stays where it is and the cause waits
+    // for its tick, when `RunOutcome` decides it. Any other is absorbed now.
     private static void InstallTransition(Working working, Pipeline.CommandContext context, string? rootEventId)
     {
         var bodyId = context.Target!.EntityId;
@@ -131,15 +131,75 @@ public static class SocketVerbs
         {
             throw new InvalidOperationException("Install item changed after validation");
         }
+        var installable = context.Registry[item.Template];
+        if (installable.Props.Get(Prop.OutcomeTicks) is not { } ticks)
+        {
+            Absorb(working, context.Registry, bodyId, part, item, rootEventId!);
+            return;
+        }
+        // A sure attempt draws nothing, so it needs no dice; any other needs a seed now, not at its tick.
+        if (Odds(installable) < 100 && working.Snapshot.Rng is null)
+        {
+            throw new NoSeedError();
+        }
+        if (!TryAdd(working.Snapshot.Tick, ticks, out var due))
+        {
+            throw new InvalidOperationException($"An outcome {ticks} ticks on overflows the clock");
+        }
+        var scheduled = working.Emit(EventType.OutcomeScheduled, bodyId, Pipeline.Reason(("part", part), ("item", item.Id)), rootEventId);
+        Schedule.Add(working, new OutcomeCause(due, bodyId, scheduled, part, item.Id, context.Command.Actor));
+    }
+
+    // An attempt falls due (`docs/sockets.md`). The body or the item gone, it was pruned with them. The item out of the body's
+    // reach, or the stump filled meanwhile, it fails with that reason; else one roll under `success_pct` decides it, and a
+    // failure costs the body `failure_damage`.
+    public static void RunOutcome(Working working, IReadOnlyDictionary<string, Template> registry, OutcomeCause cause)
+    {
+        var snapshot = working.Snapshot;
+        if (!snapshot.Entities.TryGetValue(cause.Entity, out var body) || !snapshot.Entities.TryGetValue(cause.Item, out var item))
+        {
+            return;
+        }
+        var template = registry[body.Template];
+        var installable = registry[item.Template];
+        var blocked = !Reach.InReach(snapshot, body.Id, item.Id) ? "out_of_reach"
+            : PartStates.State(template, body, cause.Part) is not { Status: PartStatus.Detached } ? "socket_occupied"
+            : null;
+        var odds = Odds(installable);
+        if (blocked is null && (odds >= 100 || working.Random() * 100 < odds))
+        {
+            var succeeded = working.Emit(EventType.OutcomeSucceeded, body.Id, Pipeline.Reason(("part", cause.Part), ("item", item.Id)), cause.CauseId);
+            Absorb(working, registry, body.Id, cause.Part, item, succeeded);
+            return;
+        }
+        var failed = working.Emit(
+            EventType.OutcomeFailed,
+            body.Id,
+            Pipeline.Reason(("part", cause.Part), ("item", item.Id), ("reason", blocked ?? "roll")),
+            cause.CauseId);
+        if (blocked is null && installable.Props.Get(Prop.FailureDamage) is > 0 and var damage)
+        {
+            Harm.Apply(working, registry, body.Id, damage, failed);
+        }
+    }
+
+    // The chance an attempt succeeds, in percent: `success_pct`, and nothing else.
+    private static long Odds(Template installable) => installable.Props.Get(Prop.SuccessPct) ?? 100;
+
+    // The item is absorbed into the body's part state: its subtree's states written from the item's parts,
+    // as `DetachPart` copied them out, in reverse. The root reads intact at the item's integrity, and keeps
+    // the installable's id unless the item is the companion itself.
+    private static void Absorb(Working working, IReadOnlyDictionary<string, Template> registry, string bodyId, string part, Entity item, string causeId)
+    {
         var body = working.Snapshot.Entities[bodyId];
-        var template = current.Registry[body.Template];
-        var installable = current.Registry[item.Template];
+        var template = registry[body.Template];
+        var installable = registry[item.Template];
         var companion = $"{body.Template}.{part}";
         var installed = item.Template == companion ? null : item.Template;
         var itemParts = new Dictionary<string, PartState>(item.Parts, StringComparer.Ordinal);
         var itemIntegrity = item.Integrity;
 
-        if (!Physical.RemoveEntity(working, current.Registry, item.Id, rootEventId))
+        if (!Physical.RemoveEntity(working, registry, item.Id, causeId))
         {
             throw new InvalidOperationException("Install item changed after validation");
         }
@@ -156,8 +216,8 @@ public static class SocketVerbs
         {
             remaining.Remove(name);
         }
-        working.SetParts(bodyId, PartStates.With(template, remaining, changes), rootEventId!);
-        working.Emit(EventType.Installed, bodyId, Pipeline.Reason(("part", part), ("template", item.Template)), rootEventId);
+        working.SetParts(bodyId, PartStates.With(template, remaining, changes), causeId);
+        working.Emit(EventType.Installed, bodyId, Pipeline.Reason(("part", part), ("template", item.Template)), causeId);
     }
 
     // The installed subtree leaves the body as one entity of the installed template at the body's feet, with

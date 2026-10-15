@@ -793,7 +793,7 @@
    "status": 0
   },
   {
-   "stdout": "{\"coverage\":{\"properties\":[\"integrity\",\"residue\",\"pos\",\"open\"],\"relations\":[\"support\",\"contained_in\",\"attached_to\",\"status\",\"location\",\"near\",\"reachable\"],\"senses\":[\"sight\",\"hearing\"]},\"entities\":{\"e1\":{\"aliases\":[],\"id\":\"e1\",\"integrity\":100,\"modifiers\":[],\"name\":\"room\",\"parts\":{},\"props\":{},\"residue\":{\"glass\":5,\"wine\":750},\"status\":\"intact\",\"template\":\"room\"},\"e12\":{\"aliases\":[],\"id\":\"e12\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e14\":{\"aliases\":[],\"id\":\"e14\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e16\":{\"aliases\":[],\"id\":\"e16\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e2\":{\"aliases\":[],\"id\":\"e2\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"table\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"surface\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"table\"},\"e3\":{\"aliases\":[],\"id\":\"e3\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"bottle\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"break_fall_cm\":50,\"capacity_cm3\":750,\"liquid_amount\":0,\"liquid_material\":\"\",\"liquid_nutrition\":10,\"topples\":true},\"residue\":{},\"status\":\"broken\",\"support\":\"e1\",\"template\":\"bottle\"},\"e4\":{\"aliases\":[],\"id\":\"e4\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"pusher\",\"parts\":{},\"pos\":{\"x\":-50,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e5\":{\"aliases\":[],\"id\":\"e5\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"doorstop\",\"parts\":{},\"pos\":{\"x\":129,\"y\":0},\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"stone\"}},\"next_seq\":18,\"templates_hash\":\"d1dcc0d9db569b58703c8b67d129a35be319ae73aae6f44b4245fd6947da0fd7\",\"tick\":1,\"version\":1}\n",
+   "stdout": "{\"coverage\":{\"properties\":[\"integrity\",\"residue\",\"pos\",\"open\"],\"relations\":[\"support\",\"contained_in\",\"attached_to\",\"status\",\"location\",\"near\",\"reachable\"],\"senses\":[\"sight\",\"hearing\"]},\"entities\":{\"e1\":{\"aliases\":[],\"id\":\"e1\",\"integrity\":100,\"modifiers\":[],\"name\":\"room\",\"parts\":{},\"props\":{},\"residue\":{\"glass\":5,\"wine\":750},\"status\":\"intact\",\"template\":\"room\"},\"e12\":{\"aliases\":[],\"id\":\"e12\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e14\":{\"aliases\":[],\"id\":\"e14\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e16\":{\"aliases\":[],\"id\":\"e16\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e2\":{\"aliases\":[],\"id\":\"e2\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"table\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"surface\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"table\"},\"e3\":{\"aliases\":[],\"id\":\"e3\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"bottle\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"break_fall_cm\":50,\"capacity_cm3\":750,\"liquid_amount\":0,\"liquid_material\":\"\",\"liquid_nutrition\":10,\"topples\":true},\"residue\":{},\"status\":\"broken\",\"support\":\"e1\",\"template\":\"bottle\"},\"e4\":{\"aliases\":[],\"id\":\"e4\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"pusher\",\"parts\":{},\"pos\":{\"x\":-50,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e5\":{\"aliases\":[],\"id\":\"e5\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"doorstop\",\"parts\":{},\"pos\":{\"x\":129,\"y\":0},\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"stone\"}},\"next_seq\":18,\"templates_hash\":\"07e0d769030404c26a1c604f61c1d76654055be2caecd5a54efc7e2b571516fe\",\"tick\":1,\"version\":1}\n",
    "status": 0
   },
   {
@@ -817,7 +817,7 @@
    "status": 0
   },
   {
-   "stdout": "{\"coverage\":{\"properties\":[\"integrity\",\"residue\",\"pos\",\"open\"],\"relations\":[\"support\",\"contained_in\",\"attached_to\",\"status\",\"location\",\"near\",\"reachable\"],\"senses\":[\"sight\",\"hearing\"]},\"entities\":{\"e1\":{\"aliases\":[],\"id\":\"e1\",\"integrity\":100,\"modifiers\":[],\"name\":\"room\",\"parts\":{},\"props\":{},\"residue\":{\"glass\":5,\"wine\":750},\"status\":\"intact\",\"template\":\"room\"},\"e12\":{\"aliases\":[],\"id\":\"e12\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e14\":{\"aliases\":[],\"id\":\"e14\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e16\":{\"aliases\":[],\"id\":\"e16\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e2\":{\"aliases\":[],\"id\":\"e2\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"table\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"surface\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"table\"},\"e3\":{\"aliases\":[],\"id\":\"e3\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"bottle\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"break_fall_cm\":50,\"capacity_cm3\":750,\"liquid_amount\":0,\"liquid_material\":\"\",\"liquid_nutrition\":10,\"topples\":true},\"residue\":{},\"status\":\"broken\",\"support\":\"e1\",\"template\":\"bottle\"},\"e4\":{\"aliases\":[],\"id\":\"e4\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"pusher\",\"parts\":{},\"pos\":{\"x\":-50,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e5\":{\"aliases\":[],\"id\":\"e5\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"doorstop\",\"parts\":{},\"pos\":{\"x\":129,\"y\":0},\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"stone\"}},\"next_seq\":18,\"templates_hash\":\"d1dcc0d9db569b58703c8b67d129a35be319ae73aae6f44b4245fd6947da0fd7\",\"tick\":1,\"version\":1}\n",
+   "stdout": "{\"coverage\":{\"properties\":[\"integrity\",\"residue\",\"pos\",\"open\"],\"relations\":[\"support\",\"contained_in\",\"attached_to\",\"status\",\"location\",\"near\",\"reachable\"],\"senses\":[\"sight\",\"hearing\"]},\"entities\":{\"e1\":{\"aliases\":[],\"id\":\"e1\",\"integrity\":100,\"modifiers\":[],\"name\":\"room\",\"parts\":{},\"props\":{},\"residue\":{\"glass\":5,\"wine\":750},\"status\":\"intact\",\"template\":\"room\"},\"e12\":{\"aliases\":[],\"id\":\"e12\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e14\":{\"aliases\":[],\"id\":\"e14\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e16\":{\"aliases\":[],\"id\":\"e16\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"glass_shard\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"rubble\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"glass_shard\"},\"e2\":{\"aliases\":[],\"id\":\"e2\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"table\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"surface\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"table\"},\"e3\":{\"aliases\":[],\"id\":\"e3\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"bottle\",\"parts\":{},\"pos\":{\"x\":59,\"y\":0},\"props\":{\"break_fall_cm\":50,\"capacity_cm3\":750,\"liquid_amount\":0,\"liquid_material\":\"\",\"liquid_nutrition\":10,\"topples\":true},\"residue\":{},\"status\":\"broken\",\"support\":\"e1\",\"template\":\"bottle\"},\"e4\":{\"aliases\":[],\"id\":\"e4\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"pusher\",\"parts\":{},\"pos\":{\"x\":-50,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e5\":{\"aliases\":[],\"id\":\"e5\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"doorstop\",\"parts\":{},\"pos\":{\"x\":129,\"y\":0},\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"stone\"}},\"next_seq\":18,\"templates_hash\":\"07e0d769030404c26a1c604f61c1d76654055be2caecd5a54efc7e2b571516fe\",\"tick\":1,\"version\":1}\n",
    "status": 0
   },
   {
@@ -849,7 +849,7 @@
    "status": 0
   },
   {
-   "stdout": "{\"coverage\":{\"properties\":[\"integrity\",\"residue\",\"pos\",\"open\"],\"relations\":[\"support\",\"contained_in\",\"attached_to\",\"status\",\"location\",\"near\",\"reachable\"],\"senses\":[\"sight\",\"hearing\"]},\"entities\":{\"e1\":{\"aliases\":[],\"id\":\"e1\",\"integrity\":100,\"modifiers\":[],\"name\":\"room\",\"parts\":{},\"props\":{},\"residue\":{},\"status\":\"intact\",\"template\":\"room\"},\"e17\":{\"aliases\":[],\"detached_from\":{\"entity\":\"e3\",\"part\":\"hand_r\"},\"id\":\"e17\",\"integrity\":0,\"location\":\"e1\",\"modifiers\":[],\"name\":\"hand_r\",\"parts\":{},\"pos\":{\"x\":50,\"y\":0},\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human.hand_r\"},\"e2\":{\"aliases\":[],\"id\":\"e2\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"attacker\",\"parts\":{},\"pos\":{\"x\":0,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e3\":{\"aliases\":[],\"id\":\"e3\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"guard\",\"parts\":{\"hand_r\":{\"integrity\":0,\"status\":\"detached\"}},\"pos\":{\"x\":50,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e4\":{\"aliases\":[],\"id\":\"e4\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"crate\",\"parts\":{},\"pos\":{\"x\":50,\"y\":0},\"props\":{\"hands_required\":2},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"crate\"}},\"next_seq\":20,\"schedule\":[{\"cause_id\":\"ev16\",\"due_tick\":10,\"entity\":\"e3\",\"kind\":\"bleed\",\"part\":\"hand_r\",\"remaining\":3}],\"templates_hash\":\"d1dcc0d9db569b58703c8b67d129a35be319ae73aae6f44b4245fd6947da0fd7\",\"tick\":9,\"version\":5}\n",
+   "stdout": "{\"coverage\":{\"properties\":[\"integrity\",\"residue\",\"pos\",\"open\"],\"relations\":[\"support\",\"contained_in\",\"attached_to\",\"status\",\"location\",\"near\",\"reachable\"],\"senses\":[\"sight\",\"hearing\"]},\"entities\":{\"e1\":{\"aliases\":[],\"id\":\"e1\",\"integrity\":100,\"modifiers\":[],\"name\":\"room\",\"parts\":{},\"props\":{},\"residue\":{},\"status\":\"intact\",\"template\":\"room\"},\"e17\":{\"aliases\":[],\"detached_from\":{\"entity\":\"e3\",\"part\":\"hand_r\"},\"id\":\"e17\",\"integrity\":0,\"location\":\"e1\",\"modifiers\":[],\"name\":\"hand_r\",\"parts\":{},\"pos\":{\"x\":50,\"y\":0},\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human.hand_r\"},\"e2\":{\"aliases\":[],\"id\":\"e2\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"attacker\",\"parts\":{},\"pos\":{\"x\":0,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e3\":{\"aliases\":[],\"id\":\"e3\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"guard\",\"parts\":{\"hand_r\":{\"integrity\":0,\"status\":\"detached\"}},\"pos\":{\"x\":50,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e4\":{\"aliases\":[],\"id\":\"e4\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"crate\",\"parts\":{},\"pos\":{\"x\":50,\"y\":0},\"props\":{\"hands_required\":2},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"crate\"}},\"next_seq\":20,\"schedule\":[{\"cause_id\":\"ev16\",\"due_tick\":10,\"entity\":\"e3\",\"kind\":\"bleed\",\"part\":\"hand_r\",\"remaining\":3}],\"templates_hash\":\"07e0d769030404c26a1c604f61c1d76654055be2caecd5a54efc7e2b571516fe\",\"tick\":9,\"version\":5}\n",
    "status": 0
   },
   {
@@ -909,7 +909,7 @@
    "status": 0
   },
   {
-   "stdout": "{\"coverage\":{\"properties\":[\"integrity\",\"residue\",\"pos\",\"open\"],\"relations\":[\"support\",\"contained_in\",\"attached_to\",\"status\",\"location\",\"near\",\"reachable\"],\"senses\":[\"sight\",\"hearing\"]},\"entities\":{\"e1\":{\"aliases\":[],\"id\":\"e1\",\"integrity\":100,\"modifiers\":[],\"name\":\"room\",\"parts\":{},\"props\":{},\"residue\":{},\"status\":\"intact\",\"template\":\"room\"},\"e17\":{\"aliases\":[],\"detached_from\":{\"entity\":\"e3\",\"part\":\"hand_r\"},\"id\":\"e17\",\"integrity\":0,\"location\":\"e1\",\"modifiers\":[],\"name\":\"hand_r\",\"parts\":{},\"pos\":{\"x\":50,\"y\":0},\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human.hand_r\"},\"e2\":{\"aliases\":[],\"id\":\"e2\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"attacker\",\"parts\":{},\"pos\":{\"x\":0,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e3\":{\"aliases\":[],\"id\":\"e3\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"guard\",\"parts\":{\"hand_r\":{\"integrity\":0,\"status\":\"detached\"}},\"pos\":{\"x\":50,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e4\":{\"aliases\":[],\"id\":\"e4\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"crate\",\"parts\":{},\"pos\":{\"x\":50,\"y\":0},\"props\":{\"hands_required\":2},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"crate\"}},\"next_seq\":20,\"schedule\":[{\"cause_id\":\"ev16\",\"due_tick\":10,\"entity\":\"e3\",\"kind\":\"bleed\",\"part\":\"hand_r\",\"remaining\":3}],\"templates_hash\":\"d1dcc0d9db569b58703c8b67d129a35be319ae73aae6f44b4245fd6947da0fd7\",\"tick\":9,\"version\":5}\n",
+   "stdout": "{\"coverage\":{\"properties\":[\"integrity\",\"residue\",\"pos\",\"open\"],\"relations\":[\"support\",\"contained_in\",\"attached_to\",\"status\",\"location\",\"near\",\"reachable\"],\"senses\":[\"sight\",\"hearing\"]},\"entities\":{\"e1\":{\"aliases\":[],\"id\":\"e1\",\"integrity\":100,\"modifiers\":[],\"name\":\"room\",\"parts\":{},\"props\":{},\"residue\":{},\"status\":\"intact\",\"template\":\"room\"},\"e17\":{\"aliases\":[],\"detached_from\":{\"entity\":\"e3\",\"part\":\"hand_r\"},\"id\":\"e17\",\"integrity\":0,\"location\":\"e1\",\"modifiers\":[],\"name\":\"hand_r\",\"parts\":{},\"pos\":{\"x\":50,\"y\":0},\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human.hand_r\"},\"e2\":{\"aliases\":[],\"id\":\"e2\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"attacker\",\"parts\":{},\"pos\":{\"x\":0,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e3\":{\"aliases\":[],\"id\":\"e3\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"guard\",\"parts\":{\"hand_r\":{\"integrity\":0,\"status\":\"detached\"}},\"pos\":{\"x\":50,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e4\":{\"aliases\":[],\"id\":\"e4\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"crate\",\"parts\":{},\"pos\":{\"x\":50,\"y\":0},\"props\":{\"hands_required\":2},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"crate\"}},\"next_seq\":20,\"schedule\":[{\"cause_id\":\"ev16\",\"due_tick\":10,\"entity\":\"e3\",\"kind\":\"bleed\",\"part\":\"hand_r\",\"remaining\":3}],\"templates_hash\":\"07e0d769030404c26a1c604f61c1d76654055be2caecd5a54efc7e2b571516fe\",\"tick\":9,\"version\":5}\n",
    "status": 0
   },
   {
@@ -3794,216 +3794,216 @@
    "deltas.jsonl": "0892ce4ff99b638f1df773e31903ca1f4fdbaca6bdb9658c07ea1e0e8b9357a2",
    "events.jsonl": "64f28dcb152550c22e1ae333650dc4abd153933cb6d8f9f619479706d2327991",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "3e7c5ab772d90390cb772153995e40881295d6066ecba72e3a9132fd6c03ebb5",
+   "head.json": "ae1948755e571faaa2560b10790d73acd1b4e5c9370c8785e552c155434bc165",
    "ids.json": "ecda01ca8e9c55b28e0c61fba02d22b0a9b9ce007ded6555eac16364f3efba4a",
-   "initial.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
+   "initial.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
    "log.jsonl": "3039769b255828d9b8bc053ffafc91011340db88100b66f0c87ec49a46f3a12d",
    "pending.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-   "snapshot.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-zJEGrS\\second": {
    "deltas.jsonl": "0892ce4ff99b638f1df773e31903ca1f4fdbaca6bdb9658c07ea1e0e8b9357a2",
    "events.jsonl": "64f28dcb152550c22e1ae333650dc4abd153933cb6d8f9f619479706d2327991",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "3e7c5ab772d90390cb772153995e40881295d6066ecba72e3a9132fd6c03ebb5",
+   "head.json": "ae1948755e571faaa2560b10790d73acd1b4e5c9370c8785e552c155434bc165",
    "ids.json": "ecda01ca8e9c55b28e0c61fba02d22b0a9b9ce007ded6555eac16364f3efba4a",
-   "initial.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
+   "initial.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
    "log.jsonl": "3039769b255828d9b8bc053ffafc91011340db88100b66f0c87ec49a46f3a12d",
    "pending.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-   "snapshot.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-x3ZMV1\\run": {
    "deltas.jsonl": "6ae6ed3e3df2660d1f495424afcb9fb933738c9dd997e0b605290dafb574150f",
    "events.jsonl": "855695e93bb81c7434e0ad845e376bf01e947d7bd2a7e4538cc00b42ee26969c",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "144a167129bfb1612bacc4de9fe505235ef69b7c71bad2b3ae179fbad0624d51",
+   "head.json": "b191512ca963c2af178bb2afe4e84a60fafb2d4b806df45b8cf4da36078444a0",
    "ids.json": "ecda01ca8e9c55b28e0c61fba02d22b0a9b9ce007ded6555eac16364f3efba4a",
-   "initial.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
+   "initial.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
    "log.jsonl": "458f67f4fc8cb6261ee30d032df47b590b04d3abdcdab704568ba3b23fefab45",
    "pending.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-   "snapshot.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-GsKUvv\\default": {
    "deltas.jsonl": "5d65156748bb70e023963e35a2362dcf75397a59904a5e9a03cdabd99a954863",
    "events.jsonl": "8f8f0a8cc4694fcfbf05720fbf04ea1a319be3a5917123e92dba4b164bb7badd",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "393d14b6c2e2a82e914df47a7afb60b763443085aebb9cd5b65d19c08b65f219",
+   "head.json": "f1db9952235ed03099d53fa3966d85b975ae3e0665fded59c57ecfec0290625c",
    "ids.json": "ecda01ca8e9c55b28e0c61fba02d22b0a9b9ce007ded6555eac16364f3efba4a",
-   "initial.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
+   "initial.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
    "log.jsonl": "093eded494dccef323e0fc86c6e4bb7307bd6c66451d85b74998da8ceac3d4d6",
    "pending.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-   "snapshot.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-LE2vAn\\steered": {
    "deltas.jsonl": "8d23e55f96a5e7a90d978578653a422c09f470e17c827800fd440d3eb1e95c7f",
    "events.jsonl": "a701a1b61e2abbd9eb8465925232386fe69dbe1bb92302e37d2c326b95afa5a0",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "4ce0996de8b8ba1e07a63faf1b477b61ee8bfe97464f0662d405a04411837c43",
+   "head.json": "8f3b1abfb5aba1b13b02b5922f6a409414358e9082c1f9a63cf11ca4a1e645f0",
    "ids.json": "ecda01ca8e9c55b28e0c61fba02d22b0a9b9ce007ded6555eac16364f3efba4a",
-   "initial.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
+   "initial.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
    "log.jsonl": "ab5def2f092ea6db795180ecb745d67f776929d5e90e5a548a34dd8cdde1db91",
    "pending.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-   "snapshot.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-NJMKID\\range": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "0aada97f400c149ff8e6900a1ac88200a26ef24e3d52e1f8cd4a5b2b8b9120c2",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "4d643d62638bb8aa884bbbecacdcc21825892ade30cdfa74d727addd99aa2c01",
+   "head.json": "69e76112dc95591cf81e239ec9d925ae427efb1112fd433d32a2029fb10030c1",
    "ids.json": "ecda01ca8e9c55b28e0c61fba02d22b0a9b9ce007ded6555eac16364f3efba4a",
-   "initial.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
+   "initial.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
    "log.jsonl": "6d210e53125151402e6b998875b6249d4ee307c7e6a675a76bc08160b1405f05",
-   "snapshot.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-5mwl0W\\run": {
    "deltas.jsonl": "e2ec133e8c39e25c511d8a5203b948be2327c2491f383ef984ab1d5b70ac2a91",
    "events.jsonl": "30e8e013750ba86db63ae9d599f6f0f98993cd184b8ea9656309ee0cb9f0f102",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "db53a878d284577a2db69e12c5122bc64c347d02fcbd3c263d2da82568fd3806",
+   "head.json": "92bb039ac13daa1a7ebf57164a77e8b3f9fda388df68b116fe2bd15907a7a172",
    "ids.json": "ecda01ca8e9c55b28e0c61fba02d22b0a9b9ce007ded6555eac16364f3efba4a",
-   "initial.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
+   "initial.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
    "log.jsonl": "3444cb191aa84b2983731c515609ec11459390129fc582cb3ff4b014d6e8fc0d",
    "pending.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-   "snapshot.json": "28531e4db95b974729672f7947943ff837f9a82b87ec1ca911c9493109b2ecb1",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "429c57852d12c089555c2a4e080826909298f9dfbed0d5eb12c9d4a2d33efad7",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-i0H6aV\\lab": {
    "deltas.jsonl": "0421e29014d6c7f58412a0563644c3b66d11216d546ebb01a133e606d45f9d9a",
    "events.jsonl": "8af5ea63ad7d2f83a70f8f677de611f4283a64dcff38f750c0ef84446c2a6b73",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "884a014e3e47a561f60a4e94adbeb1f1092c74ec6ad0eb556d057e88ef555272",
+   "head.json": "656a1a32a7d12f793567cc18fbfa2661431d56b9223535394dff688eff552459",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "55b73cf8a9a7b8aed42ac62dfa3021214d16255f05e1fb941893f8798143f4ca",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-Xv4VNR\\lab": {
    "deltas.jsonl": "39d53ed7494ec55040cfc2a848f53b7795e3d33fc5b7e95354e62343ed31f302",
    "events.jsonl": "3354c185444bc27e1fe297cdda9ee197c2160d52ee13b9777ee0afc4833877e8",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "f5ea536e4ae49722954cfaa66f0533db505e9f5f2c41e4b777468bb9d0924534",
+   "head.json": "2e6aba1bf86a6b2bf6e6aca1703f6d1ae5bebac5ea959b27635190358431f41d",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "ea2323f89706d54e45dd1ffc87de70b090fe963df8ecae0a5eab2e1735df99cf",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-7fiuFr\\lab": {
    "deltas.jsonl": "c5cdbf27c51988fe3428b0685babfd58e679b9495087fa0e8b539179d777e67e",
    "events.jsonl": "62f7812c1fa29bfe4e665993dc41eab01668c5c6fb60194396ff6e719c9abfc4",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "592b6748285dd3d2d6eeaae9aeaa865385619cdbff99e9c5f5ae22eb571e9a0c",
+   "head.json": "6c96498dadd90ec04faf5090f9009060cd513702ed59978a0083ef0e728e6b0d",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "533fd4dc7abfdbe52c9b90a84045cb9b9a471fffca9b094afe66f3a3b4d372ce",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-LakBdl\\lab": {
    "deltas.jsonl": "4912d0caa21f7f488f2aaef45e05e4515b1957b9711105c4416efde057072849",
    "events.jsonl": "01eb3f0e2c2b30f683d81eb3e75677aaf29f5057f8ab0a9363939004ccfc7b37",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "b6f84dcb1afb9512ff7e4783ab091b010ece1b71669860d575014537787cc1c4",
+   "head.json": "3859a8ccedbbca7003c8efd71afe7fee320581281c5fff3cb0a732f51975112b",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "c910064e644e4643f9beb23ebca0d76bf7d025ee05875426def2b7d0e2f558be",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-pZ79EW\\lab": {
    "deltas.jsonl": "1a57800d93c605f03095e543043898f2f0edbf7abd6224977f02aa987f75edaf",
    "events.jsonl": "8e3902265c38d07508b7e73b763d1c617e44e6be9ab6e5427bcd983aeb42fc28",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "3a334564cbe6e167fa0604c8b1f40915b9a7bd971de1c950ffd5a7bb972b6fb4",
+   "head.json": "4990aabc475012307dbb2b6481da4f16ed565f35bcdaaa87156b9c9b51cade5d",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "aaa7fe788dabb309a5671a9e51f9029f155dff94b592d553f61b804ceea279d6",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-Z9daxJ\\lab": {
    "deltas.jsonl": "3a9ae1375bb0196f889e3255001d5926588d757a5bda69e9d9d2354d9519abc7",
    "events.jsonl": "9b228dcc07ded66d5118bdfc2908cef7cc31259a2d0723d9d1218f44a7de0340",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "5009aea3cc2b4b90176f4ef071c55002274132595da0419be599d5c99361e821",
+   "head.json": "04677a03a68fff04cf169aa2848d04ed575a07e4e89004acdf775118bce07555",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "6644abb5daa7e86ed74dc5698cefe8bb3f6a4382a56cc9e9f33b4e0993c19d22",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-MdcKjW\\lab": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "72d8c57ed53695cd3c2a1ef0fbaf9f0e4bb282a998c685f8af2864db64aacdfd",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "0589f24ec75833ebcd85061c886c2dd0cbc3003bc1d5f03f3c4090e5574b5d43",
+   "head.json": "2a29c1d7b33668a248f968eb52de44be39849c11eb26e640dfaa88da9e42233f",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "4c2a990b42f22ec5daaa95852468c182931af0a747e52301a64ad32c9bff786f",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-7BatMD\\first": {
    "deltas.jsonl": "cd40c3d9f0778a833c80c8328234d4d83964155838f8d505c6be9eb6468f9b2e",
    "events.jsonl": "64c55e73ff0e5f93f2c80c6a8db87fab51aa955c5e4cfd89aea35aacb526639a",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "92cf9ff8d2f9ef0c986ed3b83b5f180b52226fc1489a34a098bb0043baf00575",
+   "head.json": "2baf775fa6e0d7ececc461b844dd681fa335a6ff6c7280c0b4c5a0ec4a17e59c",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "3ea11e245673d41b372dd8428ba0739f4a26eb027de4ecb545b55ef83f9fcc0e",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-XFL9x8\\second": {
    "deltas.jsonl": "cd40c3d9f0778a833c80c8328234d4d83964155838f8d505c6be9eb6468f9b2e",
    "events.jsonl": "64c55e73ff0e5f93f2c80c6a8db87fab51aa955c5e4cfd89aea35aacb526639a",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "92cf9ff8d2f9ef0c986ed3b83b5f180b52226fc1489a34a098bb0043baf00575",
+   "head.json": "2baf775fa6e0d7ececc461b844dd681fa335a6ff6c7280c0b4c5a0ec4a17e59c",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "3ea11e245673d41b372dd8428ba0739f4a26eb027de4ecb545b55ef83f9fcc0e",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-Nu5Vj2\\bottle-world": {
    "deltas.jsonl": "ce3195601d43a592dc96534572f394f9cdb9781869914c28d8fa10251d8d185f",
    "events.jsonl": "1b0718d3cc264abe689f61fb95a0d07744d4e7ad565dbf42087ed74397372675",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "592b6748285dd3d2d6eeaae9aeaa865385619cdbff99e9c5f5ae22eb571e9a0c",
+   "head.json": "6c96498dadd90ec04faf5090f9009060cd513702ed59978a0083ef0e728e6b0d",
    "ids.json": "d3706dc8707887cfafdf000e94c13efb51255aa2f78b07ba75853d2058955c40",
-   "initial.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
+   "initial.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
    "log.jsonl": "ae08af7dcc71238f48f57b617cbed01b86f815f3020f6b62b4130dc82cad27e6",
-   "snapshot.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-sKTaYp\\hand-world": {
    "deltas.jsonl": "ca6dc7b4810ed9459a89244abadbf6d70bb9b37d1588f2596f5b632d41db8325",
    "events.jsonl": "73a6c23a7fa0abe825885d4845e70942c7c4e445eb6920039113071e1341bdd3",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "e6fb3120f4325dcfb10bb0e37725dee658528a722afd27905dd28319a4975e82",
+   "head.json": "5bedac4bf1b64e536014879e859a0ae4f6e6603fee208a7fe3ce2adfd533e6c6",
    "ids.json": "1b42de83c65ec388627f7ba603dfb159a0441630cf0cc7e38cf2d4539814ae12",
-   "initial.json": "93afd08e468e6e65b70b77c446156e42041792d8d20153dfcc77550d30cb9cf3",
+   "initial.json": "067514a543477f5bffaa140dddcc04f9a3629dd8158e023e75f05d0d170781ea",
    "log.jsonl": "037d279894425e3c67aa5b6c24e4118e8c246c58169a5fef482b8b65f19eb522",
-   "snapshot.json": "93afd08e468e6e65b70b77c446156e42041792d8d20153dfcc77550d30cb9cf3",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "067514a543477f5bffaa140dddcc04f9a3629dd8158e023e75f05d0d170781ea",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-l2ndhH\\bottle-original": {
    "deltas.jsonl": "ce3195601d43a592dc96534572f394f9cdb9781869914c28d8fa10251d8d185f",
    "events.jsonl": "9a4e41d9a9804fd4590e910f37c213003be46237c54726698cebd02dadd8cf81",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "592b6748285dd3d2d6eeaae9aeaa865385619cdbff99e9c5f5ae22eb571e9a0c",
+   "head.json": "6c96498dadd90ec04faf5090f9009060cd513702ed59978a0083ef0e728e6b0d",
    "ids.json": "d3706dc8707887cfafdf000e94c13efb51255aa2f78b07ba75853d2058955c40",
-   "initial.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
+   "initial.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
    "log.jsonl": "8b461c8a8e31e62341974c5750986bdeae5a23891507c661df3e5ae4d92c9272",
-   "snapshot.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-l2ndhH\\bottle-replay": {
    "__missing__": true
@@ -4012,23 +4012,23 @@
    "deltas.jsonl": "ce3195601d43a592dc96534572f394f9cdb9781869914c28d8fa10251d8d185f",
    "events.jsonl": "9a4e41d9a9804fd4590e910f37c213003be46237c54726698cebd02dadd8cf81",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "592b6748285dd3d2d6eeaae9aeaa865385619cdbff99e9c5f5ae22eb571e9a0c",
+   "head.json": "6c96498dadd90ec04faf5090f9009060cd513702ed59978a0083ef0e728e6b0d",
    "ids.json": "d3706dc8707887cfafdf000e94c13efb51255aa2f78b07ba75853d2058955c40",
-   "initial.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
+   "initial.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
    "log.jsonl": "8b461c8a8e31e62341974c5750986bdeae5a23891507c661df3e5ae4d92c9272",
-   "snapshot.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-l2ndhH\\hand-original": {
    "deltas.jsonl": "ca6dc7b4810ed9459a89244abadbf6d70bb9b37d1588f2596f5b632d41db8325",
    "events.jsonl": "90c4b71222ff86f720b6fe05cbfaded33c1f9169ab7aad9eb9df9939759349d3",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "e6fb3120f4325dcfb10bb0e37725dee658528a722afd27905dd28319a4975e82",
+   "head.json": "5bedac4bf1b64e536014879e859a0ae4f6e6603fee208a7fe3ce2adfd533e6c6",
    "ids.json": "1b42de83c65ec388627f7ba603dfb159a0441630cf0cc7e38cf2d4539814ae12",
-   "initial.json": "93afd08e468e6e65b70b77c446156e42041792d8d20153dfcc77550d30cb9cf3",
+   "initial.json": "067514a543477f5bffaa140dddcc04f9a3629dd8158e023e75f05d0d170781ea",
    "log.jsonl": "1cff9b144f9ac442007b4e632fecb2e28bc15bdd28aa5c01d146e2c624e2bd42",
-   "snapshot.json": "93afd08e468e6e65b70b77c446156e42041792d8d20153dfcc77550d30cb9cf3",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "067514a543477f5bffaa140dddcc04f9a3629dd8158e023e75f05d0d170781ea",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-l2ndhH\\hand-replay": {
    "__missing__": true
@@ -4037,23 +4037,23 @@
    "deltas.jsonl": "ca6dc7b4810ed9459a89244abadbf6d70bb9b37d1588f2596f5b632d41db8325",
    "events.jsonl": "90c4b71222ff86f720b6fe05cbfaded33c1f9169ab7aad9eb9df9939759349d3",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "e6fb3120f4325dcfb10bb0e37725dee658528a722afd27905dd28319a4975e82",
+   "head.json": "5bedac4bf1b64e536014879e859a0ae4f6e6603fee208a7fe3ce2adfd533e6c6",
    "ids.json": "1b42de83c65ec388627f7ba603dfb159a0441630cf0cc7e38cf2d4539814ae12",
-   "initial.json": "93afd08e468e6e65b70b77c446156e42041792d8d20153dfcc77550d30cb9cf3",
+   "initial.json": "067514a543477f5bffaa140dddcc04f9a3629dd8158e023e75f05d0d170781ea",
    "log.jsonl": "1cff9b144f9ac442007b4e632fecb2e28bc15bdd28aa5c01d146e2c624e2bd42",
-   "snapshot.json": "93afd08e468e6e65b70b77c446156e42041792d8d20153dfcc77550d30cb9cf3",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "067514a543477f5bffaa140dddcc04f9a3629dd8158e023e75f05d0d170781ea",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-FsdVXE\\bottle-world": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a746ac48e6b72bfcab7cbd44110686b9d4471a7ab87a84cd44d9ddd979a998c0",
+   "head.json": "3b1424c06b69018fd04edf7319ee19bfd5875d05eacb5eb6af40eef11478ff36",
    "ids.json": "d3706dc8707887cfafdf000e94c13efb51255aa2f78b07ba75853d2058955c40",
-   "initial.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
+   "initial.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
    "log.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "snapshot.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-xQWWJ0\\wall-world": {
    "__missing__": true
@@ -4065,516 +4065,516 @@
    "deltas.jsonl": "ce3195601d43a592dc96534572f394f9cdb9781869914c28d8fa10251d8d185f",
    "events.jsonl": "9a4e41d9a9804fd4590e910f37c213003be46237c54726698cebd02dadd8cf81",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "0589f24ec75833ebcd85061c886c2dd0cbc3003bc1d5f03f3c4090e5574b5d43",
+   "head.json": "2a29c1d7b33668a248f968eb52de44be39849c11eb26e640dfaa88da9e42233f",
    "ids.json": "d3706dc8707887cfafdf000e94c13efb51255aa2f78b07ba75853d2058955c40",
-   "initial.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
+   "initial.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
    "log.jsonl": "9cc196632ea48f311999b122439983b837b9dd17b0f61434e60903e74038a26b",
-   "snapshot.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-KiNyuY\\refused-world": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "aec2080b351b8d0f76e99013c65846e3facd82617a4aff064622eea5ef1d7e17",
+   "head.json": "0dccbb7aa53c5a6a30ec9b6f1a07f5bcf6c5aacd1723c26e54f2f5afe45ad784",
    "ids.json": "d3706dc8707887cfafdf000e94c13efb51255aa2f78b07ba75853d2058955c40",
-   "initial.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
+   "initial.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
    "log.jsonl": "eb58f05c2a332e129cbcb319a15b32ba981cbcfa465e2022c82c2154b7a30811",
-   "snapshot.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-BdYxy6\\bottle": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a746ac48e6b72bfcab7cbd44110686b9d4471a7ab87a84cd44d9ddd979a998c0",
+   "head.json": "3b1424c06b69018fd04edf7319ee19bfd5875d05eacb5eb6af40eef11478ff36",
    "ids.json": "d3706dc8707887cfafdf000e94c13efb51255aa2f78b07ba75853d2058955c40",
-   "initial.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
+   "initial.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
    "log.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "snapshot.json": "2f7221d496b629886008b9370bb72d1c11058044b2a94626d018c4bc27fec759",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "49127a7e3f6026f86809e518e2a82cee707f06f5c6470ba7ea4261747c241bd0",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-oNwYWn\\door": {
    "deltas.jsonl": "50d4dd7430f11f5c094758aa60bbbed8e58f18830ad16c17577ef8402f48d376",
    "events.jsonl": "344fbefda144047fe6a3eda74f71474a024f802e9f131bc178b22501935055e5",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "884a014e3e47a561f60a4e94adbeb1f1092c74ec6ad0eb556d057e88ef555272",
+   "head.json": "656a1a32a7d12f793567cc18fbfa2661431d56b9223535394dff688eff552459",
    "ids.json": "d3e03ab000280f98bd326178400d76a76b6c29ac3e5d326050f291409e6a1102",
-   "initial.json": "0f65d94341ed210f18d34034ee48c97dd914c89f90fd6927458dbe1980b60519",
+   "initial.json": "eb5d2c7debba3a75a4cc712985cec94e19f0565e148912423c9847a96efb5de7",
    "log.jsonl": "1888a6324793dcf15cca5bc516d7e74ff0a86e5ac1ce090eaa632097a988604e",
-   "snapshot.json": "0f65d94341ed210f18d34034ee48c97dd914c89f90fd6927458dbe1980b60519",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "eb5d2c7debba3a75a4cc712985cec94e19f0565e148912423c9847a96efb5de7",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-DSNVEU\\reopened": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a746ac48e6b72bfcab7cbd44110686b9d4471a7ab87a84cd44d9ddd979a998c0",
+   "head.json": "3b1424c06b69018fd04edf7319ee19bfd5875d05eacb5eb6af40eef11478ff36",
    "ids.json": "040fd727abfadf4bf1639655a1bb0b3fc98bdcd47cb9d8a12f7090a632df87ce",
-   "initial.json": "2d9fcdce735298472c4674b00715203e8415679043b714b28b716997ca6a4b95",
+   "initial.json": "c5ffdb850e6031375ae2191ac0a6667517db3084862a9c70524830715888b103",
    "log.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "snapshot.json": "2d9fcdce735298472c4674b00715203e8415679043b714b28b716997ca6a4b95",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "c5ffdb850e6031375ae2191ac0a6667517db3084862a9c70524830715888b103",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-QWpxXJ\\nameless": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a746ac48e6b72bfcab7cbd44110686b9d4471a7ab87a84cd44d9ddd979a998c0",
-   "initial.json": "b8b14619be3bb825d49ecb6eefa9a96b645b2db6bc18473dba4a2c8f8041ba03",
+   "head.json": "3b1424c06b69018fd04edf7319ee19bfd5875d05eacb5eb6af40eef11478ff36",
+   "initial.json": "be458a716efcc0f564cb77b74edc57ad3a9af0855914d8a4e0af6899fd8abd2b",
    "log.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "snapshot.json": "b8b14619be3bb825d49ecb6eefa9a96b645b2db6bc18473dba4a2c8f8041ba03",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "be458a716efcc0f564cb77b74edc57ad3a9af0855914d8a4e0af6899fd8abd2b",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-i9uEDG\\corrupt": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a746ac48e6b72bfcab7cbd44110686b9d4471a7ab87a84cd44d9ddd979a998c0",
+   "head.json": "3b1424c06b69018fd04edf7319ee19bfd5875d05eacb5eb6af40eef11478ff36",
    "ids.json": "cf75c4b05d01eb68d2412df971f3aae7a8877b49dc46e48c363b50ee73a955e4",
-   "initial.json": "b8b14619be3bb825d49ecb6eefa9a96b645b2db6bc18473dba4a2c8f8041ba03",
+   "initial.json": "be458a716efcc0f564cb77b74edc57ad3a9af0855914d8a4e0af6899fd8abd2b",
    "log.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "snapshot.json": "b8b14619be3bb825d49ecb6eefa9a96b645b2db6bc18473dba4a2c8f8041ba03",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "be458a716efcc0f564cb77b74edc57ad3a9af0855914d8a4e0af6899fd8abd2b",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-k298fm": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a746ac48e6b72bfcab7cbd44110686b9d4471a7ab87a84cd44d9ddd979a998c0",
+   "head.json": "3b1424c06b69018fd04edf7319ee19bfd5875d05eacb5eb6af40eef11478ff36",
    "ids.json": "040fd727abfadf4bf1639655a1bb0b3fc98bdcd47cb9d8a12f7090a632df87ce",
-   "initial.json": "2d9fcdce735298472c4674b00715203e8415679043b714b28b716997ca6a4b95",
+   "initial.json": "c5ffdb850e6031375ae2191ac0a6667517db3084862a9c70524830715888b103",
    "log.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "snapshot.json": "2d9fcdce735298472c4674b00715203e8415679043b714b28b716997ca6a4b95",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "c5ffdb850e6031375ae2191ac0a6667517db3084862a9c70524830715888b103",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-xsNSc7": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a746ac48e6b72bfcab7cbd44110686b9d4471a7ab87a84cd44d9ddd979a998c0",
-   "initial.json": "83fa3d41a9e3313d74246e7fb94e3d02596ff543ea7e1a93dd860bff1eee9a31",
+   "head.json": "3b1424c06b69018fd04edf7319ee19bfd5875d05eacb5eb6af40eef11478ff36",
+   "initial.json": "794fb72f2b5e6d570a50291698ef8dcf165ca8158b9c757f1250399ffc721892",
    "log.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "snapshot.json": "83fa3d41a9e3313d74246e7fb94e3d02596ff543ea7e1a93dd860bff1eee9a31",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "794fb72f2b5e6d570a50291698ef8dcf165ca8158b9c757f1250399ffc721892",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-Frj1vd\\camp": {
    "deltas.jsonl": "eadf8fbd7e56efaf518b15b4cf1471d87a3fabf5a094e2ec721feeacdd9b639f",
    "events.jsonl": "af53eb53721bc321828fafa238936e144d32958da2ca906e2be66e45c5d953cf",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "4cd25ab0a3724c2ffd830e71f58d1a9427ebccd9e720d78588af32cd96878436",
+   "head.json": "f0eb0c591b5a56faf424c965beec16ba9adcc586805e6d63969eb4c60d89441c",
    "ids.json": "bcb67d95de690c266b8002ed0449147ac8eced745eb203e8c1261925acfa4d74",
-   "initial.json": "fa7d33e9936abd216c011d02483c816f93b0625828187bf1d0000d78579e26a5",
+   "initial.json": "35dbf18ba73381c2e8d88a3170c20ab0aef6a585da8ba10a2e7438979f130569",
    "log.jsonl": "37c9af662514e122bdf71c195d70628fb94bc67c5c494bf2b5992aba3b411b78",
-   "snapshot.json": "fa7d33e9936abd216c011d02483c816f93b0625828187bf1d0000d78579e26a5",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "35dbf18ba73381c2e8d88a3170c20ab0aef6a585da8ba10a2e7438979f130569",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-brqFkG\\camp": {
    "deltas.jsonl": "10b8c67de66fbf3d4df94a62e39544bd5bd27a948fa1becaf093c9756a302596",
    "events.jsonl": "28e36ebca55314b0796ef3c02f0c46a9946b353d839211ae2d4ed132f573952f",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "ef430ef5cbbbc88d13786659ee760b42433ea5a8ab94c12600ff947b63c0537d",
+   "head.json": "70aa87bf7765caea255af4380bd74b5df465ea561134baddf2b09506ab9b544b",
    "ids.json": "bcb67d95de690c266b8002ed0449147ac8eced745eb203e8c1261925acfa4d74",
-   "initial.json": "fa7d33e9936abd216c011d02483c816f93b0625828187bf1d0000d78579e26a5",
+   "initial.json": "35dbf18ba73381c2e8d88a3170c20ab0aef6a585da8ba10a2e7438979f130569",
    "log.jsonl": "749dee6a5f60a3e401ef48700201be1946d874b5bb57332455d49885f574c536",
-   "snapshot.json": "fa7d33e9936abd216c011d02483c816f93b0625828187bf1d0000d78579e26a5",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "35dbf18ba73381c2e8d88a3170c20ab0aef6a585da8ba10a2e7438979f130569",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-tIvIwr\\camp": {
    "deltas.jsonl": "02eb2f34d12cc71debdd86a1af88a4622f8c9cf08480b26dce79c7cc1284fa55",
    "events.jsonl": "0cf2300f8089e74abeae6ecab2796002a65d70de285e0320115cb9135bc9268a",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "07b1a1200236f1dff02534d0e7b5a5f0057d4c2a3d3c9799cc2676829c652e33",
+   "head.json": "0bec05250ec8331d573f1325841a9ade8bada8de90e5abb3d3dce226bc21b120",
    "ids.json": "bcb67d95de690c266b8002ed0449147ac8eced745eb203e8c1261925acfa4d74",
-   "initial.json": "fa7d33e9936abd216c011d02483c816f93b0625828187bf1d0000d78579e26a5",
+   "initial.json": "35dbf18ba73381c2e8d88a3170c20ab0aef6a585da8ba10a2e7438979f130569",
    "log.jsonl": "d06d440fb7e369f045ae6336bcda7640eef55630729999e96b60beb6cb8621ed",
-   "snapshot.json": "fa7d33e9936abd216c011d02483c816f93b0625828187bf1d0000d78579e26a5",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "35dbf18ba73381c2e8d88a3170c20ab0aef6a585da8ba10a2e7438979f130569",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-5Zcj0m\\cell": {
    "deltas.jsonl": "4473540d9e3027c42f786ee8f3ff3ef11dfebe1cea21738721b20cc5f00534fb",
    "events.jsonl": "2a84bab1b85a74ac77ed6d06be26404e5d70362afb344803a5d99aa47eb9860d",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "f2dcbc165c3a5c4c0319e13212e56a13de8ffd737d3d645e43bea5cb33bdfca4",
+   "head.json": "3452d9aa3055e741e4fa4cef2fdcb5e8ef6830f5c635c4a5731afb89f68928b3",
    "ids.json": "4c5d7690817c4298ef4fc60791f7ada48ea63f715cdee3e455b5d5e4719d89aa",
-   "initial.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
+   "initial.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
    "log.jsonl": "5c78dc8f2da1f41b45aff7b8c4236ce49765ac205f4e3d363f18acd95475c3cd",
-   "snapshot.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-fyLBve\\cell": {
    "deltas.jsonl": "4473540d9e3027c42f786ee8f3ff3ef11dfebe1cea21738721b20cc5f00534fb",
    "events.jsonl": "2a84bab1b85a74ac77ed6d06be26404e5d70362afb344803a5d99aa47eb9860d",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "f2dcbc165c3a5c4c0319e13212e56a13de8ffd737d3d645e43bea5cb33bdfca4",
+   "head.json": "3452d9aa3055e741e4fa4cef2fdcb5e8ef6830f5c635c4a5731afb89f68928b3",
    "ids.json": "4c5d7690817c4298ef4fc60791f7ada48ea63f715cdee3e455b5d5e4719d89aa",
-   "initial.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
+   "initial.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
    "log.jsonl": "5c78dc8f2da1f41b45aff7b8c4236ce49765ac205f4e3d363f18acd95475c3cd",
-   "snapshot.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-KDEcyz\\cell": {
    "deltas.jsonl": "4473540d9e3027c42f786ee8f3ff3ef11dfebe1cea21738721b20cc5f00534fb",
    "events.jsonl": "2a84bab1b85a74ac77ed6d06be26404e5d70362afb344803a5d99aa47eb9860d",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "f2dcbc165c3a5c4c0319e13212e56a13de8ffd737d3d645e43bea5cb33bdfca4",
+   "head.json": "3452d9aa3055e741e4fa4cef2fdcb5e8ef6830f5c635c4a5731afb89f68928b3",
    "ids.json": "4c5d7690817c4298ef4fc60791f7ada48ea63f715cdee3e455b5d5e4719d89aa",
-   "initial.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
+   "initial.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
    "log.jsonl": "5c78dc8f2da1f41b45aff7b8c4236ce49765ac205f4e3d363f18acd95475c3cd",
-   "snapshot.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-Jx858S\\cell": {
    "deltas.jsonl": "4473540d9e3027c42f786ee8f3ff3ef11dfebe1cea21738721b20cc5f00534fb",
    "events.jsonl": "2a84bab1b85a74ac77ed6d06be26404e5d70362afb344803a5d99aa47eb9860d",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "f2dcbc165c3a5c4c0319e13212e56a13de8ffd737d3d645e43bea5cb33bdfca4",
+   "head.json": "3452d9aa3055e741e4fa4cef2fdcb5e8ef6830f5c635c4a5731afb89f68928b3",
    "ids.json": "4c5d7690817c4298ef4fc60791f7ada48ea63f715cdee3e455b5d5e4719d89aa",
-   "initial.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
+   "initial.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
    "log.jsonl": "5c78dc8f2da1f41b45aff7b8c4236ce49765ac205f4e3d363f18acd95475c3cd",
-   "snapshot.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-Ra5RkS\\cell": {
    "deltas.jsonl": "da4155aba00512ee074fcef990f5552925ddccf27ffba1809110cf052333b400",
    "events.jsonl": "a99b79830c4a378ad3b52db3d2e209bfff5c60a6345d78da6139a72114639a51",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "73a27099fac507b33aa426f89ced6cfcf2874963103e0fa53d362298fe519cde",
+   "head.json": "ad48b0581a592e5841c56304a9048097f492d0621c7c584ea570c706115dc9d5",
    "ids.json": "4c5d7690817c4298ef4fc60791f7ada48ea63f715cdee3e455b5d5e4719d89aa",
-   "initial.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
+   "initial.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
    "log.jsonl": "542eb3fafedd80ac79026e7da55e0777979a63374524d9a28394d2655a482315",
-   "snapshot.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-1DR84V\\cell": {
    "deltas.jsonl": "ea74aaa9bcf664165ccdba8c8937f016a332abbe904258c21461c19d95e48583",
    "events.jsonl": "d94418d789438aacb5936c70aef6e78d4ff312e5f982d3d4802fc7a377d6d480",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a32310cbc78e7bace0c39a4d3422bfa981f2faa7254743687878a04c8efc127b",
+   "head.json": "6e2b9ce4d63864be3a9d5316ba22377f79f77ac8868bef4445660a492942a22c",
    "ids.json": "4c5d7690817c4298ef4fc60791f7ada48ea63f715cdee3e455b5d5e4719d89aa",
-   "initial.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
+   "initial.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
    "log.jsonl": "bfb03f17ac007552bab23d95802f0c222686e044b7160e70b1112019ce74b4e4",
-   "snapshot.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-sqe9Ca\\cell": {
    "deltas.jsonl": "235cc7a732a526cb79213bd0edbf55290e4a1ab797d20c6dfed24038d7c93c6c",
    "events.jsonl": "20382a5ab7830c4e72226c11cc2bab97849ade4e81dce96978ad441f4fd1853b",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "f5ea536e4ae49722954cfaa66f0533db505e9f5f2c41e4b777468bb9d0924534",
+   "head.json": "2e6aba1bf86a6b2bf6e6aca1703f6d1ae5bebac5ea959b27635190358431f41d",
    "ids.json": "4c5d7690817c4298ef4fc60791f7ada48ea63f715cdee3e455b5d5e4719d89aa",
-   "initial.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
+   "initial.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
    "log.jsonl": "2eeb82be31e65db51126dda31cafe79208cd824a1f4c7677cec6e02fddb818ff",
-   "snapshot.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-8Q0mpw\\cell": {
    "deltas.jsonl": "91f9155e1b3a9a3a25e597126b743a9243bf733d811aab364f9b6d23ac8fda23",
    "events.jsonl": "75f23dcdd835ca8a9251d7a5e056e75184d9e7d4847b7dd2acf64aea7a96a537",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a32310cbc78e7bace0c39a4d3422bfa981f2faa7254743687878a04c8efc127b",
+   "head.json": "6e2b9ce4d63864be3a9d5316ba22377f79f77ac8868bef4445660a492942a22c",
    "ids.json": "4c5d7690817c4298ef4fc60791f7ada48ea63f715cdee3e455b5d5e4719d89aa",
-   "initial.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
+   "initial.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
    "log.jsonl": "afca5a836ac2bc41b6802cc1ab00d18b393c9aa63685ace92b52884bbac4b4d6",
-   "snapshot.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-CoeYFA\\cell": {
    "deltas.jsonl": "528606dc22ef3b5e5964bdb7590d9e14d925406c6f3ddb0eaf2f474848567c43",
    "events.jsonl": "608cedbb96142a6f9b31f7b12bc37c5ac0bc3af03b4986ecf9552fd0c32f1ee9",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "e6fb3120f4325dcfb10bb0e37725dee658528a722afd27905dd28319a4975e82",
+   "head.json": "5bedac4bf1b64e536014879e859a0ae4f6e6603fee208a7fe3ce2adfd533e6c6",
    "ids.json": "4c5d7690817c4298ef4fc60791f7ada48ea63f715cdee3e455b5d5e4719d89aa",
-   "initial.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
+   "initial.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
    "log.jsonl": "449defde65e04d7b941ca863328391ad9f241647973f9153fc7a20d40b5033ea",
-   "snapshot.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-keIYyv\\cell": {
    "deltas.jsonl": "f077fce17c318d383595619fbed260db300dcfa043f49a95129c2286e754b30f",
    "events.jsonl": "60a2ce09f99aa0b7285d5bb19bf2c0544369b8a36bcf79c92c5fd51c716f3867",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a32310cbc78e7bace0c39a4d3422bfa981f2faa7254743687878a04c8efc127b",
+   "head.json": "6e2b9ce4d63864be3a9d5316ba22377f79f77ac8868bef4445660a492942a22c",
    "ids.json": "4c5d7690817c4298ef4fc60791f7ada48ea63f715cdee3e455b5d5e4719d89aa",
-   "initial.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
+   "initial.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
    "log.jsonl": "134f65030b9b5d209ebfd69e22c5fdde4a628f8c60fe98364a94767bd7ed5e46",
-   "snapshot.json": "acccdcb203f158aa17b379ad701bad740bc735f9975ee78dfab2de50a552d103",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "48cbcb1e1c5477484df6c24e4dada62a3f7575ed818dfaea50bbfc350b7e7bd8",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-Kg78Mx\\two": {
    "deltas.jsonl": "631bb514fb6998aebb47463bba787cd24136fbd28db97b9c1022fca924a93818",
    "events.jsonl": "b9b6df7e555312d6e3989f241d8b5e4e0ea32cb6d8054584f2a8d5c4a46fb52b",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "4d60dd0df03074af56127ffbabd5a4fb83e95d24c225f8232575662ca01a653d",
+   "head.json": "f5d2b787b0b4f75749177894e455d0011f40a097094087b33c6207709ddc0856",
    "ids.json": "967429fe3b39ac8b0596e826449efdf61650bc507e488cca25890cab556dcb89",
-   "initial.json": "b789d960e8c861d3114dbc8554a56a9b5969e706d8fa16296daab7ac0a89eb01",
+   "initial.json": "6369dad1a737fa317ffccf29b1b90c81fd254310d98bb9fab4ddc5211d8a985b",
    "log.jsonl": "9ec4334f0808efba9aa8d859fca4744c565e0ece7c810308dd6dd96425185192",
-   "snapshot.json": "b789d960e8c861d3114dbc8554a56a9b5969e706d8fa16296daab7ac0a89eb01",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "6369dad1a737fa317ffccf29b1b90c81fd254310d98bb9fab4ddc5211d8a985b",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-YUCZON\\inn": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a746ac48e6b72bfcab7cbd44110686b9d4471a7ab87a84cd44d9ddd979a998c0",
+   "head.json": "3b1424c06b69018fd04edf7319ee19bfd5875d05eacb5eb6af40eef11478ff36",
    "ids.json": "a593df0ec41c69055052e5b71d61afbb9a61fb10508955957b30164404260c4d",
-   "initial.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
+   "initial.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
    "log.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "snapshot.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-qmaBch\\inn": {
    "deltas.jsonl": "7cf7c204b10ac12791e55c8e1d078325750faac00dec96592ceebdad8bf75f63",
    "events.jsonl": "8bdea53ab96b620553e5a11a9a4224ad8f31f8f1250253eb2c66e8a7c5d05c3f",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "16e66bb06cebb40775f50af71f51e4c4e54f887bb8d3b98919ec2b95c3fe1cf6",
+   "head.json": "329e564933f31d16c1f7dde0abc5de993ba7033f51880d2ec569d8d82e521bbe",
    "ids.json": "a593df0ec41c69055052e5b71d61afbb9a61fb10508955957b30164404260c4d",
-   "initial.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
+   "initial.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
    "log.jsonl": "d58d6fb6bfd8830dd60321b9995d24c9a2968f32b88ba27e1f0d24fce729404f",
-   "snapshot.json": "06b595ed2e94e247d121b0647958aaf65bb769e7e2b6606c9fd874ed326ee5c0",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "b3d1d82b6ec33c9145d747d00be0f9283d510d73077d1a5a3e502f99aeb5cdd9",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-U6GHAp\\inn": {
    "deltas.jsonl": "7cf7c204b10ac12791e55c8e1d078325750faac00dec96592ceebdad8bf75f63",
    "events.jsonl": "8bdea53ab96b620553e5a11a9a4224ad8f31f8f1250253eb2c66e8a7c5d05c3f",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "16e66bb06cebb40775f50af71f51e4c4e54f887bb8d3b98919ec2b95c3fe1cf6",
+   "head.json": "329e564933f31d16c1f7dde0abc5de993ba7033f51880d2ec569d8d82e521bbe",
    "ids.json": "a593df0ec41c69055052e5b71d61afbb9a61fb10508955957b30164404260c4d",
-   "initial.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
+   "initial.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
    "log.jsonl": "d58d6fb6bfd8830dd60321b9995d24c9a2968f32b88ba27e1f0d24fce729404f",
-   "snapshot.json": "06b595ed2e94e247d121b0647958aaf65bb769e7e2b6606c9fd874ed326ee5c0",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "b3d1d82b6ec33c9145d747d00be0f9283d510d73077d1a5a3e502f99aeb5cdd9",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-nQ4OOl\\inn": {
    "deltas.jsonl": "7cf7c204b10ac12791e55c8e1d078325750faac00dec96592ceebdad8bf75f63",
    "events.jsonl": "8bdea53ab96b620553e5a11a9a4224ad8f31f8f1250253eb2c66e8a7c5d05c3f",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "16e66bb06cebb40775f50af71f51e4c4e54f887bb8d3b98919ec2b95c3fe1cf6",
+   "head.json": "329e564933f31d16c1f7dde0abc5de993ba7033f51880d2ec569d8d82e521bbe",
    "ids.json": "a593df0ec41c69055052e5b71d61afbb9a61fb10508955957b30164404260c4d",
-   "initial.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
+   "initial.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
    "log.jsonl": "d58d6fb6bfd8830dd60321b9995d24c9a2968f32b88ba27e1f0d24fce729404f",
-   "snapshot.json": "06b595ed2e94e247d121b0647958aaf65bb769e7e2b6606c9fd874ed326ee5c0",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "b3d1d82b6ec33c9145d747d00be0f9283d510d73077d1a5a3e502f99aeb5cdd9",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-S9c3oc\\inn": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a746ac48e6b72bfcab7cbd44110686b9d4471a7ab87a84cd44d9ddd979a998c0",
+   "head.json": "3b1424c06b69018fd04edf7319ee19bfd5875d05eacb5eb6af40eef11478ff36",
    "ids.json": "a593df0ec41c69055052e5b71d61afbb9a61fb10508955957b30164404260c4d",
-   "initial.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
+   "initial.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
    "log.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "snapshot.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-JthgVW\\inn": {
    "deltas.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a746ac48e6b72bfcab7cbd44110686b9d4471a7ab87a84cd44d9ddd979a998c0",
+   "head.json": "3b1424c06b69018fd04edf7319ee19bfd5875d05eacb5eb6af40eef11478ff36",
    "ids.json": "a593df0ec41c69055052e5b71d61afbb9a61fb10508955957b30164404260c4d",
-   "initial.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
+   "initial.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
    "log.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "snapshot.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-unWgeH\\inn": {
    "deltas.jsonl": "05f79a2f1bdb0c1efbe845b02f4b8e625e2d6984450ac7f3d82701c1a7813360",
    "events.jsonl": "acf394d77ea081766bdc6f78773f16dd9f28f264693f3e475bf4c54a0869a765",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "9babfbe6964c82b1a11336516f7701250259c67e4badba8a43558eb222be4de1",
+   "head.json": "1196269c20ff7bbc50b39ed8af3e0b012c3266e9bf4ce299811630d836479ec5",
    "ids.json": "a593df0ec41c69055052e5b71d61afbb9a61fb10508955957b30164404260c4d",
-   "initial.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
+   "initial.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
    "log.jsonl": "bc09f46a58585e4c663d18e98a407c61fc9bfa652ceb87089270f8511d7a4bc2",
-   "snapshot.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-cgQcbr\\inn": {
    "deltas.jsonl": "7cf7c204b10ac12791e55c8e1d078325750faac00dec96592ceebdad8bf75f63",
    "events.jsonl": "8bdea53ab96b620553e5a11a9a4224ad8f31f8f1250253eb2c66e8a7c5d05c3f",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "16e66bb06cebb40775f50af71f51e4c4e54f887bb8d3b98919ec2b95c3fe1cf6",
+   "head.json": "329e564933f31d16c1f7dde0abc5de993ba7033f51880d2ec569d8d82e521bbe",
    "ids.json": "a593df0ec41c69055052e5b71d61afbb9a61fb10508955957b30164404260c4d",
-   "initial.json": "fc3ee1be4b38961983e72824f214af8328e51990bbbcc3a20e87d1c48620693f",
+   "initial.json": "31d2643d7d268e48181be787d03f73d7bd118555fb14cc8c4586b36f5a207718",
    "log.jsonl": "d58d6fb6bfd8830dd60321b9995d24c9a2968f32b88ba27e1f0d24fce729404f",
-   "snapshot.json": "06b595ed2e94e247d121b0647958aaf65bb769e7e2b6606c9fd874ed326ee5c0",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "b3d1d82b6ec33c9145d747d00be0f9283d510d73077d1a5a3e502f99aeb5cdd9",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-LFn00P\\arm": {
    "deltas.jsonl": "703fcb5f8fff13ce5adb96c0456ce5c0d13bb4d99cf350007101191de35f32b0",
    "events.jsonl": "470f4dfd4cfaeabe0ad7b56e896e0217403d85715f5f1ebf50c35962bc253efa",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "72fe5d0b5e070dcc2b04a70e3d9f70b0a37ce9300203333ec80bbf525e4dea97",
+   "head.json": "c7ff92491d5f3c2d7d1d13763fe199a64d9692387a35a86f9a97b90a0b3ff47e",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "162984171c876ca19114cfed34ac1929e2dd400ae6ce60d90aab588e63de76ee",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-JGKwqz\\window": {
    "deltas.jsonl": "0bda42c205cd7bd579965fd78bf8305f451a69b617be2db7fc6d2b7a720d5237",
    "events.jsonl": "4dd7e8dff91daad39318ca4f49d34788f9bc652b87d5bf3d955182c781ba848b",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "67fbbaa7b46c677d773a6eadc5db6e4856bffcef8dedcf5086ae062ddcb111c4",
+   "head.json": "a9da4b668495d99e399d32a653068b7308dbb0de2e3fa70da5097f17fde28270",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "04946cb77c6f04521f4fc563466d5521167942abdec8242536c1263fce34cfbd",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-80ekiE\\cone": {
    "deltas.jsonl": "7e7639610c3947cc3ec31ca9a770d1d0ea70d1d85c109d4431bf2263ff3f78e4",
    "events.jsonl": "31987cb47821edf217248d4a5df8976cd6df00d29af390249cec435672cb123e",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "9babfbe6964c82b1a11336516f7701250259c67e4badba8a43558eb222be4de1",
+   "head.json": "1196269c20ff7bbc50b39ed8af3e0b012c3266e9bf4ce299811630d836479ec5",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "144d313c3fe7857e5a087bda54643fd55334d7bcf56413211acc0ff62415f230",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-aKH5Xr\\panel": {
    "deltas.jsonl": "2dabbef019a7f0a27b25c42b6b40f64c11283871b4f39959d766de03c9249631",
    "events.jsonl": "f530b32da2cecf29d781b6cd1be3fe14f8ae8689f42afe7717941eb73f01d9f1",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "a326175ffd81638b08f6cf2d831137003706ae866af067e0e49c9a1b1705f96f",
+   "head.json": "f83833e628c8b42d37b9690a1b79c0e468bd9a9ec36578846c483fd85a2249de",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "8163bbaf857b788b96213371386703338fdf12db4946e849b1510edd0f0c4db0",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-efOHhh\\jam": {
    "deltas.jsonl": "a3fb46cf40df1e1bec049bcb0311f8b245fffd8f00f3e7eea5044449e04fa604",
    "events.jsonl": "117ac18aefb8b74f35d8241570032d4c01986bc7333f6d53dd28c26cfdabf409",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "9869e90711511b58f8361625c0a3a026ccf88edcfeb1174b433e3b0afebdf226",
+   "head.json": "ffb5550b83c9714a09ce4ab34722a968283e1107d30c7a3312ad9f70d6d58a4e",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "a3e22b13b009d0195ea9436e6f150d5a6491cea2f249cf1424aa950d88c1132a",
-   "snapshot.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-jmGSqe\\lab": {
    "deltas.jsonl": "8e4eecd62007518979563b099d7ab56d8f382bfeab2d67d95ed5a0808bd61d55",
    "events.jsonl": "d9a7f2c1923de13336c2e03d385d2001f796e7cb7dfb0fd82d34e29660edc946",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "4f0fc08c0c3bcaf0060e4a5bb516ada0ac23c492d9afc8bd8e3024cd9cd7bada",
+   "head.json": "62f7d5aba738e721fa0703f68f38930b17a060bf145359f3c40a719a60671214",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "584061c8dc4caf7cd2f46a951f34c62fb97d3dd77f0f8eef1fba80483d0a3321",
-   "snapshot.json": "056b2434608aeeb3ed0b5bd288551c61146566ed5bef630c12585fb214a501f8",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "03f2eed81f80d2301c55bd4de8425b527db0a7475bee5f529d6bcc3e52855218",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-jmGSqe\\again": {
    "deltas.jsonl": "8e4eecd62007518979563b099d7ab56d8f382bfeab2d67d95ed5a0808bd61d55",
    "events.jsonl": "d9a7f2c1923de13336c2e03d385d2001f796e7cb7dfb0fd82d34e29660edc946",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "4f0fc08c0c3bcaf0060e4a5bb516ada0ac23c492d9afc8bd8e3024cd9cd7bada",
+   "head.json": "62f7d5aba738e721fa0703f68f38930b17a060bf145359f3c40a719a60671214",
    "ids.json": "63eda1c2d560d928aa5dff938014812a16ebe3579274b14922b2b46b1d0128fa",
-   "initial.json": "94e05a1ea849647d18aa34347177f8c2bfd8269c26a28877c9e4be666998756c",
+   "initial.json": "df4e4c6d606cb27b7cdc0d17393bc6a9b2d51c0cac4c20579925f913ad7455e3",
    "log.jsonl": "584061c8dc4caf7cd2f46a951f34c62fb97d3dd77f0f8eef1fba80483d0a3321",
-   "snapshot.json": "056b2434608aeeb3ed0b5bd288551c61146566ed5bef630c12585fb214a501f8",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "03f2eed81f80d2301c55bd4de8425b527db0a7475bee5f529d6bcc3e52855218",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-5SsvX7\\night": {
    "deltas.jsonl": "852234995a10972350921f87ff606883efadb7768774eedb03e081045531f399",
    "events.jsonl": "528b8751ab9d19e51fec1f23fcd05f4f227d8ab9525fab49187418f3a49b1201",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "267c8af88e939e67984b5a45473da17b73bce3722ef9b9d4bd1f5076bbdd896f",
+   "head.json": "991c499fe60b82323d101319bd7d07555d6178454842efb779aad42d128960d8",
    "ids.json": "93cddd5dd9b6b2b9302427e8db182a3053311b8fb19682fc8e55db06ee6fcba7",
-   "initial.json": "45b8b2677c2204b76c07dfd627c0f1c05d23c5260064960adf3108b3a7c431f2",
+   "initial.json": "f6bf0007cb77238efd79e14411c7ccd99e233a0857c933faead314e140b2cfe4",
    "log.jsonl": "0903b470887335d29c02f6ec03fbf7d1b35cf03defe140bff22226ceb02f0e66",
-   "snapshot.json": "45b8b2677c2204b76c07dfd627c0f1c05d23c5260064960adf3108b3a7c431f2",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "f6bf0007cb77238efd79e14411c7ccd99e233a0857c933faead314e140b2cfe4",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-Cww97v\\night": {
    "deltas.jsonl": "852234995a10972350921f87ff606883efadb7768774eedb03e081045531f399",
    "events.jsonl": "528b8751ab9d19e51fec1f23fcd05f4f227d8ab9525fab49187418f3a49b1201",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "267c8af88e939e67984b5a45473da17b73bce3722ef9b9d4bd1f5076bbdd896f",
+   "head.json": "991c499fe60b82323d101319bd7d07555d6178454842efb779aad42d128960d8",
    "ids.json": "93cddd5dd9b6b2b9302427e8db182a3053311b8fb19682fc8e55db06ee6fcba7",
-   "initial.json": "45b8b2677c2204b76c07dfd627c0f1c05d23c5260064960adf3108b3a7c431f2",
+   "initial.json": "f6bf0007cb77238efd79e14411c7ccd99e233a0857c933faead314e140b2cfe4",
    "log.jsonl": "0903b470887335d29c02f6ec03fbf7d1b35cf03defe140bff22226ceb02f0e66",
-   "snapshot.json": "45b8b2677c2204b76c07dfd627c0f1c05d23c5260064960adf3108b3a7c431f2",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "f6bf0007cb77238efd79e14411c7ccd99e233a0857c933faead314e140b2cfe4",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-VL4nuS\\night": {
    "deltas.jsonl": "852234995a10972350921f87ff606883efadb7768774eedb03e081045531f399",
    "events.jsonl": "528b8751ab9d19e51fec1f23fcd05f4f227d8ab9525fab49187418f3a49b1201",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "267c8af88e939e67984b5a45473da17b73bce3722ef9b9d4bd1f5076bbdd896f",
+   "head.json": "991c499fe60b82323d101319bd7d07555d6178454842efb779aad42d128960d8",
    "ids.json": "93cddd5dd9b6b2b9302427e8db182a3053311b8fb19682fc8e55db06ee6fcba7",
-   "initial.json": "45b8b2677c2204b76c07dfd627c0f1c05d23c5260064960adf3108b3a7c431f2",
+   "initial.json": "f6bf0007cb77238efd79e14411c7ccd99e233a0857c933faead314e140b2cfe4",
    "log.jsonl": "0903b470887335d29c02f6ec03fbf7d1b35cf03defe140bff22226ceb02f0e66",
-   "snapshot.json": "45b8b2677c2204b76c07dfd627c0f1c05d23c5260064960adf3108b3a7c431f2",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "f6bf0007cb77238efd79e14411c7ccd99e233a0857c933faead314e140b2cfe4",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-67Zsb6\\night": {
    "deltas.jsonl": "852234995a10972350921f87ff606883efadb7768774eedb03e081045531f399",
    "events.jsonl": "528b8751ab9d19e51fec1f23fcd05f4f227d8ab9525fab49187418f3a49b1201",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "267c8af88e939e67984b5a45473da17b73bce3722ef9b9d4bd1f5076bbdd896f",
+   "head.json": "991c499fe60b82323d101319bd7d07555d6178454842efb779aad42d128960d8",
    "ids.json": "93cddd5dd9b6b2b9302427e8db182a3053311b8fb19682fc8e55db06ee6fcba7",
-   "initial.json": "45b8b2677c2204b76c07dfd627c0f1c05d23c5260064960adf3108b3a7c431f2",
+   "initial.json": "f6bf0007cb77238efd79e14411c7ccd99e233a0857c933faead314e140b2cfe4",
    "log.jsonl": "0903b470887335d29c02f6ec03fbf7d1b35cf03defe140bff22226ceb02f0e66",
-   "snapshot.json": "45b8b2677c2204b76c07dfd627c0f1c05d23c5260064960adf3108b3a7c431f2",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "f6bf0007cb77238efd79e14411c7ccd99e233a0857c933faead314e140b2cfe4",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-80oGbz\\night": {
    "deltas.jsonl": "852234995a10972350921f87ff606883efadb7768774eedb03e081045531f399",
    "events.jsonl": "528b8751ab9d19e51fec1f23fcd05f4f227d8ab9525fab49187418f3a49b1201",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "267c8af88e939e67984b5a45473da17b73bce3722ef9b9d4bd1f5076bbdd896f",
+   "head.json": "991c499fe60b82323d101319bd7d07555d6178454842efb779aad42d128960d8",
    "ids.json": "93cddd5dd9b6b2b9302427e8db182a3053311b8fb19682fc8e55db06ee6fcba7",
-   "initial.json": "45b8b2677c2204b76c07dfd627c0f1c05d23c5260064960adf3108b3a7c431f2",
+   "initial.json": "f6bf0007cb77238efd79e14411c7ccd99e233a0857c933faead314e140b2cfe4",
    "log.jsonl": "0903b470887335d29c02f6ec03fbf7d1b35cf03defe140bff22226ceb02f0e66",
-   "snapshot.json": "45b8b2677c2204b76c07dfd627c0f1c05d23c5260064960adf3108b3a7c431f2",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "f6bf0007cb77238efd79e14411c7ccd99e233a0857c933faead314e140b2cfe4",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-RmGTQN\\workshop": {
    "deltas.jsonl": "c9993d72656b72865fdf2f3df3f339d018b34898cf630a01bdb365fb6b948bfc",
    "events.jsonl": "511bcd8afd12061353aaedc4eac1cbdbee68b7b6018cf45d56a41855944585b6",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "5009aea3cc2b4b90176f4ef071c55002274132595da0419be599d5c99361e821",
+   "head.json": "04677a03a68fff04cf169aa2848d04ed575a07e4e89004acdf775118bce07555",
    "ids.json": "97a8921ba6220b1c149d6aa289fa59afb880790a562bbc2f03439e2550dceb84",
-   "initial.json": "63818586cee2127e6d7465961912e05bdc752678a2377265468c44647df84cce",
+   "initial.json": "2307ca9d2c457f906883b71a447e18f701935733e01880c85b9d5a8a317af7b4",
    "log.jsonl": "a3becd0bd643270de1549edc85f27f7635b6fc0eb71d0cd7220136cf0ff1709b",
-   "snapshot.json": "63818586cee2127e6d7465961912e05bdc752678a2377265468c44647df84cce",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "2307ca9d2c457f906883b71a447e18f701935733e01880c85b9d5a8a317af7b4",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-rvKtwc\\workshop": {
    "deltas.jsonl": "cdeb05a1aa517d3d2c38e78325bbc7e5a66008e6e3200d9a64d5217896b1c857",
    "events.jsonl": "793d2f2b8932188011dfc2d98d2a4c886e78cbd2845086cfe25d5b696c615969",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "5009aea3cc2b4b90176f4ef071c55002274132595da0419be599d5c99361e821",
+   "head.json": "04677a03a68fff04cf169aa2848d04ed575a07e4e89004acdf775118bce07555",
    "ids.json": "97a8921ba6220b1c149d6aa289fa59afb880790a562bbc2f03439e2550dceb84",
-   "initial.json": "63818586cee2127e6d7465961912e05bdc752678a2377265468c44647df84cce",
+   "initial.json": "2307ca9d2c457f906883b71a447e18f701935733e01880c85b9d5a8a317af7b4",
    "log.jsonl": "49cd34cc8ed5cd11ba35462565fa0165bd2b55c700117731720ab0b8832104cc",
-   "snapshot.json": "63818586cee2127e6d7465961912e05bdc752678a2377265468c44647df84cce",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "2307ca9d2c457f906883b71a447e18f701935733e01880c85b9d5a8a317af7b4",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-J0JeHD\\watch": {
    "deltas.jsonl": "6be59517a20915d356a08ac4c359cec06b9e7753b4e509d4d3643a83078a8f73",
    "events.jsonl": "a5ef4f9bf9e919f5b08011f759a9a7e952fefb1b0c795ef3c8fe9ece8a92ef29",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "5009aea3cc2b4b90176f4ef071c55002274132595da0419be599d5c99361e821",
+   "head.json": "04677a03a68fff04cf169aa2848d04ed575a07e4e89004acdf775118bce07555",
    "ids.json": "93cddd5dd9b6b2b9302427e8db182a3053311b8fb19682fc8e55db06ee6fcba7",
-   "initial.json": "53f5c5f3b4f0993d2b1bccdfba4313ddf8131cb21e345111ee7f1921b2a0c25f",
+   "initial.json": "f7e505b10fb476e523cf91426adedf432b17d7328f3dab43eb3238bcc2ae736e",
    "log.jsonl": "7f31f1d60cf9114c4242dcaaedbcf9cb0b7cbb1af5b0f6f73db253d48cba3570",
-   "snapshot.json": "53f5c5f3b4f0993d2b1bccdfba4313ddf8131cb21e345111ee7f1921b2a0c25f",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "f7e505b10fb476e523cf91426adedf432b17d7328f3dab43eb3238bcc2ae736e",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   },
   "{TMP}\\world-engine-3cr7Qo\\watch": {
    "deltas.jsonl": "7f6f88d229dbd8b572980d06c28f94c1ec93b14c61760786355914f2c86e0bd7",
    "events.jsonl": "d7579459f78b4f504eb99a2d45f1d94c41d73588135e582094d840e44d87371e",
    "format.json": "3767a4754c5795c638a41b61a11810e121eb59db17fb7efb74e94015a59c47b5",
-   "head.json": "07b1a1200236f1dff02534d0e7b5a5f0057d4c2a3d3c9799cc2676829c652e33",
+   "head.json": "0bec05250ec8331d573f1325841a9ade8bada8de90e5abb3d3dce226bc21b120",
    "ids.json": "93cddd5dd9b6b2b9302427e8db182a3053311b8fb19682fc8e55db06ee6fcba7",
-   "initial.json": "53f5c5f3b4f0993d2b1bccdfba4313ddf8131cb21e345111ee7f1921b2a0c25f",
+   "initial.json": "f7e505b10fb476e523cf91426adedf432b17d7328f3dab43eb3238bcc2ae736e",
    "log.jsonl": "b8094a08df0f81d66653e464edf07b4c88d361dcefe8f26d91629d02ca7c6d7a",
-   "snapshot.json": "53f5c5f3b4f0993d2b1bccdfba4313ddf8131cb21e345111ee7f1921b2a0c25f",
-   "templates.json": "a4a49e5004aca9688ed4d3791a9772462807c6d6c97799f5d306bbb9b0d1a3a1"
+   "snapshot.json": "f7e505b10fb476e523cf91426adedf432b17d7328f3dab43eb3238bcc2ae736e",
+   "templates.json": "9ee29fba4b64ea697e2eab611126476770887e9867691366bed4c39d493ce747"
   }
  }
 }

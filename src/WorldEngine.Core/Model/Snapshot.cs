@@ -13,6 +13,7 @@ public abstract record ScheduledCause(long DueTick, string Entity, string? Cause
         CloseCause => CauseKind.Close,
         BleedCause => CauseKind.Bleed,
         ProcessCause => CauseKind.Process,
+        OutcomeCause => CauseKind.Outcome,
         _ => CauseKind.Beat,
     };
 }
@@ -25,6 +26,11 @@ public sealed record BleedCause(long DueTick, string Entity, string? CauseId, lo
 
 // The next step of a template process on its entity.
 public sealed record ProcessCause(long DueTick, string Entity, string? CauseId, string Process) : ScheduledCause(DueTick, Entity, CauseId);
+
+// An attempted install the dice decide when it falls due (`docs/sockets.md`): the body is the entity, the stump its `Part`, the
+// implant its `Item`, and `Actor` who attempted it.
+public sealed record OutcomeCause(long DueTick, string Entity, string? CauseId, string Part, string Item, string Actor)
+    : ScheduledCause(DueTick, Entity, CauseId);
 
 // An authored beat: its id, its action (an author's edit, or a sound, kept as the value written for the edit verb to read), and optionally its
 // condition, followers and repeat, held to `Beats`' shape rules wherever one is made or read.

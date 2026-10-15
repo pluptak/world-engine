@@ -7,7 +7,7 @@
     { "name": "hand_l", "parent": null, "contributes": { "manipulation": 40 }, "detachable": false, "max_integrity": 100 },
     { "name": "thumb_l", "parent": "hand_l", "contributes": {}, "detachable": false, "max_integrity": 50 }
   ],
-  "props": {},
+  "props": { "success_pct": 75, "outcome_ticks": 10, "failure_damage": 20 },
   "break_products": [],
   "break_residue": {}
 }

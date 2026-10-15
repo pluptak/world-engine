@@ -28,6 +28,9 @@ public static class EventType
     public const string Locked = "locked";
     public const string Moved = "moved";
     public const string Opened = "opened";
+    public const string OutcomeFailed = "outcome_failed";
+    public const string OutcomeScheduled = "outcome_scheduled";
+    public const string OutcomeSucceeded = "outcome_succeeded";
     public const string Placed = "placed";
     public const string Poured = "poured";
     public const string Removed = "removed";
