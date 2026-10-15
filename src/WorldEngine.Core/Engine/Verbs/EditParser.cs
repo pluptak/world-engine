@@ -153,10 +153,11 @@ public static partial class EditVerb
             {
                 if (!Only(obj, "kind", "target", "part", "state") || Text(obj.GetValueOrDefault("target")) is not { } target
                     || Text(obj.GetValueOrDefault("part")) is not { } part || obj.GetValueOrDefault("state") is not Value.Map state
-                    || !state.Keys.All(key => key is "integrity" or "status" or "bound" or "incised")
+                    || !state.Keys.All(key => key is "integrity" or "status" or "bound" or "incised" or "installed")
                     || Int(state.GetValueOrDefault("integrity")) is not { } integrity || Text(state.GetValueOrDefault("status")) is not { } status
                     || (state.ContainsKey("bound") && state.GetValueOrDefault("bound") is not Value.Bool)
-                    || (state.ContainsKey("incised") && state.GetValueOrDefault("incised") is not Value.Bool))
+                    || (state.ContainsKey("incised") && state.GetValueOrDefault("incised") is not Value.Bool)
+                    || (state.GetValueOrDefault("installed") is { } installed && Text(installed) is null))
                 {
                     return null;
                 }
@@ -170,7 +171,12 @@ public static partial class EditVerb
                     "destroyed" => PartStatus.Destroyed,
                     _ => (PartStatus?)null,
                 };
-                return partStatus is { } value ? new SetPartEdit(target, part, new PartState(integrity, value, bound, incised)) : null;
+                return partStatus is { } value
+                    ? new SetPartEdit(
+                        target,
+                        part,
+                        new PartState(integrity, value, bound, Incised: incised, Installed: Text(state.GetValueOrDefault("installed"))))
+                    : null;
             }
             default:
                 return null;

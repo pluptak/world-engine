@@ -53,6 +53,94 @@ public class TemplateValidationTests
 
     private static string InvalidRoot =>
         Path.Combine(AppContext.BaseDirectory, "Fixtures", "invalid-templates");
+
+    private static TemplateDecl BareDecl(
+        string id,
+        IReadOnlyList<PartDecl>? parts = null,
+        string? fits = null,
+        string? extends = null) =>
+        new(id,
+            Extends: extends,
+            SizeCm: new Dimensions(1, 1, 1),
+            MassG: 1,
+            Parts: parts,
+            Props: Value.Map.Empty,
+            BreakProducts: [],
+            BreakResidue: new Dictionary<string, long>(),
+            Fits: fits);
+
+    private static PartDecl HandPart(long manipulation) =>
+        new("hand_l", null, new Dictionary<string, long> { ["manipulation"] = manipulation }, false, 100);
+
+    private static PartDecl ThumbPart(long manipulation) =>
+        new("thumb_l", "hand_l", new Dictionary<string, long> { ["manipulation"] = manipulation }, false, 50);
+
+    [Fact]
+    public void A_template_fitting_a_companion_keeps_its_fits()
+    {
+        var decls = new Dictionary<string, TemplateDecl>(StringComparer.Ordinal)
+        {
+            ["companion"] = BareDecl("companion", parts: [HandPart(30), ThumbPart(20)]),
+            ["robo"] = BareDecl("robo", parts: [HandPart(40), ThumbPart(0)], fits: "companion"),
+        };
+
+        var registry = TemplateResolver.Resolve(decls);
+
+        Assert.Equal("companion", registry["robo"].Fits);
+        Assert.Null(registry["companion"].Fits);
+    }
+
+    [Fact]
+    public void Fits_naming_no_template_is_refused()
+    {
+        var decls = new Dictionary<string, TemplateDecl>(StringComparer.Ordinal)
+        {
+            ["robo"] = BareDecl("robo", parts: [HandPart(40)], fits: "nope"),
+        };
+
+        var error = Assert.Throws<FormatException>(() => TemplateResolver.Resolve(decls));
+
+        Assert.Equal("robo.fits names unknown template nope", error.Message);
+    }
+
+    [Fact]
+    public void Fits_with_different_part_names_is_refused()
+    {
+        var decls = new Dictionary<string, TemplateDecl>(StringComparer.Ordinal)
+        {
+            ["companion"] = BareDecl("companion", parts: [HandPart(30), ThumbPart(20)]),
+            ["robo"] = BareDecl("robo", parts: [HandPart(40)], fits: "companion"),
+        };
+
+        var error = Assert.Throws<FormatException>(() => TemplateResolver.Resolve(decls));
+
+        Assert.Equal("robo fits companion but declares different parts", error.Message);
+    }
+
+    [Fact]
+    public void A_child_inherits_fits_with_its_parts()
+    {
+        var decls = new Dictionary<string, TemplateDecl>(StringComparer.Ordinal)
+        {
+            ["companion"] = BareDecl("companion", parts: [HandPart(30), ThumbPart(20)]),
+            ["robo"] = BareDecl("robo", parts: [HandPart(40), ThumbPart(0)], fits: "companion"),
+            ["child"] = BareDecl("child", extends: "robo"),
+        };
+
+        var registry = TemplateResolver.Resolve(decls);
+
+        Assert.Equal("companion", registry["child"].Fits);
+    }
+
+    [Fact]
+    public void A_non_string_fits_is_refused_as_shape()
+    {
+        var value = Value.Map.Empty.With("id", "robo").With("fits", 5L);
+
+        var error = Assert.Throws<FormatException>(() => TemplateShape.Check(value, "robo.json"));
+
+        Assert.Equal("robo.json.fits must be a non-empty string", error.Message);
+    }
 }
 
 public class PropTests

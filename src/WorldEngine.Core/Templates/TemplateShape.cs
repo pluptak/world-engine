@@ -26,6 +26,10 @@ public static class TemplateShape
         {
             throw new FormatException($"{source}.extends must be a non-empty string");
         }
+        if (obj.ContainsKey("fits") && (!IsText(obj.GetValueOrDefault("fits")) || Text(obj.GetValueOrDefault("fits"))!.Length == 0))
+        {
+            throw new FormatException($"{source}.fits must be a non-empty string");
+        }
 
         if (obj.ContainsKey("size_cm"))
         {

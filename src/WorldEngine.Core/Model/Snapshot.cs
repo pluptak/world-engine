@@ -55,8 +55,9 @@ public enum EntityStatus
 }
 
 // `Bound` and `Incised` are written only when true: a tied part takes no capacity (`docs/structure.md`); an incised one is
-// open and bleeds (`docs/verbs-surgery.md`).
-public sealed record PartState(long Integrity, PartStatus Status, bool? Bound = null, bool? Incised = null);
+// open and bleeds (`docs/verbs-surgery.md`). `Installed` is the installable template filling a severed part
+// (`docs/sockets.md`); absent for the body's own parts.
+public sealed record PartState(long Integrity, PartStatus Status, bool? Bound = null, bool? Incised = null, string? Installed = null);
 
 public sealed record Modifier(string Capacity, long Delta, long? ExpiresAtTick, string CauseId);
 

@@ -24,6 +24,7 @@ public static partial class EditVerb
         Code.PosWithoutRoomSupport, Code.AnchorNotRoomSupported, Code.CircularPlacement, Code.OccupiedRoom, Code.UnknownPart,
         Code.NotARefinement, Code.TooLarge, Code.NotASurface, Code.LiquidExceedsCapacity, Code.IntegrityOutOfRange,
         Code.DetachedPartWithoutEntity, Code.PartAtDefault, Code.PartUnderDetached, Code.CoverageNotComputable,
+        Code.DoesNotFit,
         Code.LocationMismatch, Code.DanglingReference, Code.IdNotBelowNextSeq, Code.SupportOrContainmentCycle,
         Code.SupportAndContainedIn, Code.DoorSideNotRoom, Code.OpensTargetNotOpenable, Code.ConcealedByAbstract,
         Code.ConcealedByNotSameRoom, Code.ConcealedByCycle, Code.PowerLoop, Code.ControlLoop, Code.InPartHolderMismatch,
@@ -125,7 +126,7 @@ public static partial class EditVerb
             PlaceEdit place => PlaceRefusal(context, place, subject),
             PropsEdit props => PropsRefusal(context, subject, props),
             AfflictEdit afflict => AfflictRefusal(context, subject, afflict),
-            SetPartEdit part => PartRefusal(context.Registry, subject, part.Part),
+            SetPartEdit part => PartRefusal(context.Registry, subject, part.Part, part.State.Installed),
             RefineEdit refine => context.Registry.TryGetValue(refine.Template, out var next)
                 ? Refine.RefineRefusal(context.Snapshot, context.Registry, subject, next)
                 : Invalid(Code.UnknownTemplate),

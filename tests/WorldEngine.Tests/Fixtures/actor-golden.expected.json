@@ -2719,6 +2719,8 @@
       ],
       "needs_args": [
         "cut",
+        "extract",
+        "install",
         "move",
         "pour",
         "say",
@@ -3233,6 +3235,8 @@
       ],
       "needs_args": [
         "cut",
+        "extract",
+        "install",
         "move",
         "pour",
         "say",

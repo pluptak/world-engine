@@ -360,13 +360,27 @@ public static partial class EditVerb
         return capacities is not null && capacities.ContainsKey(edit.Capacity) ? null : Refused(Code.UnknownCapacity);
     }
 
-    private static Pipeline.Refusal? PartRefusal(IReadOnlyDictionary<string, Template> registry, Entity subject, string part)
+    // A part the template declares, and an install it names that fits it as `install` judges it (`docs/sockets.md`).
+    private static Pipeline.Refusal? PartRefusal(IReadOnlyDictionary<string, Template> registry, Entity subject, string part, string? installed)
     {
         if (!registry.TryGetValue(subject.Template, out var template))
         {
             return Invalid(Code.UnknownTemplate);
         }
-        return template.Parts.Any(decl => decl.Name == part) ? null : Refused(Code.UnknownPart);
+        if (!template.Parts.Any(decl => decl.Name == part))
+        {
+            return Refused(Code.UnknownPart);
+        }
+        if (installed is null)
+        {
+            return null;
+        }
+        if (!registry.TryGetValue(installed, out var installable))
+        {
+            return Invalid(Code.UnknownTemplate);
+        }
+        var companion = $"{subject.Template}.{part}";
+        return installed == companion || installable.Fits == companion ? null : Refused(Code.DoesNotFit);
     }
 
     // The definition prop a write changes, or null. An entity stores a copy of its template's props, so repeating a

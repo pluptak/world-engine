@@ -36,6 +36,8 @@ This is the index: one line per verb, its rules in the family file it links to.
 - `cut`: opens a part of a body without severing it ([verbs-surgery.md](verbs-surgery.md)).
 - `staunch`: stops a part's bleed ([verbs-surgery.md](verbs-surgery.md)).
 - `suture`: closes an incision ([verbs-surgery.md](verbs-surgery.md)).
+- `install`: fills a severed part with a held limb or implant ([sockets.md](sockets.md)).
+- `extract`: takes an installed implant out again ([sockets.md](sockets.md)).
 - `search`: looks under or behind a target ([verbs-sensing.md](verbs-sensing.md)).
 - `light`: sets a light source burning ([verbs-sensing.md](verbs-sensing.md)).
 - `douse`: puts it out ([verbs-sensing.md](verbs-sensing.md)).

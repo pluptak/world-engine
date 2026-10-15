@@ -27,18 +27,68 @@ public static class Capacities
         foreach (var part in template.Parts)
         {
             var state = StateOf(part.Name);
+            var contributes = ContributesOf(registry, template, entity, part, partsByName);
             if (state is null
                 || state.Bound is true
                 || state.Status is not (PartStatus.Intact or PartStatus.Damaged)
-                || !part.Contributes.ContainsKey(name)
+                || !contributes.ContainsKey(name)
                 || !AncestorsAvailable(part, partsByName, StateOf))
             {
                 continue;
             }
-            total += part.Contributes[name];
+            total += contributes[name];
         }
 
         return Math.Clamp(total, 0, 100);
+    }
+
+    // A part's contributions: from the installed template's part of the same name when the part or an ancestor
+    // carries an install (`docs/sockets.md`), else from the body's own template. The installed root itself has no
+    // same-name part in the installed template (a companion omits its root), so it reads the body's own.
+    private static IReadOnlyDictionary<string, long> ContributesOf(
+        IReadOnlyDictionary<string, Template> registry,
+        Template template,
+        Entity entity,
+        PartDecl part,
+        IReadOnlyDictionary<string, PartDecl> partsByName)
+    {
+        if (InstalledTemplateId(template, entity, part.Name, partsByName) is not { } installedId)
+        {
+            return part.Contributes;
+        }
+        if (!registry.TryGetValue(installedId, out var installed))
+        {
+            throw new InvalidOperationException($"Unknown installed template {installedId}");
+        }
+        return installed.Parts.FirstOrDefault(candidate => candidate.Name == part.Name)?.Contributes ?? part.Contributes;
+    }
+
+    // The install the part or its nearest ancestor carries, if any.
+    private static string? InstalledTemplateId(
+        Template template,
+        Entity entity,
+        string partName,
+        IReadOnlyDictionary<string, PartDecl> partsByName)
+    {
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        string? current = partName;
+        while (current is not null)
+        {
+            if (!visited.Add(current))
+            {
+                throw new InvalidOperationException($"Part cycle at {current}");
+            }
+            if (PartStates.State(template, entity, current)?.Installed is { } installed)
+            {
+                return installed;
+            }
+            if (!partsByName.TryGetValue(current, out var decl))
+            {
+                throw new InvalidOperationException($"Unknown ancestor part {current}");
+            }
+            current = decl.Parent;
+        }
+        return null;
     }
 
     public static long? Of(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, string entityId, string name)
