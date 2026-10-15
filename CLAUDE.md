@@ -103,8 +103,10 @@ and answers `{status:"invalid", issues}` with exit code 2 on failure. `init <dir
 ## Templates
 
 `templates/*.json` at the repository root are loaded and validated by `TemplateDirectory` and
-`TemplateResolver`, and all of them are hashed into `templates_hash`. Editing any template therefore makes
-existing worlds fail with `templates_changed` (an `upgrade` moves a world). A detachable part needs a
+`TemplateResolver`, and all of them are hashed into `templates_hash`. A stored world keeps its own resolved
+set in `templates.json` and opens with it, so editing a template reaches only worlds made afterwards; a
+different set handed to a world is refused `templates_changed` (`WorldUpgrade.UpgradeTemplates` moves one).
+Editing a template does move the goldens, which read `templates/`. A detachable part needs a
 companion template named `<template>.<part>.json` (for example `human.hand_l.json`); a child that
 declares no `parts` inherits its parent's. `extends` is resolved once when a set is loaded; a cycle
 or unknown parent is refused with the chain. `docs/fields.md` is the schema of every prop the engine
