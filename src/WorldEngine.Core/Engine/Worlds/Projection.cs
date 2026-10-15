@@ -239,7 +239,7 @@ public static class Projection
             found.Name,
             found.Senses,
             found.Facts,
-            snapshot.Coverage.Relations.Contains("reachable") ? Reach.InReach(snapshot, observer, entityId) : null);
+            snapshot.Coverage.Relations.Contains("reachable") ? Reach.Reaches(snapshot, observer, entityId) : null);
         if (found.Facts is null)
         {
             return inspection;

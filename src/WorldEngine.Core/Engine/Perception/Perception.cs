@@ -161,7 +161,7 @@ public static class Perception
         {
             return false;
         }
-        return Reach.ReachedAsDoor(snapshot, actorId, entity) || Reach.InReach(snapshot, actorId, entityId);
+        return Reach.Reaches(snapshot, actorId, entityId);
     }
 
     // Whether a room is lit: it says so itself, something burning in it gives light, or a lamp on power does. A light

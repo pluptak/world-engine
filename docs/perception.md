@@ -8,10 +8,11 @@ Coverage is what this world models, chosen among them: `SnapshotValidation` refu
 relation or sense the engine has no rule for (`coverage_not_computable`). A category the world
 leaves out of coverage answers unknown (`uncovered_category`, `uncovered_sense`), and a sense the
 engine cannot compute answers unknown / `engine_incapable`. Coverage is never what any actor knows
-or notices. `reachable` (subject an agent, object a target) answers by `Reach.InReach`, the one rule
-every verb that reaches applies: same room, centre to centre within `reach_cm`, bars or not; `false`
-/ `no_object` without an object. Door verbs reach further
-([verbs-openables.md](verbs-openables.md)). A `fact` subject may name one part, `<entity>.<part>`:
+or notices. `reachable` (subject an agent, object a target) answers by `Reach.Reaches`, the rule
+every verb that reaches applies: a doorway joining the subject's room is reached from anywhere in it
+when it has no position or stands in the other room ([verbs-openables.md](verbs-openables.md));
+anything else by `Reach.InReach`, same room, centre to centre within `reach_cm`, bars or not; `false`
+/ `no_object` without an object. Inspect's `reachable` is the same answer. A `fact` subject may name one part, `<entity>.<part>`:
 `status`, `integrity` and `attached_to` (its entity) read the stored entry or the template default
 and write nothing; any other field is `false` / `not_a_part_field`, and a part the template does not
 declare is `false` / `no_such_part`.

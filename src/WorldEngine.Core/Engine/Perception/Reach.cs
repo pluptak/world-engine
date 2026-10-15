@@ -66,6 +66,11 @@ public static class Reach
             && (entity.Pos is null || entity.Location != here);
     }
 
+    // What every verb that reaches asks: a doorway reached as one, or the ordinary rule below.
+    public static bool Reaches(Snapshot snapshot, string actorId, string targetId) =>
+        snapshot.Entities.TryGetValue(targetId, out var target)
+        && (ReachedAsDoor(snapshot, actorId, target) || InReach(snapshot, actorId, targetId));
+
     // The one reach rule: both positions known, the same room, and centre to centre within the actor's `reach_cm`.
     public static bool InReach(Snapshot snapshot, string actorId, string targetId)
     {

@@ -52,7 +52,7 @@ public static class Queries
                 {
                     return new Perception.Answer(Truth.False, Code.NoSuchEntity);
                 }
-                return Perception.Answer.Of(Reach.InReach(snapshot, entity.Id, obj), Code.DerivedReach);
+                return Perception.Answer.Of(Reach.Reaches(snapshot, entity.Id, obj), Code.DerivedReach);
             }
             return Perception.Answer.Of(RelationValue(registry, entity, relation, obj), Code.RelationState);
         }
