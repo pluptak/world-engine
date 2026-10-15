@@ -1132,10 +1132,6 @@
           "verb": "take"
         },
         {
-          "target": "x9c430c60b291",
-          "verb": "take"
-        },
-        {
           "target": "xa91157f9c462",
           "verb": "take"
         }
@@ -1514,6 +1510,11 @@
           "verb": "take"
         },
         {
+          "reason_code": "resists",
+          "target": "x9c430c60b291",
+          "verb": "take"
+        },
+        {
           "reason_code": "not_openable",
           "target": "x574ce08fc018",
           "verb": "unlock"
@@ -1660,10 +1661,6 @@
         },
         {
           "target": "x8ea789cc1f2c",
-          "verb": "take"
-        },
-        {
-          "target": "x9c430c60b291",
           "verb": "take"
         },
         {

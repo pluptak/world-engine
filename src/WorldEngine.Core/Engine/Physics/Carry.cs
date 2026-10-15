@@ -36,8 +36,16 @@ public static class Carry
     public static int HeldCount(Snapshot snapshot, string carrierId) =>
         snapshot.Entities.Values.Count(entity => entity.ContainedIn == carrierId);
 
-    private static long HandsOf(Entity item) =>
-        item.Props.Get(Prop.HandsRequired) == 2 ? 2 : 1;
+    // An item heavier than one hand's share of the holder's limit (half of it) needs both hands, as a two-handed one does.
+    private static long HandsOf(Entity item, IReadOnlyDictionary<string, Template> registry, IReadOnlyDictionary<string, Value> holderProps)
+    {
+        if (item.Props.Get(Prop.HandsRequired) == 2)
+        {
+            return 2;
+        }
+        var mass = registry.TryGetValue(item.Template, out var template) ? template.MassG : 0;
+        return holderProps.Get(Prop.HandCarryLimitG) is { } limit && mass * 2 > limit ? 2 : 1;
+    }
 
     // The holder parts a template declares, in declaration order.
     // Whether an item fits a pocket (src/engine/carry.ts `spaceRefusal`): null when it does. An unknown part or item, or
@@ -134,11 +142,14 @@ public static class Carry
     }
 
     // Everything the holder carries that names one of its parts, in id order.
-    public static IReadOnlyList<HeldItem> HeldInParts(Snapshot snapshot, string holderId) =>
-        [.. snapshot.Entities.Keys.Order(StringComparer.Ordinal)
+    public static IReadOnlyList<HeldItem> HeldInParts(Snapshot snapshot, IReadOnlyDictionary<string, Template> registry, string holderId)
+    {
+        var holderProps = snapshot.Entities.TryGetValue(holderId, out var holder) ? holder.Props : Value.Map.Empty;
+        return [.. snapshot.Entities.Keys.Order(StringComparer.Ordinal)
             .Select(id => snapshot.Entities[id])
             .Where(entity => entity.ContainedIn == holderId && entity.InPart is not null)
-            .Select(entity => new HeldItem(entity.Id, entity.InPart!, HandsOf(entity)))];
+            .Select(entity => new HeldItem(entity.Id, entity.InPart!, HandsOf(entity, registry, holderProps)))];
+    }
 
     // A two-handed item's other grip: the first grip that is not its primary, in template order.
     public static string? GripSecondary(IReadOnlyList<string> grips, string primary) =>
@@ -191,13 +202,13 @@ public static class Carry
             .ToList();
         var packed = PackGrips(
             grips,
-            [.. HeldInParts(snapshot, holderId).Where(held => held.Id != exclude && grips.Contains(held.InPart))]);
+            [.. HeldInParts(snapshot, registry, holderId).Where(held => held.Id != exclude && grips.Contains(held.InPart))]);
         // An unpackable holder is refused, never written through: every grip reads full. A bound grip keeps what it holds
         // and takes nothing new, so it reads full too (`docs/structure.md`).
         var full = (packed ?? grips.ToHashSet(StringComparer.Ordinal))
             .Concat(grips.Where(grip => PartBound(registry, holder, grip)))
             .ToHashSet(StringComparer.Ordinal);
-        var hands = HandsOf(item);
+        var hands = HandsOf(item, registry, holder.Props);
         var freeCount = grips.Count(grip => !full.Contains(grip));
         if (named is not null)
         {
@@ -247,7 +258,7 @@ public static class Carry
             .Where(name => PartAvailable(snapshot, registry, holderId, name))
             .ToHashSet(StringComparer.Ordinal);
         var evicted = new List<string>();
-        foreach (var item in HeldInParts(snapshot, holderId))
+        foreach (var item in HeldInParts(snapshot, registry, holderId))
         {
             if (!declared.Contains(item.InPart))
             {
@@ -279,7 +290,7 @@ public static class Carry
         }
         var grips = HolderLayout(registry, holder.Template).Grips.ToHashSet(StringComparer.Ordinal);
         long mass = 0;
-        foreach (var held in HeldInParts(snapshot, holderId))
+        foreach (var held in HeldInParts(snapshot, registry, holderId))
         {
             if (held.Id == exclude || !grips.Contains(held.InPart))
             {
@@ -305,9 +316,9 @@ public static class Carry
                 Kind.Capacity,
                 alternative.Capacity,
                 0,
-                alternative.PerHand is { } perHand ? HandsOf(item) * perHand : alternative.AtLeast ?? 1);
+                alternative.PerHand is { } perHand ? HandsOf(item, registry, carrierProps) * perHand : alternative.AtLeast ?? 1);
         }
-        var hands = HandsOf(item);
+        var hands = HandsOf(item, registry, carrierProps);
         if (alternative.PerHand is { } rate)
         {
             var have = caps.GetValueOrDefault(alternative.Capacity);

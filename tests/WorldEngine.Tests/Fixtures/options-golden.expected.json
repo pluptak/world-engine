@@ -243,134 +243,6 @@
       "status": "ok",
       "options": {
         "actor": "e4",
-        "version": 0,
-        "ready": [
-          {
-            "verb": "attack",
-            "target": "e2"
-          },
-          {
-            "verb": "attack",
-            "target": "e3"
-          },
-          {
-            "verb": "attack",
-            "target": "e5"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.arm_l"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.arm_r"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.hand_l"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.hand_r"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.head"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.pocket"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.thumb_l"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.thumb_r"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.torso"
-          },
-          {
-            "verb": "attack",
-            "target": "e8"
-          },
-          {
-            "verb": "drop",
-            "target": "e3"
-          },
-          {
-            "verb": "give",
-            "target": "e3",
-            "args": {
-              "destination": "e5"
-            }
-          },
-          {
-            "verb": "open",
-            "target": "e8"
-          },
-          {
-            "verb": "pour",
-            "target": "e3",
-            "args": {
-              "destination": "e1"
-            }
-          },
-          {
-            "verb": "pour",
-            "target": "e3",
-            "args": {
-              "destination": "e2"
-            }
-          },
-          {
-            "verb": "pull",
-            "target": "e2"
-          },
-          {
-            "verb": "push",
-            "target": "e2"
-          },
-          {
-            "verb": "put",
-            "target": "e3",
-            "args": {
-              "relation": "on",
-              "destination": "e2"
-            }
-          },
-          {
-            "verb": "search",
-            "target": "e2"
-          },
-          {
-            "verb": "search",
-            "target": "e3"
-          },
-          {
-            "verb": "search",
-            "target": "e5"
-          },
-          {
-            "verb": "search",
-            "target": "e8"
-          },
-          {
-            "verb": "take",
-            "target": "e2"
-          },
-          {
-            "verb": "take",
-            "target": "e5"
-          },
-          {
-            "verb": "take",
-            "target": "e8"
-          }
-        ],
         "needs_args": [
           "cut",
           "extract",
@@ -381,7 +253,131 @@
           "staunch",
           "suture",
           "wait"
-        ]
+        ],
+        "ready": [
+          {
+            "target": "e2",
+            "verb": "attack"
+          },
+          {
+            "target": "e3",
+            "verb": "attack"
+          },
+          {
+            "target": "e5",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.arm_l",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.arm_r",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.hand_l",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.hand_r",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.head",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.pocket",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.thumb_l",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.thumb_r",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.torso",
+            "verb": "attack"
+          },
+          {
+            "target": "e8",
+            "verb": "attack"
+          },
+          {
+            "target": "e3",
+            "verb": "drop"
+          },
+          {
+            "args": {
+              "destination": "e5"
+            },
+            "target": "e3",
+            "verb": "give"
+          },
+          {
+            "target": "e8",
+            "verb": "open"
+          },
+          {
+            "args": {
+              "destination": "e1"
+            },
+            "target": "e3",
+            "verb": "pour"
+          },
+          {
+            "args": {
+              "destination": "e2"
+            },
+            "target": "e3",
+            "verb": "pour"
+          },
+          {
+            "target": "e2",
+            "verb": "pull"
+          },
+          {
+            "target": "e2",
+            "verb": "push"
+          },
+          {
+            "args": {
+              "destination": "e2",
+              "relation": "on"
+            },
+            "target": "e3",
+            "verb": "put"
+          },
+          {
+            "target": "e2",
+            "verb": "search"
+          },
+          {
+            "target": "e3",
+            "verb": "search"
+          },
+          {
+            "target": "e5",
+            "verb": "search"
+          },
+          {
+            "target": "e8",
+            "verb": "search"
+          },
+          {
+            "target": "e2",
+            "verb": "take"
+          },
+          {
+            "target": "e8",
+            "verb": "take"
+          }
+        ],
+        "version": 0
       }
     }
   },
@@ -629,132 +625,402 @@
       "status": "ok",
       "options": {
         "actor": "e4",
-        "version": 0,
-        "ready": [
+        "blocked": [
           {
-            "verb": "attack",
-            "target": "e2"
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "attack"
           },
           {
-            "verb": "attack",
-            "target": "e3"
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "attack"
           },
           {
-            "verb": "attack",
-            "target": "e5"
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "close"
           },
           {
-            "verb": "attack",
-            "target": "e5.arm_l"
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "close"
           },
           {
-            "verb": "attack",
-            "target": "e5.arm_r"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.hand_l"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.hand_r"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.head"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.pocket"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.thumb_l"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.thumb_r"
-          },
-          {
-            "verb": "attack",
-            "target": "e5.torso"
-          },
-          {
-            "verb": "attack",
-            "target": "e8"
-          },
-          {
-            "verb": "drop",
-            "target": "e3"
-          },
-          {
-            "verb": "give",
+            "reason_code": "not_openable",
             "target": "e3",
-            "args": {
-              "destination": "e5"
-            }
+            "verb": "close"
           },
           {
-            "verb": "open",
-            "target": "e8"
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "close"
           },
           {
-            "verb": "pour",
+            "reason_code": "not_openable",
+            "target": "e5",
+            "verb": "close"
+          },
+          {
+            "reason_code": "already_closed",
+            "target": "e8",
+            "verb": "close"
+          },
+          {
+            "reason_code": "not_consumable",
+            "target": "e1",
+            "verb": "consume"
+          },
+          {
+            "reason_code": "not_consumable",
+            "target": "e2",
+            "verb": "consume"
+          },
+          {
+            "reason_code": "not_consumable",
             "target": "e3",
-            "args": {
-              "destination": "e1"
-            }
+            "verb": "consume"
           },
           {
-            "verb": "pour",
+            "reason_code": "not_consumable",
+            "target": "e31",
+            "verb": "consume"
+          },
+          {
+            "reason_code": "not_consumable",
+            "target": "e5",
+            "verb": "consume"
+          },
+          {
+            "reason_code": "not_consumable",
+            "target": "e8",
+            "verb": "consume"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e1",
+            "verb": "douse"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e2",
+            "verb": "douse"
+          },
+          {
+            "reason_code": "not_a_light",
             "target": "e3",
-            "args": {
-              "destination": "e2"
-            }
+            "verb": "douse"
           },
           {
-            "verb": "pull",
-            "target": "e2"
+            "reason_code": "not_a_light",
+            "target": "e31",
+            "verb": "douse"
           },
           {
-            "verb": "push",
-            "target": "e2"
+            "reason_code": "not_a_light",
+            "target": "e5",
+            "verb": "douse"
           },
           {
-            "verb": "put",
+            "reason_code": "not_a_light",
+            "target": "e8",
+            "verb": "douse"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e1",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e2",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e31",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e5",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e8",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e1",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e2",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
             "target": "e3",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e31",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e5",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e8",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e3",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e5",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "no_key",
+            "target": "e8",
+            "verb": "lock"
+          },
+          {
             "args": {
-              "relation": "on",
-              "destination": "e2"
-            }
+              "location": "e9"
+            },
+            "reason_code": "no_open_door",
+            "verb": "move"
           },
           {
-            "verb": "search",
-            "target": "e2"
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "open"
           },
           {
-            "verb": "search",
-            "target": "e3"
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "open"
           },
           {
-            "verb": "search",
-            "target": "e5"
+            "reason_code": "not_openable",
+            "target": "e3",
+            "verb": "open"
           },
           {
-            "verb": "search",
-            "target": "e8"
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "open"
           },
           {
-            "verb": "take",
-            "target": "e2"
+            "reason_code": "not_openable",
+            "target": "e5",
+            "verb": "open"
           },
           {
-            "verb": "take",
-            "target": "e5"
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "pull"
           },
           {
-            "verb": "take",
-            "target": "e8"
+            "reason_code": "target_carried",
+            "target": "e3",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e5",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e8",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "push"
+          },
+          {
+            "reason_code": "target_carried",
+            "target": "e3",
+            "verb": "push"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "push"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e5",
+            "verb": "push"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e8",
+            "verb": "push"
+          },
+          {
+            "args": {
+              "destination": "e4.pocket",
+              "relation": "in"
+            },
+            "reason_code": "too_large",
+            "target": "e3",
+            "verb": "put"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "search"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "search"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e1",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e2",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e3",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e31",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e5",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e8",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e1",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e2",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e3",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e31",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e5",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e8",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "circular_placement",
+            "target": "e1",
+            "verb": "take"
+          },
+          {
+            "reason_code": "already_held",
+            "target": "e3",
+            "verb": "take"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "take"
+          },
+          {
+            "reason_code": "resists",
+            "target": "e5",
+            "verb": "take"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e3",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e5",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "already_unlocked",
+            "target": "e8",
+            "verb": "unlock"
           }
         ],
         "needs_args": [
@@ -768,399 +1034,130 @@
           "suture",
           "wait"
         ],
-        "blocked": [
+        "ready": [
           {
-            "verb": "attack",
-            "target": "e1",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "attack",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "close",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "close",
             "target": "e2",
-            "reason_code": "not_openable"
+            "verb": "attack"
           },
           {
-            "verb": "close",
             "target": "e3",
-            "reason_code": "not_openable"
+            "verb": "attack"
           },
           {
-            "verb": "close",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "close",
             "target": "e5",
-            "reason_code": "not_openable"
+            "verb": "attack"
           },
           {
-            "verb": "close",
+            "target": "e5.arm_l",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.arm_r",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.hand_l",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.hand_r",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.head",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.pocket",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.thumb_l",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.thumb_r",
+            "verb": "attack"
+          },
+          {
+            "target": "e5.torso",
+            "verb": "attack"
+          },
+          {
             "target": "e8",
-            "reason_code": "already_closed"
+            "verb": "attack"
           },
           {
-            "verb": "consume",
-            "target": "e1",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "consume",
-            "target": "e2",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "consume",
             "target": "e3",
-            "reason_code": "not_consumable"
+            "verb": "drop"
           },
           {
-            "verb": "consume",
-            "target": "e31",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "consume",
-            "target": "e5",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "consume",
-            "target": "e8",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "douse",
-            "target": "e1",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e2",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e3",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e31",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e5",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e8",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "drop",
-            "target": "e1",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "drop",
-            "target": "e2",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "drop",
-            "target": "e31",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "drop",
-            "target": "e5",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "drop",
-            "target": "e8",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "light",
-            "target": "e1",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e2",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e3",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e31",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e5",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e8",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "lock",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e2",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e3",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "lock",
-            "target": "e5",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e8",
-            "reason_code": "no_key"
-          },
-          {
-            "verb": "move",
             "args": {
-              "location": "e9"
+              "destination": "e5"
             },
-            "reason_code": "no_open_door"
-          },
-          {
-            "verb": "open",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "open",
-            "target": "e2",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "open",
             "target": "e3",
-            "reason_code": "not_openable"
+            "verb": "give"
           },
           {
-            "verb": "open",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "open",
-            "target": "e5",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "pull",
-            "target": "e1",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "pull",
-            "target": "e3",
-            "reason_code": "target_carried"
-          },
-          {
-            "verb": "pull",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "pull",
-            "target": "e5",
-            "reason_code": "too_heavy"
-          },
-          {
-            "verb": "pull",
             "target": "e8",
-            "reason_code": "too_heavy"
+            "verb": "open"
           },
           {
-            "verb": "push",
-            "target": "e1",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "push",
-            "target": "e3",
-            "reason_code": "target_carried"
-          },
-          {
-            "verb": "push",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "push",
-            "target": "e5",
-            "reason_code": "too_heavy"
-          },
-          {
-            "verb": "push",
-            "target": "e8",
-            "reason_code": "too_heavy"
-          },
-          {
-            "verb": "put",
-            "target": "e3",
             "args": {
-              "relation": "in",
-              "destination": "e4.pocket"
+              "destination": "e1"
             },
-            "reason_code": "too_large"
+            "target": "e3",
+            "verb": "pour"
           },
           {
-            "verb": "search",
-            "target": "e1",
-            "reason_code": "out_of_reach"
+            "args": {
+              "destination": "e2"
+            },
+            "target": "e3",
+            "verb": "pour"
           },
           {
-            "verb": "search",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e1",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
             "target": "e2",
-            "reason_code": "not_switchable"
+            "verb": "pull"
           },
           {
-            "verb": "switch_off",
-            "target": "e3",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e31",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e5",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e8",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e1",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
             "target": "e2",
-            "reason_code": "not_switchable"
+            "verb": "push"
           },
           {
-            "verb": "switch_on",
+            "args": {
+              "destination": "e2",
+              "relation": "on"
+            },
             "target": "e3",
-            "reason_code": "not_switchable"
+            "verb": "put"
           },
           {
-            "verb": "switch_on",
-            "target": "e31",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e5",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e8",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "take",
-            "target": "e1",
-            "reason_code": "circular_placement"
-          },
-          {
-            "verb": "take",
-            "target": "e3",
-            "reason_code": "already_held"
-          },
-          {
-            "verb": "take",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "unlock",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "unlock",
             "target": "e2",
-            "reason_code": "not_openable"
+            "verb": "search"
           },
           {
-            "verb": "unlock",
             "target": "e3",
-            "reason_code": "not_openable"
+            "verb": "search"
           },
           {
-            "verb": "unlock",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "unlock",
             "target": "e5",
-            "reason_code": "not_openable"
+            "verb": "search"
           },
           {
-            "verb": "unlock",
             "target": "e8",
-            "reason_code": "already_unlocked"
+            "verb": "search"
+          },
+          {
+            "target": "e2",
+            "verb": "take"
+          },
+          {
+            "target": "e8",
+            "verb": "take"
           }
-        ]
+        ],
+        "version": 0
       }
     }
   },
@@ -1408,99 +1405,398 @@
       "status": "ok",
       "options": {
         "actor": "e5",
-        "version": 0,
-        "ready": [
+        "blocked": [
           {
-            "verb": "attack",
-            "target": "e2"
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "attack"
           },
           {
-            "verb": "attack",
-            "target": "e3"
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "attack"
           },
           {
-            "verb": "attack",
-            "target": "e4"
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "close"
           },
           {
-            "verb": "attack",
-            "target": "e4.arm_l"
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "close"
           },
           {
-            "verb": "attack",
-            "target": "e4.arm_r"
+            "reason_code": "not_openable",
+            "target": "e3",
+            "verb": "close"
           },
           {
-            "verb": "attack",
-            "target": "e4.hand_l"
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "close"
           },
           {
-            "verb": "attack",
-            "target": "e4.hand_r"
+            "reason_code": "not_openable",
+            "target": "e4",
+            "verb": "close"
           },
           {
-            "verb": "attack",
-            "target": "e4.head"
+            "reason_code": "already_closed",
+            "target": "e8",
+            "verb": "close"
           },
           {
-            "verb": "attack",
-            "target": "e4.pocket"
+            "reason_code": "not_consumable",
+            "target": "e1",
+            "verb": "consume"
           },
           {
-            "verb": "attack",
-            "target": "e4.thumb_l"
+            "reason_code": "not_consumable",
+            "target": "e2",
+            "verb": "consume"
           },
           {
-            "verb": "attack",
-            "target": "e4.thumb_r"
+            "reason_code": "not_consumable",
+            "target": "e3",
+            "verb": "consume"
           },
           {
-            "verb": "attack",
-            "target": "e4.torso"
+            "reason_code": "not_consumable",
+            "target": "e31",
+            "verb": "consume"
           },
           {
-            "verb": "attack",
-            "target": "e8"
+            "reason_code": "not_consumable",
+            "target": "e4",
+            "verb": "consume"
           },
           {
-            "verb": "open",
-            "target": "e8"
+            "reason_code": "not_consumable",
+            "target": "e8",
+            "verb": "consume"
           },
           {
-            "verb": "pull",
-            "target": "e2"
+            "reason_code": "not_a_light",
+            "target": "e1",
+            "verb": "douse"
           },
           {
-            "verb": "push",
-            "target": "e2"
+            "reason_code": "not_a_light",
+            "target": "e2",
+            "verb": "douse"
           },
           {
-            "verb": "search",
-            "target": "e2"
+            "reason_code": "not_a_light",
+            "target": "e3",
+            "verb": "douse"
           },
           {
-            "verb": "search",
-            "target": "e3"
+            "reason_code": "not_a_light",
+            "target": "e31",
+            "verb": "douse"
           },
           {
-            "verb": "search",
-            "target": "e4"
+            "reason_code": "not_a_light",
+            "target": "e4",
+            "verb": "douse"
           },
           {
-            "verb": "search",
-            "target": "e8"
+            "reason_code": "not_a_light",
+            "target": "e8",
+            "verb": "douse"
           },
           {
-            "verb": "take",
-            "target": "e2"
+            "reason_code": "not_carried",
+            "target": "e1",
+            "verb": "drop"
           },
           {
-            "verb": "take",
-            "target": "e4"
+            "reason_code": "not_carried",
+            "target": "e2",
+            "verb": "drop"
           },
           {
-            "verb": "take",
-            "target": "e8"
+            "reason_code": "not_carried",
+            "target": "e3",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e31",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e4",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e8",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e1",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e2",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e3",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e31",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e4",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e8",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e3",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e4",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "no_key",
+            "target": "e8",
+            "verb": "lock"
+          },
+          {
+            "args": {
+              "location": "e9"
+            },
+            "reason_code": "no_open_door",
+            "verb": "move"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "open"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "open"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e3",
+            "verb": "open"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "open"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e4",
+            "verb": "open"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "target_carried",
+            "target": "e3",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e4",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e8",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "push"
+          },
+          {
+            "reason_code": "target_carried",
+            "target": "e3",
+            "verb": "push"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "push"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e4",
+            "verb": "push"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e8",
+            "verb": "push"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "search"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "search"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e1",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e2",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e3",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e31",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e4",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e8",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e1",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e2",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e3",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e31",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e4",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e8",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "circular_placement",
+            "target": "e1",
+            "verb": "take"
+          },
+          {
+            "reason_code": "held_by_another",
+            "target": "e3",
+            "verb": "take"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "take"
+          },
+          {
+            "reason_code": "resists",
+            "target": "e4",
+            "verb": "take"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e3",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e31",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e4",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "already_unlocked",
+            "target": "e8",
+            "verb": "unlock"
           }
         ],
         "needs_args": [
@@ -1514,395 +1810,97 @@
           "suture",
           "wait"
         ],
-        "blocked": [
+        "ready": [
           {
-            "verb": "attack",
-            "target": "e1",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "attack",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "close",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "close",
             "target": "e2",
-            "reason_code": "not_openable"
+            "verb": "attack"
           },
           {
-            "verb": "close",
             "target": "e3",
-            "reason_code": "not_openable"
+            "verb": "attack"
           },
           {
-            "verb": "close",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "close",
             "target": "e4",
-            "reason_code": "not_openable"
+            "verb": "attack"
           },
           {
-            "verb": "close",
+            "target": "e4.arm_l",
+            "verb": "attack"
+          },
+          {
+            "target": "e4.arm_r",
+            "verb": "attack"
+          },
+          {
+            "target": "e4.hand_l",
+            "verb": "attack"
+          },
+          {
+            "target": "e4.hand_r",
+            "verb": "attack"
+          },
+          {
+            "target": "e4.head",
+            "verb": "attack"
+          },
+          {
+            "target": "e4.pocket",
+            "verb": "attack"
+          },
+          {
+            "target": "e4.thumb_l",
+            "verb": "attack"
+          },
+          {
+            "target": "e4.thumb_r",
+            "verb": "attack"
+          },
+          {
+            "target": "e4.torso",
+            "verb": "attack"
+          },
+          {
             "target": "e8",
-            "reason_code": "already_closed"
+            "verb": "attack"
           },
           {
-            "verb": "consume",
-            "target": "e1",
-            "reason_code": "not_consumable"
+            "target": "e8",
+            "verb": "open"
           },
           {
-            "verb": "consume",
             "target": "e2",
-            "reason_code": "not_consumable"
+            "verb": "pull"
           },
           {
-            "verb": "consume",
-            "target": "e3",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "consume",
-            "target": "e31",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "consume",
-            "target": "e4",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "consume",
-            "target": "e8",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "douse",
-            "target": "e1",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
             "target": "e2",
-            "reason_code": "not_a_light"
+            "verb": "push"
           },
           {
-            "verb": "douse",
-            "target": "e3",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e31",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e4",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e8",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "drop",
-            "target": "e1",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "drop",
             "target": "e2",
-            "reason_code": "not_carried"
+            "verb": "search"
           },
           {
-            "verb": "drop",
             "target": "e3",
-            "reason_code": "not_carried"
+            "verb": "search"
           },
           {
-            "verb": "drop",
-            "target": "e31",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "drop",
             "target": "e4",
-            "reason_code": "not_carried"
+            "verb": "search"
           },
           {
-            "verb": "drop",
             "target": "e8",
-            "reason_code": "not_carried"
+            "verb": "search"
           },
           {
-            "verb": "light",
-            "target": "e1",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
             "target": "e2",
-            "reason_code": "not_a_light"
+            "verb": "take"
           },
           {
-            "verb": "light",
-            "target": "e3",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e31",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e4",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
             "target": "e8",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "lock",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e2",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e3",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "lock",
-            "target": "e4",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e8",
-            "reason_code": "no_key"
-          },
-          {
-            "verb": "move",
-            "args": {
-              "location": "e9"
-            },
-            "reason_code": "no_open_door"
-          },
-          {
-            "verb": "open",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "open",
-            "target": "e2",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "open",
-            "target": "e3",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "open",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "open",
-            "target": "e4",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "pull",
-            "target": "e1",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "pull",
-            "target": "e3",
-            "reason_code": "target_carried"
-          },
-          {
-            "verb": "pull",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "pull",
-            "target": "e4",
-            "reason_code": "too_heavy"
-          },
-          {
-            "verb": "pull",
-            "target": "e8",
-            "reason_code": "too_heavy"
-          },
-          {
-            "verb": "push",
-            "target": "e1",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "push",
-            "target": "e3",
-            "reason_code": "target_carried"
-          },
-          {
-            "verb": "push",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "push",
-            "target": "e4",
-            "reason_code": "too_heavy"
-          },
-          {
-            "verb": "push",
-            "target": "e8",
-            "reason_code": "too_heavy"
-          },
-          {
-            "verb": "search",
-            "target": "e1",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "search",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e1",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e2",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e3",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e31",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e4",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e8",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e1",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e2",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e3",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e31",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e4",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e8",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "take",
-            "target": "e1",
-            "reason_code": "circular_placement"
-          },
-          {
-            "verb": "take",
-            "target": "e3",
-            "reason_code": "held_by_another"
-          },
-          {
-            "verb": "take",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "unlock",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "unlock",
-            "target": "e2",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "unlock",
-            "target": "e3",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "unlock",
-            "target": "e31",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "unlock",
-            "target": "e4",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "unlock",
-            "target": "e8",
-            "reason_code": "already_unlocked"
+            "verb": "take"
           }
-        ]
+        ],
+        "version": 0
       }
     }
   },
@@ -2150,96 +2148,327 @@
       "status": "ok",
       "options": {
         "actor": "e4",
-        "version": 0,
-        "ready": [
+        "blocked": [
           {
-            "verb": "attack",
-            "target": "e2"
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "attack"
           },
           {
-            "verb": "attack",
-            "target": "e3"
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "close"
           },
           {
-            "verb": "attack",
-            "target": "e5"
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "close"
           },
           {
-            "verb": "attack",
-            "target": "e8"
-          },
-          {
-            "verb": "drop",
-            "target": "e3"
-          },
-          {
-            "verb": "give",
+            "reason_code": "not_openable",
             "target": "e3",
-            "args": {
-              "destination": "e5"
-            }
+            "verb": "close"
           },
           {
-            "verb": "open",
-            "target": "e8"
+            "reason_code": "not_openable",
+            "target": "e5",
+            "verb": "close"
           },
           {
-            "verb": "pour",
+            "reason_code": "already_closed",
+            "target": "e8",
+            "verb": "close"
+          },
+          {
+            "reason_code": "not_consumable",
+            "target": "e1",
+            "verb": "consume"
+          },
+          {
+            "reason_code": "not_consumable",
+            "target": "e2",
+            "verb": "consume"
+          },
+          {
+            "reason_code": "not_consumable",
             "target": "e3",
-            "args": {
-              "destination": "e1"
-            }
+            "verb": "consume"
           },
           {
-            "verb": "pour",
+            "reason_code": "not_consumable",
+            "target": "e5",
+            "verb": "consume"
+          },
+          {
+            "reason_code": "not_consumable",
+            "target": "e8",
+            "verb": "consume"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e1",
+            "verb": "douse"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e2",
+            "verb": "douse"
+          },
+          {
+            "reason_code": "not_a_light",
             "target": "e3",
-            "args": {
-              "destination": "e2"
-            }
+            "verb": "douse"
           },
           {
-            "verb": "pull",
-            "target": "e2"
+            "reason_code": "not_a_light",
+            "target": "e5",
+            "verb": "douse"
           },
           {
-            "verb": "push",
-            "target": "e2"
+            "reason_code": "not_a_light",
+            "target": "e8",
+            "verb": "douse"
           },
           {
-            "verb": "put",
+            "reason_code": "not_carried",
+            "target": "e1",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e2",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e5",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_carried",
+            "target": "e8",
+            "verb": "drop"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e1",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e2",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
             "target": "e3",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e5",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_a_light",
+            "target": "e8",
+            "verb": "light"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e3",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e5",
+            "verb": "lock"
+          },
+          {
+            "reason_code": "no_key",
+            "target": "e8",
+            "verb": "lock"
+          },
+          {
             "args": {
-              "relation": "on",
-              "destination": "e2"
-            }
+              "location": "e9"
+            },
+            "reason_code": "no_open_door",
+            "verb": "move"
           },
           {
-            "verb": "search",
-            "target": "e2"
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "open"
           },
           {
-            "verb": "search",
-            "target": "e3"
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "open"
           },
           {
-            "verb": "search",
-            "target": "e5"
+            "reason_code": "not_openable",
+            "target": "e3",
+            "verb": "open"
           },
           {
-            "verb": "search",
-            "target": "e8"
+            "reason_code": "not_openable",
+            "target": "e5",
+            "verb": "open"
           },
           {
-            "verb": "take",
-            "target": "e2"
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "pull"
           },
           {
-            "verb": "take",
-            "target": "e5"
+            "reason_code": "target_carried",
+            "target": "e3",
+            "verb": "pull"
           },
           {
-            "verb": "take",
-            "target": "e8"
+            "reason_code": "too_heavy",
+            "target": "e5",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e8",
+            "verb": "pull"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "push"
+          },
+          {
+            "reason_code": "target_carried",
+            "target": "e3",
+            "verb": "push"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e5",
+            "verb": "push"
+          },
+          {
+            "reason_code": "too_heavy",
+            "target": "e8",
+            "verb": "push"
+          },
+          {
+            "args": {
+              "destination": "e4.pocket",
+              "relation": "in"
+            },
+            "reason_code": "too_large",
+            "target": "e3",
+            "verb": "put"
+          },
+          {
+            "reason_code": "out_of_reach",
+            "target": "e1",
+            "verb": "search"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e1",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e2",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e3",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e5",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e8",
+            "verb": "switch_off"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e1",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e2",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e3",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e5",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "not_switchable",
+            "target": "e8",
+            "verb": "switch_on"
+          },
+          {
+            "reason_code": "circular_placement",
+            "target": "e1",
+            "verb": "take"
+          },
+          {
+            "reason_code": "already_held",
+            "target": "e3",
+            "verb": "take"
+          },
+          {
+            "reason_code": "resists",
+            "target": "e5",
+            "verb": "take"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e1",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e2",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e3",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "not_openable",
+            "target": "e5",
+            "verb": "unlock"
+          },
+          {
+            "reason_code": "already_unlocked",
+            "target": "e8",
+            "verb": "unlock"
           }
         ],
         "needs_args": [
@@ -2253,324 +2482,94 @@
           "suture",
           "wait"
         ],
-        "blocked": [
+        "ready": [
           {
-            "verb": "attack",
-            "target": "e1",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "close",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "close",
             "target": "e2",
-            "reason_code": "not_openable"
+            "verb": "attack"
           },
           {
-            "verb": "close",
             "target": "e3",
-            "reason_code": "not_openable"
+            "verb": "attack"
           },
           {
-            "verb": "close",
             "target": "e5",
-            "reason_code": "not_openable"
+            "verb": "attack"
           },
           {
-            "verb": "close",
             "target": "e8",
-            "reason_code": "already_closed"
+            "verb": "attack"
           },
           {
-            "verb": "consume",
-            "target": "e1",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "consume",
-            "target": "e2",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "consume",
             "target": "e3",
-            "reason_code": "not_consumable"
+            "verb": "drop"
           },
           {
-            "verb": "consume",
-            "target": "e5",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "consume",
-            "target": "e8",
-            "reason_code": "not_consumable"
-          },
-          {
-            "verb": "douse",
-            "target": "e1",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e2",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e3",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e5",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "douse",
-            "target": "e8",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "drop",
-            "target": "e1",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "drop",
-            "target": "e2",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "drop",
-            "target": "e5",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "drop",
-            "target": "e8",
-            "reason_code": "not_carried"
-          },
-          {
-            "verb": "light",
-            "target": "e1",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e2",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e3",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e5",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "light",
-            "target": "e8",
-            "reason_code": "not_a_light"
-          },
-          {
-            "verb": "lock",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e2",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e3",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e5",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "lock",
-            "target": "e8",
-            "reason_code": "no_key"
-          },
-          {
-            "verb": "move",
             "args": {
-              "location": "e9"
+              "destination": "e5"
             },
-            "reason_code": "no_open_door"
-          },
-          {
-            "verb": "open",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "open",
-            "target": "e2",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "open",
             "target": "e3",
-            "reason_code": "not_openable"
+            "verb": "give"
           },
           {
-            "verb": "open",
-            "target": "e5",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "pull",
-            "target": "e1",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "pull",
-            "target": "e3",
-            "reason_code": "target_carried"
-          },
-          {
-            "verb": "pull",
-            "target": "e5",
-            "reason_code": "too_heavy"
-          },
-          {
-            "verb": "pull",
             "target": "e8",
-            "reason_code": "too_heavy"
+            "verb": "open"
           },
           {
-            "verb": "push",
-            "target": "e1",
-            "reason_code": "out_of_reach"
-          },
-          {
-            "verb": "push",
-            "target": "e3",
-            "reason_code": "target_carried"
-          },
-          {
-            "verb": "push",
-            "target": "e5",
-            "reason_code": "too_heavy"
-          },
-          {
-            "verb": "push",
-            "target": "e8",
-            "reason_code": "too_heavy"
-          },
-          {
-            "verb": "put",
-            "target": "e3",
             "args": {
-              "relation": "in",
-              "destination": "e4.pocket"
+              "destination": "e1"
             },
-            "reason_code": "too_large"
+            "target": "e3",
+            "verb": "pour"
           },
           {
-            "verb": "search",
-            "target": "e1",
-            "reason_code": "out_of_reach"
+            "args": {
+              "destination": "e2"
+            },
+            "target": "e3",
+            "verb": "pour"
           },
           {
-            "verb": "switch_off",
-            "target": "e1",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
             "target": "e2",
-            "reason_code": "not_switchable"
+            "verb": "pull"
           },
           {
-            "verb": "switch_off",
-            "target": "e3",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e5",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_off",
-            "target": "e8",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e1",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
             "target": "e2",
-            "reason_code": "not_switchable"
+            "verb": "push"
           },
           {
-            "verb": "switch_on",
+            "args": {
+              "destination": "e2",
+              "relation": "on"
+            },
             "target": "e3",
-            "reason_code": "not_switchable"
+            "verb": "put"
           },
           {
-            "verb": "switch_on",
-            "target": "e5",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "switch_on",
-            "target": "e8",
-            "reason_code": "not_switchable"
-          },
-          {
-            "verb": "take",
-            "target": "e1",
-            "reason_code": "circular_placement"
-          },
-          {
-            "verb": "take",
-            "target": "e3",
-            "reason_code": "already_held"
-          },
-          {
-            "verb": "unlock",
-            "target": "e1",
-            "reason_code": "not_openable"
-          },
-          {
-            "verb": "unlock",
             "target": "e2",
-            "reason_code": "not_openable"
+            "verb": "search"
           },
           {
-            "verb": "unlock",
             "target": "e3",
-            "reason_code": "not_openable"
+            "verb": "search"
           },
           {
-            "verb": "unlock",
             "target": "e5",
-            "reason_code": "not_openable"
+            "verb": "search"
           },
           {
-            "verb": "unlock",
             "target": "e8",
-            "reason_code": "already_unlocked"
+            "verb": "search"
+          },
+          {
+            "target": "e2",
+            "verb": "take"
+          },
+          {
+            "target": "e8",
+            "verb": "take"
           }
-        ]
+        ],
+        "version": 0
       }
     }
   },

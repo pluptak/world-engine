@@ -73,7 +73,7 @@ public static class SurgeryVerbs
         {
             return reach;
         }
-        if (!Carry.HeldInParts(snapshot, context.Command.Actor).Any(item => snapshot.Entities[item.Id].Props.Is(Prop.Cuts)))
+        if (!Carry.HeldInParts(snapshot, context.Registry, context.Command.Actor).Any(item => snapshot.Entities[item.Id].Props.Is(Prop.Cuts)))
         {
             return Pipeline.Refused(Code.NoCuttingTool);
         }

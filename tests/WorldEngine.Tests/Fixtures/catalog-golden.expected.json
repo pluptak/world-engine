@@ -786,6 +786,7 @@
       "container_closed",
       "held_by_another",
       "already_held",
+      "resists",
       "two_hands_required",
       "too_heavy",
       "mouth_full",

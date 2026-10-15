@@ -194,6 +194,7 @@ public enum Code
     Quiet,
     RelationState,
     ReplayDiverges,
+    Resists,
     RevisionInUse,
     RoleForbidden,
     RoomPlaced,

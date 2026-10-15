@@ -1736,12 +1736,13 @@
       }
     },
     "result": {
-      "status": "ok",
+      "status": "refused",
       "command_id": "c5",
       "resolved_target": "x9c430c60b291",
+      "reason_code": "resists",
       "observation": {
         "observer": "x4867edd8484a",
-        "tick": 4,
+        "tick": 3,
         "unknown_senses": [
           "smell"
         ],
@@ -1823,18 +1824,16 @@
             "template": "human",
             "name": "e5",
             "senses": [
-              "sight",
-              "touch"
+              "sight"
             ],
             "facts": {
               "location": "x574ce08fc018",
-              "contained_in": "x4867edd8484a",
-              "in_part": "hand_r",
+              "support": "x574ce08fc018",
               "status": "intact",
               "integrity": 100,
               "residue": {},
               "pos": {
-                "x": -50,
+                "x": -20,
                 "y": 0
               }
             }
@@ -1880,28 +1879,7 @@
             }
           }
         ],
-        "events": [
-          {
-            "event_id": "x98eb240ee83c",
-            "tick": 3,
-            "type": "take",
-            "senses": [
-              "sight",
-              "touch"
-            ],
-            "entity": "x9c430c60b291"
-          },
-          {
-            "event_id": "xdb3716ab5857",
-            "tick": 3,
-            "type": "moved",
-            "senses": [
-              "sight",
-              "touch"
-            ],
-            "entity": "x9c430c60b291"
-          }
-        ]
+        "events": []
       }
     }
   },
@@ -1921,7 +1899,7 @@
       "command_id": "c6",
       "observation": {
         "observer": "x4867edd8484a",
-        "tick": 4,
+        "tick": 3,
         "unknown_senses": [
           "smell"
         ],
@@ -2003,18 +1981,16 @@
             "template": "human",
             "name": "e5",
             "senses": [
-              "sight",
-              "touch"
+              "sight"
             ],
             "facts": {
               "location": "x574ce08fc018",
-              "contained_in": "x4867edd8484a",
-              "in_part": "hand_r",
+              "support": "x574ce08fc018",
               "status": "intact",
               "integrity": 100,
               "residue": {},
               "pos": {
-                "x": -50,
+                "x": -20,
                 "y": 0
               }
             }
@@ -2082,7 +2058,7 @@
       "reason_code": "already_open",
       "observation": {
         "observer": "x5b95900d0b16",
-        "tick": 4,
+        "tick": 3,
         "unknown_senses": [
           "smell"
         ],
@@ -2174,13 +2150,12 @@
             ],
             "facts": {
               "location": "x6e99b3c5eae8",
-              "contained_in": "x2e07a7fffead",
-              "in_part": "hand_r",
+              "support": "x6e99b3c5eae8",
               "status": "intact",
               "integrity": 100,
               "residue": {},
               "pos": {
-                "x": -50,
+                "x": -20,
                 "y": 0
               }
             }
@@ -2190,7 +2165,8 @@
             "template": "room",
             "name": "room",
             "senses": [
-              "sight"
+              "sight",
+              "touch"
             ],
             "facts": {
               "status": "intact",
@@ -2230,7 +2206,7 @@
     },
     "result": {
       "observer": "x5b95900d0b16",
-      "tick": 4,
+      "tick": 3,
       "unknown_senses": [
         "smell"
       ],
@@ -2322,13 +2298,12 @@
           ],
           "facts": {
             "location": "x6e99b3c5eae8",
-            "contained_in": "x2e07a7fffead",
-            "in_part": "hand_r",
+            "support": "x6e99b3c5eae8",
             "status": "intact",
             "integrity": 100,
             "residue": {},
             "pos": {
-              "x": -50,
+              "x": -20,
               "y": 0
             }
           }
@@ -2338,7 +2313,8 @@
           "template": "room",
           "name": "room",
           "senses": [
-            "sight"
+            "sight",
+            "touch"
           ],
           "facts": {
             "status": "intact",
@@ -2378,7 +2354,7 @@
     },
     "result": {
       "observer": "x5b95900d0b16",
-      "tick": 4,
+      "tick": 3,
       "unknown_senses": [
         "smell"
       ],
@@ -2470,13 +2446,12 @@
           ],
           "facts": {
             "location": "x6e99b3c5eae8",
-            "contained_in": "x2e07a7fffead",
-            "in_part": "hand_r",
+            "support": "x6e99b3c5eae8",
             "status": "intact",
             "integrity": 100,
             "residue": {},
             "pos": {
-              "x": -50,
+              "x": -20,
               "y": 0
             }
           }
@@ -2486,7 +2461,8 @@
           "template": "room",
           "name": "room",
           "senses": [
-            "sight"
+            "sight",
+            "touch"
           ],
           "facts": {
             "status": "intact",
@@ -2558,26 +2534,6 @@
           "entity": "x2e07a7fffead",
           "utterance": "xa91157f9c462",
           "volume": "normal"
-        },
-        {
-          "event_id": "x047e75f87345",
-          "tick": 3,
-          "type": "take",
-          "senses": [
-            "sight",
-            "touch"
-          ],
-          "entity": "x5b95900d0b16"
-        },
-        {
-          "event_id": "x42c56fd9ac0d",
-          "tick": 3,
-          "type": "moved",
-          "senses": [
-            "sight",
-            "touch"
-          ],
-          "entity": "x5b95900d0b16"
         }
       ]
     }
@@ -2653,10 +2609,6 @@
           "target": "xe7d06abfe371"
         },
         {
-          "verb": "drop",
-          "target": "x9c430c60b291"
-        },
-        {
           "verb": "give",
           "target": "xe7d06abfe371",
           "args": {
@@ -2686,14 +2638,6 @@
           }
         },
         {
-          "verb": "put",
-          "target": "x9c430c60b291",
-          "args": {
-            "destination": "x8ea789cc1f2c",
-            "relation": "on"
-          }
-        },
-        {
           "verb": "search",
           "target": "x8ea789cc1f2c"
         },
@@ -2707,6 +2651,14 @@
         },
         {
           "verb": "search",
+          "target": "xa91157f9c462"
+        },
+        {
+          "verb": "take",
+          "target": "x8ea789cc1f2c"
+        },
+        {
+          "verb": "take",
           "target": "xa91157f9c462"
         }
       ],
@@ -2834,6 +2786,11 @@
         },
         {
           "verb": "drop",
+          "target": "x9c430c60b291",
+          "reason_code": "not_carried"
+        },
+        {
+          "verb": "drop",
           "target": "xa91157f9c462",
           "reason_code": "not_carried"
         },
@@ -2945,7 +2902,7 @@
         {
           "verb": "pull",
           "target": "x9c430c60b291",
-          "reason_code": "target_carried"
+          "reason_code": "too_heavy"
         },
         {
           "verb": "pull",
@@ -2970,7 +2927,7 @@
         {
           "verb": "push",
           "target": "x9c430c60b291",
-          "reason_code": "target_carried"
+          "reason_code": "too_heavy"
         },
         {
           "verb": "push",
@@ -2980,15 +2937,6 @@
         {
           "verb": "put",
           "target": "xe7d06abfe371",
-          "args": {
-            "destination": "x4867edd8484a.pocket",
-            "relation": "in"
-          },
-          "reason_code": "too_large"
-        },
-        {
-          "verb": "put",
-          "target": "x9c430c60b291",
           "args": {
             "destination": "x4867edd8484a.pocket",
             "relation": "in"
@@ -3072,11 +3020,6 @@
         },
         {
           "verb": "take",
-          "target": "x8ea789cc1f2c",
-          "reason_code": "too_heavy"
-        },
-        {
-          "verb": "take",
           "target": "xe7d06abfe371",
           "reason_code": "already_held"
         },
@@ -3088,12 +3031,7 @@
         {
           "verb": "take",
           "target": "x9c430c60b291",
-          "reason_code": "already_held"
-        },
-        {
-          "verb": "take",
-          "target": "xa91157f9c462",
-          "reason_code": "too_heavy"
+          "reason_code": "resists"
         },
         {
           "verb": "unlock",
@@ -3192,6 +3130,12 @@
         {
           "verb": "close",
           "target": "xf663ff86224e"
+        },
+        {
+          "verb": "move",
+          "args": {
+            "location": "x317e7e739bd9"
+          }
         },
         {
           "verb": "pull",
@@ -3404,14 +3348,16 @@
         },
         "e5": {
           "aliases": [],
-          "contained_in": "e4",
           "id": "e5",
-          "in_part": "hand_r",
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
           "name": "e5",
           "parts": {},
+          "pos": {
+            "x": -20,
+            "y": 0
+          },
           "props": {
             "agent": true,
             "attack_damage": 40,
@@ -3425,6 +3371,7 @@
           },
           "residue": {},
           "status": "intact",
+          "support": "e1",
           "template": "human"
         },
         "e8": {
@@ -3463,10 +3410,10 @@
           "template": "room"
         }
       },
-      "next_seq": 46,
+      "next_seq": 44,
       "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
-      "tick": 4,
-      "version": 4
+      "tick": 3,
+      "version": 3
     }
   }
 ]

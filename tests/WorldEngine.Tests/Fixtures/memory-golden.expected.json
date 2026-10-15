@@ -803,6 +803,11 @@
           "verb": "take"
         },
         {
+          "reason_code": "resists",
+          "target": "e5",
+          "verb": "take"
+        },
+        {
           "reason_code": "not_openable",
           "target": "e1",
           "verb": "unlock"
@@ -946,10 +951,6 @@
         },
         {
           "target": "e2",
-          "verb": "take"
-        },
-        {
-          "target": "e5",
           "verb": "take"
         },
         {

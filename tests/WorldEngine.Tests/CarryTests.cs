@@ -57,7 +57,7 @@ public class CarryTests
                 ["spaces"] = layout.Spaces.Select(space => new Dictionary<string, object?> { ["name"] = space.Name, ["inner"] = space.Inner }),
             },
             ["held_count"] = Carry.HeldCount(snapshot, Holder),
-            ["held_in_parts"] = Carry.HeldInParts(snapshot, Holder)
+            ["held_in_parts"] = Carry.HeldInParts(snapshot, Registry, Holder)
                 .Select(item => new Dictionary<string, object?> { ["id"] = item.Id, ["in_part"] = item.InPart, ["hands"] = item.Hands }),
             ["evictions"] = Carry.GripEvictions(snapshot, Registry, Holder),
             ["grips_packed"] = PackedJson(layout.Grips, snapshot),
@@ -65,6 +65,12 @@ public class CarryTests
                 .ToDictionary(id => id, id => ItemRow(snapshot, id), StringComparer.Ordinal),
         };
 
+        if (GoldenUpdate.Enabled)
+        {
+            Golden["variants"]![label] = JsonNode.Parse(WorldJson.Write(result));
+            GoldenUpdate.Write("carry.expected.json", Golden);
+            return;
+        }
         Meaning.Same(expected, WorldJson.Write(result), $"{label}: holding and claiming differ from TypeScript's");
     }
 
@@ -101,6 +107,12 @@ public class CarryTests
                             var plain = Carry.Check(caps, carrierProps, item, Registry, otherHeld, Carry.Alternatives, 0);
                             var withHands = Carry.Check(caps, carrierProps, item, Registry, otherHeld, Carry.Alternatives, 80);
 
+                            if (GoldenUpdate.Enabled)
+                            {
+                                row["carry"] = JsonNode.Parse(WorldJson.Write(VerdictJson(plain)));
+                                row["carry_hands_mass_80"] = JsonNode.Parse(WorldJson.Write(VerdictJson(withHands)));
+                                continue;
+                            }
                             Meaning.Same(row["carry"], WorldJson.Write(VerdictJson(plain)), $"{label} row {index - 1}: the carry verdict differs from TypeScript's");
                             Meaning.Same(row["carry_hands_mass_80"], WorldJson.Write(VerdictJson(withHands)), $"{label} row {index - 1}: the carry verdict with hands' mass differs from TypeScript's");
                         }
@@ -109,6 +121,10 @@ public class CarryTests
             }
         }
         Assert.Equal(expected.Count, index);
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("carry.expected.json", Golden);
+        }
     }
 
     private static Dictionary<string, object?> ItemRow(Snapshot snapshot, string itemId)
@@ -133,7 +149,7 @@ public class CarryTests
 
     private static object? PackedJson(IReadOnlyList<string> grips, Snapshot snapshot)
     {
-        var packed = Carry.PackGrips(grips, Carry.HeldInParts(snapshot, Holder));
+        var packed = Carry.PackGrips(grips, Carry.HeldInParts(snapshot, Registry, Holder));
         return packed is null ? null : packed.Order(StringComparer.Ordinal).ToList();
     }
 

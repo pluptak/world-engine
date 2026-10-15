@@ -197,11 +197,18 @@ round 12. **Evidence** says what the run showed.
 - **What `take` may lift.** `take` asks nothing of its target's kind.
   Evidence: an earlier run of the same scene took and dropped the exit door, which `lab-run.json` places
   with a `location` and `support` beside its `from` and `to`; this run offered `take` on the intercom.
-  Carrying a person is built (`move` refuses `being_carried`), so `take` on bob is no gap.
+  A person is lifted only when it cannot resist (`resists`), and with both hands.
   Possible representation: `take` refuses a door (`Resolve.IsDoor`) with a code of its own; a fixture is
   attached by the scene, or marked by its template.
   Open: whether a door may have a `location` at all (`SnapshotValidation`); a template mark such as
   `fixed`, or attachment only.
+- **Consent to be carried.** `take` refuses an agent that can move (`resists`); only one asleep,
+  unconscious or bound is lifted, so a willing one cannot be carried.
+  Evidence: the ann and bob run, where bob lifted ann one-handed; the user asked that a person be
+  carried only when it cooperates or cannot prevent it, and chose to build the second half first.
+  Possible representation: a `yield {to}` verb setting a state prop that lets that carrier lift it
+  until either moves away; or a consenting move in the same round.
+  Open: which; whether a carried agent may end it by struggling, and at what cost.
 - **A CLI that stays up.** Each request is one process start and one read of the world's files.
   Evidence: the run made 236 requests at about 0.45 s each, about a fifth of its 8.5 minutes; the host's
   `snapshot` each round (0.44 s, the costliest read) was only for `run.state`.

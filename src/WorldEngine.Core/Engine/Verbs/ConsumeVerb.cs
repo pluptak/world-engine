@@ -183,7 +183,7 @@ public static class ConsumeVerb
                 .Select(part => part.Name)]
             : new List<string>();
         return mouths.Count > 0
-            && Carry.HeldInParts(context.Snapshot, actorId).Any(held => held.Id != itemId && mouths.Contains(held.InPart));
+            && Carry.HeldInParts(context.Snapshot, context.Registry, actorId).Any(held => held.Id != itemId && mouths.Contains(held.InPart));
     }
 
     // A whole number, as the engine reads a count: a JSON number with no fraction.

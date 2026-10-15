@@ -155,7 +155,7 @@ public static class VerbSpecs
             {
                 ["part"] = new(ArgKind.Address),
             },
-            Refuses: [Code.TargetAttached, Code.CircularPlacement, Code.OutOfReach, Code.TooBigForGap, Code.InsufficientManipulation, Code.ContainerClosed, Code.HeldByAnother, Code.AlreadyHeld, Code.TwoHandsRequired, Code.TooHeavy, Code.MouthFull, Code.HandsFull, Code.UnknownPart],
+            Refuses: [Code.TargetAttached, Code.CircularPlacement, Code.OutOfReach, Code.TooBigForGap, Code.InsufficientManipulation, Code.ContainerClosed, Code.HeldByAnother, Code.AlreadyHeld, Code.Resists, Code.TwoHandsRequired, Code.TooHeavy, Code.MouthFull, Code.HandsFull, Code.UnknownPart],
             CarryAlternatives: Carry.Alternatives),
         ["unlock"] = new(
             Args: NoArgs,

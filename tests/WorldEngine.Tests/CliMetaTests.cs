@@ -56,9 +56,26 @@ public class CliMetaTests : IDisposable
                 request["world"] = dir;
             }
             var output = CliRunner.Run([], request.ToJsonString());
+            // Only a row that moved is rewritten: an answer may carry this run's world folder.
+            if (GoldenUpdate.Enabled)
+            {
+                try
+                {
+                    Meaning.Same(row["stdout"]!.GetValue<string>(), output.Stdout, "");
+                }
+                catch (Exception)
+                {
+                    row["stdout"] = output.Stdout;
+                }
+                continue;
+            }
 
             Meaning.Same(row["stdout"]!.GetValue<string>(), output.Stdout, $"row {index} ({request["op"]}): the answer differs from TypeScript's");
             Assert.Equal(row["status"]!.GetValue<int>(), output.Status);
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("cli-meta.expected.json", Rows);
         }
     }
 

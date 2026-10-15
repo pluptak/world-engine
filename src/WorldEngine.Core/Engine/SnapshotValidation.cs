@@ -576,7 +576,7 @@ public static class SnapshotValidation
                 continue;
             }
             var grips = layout.Grips.Where(grip => Carry.PartAvailable(snapshot, registry, holderId, grip)).ToList();
-            var gripHeld = Carry.HeldInParts(snapshot, holderId).Where(item => grips.Contains(item.InPart)).ToList();
+            var gripHeld = Carry.HeldInParts(snapshot, registry, holderId).Where(item => grips.Contains(item.InPart)).ToList();
             if (Carry.PackGrips(grips, gripHeld) is null)
             {
                 issues.Add(Issue(Code.GripOccupied, ["entities", holderId], $"holder {holderId}"));
@@ -587,7 +587,7 @@ public static class SnapshotValidation
                 {
                     continue;
                 }
-                var oversized = Carry.HeldInParts(snapshot, holderId)
+                var oversized = Carry.HeldInParts(snapshot, registry, holderId)
                     .Where(item => item.InPart == spaceName)
                     .FirstOrDefault(item =>
                     {

@@ -13,7 +13,8 @@ public class OptionsGoldenTests
     [Fact]
     public void Options_rows_match_TypeScript()
     {
-        foreach (var row in GoldenRows.ReadRows("options-golden.expected.json"))
+        var rows = GoldenRows.ReadRows("options-golden.expected.json");
+        foreach (var row in rows)
         {
             var name = row!["name"]!.GetValue<string>();
             var input = row["input"]!;
@@ -24,7 +25,16 @@ public class OptionsGoldenTests
                 input["actor"]!.GetValue<string>(),
                 input["refused"]!.GetValue<bool>(),
                 command => Pipeline.Apply(snapshot, TestTemplates.RepoRegistry, VerbRegistry.All, command)))));
+            if (GoldenUpdate.Enabled)
+            {
+                row["result"] = actual.DeepClone();
+                continue;
+            }
             Meaning.Same(row["result"], actual, $"{name}: the options differ from TypeScript's");
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("options-golden.expected.json", rows);
         }
     }
 

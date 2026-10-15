@@ -51,6 +51,13 @@ public static class TakeVerb
         {
             return Pipeline.Refused(Code.AlreadyHeld);
         }
+        // An agent able to move stops anyone lifting it; one asleep, unconscious or bound cannot. Consent is not modelled.
+        if (Reach.IsAgent(snapshot, entity.Id)
+            && !entity.Props.Is(Prop.Asleep)
+            && (Capacities.Of(snapshot, context.Registry, entity.Id, Capacity.Moving) ?? 0) > 0)
+        {
+            return Pipeline.Refused(Code.Resists);
+        }
 
         var carry = Carry.Check(
             Capacities.All(snapshot, context.Registry, actorId),
