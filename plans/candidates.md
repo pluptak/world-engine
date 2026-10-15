@@ -89,7 +89,19 @@ first, and **Non-goals** what its first version leaves out.
   none; an actor without the capacity is refused, and so is any of the three into a body not
   possessable; a possessed played body refuses its own player's move
   `possessed` and accepts the possessor's; the body's state is unchanged by any of them.
-  Open: the verb's preconditions beyond the two (reach, sight, a carried item).
+  Decided: the verb's third precondition is a condition on the target, a curse or affliction laid on
+  it; reach, sight, items and who may lay one are that condition's mechanics, settled in one place in
+  "Laying curses and afflictions in the world" below, not in this verb.
+  Depends: also "Laying curses and afflictions in the world".
+- **Laying curses and afflictions in the world.** Today both are the author's alone: `afflict` lays a
+  timed modifier (`docs/verbs-edit.md`), and a curse is a link entity (`templates/curse.json`) the author
+  places with `possessed_by` and `possessor` (`docs/possession.md`). Decided: the mechanics of laying one
+  are settled here, once, for every rule that reads a curse or affliction as a condition (a change of
+  body's third precondition first). Trigger: a character changing bodies, or any character laying a
+  curse in a run. Open: whether a character lays one by a verb of its own, by a capacity, or only
+  through a beat or a Scheduled outcome; what it needs (reach, sight, a carried item); how a curse or
+  affliction is told apart as a condition from an attack's modifier; whether the target's
+  `possessable` mark also gates being cursed.
 - **Class changes.** Behaviour: a body becomes another class, with the larger or smaller absolute amounts
   of that class, by a world event (a curse taking hold, an upgrade succeeding), never inside the command
   that starts it. Decided by the maintainer:
