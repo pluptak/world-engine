@@ -17,11 +17,23 @@ Priorities there, then deleting it here in the same commit.
     poorly. The garble is a flag on the heard event, not scrambled words: hearers already get only a
     sound, and scrambling would make the engine produce text, which the no-prose rule forbids.
   - Open: which scene needs it.
-- **A room going dark.** Decided: when a room goes dark, every sighted participant in it is blind until
-  the light is back on. No per-participant condition: the unlit rule already makes sight false in a dark
-  room, which is that blindness, and a condition would duplicate it and need upkeep as the light changes.
-  What is added is a `darkened` event on the room, emitted when `isLit` turns false within a command. A
-  sighted participant keeps the basis `location_unlit`. Open: whether a scene row needs the event at all.
+- **A room going dark, and a device losing power.** Decided: when a room goes dark, every sighted
+  participant in it is blind until the light is back on. No per-participant condition: the unlit rule
+  already makes sight false in a dark room, which is that blindness, and a condition would duplicate it
+  and need upkeep as the light changes. What is added is a `darkened` event on the room, emitted when
+  `isLit` turns false within a command. A sighted participant keeps the basis `location_unlit`.
+  Evidence (the first LLM run, below): the director's `power_cut` beat left one event, `edited` on the
+  generator, which nobody senses (it is authored, `docs/senses.md`). The server room's lamp went out and
+  the cameras and exit door on the cable lost power, all read and never stored (`Perception.IsLit`,
+  `Power.Powered`), so no event said so: an agent learns it only from things missing in its next view,
+  and only if its caller compares views. The other rooms stayed lit because the scene lights them with
+  `lit: true`, which no power reaches: a scene matter.
+  Possible representation: beside `darkened`, an event on a device whose `Power.Powered` turns within a
+  command (`powered_off`, `powered_on`), sensed as the `silent` row.
+  Open: the events' names (`lit` is already the light verb's); whether a room's coming back on is an
+  event too; whether a device's change is seen only (a lamp dies) or heard as well (a hum stops);
+  whether every link on a walk emits one or only devices a body can sense (`camera`, `light_source`, a
+  door with `powered_by`).
 - **`wait` outside a run.** A running run already refuses `wait` (`round_only`, `src/engine/run.ts`).
   Decided: `wait` stays in worlds with no run, since the suite and single-agent worlds use it. Removing it
   would rewrite many tests for no gain.
@@ -133,3 +145,70 @@ first, and **Non-goals** what its first version leaves out.
   `human_with_bionic_leg`, and the trigger decides which). A class is always the whole body's template,
   so a changed part is a class of its own. A class goes back only when the architect lists the way
   back.
+
+The entries below come from the first run played by language models (2026-10-15): a separate
+repository's host played `scenarios/lab-run.json` for 20 rounds, ann and bob each driven by a local
+model through the `player_*` ops alone, the director pulling `alarm` at round 5 and `power_cut` at
+round 12. **Evidence** says what the run showed.
+
+- **An act names who did it.** Behaviour: an observer who sensed an act learns who did it. Today a
+  command's root event sits on the target when there is one, else on the actor (`Pipeline.cs`), and
+  nothing in any event names the actor; only the log line does.
+  Evidence: bob watched ann search the intercom and was told `search`, about the intercom. By the same
+  rule a body that is attacked learns `attack`, about itself, and not who hit it, the attacker in plain
+  sight.
+  Possible representation: an `actor` on the root event, stored as `entity` is, shown in a projection
+  only to an observer who senses the actor by sight or touch at either end of the command; one who only
+  heard keeps `from`, as today.
+  Trigger: two agents in a run who should answer each other's deeds.
+  Open: a field of its own or a member of `data`; whether events the root causes (`moved` under a
+  `push`) carry it too; whether a command sent `via` another agent (`docs/command-via.md`) shows the
+  body or the sender; whether a disguised actor is shown by the face it wears (`docs/appearance.md`).
+- **A player learns the verdict on its own moves.** Today `PlayerWorld` submits, withdraws and lists
+  pending moves, but nothing tells the player what became of a move once the round closes: a host reads
+  `director_close_round`, whose results are the world's record (world ids, events, deltas).
+  Evidence: the run's host cut those results down to `status` and `reason_code` before handing them to
+  each agent; an agent holding only the player ops could not have learned that its search was
+  `preempted` by bob walking away.
+  Possible representation: `player_observe` also answers the player's moves of the rounds closed since
+  `since_tick`, each `{ command_id, round, status, reason_code? }`, with `reason_data` filtered as
+  `ActorWorld` filters a refusal.
+  Open: whether `preempted` is shown as such, since it tells the player that someone else acted (the
+  version side channel `docs/actor-view.md` closes); in `player_observe` or an op of its own.
+- **What a thing looks like, apart from its template id.** A projection names each thing's `template`,
+  so a player reads mechanics from ids.
+  Evidence: the agents were shown the exit door as `jamming_door` and the corridor's camera as
+  `narrow_camera`, so ann could know the door jams before she ever tried it.
+  Possible representation: a template key `kind` (definition, string; "door", "camera"), inherited
+  through `extends`, shown in place of `template` to everyone but the author; a template without one
+  shows its id, as today.
+  Trigger: a scene whose template ids give away what its characters should discover.
+  Open: in place of `template` or beside it; whether `appearance` already covers bodies, leaving `kind`
+  to things.
+- **Searching in the dark.** `found` and `revealed` are sensed as the `silent` row, against the
+  concealer and the thing: in an unlit room the searcher neither sees them nor feels them (touch is its
+  own body and grips), so it is not told what its own search found, and a caller that reads "no `found`"
+  as "nothing there" is told wrong.
+  Evidence: none in the run, where every searched room was lit; found while giving the agents a "you
+  found nothing hidden there" note.
+  Possible representation: the searcher feels the `found` and `revealed` of its own search, dark or not.
+  Open: what it is told of the thing itself, which a dark room still keeps out of its view; the basis
+  code.
+- **What `take` may lift.** `take` asks nothing of its target's kind.
+  Evidence: an earlier run of the same scene took and dropped the exit door, which `lab-run.json` places
+  with a `location` and `support` beside its `from` and `to`; this run offered `take` on the intercom.
+  Carrying a person is built (`move` refuses `being_carried`), so `take` on bob is no gap.
+  Possible representation: `take` refuses a door (`Resolve.IsDoor`) with a code of its own; a fixture is
+  attached by the scene, or marked by its template.
+  Open: whether a door may have a `location` at all (`SnapshotValidation`); a template mark such as
+  `fixed`, or attachment only.
+- **A CLI that stays up.** Each request is one process start and one read of the world's files.
+  Evidence: the run made 236 requests at about 0.45 s each, about a fifth of its 8.5 minutes; the host's
+  `snapshot` each round (0.44 s, the costliest read) was only for `run.state`.
+  Possible representation: `WorldEngine.Cli serve`: one JSON request per line on stdin and one answer
+  per line on stdout through the same `CliRunner.Run`, so a host keeps one process and the store's
+  remembered head and registry stay warm; it takes the world's turn per request, as today. It is no
+  server, so the scope line holds.
+  Trigger: a host that drives runs in rounds.
+  Open: a `run_state` op, or the run read through an existing op; whether the web service considered
+  later replaces it or wraps it.
