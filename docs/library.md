@@ -16,6 +16,11 @@ Layout:
 
 Rules:
 
+- Ids. A template id is a plain file name: words of lower letters, digits and
+  `_`, joined by `.` as a companion's are (`human.hand_l`). A put of any other
+  is refused `invalid_templates`, a get or delete naming one `invalid_request`,
+  before any path is made of it, so nothing outside `templates/` is read or
+  written.
 - Recording. Before any write for an id, the latest file whose canonical form
   differs from the highest recorded revision's (or with none recorded) is kept
   first as the next revision (`Record`, also used by later items).
@@ -33,7 +38,9 @@ Worlds:
 
 - A name is lower letters, digits, `_` and `-`, else `invalid_world`.
 - A manifest pins every id of the latest set, each recorded first: an author's
-  `spawn` or a beat may name any template, and a closure would miss them.
+  `spawn` or a beat may name any template, and a closure would miss them. The
+  scenario is built against the latest set before anything is recorded, so a
+  refused add or edit leaves the library as it was.
 - `Resolve` rebuilds the registry from the named revision files, so a world's
   set never moves; an unrecorded revision is `no_such_revision`.
 - Add `{ name, scenario }` writes revision 1, refused `world_exists` when taken;

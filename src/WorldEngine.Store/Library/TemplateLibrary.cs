@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
@@ -11,6 +12,21 @@ namespace WorldEngine.Store.Library;
 public static class TemplateLibrary
 {
     public sealed record TemplateEntry(string Id, bool Latest, IReadOnlyList<long> Revisions);
+
+    // A template id is a plain file name: words of lower letters, digits and `_`, joined by `.` as a companion's are
+    // (`human.hand_l`). Anything else could name a file outside `templates/`.
+    private static readonly Regex IdPattern = new(@"^[a-z0-9_]+(\.[a-z0-9_]+)*\z", RegexOptions.CultureInvariant);
+
+    private static bool IsPlainId(string id) => IdPattern.IsMatch(id);
+
+    // An id a request names: one that is no plain file name is refused before any path is made of it.
+    private static void CheckRequestId(string id)
+    {
+        if (!IsPlainId(id))
+        {
+            throw new WorldError(Code.InvalidRequest, $"Template id {id} is no plain file name");
+        }
+    }
 
     private static string TemplatesDir(string library) => Path.Combine(library, "templates");
 
@@ -31,6 +47,10 @@ public static class TemplateLibrary
         var texts = new List<(string File, string Text)>();
         foreach (var id in manifest.Keys.OrderBy(key => key, StringComparer.Ordinal))
         {
+            if (!IsPlainId(id))
+            {
+                throw new WorldError(Code.InvalidTemplates, $"Template id {id} is no plain file name");
+            }
             var path = RevisionPath(library, id, manifest[id]);
             if (!File.Exists(path))
             {
@@ -79,6 +99,7 @@ public static class TemplateLibrary
     // The latest declaration, or that revision's.
     public static Value.Map Get(string library, string id, long? revision = null)
     {
+        CheckRequestId(id);
         if (revision is null)
         {
             var path = LatestPath(library, id);
@@ -105,6 +126,7 @@ public static class TemplateLibrary
     // there is no latest and nothing recorded.
     public static long Record(string library, string id)
     {
+        CheckRequestId(id);
         var revs = RevisionsDir(library);
         Directory.CreateDirectory(revs);
         return WorldLock.With(revs, () => RecordLocked(library, id));
@@ -182,6 +204,10 @@ public static class TemplateLibrary
         {
             throw new WorldError(Code.InvalidTemplates, error.Message);
         }
+        if (!IsPlainId(decl.Id))
+        {
+            throw new WorldError(Code.InvalidTemplates, $"Template id {decl.Id} is no plain file name");
+        }
         var templatesDir = TemplatesDir(library);
         DeclaredSet current;
         try
@@ -238,6 +264,7 @@ public static class TemplateLibrary
     // Deletes a template from the latest set, keeping its revisions.
     public static void Delete(string library, string id)
     {
+        CheckRequestId(id);
         var revs = RevisionsDir(library);
         Directory.CreateDirectory(revs);
         WorldLock.With(revs, () =>

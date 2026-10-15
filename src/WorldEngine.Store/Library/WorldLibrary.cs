@@ -142,9 +142,11 @@ public static class WorldLibrary
         return next;
     }
 
-    // The manifest pinning every id of the latest set, each recorded first,
-    // with the scenario built against it (the snapshot discarded). The
-    // scenario's own refusal propagates and nothing is written for it.
+    // The manifest pinning every id of the latest set, each recorded first.
+    // The scenario is built against the latest set before anything is
+    // recorded (the snapshot discarded): a recorded revision is the latest
+    // file in canonical form, so the set is the one the pins resolve to, and
+    // a scenario's refusal leaves the library as it was.
     private static Value.Map Pin(string library, Value scenario)
     {
         DeclaredSet latest;
@@ -161,13 +163,22 @@ public static class WorldLibrary
         {
             throw new WorldError(Code.InvalidTemplates, error.Message);
         }
+        IReadOnlyDictionary<string, Template> registry;
+        try
+        {
+            registry = TemplateResolver.Resolve(latest);
+        }
+        catch (FormatException error)
+        {
+            throw new WorldError(Code.InvalidTemplates, error.Message);
+        }
+        WorldBuilder.Snapshot(scenario, registry);
         var pins = new Dictionary<string, long>(StringComparer.Ordinal);
         foreach (var id in latest.Decls.Keys.OrderBy(key => key, StringComparer.Ordinal))
         {
             pins[id] = TemplateLibrary.Record(library, id);
         }
-        var registry = TemplateLibrary.Resolve(library, pins);
-        WorldBuilder.Snapshot(scenario, registry);
+        TemplateLibrary.Resolve(library, pins);
         return Value.Map.Empty.With(
             "templates",
             Value.Of(pins.Select(pin => KeyValuePair.Create<string, Value?>(pin.Key, pin.Value))));

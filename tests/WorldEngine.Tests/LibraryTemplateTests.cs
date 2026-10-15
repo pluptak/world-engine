@@ -130,6 +130,27 @@ public class LibraryTemplateTests : IDisposable
         Assert.Equal(before, SnapshotBytes(lib));
     }
 
+    // An id that is no plain file name could climb out of `templates/`: a put is refused with nothing written anywhere, and a get or
+    // delete naming one is refused before any path is made of it.
+    [Fact]
+    public void An_id_that_is_no_plain_file_name_is_refused()
+    {
+        var lib = CopyTemplatesToTemp();
+        var before = SnapshotBytes(lib);
+        var stone = TemplateLibrary.Get(lib, "stone");
+
+        foreach (var id in new[] { "../../outside", "../outside", "a/b", "a\\b", "Stone", ".hidden", "stone." })
+        {
+            Assert.Equal(Code.InvalidTemplates, Assert.Throws<WorldError>(() => TemplateLibrary.Put(lib, stone.With("id", id))).Code);
+            Assert.Equal(Code.InvalidRequest, Assert.Throws<WorldError>(() => TemplateLibrary.Get(lib, id)).Code);
+            Assert.Equal(Code.InvalidRequest, Assert.Throws<WorldError>(() => TemplateLibrary.Delete(lib, id)).Code);
+        }
+        Assert.Equal(before, SnapshotBytes(lib));
+        Assert.Empty(Directory.GetFiles(lib, "*.json"));
+        Assert.Empty(Directory.GetFiles(scratch, "*.json"));
+        Assert.Equal("human.hand_l", TemplateLibrary.Get(lib, "human.hand_l")["id"].AsText());
+    }
+
     [Fact]
     public void Hand_edited_bottle_recorded_before_next_put()
     {

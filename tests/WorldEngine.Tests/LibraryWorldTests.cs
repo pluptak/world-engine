@@ -121,6 +121,23 @@ public class LibraryWorldTests : IDisposable
         Assert.False(Directory.Exists(Path.Combine(lib, "worlds", "bad")));
     }
 
+    // The scenario is built before anything is recorded: a hand edit no revision holds yet stays unrecorded when the add is refused,
+    // and is recorded by the add that succeeds.
+    [Fact]
+    public void A_refused_scenario_records_no_revision()
+    {
+        var lib = CopyTemplatesToTemp();
+        var path = Path.Combine(lib, "templates", "bottle.json");
+        File.WriteAllText(path, File.ReadAllText(path).Replace("500", "600"));
+
+        Assert.ThrowsAny<Exception>(() => WorldLibrary.Add(lib, "bad", (Value)ValueJson.Parse("""[{"template":"nope"}]""")!));
+        Assert.False(Directory.Exists(Path.Combine(lib, "templates", ".revisions", "bottle")));
+
+        WorldLibrary.Add(lib, "lab", LabScenario());
+        Assert.Equal([1L], TemplateLibrary.List(lib).Single(entry => entry.Id == "bottle").Revisions);
+        Assert.Equal(600, TemplateLibrary.Get(lib, "bottle", 1)["mass_g"].AsInt());
+    }
+
     [Fact]
     public void Taken_name_is_world_exists()
     {
