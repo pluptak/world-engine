@@ -59,10 +59,12 @@ first, and **Non-goals** what its first version leaves out.
     player drives is taken only this way or by (c), and its own player stays seated, its moves for it
     refused `possessed`. (c) Two players exchange bodies, each into the other's, in one step: the mind
     swap, where both bodies are played.
-  - **By ability.** A character changes bodies by its own verb, refused unless it has the ability, a
-    capacity its template's parts or a modifier give (AGENTS.md: actions check capacities, never parts).
-    The architect decides who can, by the templates and the scene; when and into whom is the
-    character's choice, within the verb's preconditions.
+  - **By ability, into a possessable body.** A character changes bodies by its own verb, which needs
+    both: (1) the actor's ability, the capacity `possession` its template's parts or a modifier give
+    (AGENTS.md: actions check capacities, never parts), the trigger of the Possession mechanism it is
+    named after; (2) a target that cannot prevent it: the architect marks at setup which bodies may be
+    possessed, and every other body refuses all three ways, as a security measure. When and into whom
+    is the character's choice, within the verb's preconditions.
   - **The director gets no new lever.** It changes a body only by playing a beat the architect put in
     the run's pool (`docs/roles-levers.md`), which carries the change as an edit.
   - A move already submitted for the body goes with it to its new player, as a successor's does.
@@ -73,8 +75,9 @@ first, and **Non-goals** what its first version leaves out.
     others take it for that character whoever drives it. A player is not bound to a body: its own view
     is keyed by its slot, not by the slot's first body, so a change of body renames nothing it sees.
   Possible representation: a verb `transfer { target }` (into an unoccupied body, or exchanging with a
-  played one), refused without the capacity, out of reach or sight, and into a body neither unoccupied nor
-  played; an edit kind of the same change that a pool beat may carry; possession in a run read from
+  played one), refused without the capacity, into a body not marked possessable, out of reach or sight,
+  and into a body neither unoccupied nor played; `possessable` (state, bool, absent false) set by the
+  scene entry; an edit kind of the same change that a pool beat may carry; possession in a run read from
   `Possession.Holder`, so the possessor's slot drives the body with no slot change and the drive ends when
   the link lapses.
   Trigger: a run scene where two players swap bodies, or one takes another's.
@@ -83,10 +86,10 @@ first, and **Non-goals** what its first version leaves out.
   Test: after a transfer, the receiving handle's `submit` for the body is accepted and the former
   handle's is refused `not_a_body`; the body left behind is driven by no handle and is occupied back by a
   second transfer; after an exchange each handle drives the other's body and neither saw a step with
-  none; a body without the capacity is refused; a possessed played body refuses its own player's move
+  none; an actor without the capacity is refused, and so is any of the three into a body not
+  possessable; a possessed played body refuses its own player's move
   `possessed` and accepts the possessor's; the body's state is unchanged by any of them.
-  Open: the capacity's name and the verb's preconditions (reach, sight, a carried item); whether an
-  exchange needs the other player's body to have the ability too, or only the actor's.
+  Open: the verb's preconditions beyond the two (reach, sight, a carried item).
 - **Class changes.** Behaviour: a body becomes another class, with the larger or smaller absolute amounts
   of that class, by a world event (a curse taking hold, an upgrade succeeding), never inside the command
   that starts it. Decided by the maintainer:
