@@ -2,6 +2,7 @@ using WorldEngine.Core.Engine;
 using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
+using WorldEngine.Store.Templates;
 
 namespace WorldEngine.Store.Library;
 
@@ -126,6 +127,129 @@ public static class TemplateLibrary
         }
         found.Sort();
         return found;
+    }
+
+    // Puts a declaration as the latest, keeping a revision. Answers the
+    // revision number, naming the existing one when identical.
+    public static long Put(string library, Value.Map template)
+    {
+        var revs = RevisionsDir(library);
+        Directory.CreateDirectory(revs);
+        return WorldLock.With(revs, () => PutLocked(library, template));
+    }
+
+    private static long PutLocked(string library, Value.Map template)
+    {
+        TemplateDecl decl;
+        try
+        {
+            var id = template.GetValueOrDefault("id").AsText() ?? "template";
+            TemplateShape.Check(template, id);
+            decl = ValueJson.Read<TemplateDecl>(template);
+        }
+        catch (FormatException error)
+        {
+            throw new WorldError(Code.InvalidTemplates, error.Message);
+        }
+        var templatesDir = TemplatesDir(library);
+        DeclaredSet current;
+        try
+        {
+            current = Directory.Exists(templatesDir)
+                ? TemplateDirectory.ReadDeclarations(templatesDir)
+                : new DeclaredSet(
+                    new Dictionary<string, TemplateDecl>(StringComparer.Ordinal),
+                    new Dictionary<string, string>(StringComparer.Ordinal));
+        }
+        catch (FormatException error)
+        {
+            throw new WorldError(Code.InvalidTemplates, error.Message);
+        }
+        var decls = new Dictionary<string, TemplateDecl>(current.Decls, StringComparer.Ordinal);
+        var sources = new Dictionary<string, string>(current.Sources, StringComparer.Ordinal);
+        decls[decl.Id] = decl;
+        sources[decl.Id] = "template";
+        try
+        {
+            TemplateResolver.Resolve(new DeclaredSet(decls, sources));
+        }
+        catch (FormatException error)
+        {
+            throw new WorldError(Code.InvalidTemplates, error.Message);
+        }
+        var canonical = WorldJson.Write(decl);
+        var latestPath = LatestPath(library, decl.Id);
+        if (File.Exists(latestPath))
+        {
+            string currentCanonical;
+            try
+            {
+                currentCanonical = CanonicalJson.Serialize(ValueJson.Parse(WorldIO.ReadAllText(latestPath)));
+            }
+            catch (FormatException error)
+            {
+                throw new WorldError(Code.InvalidTemplates, $"Unreadable template {decl.Id}: {error.Message}");
+            }
+            if (string.Equals(currentCanonical, canonical, StringComparison.Ordinal))
+            {
+                return RecordLocked(library, decl.Id);
+            }
+        }
+        var recorded = RecordLocked(library, decl.Id);
+        var next = recorded + 1;
+        Directory.CreateDirectory(Path.Combine(RevisionsDir(library), decl.Id));
+        WorldWriter.AtomicWrite(RevisionPath(library, decl.Id, next), canonical);
+        Directory.CreateDirectory(templatesDir);
+        WorldWriter.AtomicWrite(latestPath, canonical);
+        return next;
+    }
+
+    // Deletes a template from the latest set, keeping its revisions.
+    public static void Delete(string library, string id)
+    {
+        var revs = RevisionsDir(library);
+        Directory.CreateDirectory(revs);
+        WorldLock.With(revs, () =>
+        {
+            DeleteLocked(library, id);
+            return true;
+        });
+    }
+
+    private static void DeleteLocked(string library, string id)
+    {
+        var latestPath = LatestPath(library, id);
+        if (!File.Exists(latestPath))
+        {
+            throw new WorldError(Code.UnknownTemplate, $"Unknown template {id}");
+        }
+        DeclaredSet current;
+        try
+        {
+            current = TemplateDirectory.ReadDeclarations(TemplatesDir(library));
+        }
+        catch (FormatException error)
+        {
+            throw new WorldError(Code.InvalidTemplates, error.Message);
+        }
+        if (!current.Decls.ContainsKey(id))
+        {
+            throw new WorldError(Code.UnknownTemplate, $"Unknown template {id}");
+        }
+        var decls = new Dictionary<string, TemplateDecl>(current.Decls, StringComparer.Ordinal);
+        decls.Remove(id);
+        var sources = new Dictionary<string, string>(current.Sources, StringComparer.Ordinal);
+        sources.Remove(id);
+        try
+        {
+            TemplateResolver.Resolve(new DeclaredSet(decls, sources));
+        }
+        catch (FormatException error)
+        {
+            throw new WorldError(Code.InvalidTemplates, error.Message);
+        }
+        RecordLocked(library, id);
+        File.Delete(latestPath);
     }
 
     private static Value.Map ReadDeclaration(string path, string source)

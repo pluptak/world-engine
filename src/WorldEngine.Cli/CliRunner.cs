@@ -5,6 +5,7 @@ using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
 using WorldEngine.Core.Templates;
 using WorldEngine.Store;
+using WorldEngine.Store.Library;
 using WorldEngine.Store.Templates;
 
 namespace WorldEngine.Cli;
@@ -224,6 +225,30 @@ public static class CliRunner
                         Optional(request, "command_id"),
                         Flag(request, "perceivers")),
                     Flag(request, "include_snapshot"));
+            case "template_list":
+                return Obj(("templates", Value.Of(
+                    TemplateLibrary.List(Text(request, "library"))
+                        .Select(entry => (Value)Obj(
+                            ("id", entry.Id),
+                            ("latest", entry.Latest),
+                            ("revisions", Value.Of(entry.Revisions.Select(number => (Value)number))))))));
+            case "template_get":
+                return Obj(("template", TemplateLibrary.Get(
+                    Text(request, "library"),
+                    Text(request, "id"),
+                    Int(request, "revision"))));
+            case "template_put":
+                return Obj(("revision", TemplateLibrary.Put(
+                    Text(request, "library"),
+                    request.GetValueOrDefault("template") as Value.Map
+                        ?? throw new WorldError(Code.InvalidRequest, "The request names no template"))));
+            case "template_delete":
+                {
+                    var library = Text(request, "library");
+                    var id = Text(request, "id");
+                    TemplateLibrary.Delete(library, id);
+                    return Obj(("id", id));
+                }
             default:
                 throw new WorldError(Code.InvalidOp, $"Unknown op {op}");
         }
