@@ -5,44 +5,6 @@ ends in open questions that are the maintainer's to settle. A candidate is promo
 up as an item in `backlog.md` (its files, types, tests and done-condition) and adding it to the
 Priorities there, then deleting it here in the same commit.
 
-- **Who authors templates: a template library, worlds and runs, all by revision.** Today the
-  catalogue is `templates/`, an architect picks presets and never writes one, and a world author
-  changes state, never a definition; a stored world freezes its resolved set in `templates.json`.
-  Decided by the maintainer:
-  - **Templates are fixed building blocks.** No scene brings templates of its own, and no world or run
-    creates or changes one: nothing mid-world. The set a run uses never changes while it runs.
-  - **A template library with its own CLI flow** (list, get, put, delete), touching the library only.
-    For now the library is `templates/`.
-  - **Template revisions.** A put never overwrites: it writes a new revision of the template, and a
-    revision never changes once written. Every write validates the whole latest set as loading does
-    (shape, `extends`, companions, products, successors) and writes nothing when it breaks.
-  - **Worlds in a library, by revision.** A world is a scenario source and a manifest pinning a
-    revision for every template id it uses: linked, not copied. Editing a world writes a new world
-    revision; a world's CLI flow is add, edit (a revision), delete.
-  - **Runs from a world revision.** A run is played from one world revision, pinned with the template
-    manifest it was built with, and maps back to that revision. Before a run starts the caller chooses,
-    per template with a newer revision, the pinned one or the newer; the chosen set is validated as a
-    whole, the scene's entries against it, and the run's initial state is built from the scenario with
-    it (`WorldBuilder.Restart` copies a built world today). A fresh run has no log, so no lost-field
-    check (`UpgradeTemplates`) is needed.
-  - **Deleting.** A template revision any world revision or run names cannot be deleted; past runs
-    survive a world's later revisions. Deleting a world deletes all its revisions and every run made
-    from them, which frees the template revisions only they named. Since revisions are immutable, a
-    new revision never needs to wait for a running simulation.
-  - **Choosing revisions.** A separate request lists, for a world revision, the templates with newer
-    revisions than it pins; the run-start request takes the choices, and a template it names no choice
-    for keeps its pinned revision.
-  - **Numbering.** A revision is a counter (1, 2, 3) per template and per world; the hash still checks
-    what was pinned.
-  Possible representation: `templates/<id>.json` stays the latest revision, so the loaders, the CLI's
-  shipped set and the suite read what they read today; older revisions under
-  `templates/.revisions/<id>/<n>.json`; `templates_hash` over the pinned revisions. Requirement, not a
-  choice: the suite reads `templates/` and its goldens pin it, so a new latest revision moves goldens
-  until the library has a directory of its own. A run linked to the library is no longer a
-  self-contained directory (`verify`, `restart`, copying it away need the library beside it).
-  Decided: the library leaves `templates/` for a directory of its own as soon as a template is written
-  for a story rather than for the engine; `templates/` then stays the set the engine is tested against.
-  Non-goals: exporting a run with its pinned revisions copied in, until a run has to leave the library.
 - **Facing and a sight cone for bodies.** In a lit room every act is seen (`docs/limits.md`); the
   costliest of the limits, revisit when a concrete world needs what darkness, concealment and
   staging cannot give. A camera's cone is built (`docs/camera.md`); a body's would also need a facing that

@@ -18,7 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-Nothing is promoted.
+1. [Template library: revisions and their requests](#template-library-revisions-and-their-requests).
+2. [Library worlds: a scenario and a manifest, by revision](#library-worlds-a-scenario-and-a-manifest-by-revision).
+3. [Runs from a world revision, linked to the library](#runs-from-a-world-revision-linked-to-the-library).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -61,4 +63,135 @@ index, `CLAUDE.md`) are one line or one entry each, so parallel work conflicts a
 
 ## Items
 
-None: the curse and clinic chains promoted from `plans/candidates.md` have shipped.
+One chain, promoted from `plans/candidates.md` ("Who authors templates"): a library of templates, worlds and
+runs, each kept by revision. Decided by the maintainer: templates are fixed building blocks, never brought by a
+scene and never made or changed inside a world; a template or world is changed only by writing a new revision,
+and a revision never changes once written; a world links to its template revisions instead of copying them;
+the caller chooses, before a run starts, the pinned or a newer revision of each template; deleting a world
+deletes its runs. Exporting a run with its revisions copied in is not in it.
+
+All three items live in `src/WorldEngine.Store/Library/` (new) and are reached by CLI requests that each name
+`library`, a directory; the CLI stays a thin adapter (the scope line), so every request is one call of a Store
+method. **The library is a directory holding `templates/`**, laid out as the repository's is, so the
+repository root is a library: for now that is the one the maintainer uses. Moving to a directory of its own
+happens as soon as a template is written for a story rather than for the engine, with no code change. The
+suite never writes the repository's `templates/`: every library test copies it to a temp folder first, since
+the goldens pin it. Every write takes the library's turn, `WorldLock.With(<library>/templates/.revisions, ...)`,
+so two writers never interleave; reads take none.
+
+### Template library: revisions and their requests
+
+- **What:** `TemplateLibrary` (`Library/TemplateLibrary.cs`, new): list, get, put and delete over a library's
+  templates, every change kept as a revision.
+- **Layout:**
+  - `templates/<id>.json` is the latest revision, the file `TemplateDirectory.ReadDeclarations` already reads
+    (it reads only the top level, so the folder below is never loaded as templates). It is the truth of the
+    latest set.
+  - `templates/.revisions/<id>/<n>.json`, `n` from 1 counting up per template: every recorded revision,
+    written in canonical form (`CanonicalJson`) and never rewritten.
+- **Rules:**
+  - **Recording.** Before any write for an id, a `<id>.json` whose canonical form is not the highest recorded
+    revision's (or that has none) is recorded first as the next revision. A hand edit, and every shipped
+    template, so becomes a revision when it is first touched (`TemplateLibrary.Record(id)`, used by the later
+    items too).
+  - **Put** `{ template }` (a declaration, checked by `TemplateShape` as loading does): the latest set with it
+    in place of its id, resolved by `TemplateResolver` and validated by `TemplateValidation`, or refused
+    `invalid_templates` (existing code, the loader's message) with nothing written. A declaration canonically
+    the same as the latest is no new revision; the answer names the existing one. Otherwise the revision file
+    is written, then `<id>.json` (canonical); a crash between them leaves the old latest, and the next write
+    records it again, which is harmless.
+  - **Delete** `{ id }`: removes `<id>.json` from the latest set, refused `invalid_templates` when the set
+    without it fails to resolve or validate (a child `extends` it, a product, successor or companion names it).
+    Its revisions stay (the third item deletes revisions).
+  - **Get** `{ id, revision? }`: the latest declaration, or that revision's; `unknown_template` (existing) for
+    an id with neither, `no_such_revision` (new) for a revision not recorded. **List**: every id with a latest
+    or a recorded revision, `{ id, latest: bool, revisions: [n...] }`, by id.
+- **CLI:** `template_list`, `template_get`, `template_put`, `template_delete`, each `{ op, library, ... }`
+  (`Contract/Checks.cs`, one shape each; `Cli/CliRunner.cs`, one case each).
+- **Files:** `Library/TemplateLibrary.cs` (new), `Model/Code.cs` (`no_such_revision`), `Contract/Checks.cs`,
+  `Cli/CliRunner.cs`, `docs/library.md` (new, ≤ 60 lines, indexed in `docs/DESIGN.md`), `docs/api.md` (the
+  four requests).
+- **Tests** (`LibraryTemplateTests`, on a temp copy of `templates/`): putting `werewolf` extending `human` makes
+  revision 1 and `TemplateDirectory` then reads it; a second put makes 2 and `get` of 1 answers the first; an
+  identical put makes none; a put extending an unknown parent is `invalid_templates` and the folder's bytes are
+  unchanged; a hand-edited `bottle.json` is recorded as a revision before the next put's; deleting `bottle`
+  while `wine_bottle` extends it is refused, deleting `wine_bottle` drops it from the latest set and keeps its
+  revisions; each request through `CliRunner`.
+- **Done when:** the tests pass, `dotnet test WorldEngine.slnx` and the deep run pass, and no golden changes
+  except the catalog golden's new code.
+- **Depends on:** nothing.
+
+### Library worlds: a scenario and a manifest, by revision
+
+- **What:** `WorldLibrary` (`Library/WorldLibrary.cs`, new): a library world is a scenario and the template
+  revisions it is pinned to, kept by revision; a world is added, edited (a new revision), listed and read.
+- **Layout:** `worlds/<name>/<n>/scenario.json` (the scenario as given) and `worlds/<name>/<n>/manifest.json`
+  (`{ templates: { <id>: <revision> } }`), `n` from 1. A name is an id-like token (lower letters, digits, `_`
+  and `-`), else `invalid_world` (existing).
+- **Rules:**
+  - **Pinning.** A manifest pins every id of the latest set, each `Record`ed first, not only the scene's
+    templates: an author's `spawn` or a beat may name any template in a run, and a closure of the scene's
+    templates would miss them.
+  - `TemplateLibrary.Resolve(library, manifest)` (new): the registry from the named revision files
+    (`TemplateDirectory.ReadDeclarations` over their texts, then `TemplateResolver.Resolve`), so a world's set
+    is the same however the latest set moves on. An unrecorded revision is `no_such_revision`.
+  - **Add** `{ name, scenario }`: `world_exists` (existing) when the name is taken; the scenario checked as
+    `init` checks it (`Checks.IsScenario`, then `WorldBuilder.Snapshot` against the pinned set, the snapshot
+    discarded), else its existing refusal and nothing written; writes revision 1. **Edit** `{ name, scenario }`:
+    the same checks, a new revision pinned to the latest set; `no_such_world` (existing) for an unknown name.
+  - **Get** `{ name, revision? }` (latest by default): the scenario and the manifest. **List**: each name with
+    its revisions.
+- **CLI:** `world_add`, `world_edit`, `world_get`, `world_list`, each with `library`.
+- **Files:** `Library/WorldLibrary.cs` (new), `Library/TemplateLibrary.cs` (`Resolve`), `Contract/Checks.cs`,
+  `Cli/CliRunner.cs`, `docs/library.md`, `docs/api.md`.
+- **Tests** (`LibraryWorldTests`): adding `scenarios/lab.json` writes revision 1 pinning every latest id; after
+  a new `human` revision the world's resolved set still hashes (`TemplateHash`) as the set did at the add, and
+  `world_edit` writes revision 2 pinning the new `human`; an invalid scenario is refused with nothing written;
+  a taken name is `world_exists`; each request through `CliRunner`.
+- **Done when:** as above.
+- **Depends on:** Template library.
+
+### Runs from a world revision, linked to the library
+
+- **What:** a run is a store world made from one world revision, linked to its template revisions by a
+  manifest instead of a copied `templates.json`; the caller lists the newer revisions first and chooses.
+  Deleting a world deletes its runs, and a template revision nothing names may be deleted.
+- **Layout:** `runs/<world>/<run>/`, an ordinary world directory (`docs/persistence.md`) whose `templates.json`
+  is replaced by `manifest.json`: `{ world, world_revision, templates: { <id>: <revision> } }`.
+- **Rules:**
+  - `WorldFiles.ReadTemplates(dir)`: `templates.json` when present, as today; else `manifest.json`, resolved by
+    `TemplateLibrary.Resolve` with the library found by the layout (the directory three above the run). The
+    hash, `verify`, checkpoints and every world request are unchanged, since they read the resolved set.
+    `manifest.json` joins `WorldFiles.AllNames`. A world with neither is `invalid_templates`.
+  - **Plan** `{ world, revision? }` (latest by default): `{ world, revision, newer: [{ template, pinned, latest }],
+    added: [id...] }`, the pinned templates with a higher recorded or latest revision (each `Record`ed) and the
+    latest ids the manifest does not pin.
+  - **Start** `{ world, revision?, run, use? }`: `use` maps an id to a revision number or `"latest"`; the manifest
+    with `use` applied (an added id is pinned too) is resolved and validated, else `invalid_templates`
+    (`no_such_revision` for an unrecorded one); the scenario is built with it (`WorldBuilder.Snapshot`) and
+    created by a `WorldBuilder.Create` overload that writes the manifest instead of the set. `world_exists` when
+    the run is there. A fresh run has no log, so there is no lost-field check (`UpgradeTemplates`).
+  - **List runs** `{ world }`: each run with its `world_revision`.
+  - `WorldBuilder.Restart` from a linked run copies its manifest; `to` outside that library's
+    `runs/<world>/` is refused `outside_library` (new), since the copy would not find its revisions.
+  - **Delete a world** `{ name }`: takes each run's `WorldLock` (`store_busy` while one is held) and removes
+    `worlds/<name>/` and `runs/<name>/`.
+  - **Delete a template revision** `{ id, revision }`: refused `revision_in_use` (new) while any world
+    revision's or run's manifest pins it, or it is the latest's recorded revision.
+- **CLI:** `run_plan`, `run_start` (answers the run's directory and `snapshot_version`), `run_list`,
+  `world_delete`, `template_revision_delete`, each with `library`; a run is then played by every existing request
+  with `world: <library>/runs/<world>/<run>`.
+- **Files:** `Library/RunLibrary.cs` (new), `Library/WorldLibrary.cs` (delete), `Library/TemplateLibrary.cs`
+  (revision delete, the pin scan), `Store/WorldFiles.cs`, `Store/WorldBuilder.cs`, `Model/Code.cs`
+  (`revision_in_use`, `outside_library`), `Contract/Checks.cs`, `Cli/CliRunner.cs`, `docs/library.md`,
+  `docs/persistence.md` (one line for `manifest.json`), `docs/restart.md` (one line), `docs/api.md`.
+- **Tests** (`LibraryRunTests`): a run started from the lab world has the snapshot and `templates_hash` that
+  `init` of the scenario with the same set gives; commands on it reopen and `verify` passes; after a new `human`
+  revision `run_plan` lists it, a second run with `use: { human: "latest" }` hashes as the new set, and the first
+  still verifies; deleting `human` revision 1 is `revision_in_use`, and after `world_delete` (both runs gone) it
+  succeeds; a restart within the library keeps the manifest, one outside is `outside_library`; each request
+  through `CliRunner`.
+- **Non-goals:** exporting a run with its revisions copied in, deleting a single run, moving a run between
+  libraries, a run changing its template revisions once started.
+- **Done when:** as above, and every existing golden is unchanged except the catalog golden's new codes.
+- **Depends on:** Library worlds.
