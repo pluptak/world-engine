@@ -217,4 +217,26 @@ public class LibraryWorldTests : IDisposable
         Assert.Equal(2, missingRev.Status);
         Assert.Contains("no_such_revision", missingRev.Stdout);
     }
+
+    [Fact]
+    public void Corrupt_world_files_are_invalid_world()
+    {
+        var lib = CopyTemplatesToTemp();
+        WorldLibrary.Add(lib, "lab", LabScenario());
+        var dir = Path.Combine(lib, "worlds", "lab", "1");
+        var manifest = File.ReadAllBytes(Path.Combine(dir, "manifest.json"));
+        var scenario = File.ReadAllBytes(Path.Combine(dir, "scenario.json"));
+
+        File.WriteAllText(Path.Combine(dir, "manifest.json"), """{"other":{}}""");
+        Assert.Equal(Code.InvalidWorld, Assert.Throws<WorldError>(() => WorldLibrary.Get(lib, "lab", 1)).Code);
+        File.WriteAllBytes(Path.Combine(dir, "manifest.json"), manifest);
+
+        File.Delete(Path.Combine(dir, "scenario.json"));
+        Assert.Equal(Code.InvalidWorld, Assert.Throws<WorldError>(() => WorldLibrary.Get(lib, "lab", 1)).Code);
+        File.WriteAllBytes(Path.Combine(dir, "scenario.json"), scenario);
+
+        File.WriteAllText(Path.Combine(dir, "scenario.json"), "null");
+        Assert.Equal(Code.InvalidWorld, Assert.Throws<WorldError>(() => WorldLibrary.Get(lib, "lab", 1)).Code);
+        File.WriteAllBytes(Path.Combine(dir, "scenario.json"), scenario);
+    }
 }

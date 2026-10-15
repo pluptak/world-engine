@@ -69,9 +69,14 @@ public static class WorldLibrary
         Value scenario;
         try
         {
-            scenario = ValueJson.Parse(WorldIO.ReadAllText(Path.Combine(dir, "scenario.json")))!;
+            scenario = ValueJson.Parse(WorldIO.ReadAllText(Path.Combine(dir, "scenario.json")))
+                ?? throw new FormatException("scenario.json must contain a scenario");
         }
         catch (FormatException error)
+        {
+            throw new WorldError(Code.InvalidWorld, $"Unreadable scenario of world {name}: {error.Message}");
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
             throw new WorldError(Code.InvalidWorld, $"Unreadable scenario of world {name}: {error.Message}");
         }
@@ -83,6 +88,10 @@ public static class WorldLibrary
             ManifestPins(manifest);
         }
         catch (FormatException error)
+        {
+            throw new WorldError(Code.InvalidWorld, $"Unreadable manifest of world {name}: {error.Message}");
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
             throw new WorldError(Code.InvalidWorld, $"Unreadable manifest of world {name}: {error.Message}");
         }
@@ -204,7 +213,7 @@ public static class WorldLibrary
 
     private static IReadOnlyDictionary<string, long> ManifestPins(Value.Map manifest)
     {
-        if (manifest["templates"] is not Value.Map templates
+        if (manifest.GetValueOrDefault("templates") is not Value.Map templates
             || templates.Values.Any(pin => pin.AsInt() is null or < 1))
         {
             throw new FormatException("manifest.json must pin each template to a revision");
