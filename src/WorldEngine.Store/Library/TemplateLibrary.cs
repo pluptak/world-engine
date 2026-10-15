@@ -21,6 +21,37 @@ public static class TemplateLibrary
     private static string RevisionPath(string library, string id, long revision) =>
         Path.Combine(RevisionsDir(library), id, revision + ".json");
 
+    // The directory writers take their turn on.
+    internal static string RevisionsRoot(string library) => RevisionsDir(library);
+
+    // The registry from the named revision files, so a world's set is the
+    // same however the latest set moves on.
+    public static IReadOnlyDictionary<string, Template> Resolve(string library, IReadOnlyDictionary<string, long> manifest)
+    {
+        var texts = new List<(string File, string Text)>();
+        foreach (var id in manifest.Keys.OrderBy(key => key, StringComparer.Ordinal))
+        {
+            var path = RevisionPath(library, id, manifest[id]);
+            if (!File.Exists(path))
+            {
+                if (!File.Exists(LatestPath(library, id)) && ReadRevisions(library, id).Count == 0)
+                {
+                    throw new WorldError(Code.UnknownTemplate, $"Unknown template {id}");
+                }
+                throw new WorldError(Code.NoSuchRevision, $"No revision {manifest[id]} of template {id}");
+            }
+            texts.Add((id + ".json", WorldIO.ReadAllText(path)));
+        }
+        try
+        {
+            return TemplateResolver.Resolve(TemplateDirectory.ReadDeclarations(texts));
+        }
+        catch (FormatException error)
+        {
+            throw new WorldError(Code.InvalidTemplates, error.Message);
+        }
+    }
+
     // Every id with a latest or a recorded revision, by id.
     public static IReadOnlyList<TemplateEntry> List(string library)
     {
