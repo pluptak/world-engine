@@ -18,8 +18,6 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Identity by appearance: a body seen is named by the face it wears](#identity-by-appearance-a-body-seen-is-named-by-the-face-it-wears).
-
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
 to an item here.
@@ -76,44 +74,3 @@ happens as soon as a template is written for a story rather than for the engine,
 suite never writes the repository's `templates/`: every library test copies it to a temp folder first, since
 the goldens pin it. Every write takes the library's turn, `WorldLock.With(<library>/templates/.revisions, ...)`,
 so two writers never interleave; reads take none.
-
-### Identity by appearance: a body seen is named by the face it wears
-
-Promoted from `plans/candidates.md`, triggered by `scenarios/disguise.json` (`docs/limits-disguise.md`). Decided
-by the maintainer: the face only for now, no voice.
-
-- **What:** a body may look like another entity, and an observer that only sees it names it as that entity: the
-  alias, `name` and `template` of the one it looks like. Touch and smell see through it. Today a seen body is
-  shown by its own alias (hashed from the view's key and its id), name and template (`ActorWorld`), so the
-  engine itself would give a disguise away.
-- **Prop** (`Engine/Prop.cs` and its table, `docs/fields.md`): `appearance` (state, id) on a body, the entity it
-  looks like; absent, itself. Written by a scene entry's `props` (as `possessed_by` is, the scenario id resolved)
-  or the author's `update_props`. `SnapshotValidation` adds it to the dangling-reference loop beside
-  `possessed_by` (`SnapshotValidation.cs`, the `link` loop), so the entity it names cannot be removed while worn.
-- **Rules** (`Worlds/ActorWorld.cs`, `Worlds/PlayerWorld.cs`):
-  - **Shown.** For each entity the view lists or names, the *shown* id is its `appearance` when the observer's
-    senses of it (the projection's `senses`, merged across a slot's bodies in `PlayerWorld`) are sight without
-    touch or smell; otherwise its own id. Its alias is `ActorAlias.Of(key, shown)`, and `name` and `template`
-    are the shown entity's. Facts, props, parts, `holds` and `size_cm` stay the body's own. A reference to it
-    (in another entity's facts, an event's `entity`, an id prop, `reason_data`) uses the same shown id. With no
-    `appearance` anywhere every alias is today's, so no golden moves.
-  - **Read back.** An alias names every entity whose shown alias it is: one is the target, as today; two (sean
-    and castor wearing his face, both only seen) answer `ambiguous` with both as candidates, as an ambiguous
-    name does, and nothing is applied. A name in a command resolves against the shown names the same way.
-  - **Invariant:** the alias in an observation is the alias a command of the view resolves, and no alias, name,
-    fact or event in a view leads back to a worn-over id: `ActorGoldenTests`' rule, extended.
-  - The omniscient record (`snapshot`, `trace`, `since`, `perceivers`, the trusted `observe` and `inspect`)
-    keeps every id and own name.
-- **Files:** `Engine/Prop.cs`, `Engine/SnapshotValidation.cs`, `Worlds/ActorWorld.cs`, `Worlds/PlayerWorld.cs`,
-  `docs/appearance.md` (new, ≤ 40 lines, indexed in `docs/DESIGN.md`), `docs/actor-view.md` (one paragraph),
-  `docs/fields.md`, `docs/limits-disguise.md` (its first line is built: removed, the other two kept).
-- **Tests** (`AppearanceTests`, on the disguise scene with castor's `appearance` sean):
-  `LimitsDisguiseTests.A_seen_body_is_shown_by_its_own_alias_name_and_template` becomes its opposite: the guard
-  gets one alias for both, named `sean`, and a command naming it is `ambiguous` with two candidates; an
-  observer that touches castor gets castor's own alias and name; clearing `appearance` brings castor's alias back; no observation of the guard's
-  contains castor's id or name; removing sean while worn is a `dangling_reference`; a store world folds alike.
-- **Non-goals:** voice; a face as a part that moves between bodies (the head is not detachable; a face entity
-  for Sockets later); an observer linking two aliases to one body (knowledge); a shown `parts` or `size_cm`.
-- **Done when:** the tests pass, `dotnet test WorldEngine.slnx` and the deep run pass, and every existing golden
-  is unchanged.
-- **Depends on:** nothing.

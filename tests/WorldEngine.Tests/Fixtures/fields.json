@@ -7,6 +7,10 @@
     "type": "boolean",
     "tier": "definition"
   },
+  "appearance": {
+    "type": "id",
+    "tier": "state"
+  },
   "asleep": {
     "type": "boolean",
     "tier": "state"

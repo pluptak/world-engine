@@ -38,3 +38,7 @@ is `command_id`, `verb`, `target?` and `args?` only: one that names an `actor` o
 `invalid_request`. `actor_command` answers `status`, `command_id`, `resolved_target`, `candidates?`,
 `reason_code?`, `reason_data?` and `observation`. A runtime allowed only these five ops learns no
 more than the actor could.
+
+A body seen by sight alone is named by the face it wears ([appearance.md](appearance.md)):
+its shown alias, name and template, with everything else its body's own. Touch and smell see
+through it. An alias or name two bodies show answers `ambiguous` with both as candidates.

@@ -21,7 +21,7 @@ public static class Forms
         [
             Prop.Open, Prop.Locked, Prop.Burning, Prop.Lit, Prop.From, Prop.To, Prop.Opens, Prop.PoweredBy, Prop.ControlledBy,
             Prop.FacingDeg, Prop.Asleep, Prop.Unconscious, Prop.Blind, Prop.Deaf, Prop.Bound, Prop.PossessedBy,
-            Prop.Possessor, Prop.LapsesAt,
+            Prop.Possessor, Prop.LapsesAt, Prop.Appearance,
         ];
 
     // A percentage of what the preset holds, floored, except that one above 0 never comes to 0: a candle's 8 fuel at 10% is 1, so it

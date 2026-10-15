@@ -21,6 +21,8 @@ public static class Prop
 
     public static readonly Prop<bool> Abstract = Flag("abstract", Tier.Definition);
     public static readonly Prop<bool> Agent = Flag("agent", Tier.Definition);
+    // The face a body wears: the entity it looks like to sight alone (`docs/appearance.md`).
+    public static readonly Prop<string> Appearance = Id("appearance", Tier.State);
     // A sleeping body acts on nothing and senses only by touch and smell (`docs/senses.md`); an author sets it.
     public static readonly Prop<bool> Asleep = Flag("asleep", Tier.State);
     public static readonly Prop<long> AttackDamage = Integer("attack_damage", Tier.Definition);

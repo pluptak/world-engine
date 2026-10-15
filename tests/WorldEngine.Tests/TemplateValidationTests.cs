@@ -145,7 +145,7 @@ public class TemplateValidationTests
 
 public class PropTests
 {
-    // The TypeScript table, and the two props .NET adds after it: `blind` and `deaf` (backlog: blind and deaf) `bound` (backlog: bound) and `cuts` (backlog: wounds), which TypeScript never had.
+    // The TypeScript table, and the props .NET adds after it: `blind` and `deaf` (backlog: blind and deaf) `bound` (backlog: bound), `cuts` (backlog: wounds) and `appearance` (backlog: identity by appearance), which TypeScript never had.
     [Fact]
     public void Table_matches_the_TypeScript_table_and_the_props_added_since()
     {

@@ -72,6 +72,7 @@ What is built, nothing aspirational, one concept per file:
 - [senses.md](senses.md): the sense table both queries and tests read.
 - [senses-bases.md](senses-bases.md): the basis codes a perception answers with.
 - [projection.md](projection.md), [actor-view.md](actor-view.md): observation; one actor's side.
+- [appearance.md](appearance.md): the face a body wears, and naming it by sight.
 - [projection-inspect.md](projection-inspect.md): one entity in detail; a command's observation.
 - [command-via.md](command-via.md): the agent that sent an actor's command (`via`).
 - [possession.md](possession.md): a curse makes a body act only at its possessor's word.

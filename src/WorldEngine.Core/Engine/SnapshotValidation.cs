@@ -401,7 +401,7 @@ public static class SnapshotValidation
                 }
             }
         }
-        foreach (var link in new[] { Prop.PoweredBy, Prop.ControlledBy, Prop.PossessedBy, Prop.Possessor })
+        foreach (var link in new[] { Prop.PoweredBy, Prop.ControlledBy, Prop.PossessedBy, Prop.Possessor, Prop.Appearance })
         {
             var reference = entity.Props.Get(link);
             if (reference is not null && !snapshot.Entities.ContainsKey(reference))

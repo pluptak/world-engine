@@ -29,7 +29,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
         var (found, id) = NamedOf(body);
         if (BodyOut(world.CurrentSnapshot(), id))
         {
-            return new ActorOptions(ActorAlias.Of(found.Root, id), [], [], ReasonCode: Code.BodyOut);
+            return new ActorOptions(ActorAlias.Of(found.Root, ShownOf(found).GetValueOrDefault(id) ?? id), [], [], ReasonCode: Code.BodyOut);
         }
         return new ActorWorld(world, id, key: found.Root, senses: found.Bodies).OptionsOf(refused);
     }
@@ -61,7 +61,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
             return Refusal(Code.RunNotRunning);
         }
         var found = new Bound(player.Slot, Runs.DriverBodies(snapshot, player.Slot));
-        var id = BodyNamed(found, body);
+        var id = BodyNamed(found, ShownOf(found), body);
         if (id is null)
         {
             return Refusal(body is null ? Code.BodyRequired : Code.NotABody);
@@ -71,7 +71,13 @@ public sealed class PlayerWorld(IWorld world, string handle)
             return Refusal(Code.BodyOut);
         }
         // The move is the body's own, read back from the view's aliases as the view's own `check` reads it.
-        var command = new ActorWorld(world, id, key: found.Root, senses: found.Bodies).Decode(move);
+        var view = new ActorWorld(world, id, key: found.Root, senses: found.Bodies);
+        var (decoded, ambiguous) = view.TryDecode(move);
+        if (ambiguous is not null)
+        {
+            return new Answer(Status.Ambiguous);
+        }
+        var command = decoded!;
         foreach (var held in world.Pending.Moves(handle).ToList())
         {
             if (Runs.LiveBodyOf(snapshot, held.Actor) == id)
@@ -96,7 +102,7 @@ public sealed class PlayerWorld(IWorld world, string handle)
             world.Pending.Clear(handle);
             return Ok();
         }
-        var id = BodyNamed(found, body);
+        var id = BodyNamed(found, ShownOf(found), body);
         if (id is null)
         {
             return Refusal(Code.NotABody);
@@ -129,11 +135,15 @@ public sealed class PlayerWorld(IWorld world, string handle)
     {
         var found = RequireBound();
         var snapshot = world.CurrentSnapshot();
+        var shown = ShownOf(found);
+        string Shown(string id) => shown.GetValueOrDefault(id.Split('.')[0]) is { } worn
+            ? ActorAlias.Of(found.Root, worn + (id.Contains('.') ? id[id.IndexOf('.')..] : ""))
+            : ActorAlias.Of(found.Root, id);
         Value Written(Value value) =>
-            value.AsText() is { } text && snapshot.Entities.ContainsKey(text.Split('.')[0]) ? ActorAlias.Of(found.Root, text) : value;
+            value.AsText() is { } text && snapshot.Entities.ContainsKey(text.Split('.')[0]) ? Shown(text) : value;
 
         return [.. world.Pending.Moves(handle).Select(held => new Move(
-            found.Bodies.Count > 1 ? ActorAlias.Of(found.Root, Runs.LiveBodyOf(snapshot, held.Actor)) : null,
+            found.Bodies.Count > 1 ? Shown(Runs.LiveBodyOf(snapshot, held.Actor)) : null,
             held.CommandId,
             held.Verb,
             held.Target is null ? null : Written(held.Target).AsText(),
@@ -145,9 +155,13 @@ public sealed class PlayerWorld(IWorld world, string handle)
     }
 
     // The view that reads through every body of the slot, as the first of them still in the world.
-    private ActorWorld SlotView()
+    private ActorWorld SlotView() => SlotViewFor(RequireBound());
+
+    // True id to shown id under the slot's key, as the slot's view reads things.
+    private Dictionary<string, string> ShownOf(Bound found) => SlotViewFor(found).ShownMap();
+
+    private ActorWorld SlotViewFor(Bound found)
     {
-        var found = RequireBound();
         var first = found.Bodies.FirstOrDefault(body => world.EntityOf(body) is not null) ?? found.Bodies[0];
         return new ActorWorld(world, first, key: found.Root, senses: found.Bodies);
     }
@@ -161,21 +175,21 @@ public sealed class PlayerWorld(IWorld world, string handle)
         return player is null ? null : new Bound(player.Slot, Runs.DriverBodies(snapshot, player.Slot));
     }
 
-    // The body a move names by its alias in the view: the slot's one body when none is named and it holds one, else null.
-    private static string? BodyNamed(Bound bound, string? body)
+    // The body a move names by its shown alias in the view: the slot's one body when none is named and it holds one, else null.
+    private static string? BodyNamed(Bound bound, Dictionary<string, string> shown, string? body)
     {
         if (body is null)
         {
             return bound.Bodies.Count == 1 ? bound.Bodies[0] : null;
         }
-        return bound.Bodies.FirstOrDefault(candidate => ActorAlias.Of(bound.Root, candidate) == body);
+        return bound.Bodies.FirstOrDefault(candidate => ActorAlias.Of(bound.Root, shown.GetValueOrDefault(candidate) ?? candidate) == body);
     }
 
     // The body a read or a check names, with its slot: a throw when the body is unnamed or not the handle's.
     private (Bound Found, string Id) NamedOf(string? body)
     {
         var found = RequireBound();
-        var id = BodyNamed(found, body);
+        var id = BodyNamed(found, ShownOf(found), body);
         return id is null
             ? throw new WorldError(body is null ? Code.BodyRequired : Code.NotABody, $"No body {body ?? ""} is driven by {handle}")
             : (found, id);
