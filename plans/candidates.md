@@ -52,15 +52,19 @@ first, and **Non-goals** what its first version leaves out.
   - **Unoccupied bodies.** An agent the architect places that no player drives is unoccupied: a part of
     the scene that acts for no one until a player occupies it (an idle slot, or an agent in no slot, is
     one today).
-  - **Two ways to occupy.** (a) A player leaves its own body for an unoccupied one; the body left
+  - **Three ways to change bodies.** (a) A player leaves its own body for an unoccupied one; the body left
     behind becomes unoccupied, and its former player or any other may occupy it again the same way.
     (b) A player drives a second body beside its own, by Possession (`docs/possession.md`) carried into
     runs: the possessor's player drives the possessed body while the possession holds. A body another
-    player drives is taken only this way, and its own player stays seated, its moves for it refused
-    `possessed`.
-  - **Triggered as class changes are.** The architect prepares which changes of body may happen before
-    the story, and during a run only a prepared one happens, set off by a world event (a beat, or a
-    Scheduled outcome's success); a character never improvises one.
+    player drives is taken only this way or by (c), and its own player stays seated, its moves for it
+    refused `possessed`. (c) Two players exchange bodies, each into the other's, in one step: the mind
+    swap, where both bodies are played.
+  - **By ability.** A character changes bodies by its own verb, refused unless it has the ability, a
+    capacity its template's parts or a modifier give (AGENTS.md: actions check capacities, never parts).
+    The architect decides who can, by the templates and the scene; when and into whom is the
+    character's choice, within the verb's preconditions.
+  - **The director gets no new lever.** It changes a body only by playing a beat the architect put in
+    the run's pool (`docs/roles-levers.md`), which carries the change as an edit.
   - A move already submitted for the body goes with it to its new player, as a successor's does.
   - **Instant.** A change of body is one step: until it happens the player is in its own body, and when
     it happens the player is in the new one. No player is ever left with no body by it.
@@ -68,18 +72,21 @@ first, and **Non-goals** what its first version leaves out.
     character it is (its alias from its id, or its `appearance` once Identity by appearance is built), so
     others take it for that character whoever drives it. A player is not bound to a body: its own view
     is keyed by its slot, not by the slot's first body, so a change of body renames nothing it sees.
-  Possible representation: an edit kind `occupy { body, slot }` that a beat may carry, refused unless the
-  architect prepared it and the body is unoccupied; possession in a run read from `Possession.Holder`, so
-  the possessor's slot drives the body with no slot change and the drive ends when the link lapses.
+  Possible representation: a verb `transfer { target }` (into an unoccupied body, or exchanging with a
+  played one), refused without the capacity, out of reach or sight, and into a body neither unoccupied nor
+  played; an edit kind of the same change that a pool beat may carry; possession in a run read from
+  `Possession.Holder`, so the possessor's slot drives the body with no slot change and the drive ends when
+  the link lapses.
   Trigger: a run scene where two players swap bodies, or one takes another's.
   Depends: Possession (shipped), for (b).
   Non-goals: a body in two slots other than by possession, senses through a possessed body.
-  Test: after an occupation, the receiving handle's `submit` for the body is accepted and the former
+  Test: after a transfer, the receiving handle's `submit` for the body is accepted and the former
   handle's is refused `not_a_body`; the body left behind is driven by no handle and is occupied back by a
-  second prepared occupation; a possessed played body refuses its own player's move `possessed` and accepts
-  the possessor's; the body's state is unchanged by either.
-  Open: where the architect prepares an occupation (the scene's `run`, or the body's template as
-  `becomes` is).
+  second transfer; after an exchange each handle drives the other's body and neither saw a step with
+  none; a body without the capacity is refused; a possessed played body refuses its own player's move
+  `possessed` and accepts the possessor's; the body's state is unchanged by any of them.
+  Open: the capacity's name and the verb's preconditions (reach, sight, a carried item); whether an
+  exchange needs the other player's body to have the ability too, or only the actor's.
 - **Class changes.** Behaviour: a body becomes another class, with the larger or smaller absolute amounts
   of that class, by a world event (a curse taking hold, an upgrade succeeding), never inside the command
   that starts it. Decided by the maintainer:
