@@ -25,6 +25,11 @@ public class ChecksTests
     [InlineData("""{"op":"template_get","library":"/tmp/lib","id":"bottle","revision":1}""")]
     [InlineData("""{"op":"template_put","library":"/tmp/lib","template":{"id":"werewolf","extends":"human"}}""")]
     [InlineData("""{"op":"template_delete","library":"/tmp/lib","id":"wine_bottle"}""")]
+    [InlineData("""{"op":"world_add","library":"/tmp/lib","name":"lab","scenario":[]}""")]
+    [InlineData("""{"op":"world_edit","library":"/tmp/lib","name":"lab","scenario":{"entities":[]}}""")]
+    [InlineData("""{"op":"world_get","library":"/tmp/lib","name":"lab"}""")]
+    [InlineData("""{"op":"world_get","library":"/tmp/lib","name":"lab","revision":2}""")]
+    [InlineData("""{"op":"world_list","library":"/tmp/lib"}""")]
     public void A_request_of_the_shape_of_its_op_is_accepted(string json) => Assert.True(Checks.IsRequest(Parse(json)));
 
     [Theory]
@@ -50,6 +55,10 @@ public class ChecksTests
     [InlineData("""{"op":"template_get","library":"/tmp/lib","id":"bottle","revision":0}""")]
     [InlineData("""{"op":"template_put","library":"/tmp/lib"}""")]
     [InlineData("""{"op":"template_list","library":"/tmp/lib","extra":1}""")]
+    [InlineData("""{"op":"world_add","library":"/tmp/lib","name":"lab"}""")]
+    [InlineData("""{"op":"world_add","library":"/tmp/lib","name":"","scenario":[]}""")]
+    [InlineData("""{"op":"world_get","library":"/tmp/lib","name":"lab","revision":0}""")]
+    [InlineData("""{"op":"world_add","library":"/tmp/lib","name":"lab","scenario":[],"extra":1}""")]
     public void A_request_that_does_not_fit_its_op_is_refused(string json) => Assert.False(Checks.IsRequest(Parse(json)));
 
     [Fact]

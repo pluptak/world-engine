@@ -133,5 +133,9 @@ public static class Checks
         ["template_get"] = Obj(Op("template_get"), ("library", Req(NonEmpty)), ("id", Req(NonEmpty)), ("revision", Opt(AtLeast(1)))),
         ["template_put"] = Obj(Op("template_put"), ("library", Req(NonEmpty)), ("template", Req(Record))),
         ["template_delete"] = Obj(Op("template_delete"), ("library", Req(NonEmpty)), ("id", Req(NonEmpty))),
+        ["world_add"] = Obj(Op("world_add"), ("library", Req(NonEmpty)), ("name", Req(NonEmpty)), ("scenario", Req(Or(List(_ => true), Record)))),
+        ["world_edit"] = Obj(Op("world_edit"), ("library", Req(NonEmpty)), ("name", Req(NonEmpty)), ("scenario", Req(Or(List(_ => true), Record)))),
+        ["world_get"] = Obj(Op("world_get"), ("library", Req(NonEmpty)), ("name", Req(NonEmpty)), ("revision", Opt(AtLeast(1)))),
+        ["world_list"] = Obj(Op("world_list"), ("library", Req(NonEmpty))),
     };
 }
