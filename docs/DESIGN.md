@@ -20,6 +20,7 @@ What is built, nothing aspirational, one concept per file:
 - [state.md](state.md): snapshots, validation, templates, parts, capacities, physical consequences.
 - [structure.md](structure.md): parts, sparse part state, what writes it, and severing.
 - [templates.md](templates.md), [fields.md](fields.md): templates, upgrades; each prop's tier.
+- [library.md](library.md): the template library, its revisions and its requests.
 - [relations.md](relations.md): every relation, and the rule that holds it.
 - [relation-tests.md](relation-tests.md): the tests that pin each relation's rule.
 - [carrying.md](carrying.md): holding parts, grips and pockets, and what losing a part drops.

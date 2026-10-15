@@ -37,3 +37,9 @@ changed hash, or a bad version is a `WorldError` with a code.
   `snapshot.json` (default 32) and a checkpoint (default 256). Nothing stores them.
 - `WorldBuilder.Restart(from, to)` makes a world at `to` from `from`'s `initial.json` and
   `templates.json` ([restart.md](restart.md)).
+- The template library ([library.md](library.md)) is four ops, each naming `library`:
+  `template_list` answers `{ templates: [{ id, latest, revisions }] }`;
+  `template_get { id, revision? }` answers `{ template }`, else `unknown_template`
+  or `no_such_revision`; `template_put { template }` answers `{ revision }`, else
+  `invalid_templates`; `template_delete { id }` answers `{ id }`, else
+  `unknown_template` or `invalid_templates`.

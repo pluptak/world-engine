@@ -18,10 +18,9 @@ one, structured refusals), but never interpret text or plan on a caller's behalf
 
 Work top to bottom; take the first entry that is not blocked. Reorder here, nowhere else.
 
-1. [Template library: revisions and their requests](#template-library-revisions-and-their-requests).
-2. [Library worlds: a scenario and a manifest, by revision](#library-worlds-a-scenario-and-a-manifest-by-revision).
-3. [Runs from a world revision, linked to the library](#runs-from-a-world-revision-linked-to-the-library).
-4. [Identity by appearance: a body seen is named by the face it wears](#identity-by-appearance-a-body-seen-is-named-by-the-face-it-wears).
+1. [Library worlds: a scenario and a manifest, by revision](#library-worlds-a-scenario-and-a-manifest-by-revision).
+2. [Runs from a world revision, linked to the library](#runs-from-a-world-revision-linked-to-the-library).
+3. [Identity by appearance: a body seen is named by the face it wears](#identity-by-appearance-a-body-seen-is-named-by-the-face-it-wears).
 
 When nothing above is unblocked, stop and report. Gaps with no plan yet are in
 [plans/candidates.md](plans/candidates.md); they are not work, and only the maintainer promotes one
@@ -79,48 +78,6 @@ happens as soon as a template is written for a story rather than for the engine,
 suite never writes the repository's `templates/`: every library test copies it to a temp folder first, since
 the goldens pin it. Every write takes the library's turn, `WorldLock.With(<library>/templates/.revisions, ...)`,
 so two writers never interleave; reads take none.
-
-### Template library: revisions and their requests
-
-- **What:** `TemplateLibrary` (`Library/TemplateLibrary.cs`, new): list, get, put and delete over a library's
-  templates, every change kept as a revision.
-- **Layout:**
-  - `templates/<id>.json` is the latest revision, the file `TemplateDirectory.ReadDeclarations` already reads
-    (it reads only the top level, so the folder below is never loaded as templates). It is the truth of the
-    latest set.
-  - `templates/.revisions/<id>/<n>.json`, `n` from 1 counting up per template: every recorded revision,
-    written in canonical form (`CanonicalJson`) and never rewritten.
-- **Rules:**
-  - **Recording.** Before any write for an id, a `<id>.json` whose canonical form is not the highest recorded
-    revision's (or that has none) is recorded first as the next revision. A hand edit, and every shipped
-    template, so becomes a revision when it is first touched (`TemplateLibrary.Record(id)`, used by the later
-    items too).
-  - **Put** `{ template }` (a declaration, checked by `TemplateShape` as loading does): the latest set with it
-    in place of its id, resolved by `TemplateResolver` and validated by `TemplateValidation`, or refused
-    `invalid_templates` (existing code, the loader's message) with nothing written. A declaration canonically
-    the same as the latest is no new revision; the answer names the existing one. Otherwise the revision file
-    is written, then `<id>.json` (canonical); a crash between them leaves the old latest, and the next write
-    records it again, which is harmless.
-  - **Delete** `{ id }`: removes `<id>.json` from the latest set, refused `invalid_templates` when the set
-    without it fails to resolve or validate (a child `extends` it, a product, successor or companion names it).
-    Its revisions stay (the third item deletes revisions).
-  - **Get** `{ id, revision? }`: the latest declaration, or that revision's; `unknown_template` (existing) for
-    an id with neither, `no_such_revision` (new) for a revision not recorded. **List**: every id with a latest
-    or a recorded revision, `{ id, latest: bool, revisions: [n...] }`, by id.
-- **CLI:** `template_list`, `template_get`, `template_put`, `template_delete`, each `{ op, library, ... }`
-  (`Contract/Checks.cs`, one shape each; `Cli/CliRunner.cs`, one case each).
-- **Files:** `Library/TemplateLibrary.cs` (new), `Model/Code.cs` (`no_such_revision`), `Contract/Checks.cs`,
-  `Cli/CliRunner.cs`, `docs/library.md` (new, ≤ 60 lines, indexed in `docs/DESIGN.md`), `docs/api.md` (the
-  four requests).
-- **Tests** (`LibraryTemplateTests`, on a temp copy of `templates/`): putting `werewolf` extending `human` makes
-  revision 1 and `TemplateDirectory` then reads it; a second put makes 2 and `get` of 1 answers the first; an
-  identical put makes none; a put extending an unknown parent is `invalid_templates` and the folder's bytes are
-  unchanged; a hand-edited `bottle.json` is recorded as a revision before the next put's; deleting `bottle`
-  while `wine_bottle` extends it is refused, deleting `wine_bottle` drops it from the latest set and keeps its
-  revisions; each request through `CliRunner`.
-- **Done when:** the tests pass, `dotnet test WorldEngine.slnx` and the deep run pass, and no golden changes
-  except the catalog golden's new code.
-- **Depends on:** nothing.
 
 ### Library worlds: a scenario and a manifest, by revision
 
