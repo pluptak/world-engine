@@ -1,6 +1,9 @@
 using WorldEngine.Core.Engine;
+using WorldEngine.Core.Json;
 using WorldEngine.Core.Model;
+using WorldEngine.Core.Templates;
 using WorldEngine.Store.Library;
+using WorldEngine.Store.Templates;
 
 namespace WorldEngine.Tests;
 
@@ -64,5 +67,90 @@ public class LibraryWorldTests : IDisposable
         var lib = CopyTemplatesToTemp();
         Assert.Equal(Code.UnknownTemplate, Assert.Throws<WorldError>(() =>
             TemplateLibrary.Resolve(lib, new Dictionary<string, long> { ["nope"] = 1 })).Code);
+    }
+
+    private static Value LabScenario() =>
+        ValueJson.Parse(File.ReadAllText(Path.Combine(RepoRoot(), "scenarios", "lab.json")))!;
+
+    private static Dictionary<string, long> ManifestOf(Value.Map manifest) =>
+        ((Value.Map)manifest["templates"]).ToDictionary(pair => pair.Key, pair => pair.Value.AsInt()!.Value, StringComparer.Ordinal);
+
+    [Fact]
+    public void Add_lab_writes_revision_1_pinning_every_latest_id()
+    {
+        var lib = CopyTemplatesToTemp();
+        var scenario = LabScenario();
+        Assert.Equal(1, WorldLibrary.Add(lib, "lab", scenario));
+        var got = WorldLibrary.Get(lib, "lab", 1);
+        Assert.Equal(CanonicalJson.Serialize(scenario), CanonicalJson.Serialize(got.Scenario));
+        var latest = TemplateDirectory.ReadDeclarations(Path.Combine(lib, "templates")).Decls.Keys.Order(StringComparer.Ordinal);
+        Assert.Equal(latest, ManifestOf(got.Manifest).Keys.Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void Pinned_set_is_stable_across_latest_movement_and_edit_pins_new_human()
+    {
+        var lib = CopyTemplatesToTemp();
+        WorldLibrary.Add(lib, "lab", LabScenario());
+        var first = ManifestOf(WorldLibrary.Get(lib, "lab", 1).Manifest);
+        var hash = TemplateHash.Of(TemplateLibrary.Resolve(lib, first));
+        var human = File.ReadAllText(Path.Combine(lib, "templates", "human.json")).Replace("70000", "70001");
+        TemplateLibrary.Put(lib, (Value.Map)ValueJson.Parse(human)!);
+        Assert.Equal(hash, TemplateHash.Of(TemplateLibrary.Resolve(lib, first)));
+        Assert.Equal(2, WorldLibrary.Edit(lib, "lab", LabScenario()));
+        var second = ManifestOf(WorldLibrary.Get(lib, "lab", 2).Manifest);
+        Assert.True(second["human"] > first["human"]);
+    }
+
+    [Fact]
+    public void Non_scene_value_is_refused_with_nothing_written()
+    {
+        var lib = CopyTemplatesToTemp();
+        Assert.Equal(Code.InvalidScenario, Assert.Throws<WorldError>(() => WorldLibrary.Add(lib, "bad", "nope")).Code);
+        Assert.False(Directory.Exists(Path.Combine(lib, "worlds", "bad")));
+    }
+
+    [Fact]
+    public void Unknown_template_scenario_writes_no_world()
+    {
+        // As `init` refuses it: the engine's own error escapes (the goldens pin
+        // `internal_error` for it), and no world revision is written for it.
+        var lib = CopyTemplatesToTemp();
+        Assert.ThrowsAny<Exception>(() => WorldLibrary.Add(lib, "bad", (Value)ValueJson.Parse("""[{"template":"nope"}]""")!));
+        Assert.False(Directory.Exists(Path.Combine(lib, "worlds", "bad")));
+    }
+
+    [Fact]
+    public void Taken_name_is_world_exists()
+    {
+        var lib = CopyTemplatesToTemp();
+        WorldLibrary.Add(lib, "lab", LabScenario());
+        Assert.Equal(Code.WorldExists, Assert.Throws<WorldError>(() => WorldLibrary.Add(lib, "lab", LabScenario())).Code);
+    }
+
+    [Fact]
+    public void Deleted_template_still_resolves_through_a_world()
+    {
+        var lib = CopyTemplatesToTemp();
+        WorldLibrary.Add(lib, "lab", LabScenario());
+        TemplateLibrary.Delete(lib, "wine_bottle");
+        var got = WorldLibrary.Get(lib, "lab", 1);
+        Assert.True(TemplateLibrary.Resolve(lib, ManifestOf(got.Manifest)).ContainsKey("wine_bottle"));
+    }
+
+    [Fact]
+    public void Get_unknown_name_is_no_such_world_and_bad_world_revision_is_no_such_revision()
+    {
+        var lib = CopyTemplatesToTemp();
+        WorldLibrary.Add(lib, "lab", LabScenario());
+        Assert.Equal(Code.NoSuchWorld, Assert.Throws<WorldError>(() => WorldLibrary.Get(lib, "nope", null)).Code);
+        Assert.Equal(Code.NoSuchRevision, Assert.Throws<WorldError>(() => WorldLibrary.Get(lib, "lab", 7)).Code);
+    }
+
+    [Fact]
+    public void Invalid_name_is_invalid_world()
+    {
+        var lib = CopyTemplatesToTemp();
+        Assert.Equal(Code.InvalidWorld, Assert.Throws<WorldError>(() => WorldLibrary.Add(lib, "Lab", LabScenario())).Code);
     }
 }
