@@ -62,6 +62,12 @@ first, and **Non-goals** what its first version leaves out.
     the story, and during a run only a prepared one happens, set off by a world event (a beat, or a
     Scheduled outcome's success); a character never improvises one.
   - A move already submitted for the body goes with it to its new player, as a successor's does.
+  - **Instant.** A change of body is one step: until it happens the player is in its own body, and when
+    it happens the player is in the new one. No player is ever left with no body by it.
+  - **Recognition follows the body, never the player.** A body left behind is still recognised as the
+    character it is (its alias from its id, or its `appearance` once Identity by appearance is built), so
+    others take it for that character whoever drives it. A player is not bound to a body: its own view
+    is keyed by its slot, not by the slot's first body, so a change of body renames nothing it sees.
   Possible representation: an edit kind `occupy { body, slot }` that a beat may carry, refused unless the
   architect prepared it and the body is unoccupied; possession in a run read from `Possession.Holder`, so
   the possessor's slot drives the body with no slot change and the drive ends when the link lapses.
@@ -73,8 +79,7 @@ first, and **Non-goals** what its first version leaves out.
   second prepared occupation; a possessed played body refuses its own player's move `possessed` and accepts
   the possessor's; the body's state is unchanged by either.
   Open: where the architect prepares an occupation (the scene's `run`, or the body's template as
-  `becomes` is); what a slot left with no body reads (`Options` empty with a reason, as `body_out`); how
-  a slot is named once its first body is left behind, since the player's aliases are keyed by it.
+  `becomes` is).
 - **Class changes.** Behaviour: a body becomes another class, with the larger or smaller absolute amounts
   of that class, by a world event (a curse taking hold, an upgrade succeeding), never inside the command
   that starts it. Decided by the maintainer:
