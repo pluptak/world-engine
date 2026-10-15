@@ -46,18 +46,35 @@ sketch, not a decision. **Trigger** names what would justify promoting it, **Dep
 first, and **Non-goals** what its first version leaves out.
 
 - **A body changing hands during a run.** Behaviour: in a run, a player can come to drive another body
-  (a mind swap), and the body's moves go with it. Today a body cannot join or leave a slot during a run
-  (`docs/roles.md`, "Not in it"); a successor is the only hand-over, and only on destruction. Possible
-  representation: an edit kind `transfer_body { body, slot }` for the director and the author.
+  (a mind swap, a possession), and the body's moves go with it. Today a body cannot join or leave a slot
+  during a run (`docs/roles.md`, "Not in it"); a successor is the only hand-over, and only on destruction.
+  Decided by the maintainer:
+  - **Unoccupied bodies.** An agent the architect places that no player drives is unoccupied: a part of
+    the scene that acts for no one until a player occupies it (an idle slot, or an agent in no slot, is
+    one today).
+  - **Two ways to occupy.** (a) A player leaves its own body for an unoccupied one; the body left
+    behind becomes unoccupied, and its former player or any other may occupy it again the same way.
+    (b) A player drives a second body beside its own, by Possession (`docs/possession.md`) carried into
+    runs: the possessor's player drives the possessed body while the possession holds. A body another
+    player drives is taken only this way, and its own player stays seated, its moves for it refused
+    `possessed`.
+  - **Triggered as class changes are.** The architect prepares which changes of body may happen before
+    the story, and during a run only a prepared one happens, set off by a world event (a beat, or a
+    Scheduled outcome's success); a character never improvises one.
+  - A move already submitted for the body goes with it to its new player, as a successor's does.
+  Possible representation: an edit kind `occupy { body, slot }` that a beat may carry, refused unless the
+  architect prepared it and the body is unoccupied; possession in a run read from `Possession.Holder`, so
+  the possessor's slot drives the body with no slot change and the drive ends when the link lapses.
   Trigger: a run scene where two players swap bodies, or one takes another's.
-  Depends: nothing; independent of Possession (`backlog.md`), which works outside runs too.
-  Non-goals: a slot with no body, a body in two slots.
-  Test: after a transfer, the receiving handle's `submit` for the body is accepted and the former
-  handle's is refused `not_a_body`; the body's state is unchanged by the transfer.
-  Decided: a move already submitted for the body goes with it to its new player, as a successor's does.
-  Open: whether this changes the general rule in `docs/roles.md` (a body may change slots during a run)
-  or stays a rule for swaps only, the narrower one and easier to test; the run's lifecycle is to be
-  checked against either.
+  Depends: Possession (shipped), for (b).
+  Non-goals: a body in two slots other than by possession, senses through a possessed body.
+  Test: after an occupation, the receiving handle's `submit` for the body is accepted and the former
+  handle's is refused `not_a_body`; the body left behind is driven by no handle and is occupied back by a
+  second prepared occupation; a possessed played body refuses its own player's move `possessed` and accepts
+  the possessor's; the body's state is unchanged by either.
+  Open: where the architect prepares an occupation (the scene's `run`, or the body's template as
+  `becomes` is); what a slot left with no body reads (`Options` empty with a reason, as `body_out`); how
+  a slot is named once its first body is left behind, since the player's aliases are keyed by it.
 - **Class changes.** Behaviour: a body becomes another class, with the larger or smaller absolute amounts
   of that class, by a world event (a curse taking hold, an upgrade succeeding), never inside the command
   that starts it. Decided by the maintainer:
