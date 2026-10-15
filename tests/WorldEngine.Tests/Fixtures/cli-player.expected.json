@@ -5,7 +5,7 @@
       "handle": "alice",
       "world": "{WORLD}"
     },
-    "stdout": "{\"entities\":[{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":50,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"x7deffeebf116\",\"name\":\"bob\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xcf33243f98cd\",\"name\":\"ann\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":20,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xf8f49b382896\",\"name\":\"stone\",\"senses\":[\"sight\"],\"template\":\"stone\"}],\"events\":[],\"observer\":\"xcf33243f98cd\",\"tick\":0,\"unknown_senses\":[\"smell\",\"touch\"]}\n",
+    "stdout": "{\"entities\":[{\"facts\":{\"integrity\":100,\"residue\":{},\"status\":\"intact\"},\"id\":\"x0f05b403eb4e\",\"name\":\"room\",\"senses\":[\"sight\"],\"template\":\"room\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":50,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"x7deffeebf116\",\"name\":\"bob\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xcf33243f98cd\",\"name\":\"ann\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":20,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xf8f49b382896\",\"name\":\"stone\",\"senses\":[\"sight\"],\"template\":\"stone\"}],\"events\":[],\"observer\":\"xcf33243f98cd\",\"tick\":0,\"unknown_senses\":[\"smell\",\"touch\"]}\n",
     "status": 0
   },
   {
@@ -15,7 +15,7 @@
       "since_tick": 0,
       "world": "{WORLD}"
     },
-    "stdout": "{\"entities\":[{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":50,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"x7deffeebf116\",\"name\":\"bob\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xcf33243f98cd\",\"name\":\"ann\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":20,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xf8f49b382896\",\"name\":\"stone\",\"senses\":[\"sight\"],\"template\":\"stone\"}],\"events\":[],\"observer\":\"xcf33243f98cd\",\"tick\":0,\"unknown_senses\":[\"smell\",\"touch\"]}\n",
+    "stdout": "{\"entities\":[{\"facts\":{\"integrity\":100,\"residue\":{},\"status\":\"intact\"},\"id\":\"x0f05b403eb4e\",\"name\":\"room\",\"senses\":[\"sight\"],\"template\":\"room\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":50,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"x7deffeebf116\",\"name\":\"bob\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xcf33243f98cd\",\"name\":\"ann\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":20,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xf8f49b382896\",\"name\":\"stone\",\"senses\":[\"sight\"],\"template\":\"stone\"}],\"events\":[],\"observer\":\"xcf33243f98cd\",\"tick\":0,\"unknown_senses\":[\"smell\",\"touch\"]}\n",
     "status": 0
   },
   {
@@ -25,7 +25,7 @@
       "entity": "xf8f49b382896",
       "world": "{WORLD}"
     },
-    "stdout": "{\"inspection\":{\"facts\":{\"contained_in\":null,\"in_part\":null,\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":20,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"holds\":[],\"id\":\"xf8f49b382896\",\"name\":\"stone\",\"props\":{},\"reachable\":true,\"senses\":[\"sight\"],\"size_cm\":{\"d\":20,\"h\":20,\"w\":20},\"template\":\"stone\"}}\n",
+    "stdout": "{\"inspection\":{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":20,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"holds\":[],\"id\":\"xf8f49b382896\",\"name\":\"stone\",\"props\":{},\"reachable\":true,\"senses\":[\"sight\"],\"size_cm\":{\"d\":20,\"h\":20,\"w\":20},\"template\":\"stone\"}}\n",
     "status": 0
   },
   {
@@ -60,7 +60,7 @@
       },
       "world": "{WORLD}"
     },
-    "stdout": "{\"command_id\":\"p0\",\"resolved_target\":null,\"status\":\"ok\"}\n",
+    "stdout": "{\"command_id\":\"p0\",\"status\":\"ok\"}\n",
     "status": 0
   },
   {
@@ -183,7 +183,7 @@
       "op": "director_close_round",
       "world": "{WORLD}"
     },
-    "stdout": "{\"closing\":{\"command_id\":\"round-1-close\",\"deltas\":[],\"events\":[{\"cause_id\":null,\"command_id\":\"round-1-close\",\"data\":{},\"entity\":\"world\",\"event_id\":\"ev9\",\"tick\":0,\"type\":\"advance\"}],\"resolved_target\":null,\"snapshot_version\":5,\"status\":\"ok\"},\"results\":[{\"command_id\":\"p3\",\"deltas\":[],\"events\":[{\"cause_id\":null,\"command_id\":\"p3\",\"data\":{\"utterance\":\"again\",\"volume\":\"normal\"},\"entity\":\"e2\",\"event_id\":\"ev8\",\"tick\":0,\"type\":\"say\"}],\"resolved_target\":null,\"snapshot_version\":4,\"status\":\"ok\"}],\"round\":1,\"status\":\"ok\"}\n",
+    "stdout": "{\"closing\":{\"command_id\":\"round-1-close\",\"deltas\":[],\"events\":[{\"command_id\":\"round-1-close\",\"data\":{},\"entity\":\"world\",\"event_id\":\"ev9\",\"tick\":0,\"type\":\"advance\"}],\"snapshot_version\":5,\"status\":\"ok\"},\"results\":[{\"command_id\":\"p3\",\"deltas\":[],\"events\":[{\"command_id\":\"p3\",\"data\":{\"utterance\":\"again\",\"volume\":\"normal\"},\"entity\":\"e2\",\"event_id\":\"ev8\",\"tick\":0,\"type\":\"say\"}],\"snapshot_version\":4,\"status\":\"ok\"}],\"round\":1,\"status\":\"ok\"}\n",
     "status": 0
   },
   {

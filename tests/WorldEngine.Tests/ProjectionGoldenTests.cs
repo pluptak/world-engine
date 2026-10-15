@@ -17,7 +17,8 @@ public class ProjectionGoldenTests
     [Fact]
     public void Projection_rows_match_TypeScript()
     {
-        foreach (var row in GoldenRows.ReadRows("projection-golden.expected.json"))
+        var rows = GoldenRows.ReadRows("projection-golden.expected.json");
+        foreach (var row in rows)
         {
             var name = row!["name"]!.GetValue<string>();
             var input = row["input"]!;
@@ -30,7 +31,16 @@ public class ProjectionGoldenTests
                 "hearing_door" => HearingDoor(input),
                 var kind => throw new InvalidDataException($"{name}: unknown row kind {kind}"),
             };
+            if (GoldenUpdate.Enabled)
+            {
+                row["result"] = actual?.DeepClone();
+                continue;
+            }
             Meaning.Same(row["result"], actual, $"{name}: expected {row["result"]?.ToJsonString()}, got {actual?.ToJsonString()}");
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("projection-golden.expected.json", rows);
         }
     }
 

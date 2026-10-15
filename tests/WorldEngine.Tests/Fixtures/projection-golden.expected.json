@@ -247,6 +247,20 @@
     },
     "result": [
       {
+        "id": "e1",
+        "template": "room",
+        "name": "room",
+        "senses": [
+          "sight",
+          "touch"
+        ],
+        "facts": {
+          "status": "intact",
+          "integrity": 100,
+          "residue": {}
+        }
+      },
+      {
         "id": "e2",
         "template": "table",
         "name": "e2",
@@ -256,8 +270,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -277,7 +289,6 @@
         ],
         "facts": {
           "location": "e1",
-          "support": null,
           "contained_in": "e4",
           "in_part": "hand_l",
           "status": "intact",
@@ -299,8 +310,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -321,8 +330,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -342,8 +349,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -363,8 +368,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -624,6 +627,20 @@
     },
     "result": [
       {
+        "id": "e1",
+        "template": "room",
+        "name": "room",
+        "senses": [
+          "sight",
+          "touch"
+        ],
+        "facts": {
+          "status": "intact",
+          "integrity": 100,
+          "residue": {}
+        }
+      },
+      {
         "id": "e2",
         "template": "table",
         "name": "e2",
@@ -633,8 +650,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -653,7 +668,6 @@
         ],
         "facts": {
           "location": "e1",
-          "support": null,
           "contained_in": "e4",
           "in_part": "hand_l",
           "status": "intact",
@@ -675,8 +689,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -696,8 +708,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -718,8 +728,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -739,8 +747,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -1000,6 +1006,19 @@
     },
     "result": [
       {
+        "id": "e1",
+        "template": "room",
+        "name": "room",
+        "senses": [
+          "touch"
+        ],
+        "facts": {
+          "status": "intact",
+          "integrity": 100,
+          "residue": {}
+        }
+      },
+      {
         "id": "e3",
         "template": "bottle",
         "name": "e3",
@@ -1008,7 +1027,6 @@
         ],
         "facts": {
           "location": "e1",
-          "support": null,
           "contained_in": "e4",
           "in_part": "hand_l",
           "status": "intact",
@@ -1030,8 +1048,6 @@
         "facts": {
           "location": "e1",
           "support": "e1",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -1793,8 +1809,6 @@
         "facts": {
           "location": "e9",
           "support": "e9",
-          "contained_in": null,
-          "in_part": null,
           "status": "intact",
           "integrity": 100,
           "residue": {},
@@ -1802,6 +1816,19 @@
             "x": 0,
             "y": 0
           }
+        }
+      },
+      {
+        "id": "e9",
+        "template": "room",
+        "name": "room",
+        "senses": [
+          "touch"
+        ],
+        "facts": {
+          "status": "intact",
+          "integrity": 100,
+          "residue": {}
         }
       }
     ]
@@ -2063,7 +2090,6 @@
       ],
       "facts": {
         "location": "e1",
-        "support": null,
         "contained_in": "e4",
         "in_part": "hand_l",
         "status": "intact",
@@ -2347,8 +2373,6 @@
       "facts": {
         "location": "e1",
         "support": "e1",
-        "contained_in": null,
-        "in_part": null,
         "status": "intact",
         "integrity": 100,
         "residue": {},
@@ -2673,8 +2697,6 @@
       "facts": {
         "location": "e1",
         "support": "e1",
-        "contained_in": null,
-        "in_part": null,
         "status": "intact",
         "integrity": 100,
         "residue": {},
@@ -2954,8 +2976,6 @@
       "facts": {
         "location": "e1",
         "support": "e1",
-        "contained_in": null,
-        "in_part": null,
         "status": "intact",
         "integrity": 100,
         "residue": {},
@@ -3234,8 +3254,6 @@
       "facts": {
         "location": "e1",
         "support": "e1",
-        "contained_in": null,
-        "in_part": null,
         "status": "intact",
         "integrity": 100,
         "residue": {},

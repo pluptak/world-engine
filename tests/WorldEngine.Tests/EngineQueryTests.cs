@@ -71,6 +71,11 @@ public class EngineQueryTests
             ["resolve"] = resolve,
         };
 
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write($"engine-{name}.expected.json", JsonNode.Parse(WorldJson.Write(result))!);
+            return;
+        }
         Meaning.Same(expected, WorldJson.Write(result));
     }
 

@@ -24,8 +24,8 @@ answer. Sight across an open door needs both rooms lit (`adjacent_open_door_lit`
 `location_unlit`, and a camera lends its lit room, an intercom its sounds, to the agent it feeds
 ([camera.md](camera.md), [intercom.md](intercom.md)).
 
-The sense table lives in [senses.md](senses.md): one row per event class; touch ignores rooms and
-reads the observer's own body and grips (`own_body`), never an authored event, else `not_touching`.
+The sense table lives in [senses.md](senses.md): one row per event class; touch reads the body and
+grips (`own_body`) and the room it stands in ([room-sight.md](room-sight.md)), else `not_touching`.
 An event heard alone from the next room names the door it came through (`heard_from`).
 
 An event-form perceive reads the world at both ends of the command that produced it and is true if

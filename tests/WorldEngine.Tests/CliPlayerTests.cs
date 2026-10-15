@@ -40,9 +40,19 @@ public class CliPlayerTests : IDisposable
             var request = (JsonObject)row["request"]!.DeepClone();
             request["world"] = dir;
             var output = CliRunner.Run([], request.ToJsonString());
+            if (GoldenUpdate.Enabled)
+            {
+                row["stdout"] = output.Stdout;
+                row["status"] = output.Status;
+                continue;
+            }
 
             Meaning.Same(row["stdout"]!.GetValue<string>(), output.Stdout, $"row {index} ({request["op"]}): the answer differs from TypeScript's");
             Assert.Equal(row["status"]!.GetValue<int>(), output.Status);
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("cli-player.expected.json", Rows);
         }
     }
 

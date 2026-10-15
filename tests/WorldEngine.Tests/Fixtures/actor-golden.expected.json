@@ -240,11 +240,14 @@
     "op": "snapshot",
     "args": {},
     "result": {
-      "version": 0,
-      "tick": 0,
-      "next_seq": 40,
-      "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
       "coverage": {
+        "properties": [
+          "integrity",
+          "residue",
+          "pos",
+          "open",
+          "liquid_amount"
+        ],
         "relations": [
           "support",
           "contained_in",
@@ -258,215 +261,174 @@
           "sight",
           "hearing",
           "touch"
-        ],
-        "properties": [
-          "integrity",
-          "residue",
-          "pos",
-          "open",
-          "liquid_amount"
         ]
       },
       "entities": {
         "e1": {
-          "id": "e1",
-          "template": "room",
-          "name": "room",
           "aliases": [],
-          "location": null,
-          "support": null,
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
-          "pos": null,
-          "detached_from": null,
+          "id": "e1",
           "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
           "modifiers": [],
+          "name": "room",
+          "parts": {},
           "props": {
             "lit": true
-          }
+          },
+          "residue": {},
+          "status": "intact",
+          "template": "room"
         },
         "e2": {
-          "id": "e2",
-          "template": "table",
-          "name": "e2",
           "aliases": [],
+          "id": "e2",
+          "integrity": 100,
           "location": "e1",
-          "support": "e1",
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
+          "modifiers": [],
+          "name": "e2",
+          "parts": {},
           "pos": {
             "x": 30,
             "y": 0
           },
-          "detached_from": null,
-          "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
-          "modifiers": [],
           "props": {
             "surface": true
-          }
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "table"
         },
         "e3": {
-          "id": "e3",
-          "template": "bottle",
-          "name": "e3",
           "aliases": [],
-          "location": "e1",
-          "support": null,
           "contained_in": "e4",
+          "id": "e3",
           "in_part": "hand_l",
-          "concealed_by": null,
-          "pos": null,
-          "detached_from": null,
           "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
-          "modifiers": [],
-          "props": {}
-        },
-        "e4": {
-          "id": "e4",
-          "template": "human",
-          "name": "e4",
-          "aliases": [],
           "location": "e1",
-          "support": "e1",
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
-          "pos": {
-            "x": -50,
-            "y": 0
-          },
-          "detached_from": null,
-          "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
           "modifiers": [],
-          "props": {
-            "agent": true,
-            "reach_cm": 100,
-            "hand_height_cm": 100,
-            "hand_carry_limit_g": 80000,
-            "attack_damage": 40,
-            "default_hit_part": "torso",
-            "bleed_damage": 5,
-            "bleed_every_ticks": 2,
-            "bleed_times": 3
-          }
-        },
-        "e8": {
-          "id": "e8",
-          "template": "door",
-          "name": "e8",
-          "aliases": [],
-          "location": "e1",
-          "support": "e1",
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
-          "pos": {
-            "x": 0,
-            "y": 0
-          },
-          "detached_from": null,
-          "integrity": 100,
-          "status": "intact",
+          "name": "e3",
           "parts": {},
+          "props": {},
           "residue": {},
-          "modifiers": [],
-          "props": {
-            "openable": true,
-            "open": false,
-            "from": "e1",
-            "to": "e9"
-          }
-        },
-        "e9": {
-          "id": "e9",
-          "template": "room",
-          "name": "room",
-          "aliases": [],
-          "location": null,
-          "support": null,
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
-          "pos": null,
-          "detached_from": null,
-          "integrity": 100,
           "status": "intact",
-          "parts": {},
-          "residue": {},
-          "modifiers": [],
-          "props": {}
+          "template": "bottle"
         },
         "e31": {
-          "id": "e31",
-          "template": "chest",
-          "name": "e31",
           "aliases": [],
+          "id": "e31",
+          "integrity": 100,
           "location": "e1",
-          "support": "e1",
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
+          "modifiers": [],
+          "name": "e31",
+          "parts": {},
           "pos": {
             "x": 90,
             "y": 0
           },
-          "detached_from": null,
-          "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
-          "modifiers": [],
           "props": {
             "openable": true
-          }
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "chest"
+        },
+        "e4": {
+          "aliases": [],
+          "id": "e4",
+          "integrity": 100,
+          "location": "e1",
+          "modifiers": [],
+          "name": "e4",
+          "parts": {},
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "props": {
+            "agent": true,
+            "attack_damage": 40,
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "default_hit_part": "torso",
+            "hand_carry_limit_g": 80000,
+            "hand_height_cm": 100,
+            "reach_cm": 100
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "human"
         },
         "e5": {
-          "id": "e5",
-          "template": "human",
-          "name": "e5",
           "aliases": [],
+          "id": "e5",
+          "integrity": 100,
           "location": "e1",
-          "support": "e1",
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
+          "modifiers": [],
+          "name": "e5",
+          "parts": {},
           "pos": {
             "x": -20,
             "y": 0
           },
-          "detached_from": null,
-          "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
-          "modifiers": [],
           "props": {
             "agent": true,
-            "reach_cm": 100,
-            "hand_height_cm": 100,
-            "hand_carry_limit_g": 80000,
             "attack_damage": 40,
-            "default_hit_part": "torso",
             "bleed_damage": 5,
             "bleed_every_ticks": 2,
-            "bleed_times": 3
-          }
+            "bleed_times": 3,
+            "default_hit_part": "torso",
+            "hand_carry_limit_g": 80000,
+            "hand_height_cm": 100,
+            "reach_cm": 100
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "human"
+        },
+        "e8": {
+          "aliases": [],
+          "id": "e8",
+          "integrity": 100,
+          "location": "e1",
+          "modifiers": [],
+          "name": "e8",
+          "parts": {},
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "props": {
+            "from": "e1",
+            "open": false,
+            "openable": true,
+            "to": "e9"
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "door"
+        },
+        "e9": {
+          "aliases": [],
+          "id": "e9",
+          "integrity": 100,
+          "modifiers": [],
+          "name": "room",
+          "parts": {},
+          "props": {},
+          "residue": {},
+          "status": "intact",
+          "template": "room"
         }
-      }
+      },
+      "next_seq": 40,
+      "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
+      "tick": 0,
+      "version": 0
     }
   },
   {
@@ -561,8 +523,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -583,8 +543,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -592,6 +550,20 @@
               "x": -50,
               "y": 0
             }
+          }
+        },
+        {
+          "id": "x574ce08fc018",
+          "template": "room",
+          "name": "room",
+          "senses": [
+            "sight",
+            "touch"
+          ],
+          "facts": {
+            "status": "intact",
+            "integrity": 100,
+            "residue": {}
           }
         },
         {
@@ -604,8 +576,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -625,8 +595,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -646,8 +614,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -667,7 +633,6 @@
           ],
           "facts": {
             "location": "x574ce08fc018",
-            "support": null,
             "contained_in": "x4867edd8484a",
             "in_part": "hand_l",
             "status": "intact",
@@ -707,8 +672,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -729,8 +692,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -738,6 +699,20 @@
               "x": -50,
               "y": 0
             }
+          }
+        },
+        {
+          "id": "x574ce08fc018",
+          "template": "room",
+          "name": "room",
+          "senses": [
+            "sight",
+            "touch"
+          ],
+          "facts": {
+            "status": "intact",
+            "integrity": 100,
+            "residue": {}
           }
         },
         {
@@ -750,8 +725,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -771,8 +744,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -792,8 +763,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -813,7 +782,6 @@
           ],
           "facts": {
             "location": "x574ce08fc018",
-            "support": null,
             "contained_in": "x4867edd8484a",
             "in_part": "hand_l",
             "status": "intact",
@@ -852,8 +820,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -874,8 +840,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -883,6 +847,20 @@
               "x": -50,
               "y": 0
             }
+          }
+        },
+        {
+          "id": "x574ce08fc018",
+          "template": "room",
+          "name": "room",
+          "senses": [
+            "sight",
+            "touch"
+          ],
+          "facts": {
+            "status": "intact",
+            "integrity": 100,
+            "residue": {}
           }
         },
         {
@@ -895,8 +873,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -916,8 +892,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -937,8 +911,6 @@
           "facts": {
             "location": "x574ce08fc018",
             "support": "x574ce08fc018",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -958,7 +930,6 @@
           ],
           "facts": {
             "location": "x574ce08fc018",
-            "support": null,
             "contained_in": "x4867edd8484a",
             "in_part": "hand_l",
             "status": "intact",
@@ -991,8 +962,6 @@
       "facts": {
         "location": "x574ce08fc018",
         "support": "x574ce08fc018",
-        "contained_in": null,
-        "in_part": null,
         "status": "intact",
         "integrity": 100,
         "residue": {},
@@ -1052,8 +1021,7 @@
     },
     "result": {
       "status": "unresolved",
-      "command_id": "k2",
-      "resolved_target": null
+      "command_id": "k2"
     }
   },
   {
@@ -1069,8 +1037,7 @@
     },
     "result": {
       "status": "unresolved",
-      "command_id": "k3",
-      "resolved_target": null
+      "command_id": "k3"
     }
   },
   {
@@ -1105,8 +1072,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1127,8 +1092,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1136,6 +1099,20 @@
                 "x": -50,
                 "y": 0
               }
+            }
+          },
+          {
+            "id": "x574ce08fc018",
+            "template": "room",
+            "name": "room",
+            "senses": [
+              "sight",
+              "touch"
+            ],
+            "facts": {
+              "status": "intact",
+              "integrity": 100,
+              "residue": {}
             }
           },
           {
@@ -1148,8 +1125,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1169,8 +1144,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1190,8 +1163,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1211,7 +1182,6 @@
             ],
             "facts": {
               "location": "x574ce08fc018",
-              "support": null,
               "contained_in": "x4867edd8484a",
               "in_part": "hand_l",
               "status": "intact",
@@ -1229,21 +1199,21 @@
             "event_id": "xadaca19256cf",
             "tick": 0,
             "type": "open",
-            "entity": "xa91157f9c462",
             "senses": [
               "sight",
               "hearing"
-            ]
+            ],
+            "entity": "xa91157f9c462"
           },
           {
             "event_id": "xcafbc98cbfab",
             "tick": 0,
             "type": "opened",
-            "entity": "xa91157f9c462",
             "senses": [
               "sight",
               "hearing"
-            ]
+            ],
+            "entity": "xa91157f9c462"
           }
         ]
       }
@@ -1282,8 +1252,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1304,8 +1272,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1313,6 +1279,20 @@
                 "x": -50,
                 "y": 0
               }
+            }
+          },
+          {
+            "id": "x574ce08fc018",
+            "template": "room",
+            "name": "room",
+            "senses": [
+              "sight",
+              "touch"
+            ],
+            "facts": {
+              "status": "intact",
+              "integrity": 100,
+              "residue": {}
             }
           },
           {
@@ -1325,8 +1305,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1346,8 +1324,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1367,8 +1343,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1388,7 +1362,6 @@
             ],
             "facts": {
               "location": "x574ce08fc018",
-              "support": null,
               "contained_in": "x4867edd8484a",
               "in_part": "hand_l",
               "status": "intact",
@@ -1421,7 +1394,6 @@
     "result": {
       "status": "ok",
       "command_id": "c3",
-      "resolved_target": null,
       "observation": {
         "observer": "x4867edd8484a",
         "tick": 2,
@@ -1439,8 +1411,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1461,8 +1431,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1470,6 +1438,20 @@
                 "x": -50,
                 "y": 0
               }
+            }
+          },
+          {
+            "id": "x574ce08fc018",
+            "template": "room",
+            "name": "room",
+            "senses": [
+              "sight",
+              "touch"
+            ],
+            "facts": {
+              "status": "intact",
+              "integrity": 100,
+              "residue": {}
             }
           },
           {
@@ -1482,8 +1464,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1503,8 +1483,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1524,8 +1502,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1545,7 +1521,6 @@
             ],
             "facts": {
               "location": "x574ce08fc018",
-              "support": null,
               "contained_in": "x4867edd8484a",
               "in_part": "hand_l",
               "status": "intact",
@@ -1563,12 +1538,12 @@
             "event_id": "xa8994b352011",
             "tick": 1,
             "type": "say",
-            "entity": "x4867edd8484a",
             "senses": [
               "sight",
               "hearing",
               "touch"
             ],
+            "entity": "x4867edd8484a",
             "utterance": "hello",
             "volume": "normal"
           }
@@ -1592,7 +1567,6 @@
     "result": {
       "status": "ok",
       "command_id": "c4",
-      "resolved_target": null,
       "observation": {
         "observer": "x4867edd8484a",
         "tick": 3,
@@ -1610,8 +1584,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1632,8 +1604,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1641,6 +1611,20 @@
                 "x": -50,
                 "y": 0
               }
+            }
+          },
+          {
+            "id": "x574ce08fc018",
+            "template": "room",
+            "name": "room",
+            "senses": [
+              "sight",
+              "touch"
+            ],
+            "facts": {
+              "status": "intact",
+              "integrity": 100,
+              "residue": {}
             }
           },
           {
@@ -1653,8 +1637,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1674,8 +1656,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1695,8 +1675,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1716,7 +1694,6 @@
             ],
             "facts": {
               "location": "x574ce08fc018",
-              "support": null,
               "contained_in": "x4867edd8484a",
               "in_part": "hand_l",
               "status": "intact",
@@ -1734,12 +1711,12 @@
             "event_id": "x614e4d9c71e5",
             "tick": 2,
             "type": "say",
-            "entity": "x4867edd8484a",
             "senses": [
               "sight",
               "hearing",
               "touch"
             ],
+            "entity": "x4867edd8484a",
             "utterance": "xa91157f9c462",
             "volume": "normal"
           }
@@ -1779,8 +1756,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1801,8 +1776,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1810,6 +1783,20 @@
                 "x": -50,
                 "y": 0
               }
+            }
+          },
+          {
+            "id": "x574ce08fc018",
+            "template": "room",
+            "name": "room",
+            "senses": [
+              "sight",
+              "touch"
+            ],
+            "facts": {
+              "status": "intact",
+              "integrity": 100,
+              "residue": {}
             }
           },
           {
@@ -1822,8 +1809,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1843,7 +1828,6 @@
             ],
             "facts": {
               "location": "x574ce08fc018",
-              "support": null,
               "contained_in": "x4867edd8484a",
               "in_part": "hand_r",
               "status": "intact",
@@ -1865,8 +1849,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1886,7 +1868,6 @@
             ],
             "facts": {
               "location": "x574ce08fc018",
-              "support": null,
               "contained_in": "x4867edd8484a",
               "in_part": "hand_l",
               "status": "intact",
@@ -1904,21 +1885,21 @@
             "event_id": "x98eb240ee83c",
             "tick": 3,
             "type": "take",
-            "entity": "x9c430c60b291",
             "senses": [
               "sight",
               "touch"
-            ]
+            ],
+            "entity": "x9c430c60b291"
           },
           {
             "event_id": "xdb3716ab5857",
             "tick": 3,
             "type": "moved",
-            "entity": "x9c430c60b291",
             "senses": [
               "sight",
               "touch"
-            ]
+            ],
+            "entity": "x9c430c60b291"
           }
         ]
       }
@@ -1938,7 +1919,6 @@
     "result": {
       "status": "unresolved",
       "command_id": "c6",
-      "resolved_target": null,
       "observation": {
         "observer": "x4867edd8484a",
         "tick": 4,
@@ -1956,8 +1936,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1978,8 +1956,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -1987,6 +1963,20 @@
                 "x": -50,
                 "y": 0
               }
+            }
+          },
+          {
+            "id": "x574ce08fc018",
+            "template": "room",
+            "name": "room",
+            "senses": [
+              "sight",
+              "touch"
+            ],
+            "facts": {
+              "status": "intact",
+              "integrity": 100,
+              "residue": {}
             }
           },
           {
@@ -1999,8 +1989,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -2020,7 +2008,6 @@
             ],
             "facts": {
               "location": "x574ce08fc018",
-              "support": null,
               "contained_in": "x4867edd8484a",
               "in_part": "hand_r",
               "status": "intact",
@@ -2042,8 +2029,6 @@
             "facts": {
               "location": "x574ce08fc018",
               "support": "x574ce08fc018",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -2063,7 +2048,6 @@
             ],
             "facts": {
               "location": "x574ce08fc018",
-              "support": null,
               "contained_in": "x4867edd8484a",
               "in_part": "hand_l",
               "status": "intact",
@@ -2112,7 +2096,6 @@
             ],
             "facts": {
               "location": "x6e99b3c5eae8",
-              "support": null,
               "contained_in": "x2e07a7fffead",
               "in_part": "hand_l",
               "status": "intact",
@@ -2134,8 +2117,6 @@
             "facts": {
               "location": "x6e99b3c5eae8",
               "support": "x6e99b3c5eae8",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -2155,8 +2136,6 @@
             "facts": {
               "location": "x6e99b3c5eae8",
               "support": "x6e99b3c5eae8",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -2176,8 +2155,6 @@
             "facts": {
               "location": "x6e99b3c5eae8",
               "support": "x6e99b3c5eae8",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -2197,7 +2174,6 @@
             ],
             "facts": {
               "location": "x6e99b3c5eae8",
-              "support": null,
               "contained_in": "x2e07a7fffead",
               "in_part": "hand_r",
               "status": "intact",
@@ -2210,6 +2186,19 @@
             }
           },
           {
+            "id": "x6e99b3c5eae8",
+            "template": "room",
+            "name": "room",
+            "senses": [
+              "sight"
+            ],
+            "facts": {
+              "status": "intact",
+              "integrity": 100,
+              "residue": {}
+            }
+          },
+          {
             "id": "xf663ff86224e",
             "template": "door",
             "name": "e8",
@@ -2219,8 +2208,6 @@
             "facts": {
               "location": "x6e99b3c5eae8",
               "support": "x6e99b3c5eae8",
-              "contained_in": null,
-              "in_part": null,
               "status": "intact",
               "integrity": 100,
               "residue": {},
@@ -2257,7 +2244,6 @@
           ],
           "facts": {
             "location": "x6e99b3c5eae8",
-            "support": null,
             "contained_in": "x2e07a7fffead",
             "in_part": "hand_l",
             "status": "intact",
@@ -2279,8 +2265,6 @@
           "facts": {
             "location": "x6e99b3c5eae8",
             "support": "x6e99b3c5eae8",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -2300,8 +2284,6 @@
           "facts": {
             "location": "x6e99b3c5eae8",
             "support": "x6e99b3c5eae8",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -2321,8 +2303,6 @@
           "facts": {
             "location": "x6e99b3c5eae8",
             "support": "x6e99b3c5eae8",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -2342,7 +2322,6 @@
           ],
           "facts": {
             "location": "x6e99b3c5eae8",
-            "support": null,
             "contained_in": "x2e07a7fffead",
             "in_part": "hand_r",
             "status": "intact",
@@ -2355,6 +2334,19 @@
           }
         },
         {
+          "id": "x6e99b3c5eae8",
+          "template": "room",
+          "name": "room",
+          "senses": [
+            "sight"
+          ],
+          "facts": {
+            "status": "intact",
+            "integrity": 100,
+            "residue": {}
+          }
+        },
+        {
           "id": "xf663ff86224e",
           "template": "door",
           "name": "e8",
@@ -2364,8 +2356,6 @@
           "facts": {
             "location": "x6e99b3c5eae8",
             "support": "x6e99b3c5eae8",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -2402,7 +2392,6 @@
           ],
           "facts": {
             "location": "x6e99b3c5eae8",
-            "support": null,
             "contained_in": "x2e07a7fffead",
             "in_part": "hand_l",
             "status": "intact",
@@ -2424,8 +2413,6 @@
           "facts": {
             "location": "x6e99b3c5eae8",
             "support": "x6e99b3c5eae8",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -2445,8 +2432,6 @@
           "facts": {
             "location": "x6e99b3c5eae8",
             "support": "x6e99b3c5eae8",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -2466,8 +2451,6 @@
           "facts": {
             "location": "x6e99b3c5eae8",
             "support": "x6e99b3c5eae8",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -2487,7 +2470,6 @@
           ],
           "facts": {
             "location": "x6e99b3c5eae8",
-            "support": null,
             "contained_in": "x2e07a7fffead",
             "in_part": "hand_r",
             "status": "intact",
@@ -2500,6 +2482,19 @@
           }
         },
         {
+          "id": "x6e99b3c5eae8",
+          "template": "room",
+          "name": "room",
+          "senses": [
+            "sight"
+          ],
+          "facts": {
+            "status": "intact",
+            "integrity": 100,
+            "residue": {}
+          }
+        },
+        {
           "id": "xf663ff86224e",
           "template": "door",
           "name": "e8",
@@ -2509,8 +2504,6 @@
           "facts": {
             "location": "x6e99b3c5eae8",
             "support": "x6e99b3c5eae8",
-            "contained_in": null,
-            "in_part": null,
             "status": "intact",
             "integrity": 100,
             "residue": {},
@@ -2526,31 +2519,31 @@
           "event_id": "x85d4d75457ad",
           "tick": 0,
           "type": "open",
-          "entity": "xf663ff86224e",
           "senses": [
             "sight",
             "hearing"
-          ]
+          ],
+          "entity": "xf663ff86224e"
         },
         {
           "event_id": "x660dfcac7784",
           "tick": 0,
           "type": "opened",
-          "entity": "xf663ff86224e",
           "senses": [
             "sight",
             "hearing"
-          ]
+          ],
+          "entity": "xf663ff86224e"
         },
         {
           "event_id": "xc8ee0db77214",
           "tick": 1,
           "type": "say",
-          "entity": "x2e07a7fffead",
           "senses": [
             "sight",
             "hearing"
           ],
+          "entity": "x2e07a7fffead",
           "utterance": "hello",
           "volume": "normal"
         },
@@ -2558,11 +2551,11 @@
           "event_id": "x477cee95f8d7",
           "tick": 2,
           "type": "say",
-          "entity": "x2e07a7fffead",
           "senses": [
             "sight",
             "hearing"
           ],
+          "entity": "x2e07a7fffead",
           "utterance": "xa91157f9c462",
           "volume": "normal"
         },
@@ -2570,21 +2563,21 @@
           "event_id": "x047e75f87345",
           "tick": 3,
           "type": "take",
-          "entity": "x5b95900d0b16",
           "senses": [
             "sight",
             "touch"
-          ]
+          ],
+          "entity": "x5b95900d0b16"
         },
         {
           "event_id": "x42c56fd9ac0d",
           "tick": 3,
           "type": "moved",
-          "entity": "x5b95900d0b16",
           "senses": [
             "sight",
             "touch"
-          ]
+          ],
+          "entity": "x5b95900d0b16"
         }
       ]
     }
@@ -2688,16 +2681,16 @@
           "verb": "put",
           "target": "xe7d06abfe371",
           "args": {
-            "relation": "on",
-            "destination": "x8ea789cc1f2c"
+            "destination": "x8ea789cc1f2c",
+            "relation": "on"
           }
         },
         {
           "verb": "put",
           "target": "x9c430c60b291",
           "args": {
-            "relation": "on",
-            "destination": "x8ea789cc1f2c"
+            "destination": "x8ea789cc1f2c",
+            "relation": "on"
           }
         },
         {
@@ -2988,8 +2981,8 @@
           "verb": "put",
           "target": "xe7d06abfe371",
           "args": {
-            "relation": "in",
-            "destination": "x4867edd8484a.pocket"
+            "destination": "x4867edd8484a.pocket",
+            "relation": "in"
           },
           "reason_code": "too_large"
         },
@@ -2997,8 +2990,8 @@
           "verb": "put",
           "target": "x9c430c60b291",
           "args": {
-            "relation": "in",
-            "destination": "x4867edd8484a.pocket"
+            "destination": "x4867edd8484a.pocket",
+            "relation": "in"
           },
           "reason_code": "too_large"
         },
@@ -3263,8 +3256,6 @@
       "facts": {
         "location": "x574ce08fc018",
         "support": "x574ce08fc018",
-        "contained_in": null,
-        "in_part": null,
         "status": "intact",
         "integrity": 100,
         "residue": {},
@@ -3290,11 +3281,14 @@
     "op": "snapshot",
     "args": {},
     "result": {
-      "version": 4,
-      "tick": 4,
-      "next_seq": 46,
-      "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
       "coverage": {
+        "properties": [
+          "integrity",
+          "residue",
+          "pos",
+          "open",
+          "liquid_amount"
+        ],
         "relations": [
           "support",
           "contained_in",
@@ -3308,212 +3302,171 @@
           "sight",
           "hearing",
           "touch"
-        ],
-        "properties": [
-          "integrity",
-          "residue",
-          "pos",
-          "open",
-          "liquid_amount"
         ]
       },
       "entities": {
         "e1": {
-          "id": "e1",
-          "template": "room",
-          "name": "room",
           "aliases": [],
-          "location": null,
-          "support": null,
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
-          "pos": null,
-          "detached_from": null,
+          "id": "e1",
           "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
           "modifiers": [],
+          "name": "room",
+          "parts": {},
           "props": {
             "lit": true
-          }
+          },
+          "residue": {},
+          "status": "intact",
+          "template": "room"
         },
         "e2": {
-          "id": "e2",
-          "template": "table",
-          "name": "e2",
           "aliases": [],
+          "id": "e2",
+          "integrity": 100,
           "location": "e1",
-          "support": "e1",
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
+          "modifiers": [],
+          "name": "e2",
+          "parts": {},
           "pos": {
             "x": 30,
             "y": 0
           },
-          "detached_from": null,
-          "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
-          "modifiers": [],
           "props": {
             "surface": true
-          }
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "table"
         },
         "e3": {
-          "id": "e3",
-          "template": "bottle",
-          "name": "e3",
           "aliases": [],
-          "location": "e1",
-          "support": null,
           "contained_in": "e4",
+          "id": "e3",
           "in_part": "hand_l",
-          "concealed_by": null,
-          "pos": null,
-          "detached_from": null,
           "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
-          "modifiers": [],
-          "props": {}
-        },
-        "e4": {
-          "id": "e4",
-          "template": "human",
-          "name": "e4",
-          "aliases": [],
           "location": "e1",
-          "support": "e1",
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
-          "pos": {
-            "x": -50,
-            "y": 0
-          },
-          "detached_from": null,
-          "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
           "modifiers": [],
-          "props": {
-            "agent": true,
-            "reach_cm": 100,
-            "hand_height_cm": 100,
-            "hand_carry_limit_g": 80000,
-            "attack_damage": 40,
-            "default_hit_part": "torso",
-            "bleed_damage": 5,
-            "bleed_every_ticks": 2,
-            "bleed_times": 3
-          }
-        },
-        "e8": {
-          "id": "e8",
-          "template": "door",
-          "name": "e8",
-          "aliases": [],
-          "location": "e1",
-          "support": "e1",
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
-          "pos": {
-            "x": 0,
-            "y": 0
-          },
-          "detached_from": null,
-          "integrity": 100,
-          "status": "intact",
+          "name": "e3",
           "parts": {},
+          "props": {},
           "residue": {},
-          "modifiers": [],
-          "props": {
-            "openable": true,
-            "open": true,
-            "from": "e1",
-            "to": "e9"
-          }
-        },
-        "e9": {
-          "id": "e9",
-          "template": "room",
-          "name": "room",
-          "aliases": [],
-          "location": null,
-          "support": null,
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
-          "pos": null,
-          "detached_from": null,
-          "integrity": 100,
           "status": "intact",
-          "parts": {},
-          "residue": {},
-          "modifiers": [],
-          "props": {}
+          "template": "bottle"
         },
         "e31": {
-          "id": "e31",
-          "template": "chest",
-          "name": "e31",
           "aliases": [],
+          "id": "e31",
+          "integrity": 100,
           "location": "e1",
-          "support": "e1",
-          "contained_in": null,
-          "in_part": null,
-          "concealed_by": null,
+          "modifiers": [],
+          "name": "e31",
+          "parts": {},
           "pos": {
             "x": 90,
             "y": 0
           },
-          "detached_from": null,
-          "integrity": 100,
-          "status": "intact",
-          "parts": {},
-          "residue": {},
-          "modifiers": [],
           "props": {
             "openable": true
-          }
-        },
-        "e5": {
-          "id": "e5",
-          "template": "human",
-          "name": "e5",
-          "aliases": [],
-          "location": "e1",
-          "support": null,
-          "contained_in": "e4",
-          "in_part": "hand_r",
-          "concealed_by": null,
-          "pos": null,
-          "detached_from": null,
-          "integrity": 100,
-          "status": "intact",
-          "parts": {},
+          },
           "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "chest"
+        },
+        "e4": {
+          "aliases": [],
+          "id": "e4",
+          "integrity": 100,
+          "location": "e1",
           "modifiers": [],
+          "name": "e4",
+          "parts": {},
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
           "props": {
             "agent": true,
-            "reach_cm": 100,
-            "hand_height_cm": 100,
-            "hand_carry_limit_g": 80000,
             "attack_damage": 40,
-            "default_hit_part": "torso",
             "bleed_damage": 5,
             "bleed_every_ticks": 2,
-            "bleed_times": 3
-          }
+            "bleed_times": 3,
+            "default_hit_part": "torso",
+            "hand_carry_limit_g": 80000,
+            "hand_height_cm": 100,
+            "reach_cm": 100
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "human"
+        },
+        "e5": {
+          "aliases": [],
+          "contained_in": "e4",
+          "id": "e5",
+          "in_part": "hand_r",
+          "integrity": 100,
+          "location": "e1",
+          "modifiers": [],
+          "name": "e5",
+          "parts": {},
+          "props": {
+            "agent": true,
+            "attack_damage": 40,
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "default_hit_part": "torso",
+            "hand_carry_limit_g": 80000,
+            "hand_height_cm": 100,
+            "reach_cm": 100
+          },
+          "residue": {},
+          "status": "intact",
+          "template": "human"
+        },
+        "e8": {
+          "aliases": [],
+          "id": "e8",
+          "integrity": 100,
+          "location": "e1",
+          "modifiers": [],
+          "name": "e8",
+          "parts": {},
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "props": {
+            "from": "e1",
+            "open": true,
+            "openable": true,
+            "to": "e9"
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "door"
+        },
+        "e9": {
+          "aliases": [],
+          "id": "e9",
+          "integrity": 100,
+          "modifiers": [],
+          "name": "room",
+          "parts": {},
+          "props": {},
+          "residue": {},
+          "status": "intact",
+          "template": "room"
         }
-      }
+      },
+      "next_seq": 46,
+      "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
+      "tick": 4,
+      "version": 4
     }
   }
 ]

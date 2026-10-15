@@ -81,9 +81,13 @@ public static class Perception
         {
             return new Answer(Truth.False, Code.Abstract);
         }
-        // Touch reads the body instead of the room.
+        // Touch reads the body instead of the room, and the room a body stands in, dark or not.
         if (sense == Sense.Touch)
         {
+            if (subject.Template == TemplateIds.Room && observer.Location == subject.Id && observer.ContainedIn is null)
+            {
+                return new Answer(Truth.True, Code.SameLocation);
+            }
             return TouchesBody(snapshot, registry, observer.Id, subject)
                 ? new Answer(Truth.True, Code.OwnBody)
                 : new Answer(Truth.False, Code.NotTouching);
@@ -200,8 +204,13 @@ public static class Perception
             });
 
     // A door or panel with no location is in either room it joins, so it is in the observer's room if the observer is in one of them.
+    // A room is its own location: it is seen from inside it, and through an open door, as anything in it is.
     private static string? TargetLocationForPerception(Entity target, string? targetLocation, string? observerLocation)
     {
+        if (target.Template == TemplateIds.Room)
+        {
+            return target.Id;
+        }
         if (targetLocation is not null)
         {
             return targetLocation;

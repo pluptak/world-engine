@@ -266,32 +266,21 @@
       "entities": {
         "e1": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e1",
-          "in_part": null,
           "integrity": 100,
-          "location": null,
           "modifiers": [],
           "name": "room",
           "parts": {},
-          "pos": null,
           "props": {
             "lit": true
           },
           "residue": {},
           "status": "intact",
-          "support": null,
           "template": "room"
         },
         "e2": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e2",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -311,9 +300,7 @@
         },
         "e3": {
           "aliases": [],
-          "concealed_by": null,
           "contained_in": "e4",
-          "detached_from": null,
           "id": "e3",
           "in_part": "hand_l",
           "integrity": 100,
@@ -321,20 +308,14 @@
           "modifiers": [],
           "name": "e3",
           "parts": {},
-          "pos": null,
           "props": {},
           "residue": {},
           "status": "intact",
-          "support": null,
           "template": "bottle"
         },
         "e31": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e31",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -354,11 +335,7 @@
         },
         "e4": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e4",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -386,11 +363,7 @@
         },
         "e5": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e5",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -418,11 +391,7 @@
         },
         "e8": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e8",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -445,21 +414,14 @@
         },
         "e9": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e9",
-          "in_part": null,
           "integrity": 100,
-          "location": null,
           "modifiers": [],
           "name": "room",
           "parts": {},
-          "pos": null,
           "props": {},
           "residue": {},
           "status": "intact",
-          "support": null,
           "template": "room"
         }
       },
@@ -1057,32 +1019,21 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {
               "lit": true
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1102,9 +1053,7 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
             "contained_in": "e4",
-            "detached_from": null,
             "id": "e3",
             "in_part": "hand_l",
             "integrity": 100,
@@ -1112,20 +1061,14 @@
             "modifiers": [],
             "name": "e3",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "bottle"
           },
           "e31": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e31",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1145,11 +1088,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1177,11 +1116,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1209,11 +1144,7 @@
           },
           "e8": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1236,21 +1167,14 @@
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           }
         },
@@ -1280,7 +1204,6 @@
       ],
       "events": [
         {
-          "cause_id": null,
           "command_id": "c1",
           "data": {},
           "entity": "e8",
@@ -1343,32 +1266,21 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {
               "lit": true
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1388,9 +1300,7 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
             "contained_in": "e4",
-            "detached_from": null,
             "id": "e3",
             "in_part": "hand_l",
             "integrity": 100,
@@ -1398,20 +1308,14 @@
             "modifiers": [],
             "name": "e3",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "bottle"
           },
           "e31": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e31",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1431,11 +1335,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1463,11 +1363,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1495,11 +1391,7 @@
           },
           "e8": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1522,21 +1414,14 @@
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           }
         },
@@ -1593,32 +1478,21 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {
               "lit": true
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1638,9 +1512,7 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
             "contained_in": "e4",
-            "detached_from": null,
             "id": "e3",
             "in_part": "hand_l",
             "integrity": 100,
@@ -1648,20 +1520,14 @@
             "modifiers": [],
             "name": "e3",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "bottle"
           },
           "e31": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e31",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1681,11 +1547,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1713,11 +1575,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1745,11 +1603,7 @@
           },
           "e8": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1772,21 +1626,14 @@
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           }
         },
@@ -1844,32 +1691,21 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {
               "lit": true
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1889,9 +1725,7 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
             "contained_in": "e4",
-            "detached_from": null,
             "id": "e3",
             "in_part": "hand_l",
             "integrity": 100,
@@ -1899,20 +1733,14 @@
             "modifiers": [],
             "name": "e3",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "bottle"
           },
           "e31": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e31",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1932,11 +1760,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1964,11 +1788,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -1996,11 +1816,7 @@
           },
           "e8": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2023,21 +1839,14 @@
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           }
         },
@@ -2049,7 +1858,6 @@
       "deltas": [],
       "events": [
         {
-          "cause_id": null,
           "command_id": "c4",
           "data": {
             "utterance": "hello",
@@ -2062,156 +1870,159 @@
         }
       ],
       "observation": {
-        "observer": "e4",
-        "version": 2,
-        "unknown_senses": [
-          "smell"
-        ],
         "entities": [
           {
+            "facts": {
+              "integrity": 100,
+              "residue": {},
+              "status": "intact"
+            },
+            "id": "e1",
+            "name": "room",
+            "senses": [
+              "sight",
+              "touch"
+            ],
+            "template": "room"
+          },
+          {
+            "facts": {
+              "integrity": 100,
+              "location": "e1",
+              "pos": {
+                "x": 30,
+                "y": 0
+              },
+              "residue": {},
+              "status": "intact",
+              "support": "e1"
+            },
             "id": "e2",
-            "template": "table",
             "name": "e2",
             "senses": [
               "sight"
             ],
-            "facts": {
-              "location": "e1",
-              "support": "e1",
-              "contained_in": null,
-              "in_part": null,
-              "status": "intact",
-              "integrity": 100,
-              "residue": {},
-              "pos": {
-                "x": 30,
-                "y": 0
-              }
-            }
+            "template": "table"
           },
           {
+            "facts": {
+              "contained_in": "e4",
+              "in_part": "hand_l",
+              "integrity": 100,
+              "location": "e1",
+              "pos": {
+                "x": -50,
+                "y": 0
+              },
+              "residue": {},
+              "status": "intact"
+            },
             "id": "e3",
-            "template": "bottle",
             "name": "e3",
             "senses": [
               "sight",
               "touch"
             ],
-            "facts": {
-              "location": "e1",
-              "support": null,
-              "contained_in": "e4",
-              "in_part": "hand_l",
-              "status": "intact",
-              "integrity": 100,
-              "residue": {},
-              "pos": {
-                "x": -50,
-                "y": 0
-              }
-            }
+            "template": "bottle"
           },
           {
+            "facts": {
+              "integrity": 100,
+              "location": "e1",
+              "pos": {
+                "x": 90,
+                "y": 0
+              },
+              "residue": {},
+              "status": "intact",
+              "support": "e1"
+            },
             "id": "e31",
-            "template": "chest",
             "name": "e31",
             "senses": [
               "sight"
             ],
-            "facts": {
-              "location": "e1",
-              "support": "e1",
-              "contained_in": null,
-              "in_part": null,
-              "status": "intact",
-              "integrity": 100,
-              "residue": {},
-              "pos": {
-                "x": 90,
-                "y": 0
-              }
-            }
+            "template": "chest"
           },
           {
+            "facts": {
+              "integrity": 100,
+              "location": "e1",
+              "pos": {
+                "x": -50,
+                "y": 0
+              },
+              "residue": {},
+              "status": "intact",
+              "support": "e1"
+            },
             "id": "e4",
-            "template": "human",
             "name": "e4",
             "senses": [
               "sight",
               "touch"
             ],
-            "facts": {
-              "location": "e1",
-              "support": "e1",
-              "contained_in": null,
-              "in_part": null,
-              "status": "intact",
-              "integrity": 100,
-              "residue": {},
-              "pos": {
-                "x": -50,
-                "y": 0
-              }
-            }
+            "template": "human"
           },
           {
+            "facts": {
+              "integrity": 100,
+              "location": "e1",
+              "pos": {
+                "x": -20,
+                "y": 0
+              },
+              "residue": {},
+              "status": "intact",
+              "support": "e1"
+            },
             "id": "e5",
-            "template": "human",
             "name": "e5",
             "senses": [
               "sight"
             ],
-            "facts": {
-              "location": "e1",
-              "support": "e1",
-              "contained_in": null,
-              "in_part": null,
-              "status": "intact",
-              "integrity": 100,
-              "residue": {},
-              "pos": {
-                "x": -20,
-                "y": 0
-              }
-            }
+            "template": "human"
           },
           {
+            "facts": {
+              "integrity": 100,
+              "location": "e1",
+              "pos": {
+                "x": 0,
+                "y": 0
+              },
+              "residue": {},
+              "status": "intact",
+              "support": "e1"
+            },
             "id": "e8",
-            "template": "door",
             "name": "e8",
             "senses": [
               "sight"
             ],
-            "facts": {
-              "location": "e1",
-              "support": "e1",
-              "contained_in": null,
-              "in_part": null,
-              "status": "intact",
-              "integrity": 100,
-              "residue": {},
-              "pos": {
-                "x": 0,
-                "y": 0
-              }
-            }
+            "template": "door"
           }
         ],
         "events": [
           {
+            "entity": "e4",
             "event_id": "ev42",
-            "tick": 1,
-            "type": "say",
             "senses": [
               "sight",
               "hearing",
               "touch"
             ],
-            "entity": "e4",
+            "tick": 1,
+            "type": "say",
             "utterance": "hello",
             "volume": "normal"
           }
-        ]
+        ],
+        "observer": "e4",
+        "unknown_senses": [
+          "smell"
+        ],
+        "version": 2
       }
     }
   },
@@ -2255,32 +2066,21 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {
               "lit": true
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2300,9 +2100,7 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
             "contained_in": "e4",
-            "detached_from": null,
             "id": "e3",
             "in_part": "hand_l",
             "integrity": 100,
@@ -2310,20 +2108,14 @@
             "modifiers": [],
             "name": "e3",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "bottle"
           },
           "e31": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e31",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2343,11 +2135,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2375,11 +2163,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2407,11 +2191,7 @@
           },
           "e8": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2434,21 +2214,14 @@
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           }
         },
@@ -2461,7 +2234,6 @@
       "deltas": [],
       "events": [
         {
-          "cause_id": null,
           "command_id": "edit-5",
           "data": {},
           "entity": "world",
@@ -2515,32 +2287,21 @@
         "entities": {
           "e1": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e1",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {
               "lit": true
             },
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           },
           "e2": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e2",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2560,9 +2321,7 @@
           },
           "e3": {
             "aliases": [],
-            "concealed_by": null,
             "contained_in": "e4",
-            "detached_from": null,
             "id": "e3",
             "in_part": "hand_l",
             "integrity": 100,
@@ -2570,20 +2329,14 @@
             "modifiers": [],
             "name": "e3",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "bottle"
           },
           "e31": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e31",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2603,11 +2356,7 @@
           },
           "e4": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e4",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2635,11 +2384,7 @@
           },
           "e5": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e5",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2667,11 +2412,7 @@
           },
           "e8": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e8",
-            "in_part": null,
             "integrity": 100,
             "location": "e1",
             "modifiers": [],
@@ -2694,21 +2435,14 @@
           },
           "e9": {
             "aliases": [],
-            "concealed_by": null,
-            "contained_in": null,
-            "detached_from": null,
             "id": "e9",
-            "in_part": null,
             "integrity": 100,
-            "location": null,
             "modifiers": [],
             "name": "room",
             "parts": {},
-            "pos": null,
             "props": {},
             "residue": {},
             "status": "intact",
-            "support": null,
             "template": "room"
           }
         },
@@ -2721,7 +2455,6 @@
       "deltas": [],
       "events": [
         {
-          "cause_id": null,
           "command_id": "edit-6",
           "data": {},
           "entity": "e2",
@@ -2790,32 +2523,21 @@
           "entities": {
             "e1": {
               "aliases": [],
-              "concealed_by": null,
-              "contained_in": null,
-              "detached_from": null,
               "id": "e1",
-              "in_part": null,
               "integrity": 100,
-              "location": null,
               "modifiers": [],
               "name": "room",
               "parts": {},
-              "pos": null,
               "props": {
                 "lit": true
               },
               "residue": {},
               "status": "intact",
-              "support": null,
               "template": "room"
             },
             "e2": {
               "aliases": [],
-              "concealed_by": null,
-              "contained_in": null,
-              "detached_from": null,
               "id": "e2",
-              "in_part": null,
               "integrity": 100,
               "location": "e1",
               "modifiers": [],
@@ -2835,9 +2557,7 @@
             },
             "e3": {
               "aliases": [],
-              "concealed_by": null,
               "contained_in": "e4",
-              "detached_from": null,
               "id": "e3",
               "in_part": "hand_l",
               "integrity": 100,
@@ -2845,20 +2565,14 @@
               "modifiers": [],
               "name": "e3",
               "parts": {},
-              "pos": null,
               "props": {},
               "residue": {},
               "status": "intact",
-              "support": null,
               "template": "bottle"
             },
             "e31": {
               "aliases": [],
-              "concealed_by": null,
-              "contained_in": null,
-              "detached_from": null,
               "id": "e31",
-              "in_part": null,
               "integrity": 100,
               "location": "e1",
               "modifiers": [],
@@ -2878,11 +2592,7 @@
             },
             "e4": {
               "aliases": [],
-              "concealed_by": null,
-              "contained_in": null,
-              "detached_from": null,
               "id": "e4",
-              "in_part": null,
               "integrity": 100,
               "location": "e1",
               "modifiers": [],
@@ -2910,11 +2620,7 @@
             },
             "e5": {
               "aliases": [],
-              "concealed_by": null,
-              "contained_in": null,
-              "detached_from": null,
               "id": "e5",
-              "in_part": null,
               "integrity": 100,
               "location": "e1",
               "modifiers": [],
@@ -2942,11 +2648,7 @@
             },
             "e8": {
               "aliases": [],
-              "concealed_by": null,
-              "contained_in": null,
-              "detached_from": null,
               "id": "e8",
-              "in_part": null,
               "integrity": 100,
               "location": "e1",
               "modifiers": [],
@@ -2969,21 +2671,14 @@
             },
             "e9": {
               "aliases": [],
-              "concealed_by": null,
-              "contained_in": null,
-              "detached_from": null,
               "id": "e9",
-              "in_part": null,
               "integrity": 100,
-              "location": null,
               "modifiers": [],
               "name": "room",
               "parts": {},
-              "pos": null,
               "props": {},
               "residue": {},
               "status": "intact",
-              "support": null,
               "template": "room"
             }
           },
@@ -2996,7 +2691,6 @@
         "deltas": [],
         "events": [
           {
-            "cause_id": null,
             "command_id": "b1",
             "data": {
               "utterance": "back",
@@ -3018,141 +2712,144 @@
       "observer": "e5"
     },
     "result": {
-      "observer": "e5",
-      "version": 5,
-      "unknown_senses": [
-        "smell"
-      ],
       "entities": [
         {
+          "facts": {
+            "integrity": 100,
+            "residue": {},
+            "status": "intact"
+          },
+          "id": "e1",
+          "name": "room",
+          "senses": [
+            "sight",
+            "touch"
+          ],
+          "template": "room"
+        },
+        {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e2",
-          "template": "table",
           "name": "e2",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": 30,
-              "y": 0
-            }
-          }
+          "template": "table"
         },
         {
+          "facts": {
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact"
+          },
           "id": "e3",
-          "template": "bottle",
           "name": "e3",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": null,
-            "contained_in": "e4",
-            "in_part": "hand_l",
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": -50,
-              "y": 0
-            }
-          }
+          "template": "bottle"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e31",
-          "template": "chest",
           "name": "e31",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": 90,
-              "y": 0
-            }
-          }
+          "template": "chest"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e4",
-          "template": "human",
           "name": "e4",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": -50,
-              "y": 0
-            }
-          }
+          "template": "human"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": -20,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e5",
-          "template": "human",
           "name": "e5",
           "senses": [
             "sight",
             "touch"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": -20,
-              "y": 0
-            }
-          }
+          "template": "human"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e8",
-          "template": "door",
           "name": "e8",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            }
-          }
+          "template": "door"
         }
       ],
-      "events": []
+      "events": [],
+      "observer": "e5",
+      "unknown_senses": [
+        "smell"
+      ],
+      "version": 5
     }
   },
   {
@@ -3163,187 +2860,190 @@
       "since": 0
     },
     "result": {
-      "observer": "e5",
-      "version": 5,
-      "unknown_senses": [
-        "smell"
-      ],
       "entities": [
         {
+          "facts": {
+            "integrity": 100,
+            "residue": {},
+            "status": "intact"
+          },
+          "id": "e1",
+          "name": "room",
+          "senses": [
+            "sight",
+            "touch"
+          ],
+          "template": "room"
+        },
+        {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e2",
-          "template": "table",
           "name": "e2",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": 30,
-              "y": 0
-            }
-          }
+          "template": "table"
         },
         {
+          "facts": {
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact"
+          },
           "id": "e3",
-          "template": "bottle",
           "name": "e3",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": null,
-            "contained_in": "e4",
-            "in_part": "hand_l",
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": -50,
-              "y": 0
-            }
-          }
+          "template": "bottle"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e31",
-          "template": "chest",
           "name": "e31",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": 90,
-              "y": 0
-            }
-          }
+          "template": "chest"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e4",
-          "template": "human",
           "name": "e4",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": -50,
-              "y": 0
-            }
-          }
+          "template": "human"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": -20,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e5",
-          "template": "human",
           "name": "e5",
           "senses": [
             "sight",
             "touch"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": -20,
-              "y": 0
-            }
-          }
+          "template": "human"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e8",
-          "template": "door",
           "name": "e8",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            }
-          }
+          "template": "door"
         }
       ],
       "events": [
         {
+          "entity": "e8",
           "event_id": "ev40",
-          "tick": 0,
-          "type": "open",
           "senses": [
             "sight",
             "hearing"
           ],
-          "entity": "e8"
+          "tick": 0,
+          "type": "open"
         },
         {
+          "entity": "e8",
           "event_id": "ev41",
-          "tick": 0,
-          "type": "opened",
           "senses": [
             "sight",
             "hearing"
           ],
-          "entity": "e8"
+          "tick": 0,
+          "type": "opened"
         },
         {
+          "entity": "e4",
           "event_id": "ev42",
+          "senses": [
+            "sight",
+            "hearing"
+          ],
           "tick": 1,
           "type": "say",
-          "senses": [
-            "sight",
-            "hearing"
-          ],
-          "entity": "e4",
           "utterance": "hello",
           "volume": "normal"
         },
         {
+          "entity": "e5",
           "event_id": "ev46",
-          "tick": 2,
-          "type": "say",
           "senses": [
             "sight",
             "hearing",
             "touch"
           ],
-          "entity": "e5",
+          "tick": 2,
+          "type": "say",
           "utterance": "back",
           "volume": "normal"
         }
-      ]
+      ],
+      "observer": "e5",
+      "unknown_senses": [
+        "smell"
+      ],
+      "version": 5
     }
   },
   {
@@ -3354,187 +3054,190 @@
       "since_tick": 0
     },
     "result": {
-      "observer": "e5",
-      "version": 5,
-      "unknown_senses": [
-        "smell"
-      ],
       "entities": [
         {
+          "facts": {
+            "integrity": 100,
+            "residue": {},
+            "status": "intact"
+          },
+          "id": "e1",
+          "name": "room",
+          "senses": [
+            "sight",
+            "touch"
+          ],
+          "template": "room"
+        },
+        {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e2",
-          "template": "table",
           "name": "e2",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": 30,
-              "y": 0
-            }
-          }
+          "template": "table"
         },
         {
+          "facts": {
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact"
+          },
           "id": "e3",
-          "template": "bottle",
           "name": "e3",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": null,
-            "contained_in": "e4",
-            "in_part": "hand_l",
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": -50,
-              "y": 0
-            }
-          }
+          "template": "bottle"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e31",
-          "template": "chest",
           "name": "e31",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": 90,
-              "y": 0
-            }
-          }
+          "template": "chest"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e4",
-          "template": "human",
           "name": "e4",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": -50,
-              "y": 0
-            }
-          }
+          "template": "human"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": -20,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e5",
-          "template": "human",
           "name": "e5",
           "senses": [
             "sight",
             "touch"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": -20,
-              "y": 0
-            }
-          }
+          "template": "human"
         },
         {
+          "facts": {
+            "integrity": 100,
+            "location": "e1",
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "residue": {},
+            "status": "intact",
+            "support": "e1"
+          },
           "id": "e8",
-          "template": "door",
           "name": "e8",
           "senses": [
             "sight"
           ],
-          "facts": {
-            "location": "e1",
-            "support": "e1",
-            "contained_in": null,
-            "in_part": null,
-            "status": "intact",
-            "integrity": 100,
-            "residue": {},
-            "pos": {
-              "x": 0,
-              "y": 0
-            }
-          }
+          "template": "door"
         }
       ],
       "events": [
         {
+          "entity": "e8",
           "event_id": "ev40",
-          "tick": 0,
-          "type": "open",
           "senses": [
             "sight",
             "hearing"
           ],
-          "entity": "e8"
+          "tick": 0,
+          "type": "open"
         },
         {
+          "entity": "e8",
           "event_id": "ev41",
-          "tick": 0,
-          "type": "opened",
           "senses": [
             "sight",
             "hearing"
           ],
-          "entity": "e8"
+          "tick": 0,
+          "type": "opened"
         },
         {
+          "entity": "e4",
           "event_id": "ev42",
+          "senses": [
+            "sight",
+            "hearing"
+          ],
           "tick": 1,
           "type": "say",
-          "senses": [
-            "sight",
-            "hearing"
-          ],
-          "entity": "e4",
           "utterance": "hello",
           "volume": "normal"
         },
         {
+          "entity": "e5",
           "event_id": "ev46",
-          "tick": 2,
-          "type": "say",
           "senses": [
             "sight",
             "hearing",
             "touch"
           ],
-          "entity": "e5",
+          "tick": 2,
+          "type": "say",
           "utterance": "back",
           "volume": "normal"
         }
-      ]
+      ],
+      "observer": "e5",
+      "unknown_senses": [
+        "smell"
+      ],
+      "version": 5
     }
   },
   {
@@ -3570,35 +3273,33 @@
       "entity": "e8"
     },
     "result": {
-      "id": "e8",
-      "template": "door",
-      "name": "e8",
-      "senses": [
-        "sight"
-      ],
       "facts": {
-        "location": "e1",
-        "support": "e1",
-        "contained_in": null,
-        "in_part": null,
-        "status": "intact",
         "integrity": 100,
-        "residue": {},
+        "location": "e1",
         "pos": {
           "x": 0,
           "y": 0
-        }
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1"
       },
-      "reachable": true,
+      "holds": [],
+      "id": "e8",
+      "name": "e8",
       "props": {
         "open": true
       },
+      "reachable": true,
+      "senses": [
+        "sight"
+      ],
       "size_cm": {
-        "w": 90,
         "d": 10,
-        "h": 200
+        "h": 200,
+        "w": 90
       },
-      "holds": []
+      "template": "door"
     }
   },
   {
@@ -3629,7 +3330,6 @@
       ],
       "events": [
         {
-          "cause_id": null,
           "command_id": "c1",
           "data": {},
           "entity": "e8",
@@ -3647,7 +3347,6 @@
           "type": "opened"
         },
         {
-          "cause_id": null,
           "command_id": "c4",
           "data": {
             "utterance": "hello",
@@ -3659,7 +3358,6 @@
           "type": "say"
         },
         {
-          "cause_id": null,
           "command_id": "edit-5",
           "data": {},
           "entity": "world",
@@ -3668,7 +3366,6 @@
           "type": "edit"
         },
         {
-          "cause_id": null,
           "command_id": "edit-6",
           "data": {},
           "entity": "e2",
@@ -3688,7 +3385,6 @@
           "type": "edited"
         },
         {
-          "cause_id": null,
           "command_id": "b1",
           "data": {
             "utterance": "back",
@@ -3876,11 +3572,7 @@
     },
     "result": {
       "aliases": [],
-      "concealed_by": null,
-      "contained_in": null,
-      "detached_from": null,
       "id": "e8",
-      "in_part": null,
       "integrity": 100,
       "location": "e1",
       "modifiers": [],
@@ -3919,7 +3611,6 @@
     "result": {
       "events": [
         {
-          "cause_id": null,
           "command_id": "c4",
           "data": {
             "utterance": "hello",
@@ -3943,7 +3634,6 @@
     "result": {
       "events": [
         {
-          "cause_id": null,
           "command_id": "c1",
           "data": {},
           "entity": "e8",
@@ -4300,7 +3990,6 @@
         "forms": {
           "condition": "intact",
           "liquid": {
-            "material": null,
             "pct": 0
           }
         },
@@ -4932,32 +4621,21 @@
       "entities": {
         "e1": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e1",
-          "in_part": null,
           "integrity": 100,
-          "location": null,
           "modifiers": [],
           "name": "room",
           "parts": {},
-          "pos": null,
           "props": {
             "lit": true
           },
           "residue": {},
           "status": "intact",
-          "support": null,
           "template": "room"
         },
         "e2": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e2",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -4977,9 +4655,7 @@
         },
         "e3": {
           "aliases": [],
-          "concealed_by": null,
           "contained_in": "e4",
-          "detached_from": null,
           "id": "e3",
           "in_part": "hand_l",
           "integrity": 100,
@@ -4987,20 +4663,14 @@
           "modifiers": [],
           "name": "e3",
           "parts": {},
-          "pos": null,
           "props": {},
           "residue": {},
           "status": "intact",
-          "support": null,
           "template": "bottle"
         },
         "e31": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e31",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -5020,11 +4690,7 @@
         },
         "e4": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e4",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -5052,11 +4718,7 @@
         },
         "e5": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e5",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -5084,11 +4746,7 @@
         },
         "e8": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e8",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -5111,21 +4769,14 @@
         },
         "e9": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e9",
-          "in_part": null,
           "integrity": 100,
-          "location": null,
           "modifiers": [],
           "name": "room",
           "parts": {},
-          "pos": null,
           "props": {},
           "residue": {},
           "status": "intact",
-          "support": null,
           "template": "room"
         }
       },
@@ -5167,32 +4818,21 @@
       "entities": {
         "e1": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e1",
-          "in_part": null,
           "integrity": 100,
-          "location": null,
           "modifiers": [],
           "name": "room",
           "parts": {},
-          "pos": null,
           "props": {
             "lit": true
           },
           "residue": {},
           "status": "intact",
-          "support": null,
           "template": "room"
         },
         "e2": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e2",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -5212,9 +4852,7 @@
         },
         "e3": {
           "aliases": [],
-          "concealed_by": null,
           "contained_in": "e4",
-          "detached_from": null,
           "id": "e3",
           "in_part": "hand_l",
           "integrity": 100,
@@ -5222,20 +4860,14 @@
           "modifiers": [],
           "name": "e3",
           "parts": {},
-          "pos": null,
           "props": {},
           "residue": {},
           "status": "intact",
-          "support": null,
           "template": "bottle"
         },
         "e31": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e31",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -5255,11 +4887,7 @@
         },
         "e4": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e4",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -5287,11 +4915,7 @@
         },
         "e5": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e5",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -5319,11 +4943,7 @@
         },
         "e8": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e8",
-          "in_part": null,
           "integrity": 100,
           "location": "e1",
           "modifiers": [],
@@ -5346,21 +4966,14 @@
         },
         "e9": {
           "aliases": [],
-          "concealed_by": null,
-          "contained_in": null,
-          "detached_from": null,
           "id": "e9",
-          "in_part": null,
           "integrity": 100,
-          "location": null,
           "modifiers": [],
           "name": "room",
           "parts": {},
-          "pos": null,
           "props": {},
           "residue": {},
           "status": "intact",
-          "support": null,
           "template": "room"
         }
       },

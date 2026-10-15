@@ -22,7 +22,16 @@ public class HandlesGoldenTests
             var name = step!["name"]!.GetValue<string>();
             var args = step["args"]!;
             var actual = Outcome(() => Step(world, step["op"]!.GetValue<string>(), args));
+            if (GoldenUpdate.Enabled)
+            {
+                step["result"] = actual?.DeepClone();
+                continue;
+            }
             Meaning.Same(step["result"], actual, $"{name}: expected {step["result"]?.ToJsonString()}, got {actual?.ToJsonString()}");
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("handles-golden.expected.json", rows);
         }
     }
 

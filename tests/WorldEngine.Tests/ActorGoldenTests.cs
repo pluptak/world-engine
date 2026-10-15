@@ -23,7 +23,16 @@ public class ActorGoldenTests
             var name = step!["name"]!.GetValue<string>();
             var args = step["args"]!;
             var actual = Outcome(() => Step(world, views, step["op"]!.GetValue<string>(), args));
+            if (GoldenUpdate.Enabled)
+            {
+                step["result"] = actual?.DeepClone();
+                continue;
+            }
             Meaning.Same(step["result"], actual, $"{name}: expected {step["result"]?.ToJsonString()}, got {actual?.ToJsonString()}");
+        }
+        if (GoldenUpdate.Enabled)
+        {
+            GoldenUpdate.Write("actor-golden.expected.json", rows);
         }
     }
 

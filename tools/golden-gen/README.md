@@ -38,7 +38,8 @@ committing it: it is the list of everything the change did. The first update of 
 
 Supported: `VerbMatrixTests`, `PropertyTraceTests` (the memory-world test), `TamperGoldenTests`, `TakeoverGoldenTests`,
 `TemplateFuzzTests`, `Block21ReplayTests`, `VerbGoldenTests`, `EditTests`, the scripted rows (`MemoryGoldenTests`, `RefineGoldenTests`, `BeatShapesGoldenTests`) and
-the `command` and `validate` rows of `GoldenRows`. Not supported: the fixtures with a test of their own shape (the `cli-*`, `init`,
+the `command` and `validate` rows of `GoldenRows`, and the projection, handles, actor, engine-query, `cli-player` and
+`cli-actor` goldens. Not supported: the fixtures with a test of their own shape (the `cli-*`, `init`,
 `store-*`, `contract-*` and similar); when a change breaks one, edit the fixture by hand from the failure message.
 
 Goldens compare by meaning (`tests/WorldEngine.Tests/Meaning.cs`): key order, and a null member against an absent one, do not

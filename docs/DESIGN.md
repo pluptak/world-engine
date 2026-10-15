@@ -71,6 +71,7 @@ What is built, nothing aspirational, one concept per file:
 - [perception.md](perception.md): queries, perception, and coverage.
 - [senses.md](senses.md): the sense table both queries and tests read.
 - [senses-bases.md](senses-bases.md): the basis codes a perception answers with.
+- [room-sight.md](room-sight.md): rooms seen from inside, through an open door, and felt underfoot.
 - [projection.md](projection.md), [actor-view.md](actor-view.md): observation; one actor's side.
 - [appearance.md](appearance.md): the face a body wears, and naming it by sight.
 - [projection-inspect.md](projection-inspect.md): one entity in detail; a command's observation.
