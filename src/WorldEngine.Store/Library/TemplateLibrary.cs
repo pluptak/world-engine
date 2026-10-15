@@ -157,10 +157,34 @@ public static class TemplateLibrary
                 return recorded[^1];
             }
         }
-        var next = recorded.Count == 0 ? 1 : recorded[^1] + 1;
+        var next = NextNumber(library, id);
         Directory.CreateDirectory(Path.Combine(RevisionsDir(library), id));
         WorldWriter.AtomicWrite(RevisionPath(library, id, next), canonical);
         return next;
+    }
+
+    private static string TombstonePath(string library, string id, long revision) =>
+        Path.Combine(RevisionsDir(library), id, revision + ".deleted");
+
+    // The next revision number: one above every number ever written, a deleted revision's tombstone included.
+    private static long NextNumber(string library, string id)
+    {
+        var dir = Path.Combine(RevisionsDir(library), id);
+        if (!Directory.Exists(dir))
+        {
+            return 1;
+        }
+        long highest = 0;
+        foreach (var path in Directory.GetFiles(dir))
+        {
+            var extension = Path.GetExtension(path);
+            if ((extension == ".json" || extension == ".deleted")
+                && long.TryParse(Path.GetFileNameWithoutExtension(path), out var number) && number > highest)
+            {
+                highest = number;
+            }
+        }
+        return highest + 1;
     }
 
     private static IReadOnlyList<long> ReadRevisions(string library, string id)
@@ -252,8 +276,8 @@ public static class TemplateLibrary
                 return RecordLocked(library, decl.Id);
             }
         }
-        var recorded = RecordLocked(library, decl.Id);
-        var next = recorded + 1;
+        RecordLocked(library, decl.Id);
+        var next = NextNumber(library, decl.Id);
         Directory.CreateDirectory(Path.Combine(RevisionsDir(library), decl.Id));
         WorldWriter.AtomicWrite(RevisionPath(library, decl.Id, next), canonical);
         Directory.CreateDirectory(templatesDir);
@@ -303,6 +327,8 @@ public static class TemplateLibrary
         {
             throw new WorldError(Code.RevisionInUse, $"Revision {revision} of template {id} is in use");
         }
+        // The tombstone keeps the number taken: a revision never changes once written, so none is written under it again.
+        WorldWriter.AtomicWrite(TombstonePath(library, id, revision), "");
         File.Delete(RevisionPath(library, id, revision));
     }
 

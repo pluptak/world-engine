@@ -99,6 +99,28 @@ public class LibraryRunTests : IDisposable
         Assert.Equal(Code.InvalidRequest, Assert.Throws<WorldError>(() => TemplateLibrary.DeleteRevision(lib, "../outside", 1)).Code);
     }
 
+    // A deleted revision's number is never written again: the highest one deleted while the latest file holds an
+    // unrecorded edit, the next put records that edit and its own change above it, and the number stays gone.
+    [Fact]
+    public void A_deleted_revision_number_is_never_reused()
+    {
+        var lib = CopyTemplatesToTemp();
+        var stone = TemplateLibrary.Get(lib, "stone");
+        TemplateLibrary.Put(lib, stone.With("mass_g", 2100L));
+        var deleted = TemplateLibrary.Put(lib, stone.With("mass_g", 2200L));
+        var path = Path.Combine(lib, "templates", "stone.json");
+        File.WriteAllText(path, File.ReadAllText(path).Replace("2200", "2300"));
+
+        TemplateLibrary.DeleteRevision(lib, "stone", deleted);
+        var next = TemplateLibrary.Put(lib, stone.With("mass_g", 2400L));
+
+        Assert.Equal(deleted + 2, next);
+        Assert.DoesNotContain(deleted, TemplateLibrary.List(lib).Single(entry => entry.Id == "stone").Revisions);
+        Assert.Equal(Code.NoSuchRevision, Assert.Throws<WorldError>(() => TemplateLibrary.Get(lib, "stone", deleted)).Code);
+        Assert.Equal(2300, TemplateLibrary.Get(lib, "stone", deleted + 1)["mass_g"].AsInt());
+        Assert.Equal(2400, TemplateLibrary.Get(lib, "stone", next)["mass_g"].AsInt());
+    }
+
     private string MakeRun(string library, string world, long revision, string run)
     {
         var data = WorldLibrary.Get(library, world, revision);

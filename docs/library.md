@@ -62,3 +62,5 @@ Runs:
   snapshot_version }`; `run_list { world }` answers each run with its revision.
 - A run is played by every existing request with `world: <library>/runs/<world>/<run>`.
 - Deleting a world deletes its runs; a template revision nothing pins may be deleted.
+  A deleted revision leaves `<n>.deleted`, so its number is never written
+  again: a revision never changes once written.

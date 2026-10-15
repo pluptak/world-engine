@@ -96,6 +96,23 @@ public class AppearanceTests
         return new MemoryWorld(result.Snapshot, Registry, result.Snapshot.TemplatesHash);
     }
 
+    // The real name a worn face hides names nothing in the view: the guard naming castor is answered as for a name
+    // nobody holds, so the answer cannot tell it which of the two it sees is castor.
+    [Fact]
+    public void A_hidden_real_name_resolves_to_nothing()
+    {
+        var view = new ActorWorld(WornWorld(), Guard);
+        var nobody = view.Check(new ActorCommand("c1", "take", "nobodyhere"));
+
+        foreach (var name in new[] { "castor", "Castor" })
+        {
+            var named = view.Check(new ActorCommand("c2", "take", name));
+            Assert.Equal(nobody.Status, named.Status);
+            Assert.Equal(Status.Unresolved, named.Status);
+            Assert.Null(named.ResolvedTarget);
+        }
+    }
+
     // A seen body is shown by the face it wears: the guard gets one alias for both, named sean.
     [Fact]
     public void Guard_gets_one_alias_for_both_named_sean()

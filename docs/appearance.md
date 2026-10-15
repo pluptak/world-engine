@@ -13,9 +13,10 @@ to it (another fact, an event's `entity`, an id prop, `reason_data`) uses
 the shown id.
 
 A shown alias or name two bodies share answers `ambiguous` with both as
-candidates, and nothing is applied. A body's true name still resolves
-through the pipeline when nothing shown answers to it: the engine models
-no knowledge. The omniscient record (`snapshot`,
+candidates, and nothing is applied. A name the view never shows a body by
+names nothing: the guard naming castor, who wears sean's face, is answered
+`unresolved` as for a name nobody holds, so the answer cannot tell it which
+body is castor. The omniscient record (`snapshot`,
 `trace`, `since`, the trusted `observe` and `inspect`) keeps every id
 and own name.
 

@@ -254,6 +254,16 @@ public sealed class ActorWorld
         return null;
     }
 
+    // Whether an observed body the view shows by another's face owns the name or alias: its own name is hidden.
+    private bool OwnsHiddenName(Seen seen, HashSet<string> observed, string text)
+    {
+        var search = text.ToLowerInvariant();
+        return observed.Any(id =>
+            ShownId(seen.Shown, id) != id
+            && seen.Snapshot.Entities.TryGetValue(id, out var own)
+            && (own.Name.ToLowerInvariant() == search || own.Aliases.Any(name => name.ToLowerInvariant() == search)));
+    }
+
     private static HashSet<string> ObservedIds(Seen seen) => new(
         seen.Parts.SelectMany(part => part.Entities).Select(entity => entity.Id), StringComparer.Ordinal);
 
@@ -307,10 +317,17 @@ public sealed class ActorWorld
             if (!IsAddress(seen.Snapshot, text))
             {
                 observed ??= ObservedIds(seen);
-                if (ShownMatches(seen, observed, text) is { Count: 1 } single
+                var shownMatches = ShownMatches(seen, observed, text);
+                if (shownMatches is { Count: 1 } single
                     && !FoldEquals(seen.Snapshot.Entities[single[0]].Name, ShownName(seen, single[0])))
                 {
                     return single[0];
+                }
+                // A name a disguised body owns but the view never shows it by would reach that body through the
+                // pipeline's own names: what the view shows by it is named directly, and nothing else is.
+                if (OwnsHiddenName(seen, observed, text))
+                {
+                    return shownMatches is { Count: 1 } shownOne ? shownOne[0] : Nothing();
                 }
             }
             return UnaliasIn(seen, table, text);
