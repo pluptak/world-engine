@@ -97,3 +97,5 @@ What is built, nothing aspirational, one concept per file:
 - [camera.md](camera.md): a camera's sight, lent to the agent its feed reaches, within its cone.
 - [panel.md](panel.md): a panel a subject at it works a device through, as its controller does.
 - [limits-lab.md](limits-lab.md): the underground lab, with today's mechanics.
+- [limits-disguise.md](limits-disguise.md), [limits-werewolf.md](limits-werewolf.md): a face worn by
+  another body, and a curse that turns one, with today's mechanics.

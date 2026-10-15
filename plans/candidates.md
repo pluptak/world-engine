@@ -119,6 +119,7 @@ first, and **Non-goals** what its first version leaves out.
   Deferred: the first cyber-arm may need only Sockets, the arm's amounts being the installed entity's.
   Promote this only for a scene that needs a body-wide change Sockets cannot give.
   Trigger: a magical scene where a curse turns a human into another kind of body (a werewolf).
+  Met: `scenarios/werewolf.json` (`docs/limits-werewolf.md`) shows a beat cannot turn a body.
   Depends: Scheduled outcomes (`backlog.md`), when a character's attempt triggers it; nothing, when a beat does.
   Non-goals: changing into a template that is no agent, or merging two classes.
   Test: a human at 100 cannot lift what a cyborg at 100 can; after the beat refines the human to
@@ -132,26 +133,3 @@ first, and **Non-goals** what its first version leaves out.
   `human_with_bionic_leg`, and the trigger decides which). A class is always the whole body's template,
   so a changed part is a class of its own. A class goes back only when the architect lists the way
   back.
-- **Identity by appearance.** Behaviour: what an observer recognises a body by comes from what it
-  senses, so a body wearing another's face is, to someone who only sees it, the other. Today an actor
-  names every other thing by an alias hashed from the observer and the entity's id
-  (`docs/actor-view.md`), so a body keeps its alias whatever face it wears: the engine itself would give
-  a swap away. Invariant: what an actor perceives and what it can address stay one: the alias in its
-  observation is the alias a command of its resolves, and no alias, fact or event in its view leads back
-  to the id. Possible representation: `appearance` and `voice` (state, opaque string tokens, never
-  prose) on the body or on the installed entity carrying them (a face, a voice chip);
-  `appearance_part` (definition, string) on the body's template; an alias from the observer and the
-  `appearance` when the body is only seen, from the `voice` when only heard, from the id when touched or
-  smelt. Two bodies with one appearance share one alias, and a command naming it is `ambiguous`; one
-  body seen under two appearances is two aliases, as a disguise should be.
-  Trigger: a Face/Off scene, or a disguise an observer must be fooled by.
-  Depends: Sockets (`backlog.md`), for a face that moves between bodies; nothing, for an `appearance` an author sets.
-  Non-goals: an observer linking two aliases to one body (knowledge, which the engine does not keep).
-  Test: after A and B swap `appearance`, an observer that only sees them gets A's former alias for B,
-  and a command naming that alias acts on B; an observer that touches B gets B's own alias; no
-  observation of the seeing observer contains B's id.
-  Decided: touch and smell see through a disguise (the alias from the id, as today). Requirement, not a
-  choice: the omniscient record (`trace`, `since`, `perceivers`) keeps naming by id.
-  Decided: the face only for now. `appearance` is the one token; `voice` is left out, so a body only heard
-  keeps the alias from its id, and a face and a voice never disagree. Voice comes later if a scene needs
-  it. How many goldens the alias change rewrites is an estimate for the promotion, not a question.
