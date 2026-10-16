@@ -81,7 +81,8 @@ public static class WorldLock
 
     private static string Acquire(string path, string dir, long timeoutMs)
     {
-        var deadline = NowMs() + timeoutMs;
+        // The wait is timed on a monotonic clock: the wall clock is for a lock's age, which other processes read, and can step.
+        var waited = Stopwatch.StartNew();
         for (var wait = 1; ; wait = Math.Min(wait * 2, LongestPauseMs))
         {
             var mine = Create(path) ?? (TakeOver(path) ? Create(path) : null);
@@ -89,7 +90,7 @@ public static class WorldLock
             {
                 return mine;
             }
-            if (NowMs() >= deadline)
+            if (waited.ElapsedMilliseconds >= timeoutMs)
             {
                 throw new WorldError(Code.StoreBusy, $"World at {dir} is being written by another process");
             }
