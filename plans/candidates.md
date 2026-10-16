@@ -30,10 +30,29 @@ Priorities there, then deleting it here in the same commit.
   `lit: true`, which no power reaches: a scene matter.
   Possible representation: beside `darkened`, an event on a device whose `Power.Powered` turns within a
   command (`powered_off`, `powered_on`), sensed as the `silent` row.
-  Open: the events' names (`lit` is already the light verb's); whether a room's coming back on is an
-  event too; whether a device's change is seen only (a lamp dies) or heard as well (a hum stops);
-  whether every link on a walk emits one or only devices a body can sense (`camera`, `light_source`, a
-  door with `powered_by`).
+  Evidence (the demo, 2026-10-16): a power cut went unnoticed by every character, who went on seeing as
+  before. Two causes. The scene: `lab-run.json` writes `lit: true` on dormitory, corridor, lab and
+  outside (`Perception.IsLit` answers lit for it whatever the power), so only the server room, lit by
+  its lamp on the generator, could go dark. The engine: no event says a room went dark.
+  Proposed, two items in order:
+  1. **The scene** (no engine change): `lab-run.json` lights each room by a lamp `powered_by` the
+     generator's walk instead of `lit: true`, `outside` keeping `lit: true` (daylight). Its init golden
+     and `docs/limits-lab.md` move with it; `HostRunTests` say whether the run still plays.
+  2. **The events.** At the end of a command (after the clock and the scheduled causes, so a beat's
+     `power_cut` counts), the engine compares `IsLit` of every room and `Power.Powered` of every entity
+     with a `powered_by` before and after, and emits, with the command's root as cause:
+     `darkened` / `lit_up` on a room whose light changed, and `powered_off` / `powered_on` on a device a
+     body can sense changing (a `light_source`, a `camera`, a door or any entity with `controlled_by`);
+     a cable or a generator emits nothing of its own. Sensing: `darkened` and `lit_up` are seen by every
+     sighted body in the room whatever the light (the change of light is itself the thing seen, so
+     `darkened` is the one event sensed in the dark by sight) and nobody elsewhere; `powered_off` and
+     `powered_on` are sensed as the device's own room sees it, `silent` row, no sound.
+  Test: a `power_cut` beat in `lab-run` gives each body in a powered-lamp room one `darkened` it saw,
+  and from then on `location_unlit` on sight; switching the generator back gives `lit_up`; a room whose
+  light did not change (another lamp still on) emits nothing; a cut that leaves every room lit emits only
+  the devices' events.
+  Open: `lit_up` (the light verb already owns `lit`); whether a hum stopping is heard; whether a camera
+  losing power is told to its controller (it already learns from `unpowered` on its next command).
 - **`wait` outside a run.** A running run already refuses `wait` (`round_only`, `src/engine/run.ts`).
   Decided: `wait` stays in worlds with no run, since the suite and single-agent worlds use it. Removing it
   would rewrite many tests for no gain.
@@ -185,15 +204,101 @@ round 12. **Evidence** says what the run showed.
   Trigger: a scene whose template ids give away what its characters should discover.
   Open: in place of `template` or beside it; whether `appearance` already covers bodies, leaving `kind`
   to things.
+- **A glance and a close look.** Behaviour: what a character notices of others by being in the room
+  is little (who or what it is, roughly); it learns more only by choosing to look closely, which is an
+  act in the world.
+  Today: `observe` lists every sensed entity with its facts each time it is called, the same answer
+  until something changes, and `actor_inspect` gives any of them in full (props, parts with status,
+  `size_cm`, `traits`, `holds`) at once, free, unseen and unlimited. A body's descriptive traits
+  (`traits`: opaque tokens a scenario writes and no rule reads) reach a caller only through inspect.
+  Idea (the maintainer): ann at a glance is "a human" (`kind`, the shown name, a few traits such as sex);
+  looked at closely, "young, female, blonde, shorter than me".
+  Possible representation:
+  - **Glance** is the projection: each entity keeps its alias, shown name and the facts the mechanics
+    need (location, support, status, pos), shows `kind` instead of `template`, and of its traits only the
+    keys its template lists under `glance_traits` (`human`: `["sex"]`). Everything else is out of
+    `observe`. `actor_inspect` is removed from the actor view, or kept but cut to the glance (open).
+  - **A close look** is a verb `examine {target}`: needs sight (or touch, and then only what touch tells:
+    open), one tick, emits `examined` on the target, sensed as any act (in a lit room the target and others
+    see who is looking: being stared at is noticed). The command's own observation carries the target's
+    detail: what inspect gives today, all traits, and the comparisons to the examiner, as codes from both
+    `size_cm`: `height: taller | shorter | same` (within 5 cm), and the like for mass if wanted. Nothing is
+    stored: the engine does not remember that ann was examined, the caller keeps what it was told, and a
+    later `examine` answers what holds then (projections stay never-knowledge, AGENTS.md).
+  - Traits stay tokens (`young`, `blonde`), never prose: "young" is the architect's word, written on the
+    scene entry, not the engine's judgement.
+  Trigger: an LLM-played run where repeating every detail each round floods the agents' context, or a
+  scene where noticing a detail (a tattoo, a ring) is the point.
+  Depends: "What a thing looks like" (`kind`). With Identity by appearance (`docs/appearance.md`), a
+  disguised body's glance and close look show the face's traits, and touch sees through it.
+  Non-goals: memory of what was examined; prose descriptions; partial detail by distance or light
+  (a close look is all or nothing, in the first version).
+  Test: ann (traits sex, age, hair) in bob's lit room: `actor_observe` for bob shows ann's `kind` and
+  `sex` only, no parts, props or other traits; bob's `examine ann` takes one tick, ann's observation
+  has `examined` naming bob, and bob's observation has all of ann's traits, her parts' status and
+  `height: shorter`; a second `observe` still shows only the glance.
+  Open: whether `examine` in the dark is allowed by touch and what it tells; whether `actor_inspect`
+  goes or shrinks; whether the glance should drop unchanged entities on `since_tick` (the "same answer
+  each call" half of the overload), or that is the caller's diff to make; whether part damage seen at
+  a glance (a severed arm, blood) is glance-level, as it should be for a wound one cannot miss.
+- **Names a character has not learned.** Behaviour: a character perceives what a thing or a body is,
+  never the label the architect gave it. It knows a name only when it could: its own, one it was told,
+  one written on the thing.
+  Evidence (the demo): the agents saw `exit door`, a name that says what lies behind it before anyone
+  opened it, and every other character by name (`ann`, human, intact, ...) on first sight, strangers
+  included. Today `ActorWorld` lists each entity by its alias, `name` and `template`, and accepts a
+  command naming a thing by its `name` or `aliases`. The template half is "What a thing looks like"
+  (`kind`) above; this is the name half.
+  Possible representation:
+  - The actor view drops `name` (and `aliases`) from every entity but these: the observer itself; a thing
+    whose name is written on it, `labelled` (state, bool, absent false: a door with an EXIT sign, a
+    bottle's label), shown only with sight in a lit room; a body whose name the observer knows. Everything
+    else is shown by its alias, `kind` and glance traits ("A glance and a close look").
+  - Knowing a body's name is mechanical state on the observer: `knows_names` (state, list of ids),
+    written by the scene (ann and bob are colleagues) and the author, and by a verb `introduce`: every
+    body that hears the actor's speech learns the actor's name (heard voice only, so a name through the
+    intercom is learned too). It is the one remembered thing, and it is state, not a projection's memory.
+    A disguised body introduces itself by its own name or the face's (open).
+  - Addressing: an actor names a thing by its alias, by a name it is shown, or by its `kind` when exactly
+    one of that kind is in its view (else `ambiguous` with the candidates). A hidden name names nothing,
+    as a disguised body's hidden name already does (`docs/appearance.md`), so probing `take exit door`
+    teaches nothing.
+  - An audit of the other label channels, one test each: the template id (`kind`); props that name other
+    entities and say what they are for, such as the key's `opens: exit_door` or `powered_by` and
+    `controlled_by`, which the actor's `inspect` must not show unless covered and sensible; `reason_data`
+    (already filtered by `Addressable`); and options, whose listed verbs could tell a door is lockable or
+    a thing is a door. Done when an actor-view golden over `lab-run` contains no world name, template id
+    or id-bearing prop the actor was not entitled to.
+  Trigger: met by the demo.
+  Depends: "What a thing looks like" (`kind`), else a nameless thing shows nothing but its alias.
+  Non-goals: names in another language or misheard; an observer giving a thing a name of its own (the
+  caller keeps that, with the alias); the trusted ops, which keep every name.
+  Test: in `lab-run`, bob's view shows the exit door as alias and `door`, not `exit door`, and `open exit
+  door` names nothing; ann is shown by alias and `human` until she `introduce`s herself in bob's hearing,
+  after which bob's view and commands use `ann`; a scene listing bob in ann's `knows_names` shows her
+  name from the start; a `labelled` sign is read in light and not in the dark.
+  Open: whether `introduce` is a verb or a `say` flag; whether a name is learned by overhearing others use
+  it (no: `say` tokens are opaque, so the engine cannot tell a name was said); whether rooms keep their
+  names (a character knows the corridor it stands in?) or are shown by `kind` too; whether `labelled`
+  shows the whole `name` or a separate `label` token.
 - **Searching in the dark.** `found` and `revealed` are sensed as the `silent` row, against the
   concealer and the thing: in an unlit room the searcher neither sees them nor feels them (touch is its
   own body and grips), so it is not told what its own search found, and a caller that reads "no `found`"
   as "nothing there" is told wrong.
   Evidence: none in the run, where every searched room was lit; found while giving the agents a "you
-  found nothing hidden there" note.
-  Possible representation: the searcher feels the `found` and `revealed` of its own search, dark or not.
-  Open: what it is told of the thing itself, which a dark room still keeps out of its view; the basis
-  code.
+  found nothing hidden there" note. It becomes real as soon as "A room going dark" makes rooms go dark:
+  a character searching by touch after a power cut finds the key and is told nothing.
+  Proposed: the searcher senses the `found` and `revealed` of its own search by `touch`, dark or not
+  (searching is groping), naming the thing and the concealer, with no `pos`; anyone else senses them as
+  today. The thing is then one the searcher could grope for, so it is addressable
+  (`Perception.Addressable`) and `take` reaches it by name, while the projection still does not list it
+  in the dark (it is not in a grip). A search that finds nothing emits nothing, as today, and the dark is
+  the reason a caller cannot read "no `found`" as "nothing there" only for others, never the searcher.
+  Test: in an unlit room ann searches the bed, under which the key lies concealed: ann's observation
+  has `found` naming the key by `touch`, `actor_command take key` is accepted, `actor_observe` does not
+  list the key until it is in her hand; bob in the same dark room senses neither event.
+  Depends: "A room going dark" item 1, for a scene where it shows.
+  Open: whether a search in the dark takes longer than one in the light.
 - **What `take` may lift.** `take` asks nothing of its target's kind.
   Evidence: an earlier run of the same scene took and dropped the exit door, which `lab-run.json` places
   with a `location` and `support` beside its `from` and `to`; this run offered `take` on the intercom.
@@ -209,6 +314,30 @@ round 12. **Evidence** says what the run showed.
   Possible representation: a `yield {to}` verb setting a state prop that lets that carrier lift it
   until either moves away; or a consenting move in the same round.
   Open: which; whether a carried agent may end it by struggling, and at what cost.
+  Note: the half the demo hit (a character lifting another who could resist) is shipped (`0ae6ed2`,
+  `resists`). That character was after the key in the other's hand, not the body: the gap is
+  "Taking from another's hand" below. This entry waits for a scene with a willing passenger.
+- **Taking from another's hand.** Behaviour: a character can try to take what another holds, and the
+  holder may lose it, keep it, or hand it over.
+  Evidence (the demo): a character wanted the key another held; `take` is refused `held_by_another`
+  (`docs/carrying.md`, `docs/limits.md`: "snatching from a hand isn't modelled"), no option offered a
+  way, so it tried to carry the holder whole, which nothing then prevented.
+  Proposed: a verb `snatch {target}` on an item in another agent's grip, in reach and seen or felt.
+  One roll (a world with no seed refuses it `no_seed`): success when the roll is under
+  `50 + (snatcher's manipulation − holder's manipulation) / 2`, clamped 5–95; a holder asleep,
+  unconscious or bound loses it always, with no roll. Success moves the item into the snatcher's free
+  grip (`snatched`); failure leaves it (`snatch_failed`). Both are felt by the holder, by touch, and
+  seen like any act in a lit room. It refuses as `take` does for grips and weight (`hands_full`,
+  `too_heavy`, ...) before rolling, and `not_held` for an item in no one's grip (a pocket is still
+  `take`'s). A two-handed item held in both hands is `held_firmly`, never rolled. `held_by_another` on
+  `take` gains `reason_data { holder }` (the holder, when the actor can name it), so a caller knows
+  whom to ask, and `give` stays the willing way.
+  Test: seeded, bob snatches the key from awake ann (equal capacities, 50%) and the two seeds that
+  succeed and fail give `snatched` / `snatch_failed`, the key with bob or ann; asleep ann loses it with
+  no roll and does not wake (or does: open); ann with a stunned hand (modifier) loses it more often;
+  `take` on her key answers `held_by_another { holder: ann }`.
+  Open: whether a failed snatch wakes, alerts or angers anyone (mechanical state only: `alert` is
+  out of scope); whether it takes one tick or two; whether the holder's struggle can damage the item.
 - **A CLI that stays up.** Each request is one process start and one read of the world's files.
   Evidence: the run made 236 requests at about 0.45 s each, about a fifth of its 8.5 minutes; the host's
   `snapshot` each round (0.44 s, the costliest read) was only for `run.state`.
