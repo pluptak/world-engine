@@ -1,0 +1,208 @@
+[
+  {
+    "command_id": "p1",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "on",
+      "destination": "e2"
+    }
+  },
+  {
+    "command_id": "p2",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "in",
+      "destination": "e30"
+    }
+  },
+  {
+    "command_id": "p3",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "in",
+      "destination": "e31"
+    }
+  },
+  {
+    "command_id": "p4",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "in",
+      "destination": "e32"
+    }
+  },
+  {
+    "command_id": "p5",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "on",
+      "destination": "e30"
+    }
+  },
+  {
+    "command_id": "p6",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "in",
+      "destination": "e2"
+    }
+  },
+  {
+    "command_id": "p7",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "in",
+      "destination": "e4.pocket"
+    }
+  },
+  {
+    "command_id": "p8",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "in",
+      "destination": "e4.hand_r"
+    }
+  },
+  {
+    "command_id": "p9",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "on",
+      "destination": "nobody"
+    }
+  },
+  {
+    "command_id": "p10",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "on",
+      "destination": "stone"
+    }
+  },
+  {
+    "command_id": "p11",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3"
+  },
+  {
+    "command_id": "p12",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e5",
+    "args": {
+      "relation": "on",
+      "destination": "e2"
+    }
+  },
+  {
+    "command_id": "p13",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "sideways",
+      "destination": "e30"
+    }
+  },
+  {
+    "command_id": "p14",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e15",
+    "args": {
+      "relation": "in",
+      "destination": "e4.pocket"
+    }
+  },
+  {
+    "command_id": "p15",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e15",
+    "args": {
+      "relation": "on",
+      "destination": "e2"
+    }
+  },
+  {
+    "command_id": "p16",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e15",
+    "args": {
+      "relation": "in",
+      "destination": "e4.hand_r"
+    }
+  },
+  {
+    "command_id": "p17",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e15",
+    "args": {
+      "relation": "on",
+      "destination": "e4"
+    }
+  },
+  {
+    "command_id": "p18",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "on",
+      "destination": "rag"
+    }
+  },
+  {
+    "command_id": "p19",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "in",
+      "destination": "rag"
+    }
+  },
+  {
+    "command_id": "p20",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e3",
+    "args": {
+      "relation": "on",
+      "destination": "e41"
+    }
+  },
+  {
+    "command_id": "p21",
+    "actor": "e4",
+    "verb": "put",
+    "target": "e41",
+    "args": {
+      "relation": "on",
+      "destination": "e2"
+    }
+  }
+]

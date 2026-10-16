@@ -26,7 +26,7 @@ A target that declares `openable` (a door, a gate, a chest) is opened, shut, loc
     uncovering what it hid. A scheduled close does the same.
   - What a walk would not meet stays: anything lower than `STEP_OVER_CM`, broken, or rubble
     ([occupancy.md](occupancy.md)). A door between rooms has no footprint, so it moves
-    nothing. Tests: `tests/scenario-cell.test.ts`.
+    nothing. Tests: the cell script (`Block21ReplayTests`).
 - `lock`: sets `locked` under a `locked` event; needs `manipulation` and a carried entity whose
   `opens` is the target's id, else `no_key`. A target already locked is refused `already_locked`,
   after reach and before the key.

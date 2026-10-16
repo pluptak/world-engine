@@ -1,0 +1,20 @@
+{
+  "id": "tiny_chest",
+  "extends": "chest",
+  "size_cm": {
+    "w": 60,
+    "d": 40,
+    "h": 40
+  },
+  "mass_g": 12000,
+  "parts": [],
+  "props": {
+    "container": true,
+    "inner_d_cm": 10,
+    "inner_h_cm": 10,
+    "inner_w_cm": 10,
+    "topples": true
+  },
+  "break_products": [],
+  "break_residue": {}
+}

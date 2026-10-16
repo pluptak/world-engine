@@ -1,0 +1,21 @@
+{
+  "id": "frail.arm_r.hand_r",
+  "size_cm": {
+    "w": 15,
+    "d": 8,
+    "h": 5
+  },
+  "mass_g": 500,
+  "parts": [
+    {
+      "name": "thumb_r",
+      "parent": null,
+      "contributes": {},
+      "detachable": false,
+      "max_integrity": 50
+    }
+  ],
+  "props": {},
+  "break_products": [],
+  "break_residue": {}
+}

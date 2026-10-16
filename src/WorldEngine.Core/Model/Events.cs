@@ -1,0 +1,29 @@
+namespace WorldEngine.Core.Model;
+
+// What happened in a transition (src/model.ts WorldEvent, Delta, Perceivers).
+
+// The batch form of perceive, per event: the agents that sensed it through each covered sense.
+public sealed record Perceivers(
+    IReadOnlyList<string> Sight,
+    IReadOnlyList<string> Hearing,
+    IReadOnlyList<string> Smell,
+    IReadOnlyList<string> Touch,
+    IReadOnlyList<string> UnknownSenses);
+
+public sealed record WorldEvent(
+    string EventId,
+    string? CauseId,
+    string CommandId,
+    long Tick,
+    string Type,
+    string Entity,
+    Value.Map Data,
+    Perceivers? Perceivers = null);
+
+// One field of one entity changing, as an event set it: `from` and `to` are whatever the field held.
+public sealed record Delta(
+    string EventId,
+    string Entity,
+    string Field,
+    Value? From,
+    Value? To);

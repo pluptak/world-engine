@@ -6,14 +6,14 @@ an agent's verb. A surface declares `surface`, sized by its footprint; a contain
 `container` and `inner_*_cm`. Every ok command takes one tick unless its verb says otherwise
 ([time.md](time.md)).
 
-A verb that answers `invalid_args` until given some may declare `suggest`, a function from the
+A verb that answers `invalid_args` until given some may declare `Suggest`, a function from the
 command's context and the ids the actor can name to the arg sets worth trying, in a fixed order and
 from the snapshot alone, which `options` ([api-options.md](api-options.md)) dry-runs one by one.
-`free_args: true` says the verb also takes args no list can hold (a position, a partial amount, a
-token, a tick count), so it stays named in `needs_args`. A verb that `aims_at_parts` (`attack`) has
+`FreeArgs: true` says the verb also takes args no list can hold (a position, a partial amount, a
+token, a tick count), so it stays named in `needs_args`. A verb that `AimsAtParts` (`attack`) has
 `options` try it at each part of a body in view still on. `give` and `put` list every argument they
 take; `move` and `pour` list some and are free for the rest; `say` and `wait` list none and are
-free. `tests/catalog.test.ts` holds the two to the verbs a bare command finds `invalid_args`.
+free. `CatalogGoldenTests` holds the verb catalog to TypeScript's.
 
 This is the index: one line per verb, its rules in the family file it links to.
 
@@ -33,6 +33,11 @@ This is the index: one line per verb, its rules in the family file it links to.
 - `switch_on`: switches a power link on ([verbs-power.md](verbs-power.md)).
 - `switch_off`: switches it off ([verbs-power.md](verbs-power.md)).
 - `attack`: strikes with the first mode the attacker can use ([verbs-combat.md](verbs-combat.md)).
+- `cut`: opens a part of a body without severing it ([verbs-surgery.md](verbs-surgery.md)).
+- `staunch`: stops a part's bleed ([verbs-surgery.md](verbs-surgery.md)).
+- `suture`: closes an incision ([verbs-surgery.md](verbs-surgery.md)).
+- `install`: fills a severed part with a held limb or implant ([sockets.md](sockets.md)).
+- `extract`: takes an installed implant out again ([sockets.md](sockets.md)).
 - `search`: looks under or behind a target ([verbs-sensing.md](verbs-sensing.md)).
 - `light`: sets a light source burning ([verbs-sensing.md](verbs-sensing.md)).
 - `douse`: puts it out ([verbs-sensing.md](verbs-sensing.md)).

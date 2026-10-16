@@ -1,0 +1,9 @@
+{
+  "id": "mayfly",
+  "extends": "stone",
+  "props": { "life": 2 },
+  "fields": { "life": { "tier": "state", "type": "integer" } },
+  "processes": [
+    { "id": "age", "every_ticks": 1, "effect": { "adjust_prop": { "prop": "life", "by": -1, "min": 0 } }, "then": { "remove": true } }
+  ]
+}

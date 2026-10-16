@@ -1,0 +1,11 @@
+{
+  "entities": [
+    { "id": "village", "template": "room", "overrides": { "name": "village", "props": { "lit": true } } },
+    { "id": "wil", "template": "human", "overrides": { "name": "wil", "location": "village", "support": "village", "pos": { "x": -100, "y": 0 } } },
+    { "id": "ada", "template": "human", "overrides": { "name": "ada", "location": "village", "support": "village", "pos": { "x": 100, "y": 0 } } },
+    { "id": "cart", "template": "crate", "overrides": { "name": "cart", "location": "village", "support": "village", "pos": { "x": 0, "y": 200 } } }
+  ],
+  "beats": [
+    { "id": "moonrise", "at_tick": 10, "action": { "kind": "sound", "entity": "wil", "loud": true } }
+  ]
+}

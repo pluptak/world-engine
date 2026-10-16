@@ -1,0 +1,9 @@
+{"entity":"e3","event_id":"ev6","field":"contained_in","to":"e2"}
+{"entity":"e3","event_id":"ev6","field":"in_part","to":"hand_l"}
+{"entity":"e3","event_id":"ev6","field":"support","from":"e1"}
+{"entity":"e3","event_id":"ev6","field":"pos","from":{"x":30,"y":0}}
+{"entity":"e4","event_id":"ev9","field":"props","from":{"burning":true,"light_source":true},"to":{"burning":false,"light_source":true}}
+{"entity":"e3","event_id":"ev11","field":"contained_in","from":"e2"}
+{"entity":"e3","event_id":"ev11","field":"in_part","from":"hand_l"}
+{"entity":"e3","event_id":"ev11","field":"support","to":"e1"}
+{"entity":"e3","event_id":"ev11","field":"pos","to":{"x":0,"y":0}}

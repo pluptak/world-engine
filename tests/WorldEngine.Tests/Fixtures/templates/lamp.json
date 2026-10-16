@@ -1,0 +1,9 @@
+{
+  "id": "lamp",
+  "size_cm": { "w": 15, "d": 15, "h": 25 },
+  "mass_g": 800,
+  "parts": [],
+  "props": { "light_source": true },
+  "break_products": [],
+  "break_residue": {}
+}

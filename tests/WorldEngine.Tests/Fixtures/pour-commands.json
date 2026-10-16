@@ -1,0 +1,157 @@
+[
+  {
+    "command_id": "p1",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e2",
+      "amount": 100
+    }
+  },
+  {
+    "command_id": "p2",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e2"
+    }
+  },
+  {
+    "command_id": "p3",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e30",
+      "amount": 100
+    }
+  },
+  {
+    "command_id": "p4",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e30"
+    }
+  },
+  {
+    "command_id": "p5",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e31"
+    }
+  },
+  {
+    "command_id": "p6",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e32"
+    }
+  },
+  {
+    "command_id": "p7",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e5"
+    }
+  },
+  {
+    "command_id": "p8",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e1",
+      "amount": 50
+    }
+  },
+  {
+    "command_id": "p9",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e3"
+    }
+  },
+  {
+    "command_id": "p10",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e2",
+      "amount": 0
+    }
+  },
+  {
+    "command_id": "p11",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e2",
+      "amount": 1000
+    }
+  },
+  {
+    "command_id": "p12",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "nobody"
+    }
+  },
+  {
+    "command_id": "p13",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3"
+  },
+  {
+    "command_id": "p14",
+    "actor": "e4",
+    "verb": "pour",
+    "args": {
+      "destination": "e2"
+    }
+  },
+  {
+    "command_id": "p15",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e4.hand_l",
+    "args": {
+      "destination": "e2"
+    }
+  },
+  {
+    "command_id": "p16",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e5",
+    "args": {
+      "destination": "e2"
+    }
+  },
+  {
+    "command_id": "p17",
+    "actor": "e4",
+    "verb": "pour",
+    "target": "e3",
+    "args": {
+      "destination": "e2",
+      "amount": "lots"
+    }
+  }
+]

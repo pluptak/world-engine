@@ -1,0 +1,7 @@
+{"based_on_version":0,"command":{"actor":"e2","command_id":"s1","target":"stone","verb":"take"},"status":"ok","version":0}
+{"based_on_version":0,"command":{"actor":"e2","command_id":"s2","target":"stone","verb":"take"},"reason_code":"already_held","status":"preempted","version":1}
+{"based_on_version":1,"command":{"actor":"e2","command_id":"s3","target":"stone","verb":"take"},"reason_code":"already_held","status":"refused","version":1}
+{"based_on_version":0,"command":{"actor":"e2","args":{"utterance":"hi"},"command_id":"s4","verb":"say"},"status":"ok","version":1}
+{"based_on_version":0,"command":{"actor":"e2","command_id":"s5","target":"stone","verb":"drop"},"status":"ok","version":2}
+{"based_on_version":99,"command":{"actor":"e2","command_id":"s6","target":"lamp","verb":"take"},"reason_code":"future_version","status":"invalid","version":3}
+{"based_on_version":-1,"command":{"actor":"e2","command_id":"s7","target":"lamp","verb":"take"},"reason_code":"invalid_version","status":"invalid","version":3}

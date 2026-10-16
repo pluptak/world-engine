@@ -1,0 +1,12 @@
+{
+  "id": "experiment",
+  "size_cm": { "w": 0, "d": 0, "h": 0 },
+  "mass_g": 0,
+  "parts": [],
+  "props": { "abstract": true, "stage": 0 },
+  "fields": {
+    "stage": { "tier": "state", "type": "integer" }
+  },
+  "break_products": [],
+  "break_residue": {}
+}

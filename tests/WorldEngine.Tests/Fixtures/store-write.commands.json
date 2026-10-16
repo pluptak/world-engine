@@ -1,0 +1,40 @@
+[
+  {
+    "command_id": "c1",
+    "actor": "e2",
+    "verb": "take",
+    "target": "stone"
+  },
+  {
+    "command_id": "c2",
+    "actor": "e2",
+    "verb": "take",
+    "target": "stone"
+  },
+  {
+    "command_id": "c3",
+    "actor": "e2",
+    "verb": "say",
+    "args": {
+      "utterance": "hello"
+    }
+  },
+  {
+    "command_id": "c4",
+    "actor": "e2",
+    "verb": "take",
+    "target": "nothing"
+  },
+  {
+    "command_id": "c5",
+    "actor": "e2",
+    "verb": "douse",
+    "target": "lamp"
+  },
+  {
+    "command_id": "c6",
+    "actor": "e2",
+    "verb": "drop",
+    "target": "stone"
+  }
+]

@@ -1,0 +1,1460 @@
+{
+  "exists": true,
+  "holds": true,
+  "templates": [
+    "anchor",
+    "arm",
+    "bars",
+    "book",
+    "bottle",
+    "bread",
+    "cable",
+    "camera",
+    "candle",
+    "cat",
+    "cat.jaw",
+    "chair",
+    "chair.leg_bl",
+    "chair.leg_br",
+    "chair.leg_fl",
+    "chair.leg_fr",
+    "chest",
+    "crate",
+    "cup",
+    "dog",
+    "dog.jaw",
+    "door",
+    "experiment",
+    "gate",
+    "generator",
+    "glass_shard",
+    "horse",
+    "horse.jaw",
+    "human",
+    "human.arm_l",
+    "human.arm_l.hand_l",
+    "human.arm_r",
+    "human.arm_r.hand_r",
+    "human.hand_l",
+    "human.hand_r",
+    "human_hungry",
+    "human_hungry.arm_l",
+    "human_hungry.arm_l.hand_l",
+    "human_hungry.arm_r",
+    "human_hungry.arm_r.hand_r",
+    "human_hungry.hand_l",
+    "human_hungry.hand_r",
+    "intercom",
+    "jamming_door",
+    "key",
+    "lamp",
+    "lantern",
+    "locked_chest",
+    "narrow_camera",
+    "note",
+    "panel",
+    "quadruped",
+    "quadruped.jaw",
+    "room",
+    "shut_door",
+    "stone",
+    "table",
+    "terminal",
+    "wine_bottle"
+  ],
+  "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
+  "snapshot": {
+    "coverage": {
+      "properties": [
+        "integrity",
+        "residue",
+        "pos",
+        "open"
+      ],
+      "relations": [
+        "support",
+        "contained_in",
+        "attached_to",
+        "status",
+        "location",
+        "near",
+        "reachable"
+      ],
+      "senses": [
+        "sight",
+        "hearing"
+      ]
+    },
+    "entities": {
+      "e1": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e1",
+        "in_part": null,
+        "integrity": 100,
+        "location": null,
+        "modifiers": [],
+        "name": "hall",
+        "parts": {},
+        "pos": null,
+        "props": {
+          "lit": false
+        },
+        "residue": {},
+        "status": "intact",
+        "support": null,
+        "template": "room"
+      },
+      "e2": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e2",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "ann",
+        "parts": {},
+        "pos": {
+          "x": 0,
+          "y": 0
+        },
+        "props": {
+          "agent": true,
+          "attack_damage": 40,
+          "bleed_damage": 5,
+          "bleed_every_ticks": 2,
+          "bleed_times": 3,
+          "default_hit_part": "torso",
+          "hand_carry_limit_g": 80000,
+          "hand_height_cm": 100,
+          "reach_cm": 100
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "human"
+      },
+      "e3": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e3",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "stone",
+        "parts": {},
+        "pos": {
+          "x": 30,
+          "y": 0
+        },
+        "props": {},
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "stone"
+      },
+      "e4": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e4",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "lamp",
+        "parts": {},
+        "pos": {
+          "x": -30,
+          "y": 0
+        },
+        "props": {
+          "burning": true,
+          "light_source": true
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "lamp"
+      }
+    },
+    "next_seq": 5,
+    "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
+    "tick": 0,
+    "version": 0
+  },
+  "head": {
+    "deltas_bytes": 444,
+    "events_bytes": 650,
+    "log_bytes": 695,
+    "log_entries": 5,
+    "ok_entries": 4,
+    "rounds_closed": 0,
+    "snapshot_log_bytes": 0,
+    "snapshot_version": 0,
+    "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b"
+  },
+  "log": [
+    {
+      "based_on_version": 0,
+      "command": {
+        "actor": "e2",
+        "command_id": "c1",
+        "target": "stone",
+        "verb": "take"
+      },
+      "status": "ok",
+      "version": 0
+    },
+    {
+      "based_on_version": 1,
+      "command": {
+        "actor": "e2",
+        "command_id": "c2",
+        "target": "stone",
+        "verb": "take"
+      },
+      "reason_code": "already_held",
+      "status": "refused",
+      "version": 1
+    },
+    {
+      "based_on_version": 1,
+      "command": {
+        "actor": "world",
+        "args": {
+          "edit": {
+            "kind": "set_seed",
+            "seed": 3
+          }
+        },
+        "command_id": "edit-3",
+        "verb": "edit"
+      },
+      "status": "ok",
+      "version": 1
+    },
+    {
+      "based_on_version": 2,
+      "command": {
+        "actor": "e2",
+        "args": {
+          "utterance": "hello"
+        },
+        "command_id": "c3",
+        "verb": "say"
+      },
+      "status": "ok",
+      "version": 2
+    },
+    {
+      "based_on_version": 3,
+      "command": {
+        "actor": "e2",
+        "command_id": "c4",
+        "target": "lamp",
+        "verb": "douse"
+      },
+      "status": "ok",
+      "version": 3
+    }
+  ],
+  "events": [
+    {
+      "cause_id": null,
+      "command_id": "c1",
+      "data": {},
+      "entity": "e3",
+      "event_id": "ev5",
+      "tick": 0,
+      "type": "take"
+    },
+    {
+      "cause_id": "ev5",
+      "command_id": "c1",
+      "data": {},
+      "entity": "e3",
+      "event_id": "ev6",
+      "tick": 0,
+      "type": "moved"
+    },
+    {
+      "cause_id": null,
+      "command_id": "edit-3",
+      "data": {},
+      "entity": "world",
+      "event_id": "ev7",
+      "tick": 1,
+      "type": "edit"
+    },
+    {
+      "cause_id": null,
+      "command_id": "c3",
+      "data": {
+        "utterance": "hello",
+        "volume": "normal"
+      },
+      "entity": "e2",
+      "event_id": "ev8",
+      "tick": 1,
+      "type": "say"
+    },
+    {
+      "cause_id": null,
+      "command_id": "c4",
+      "data": {},
+      "entity": "e4",
+      "event_id": "ev9",
+      "tick": 2,
+      "type": "douse"
+    },
+    {
+      "cause_id": "ev9",
+      "command_id": "c4",
+      "data": {},
+      "entity": "e4",
+      "event_id": "ev10",
+      "tick": 2,
+      "type": "doused"
+    }
+  ],
+  "deltas": [
+    {
+      "entity": "e3",
+      "event_id": "ev6",
+      "field": "contained_in",
+      "from": null,
+      "to": "e2"
+    },
+    {
+      "entity": "e3",
+      "event_id": "ev6",
+      "field": "in_part",
+      "from": null,
+      "to": "hand_l"
+    },
+    {
+      "entity": "e3",
+      "event_id": "ev6",
+      "field": "support",
+      "from": "e1",
+      "to": null
+    },
+    {
+      "entity": "e3",
+      "event_id": "ev6",
+      "field": "pos",
+      "from": {
+        "x": 30,
+        "y": 0
+      },
+      "to": null
+    },
+    {
+      "entity": "e4",
+      "event_id": "ev10",
+      "field": "props",
+      "from": {
+        "burning": true,
+        "light_source": true
+      },
+      "to": {
+        "burning": false,
+        "light_source": true
+      }
+    }
+  ],
+  "ids": {
+    "ann": "e2",
+    "hall": "e1",
+    "lamp": "e4",
+    "stone": "e3"
+  },
+  "fold": {
+    "snapshot": {
+      "coverage": {
+        "properties": [
+          "integrity",
+          "residue",
+          "pos",
+          "open"
+        ],
+        "relations": [
+          "support",
+          "contained_in",
+          "attached_to",
+          "status",
+          "location",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "aliases": [],
+          "concealed_by": null,
+          "contained_in": null,
+          "detached_from": null,
+          "id": "e1",
+          "in_part": null,
+          "integrity": 100,
+          "location": null,
+          "modifiers": [],
+          "name": "hall",
+          "parts": {},
+          "pos": null,
+          "props": {
+            "lit": false
+          },
+          "residue": {},
+          "status": "intact",
+          "support": null,
+          "template": "room"
+        },
+        "e2": {
+          "aliases": [],
+          "concealed_by": null,
+          "contained_in": null,
+          "detached_from": null,
+          "id": "e2",
+          "in_part": null,
+          "integrity": 100,
+          "location": "e1",
+          "modifiers": [],
+          "name": "ann",
+          "parts": {},
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "props": {
+            "agent": true,
+            "attack_damage": 40,
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "default_hit_part": "torso",
+            "hand_carry_limit_g": 80000,
+            "hand_height_cm": 100,
+            "reach_cm": 100
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "human"
+        },
+        "e3": {
+          "aliases": [],
+          "concealed_by": null,
+          "contained_in": "e2",
+          "detached_from": null,
+          "id": "e3",
+          "in_part": "hand_l",
+          "integrity": 100,
+          "location": "e1",
+          "modifiers": [],
+          "name": "stone",
+          "parts": {},
+          "pos": null,
+          "props": {},
+          "residue": {},
+          "status": "intact",
+          "support": null,
+          "template": "stone"
+        },
+        "e4": {
+          "aliases": [],
+          "concealed_by": null,
+          "contained_in": null,
+          "detached_from": null,
+          "id": "e4",
+          "in_part": null,
+          "integrity": 100,
+          "location": "e1",
+          "modifiers": [],
+          "name": "lamp",
+          "parts": {},
+          "pos": {
+            "x": -30,
+            "y": 0
+          },
+          "props": {
+            "burning": false,
+            "light_source": true
+          },
+          "residue": {},
+          "status": "intact",
+          "support": "e1",
+          "template": "lamp"
+        }
+      },
+      "next_seq": 11,
+      "rng": 3,
+      "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
+      "tick": 3,
+      "version": 4
+    },
+    "events": [
+      {
+        "cause_id": null,
+        "command_id": "c1",
+        "data": {},
+        "entity": "e3",
+        "event_id": "ev5",
+        "tick": 0,
+        "type": "take"
+      },
+      {
+        "cause_id": "ev5",
+        "command_id": "c1",
+        "data": {},
+        "entity": "e3",
+        "event_id": "ev6",
+        "tick": 0,
+        "type": "moved"
+      },
+      {
+        "cause_id": null,
+        "command_id": "edit-3",
+        "data": {},
+        "entity": "world",
+        "event_id": "ev7",
+        "tick": 1,
+        "type": "edit"
+      },
+      {
+        "cause_id": null,
+        "command_id": "c3",
+        "data": {
+          "utterance": "hello",
+          "volume": "normal"
+        },
+        "entity": "e2",
+        "event_id": "ev8",
+        "tick": 1,
+        "type": "say"
+      },
+      {
+        "cause_id": null,
+        "command_id": "c4",
+        "data": {},
+        "entity": "e4",
+        "event_id": "ev9",
+        "tick": 2,
+        "type": "douse"
+      },
+      {
+        "cause_id": "ev9",
+        "command_id": "c4",
+        "data": {},
+        "entity": "e4",
+        "event_id": "ev10",
+        "tick": 2,
+        "type": "doused"
+      }
+    ],
+    "deltas": [
+      {
+        "entity": "e3",
+        "event_id": "ev6",
+        "field": "contained_in",
+        "from": null,
+        "to": "e2"
+      },
+      {
+        "entity": "e3",
+        "event_id": "ev6",
+        "field": "in_part",
+        "from": null,
+        "to": "hand_l"
+      },
+      {
+        "entity": "e3",
+        "event_id": "ev6",
+        "field": "support",
+        "from": "e1",
+        "to": null
+      },
+      {
+        "entity": "e3",
+        "event_id": "ev6",
+        "field": "pos",
+        "from": {
+          "x": 30,
+          "y": 0
+        },
+        "to": null
+      },
+      {
+        "entity": "e4",
+        "event_id": "ev10",
+        "field": "props",
+        "from": {
+          "burning": true,
+          "light_source": true
+        },
+        "to": {
+          "burning": false,
+          "light_source": true
+        }
+      }
+    ]
+  },
+  "replay": {
+    "coverage": {
+      "properties": [
+        "integrity",
+        "residue",
+        "pos",
+        "open"
+      ],
+      "relations": [
+        "support",
+        "contained_in",
+        "attached_to",
+        "status",
+        "location",
+        "near",
+        "reachable"
+      ],
+      "senses": [
+        "sight",
+        "hearing"
+      ]
+    },
+    "entities": {
+      "e1": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e1",
+        "in_part": null,
+        "integrity": 100,
+        "location": null,
+        "modifiers": [],
+        "name": "hall",
+        "parts": {},
+        "pos": null,
+        "props": {
+          "lit": false
+        },
+        "residue": {},
+        "status": "intact",
+        "support": null,
+        "template": "room"
+      },
+      "e2": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e2",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "ann",
+        "parts": {},
+        "pos": {
+          "x": 0,
+          "y": 0
+        },
+        "props": {
+          "agent": true,
+          "attack_damage": 40,
+          "bleed_damage": 5,
+          "bleed_every_ticks": 2,
+          "bleed_times": 3,
+          "default_hit_part": "torso",
+          "hand_carry_limit_g": 80000,
+          "hand_height_cm": 100,
+          "reach_cm": 100
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "human"
+      },
+      "e3": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": "e2",
+        "detached_from": null,
+        "id": "e3",
+        "in_part": "hand_l",
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "stone",
+        "parts": {},
+        "pos": null,
+        "props": {},
+        "residue": {},
+        "status": "intact",
+        "support": null,
+        "template": "stone"
+      },
+      "e4": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e4",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "lamp",
+        "parts": {},
+        "pos": {
+          "x": -30,
+          "y": 0
+        },
+        "props": {
+          "burning": false,
+          "light_source": true
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "lamp"
+      }
+    },
+    "next_seq": 11,
+    "rng": 3,
+    "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
+    "tick": 3,
+    "version": 4
+  },
+  "load": {
+    "coverage": {
+      "properties": [
+        "integrity",
+        "residue",
+        "pos",
+        "open"
+      ],
+      "relations": [
+        "support",
+        "contained_in",
+        "attached_to",
+        "status",
+        "location",
+        "near",
+        "reachable"
+      ],
+      "senses": [
+        "sight",
+        "hearing"
+      ]
+    },
+    "entities": {
+      "e1": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e1",
+        "in_part": null,
+        "integrity": 100,
+        "location": null,
+        "modifiers": [],
+        "name": "hall",
+        "parts": {},
+        "pos": null,
+        "props": {
+          "lit": false
+        },
+        "residue": {},
+        "status": "intact",
+        "support": null,
+        "template": "room"
+      },
+      "e2": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e2",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "ann",
+        "parts": {},
+        "pos": {
+          "x": 0,
+          "y": 0
+        },
+        "props": {
+          "agent": true,
+          "attack_damage": 40,
+          "bleed_damage": 5,
+          "bleed_every_ticks": 2,
+          "bleed_times": 3,
+          "default_hit_part": "torso",
+          "hand_carry_limit_g": 80000,
+          "hand_height_cm": 100,
+          "reach_cm": 100
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "human"
+      },
+      "e3": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": "e2",
+        "detached_from": null,
+        "id": "e3",
+        "in_part": "hand_l",
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "stone",
+        "parts": {},
+        "pos": null,
+        "props": {},
+        "residue": {},
+        "status": "intact",
+        "support": null,
+        "template": "stone"
+      },
+      "e4": {
+        "aliases": [],
+        "concealed_by": null,
+        "contained_in": null,
+        "detached_from": null,
+        "id": "e4",
+        "in_part": null,
+        "integrity": 100,
+        "location": "e1",
+        "modifiers": [],
+        "name": "lamp",
+        "parts": {},
+        "pos": {
+          "x": -30,
+          "y": 0
+        },
+        "props": {
+          "burning": false,
+          "light_source": true
+        },
+        "residue": {},
+        "status": "intact",
+        "support": "e1",
+        "template": "lamp"
+      }
+    },
+    "next_seq": 11,
+    "rng": 3,
+    "templates_hash": "a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b",
+    "tick": 3,
+    "version": 4
+  },
+  "since": {
+    "0": {
+      "deltas": [
+        {
+          "entity": "e3",
+          "event_id": "ev6",
+          "field": "contained_in",
+          "from": null,
+          "to": "e2"
+        },
+        {
+          "entity": "e3",
+          "event_id": "ev6",
+          "field": "in_part",
+          "from": null,
+          "to": "hand_l"
+        },
+        {
+          "entity": "e3",
+          "event_id": "ev6",
+          "field": "support",
+          "from": "e1",
+          "to": null
+        },
+        {
+          "entity": "e3",
+          "event_id": "ev6",
+          "field": "pos",
+          "from": {
+            "x": 30,
+            "y": 0
+          },
+          "to": null
+        },
+        {
+          "entity": "e4",
+          "event_id": "ev10",
+          "field": "props",
+          "from": {
+            "burning": true,
+            "light_source": true
+          },
+          "to": {
+            "burning": false,
+            "light_source": true
+          }
+        }
+      ],
+      "events": [
+        {
+          "cause_id": null,
+          "command_id": "c1",
+          "data": {},
+          "entity": "e3",
+          "event_id": "ev5",
+          "tick": 0,
+          "type": "take"
+        },
+        {
+          "cause_id": "ev5",
+          "command_id": "c1",
+          "data": {},
+          "entity": "e3",
+          "event_id": "ev6",
+          "tick": 0,
+          "type": "moved"
+        },
+        {
+          "cause_id": null,
+          "command_id": "edit-3",
+          "data": {},
+          "entity": "world",
+          "event_id": "ev7",
+          "tick": 1,
+          "type": "edit"
+        },
+        {
+          "cause_id": null,
+          "command_id": "c3",
+          "data": {
+            "utterance": "hello",
+            "volume": "normal"
+          },
+          "entity": "e2",
+          "event_id": "ev8",
+          "tick": 1,
+          "type": "say"
+        },
+        {
+          "cause_id": null,
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev9",
+          "tick": 2,
+          "type": "douse"
+        },
+        {
+          "cause_id": "ev9",
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev10",
+          "tick": 2,
+          "type": "doused"
+        }
+      ]
+    },
+    "1": {
+      "deltas": [
+        {
+          "entity": "e4",
+          "event_id": "ev10",
+          "field": "props",
+          "from": {
+            "burning": true,
+            "light_source": true
+          },
+          "to": {
+            "burning": false,
+            "light_source": true
+          }
+        }
+      ],
+      "events": [
+        {
+          "cause_id": null,
+          "command_id": "edit-3",
+          "data": {},
+          "entity": "world",
+          "event_id": "ev7",
+          "tick": 1,
+          "type": "edit"
+        },
+        {
+          "cause_id": null,
+          "command_id": "c3",
+          "data": {
+            "utterance": "hello",
+            "volume": "normal"
+          },
+          "entity": "e2",
+          "event_id": "ev8",
+          "tick": 1,
+          "type": "say"
+        },
+        {
+          "cause_id": null,
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev9",
+          "tick": 2,
+          "type": "douse"
+        },
+        {
+          "cause_id": "ev9",
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev10",
+          "tick": 2,
+          "type": "doused"
+        }
+      ]
+    },
+    "2": {
+      "deltas": [
+        {
+          "entity": "e4",
+          "event_id": "ev10",
+          "field": "props",
+          "from": {
+            "burning": true,
+            "light_source": true
+          },
+          "to": {
+            "burning": false,
+            "light_source": true
+          }
+        }
+      ],
+      "events": [
+        {
+          "cause_id": null,
+          "command_id": "c3",
+          "data": {
+            "utterance": "hello",
+            "volume": "normal"
+          },
+          "entity": "e2",
+          "event_id": "ev8",
+          "tick": 1,
+          "type": "say"
+        },
+        {
+          "cause_id": null,
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev9",
+          "tick": 2,
+          "type": "douse"
+        },
+        {
+          "cause_id": "ev9",
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev10",
+          "tick": 2,
+          "type": "doused"
+        }
+      ]
+    },
+    "3": {
+      "deltas": [
+        {
+          "entity": "e4",
+          "event_id": "ev10",
+          "field": "props",
+          "from": {
+            "burning": true,
+            "light_source": true
+          },
+          "to": {
+            "burning": false,
+            "light_source": true
+          }
+        }
+      ],
+      "events": [
+        {
+          "cause_id": null,
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev9",
+          "tick": 2,
+          "type": "douse"
+        },
+        {
+          "cause_id": "ev9",
+          "command_id": "c4",
+          "data": {},
+          "entity": "e4",
+          "event_id": "ev10",
+          "tick": 2,
+          "type": "doused"
+        }
+      ]
+    }
+  },
+  "attempts": {
+    "0": [
+      {
+        "based_on_version": 0,
+        "command": {
+          "actor": "e2",
+          "command_id": "c1",
+          "target": "stone",
+          "verb": "take"
+        },
+        "status": "ok",
+        "version": 0
+      },
+      {
+        "based_on_version": 1,
+        "command": {
+          "actor": "e2",
+          "command_id": "c2",
+          "target": "stone",
+          "verb": "take"
+        },
+        "reason_code": "already_held",
+        "status": "refused",
+        "version": 1
+      },
+      {
+        "based_on_version": 1,
+        "command": {
+          "actor": "world",
+          "args": {
+            "edit": {
+              "kind": "set_seed",
+              "seed": 3
+            }
+          },
+          "command_id": "edit-3",
+          "verb": "edit"
+        },
+        "status": "ok",
+        "version": 1
+      },
+      {
+        "based_on_version": 2,
+        "command": {
+          "actor": "e2",
+          "args": {
+            "utterance": "hello"
+          },
+          "command_id": "c3",
+          "verb": "say"
+        },
+        "status": "ok",
+        "version": 2
+      },
+      {
+        "based_on_version": 3,
+        "command": {
+          "actor": "e2",
+          "command_id": "c4",
+          "target": "lamp",
+          "verb": "douse"
+        },
+        "status": "ok",
+        "version": 3
+      }
+    ],
+    "1": [
+      {
+        "based_on_version": 1,
+        "command": {
+          "actor": "e2",
+          "command_id": "c2",
+          "target": "stone",
+          "verb": "take"
+        },
+        "reason_code": "already_held",
+        "status": "refused",
+        "version": 1
+      },
+      {
+        "based_on_version": 1,
+        "command": {
+          "actor": "world",
+          "args": {
+            "edit": {
+              "kind": "set_seed",
+              "seed": 3
+            }
+          },
+          "command_id": "edit-3",
+          "verb": "edit"
+        },
+        "status": "ok",
+        "version": 1
+      },
+      {
+        "based_on_version": 2,
+        "command": {
+          "actor": "e2",
+          "args": {
+            "utterance": "hello"
+          },
+          "command_id": "c3",
+          "verb": "say"
+        },
+        "status": "ok",
+        "version": 2
+      },
+      {
+        "based_on_version": 3,
+        "command": {
+          "actor": "e2",
+          "command_id": "c4",
+          "target": "lamp",
+          "verb": "douse"
+        },
+        "status": "ok",
+        "version": 3
+      }
+    ],
+    "2": [
+      {
+        "based_on_version": 2,
+        "command": {
+          "actor": "e2",
+          "args": {
+            "utterance": "hello"
+          },
+          "command_id": "c3",
+          "verb": "say"
+        },
+        "status": "ok",
+        "version": 2
+      },
+      {
+        "based_on_version": 3,
+        "command": {
+          "actor": "e2",
+          "command_id": "c4",
+          "target": "lamp",
+          "verb": "douse"
+        },
+        "status": "ok",
+        "version": 3
+      }
+    ],
+    "3": [
+      {
+        "based_on_version": 3,
+        "command": {
+          "actor": "e2",
+          "command_id": "c4",
+          "target": "lamp",
+          "verb": "douse"
+        },
+        "status": "ok",
+        "version": 3
+      }
+    ]
+  },
+  "errors": {
+    "since_future": "future_version",
+    "attempts_future": "future_version",
+    "since_negative": "invalid_version",
+    "attempts_negative": "invalid_version"
+  },
+  "trace": {
+    "event": [
+      {
+        "cause_id": null,
+        "command_id": "c4",
+        "data": {},
+        "entity": "e4",
+        "event_id": "ev9",
+        "tick": 2,
+        "type": "douse"
+      },
+      {
+        "cause_id": "ev9",
+        "command_id": "c4",
+        "data": {},
+        "entity": "e4",
+        "event_id": "ev10",
+        "tick": 2,
+        "type": "doused"
+      }
+    ],
+    "stone_contained_in": [
+      {
+        "cause_id": null,
+        "command_id": "c1",
+        "data": {},
+        "entity": "e3",
+        "event_id": "ev5",
+        "tick": 0,
+        "type": "take"
+      },
+      {
+        "cause_id": "ev5",
+        "command_id": "c1",
+        "data": {},
+        "entity": "e3",
+        "event_id": "ev6",
+        "tick": 0,
+        "type": "moved"
+      }
+    ],
+    "ann_spawn": [],
+    "hall_props": []
+  },
+  "trace_errors": {
+    "event": "no_such_event",
+    "entity": "no_such_entity",
+    "field": "no_such_field"
+  },
+  "query": [
+    {
+      "event_id": "ev5",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev5",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "quiet",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev6",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev6",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "quiet",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev7",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "authored",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev7",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "authored",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev8",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev8",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "same_location",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev9",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev9",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "quiet",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev10",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      }
+    },
+    {
+      "event_id": "ev10",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "quiet",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev999",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "no_such_event",
+        "value": "false"
+      }
+    },
+    {
+      "event_id": "ev999",
+      "sense": "hearing",
+      "answer": {
+        "basis_code": "no_such_event",
+        "value": "false"
+      }
+    },
+    {
+      "entity": "e3",
+      "sense": "sight",
+      "answer": {
+        "basis_code": "location_unlit",
+        "value": "false"
+      }
+    }
+  ]
+}

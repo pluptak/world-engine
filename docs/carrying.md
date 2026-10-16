@@ -9,11 +9,12 @@ sits in. A template declares which parts hold, with `holds`:
   container: a human's `pocket`, 18 × 12 × 4 cm, takes a note or a key, not a bottle.
 
 `in_part` is set exactly when the holder declares holding parts, so a chest's or a cup's contents
-leave it `null`. A part holds only while it and every part above it are intact or damaged: a hand
+leave it empty. A part holds only while it and every part above it are intact or damaged: a hand
 on a severed arm holds nothing.
 
-A two-handed item (`hands_required: 2`) sits in one grip and also fills the lowest other grip. That
-second grip is derived, never stored, so verbs, validation and loss always agree on it.
+A two-handed item (`hands_required: 2`, or heavier than half the holder's `hand_carry_limit_g`:
+one hand lifts half of what two do, so a human's 40 kg) sits in one grip and also fills the lowest
+other grip. That second grip is derived, never stored, so verbs, validation and loss agree on it.
 
 - `take` and `give` place the item in the lowest free grip of whoever receives it, or the grip
   `args.part` names. The capacity checks run first and keep their codes (`insufficient_*`,

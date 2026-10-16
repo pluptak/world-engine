@@ -1,0 +1,111 @@
+[
+  {
+    "request": {
+      "op": "command",
+      "world": "{WORLD}",
+      "command": {
+        "command_id": "w1",
+        "actor": "e2",
+        "verb": "take",
+        "target": "stone"
+      }
+    },
+    "stdout": "{\"command_id\":\"w1\",\"deltas\":[{\"entity\":\"e3\",\"event_id\":\"ev13\",\"field\":\"contained_in\",\"from\":null,\"to\":\"e2\"},{\"entity\":\"e3\",\"event_id\":\"ev13\",\"field\":\"in_part\",\"from\":null,\"to\":\"hand_l\"},{\"entity\":\"e3\",\"event_id\":\"ev13\",\"field\":\"support\",\"from\":\"e1\",\"to\":null},{\"entity\":\"e3\",\"event_id\":\"ev13\",\"field\":\"pos\",\"from\":{\"x\":0,\"y\":0},\"to\":null}],\"events\":[{\"cause_id\":null,\"command_id\":\"w1\",\"data\":{},\"entity\":\"e3\",\"event_id\":\"ev12\",\"tick\":4,\"type\":\"take\"},{\"cause_id\":\"ev12\",\"command_id\":\"w1\",\"data\":{},\"entity\":\"e3\",\"event_id\":\"ev13\",\"tick\":4,\"type\":\"moved\"}],\"resolved_target\":\"e3\",\"snapshot_version\":5,\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "command",
+      "world": "{WORLD}",
+      "command": {
+        "command_id": "w2",
+        "actor": "e2",
+        "verb": "take",
+        "target": "stone"
+      },
+      "include_snapshot": true
+    },
+    "stdout": "{\"command_id\":\"w2\",\"deltas\":[],\"events\":[],\"reason_code\":\"already_held\",\"resolved_target\":\"e3\",\"snapshot\":{\"coverage\":{\"properties\":[\"integrity\",\"residue\",\"pos\",\"open\"],\"relations\":[\"support\",\"contained_in\",\"attached_to\",\"status\",\"location\",\"near\",\"reachable\"],\"senses\":[\"sight\",\"hearing\"]},\"entities\":{\"e1\":{\"aliases\":[],\"concealed_by\":null,\"contained_in\":null,\"detached_from\":null,\"id\":\"e1\",\"in_part\":null,\"integrity\":100,\"location\":null,\"modifiers\":[],\"name\":\"hall\",\"parts\":{},\"pos\":null,\"props\":{\"lit\":false},\"residue\":{},\"status\":\"intact\",\"support\":null,\"template\":\"room\"},\"e2\":{\"aliases\":[],\"concealed_by\":null,\"contained_in\":null,\"detached_from\":null,\"id\":\"e2\",\"in_part\":null,\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"ann\",\"parts\":{},\"pos\":{\"x\":0,\"y\":0},\"props\":{\"agent\":true,\"attack_damage\":40,\"bleed_damage\":5,\"bleed_every_ticks\":2,\"bleed_times\":3,\"default_hit_part\":\"torso\",\"hand_carry_limit_g\":80000,\"hand_height_cm\":100,\"reach_cm\":100},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"human\"},\"e3\":{\"aliases\":[],\"concealed_by\":null,\"contained_in\":\"e2\",\"detached_from\":null,\"id\":\"e3\",\"in_part\":\"hand_l\",\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"stone\",\"parts\":{},\"pos\":null,\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":null,\"template\":\"stone\"},\"e4\":{\"aliases\":[],\"concealed_by\":null,\"contained_in\":null,\"detached_from\":null,\"id\":\"e4\",\"in_part\":null,\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"lamp\",\"parts\":{},\"pos\":{\"x\":-30,\"y\":0},\"props\":{\"burning\":false,\"light_source\":true},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"lamp\"}},\"next_seq\":14,\"templates_hash\":\"a60fb82f5f097f1a953e1494e0b5867d074573769c728a25cdd3ae784edbd54b\",\"tick\":5,\"version\":5},\"snapshot_version\":5,\"status\":\"refused\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "command",
+      "world": "{WORLD}",
+      "command": {
+        "command_id": "w3",
+        "actor": "e2",
+        "verb": "say",
+        "args": {
+          "utterance": "hello",
+          "volume": "normal"
+        }
+      },
+      "observe": true
+    },
+    "stdout": "{\"command_id\":\"w3\",\"deltas\":[],\"events\":[{\"cause_id\":null,\"command_id\":\"w3\",\"data\":{\"utterance\":\"hello\",\"volume\":\"normal\"},\"entity\":\"e2\",\"event_id\":\"ev14\",\"tick\":5,\"type\":\"say\"}],\"observation\":{\"entities\":[],\"events\":[{\"event_id\":\"ev14\",\"from\":\"here\",\"senses\":[\"hearing\"],\"tick\":5,\"type\":\"say\",\"utterance\":\"hello\",\"volume\":\"normal\"}],\"observer\":\"e2\",\"unknown_senses\":[\"smell\",\"touch\"],\"version\":6},\"resolved_target\":null,\"snapshot_version\":6,\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "command",
+      "world": "{WORLD}",
+      "command": {
+        "command_id": "w4",
+        "actor": "e2",
+        "verb": "take",
+        "target": "stone"
+      },
+      "based_on_version": 0
+    },
+    "stdout": "{\"command_id\":\"w4\",\"deltas\":[],\"events\":[],\"reason_code\":\"already_held\",\"resolved_target\":\"e3\",\"snapshot_version\":6,\"status\":\"preempted\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "edit",
+      "world": "{WORLD}",
+      "edit": {
+        "kind": "set_seed",
+        "seed": 9
+      },
+      "command_id": "e-seed"
+    },
+    "stdout": "{\"command_id\":\"e-seed\",\"deltas\":[],\"events\":[{\"cause_id\":null,\"command_id\":\"e-seed\",\"data\":{},\"entity\":\"world\",\"event_id\":\"ev15\",\"tick\":6,\"type\":\"edit\"}],\"resolved_target\":null,\"snapshot_version\":7,\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "edit",
+      "world": "{WORLD}",
+      "edit": {
+        "kind": "spawn",
+        "template": "stone",
+        "overrides": {
+          "name": "pebble",
+          "location": "e1",
+          "support": "e1",
+          "pos": {
+            "x": 5,
+            "y": 5
+          }
+        }
+      }
+    },
+    "stdout": "{\"command_id\":\"edit-12\",\"deltas\":[{\"entity\":\"e17\",\"event_id\":\"ev18\",\"field\":\"entity\",\"from\":null,\"to\":{\"aliases\":[],\"concealed_by\":null,\"contained_in\":null,\"detached_from\":null,\"id\":\"e17\",\"in_part\":null,\"integrity\":100,\"location\":\"e1\",\"modifiers\":[],\"name\":\"pebble\",\"parts\":{},\"pos\":{\"x\":5,\"y\":5},\"props\":{},\"residue\":{},\"status\":\"intact\",\"support\":\"e1\",\"template\":\"stone\"}},{\"entity\":\"e17\",\"event_id\":\"ev18\",\"field\":\"support\",\"from\":null,\"to\":\"e1\"},{\"entity\":\"e17\",\"event_id\":\"ev18\",\"field\":\"location\",\"from\":null,\"to\":\"e1\"},{\"entity\":\"e17\",\"event_id\":\"ev18\",\"field\":\"pos\",\"from\":null,\"to\":{\"x\":5,\"y\":5}}],\"events\":[{\"cause_id\":null,\"command_id\":\"edit-12\",\"data\":{},\"entity\":\"world\",\"event_id\":\"ev16\",\"tick\":6,\"type\":\"edit\"},{\"cause_id\":\"ev16\",\"command_id\":\"edit-12\",\"data\":{\"template\":\"stone\"},\"entity\":\"e17\",\"event_id\":\"ev18\",\"tick\":6,\"type\":\"spawned\"}],\"resolved_target\":null,\"snapshot_version\":8,\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "edit",
+      "world": "{WORLD}",
+      "edit": {
+        "kind": "set_seed",
+        "seed": 10
+      },
+      "based_on_version": 99
+    },
+    "stdout": "{\"command_id\":\"edit-13\",\"deltas\":[],\"events\":[],\"reason_code\":\"future_version\",\"resolved_target\":null,\"snapshot_version\":8,\"status\":\"invalid\"}\n",
+    "status": 2
+  }
+]

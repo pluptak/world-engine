@@ -1,0 +1,196 @@
+[
+  {
+    "request": {
+      "op": "actor_observe",
+      "world": "{WORLD}",
+      "actor": "e2"
+    },
+    "stdout": "{\"entities\":[],\"events\":[],\"observer\":\"xcf33243f98cd\",\"tick\":4,\"unknown_senses\":[\"smell\",\"touch\"]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_observe",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "since_tick": 0
+    },
+    "stdout": "{\"entities\":[],\"events\":[{\"entity\":\"x7deffeebf116\",\"event_id\":\"x98d8510338eb\",\"senses\":[\"sight\"],\"tick\":0,\"type\":\"take\"},{\"entity\":\"x7deffeebf116\",\"event_id\":\"xabf7daec14f7\",\"senses\":[\"sight\"],\"tick\":0,\"type\":\"moved\"},{\"entity\":\"xcf33243f98cd\",\"event_id\":\"x652ead1eb6ea\",\"senses\":[\"sight\",\"hearing\"],\"tick\":1,\"type\":\"say\",\"utterance\":\"hello\",\"volume\":\"normal\"},{\"entity\":\"xf8f49b382896\",\"event_id\":\"xe4e29ac9fefe\",\"senses\":[\"sight\"],\"tick\":2,\"type\":\"douse\"},{\"entity\":\"xf8f49b382896\",\"event_id\":\"xac1e88964175\",\"senses\":[\"sight\"],\"tick\":2,\"type\":\"doused\"},{\"event_id\":\"x0ffb2ebb8413\",\"from\":\"here\",\"senses\":[\"hearing\"],\"tick\":3,\"type\":\"drop\"},{\"event_id\":\"x5ab64e65477c\",\"from\":\"here\",\"senses\":[\"hearing\"],\"tick\":3,\"type\":\"dropped\"}],\"observer\":\"xcf33243f98cd\",\"tick\":4,\"unknown_senses\":[\"smell\",\"touch\"]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_inspect",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "entity": "x7deffeebf116"
+    },
+    "stdout": "{}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_inspect",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "entity": "e3"
+    },
+    "stdout": "{}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_options",
+      "world": "{WORLD}",
+      "actor": "e2"
+    },
+    "stdout": "{\"actor\":\"xcf33243f98cd\",\"needs_args\":[\"cut\",\"extract\",\"install\",\"move\",\"pour\",\"say\",\"staunch\",\"suture\",\"wait\"],\"ready\":[{\"target\":\"x7deffeebf116\",\"verb\":\"attack\"},{\"target\":\"xf8f49b382896\",\"verb\":\"attack\"},{\"target\":\"xf8f49b382896\",\"verb\":\"light\"},{\"target\":\"x7deffeebf116\",\"verb\":\"pull\"},{\"target\":\"xf8f49b382896\",\"verb\":\"pull\"},{\"target\":\"x7deffeebf116\",\"verb\":\"push\"},{\"target\":\"x7deffeebf116\",\"verb\":\"search\"},{\"target\":\"xf8f49b382896\",\"verb\":\"search\"},{\"target\":\"x7deffeebf116\",\"verb\":\"take\"},{\"target\":\"xf8f49b382896\",\"verb\":\"take\"}]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_options",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "refused": true
+    },
+    "stdout": "{\"actor\":\"xcf33243f98cd\",\"blocked\":[{\"reason_code\":\"out_of_reach\",\"target\":\"x0f05b403eb4e\",\"verb\":\"attack\"},{\"reason_code\":\"not_openable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"close\"},{\"reason_code\":\"not_openable\",\"target\":\"x7deffeebf116\",\"verb\":\"close\"},{\"reason_code\":\"not_openable\",\"target\":\"xf8f49b382896\",\"verb\":\"close\"},{\"reason_code\":\"not_consumable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"consume\"},{\"reason_code\":\"not_consumable\",\"target\":\"x7deffeebf116\",\"verb\":\"consume\"},{\"reason_code\":\"not_consumable\",\"target\":\"xf8f49b382896\",\"verb\":\"consume\"},{\"reason_code\":\"not_a_light\",\"target\":\"x0f05b403eb4e\",\"verb\":\"douse\"},{\"reason_code\":\"not_a_light\",\"target\":\"x7deffeebf116\",\"verb\":\"douse\"},{\"reason_code\":\"not_burning\",\"target\":\"xf8f49b382896\",\"verb\":\"douse\"},{\"reason_code\":\"not_carried\",\"target\":\"x0f05b403eb4e\",\"verb\":\"drop\"},{\"reason_code\":\"not_carried\",\"target\":\"x7deffeebf116\",\"verb\":\"drop\"},{\"reason_code\":\"not_carried\",\"target\":\"xf8f49b382896\",\"verb\":\"drop\"},{\"reason_code\":\"not_a_light\",\"target\":\"x0f05b403eb4e\",\"verb\":\"light\"},{\"reason_code\":\"not_a_light\",\"target\":\"x7deffeebf116\",\"verb\":\"light\"},{\"reason_code\":\"not_openable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"lock\"},{\"reason_code\":\"not_openable\",\"target\":\"x7deffeebf116\",\"verb\":\"lock\"},{\"reason_code\":\"not_openable\",\"target\":\"xf8f49b382896\",\"verb\":\"lock\"},{\"reason_code\":\"not_openable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"open\"},{\"reason_code\":\"not_openable\",\"target\":\"x7deffeebf116\",\"verb\":\"open\"},{\"reason_code\":\"not_openable\",\"target\":\"xf8f49b382896\",\"verb\":\"open\"},{\"reason_code\":\"out_of_reach\",\"target\":\"x0f05b403eb4e\",\"verb\":\"pull\"},{\"reason_code\":\"out_of_reach\",\"target\":\"x0f05b403eb4e\",\"verb\":\"push\"},{\"reason_code\":\"blocked\",\"target\":\"xf8f49b382896\",\"verb\":\"push\"},{\"reason_code\":\"out_of_reach\",\"target\":\"x0f05b403eb4e\",\"verb\":\"search\"},{\"reason_code\":\"not_switchable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"switch_off\"},{\"reason_code\":\"not_switchable\",\"target\":\"x7deffeebf116\",\"verb\":\"switch_off\"},{\"reason_code\":\"not_switchable\",\"target\":\"xf8f49b382896\",\"verb\":\"switch_off\"},{\"reason_code\":\"not_switchable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"switch_on\"},{\"reason_code\":\"not_switchable\",\"target\":\"x7deffeebf116\",\"verb\":\"switch_on\"},{\"reason_code\":\"not_switchable\",\"target\":\"xf8f49b382896\",\"verb\":\"switch_on\"},{\"reason_code\":\"circular_placement\",\"target\":\"x0f05b403eb4e\",\"verb\":\"take\"},{\"reason_code\":\"not_openable\",\"target\":\"x0f05b403eb4e\",\"verb\":\"unlock\"},{\"reason_code\":\"not_openable\",\"target\":\"x7deffeebf116\",\"verb\":\"unlock\"},{\"reason_code\":\"not_openable\",\"target\":\"xf8f49b382896\",\"verb\":\"unlock\"}],\"needs_args\":[\"cut\",\"extract\",\"install\",\"move\",\"pour\",\"say\",\"staunch\",\"suture\",\"wait\"],\"ready\":[{\"target\":\"x7deffeebf116\",\"verb\":\"attack\"},{\"target\":\"xf8f49b382896\",\"verb\":\"attack\"},{\"target\":\"xf8f49b382896\",\"verb\":\"light\"},{\"target\":\"x7deffeebf116\",\"verb\":\"pull\"},{\"target\":\"xf8f49b382896\",\"verb\":\"pull\"},{\"target\":\"x7deffeebf116\",\"verb\":\"push\"},{\"target\":\"x7deffeebf116\",\"verb\":\"search\"},{\"target\":\"xf8f49b382896\",\"verb\":\"search\"},{\"target\":\"x7deffeebf116\",\"verb\":\"take\"},{\"target\":\"xf8f49b382896\",\"verb\":\"take\"}]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_check",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "command": {
+        "command_id": "a-probe",
+        "verb": "take",
+        "target": "x7deffeebf116"
+      }
+    },
+    "stdout": "{\"command_id\":\"a-probe\",\"resolved_target\":\"x7deffeebf116\",\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_check",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "command": {
+        "command_id": "a-raw",
+        "verb": "take",
+        "target": "e3"
+      }
+    },
+    "stdout": "{\"command_id\":\"a-raw\",\"status\":\"unresolved\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_command",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "command": {
+        "command_id": "a1",
+        "verb": "take",
+        "target": "x7deffeebf116"
+      }
+    },
+    "stdout": "{\"command_id\":\"a1\",\"observation\":{\"entities\":[],\"events\":[],\"observer\":\"xcf33243f98cd\",\"tick\":5,\"unknown_senses\":[\"smell\",\"touch\"]},\"resolved_target\":\"x7deffeebf116\",\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_command",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "command": {
+        "command_id": "a2",
+        "verb": "take",
+        "target": "x7deffeebf116"
+      }
+    },
+    "stdout": "{\"command_id\":\"a2\",\"observation\":{\"entities\":[],\"events\":[],\"observer\":\"xcf33243f98cd\",\"tick\":5,\"unknown_senses\":[\"smell\",\"touch\"]},\"reason_code\":\"already_held\",\"resolved_target\":\"x7deffeebf116\",\"status\":\"refused\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_observe",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "since_tick": 0
+    },
+    "stdout": "{\"entities\":[],\"events\":[{\"entity\":\"x7deffeebf116\",\"event_id\":\"x98d8510338eb\",\"senses\":[\"sight\"],\"tick\":0,\"type\":\"take\"},{\"entity\":\"x7deffeebf116\",\"event_id\":\"xabf7daec14f7\",\"senses\":[\"sight\"],\"tick\":0,\"type\":\"moved\"},{\"entity\":\"xcf33243f98cd\",\"event_id\":\"x652ead1eb6ea\",\"senses\":[\"sight\",\"hearing\"],\"tick\":1,\"type\":\"say\",\"utterance\":\"hello\",\"volume\":\"normal\"},{\"entity\":\"xf8f49b382896\",\"event_id\":\"xe4e29ac9fefe\",\"senses\":[\"sight\"],\"tick\":2,\"type\":\"douse\"},{\"entity\":\"xf8f49b382896\",\"event_id\":\"xac1e88964175\",\"senses\":[\"sight\"],\"tick\":2,\"type\":\"doused\"},{\"event_id\":\"x0ffb2ebb8413\",\"from\":\"here\",\"senses\":[\"hearing\"],\"tick\":3,\"type\":\"drop\"},{\"event_id\":\"x5ab64e65477c\",\"from\":\"here\",\"senses\":[\"hearing\"],\"tick\":3,\"type\":\"dropped\"}],\"observer\":\"xcf33243f98cd\",\"tick\":5,\"unknown_senses\":[\"smell\",\"touch\"]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_command",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "command": {
+        "command_id": "a3",
+        "verb": "light",
+        "target": "xf8f49b382896"
+      }
+    },
+    "stdout": "{\"command_id\":\"a3\",\"observation\":{\"entities\":[{\"facts\":{\"integrity\":100,\"residue\":{},\"status\":\"intact\"},\"id\":\"x0f05b403eb4e\",\"name\":\"hall\",\"senses\":[\"sight\"],\"template\":\"room\"},{\"facts\":{\"contained_in\":\"xcf33243f98cd\",\"in_part\":\"hand_l\",\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\"},\"id\":\"x7deffeebf116\",\"name\":\"stone\",\"senses\":[\"sight\"],\"template\":\"stone\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xcf33243f98cd\",\"name\":\"ann\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":-30,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xf8f49b382896\",\"name\":\"lamp\",\"senses\":[\"sight\"],\"template\":\"lamp\"}],\"events\":[{\"entity\":\"xf8f49b382896\",\"event_id\":\"x5767503e548e\",\"senses\":[\"sight\"],\"tick\":5,\"type\":\"light\"},{\"entity\":\"xf8f49b382896\",\"event_id\":\"x838d956306f6\",\"senses\":[\"sight\"],\"tick\":5,\"type\":\"lit\"}],\"observer\":\"xcf33243f98cd\",\"tick\":6,\"unknown_senses\":[\"smell\",\"touch\"]},\"resolved_target\":\"xf8f49b382896\",\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_observe",
+      "world": "{WORLD}",
+      "actor": "e2"
+    },
+    "stdout": "{\"entities\":[{\"facts\":{\"integrity\":100,\"residue\":{},\"status\":\"intact\"},\"id\":\"x0f05b403eb4e\",\"name\":\"hall\",\"senses\":[\"sight\"],\"template\":\"room\"},{\"facts\":{\"contained_in\":\"xcf33243f98cd\",\"in_part\":\"hand_l\",\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\"},\"id\":\"x7deffeebf116\",\"name\":\"stone\",\"senses\":[\"sight\"],\"template\":\"stone\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xcf33243f98cd\",\"name\":\"ann\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":-30,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xf8f49b382896\",\"name\":\"lamp\",\"senses\":[\"sight\"],\"template\":\"lamp\"}],\"events\":[],\"observer\":\"xcf33243f98cd\",\"tick\":6,\"unknown_senses\":[\"smell\",\"touch\"]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_inspect",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "entity": "x7deffeebf116"
+    },
+    "stdout": "{\"inspection\":{\"facts\":{\"contained_in\":\"xcf33243f98cd\",\"in_part\":\"hand_l\",\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\"},\"holds\":[],\"id\":\"x7deffeebf116\",\"name\":\"stone\",\"props\":{},\"reachable\":true,\"senses\":[\"sight\"],\"size_cm\":{\"d\":20,\"h\":20,\"w\":20},\"template\":\"stone\"}}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_check",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "command": {
+        "command_id": "a4",
+        "verb": "drop",
+        "target": "x7deffeebf116"
+      }
+    },
+    "stdout": "{\"command_id\":\"a4\",\"resolved_target\":\"x7deffeebf116\",\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_command",
+      "world": "{WORLD}",
+      "actor": "e2",
+      "command": {
+        "command_id": "a5",
+        "verb": "drop",
+        "target": "x7deffeebf116"
+      }
+    },
+    "stdout": "{\"command_id\":\"a5\",\"observation\":{\"entities\":[{\"facts\":{\"integrity\":100,\"residue\":{},\"status\":\"intact\"},\"id\":\"x0f05b403eb4e\",\"name\":\"hall\",\"senses\":[\"sight\"],\"template\":\"room\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"x7deffeebf116\",\"name\":\"stone\",\"senses\":[\"sight\"],\"template\":\"stone\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":0,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xcf33243f98cd\",\"name\":\"ann\",\"senses\":[\"sight\"],\"template\":\"human\"},{\"facts\":{\"integrity\":100,\"location\":\"x0f05b403eb4e\",\"pos\":{\"x\":-30,\"y\":0},\"residue\":{},\"status\":\"intact\",\"support\":\"x0f05b403eb4e\"},\"id\":\"xf8f49b382896\",\"name\":\"lamp\",\"senses\":[\"sight\"],\"template\":\"lamp\"}],\"events\":[{\"entity\":\"x7deffeebf116\",\"event_id\":\"x25bc749407f9\",\"senses\":[\"sight\",\"hearing\"],\"tick\":6,\"type\":\"drop\"},{\"entity\":\"x7deffeebf116\",\"event_id\":\"x878dc0c793fe\",\"senses\":[\"sight\",\"hearing\"],\"tick\":6,\"type\":\"dropped\"}],\"observer\":\"xcf33243f98cd\",\"tick\":7,\"unknown_senses\":[\"smell\",\"touch\"]},\"resolved_target\":\"x7deffeebf116\",\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "actor_observe",
+      "world": "{WORLD}",
+      "actor": "e99"
+    },
+    "stdout": "{\"issues\":[{\"code\":\"no_such_entity\",\"message\":\"no_such_entity\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2
+  }
+]

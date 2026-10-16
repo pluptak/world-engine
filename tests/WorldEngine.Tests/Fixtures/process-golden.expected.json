@@ -1,0 +1,4212 @@
+[
+  {
+    "name": "hunger_runs_twice",
+    "kind": "command",
+    "snapshot": {
+      "version": 2,
+      "tick": 0,
+      "next_seq": 44,
+      "templates_hash": "x",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human_hungry",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 99,
+            "starvation": 0,
+            "hunger_every": 10
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        }
+      },
+      "schedule": [
+        {
+          "due_tick": 10,
+          "kind": "process",
+          "entity": "e4",
+          "cause_id": "ev41",
+          "process": "hunger"
+        }
+      ]
+    },
+    "command": {
+      "command_id": "c1",
+      "actor": "world",
+      "verb": "advance",
+      "args": {
+        "ticks": 25
+      }
+    },
+    "result": {
+      "status": "ok",
+      "command_id": "c1",
+      "resolved_target": null,
+      "snapshot": {
+        "version": 3,
+        "tick": 25,
+        "next_seq": 49,
+        "templates_hash": "x",
+        "coverage": {
+          "relations": [
+            "support",
+            "contained_in",
+            "location",
+            "near",
+            "reachable"
+          ],
+          "senses": [
+            "sight",
+            "hearing"
+          ],
+          "properties": [
+            "integrity",
+            "residue",
+            "pos"
+          ]
+        },
+        "entities": {
+          "e1": {
+            "id": "e1",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "lit": true
+            }
+          },
+          "e2": {
+            "id": "e2",
+            "template": "table",
+            "name": "e2",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "surface": true
+            }
+          },
+          "e3": {
+            "id": "e3",
+            "template": "bottle",
+            "name": "e3",
+            "aliases": [],
+            "location": "e1",
+            "support": null,
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e4": {
+            "id": "e4",
+            "template": "human_hungry",
+            "name": "e4",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3,
+              "hunger": 100,
+              "starvation": 3,
+              "hunger_every": 10
+            }
+          },
+          "e8": {
+            "id": "e8",
+            "template": "door",
+            "name": "e8",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true,
+              "open": false,
+              "from": "e1",
+              "to": "e9"
+            }
+          },
+          "e9": {
+            "id": "e9",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e31": {
+            "id": "e31",
+            "template": "chest",
+            "name": "e31",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true
+            }
+          }
+        },
+        "schedule": [
+          {
+            "due_tick": 30,
+            "kind": "process",
+            "entity": "e4",
+            "cause_id": "ev48",
+            "process": "starve"
+          }
+        ]
+      },
+      "deltas": [
+        {
+          "event_id": "ev45",
+          "entity": "e4",
+          "field": "props",
+          "from": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 99,
+            "starvation": 0,
+            "hunger_every": 10
+          },
+          "to": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 0,
+            "hunger_every": 10
+          }
+        },
+        {
+          "event_id": "ev46",
+          "entity": "e4",
+          "field": "props",
+          "from": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 0,
+            "hunger_every": 10
+          },
+          "to": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 1,
+            "hunger_every": 10
+          }
+        },
+        {
+          "event_id": "ev47",
+          "entity": "e4",
+          "field": "props",
+          "from": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 1,
+            "hunger_every": 10
+          },
+          "to": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 2,
+            "hunger_every": 10
+          }
+        },
+        {
+          "event_id": "ev48",
+          "entity": "e4",
+          "field": "props",
+          "from": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 2,
+            "hunger_every": 10
+          },
+          "to": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 3,
+            "hunger_every": 10
+          }
+        }
+      ],
+      "events": [
+        {
+          "event_id": "ev44",
+          "cause_id": null,
+          "command_id": "c1",
+          "tick": 0,
+          "type": "advance",
+          "entity": "world",
+          "data": {}
+        },
+        {
+          "event_id": "ev45",
+          "cause_id": "ev41",
+          "command_id": "c1",
+          "tick": 10,
+          "type": "changed",
+          "entity": "e4",
+          "data": {
+            "prop": "hunger",
+            "from": 99,
+            "to": 100,
+            "process": "hunger"
+          }
+        },
+        {
+          "event_id": "ev46",
+          "cause_id": "ev45",
+          "command_id": "c1",
+          "tick": 15,
+          "type": "changed",
+          "entity": "e4",
+          "data": {
+            "prop": "starvation",
+            "from": 0,
+            "to": 1,
+            "process": "starve"
+          }
+        },
+        {
+          "event_id": "ev47",
+          "cause_id": "ev46",
+          "command_id": "c1",
+          "tick": 20,
+          "type": "changed",
+          "entity": "e4",
+          "data": {
+            "prop": "starvation",
+            "from": 1,
+            "to": 2,
+            "process": "starve"
+          }
+        },
+        {
+          "event_id": "ev48",
+          "cause_id": "ev47",
+          "command_id": "c1",
+          "tick": 25,
+          "type": "changed",
+          "entity": "e4",
+          "data": {
+            "prop": "starvation",
+            "from": 2,
+            "to": 3,
+            "process": "starve"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "starvation_damages_body",
+    "kind": "command",
+    "snapshot": {
+      "version": 3,
+      "tick": 0,
+      "next_seq": 46,
+      "templates_hash": "x",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human_hungry",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 19,
+            "hunger_every": 10
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        }
+      },
+      "schedule": [
+        {
+          "due_tick": 5,
+          "kind": "process",
+          "entity": "e4",
+          "cause_id": "ev45",
+          "process": "starve"
+        }
+      ]
+    },
+    "command": {
+      "command_id": "c2",
+      "actor": "world",
+      "verb": "advance",
+      "args": {
+        "ticks": 10
+      }
+    },
+    "result": {
+      "status": "ok",
+      "command_id": "c2",
+      "resolved_target": null,
+      "snapshot": {
+        "version": 4,
+        "tick": 10,
+        "next_seq": 50,
+        "templates_hash": "x",
+        "coverage": {
+          "relations": [
+            "support",
+            "contained_in",
+            "location",
+            "near",
+            "reachable"
+          ],
+          "senses": [
+            "sight",
+            "hearing"
+          ],
+          "properties": [
+            "integrity",
+            "residue",
+            "pos"
+          ]
+        },
+        "entities": {
+          "e1": {
+            "id": "e1",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "lit": true
+            }
+          },
+          "e2": {
+            "id": "e2",
+            "template": "table",
+            "name": "e2",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "surface": true
+            }
+          },
+          "e3": {
+            "id": "e3",
+            "template": "bottle",
+            "name": "e3",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e4": {
+            "id": "e4",
+            "template": "human_hungry",
+            "name": "e4",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 0,
+            "status": "destroyed",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3,
+              "hunger": 100,
+              "starvation": 20,
+              "hunger_every": 10
+            }
+          },
+          "e8": {
+            "id": "e8",
+            "template": "door",
+            "name": "e8",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true,
+              "open": false,
+              "from": "e1",
+              "to": "e9"
+            }
+          },
+          "e9": {
+            "id": "e9",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e31": {
+            "id": "e31",
+            "template": "chest",
+            "name": "e31",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true
+            }
+          }
+        }
+      },
+      "deltas": [
+        {
+          "event_id": "ev47",
+          "entity": "e4",
+          "field": "props",
+          "from": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 19,
+            "hunger_every": 10
+          },
+          "to": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 20,
+            "hunger_every": 10
+          }
+        },
+        {
+          "event_id": "ev48",
+          "entity": "e4",
+          "field": "integrity",
+          "from": 100,
+          "to": 0
+        },
+        {
+          "event_id": "ev48",
+          "entity": "e4",
+          "field": "status",
+          "from": "intact",
+          "to": "destroyed"
+        },
+        {
+          "event_id": "ev49",
+          "entity": "e3",
+          "field": "contained_in",
+          "from": "e4",
+          "to": null
+        },
+        {
+          "event_id": "ev49",
+          "entity": "e3",
+          "field": "in_part",
+          "from": "hand_l",
+          "to": null
+        },
+        {
+          "event_id": "ev49",
+          "entity": "e3",
+          "field": "support",
+          "from": null,
+          "to": "e1"
+        },
+        {
+          "event_id": "ev49",
+          "entity": "e3",
+          "field": "pos",
+          "from": null,
+          "to": {
+            "x": -50,
+            "y": 0
+          }
+        }
+      ],
+      "events": [
+        {
+          "event_id": "ev46",
+          "cause_id": null,
+          "command_id": "c2",
+          "tick": 0,
+          "type": "advance",
+          "entity": "world",
+          "data": {}
+        },
+        {
+          "event_id": "ev47",
+          "cause_id": "ev45",
+          "command_id": "c2",
+          "tick": 5,
+          "type": "changed",
+          "entity": "e4",
+          "data": {
+            "prop": "starvation",
+            "from": 19,
+            "to": 20,
+            "process": "starve"
+          }
+        },
+        {
+          "event_id": "ev48",
+          "cause_id": "ev47",
+          "command_id": "c2",
+          "tick": 5,
+          "type": "destroyed",
+          "entity": "e4",
+          "data": {
+            "integrity": 0
+          }
+        },
+        {
+          "event_id": "ev49",
+          "cause_id": "ev48",
+          "command_id": "c2",
+          "tick": 5,
+          "type": "dropped",
+          "entity": "e3",
+          "data": {
+            "fall_cm": 100
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "candle_burns_to_spent",
+    "kind": "command",
+    "snapshot": {
+      "version": 1,
+      "tick": 0,
+      "next_seq": 43,
+      "templates_hash": "x",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        },
+        "e41": {
+          "id": "e41",
+          "template": "candle",
+          "name": "candle",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 200
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 8
+          }
+        }
+      },
+      "schedule": [
+        {
+          "due_tick": 1,
+          "kind": "process",
+          "entity": "e41",
+          "cause_id": "ev42",
+          "process": "burn"
+        }
+      ]
+    },
+    "command": {
+      "command_id": "c3",
+      "actor": "world",
+      "verb": "advance",
+      "args": {
+        "ticks": 10
+      }
+    },
+    "result": {
+      "status": "ok",
+      "command_id": "c3",
+      "resolved_target": null,
+      "snapshot": {
+        "version": 2,
+        "tick": 10,
+        "next_seq": 54,
+        "templates_hash": "x",
+        "coverage": {
+          "relations": [
+            "support",
+            "contained_in",
+            "location",
+            "near",
+            "reachable"
+          ],
+          "senses": [
+            "sight",
+            "hearing"
+          ],
+          "properties": [
+            "integrity",
+            "residue",
+            "pos"
+          ]
+        },
+        "entities": {
+          "e1": {
+            "id": "e1",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "lit": true
+            }
+          },
+          "e2": {
+            "id": "e2",
+            "template": "table",
+            "name": "e2",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "surface": true
+            }
+          },
+          "e3": {
+            "id": "e3",
+            "template": "bottle",
+            "name": "e3",
+            "aliases": [],
+            "location": "e1",
+            "support": null,
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e4": {
+            "id": "e4",
+            "template": "human",
+            "name": "e4",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3
+            }
+          },
+          "e8": {
+            "id": "e8",
+            "template": "door",
+            "name": "e8",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true,
+              "open": false,
+              "from": "e1",
+              "to": "e9"
+            }
+          },
+          "e9": {
+            "id": "e9",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e31": {
+            "id": "e31",
+            "template": "chest",
+            "name": "e31",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true
+            }
+          }
+        }
+      },
+      "deltas": [
+        {
+          "event_id": "ev44",
+          "entity": "e41",
+          "field": "props",
+          "from": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 8
+          },
+          "to": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 7
+          }
+        },
+        {
+          "event_id": "ev45",
+          "entity": "e41",
+          "field": "props",
+          "from": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 7
+          },
+          "to": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 6
+          }
+        },
+        {
+          "event_id": "ev46",
+          "entity": "e41",
+          "field": "props",
+          "from": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 6
+          },
+          "to": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 5
+          }
+        },
+        {
+          "event_id": "ev47",
+          "entity": "e41",
+          "field": "props",
+          "from": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 5
+          },
+          "to": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 4
+          }
+        },
+        {
+          "event_id": "ev48",
+          "entity": "e41",
+          "field": "props",
+          "from": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 4
+          },
+          "to": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 3
+          }
+        },
+        {
+          "event_id": "ev49",
+          "entity": "e41",
+          "field": "props",
+          "from": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 3
+          },
+          "to": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 2
+          }
+        },
+        {
+          "event_id": "ev50",
+          "entity": "e41",
+          "field": "props",
+          "from": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 2
+          },
+          "to": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 1
+          }
+        },
+        {
+          "event_id": "ev51",
+          "entity": "e41",
+          "field": "props",
+          "from": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 1
+          },
+          "to": {
+            "light_source": true,
+            "burning": true,
+            "fuel": 0
+          }
+        },
+        {
+          "event_id": "ev53",
+          "entity": "e41",
+          "field": "entity",
+          "from": {
+            "id": "e41",
+            "template": "candle",
+            "name": "candle",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 200
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "light_source": true,
+              "burning": true,
+              "fuel": 0
+            }
+          },
+          "to": null
+        }
+      ],
+      "events": [
+        {
+          "event_id": "ev43",
+          "cause_id": null,
+          "command_id": "c3",
+          "tick": 0,
+          "type": "advance",
+          "entity": "world",
+          "data": {}
+        },
+        {
+          "event_id": "ev44",
+          "cause_id": "ev42",
+          "command_id": "c3",
+          "tick": 1,
+          "type": "changed",
+          "entity": "e41",
+          "data": {
+            "prop": "fuel",
+            "from": 8,
+            "to": 7,
+            "process": "burn"
+          }
+        },
+        {
+          "event_id": "ev45",
+          "cause_id": "ev44",
+          "command_id": "c3",
+          "tick": 2,
+          "type": "changed",
+          "entity": "e41",
+          "data": {
+            "prop": "fuel",
+            "from": 7,
+            "to": 6,
+            "process": "burn"
+          }
+        },
+        {
+          "event_id": "ev46",
+          "cause_id": "ev45",
+          "command_id": "c3",
+          "tick": 3,
+          "type": "changed",
+          "entity": "e41",
+          "data": {
+            "prop": "fuel",
+            "from": 6,
+            "to": 5,
+            "process": "burn"
+          }
+        },
+        {
+          "event_id": "ev47",
+          "cause_id": "ev46",
+          "command_id": "c3",
+          "tick": 4,
+          "type": "changed",
+          "entity": "e41",
+          "data": {
+            "prop": "fuel",
+            "from": 5,
+            "to": 4,
+            "process": "burn"
+          }
+        },
+        {
+          "event_id": "ev48",
+          "cause_id": "ev47",
+          "command_id": "c3",
+          "tick": 5,
+          "type": "changed",
+          "entity": "e41",
+          "data": {
+            "prop": "fuel",
+            "from": 4,
+            "to": 3,
+            "process": "burn"
+          }
+        },
+        {
+          "event_id": "ev49",
+          "cause_id": "ev48",
+          "command_id": "c3",
+          "tick": 6,
+          "type": "changed",
+          "entity": "e41",
+          "data": {
+            "prop": "fuel",
+            "from": 3,
+            "to": 2,
+            "process": "burn"
+          }
+        },
+        {
+          "event_id": "ev50",
+          "cause_id": "ev49",
+          "command_id": "c3",
+          "tick": 7,
+          "type": "changed",
+          "entity": "e41",
+          "data": {
+            "prop": "fuel",
+            "from": 2,
+            "to": 1,
+            "process": "burn"
+          }
+        },
+        {
+          "event_id": "ev51",
+          "cause_id": "ev50",
+          "command_id": "c3",
+          "tick": 8,
+          "type": "changed",
+          "entity": "e41",
+          "data": {
+            "prop": "fuel",
+            "from": 1,
+            "to": 0,
+            "process": "burn"
+          }
+        },
+        {
+          "event_id": "ev52",
+          "cause_id": "ev51",
+          "command_id": "c3",
+          "tick": 8,
+          "type": "spent",
+          "entity": "e41",
+          "data": {}
+        },
+        {
+          "event_id": "ev53",
+          "cause_id": "ev52",
+          "command_id": "c3",
+          "tick": 8,
+          "type": "removed",
+          "entity": "e41",
+          "data": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "remove_processed_body",
+    "kind": "command",
+    "snapshot": {
+      "version": 1,
+      "tick": 0,
+      "next_seq": 42,
+      "templates_hash": "x",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human_hungry",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 0,
+            "starvation": 0,
+            "hunger_every": 10
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        }
+      },
+      "schedule": [
+        {
+          "due_tick": 10,
+          "kind": "process",
+          "entity": "e4",
+          "cause_id": "ev41",
+          "process": "hunger"
+        }
+      ]
+    },
+    "command": {
+      "command_id": "c4",
+      "actor": "world",
+      "verb": "edit",
+      "args": {
+        "edit": {
+          "kind": "remove",
+          "target": "e4"
+        }
+      },
+      "target": "e4"
+    },
+    "result": {
+      "status": "ok",
+      "command_id": "c4",
+      "resolved_target": "e4",
+      "snapshot": {
+        "version": 2,
+        "tick": 0,
+        "next_seq": 44,
+        "templates_hash": "x",
+        "coverage": {
+          "relations": [
+            "support",
+            "contained_in",
+            "location",
+            "near",
+            "reachable"
+          ],
+          "senses": [
+            "sight",
+            "hearing"
+          ],
+          "properties": [
+            "integrity",
+            "residue",
+            "pos"
+          ]
+        },
+        "entities": {
+          "e1": {
+            "id": "e1",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "lit": true
+            }
+          },
+          "e2": {
+            "id": "e2",
+            "template": "table",
+            "name": "e2",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "surface": true
+            }
+          },
+          "e3": {
+            "id": "e3",
+            "template": "bottle",
+            "name": "e3",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e8": {
+            "id": "e8",
+            "template": "door",
+            "name": "e8",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true,
+              "open": false,
+              "from": "e1",
+              "to": "e9"
+            }
+          },
+          "e9": {
+            "id": "e9",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e31": {
+            "id": "e31",
+            "template": "chest",
+            "name": "e31",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true
+            }
+          }
+        }
+      },
+      "deltas": [
+        {
+          "event_id": "ev43",
+          "entity": "e4",
+          "field": "entity",
+          "from": {
+            "id": "e4",
+            "template": "human_hungry",
+            "name": "e4",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3,
+              "hunger": 0,
+              "starvation": 0,
+              "hunger_every": 10
+            }
+          },
+          "to": null
+        },
+        {
+          "event_id": "ev43",
+          "entity": "e3",
+          "field": "contained_in",
+          "from": "e4",
+          "to": null
+        },
+        {
+          "event_id": "ev43",
+          "entity": "e3",
+          "field": "in_part",
+          "from": "hand_l",
+          "to": null
+        },
+        {
+          "event_id": "ev43",
+          "entity": "e3",
+          "field": "support",
+          "from": null,
+          "to": "e1"
+        },
+        {
+          "event_id": "ev43",
+          "entity": "e3",
+          "field": "pos",
+          "from": null,
+          "to": {
+            "x": -50,
+            "y": 0
+          }
+        }
+      ],
+      "events": [
+        {
+          "event_id": "ev42",
+          "cause_id": null,
+          "command_id": "c4",
+          "tick": 0,
+          "type": "edit",
+          "entity": "e4",
+          "data": {}
+        },
+        {
+          "event_id": "ev43",
+          "cause_id": "ev42",
+          "command_id": "c4",
+          "tick": 0,
+          "type": "removed",
+          "entity": "e4",
+          "data": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "refine_starts_hunger",
+    "kind": "command",
+    "snapshot": {
+      "version": 0,
+      "tick": 0,
+      "next_seq": 40,
+      "templates_hash": "x",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        }
+      }
+    },
+    "command": {
+      "command_id": "c5",
+      "actor": "world",
+      "verb": "edit",
+      "args": {
+        "edit": {
+          "kind": "refine",
+          "target": "e4",
+          "template": "human_hungry"
+        }
+      },
+      "target": "e4"
+    },
+    "result": {
+      "status": "ok",
+      "command_id": "c5",
+      "resolved_target": "e4",
+      "snapshot": {
+        "version": 1,
+        "tick": 0,
+        "next_seq": 42,
+        "templates_hash": "x",
+        "coverage": {
+          "relations": [
+            "support",
+            "contained_in",
+            "location",
+            "near",
+            "reachable"
+          ],
+          "senses": [
+            "sight",
+            "hearing"
+          ],
+          "properties": [
+            "integrity",
+            "residue",
+            "pos"
+          ]
+        },
+        "entities": {
+          "e1": {
+            "id": "e1",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "lit": true
+            }
+          },
+          "e2": {
+            "id": "e2",
+            "template": "table",
+            "name": "e2",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "surface": true
+            }
+          },
+          "e3": {
+            "id": "e3",
+            "template": "bottle",
+            "name": "e3",
+            "aliases": [],
+            "location": "e1",
+            "support": null,
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e4": {
+            "id": "e4",
+            "template": "human_hungry",
+            "name": "e4",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3,
+              "hunger": 0,
+              "starvation": 0,
+              "hunger_every": 10
+            }
+          },
+          "e8": {
+            "id": "e8",
+            "template": "door",
+            "name": "e8",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true,
+              "open": false,
+              "from": "e1",
+              "to": "e9"
+            }
+          },
+          "e9": {
+            "id": "e9",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e31": {
+            "id": "e31",
+            "template": "chest",
+            "name": "e31",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true
+            }
+          }
+        },
+        "schedule": [
+          {
+            "due_tick": 10,
+            "kind": "process",
+            "entity": "e4",
+            "cause_id": "ev41",
+            "process": "hunger"
+          }
+        ]
+      },
+      "deltas": [
+        {
+          "event_id": "ev41",
+          "entity": "e4",
+          "field": "template",
+          "from": "human",
+          "to": "human_hungry"
+        },
+        {
+          "event_id": "ev41",
+          "entity": "e4",
+          "field": "props",
+          "from": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3
+          },
+          "to": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 0,
+            "starvation": 0,
+            "hunger_every": 10
+          }
+        }
+      ],
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "c5",
+          "tick": 0,
+          "type": "edit",
+          "entity": "e4",
+          "data": {}
+        },
+        {
+          "event_id": "ev41",
+          "cause_id": "ev40",
+          "command_id": "c5",
+          "tick": 0,
+          "type": "edited",
+          "entity": "e4",
+          "data": {
+            "field": "template",
+            "from": "human",
+            "to": "human_hungry"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "feed_starts_starvation",
+    "kind": "command",
+    "snapshot": {
+      "version": 1,
+      "tick": 0,
+      "next_seq": 42,
+      "templates_hash": "x",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human_hungry",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 0,
+            "starvation": 0,
+            "hunger_every": 10
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        }
+      },
+      "schedule": [
+        {
+          "due_tick": 10,
+          "kind": "process",
+          "entity": "e4",
+          "cause_id": "ev41",
+          "process": "hunger"
+        }
+      ]
+    },
+    "command": {
+      "command_id": "c6",
+      "actor": "world",
+      "verb": "edit",
+      "args": {
+        "edit": {
+          "kind": "update_props",
+          "target": "e4",
+          "props": {
+            "hunger": 100
+          }
+        }
+      },
+      "target": "e4"
+    },
+    "result": {
+      "status": "ok",
+      "command_id": "c6",
+      "resolved_target": "e4",
+      "snapshot": {
+        "version": 2,
+        "tick": 0,
+        "next_seq": 44,
+        "templates_hash": "x",
+        "coverage": {
+          "relations": [
+            "support",
+            "contained_in",
+            "location",
+            "near",
+            "reachable"
+          ],
+          "senses": [
+            "sight",
+            "hearing"
+          ],
+          "properties": [
+            "integrity",
+            "residue",
+            "pos"
+          ]
+        },
+        "entities": {
+          "e1": {
+            "id": "e1",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "lit": true
+            }
+          },
+          "e2": {
+            "id": "e2",
+            "template": "table",
+            "name": "e2",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "surface": true
+            }
+          },
+          "e3": {
+            "id": "e3",
+            "template": "bottle",
+            "name": "e3",
+            "aliases": [],
+            "location": "e1",
+            "support": null,
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e4": {
+            "id": "e4",
+            "template": "human_hungry",
+            "name": "e4",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3,
+              "hunger": 100,
+              "starvation": 0,
+              "hunger_every": 10
+            }
+          },
+          "e8": {
+            "id": "e8",
+            "template": "door",
+            "name": "e8",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true,
+              "open": false,
+              "from": "e1",
+              "to": "e9"
+            }
+          },
+          "e9": {
+            "id": "e9",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e31": {
+            "id": "e31",
+            "template": "chest",
+            "name": "e31",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true
+            }
+          }
+        },
+        "schedule": [
+          {
+            "due_tick": 5,
+            "kind": "process",
+            "entity": "e4",
+            "cause_id": "ev43",
+            "process": "starve"
+          }
+        ]
+      },
+      "deltas": [
+        {
+          "event_id": "ev43",
+          "entity": "e4",
+          "field": "props",
+          "from": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 0,
+            "starvation": 0,
+            "hunger_every": 10
+          },
+          "to": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 100,
+            "starvation": 0,
+            "hunger_every": 10
+          }
+        }
+      ],
+      "events": [
+        {
+          "event_id": "ev42",
+          "cause_id": null,
+          "command_id": "c6",
+          "tick": 0,
+          "type": "edit",
+          "entity": "e4",
+          "data": {}
+        },
+        {
+          "event_id": "ev43",
+          "cause_id": "ev42",
+          "command_id": "c6",
+          "tick": 0,
+          "type": "edited",
+          "entity": "e4",
+          "data": {
+            "field": "props"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "start_processes",
+    "kind": "start",
+    "snapshot": {
+      "version": 1,
+      "tick": 0,
+      "next_seq": 42,
+      "templates_hash": "x",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human_hungry",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 0,
+            "starvation": 0,
+            "hunger_every": 10
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        }
+      }
+    },
+    "result": {
+      "snapshot": {
+        "version": 1,
+        "tick": 0,
+        "next_seq": 42,
+        "templates_hash": "x",
+        "coverage": {
+          "relations": [
+            "support",
+            "contained_in",
+            "location",
+            "near",
+            "reachable"
+          ],
+          "senses": [
+            "sight",
+            "hearing"
+          ],
+          "properties": [
+            "integrity",
+            "residue",
+            "pos"
+          ]
+        },
+        "entities": {
+          "e1": {
+            "id": "e1",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "lit": true
+            }
+          },
+          "e2": {
+            "id": "e2",
+            "template": "table",
+            "name": "e2",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 30,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "surface": true
+            }
+          },
+          "e3": {
+            "id": "e3",
+            "template": "bottle",
+            "name": "e3",
+            "aliases": [],
+            "location": "e1",
+            "support": null,
+            "contained_in": "e4",
+            "in_part": "hand_l",
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e4": {
+            "id": "e4",
+            "template": "human_hungry",
+            "name": "e4",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": -50,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "agent": true,
+              "reach_cm": 100,
+              "hand_height_cm": 100,
+              "hand_carry_limit_g": 80000,
+              "attack_damage": 40,
+              "default_hit_part": "torso",
+              "bleed_damage": 5,
+              "bleed_every_ticks": 2,
+              "bleed_times": 3,
+              "hunger": 0,
+              "starvation": 0,
+              "hunger_every": 10
+            }
+          },
+          "e8": {
+            "id": "e8",
+            "template": "door",
+            "name": "e8",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 0,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true,
+              "open": false,
+              "from": "e1",
+              "to": "e9"
+            }
+          },
+          "e9": {
+            "id": "e9",
+            "template": "room",
+            "name": "room",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {}
+          },
+          "e31": {
+            "id": "e31",
+            "template": "chest",
+            "name": "e31",
+            "aliases": [],
+            "location": "e1",
+            "support": "e1",
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": {
+              "x": 90,
+              "y": 0
+            },
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "openable": true
+            }
+          }
+        },
+        "schedule": [
+          {
+            "due_tick": 10,
+            "kind": "process",
+            "entity": "e4",
+            "cause_id": null,
+            "process": "hunger"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "validate_duplicate_process",
+    "kind": "validate",
+    "snapshot": {
+      "version": 1,
+      "tick": 0,
+      "next_seq": 42,
+      "templates_hash": "x",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human_hungry",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 0,
+            "starvation": 0,
+            "hunger_every": 10
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        }
+      },
+      "schedule": [
+        {
+          "due_tick": 10,
+          "kind": "process",
+          "entity": "e4",
+          "cause_id": "ev41",
+          "process": "hunger"
+        },
+        {
+          "due_tick": 10,
+          "kind": "process",
+          "entity": "e4",
+          "cause_id": "ev41",
+          "process": "hunger"
+        }
+      ]
+    },
+    "issues": [
+      {
+        "code": "duplicate_process",
+        "path": [
+          "schedule",
+          "1"
+        ],
+        "message": "e4/hunger"
+      }
+    ]
+  },
+  {
+    "name": "validate_unnamed_process",
+    "kind": "validate",
+    "snapshot": {
+      "version": 1,
+      "tick": 0,
+      "next_seq": 42,
+      "templates_hash": "x",
+      "coverage": {
+        "relations": [
+          "support",
+          "contained_in",
+          "location",
+          "near",
+          "reachable"
+        ],
+        "senses": [
+          "sight",
+          "hearing"
+        ],
+        "properties": [
+          "integrity",
+          "residue",
+          "pos"
+        ]
+      },
+      "entities": {
+        "e1": {
+          "id": "e1",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "lit": true
+          }
+        },
+        "e2": {
+          "id": "e2",
+          "template": "table",
+          "name": "e2",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 30,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "surface": true
+          }
+        },
+        "e3": {
+          "id": "e3",
+          "template": "bottle",
+          "name": "e3",
+          "aliases": [],
+          "location": "e1",
+          "support": null,
+          "contained_in": "e4",
+          "in_part": "hand_l",
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e4": {
+          "id": "e4",
+          "template": "human_hungry",
+          "name": "e4",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": -50,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "agent": true,
+            "reach_cm": 100,
+            "hand_height_cm": 100,
+            "hand_carry_limit_g": 80000,
+            "attack_damage": 40,
+            "default_hit_part": "torso",
+            "bleed_damage": 5,
+            "bleed_every_ticks": 2,
+            "bleed_times": 3,
+            "hunger": 0,
+            "starvation": 0,
+            "hunger_every": 10
+          }
+        },
+        "e8": {
+          "id": "e8",
+          "template": "door",
+          "name": "e8",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          }
+        },
+        "e9": {
+          "id": "e9",
+          "template": "room",
+          "name": "room",
+          "aliases": [],
+          "location": null,
+          "support": null,
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": null,
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {}
+        },
+        "e31": {
+          "id": "e31",
+          "template": "chest",
+          "name": "e31",
+          "aliases": [],
+          "location": "e1",
+          "support": "e1",
+          "contained_in": null,
+          "in_part": null,
+          "concealed_by": null,
+          "pos": {
+            "x": 90,
+            "y": 0
+          },
+          "detached_from": null,
+          "integrity": 100,
+          "status": "intact",
+          "parts": {},
+          "residue": {},
+          "modifiers": [],
+          "props": {
+            "openable": true
+          }
+        }
+      },
+      "schedule": [
+        {
+          "due_tick": 10,
+          "kind": "process",
+          "entity": "e4",
+          "cause_id": "ev41",
+          "process": "hunger"
+        },
+        {
+          "due_tick": 20,
+          "kind": "process",
+          "entity": "e4",
+          "cause_id": "e1",
+          "process": ""
+        }
+      ]
+    },
+    "issues": [
+      {
+        "code": "invalid_process",
+        "path": [
+          "schedule",
+          "1"
+        ],
+        "message": ""
+      }
+    ]
+  }
+]

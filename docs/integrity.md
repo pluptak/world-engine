@@ -6,7 +6,7 @@ A template with no `parts` may declare `max_integrity`, a top-level integer from
 field, and refused when the set loads if the template has parts or the value is out of range.
 
 **Rule.** A partless entity whose `integrity` is above its template's max is
-`integrity_out_of_range` (`src/engine/validate.ts`). An `edit` spawn that sets it so is refused that
+`integrity_out_of_range` (`SnapshotValidation.cs`). An `edit` spawn that sets it so is refused that
 code. A scenario entry may not write integrity at all ([forms.md](forms.md)): its `condition`
 `intact` is the max, `damaged` half of it, which is 100 and 50 for a template with no max.
 

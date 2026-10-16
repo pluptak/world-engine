@@ -1,39 +1,57 @@
 # The library API
 
-`src/api.ts` is the whole public surface: `createWorld(dir, scenario)` (a list of
-entries, or a scene, [scenario.md](scenario.md)), `openWorld(dir, options?)`, `restartWorld(from, to)`
-([restart.md](restart.md)), and `memoryWorld(snapshot)`
-return a `World` with `command`, `edit`, `check`, `options`, `since`, `attempts`, `trace`,
-`schedule` ([schedule-api.md](schedule-api.md)), `beat`, `round` ([rounds.md](rounds.md)),
-`upgradeTemplates`, `verify`, `query`, `observe` and `inspect` ([projection.md](projection.md)),
-`snapshot`, `entity`, `catalog` ([catalog.md](catalog.md)), `id` and `fork`. `verbs()` is the
-verb catalog and `ENGINE_CAPABILITIES` what the engine computes; the CLI answers both
-(`op` `verbs`, `capabilities`).
+A world is an `IWorld` (`Core/Engine/Worlds/IWorld.cs`): `StoreWorld.Open(dir)` opens a stored one
+([persistence.md](persistence.md)), which `WorldBuilder.Snapshot(scenario, registry, coverage?)` and
+`WorldBuilder.Create(dir, …)` make from a scenario ([scenario.md](scenario.md)); `new
+MemoryWorld(snapshot, registry, templatesHash, names?)` holds one in memory ([fork.md](fork.md)).
 
-**The CLI describes itself.** `{ "op": "schema" }` needs no world and answers
-`{ json_schema: "2020-12", request, responses, failure }`: `z.toJSONSchema` of `RequestSchema`
-(one `oneOf` branch per op, each with its `op` as a `const`), of the schema each op answers
-with, keyed by op, and of `{ status: "invalid", issues }`, which any op gives to a request
-it refuses. A caller in another language, or one generating tool definitions, reads that
-instead of `src/contract.ts`. `RESPONSES` in `src/contract.ts` is the table behind it (the
-compiler holds it to one entry per op), and `ResponseSchema`, which the CLI checks every
-answer against, is the union of its values and the failure. `tests/contract.test.ts` parses
-a real answer to every op with its own entry. Store worlds share a directory, so handles see
-each other; memory worlds hold their own. A missing directory, a changed hash, or a bad
-version is a `WorldError` with a code.
+Both answer `Apply` (a command), `Edit`, `Check`, `OptionsFor`, `Since`, `Attempts`, `TraceOf`,
+`Scheduled` ([schedule-api.md](schedule-api.md)), `Beat`, `TakeRound` ([rounds.md](rounds.md)),
+`QueryFact`, `QueryPerceive`, `Observe` and `Inspect` ([projection.md](projection.md)),
+`CurrentSnapshot`, `EntityOf`, `CatalogEntries` ([catalog.md](catalog.md)), `Id` and `Verify`.
+`WorldUpgrade.UpgradeTemplates` moves a stored world to a new set. `VerbRegistry.Catalog()` is the
+verb catalog and `Capabilities` what the engine computes; the CLI answers both (`op` `verbs`,
+`capabilities`), and each other op is one of the calls above (`CliRunner`).
 
-- `beat` runs commands in array order against one shared base, one log line each, each with its
+**The CLI checks a request before it runs it.** Each op has a shape (`Checks` in
+`WorldEngine.Contract`): its members, their types, no member beyond them. A request that does not
+fit is answered `{ status: "invalid", issues }` with `invalid_request` and exit code 2, and nothing
+is run for it. A request, a scenario file and a coverage file are read as values first: every
+number is whole, a null member is the same as an absent one, and a null in a list or a fraction
+anywhere (an edit or a scenario's `fuel_pct` included) does not fit. Otherwise the inside of an
+edit, `args` or a prop is read by the engine, which refuses with its own codes. Store worlds share
+a directory, so handles see each other; memory worlds hold their own. A missing directory, a
+changed hash, or a bad version is a `WorldError` with a code.
+
+- `Beat` runs commands in array order against one shared base, one log line each, each with its
   status, so a command an earlier one made fail is `preempted`.
-- `trace` follows `cause_id` root-first from an event, or from the last delta of an entity field,
+- `TraceOf` follows `cause_id` root-first from an event, or from the last delta of an entity field,
   else its spawn; an initial entity's field has an empty chain, and a memory world answers
   `history_unavailable` for what predates it.
 - `perceivers: true` on a command or edit names who sensed each of its events.
-- `createWorld` and `memoryWorld` take an optional `coverage`, which the world's initial snapshot
-  declares in place of `defaultCoverage()`; a category it leaves out answers `unknown`.
-  They also take an optional `seed` for the world's dice, and without one anything that rolls
-  is refused `no_seed` ([rng.md](rng.md)).
-- `openWorld(dir, { snapshotEvery, checkpointEvery })` sets how often this handle writes `snapshot.json`
-  (default 32) and a checkpoint (default 256): whole numbers from 1, else a `TypeError`. Nothing stores it.
-- `restartWorld(from, to)` makes a world at `to` from `from`'s `initial.json` and frozen
-  `templates.json` ([restart.md](restart.md)); `world_exists` when `to` holds one, `no_such_world`
-  when `from` holds none.
+- `WorldBuilder.Snapshot` and `init` take an optional coverage, which the world's initial snapshot
+  declares in place of `WorldBuilder.DefaultCoverage`; a category it leaves out answers `unknown`.
+  A scene's `seed` seeds the world's dice; without one anything that rolls is refused `no_seed`
+  ([rng.md](rng.md)).
+- `StoreWorld.Open`'s `snapshotEvery` and `checkpointEvery` set how often this handle writes
+  `snapshot.json` (default 32) and a checkpoint (default 256). Nothing stores them.
+- `WorldBuilder.Restart(from, to)` makes a world at `to` from `from`'s `initial.json` and
+  `templates.json` ([restart.md](restart.md)).
+- The template library ([library.md](library.md)) is four ops, each naming `library`:
+  `template_list` answers `{ templates: [{ id, latest, revisions }] }`;
+  `template_get { id, revision? }` answers `{ template }`, else `unknown_template`
+  or `no_such_revision`; `template_put { template }` answers `{ revision }`, else
+  `invalid_templates`; `template_delete { id }` answers `{ id }`, else
+  `unknown_template` or `invalid_templates`. Its worlds are four more:
+  `world_add { name, scenario }` answers `{ name, revision }`, else `world_exists`,
+  `invalid_world`, `invalid_scenario` or `invalid_templates`; `world_edit` the same,
+  else `no_such_world`; `world_get { name, revision? }` answers `{ name, revision,
+  scenario, manifest }`, else `no_such_world` or `no_such_revision`; `world_list`
+  answers `{ worlds: [{ name, revisions }] }`. Runs from a world revision are five
+  more: `run_plan { world, revision? }` answers `{ world, revision, newer, added }`;
+  `run_start { world, revision?, run, use? }` answers `{ run, snapshot_version }`,
+  else `world_exists`, `invalid_templates` or `no_such_revision`;
+  `run_list { world }` answers `{ runs: [{ run, world_revision }] }`;
+  `world_delete { name }` answers `{ name }`, else `no_such_world`;
+  `template_revision_delete { id, revision }` answers `{ id, revision }`, else
+  `revision_in_use`, `unknown_template` or `no_such_revision`.

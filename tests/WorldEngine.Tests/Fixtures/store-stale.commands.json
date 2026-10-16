@@ -1,0 +1,67 @@
+[
+  {
+    "command": {
+      "command_id": "s1",
+      "actor": "e2",
+      "verb": "take",
+      "target": "stone"
+    },
+    "based_on": null
+  },
+  {
+    "command": {
+      "command_id": "s2",
+      "actor": "e2",
+      "verb": "take",
+      "target": "stone"
+    },
+    "based_on": 0
+  },
+  {
+    "command": {
+      "command_id": "s3",
+      "actor": "e2",
+      "verb": "take",
+      "target": "stone"
+    },
+    "based_on": 1
+  },
+  {
+    "command": {
+      "command_id": "s4",
+      "actor": "e2",
+      "verb": "say",
+      "args": {
+        "utterance": "hi"
+      }
+    },
+    "based_on": 0
+  },
+  {
+    "command": {
+      "command_id": "s5",
+      "actor": "e2",
+      "verb": "drop",
+      "target": "stone"
+    },
+    "based_on": 0
+  },
+  {
+    "command": {
+      "command_id": "s6",
+      "actor": "e2",
+      "verb": "take",
+      "target": "lamp"
+    },
+    "based_on": 99
+  },
+  {
+    "command": {
+      "command_id": "s7",
+      "actor": "e2",
+      "verb": "take",
+      "target": "lamp"
+    },
+    "based_on": -1
+  }
+]

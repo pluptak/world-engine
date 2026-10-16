@@ -1,0 +1,151 @@
+[
+  {
+    "command_id": "m1",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "to": {
+        "x": -20,
+        "y": 10
+      }
+    }
+  },
+  {
+    "command_id": "m2",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "to": {
+        "x": 900,
+        "y": 0
+      }
+    }
+  },
+  {
+    "command_id": "m3",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "location": "e9"
+    }
+  },
+  {
+    "command_id": "m4",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "through": "door"
+    }
+  },
+  {
+    "command_id": "m5",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "location": "e2"
+    }
+  },
+  {
+    "command_id": "m6",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "location": "nowhere"
+    }
+  },
+  {
+    "command_id": "m7",
+    "actor": "e4",
+    "verb": "move"
+  },
+  {
+    "command_id": "m8",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "to": {
+        "x": "a",
+        "y": 0
+      }
+    }
+  },
+  {
+    "command_id": "m9",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "through": "e5"
+    }
+  },
+  {
+    "command_id": "m10",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "through": "nobody"
+    }
+  },
+  {
+    "command_id": "m11",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "to": {
+        "x": -50,
+        "y": 0
+      }
+    }
+  },
+  {
+    "command_id": "m12",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "location": "e1"
+    }
+  },
+  {
+    "command_id": "m13",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "to": {
+        "x": 0,
+        "y": 0
+      },
+      "location": "e9"
+    }
+  },
+  {
+    "command_id": "m14",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "location": "e9"
+    }
+  },
+  {
+    "command_id": "m15",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "through": "door"
+    }
+  },
+  {
+    "command_id": "m16",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "through": "hatch"
+    }
+  },
+  {
+    "command_id": "m17",
+    "actor": "e4",
+    "verb": "move",
+    "args": {
+      "through": ""
+    }
+  }
+]

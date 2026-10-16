@@ -1,0 +1,9 @@
+{
+  "id": "camera",
+  "size_cm": { "w": 10, "d": 10, "h": 10 },
+  "mass_g": 500,
+  "parts": [],
+  "props": { "camera": true },
+  "break_products": [],
+  "break_residue": {}
+}

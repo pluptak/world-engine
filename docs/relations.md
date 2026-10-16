@@ -16,25 +16,25 @@ present, history does not, and a key's `opens` may dangle. `any` means the targe
 | `props.powered_by` | any | — | no | yes | refused | — | R8 | T9 |
 | `props.controlled_by` | any | — | no | yes | refused | — | R8 | T9 |
 
-R1 — `validateSnapshot`: `support_and_contained_in`, `support_or_containment_cycle`,
+R1 — `SnapshotValidation`: `support_and_contained_in`, `support_or_containment_cycle`,
 `dangling_reference`; a room support also needs a `pos`, a room is never placed
 (`room_placed`), and `put` refuses a loop. What sits in a container that declares
 `inner_*_cm` fits them (`container_contents_too_large`, as `put` refuses `too_large`).
-R2 — `validateSnapshot`: `location_mismatch`; `remove` refuses `occupied_room`.
+R2 — `SnapshotValidation`: `location_mismatch`; `remove` refuses `occupied_room`.
 R3 — never a link: `detached_from` is history and may name a removed origin; the rule on the part
 that left is `detached_part_without_entity`, accounted for back along `detached_from`.
-R4 — `validateSnapshot` on an entity with a string `from` or `to`:
+R4 — `SnapshotValidation` on an entity with a string `from` or `to`:
 `door_side_not_room`, else `dangling_reference`.
-R5 — `validateSnapshot`: `opens_target_not_openable`; a name reaching nothing is left alone.
-R6 — `validateSnapshot`: `concealed_by_abstract` (neither end a mark),
+R5 — `SnapshotValidation`: `opens_target_not_openable`; a name reaching nothing is left alone.
+R6 — `SnapshotValidation`: `concealed_by_abstract` (neither end a mark),
 `concealed_by_not_same_room`, `concealed_by_cycle`, `dangling_reference`. Moving either end clears
 it under a `revealed` event.
-R7 — `validateSnapshot`: `in_part_holder_mismatch` (set exactly when the holder declares holding
+R7 — `SnapshotValidation`: `in_part_holder_mismatch` (set exactly when the holder declares holding
 parts), `in_part_unknown_part`, `in_part_unavailable`, `grip_occupied`, `part_contents_too_large`.
 A removed holder passes the item on as R1 does; it keeps its part only if the new holder declares
 it, else takes a free grip ([carrying.md](carrying.md)).
-R8 — `validateSnapshot`: `dangling_reference`, `power_loop`, `control_loop`; a destroyed link
+R8 — `SnapshotValidation`: `dangling_reference`, `power_loop`, `control_loop`; a destroyed link
 stays and breaks the walk ([power.md](power.md)).
 
 T0–T9 name the tests that pin each row: [relation-tests.md](relation-tests.md). Every rule above
-is a code `edit` refuses with; the property tests aim an edit at each of them.
+is a code `edit` refuses with; the property traces aim an edit at each of them.

@@ -1,0 +1,5 @@
+{
+  "id": "locked_chest",
+  "extends": "chest",
+  "props": { "openable": true, "locked": true }
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "command_id": "b1",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 1
+    }
+  },
+  {
+    "command_id": "b2",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 3
+    }
+  },
+  {
+    "command_id": "b3",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 6
+    }
+  },
+  {
+    "command_id": "b4",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 2
+    }
+  }
+]

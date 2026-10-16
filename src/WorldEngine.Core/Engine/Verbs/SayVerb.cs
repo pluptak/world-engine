@@ -1,0 +1,58 @@
+using System.Text.RegularExpressions;
+using WorldEngine.Core.Model;
+
+namespace WorldEngine.Core.Engine;
+
+// The say verb (src/engine/verbs/say.ts): an actor speaks a token the caller made up and keeps the text of. The engine
+// stores the token and its volume on the speaker's event, and never interprets it, so no prose crosses the boundary
+// (docs/speech.md). Saying changes no state; the event is the whole of it, and an addressee is named as a fact of the act.
+public static class SayVerb
+{
+    public static Pipeline.VerbDecl Say { get; } = new(
+        RequiresTarget: false,
+        AuthorOnly: false,
+        Preconditions: Preconditions,
+        OneTick: true,
+        FreeArgs: true,
+        Requires: [new Pipeline.Requirement(Capacity.Speech, 50)],
+        RootEvent: RootEvent);
+
+    // `\z`, not `$`: a trailing newline is not part of a token.
+    internal static readonly Regex Utterance = new(@"^[A-Za-z0-9_.:-]{1,64}\z", RegexOptions.CultureInvariant);
+
+    public static readonly IReadOnlyList<string> Volumes = ["whisper", "normal", "shout"];
+
+    private static Pipeline.Refusal? Preconditions(Pipeline.CommandContext context)
+    {
+        var args = context.Command.Args;
+        var utterance = Text(args, "utterance");
+        if (utterance is null || !Utterance.IsMatch(utterance) || VolumeOf(args) is null)
+        {
+            return Pipeline.Invalid(Code.InvalidArgs);
+        }
+        return Pipeline.RequirementRefusal(context);
+    }
+
+    // The speaker's event carries the token, its volume (normal when none is named), and the addressee when there is one.
+    private static (string Entity, Value.Map Data) RootEvent(Pipeline.CommandContext context)
+    {
+        var data = Pipeline.Reason(
+            ("utterance", Text(context.Command.Args, "utterance")),
+            ("volume", VolumeOf(context.Command.Args) ?? "normal"),
+            ("to", context.Target?.EntityId));
+        return (context.Command.Actor, data);
+    }
+
+    // The volume the command names, normal when it names none; null when it names one the verb does not know.
+    private static string? VolumeOf(Value.Map? args)
+    {
+        if (args?.GetValueOrDefault("volume") is not { } node)
+        {
+            return "normal";
+        }
+        return node.AsText() is { } volume && Volumes.Contains(volume) ? volume : null;
+    }
+
+    // An argument that is a string, or null when it is absent or not one.
+    private static string? Text(Value.Map? args, string key) => args?.GetValueOrDefault(key).AsText();
+}

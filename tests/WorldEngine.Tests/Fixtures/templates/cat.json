@@ -1,0 +1,16 @@
+{
+  "id": "cat",
+  "extends": "quadruped",
+  "size_cm": { "w": 45, "d": 15, "h": 25 },
+  "mass_g": 4000,
+  "props": { "reach_cm": 40, "carry_limit_g": 1000, "bite_damage": 8 },
+  "part_overrides": {
+    "head": { "max_integrity": 60 },
+    "jaw": { "max_integrity": 20 },
+    "leg_fl": { "max_integrity": 60 },
+    "leg_fr": { "max_integrity": 60 },
+    "leg_bl": { "max_integrity": 60 },
+    "leg_br": { "max_integrity": 60 },
+    "tail": { "max_integrity": 10 }
+  }
+}

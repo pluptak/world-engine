@@ -1,0 +1,296 @@
+[
+  {
+    "snapshot": "attack-held",
+    "command": {
+      "command_id": "h1",
+      "actor": "e4",
+      "verb": "say",
+      "args": {
+        "utterance": "hello"
+      }
+    },
+    "perceivers": [
+      {
+        "event_id": "ev90",
+        "perceivers": {
+          "sight": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "hearing": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "smell": [],
+          "touch": [
+            "e4"
+          ],
+          "unknown_senses": []
+        }
+      }
+    ]
+  },
+  {
+    "snapshot": "attack-held",
+    "command": {
+      "command_id": "h2",
+      "actor": "e4",
+      "verb": "say",
+      "args": {
+        "utterance": "psst",
+        "volume": "whisper"
+      }
+    },
+    "perceivers": [
+      {
+        "event_id": "ev90",
+        "perceivers": {
+          "sight": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "hearing": [
+            "e20",
+            "e4",
+            "e55"
+          ],
+          "smell": [],
+          "touch": [
+            "e4"
+          ],
+          "unknown_senses": []
+        }
+      }
+    ]
+  },
+  {
+    "snapshot": "attack-held",
+    "command": {
+      "command_id": "h3",
+      "actor": "e4",
+      "verb": "say",
+      "args": {
+        "utterance": "hey",
+        "volume": "shout"
+      }
+    },
+    "perceivers": [
+      {
+        "event_id": "ev90",
+        "perceivers": {
+          "sight": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "hearing": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "smell": [],
+          "touch": [
+            "e4"
+          ],
+          "unknown_senses": []
+        }
+      }
+    ]
+  },
+  {
+    "snapshot": "attack-held",
+    "command": {
+      "command_id": "h4",
+      "actor": "e20",
+      "verb": "say",
+      "args": {
+        "utterance": "hi"
+      }
+    },
+    "perceivers": [
+      {
+        "event_id": "ev90",
+        "perceivers": {
+          "sight": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "hearing": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "smell": [],
+          "touch": [
+            "e20"
+          ],
+          "unknown_senses": []
+        }
+      }
+    ]
+  },
+  {
+    "snapshot": "attack-held",
+    "command": {
+      "command_id": "h5",
+      "actor": "e4",
+      "verb": "attack",
+      "target": "e5"
+    },
+    "perceivers": [
+      {
+        "event_id": "ev90",
+        "perceivers": {
+          "sight": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "hearing": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "smell": [],
+          "touch": [],
+          "unknown_senses": []
+        }
+      },
+      {
+        "event_id": "ev91",
+        "perceivers": {
+          "sight": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "hearing": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "smell": [],
+          "touch": [],
+          "unknown_senses": []
+        }
+      }
+    ]
+  },
+  {
+    "snapshot": "attack-held",
+    "command": {
+      "command_id": "h6",
+      "actor": "e55",
+      "verb": "attack",
+      "target": "e20.hand_l"
+    },
+    "perceivers": [
+      {
+        "event_id": "ev90",
+        "perceivers": {
+          "sight": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "hearing": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "smell": [],
+          "touch": [
+            "e20"
+          ],
+          "unknown_senses": []
+        }
+      },
+      {
+        "event_id": "ev91",
+        "perceivers": {
+          "sight": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "hearing": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "smell": [],
+          "touch": [
+            "e20"
+          ],
+          "unknown_senses": []
+        }
+      },
+      {
+        "event_id": "ev92",
+        "perceivers": {
+          "sight": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "hearing": [],
+          "smell": [],
+          "touch": [
+            "e20"
+          ],
+          "unknown_senses": []
+        }
+      }
+    ]
+  },
+  {
+    "snapshot": "attack-held",
+    "command": {
+      "command_id": "h7",
+      "actor": "e4",
+      "verb": "wait",
+      "args": {
+        "ticks": 2
+      }
+    },
+    "perceivers": [
+      {
+        "event_id": "ev90",
+        "perceivers": {
+          "sight": [
+            "e20",
+            "e21",
+            "e4",
+            "e55"
+          ],
+          "hearing": [],
+          "smell": [],
+          "touch": [
+            "e4"
+          ],
+          "unknown_senses": []
+        }
+      }
+    ]
+  }
+]

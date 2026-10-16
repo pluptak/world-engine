@@ -1,0 +1,80 @@
+[
+  {
+    "command_id": "w1",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 1
+    }
+  },
+  {
+    "command_id": "w2",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 5
+    }
+  },
+  {
+    "command_id": "w3",
+    "actor": "e4",
+    "verb": "wait"
+  },
+  {
+    "command_id": "w4",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 0
+    }
+  },
+  {
+    "command_id": "w5",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": -2
+    }
+  },
+  {
+    "command_id": "w6",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 1.5
+    }
+  },
+  {
+    "command_id": "w7",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": "3"
+    }
+  },
+  {
+    "command_id": "w8",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "until": "later",
+      "ticks": 2
+    }
+  },
+  {
+    "command_id": "w9",
+    "actor": "e5",
+    "verb": "wait",
+    "args": {
+      "ticks": 1
+    }
+  },
+  {
+    "command_id": "w10",
+    "actor": "e4",
+    "verb": "wait",
+    "args": {
+      "ticks": 2
+    }
+  }
+]

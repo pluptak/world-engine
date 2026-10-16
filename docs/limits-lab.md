@@ -2,10 +2,9 @@
 
 What `scenarios/lab.json` (eight subjects, a corridor, a lab, a server room, an exit door locked
 with its key in the lab, controlled by the AI's terminal over a cable from a generator, and an
-experiment's stage) could not say, and what the
-engine does instead. One line per limit, with the step of `tests/scenario-lab.test.ts` that shows
-it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
-`tests/acceptance-lab.test.ts`, beside the scenario test.
+experiment's stage) could not say, and what the engine does instead. One line per limit, with the
+step of the lab script that shows it. Nothing here is a proposal. The lab's acceptance rows are a
+script of their own beside it.
 
 - Nothing is the AI: an agent is a body, so the terminal is one more agent with sight, hearing and
   speech, and who it acts for, and what losing it means, is the caller's (A).
@@ -27,7 +26,7 @@ it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
   no escape moves it, and a subject's `edit` is `invalid_author` (F). A watch reads its condition at
   most once a tick, so a condition that holds and lapses within one command is missed (I).
 - An experiment no one perceives: an abstract entity answers sight `false` / `abstract`, so the
-  stage is read through the trusted `World`, never through a view, the terminal's included (F).
+  stage is read through the trusted world, never through a view, the terminal's included (F).
 - An open door blocks its footprint: only a barrier stands open to walking, so no subject can
   stand in a doorway to keep it from shutting; one the author puts there is moved aside (G).
 - The exit door jams a quarter of the time: the terminal's command may be lost to the world's dice,
@@ -40,8 +39,8 @@ it. Nothing here is a proposal. The lab's acceptance rows, one test each, are in
 ## As a run
 
 The lab played as a run (`scenarios/lab-run.json`: the same entities, nine slots, a pool of two, a
-queued deadline, the door's odds steered within 10 to 50, a tick limit of 60), one test per row of
-`tests/acceptance-lab-run.test.ts`. What the run could not say:
+queued deadline, the door's odds steered within 10 to 50, a tick limit of 60), one row each of its
+acceptance script. What the run could not say:
 
 - The odds show only as an earlier jam, and the AI learns of it only through the camera, never why:
   steered to 50, the first jam falls on the sixth remote command instead of the ninth (row 4).

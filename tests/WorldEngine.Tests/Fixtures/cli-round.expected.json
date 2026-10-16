@@ -1,0 +1,85 @@
+[
+  {
+    "request": {
+      "op": "beat",
+      "world": "{WORLD}",
+      "commands": [
+        {
+          "command_id": "b1",
+          "actor": "e2",
+          "verb": "take",
+          "target": "stone"
+        },
+        {
+          "command_id": "b2",
+          "actor": "e2",
+          "verb": "say",
+          "args": {
+            "utterance": "beat",
+            "volume": "normal"
+          }
+        }
+      ]
+    },
+    "stdout": "{\"results\":[{\"command_id\":\"b1\",\"deltas\":[{\"entity\":\"e3\",\"event_id\":\"ev13\",\"field\":\"contained_in\",\"from\":null,\"to\":\"e2\"},{\"entity\":\"e3\",\"event_id\":\"ev13\",\"field\":\"in_part\",\"from\":null,\"to\":\"hand_l\"},{\"entity\":\"e3\",\"event_id\":\"ev13\",\"field\":\"support\",\"from\":\"e1\",\"to\":null},{\"entity\":\"e3\",\"event_id\":\"ev13\",\"field\":\"pos\",\"from\":{\"x\":0,\"y\":0},\"to\":null}],\"events\":[{\"cause_id\":null,\"command_id\":\"b1\",\"data\":{},\"entity\":\"e3\",\"event_id\":\"ev12\",\"tick\":4,\"type\":\"take\"},{\"cause_id\":\"ev12\",\"command_id\":\"b1\",\"data\":{},\"entity\":\"e3\",\"event_id\":\"ev13\",\"tick\":4,\"type\":\"moved\"}],\"resolved_target\":\"e3\",\"snapshot_version\":5,\"status\":\"ok\"},{\"command_id\":\"b2\",\"deltas\":[],\"events\":[{\"cause_id\":null,\"command_id\":\"b2\",\"data\":{\"utterance\":\"beat\",\"volume\":\"normal\"},\"entity\":\"e2\",\"event_id\":\"ev14\",\"tick\":5,\"type\":\"say\"}],\"resolved_target\":null,\"snapshot_version\":6,\"status\":\"ok\"}]}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "round",
+      "world": "{WORLD}",
+      "moves": [
+        {
+          "command_id": "r1",
+          "actor": "e2",
+          "verb": "drop",
+          "target": "stone"
+        }
+      ]
+    },
+    "stdout": "{\"closing\":{\"command_id\":\"round-1-close\",\"deltas\":[],\"events\":[{\"cause_id\":null,\"command_id\":\"round-1-close\",\"data\":{},\"entity\":\"world\",\"event_id\":\"ev17\",\"tick\":6,\"type\":\"advance\"}],\"resolved_target\":null,\"snapshot_version\":8,\"status\":\"ok\"},\"results\":[{\"command_id\":\"r1\",\"deltas\":[{\"entity\":\"e3\",\"event_id\":\"ev16\",\"field\":\"contained_in\",\"from\":\"e2\",\"to\":null},{\"entity\":\"e3\",\"event_id\":\"ev16\",\"field\":\"in_part\",\"from\":\"hand_l\",\"to\":null},{\"entity\":\"e3\",\"event_id\":\"ev16\",\"field\":\"support\",\"from\":null,\"to\":\"e1\"},{\"entity\":\"e3\",\"event_id\":\"ev16\",\"field\":\"pos\",\"from\":null,\"to\":{\"x\":0,\"y\":0}}],\"events\":[{\"cause_id\":null,\"command_id\":\"r1\",\"data\":{},\"entity\":\"e3\",\"event_id\":\"ev15\",\"tick\":6,\"type\":\"drop\"},{\"cause_id\":\"ev15\",\"command_id\":\"r1\",\"data\":{\"fall_cm\":100},\"entity\":\"e3\",\"event_id\":\"ev16\",\"tick\":6,\"type\":\"dropped\"}],\"resolved_target\":\"e3\",\"snapshot_version\":7,\"status\":\"ok\"}],\"round\":1,\"status\":\"ok\"}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "round",
+      "world": "{WORLD}",
+      "moves": [
+        {
+          "command_id": "r2",
+          "actor": "e2",
+          "verb": "take",
+          "target": "stone"
+        },
+        {
+          "command_id": "r3",
+          "actor": "e2",
+          "verb": "say",
+          "args": {
+            "utterance": "twice",
+            "volume": "normal"
+          }
+        }
+      ]
+    },
+    "stdout": "{\"reason_code\":\"duplicate_actor\",\"results\":[],\"status\":\"invalid\"}\n",
+    "status": 2
+  },
+  {
+    "request": {
+      "op": "beat",
+      "world": "{WORLD}",
+      "commands": [
+        {
+          "command_id": "b3",
+          "actor": "e2",
+          "verb": "drop",
+          "target": "stone"
+        }
+      ],
+      "based_on_version": 0
+    },
+    "stdout": "{\"results\":[{\"command_id\":\"b3\",\"deltas\":[],\"events\":[],\"reason_code\":\"not_carried\",\"resolved_target\":\"e3\",\"snapshot_version\":8,\"status\":\"refused\"}]}\n",
+    "status": 0
+  }
+]

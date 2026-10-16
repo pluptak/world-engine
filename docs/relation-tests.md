@@ -1,19 +1,18 @@
 # Relation tests
 
-The tests that pin each row of [relations.md](relations.md), by its T label.
+The tests that pin each row of [relations.md](relations.md), by its T label. Each replays
+TypeScript's recorded answers.
 
-T0 `validate.test.ts` "each rule fires on a snapshot wrong in exactly one way".
-T1 T0; `edit.test.ts` "removing the table under the bottle produces the break chain caused by the
-edit"; `scenario-hand.test.ts` "detaching a chair leg creates a supported part entity".
-T2 `put.test.ts` "an item put into a container is contained with no support or position";
-`scenario-hand.test.ts` "a holder who loses all manipulation drops carried items".
-T3 T0; `edit.test.ts` "edits that break snapshot invariants are refused and change nothing".
-T4 `edit.test.ts` "a detached part outlives its origin, but not the other way round".
-T5 `validate.test.ts` "a wrong kind on a door side or on a key's opens is refused; a door's rooms
-cannot go", and "a door to a removed room names the dangling prop".
-T6 `validate.test.ts` "removing a chest leaves the key that opened it valid"; T5's first test too.
-T7 `validate.test.ts` "a concealer shares the room, and neither end may be a mark";
-`conceal.test.ts` "an abstract entity can neither conceal nor be concealed".
-T8 `holders.test.ts` "each in_part rule fires on a snapshot wrong in exactly that way", "hands_full
-on a third item" and "hand loss drops its grip only".
-T9 `remote.test.ts` "a link must name something, and neither walk may loop".
+T0 `SnapshotValidationTests`: one variant of a valid world per rule, wrong in exactly that way.
+T1 T0 (`support_and_contained_in`, `support_or_containment_cycle`, `room_placed`); the `remove`
+and `place` rows of `EditTests`; the `loss` rows of `VerbGoldenTests` (support lost under a rider).
+T2 T0 (`container_contents_too_large`); the `put`, `take` and `drop` rows of `VerbGoldenTests`.
+T3 T0 (`location_mismatch`); the refused spawns and places of `EditTests`.
+T4 T0 (`detached_part_without_entity`, `part_under_detached`); the `set_part` rows of `EditTests`.
+T5 T0 (`door_side_not_room`, `dangling_reference`).
+T6 T0 (`opens_target_not_openable`).
+T7 T0 (`concealed_by_not_same_room`); `place_concealed` in `EditTests`, and `EngineQueryTests` (a
+rag concealed under the doorstop).
+T8 T0 (`in_part_holder_mismatch`, `in_part_unknown_part`); `CarryTests` and the `give` and `take`
+rows of `VerbGoldenTests`.
+T9 T0 (`power_loop`, `dangling_powered_by`).

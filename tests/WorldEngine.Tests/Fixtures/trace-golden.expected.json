@@ -1,0 +1,625 @@
+[
+  {
+    "name": "trace_event_chain",
+    "kind": "trace",
+    "input": {
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        },
+        {
+          "event_id": "ev41",
+          "cause_id": "ev40",
+          "command_id": "o1",
+          "tick": 0,
+          "type": "opened",
+          "entity": "e8",
+          "data": {}
+        }
+      ],
+      "deltas": [
+        {
+          "event_id": "ev41",
+          "entity": "e8",
+          "field": "props",
+          "from": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          },
+          "to": {
+            "openable": true,
+            "open": true,
+            "from": "e1",
+            "to": "e9"
+          }
+        }
+      ],
+      "query": {
+        "event_id": "ev41"
+      }
+    },
+    "result": {
+      "status": "ok",
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        },
+        {
+          "event_id": "ev41",
+          "cause_id": "ev40",
+          "command_id": "o1",
+          "tick": 0,
+          "type": "opened",
+          "entity": "e8",
+          "data": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "trace_event_root",
+    "kind": "trace",
+    "input": {
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        },
+        {
+          "event_id": "ev41",
+          "cause_id": "ev40",
+          "command_id": "o1",
+          "tick": 0,
+          "type": "opened",
+          "entity": "e8",
+          "data": {}
+        }
+      ],
+      "deltas": [
+        {
+          "event_id": "ev41",
+          "entity": "e8",
+          "field": "props",
+          "from": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          },
+          "to": {
+            "openable": true,
+            "open": true,
+            "from": "e1",
+            "to": "e9"
+          }
+        }
+      ],
+      "query": {
+        "event_id": "ev40"
+      }
+    },
+    "result": {
+      "status": "ok",
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "trace_field_changed",
+    "kind": "trace",
+    "input": {
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        },
+        {
+          "event_id": "ev41",
+          "cause_id": "ev40",
+          "command_id": "o1",
+          "tick": 0,
+          "type": "opened",
+          "entity": "e8",
+          "data": {}
+        }
+      ],
+      "deltas": [
+        {
+          "event_id": "ev41",
+          "entity": "e8",
+          "field": "props",
+          "from": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          },
+          "to": {
+            "openable": true,
+            "open": true,
+            "from": "e1",
+            "to": "e9"
+          }
+        }
+      ],
+      "query": {
+        "entity": "e8",
+        "field": "props"
+      }
+    },
+    "result": {
+      "status": "ok",
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        },
+        {
+          "event_id": "ev41",
+          "cause_id": "ev40",
+          "command_id": "o1",
+          "tick": 0,
+          "type": "opened",
+          "entity": "e8",
+          "data": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "trace_field_unchanged",
+    "kind": "trace",
+    "input": {
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        },
+        {
+          "event_id": "ev41",
+          "cause_id": "ev40",
+          "command_id": "o1",
+          "tick": 0,
+          "type": "opened",
+          "entity": "e8",
+          "data": {}
+        }
+      ],
+      "deltas": [
+        {
+          "event_id": "ev41",
+          "entity": "e8",
+          "field": "props",
+          "from": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          },
+          "to": {
+            "openable": true,
+            "open": true,
+            "from": "e1",
+            "to": "e9"
+          }
+        }
+      ],
+      "query": {
+        "entity": "e8",
+        "field": "pos"
+      }
+    },
+    "result": {
+      "status": "ok",
+      "events": []
+    }
+  },
+  {
+    "name": "trace_field_spawn",
+    "kind": "trace",
+    "input": {
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "s1",
+          "tick": 0,
+          "type": "edit",
+          "entity": "world",
+          "data": {}
+        },
+        {
+          "event_id": "ev42",
+          "cause_id": "ev40",
+          "command_id": "s1",
+          "tick": 0,
+          "type": "spawned",
+          "entity": "e41",
+          "data": {
+            "template": "bottle"
+          }
+        }
+      ],
+      "deltas": [
+        {
+          "event_id": "ev42",
+          "entity": "e41",
+          "field": "entity",
+          "from": null,
+          "to": {
+            "id": "e41",
+            "template": "bottle",
+            "name": "bottle",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "topples": true,
+              "break_fall_cm": 50,
+              "liquid_material": "wine",
+              "capacity_cm3": 750,
+              "liquid_amount": 750,
+              "liquid_nutrition": 10
+            }
+          }
+        }
+      ],
+      "query": {
+        "entity": "e41",
+        "field": "entity"
+      }
+    },
+    "result": {
+      "status": "ok",
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "s1",
+          "tick": 0,
+          "type": "edit",
+          "entity": "world",
+          "data": {}
+        },
+        {
+          "event_id": "ev42",
+          "cause_id": "ev40",
+          "command_id": "s1",
+          "tick": 0,
+          "type": "spawned",
+          "entity": "e41",
+          "data": {
+            "template": "bottle"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "trace_field_of_spawned_props",
+    "kind": "trace",
+    "input": {
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "s1",
+          "tick": 0,
+          "type": "edit",
+          "entity": "world",
+          "data": {}
+        },
+        {
+          "event_id": "ev42",
+          "cause_id": "ev40",
+          "command_id": "s1",
+          "tick": 0,
+          "type": "spawned",
+          "entity": "e41",
+          "data": {
+            "template": "bottle"
+          }
+        }
+      ],
+      "deltas": [
+        {
+          "event_id": "ev42",
+          "entity": "e41",
+          "field": "entity",
+          "from": null,
+          "to": {
+            "id": "e41",
+            "template": "bottle",
+            "name": "bottle",
+            "aliases": [],
+            "location": null,
+            "support": null,
+            "contained_in": null,
+            "in_part": null,
+            "concealed_by": null,
+            "pos": null,
+            "detached_from": null,
+            "integrity": 100,
+            "status": "intact",
+            "parts": {},
+            "residue": {},
+            "modifiers": [],
+            "props": {
+              "topples": true,
+              "break_fall_cm": 50,
+              "liquid_material": "wine",
+              "capacity_cm3": 750,
+              "liquid_amount": 750,
+              "liquid_nutrition": 10
+            }
+          }
+        }
+      ],
+      "query": {
+        "entity": "e41",
+        "field": "props"
+      }
+    },
+    "result": {
+      "status": "ok",
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "s1",
+          "tick": 0,
+          "type": "edit",
+          "entity": "world",
+          "data": {}
+        },
+        {
+          "event_id": "ev42",
+          "cause_id": "ev40",
+          "command_id": "s1",
+          "tick": 0,
+          "type": "spawned",
+          "entity": "e41",
+          "data": {
+            "template": "bottle"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "trace_unknown_field",
+    "kind": "trace",
+    "input": {
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        },
+        {
+          "event_id": "ev41",
+          "cause_id": "ev40",
+          "command_id": "o1",
+          "tick": 0,
+          "type": "opened",
+          "entity": "e8",
+          "data": {}
+        }
+      ],
+      "deltas": [
+        {
+          "event_id": "ev41",
+          "entity": "e8",
+          "field": "props",
+          "from": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          },
+          "to": {
+            "openable": true,
+            "open": true,
+            "from": "e1",
+            "to": "e9"
+          }
+        }
+      ],
+      "query": {
+        "entity": "e8",
+        "field": "nope"
+      }
+    },
+    "result": {
+      "status": "error",
+      "code": "no_such_field",
+      "message": "No such field nope"
+    }
+  },
+  {
+    "name": "trace_unknown_entity",
+    "kind": "trace",
+    "input": {
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        },
+        {
+          "event_id": "ev41",
+          "cause_id": "ev40",
+          "command_id": "o1",
+          "tick": 0,
+          "type": "opened",
+          "entity": "e8",
+          "data": {}
+        }
+      ],
+      "deltas": [
+        {
+          "event_id": "ev41",
+          "entity": "e8",
+          "field": "props",
+          "from": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          },
+          "to": {
+            "openable": true,
+            "open": true,
+            "from": "e1",
+            "to": "e9"
+          }
+        }
+      ],
+      "query": {
+        "entity": "e99",
+        "field": "props"
+      }
+    },
+    "result": {
+      "status": "ok",
+      "events": []
+    }
+  },
+  {
+    "name": "trace_missing_event",
+    "kind": "trace",
+    "input": {
+      "events": [
+        {
+          "event_id": "ev40",
+          "cause_id": null,
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        },
+        {
+          "event_id": "ev41",
+          "cause_id": "ev40",
+          "command_id": "o1",
+          "tick": 0,
+          "type": "opened",
+          "entity": "e8",
+          "data": {}
+        }
+      ],
+      "deltas": [
+        {
+          "event_id": "ev41",
+          "entity": "e8",
+          "field": "props",
+          "from": {
+            "openable": true,
+            "open": false,
+            "from": "e1",
+            "to": "e9"
+          },
+          "to": {
+            "openable": true,
+            "open": true,
+            "from": "e1",
+            "to": "e9"
+          }
+        }
+      ],
+      "query": {
+        "event_id": "ev999"
+      }
+    },
+    "result": {
+      "status": "error",
+      "code": "no_such_event",
+      "message": "No such event ev999"
+    }
+  },
+  {
+    "name": "trace_chain_parent_missing",
+    "kind": "chain",
+    "input": {
+      "events": [
+        {
+          "event_id": "evx",
+          "cause_id": "ev-missing",
+          "command_id": "o1",
+          "tick": 0,
+          "type": "open",
+          "entity": "e8",
+          "data": {}
+        }
+      ],
+      "start": "evx"
+    },
+    "result": {
+      "status": "error",
+      "code": "no_such_event",
+      "message": "No such event ev-missing"
+    }
+  }
+]

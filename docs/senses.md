@@ -37,6 +37,8 @@ is `quiet`. A `moved` under `move`, `push` or `pull` is footsteps or scraping, a
 A sleeping body (`asleep`, a state prop an author sets, `scenarios/watch.json`) is `false` / `asleep` for sight
 and hearing, so it hears no knock and no speech; touch and smell read as they do for anyone. Its own commands
 are refused `asleep`, and the world author may still act on it.
+A blind body (`blind`) is `false` / `blind` for sight and a deaf one (`deaf`) `false` / `deaf` for hearing; both
+still act, touch and smell, and their capacities stay as they are: the condition is not damage.
 
 An unconscious body (`unconscious`, a state prop an author sets, and an edit ends) is `false` / `unconscious` for every
 sense, and its capacities read zero (`capacity`); what it holds stays held, since structural capacities are unchanged.

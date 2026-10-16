@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WorldEngine.Cli/WorldEngine.Cli.csproj" />
+    <Project Path="src/WorldEngine.Contract/WorldEngine.Contract.csproj" />
+    <Project Path="src/WorldEngine.Core/WorldEngine.Core.csproj" />
+    <Project Path="src/WorldEngine.Store/WorldEngine.Store.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WorldEngine.LockChild/WorldEngine.LockChild.csproj" />
+    <Project Path="tests/WorldEngine.Tests/WorldEngine.Tests.csproj" />
+  </Folder>
+</Solution>

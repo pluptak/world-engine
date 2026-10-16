@@ -1,0 +1,9 @@
+[
+  { "command_id": "d1", "actor": "e4", "verb": "drop", "target": "e15" },
+  { "command_id": "d2", "actor": "e4", "verb": "drop", "target": "e5" },
+  { "command_id": "d3", "actor": "e4", "verb": "drop", "target": "e4.hand_l" },
+  { "command_id": "d4", "actor": "e4", "verb": "drop", "target": "e4" },
+  { "command_id": "d5", "actor": "e4", "verb": "drop", "target": "nobody" },
+  { "command_id": "d6", "actor": "e4", "verb": "drop" },
+  { "command_id": "b1", "actor": "e4", "verb": "drop", "target": "e3" }
+]

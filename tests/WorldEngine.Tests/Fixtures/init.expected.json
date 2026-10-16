@@ -1,0 +1,260 @@
+[
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}bottle.json"
+    ],
+    "stdout": "{\"snapshot_version\":0,\"status\":\"ok\",\"world\":\"{DIR}\"}\n",
+    "status": 0,
+    "name": "bottle"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}camp.json"
+    ],
+    "stdout": "{\"snapshot_version\":0,\"status\":\"ok\",\"world\":\"{DIR}\"}\n",
+    "status": 0,
+    "name": "camp"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}cell.json"
+    ],
+    "stdout": "{\"snapshot_version\":0,\"status\":\"ok\",\"world\":\"{DIR}\"}\n",
+    "status": 0,
+    "name": "cell"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}hand.json"
+    ],
+    "stdout": "{\"snapshot_version\":0,\"status\":\"ok\",\"world\":\"{DIR}\"}\n",
+    "status": 0,
+    "name": "hand"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}inn.json"
+    ],
+    "stdout": "{\"snapshot_version\":0,\"status\":\"ok\",\"world\":\"{DIR}\"}\n",
+    "status": 0,
+    "name": "inn"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}lab-run.json"
+    ],
+    "stdout": "{\"snapshot_version\":0,\"status\":\"ok\",\"world\":\"{DIR}\"}\n",
+    "status": 0,
+    "name": "lab-run"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}lab.json"
+    ],
+    "stdout": "{\"snapshot_version\":0,\"status\":\"ok\",\"world\":\"{DIR}\"}\n",
+    "status": 0,
+    "name": "lab"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}watch.json"
+    ],
+    "stdout": "{\"snapshot_version\":0,\"status\":\"ok\",\"world\":\"{DIR}\"}\n",
+    "status": 0,
+    "name": "watch"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}workshop.json"
+    ],
+    "stdout": "{\"snapshot_version\":0,\"status\":\"ok\",\"world\":\"{DIR}\"}\n",
+    "status": 0,
+    "name": "workshop"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}bottle.json",
+      "{SCN}coverage-small.json"
+    ],
+    "stdout": "{\"snapshot_version\":0,\"status\":\"ok\",\"world\":\"{DIR}\"}\n",
+    "status": 0,
+    "name": "coverage"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}bottle.json",
+      "{SCN}bad-coverage.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"invalid_coverage\",\"message\":\"invalid_coverage\",\"path\":[]},{\"code\":\"invalid_type\",\"expected\":\"array\",\"message\":\"Invalid input: expected array, received string\",\"path\":[\"relations\"]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "refuse-bad-coverage"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}bottle.json",
+      "{SCN}no-such.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"no_such_coverage\",\"message\":\"no_such_coverage\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "refuse-missing-coverage"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}no-such.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"no_such_scenario\",\"message\":\"no_such_scenario\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "refuse-missing"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}bad-json.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"invalid_scenario_json\",\"message\":\"invalid_scenario_json\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "refuse-bad-json"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}bad-scenario.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"unrecognized_keys\",\"keys\":[\"extra\"],\"message\":\"Unrecognized key: \\\"extra\\\"\",\"path\":[0]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "refuse-bad-scenario"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}bad-run.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"too_small\",\"inclusive\":true,\"message\":\"Too small: expected number to be >=1\",\"minimum\":1,\"origin\":\"number\",\"path\":[\"run\",\"tick_limit\"]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "refuse-bad-run"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}unknown-template.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"internal_error\",\"message\":\"internal_error\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "refuse-unknown-template"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}modifiers.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"derived_field\",\"message\":\"derived_field\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "refuse-modifiers"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}integrity.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"field_not_editable\",\"message\":\"field_not_editable\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "refuse-integrity"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}form.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"invalid_form\",\"message\":\"invalid_form\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "refuse-form"
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}derived.json"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"invalid_snapshot\",\"message\":\"invalid_snapshot\",\"path\":[]},{\"code\":\"location_mismatch\",\"message\":\"location null\",\"path\":[\"entities\",\"e3\"]}],\"status\":\"invalid\"}\n",
+    "status": 2,
+    "name": "derived"
+  },
+  {
+    "argv": [
+      "init"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"invalid_init_args\",\"message\":\"invalid_init_args\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2
+  },
+  {
+    "argv": [
+      "init",
+      "{DIR}",
+      "{SCN}bottle.json",
+      "a",
+      "b"
+    ],
+    "stdout": "{\"issues\":[{\"code\":\"invalid_init_args\",\"message\":\"invalid_init_args\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2
+  },
+  {
+    "request": {
+      "op": "restart",
+      "world": "{WORLD}",
+      "to": "{TO}"
+    },
+    "stdout": "{\"snapshot_version\":0}\n",
+    "status": 0
+  },
+  {
+    "request": {
+      "op": "restart",
+      "world": "{WORLD}",
+      "to": "{WORLD}"
+    },
+    "stdout": "{\"issues\":[{\"code\":\"world_exists\",\"message\":\"world_exists\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2
+  },
+  {
+    "request": {
+      "op": "restart",
+      "world": "{MISSING}",
+      "to": "{TO}"
+    },
+    "stdout": "{\"issues\":[{\"code\":\"no_such_world\",\"message\":\"no_such_world\",\"path\":[]}],\"status\":\"invalid\"}\n",
+    "status": 2
+  }
+]

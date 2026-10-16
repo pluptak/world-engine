@@ -1,0 +1,9 @@
+{
+  "id": "generator",
+  "size_cm": { "w": 100, "d": 60, "h": 120 },
+  "mass_g": 400000,
+  "parts": [],
+  "props": { "power_source": true },
+  "break_products": [],
+  "break_residue": {}
+}

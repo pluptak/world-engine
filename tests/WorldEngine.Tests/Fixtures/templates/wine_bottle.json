@@ -1,0 +1,5 @@
+{
+  "id": "wine_bottle",
+  "extends": "bottle",
+  "props": { "liquid_material": "grape_wine" }
+}

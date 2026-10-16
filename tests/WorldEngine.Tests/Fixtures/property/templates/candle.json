@@ -1,0 +1,50 @@
+{
+  "id": "candle",
+  "extends": "stone",
+  "size_cm": {
+    "w": 20,
+    "d": 20,
+    "h": 20
+  },
+  "mass_g": 2000,
+  "parts": [],
+  "props": {
+    "light_source": true,
+    "burning": false,
+    "fuel": 5,
+    "burn_every": 2
+  },
+  "break_products": [],
+  "break_residue": {},
+  "processes": [
+    {
+      "id": "burn",
+      "every_ticks": 2,
+      "effect": {
+        "adjust_prop": {
+          "prop": "fuel",
+          "by": -1,
+          "min": 0
+        }
+      },
+      "every_ticks_prop": "burn_every",
+      "while": {
+        "prop": "burning",
+        "op": "eq",
+        "value": true
+      },
+      "then": {
+        "set_prop": {
+          "prop": "burning",
+          "value": false
+        }
+      }
+    }
+  ],
+  "fields": {
+    "burn_every": {
+      "tier": "definition",
+      "type": "integer"
+    }
+  }
+}

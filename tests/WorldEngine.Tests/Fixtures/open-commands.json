@@ -1,0 +1,91 @@
+[
+  {
+    "command_id": "o1",
+    "actor": "e4",
+    "verb": "open",
+    "target": "e8"
+  },
+  {
+    "command_id": "o2",
+    "actor": "e4",
+    "verb": "close",
+    "target": "e8"
+  },
+  {
+    "command_id": "o3",
+    "actor": "e4",
+    "verb": "lock",
+    "target": "e8"
+  },
+  {
+    "command_id": "o4",
+    "actor": "e4",
+    "verb": "unlock",
+    "target": "e8"
+  },
+  {
+    "command_id": "o5",
+    "actor": "e4",
+    "verb": "lock",
+    "target": "e31"
+  },
+  {
+    "command_id": "o6",
+    "actor": "e4",
+    "verb": "open",
+    "target": "e31"
+  },
+  {
+    "command_id": "o7",
+    "actor": "e4",
+    "verb": "open",
+    "target": "e5"
+  },
+  {
+    "command_id": "o8",
+    "actor": "e4",
+    "verb": "open",
+    "target": "e74"
+  },
+  {
+    "command_id": "o9",
+    "actor": "e4",
+    "verb": "open",
+    "target": "nobody"
+  },
+  {
+    "command_id": "o10",
+    "actor": "e4",
+    "verb": "open"
+  },
+  {
+    "command_id": "o11",
+    "actor": "e4",
+    "verb": "close",
+    "target": "e31"
+  },
+  {
+    "command_id": "o12",
+    "actor": "e4",
+    "verb": "unlock",
+    "target": "e31"
+  },
+  {
+    "command_id": "o13",
+    "actor": "e4",
+    "verb": "open",
+    "target": "e8"
+  },
+  {
+    "command_id": "o14",
+    "actor": "e4",
+    "verb": "close",
+    "target": "e74"
+  },
+  {
+    "command_id": "o15",
+    "actor": "e4",
+    "verb": "lock",
+    "target": "e8"
+  }
+]

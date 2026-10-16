@@ -1,0 +1,5 @@
+{
+  "id": "gate",
+  "extends": "bars",
+  "props": { "openable": true, "open": false }
+}

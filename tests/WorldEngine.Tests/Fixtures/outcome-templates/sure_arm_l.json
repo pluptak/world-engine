@@ -1,0 +1,13 @@
+{
+  "id": "sure_arm_l",
+  "fits": "human.arm_l",
+  "size_cm": { "w": 12, "d": 12, "h": 60 },
+  "mass_g": 3000,
+  "parts": [
+    { "name": "hand_l", "parent": null, "contributes": { "manipulation": 40 }, "detachable": false, "max_integrity": 100 },
+    { "name": "thumb_l", "parent": "hand_l", "contributes": {}, "detachable": false, "max_integrity": 50 }
+  ],
+  "props": { "success_pct": 100, "outcome_ticks": 5 },
+  "break_products": [],
+  "break_residue": {}
+}

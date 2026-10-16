@@ -14,4 +14,4 @@ A link of a power walk is switched off and on again by hand or by its controller
   as `open` does ([verbs-openables.md](verbs-openables.md), [power.md](power.md)). A remote
   `switch_on` judges the walk with the target on, so a controller turns back on what it turned
   off; a link off upstream still refuses it. The reach and remote rules both families share are in
-  `src/engine/verbs/remote.ts`. Tests: `tests/switch.test.ts`.
+  `Remote.cs`. Tests: the `switch` rows of `VerbGoldenTests`.

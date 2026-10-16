@@ -13,7 +13,7 @@ pending close, under `opened`. A second `close`, or a `lock`, is refused `closin
 has come; a remote one the same. `closing` is audible, as `closed` is.
 
 **Rules.** `closing` on a door that is not open, or has no pending close, is `closing_without_close`
-(`src/engine/validate.ts`), and an `edit` that writes it is refused that code.
+(`SnapshotValidation.cs`), and an `edit` that writes it is refused that code.
 
 Not in it: a `closes_after` swing that takes time (its close stays the end of the swing), opening
 that takes time, and a door that crushes or stops on what is in it.

@@ -1,0 +1,267 @@
+using System.Text.Json.Nodes;
+using WorldEngine.Core.Engine;
+using WorldEngine.Core.Json;
+using WorldEngine.Core.Model;
+using WorldEngine.Core.Templates;
+using WorldEngine.Store;
+using WorldEngine.Store.Templates;
+
+namespace WorldEngine.Tests;
+
+// A cut opens a part without severing it (`docs/verbs-surgery.md`): the surgeon holds a scalpel, the patient's arm_l is incised and
+// bleeds, and nothing else changes. The builder numbers the room e1, the surgeon e2, the patient e3 and the scalpel e4.
+public class SurgeryTests : IDisposable
+{
+    private const string Scene = """
+        [
+          { "id": "room", "template": "room", "overrides": { "name": "room", "props": { "lit": true } } },
+          { "id": "surgeon", "template": "human", "overrides": { "name": "surgeon", "location": "room", "support": "room", "pos": { "x": 50, "y": 0 } } },
+          { "id": "patient", "template": "human", "overrides": { "name": "patient", "location": "room", "support": "room", "pos": { "x": 100, "y": 0 } } },
+          { "id": "scalpel", "template": "scalpel", "overrides": { "name": "scalpel", "location": "room", "contained_in": "surgeon", "in_part": "hand_r" } },
+          { "id": "arm", "template": "arm", "overrides": { "name": "arm", "location": "room", "support": "room", "pos": { "x": 75, "y": 0 } } }
+        ]
+        """;
+
+    private const string Surgeon = "e2";
+    private const string Patient = "e3";
+
+    // The TypeScript set plus the scalpel, which TypeScript never had (`templates/scalpel.json`, copied under Fixtures).
+    private static IReadOnlyDictionary<string, Template> Registry { get; } = TemplateResolver.Resolve(TemplateDirectory.ReadDeclarations(
+        Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "Fixtures", "templates"), "*.json")
+            .Concat(Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "Fixtures", "surgery-templates"), "*.json"))
+            .Select(file => (Path.GetFileName(file), File.ReadAllText(file)))));
+
+    private static IReadOnlyDictionary<string, Pipeline.VerbDecl> Verbs { get; } = new Dictionary<string, Pipeline.VerbDecl>
+    {
+        ["cut"] = SurgeryVerbs.Cut,
+        ["staunch"] = SurgeryVerbs.Staunch,
+        ["suture"] = SurgeryVerbs.Suture,
+        ["attack"] = AttackVerb.Attack,
+        ["wait"] = WaitVerb.Wait,
+    };
+
+    private readonly string scratch = Path.Combine(Path.GetTempPath(), "surgery-" + Guid.NewGuid().ToString("N"));
+
+    public void Dispose()
+    {
+        try
+        {
+            Directory.Delete(scratch, recursive: true);
+        }
+        catch (IOException)
+        {
+        }
+    }
+
+    [Fact]
+    public void A_cut_incises_the_part_and_starts_a_bleed_that_names_it()
+    {
+        var cut = Pipeline.Apply(Built(), Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Ok, cut.Status);
+        var part = PartStates.Effective(Registry["human"], cut.Snapshot.Entities[Patient], "arm_l");
+        Assert.Equal(PartStatus.Intact, part!.Status);
+        Assert.True(PartStates.State(Registry["human"], cut.Snapshot.Entities[Patient], "arm_l")!.Incised);
+        Assert.Equal(100L, Capacities.Of(cut.Snapshot, Registry, Patient, "moving"));
+        var bleed = (cut.Snapshot.Schedule ?? []).OfType<BleedCause>().Single();
+        Assert.Equal(Patient, bleed.Entity);
+        Assert.Equal("arm_l", bleed.Part);
+        var root = Assert.Single(cut.Events);
+        Assert.Equal("cut", root.Type);
+        Assert.Null(root.CauseId);
+    }
+
+    [Fact]
+    public void A_cut_on_a_body_that_does_not_bleed_only_incises()
+    {
+        var cut = Pipeline.Apply(Built(), Registry, Verbs, Cut(Surgeon, "e5", "gripper"));
+
+        Assert.Equal(Status.Ok, cut.Status);
+        Assert.True(PartStates.State(Registry["arm"], cut.Snapshot.Entities["e5"], "gripper")!.Incised);
+        Assert.Empty((cut.Snapshot.Schedule ?? []).OfType<BleedCause>());
+    }
+
+    [Fact]
+    public void A_cut_with_nothing_to_cut_with_is_refused()
+    {
+        var cut = Pipeline.Apply(Built(), Registry, Verbs, Cut(Patient, Surgeon, "arm_l"));
+
+        Assert.Equal(Status.Refused, cut.Status);
+        Assert.Equal(Code.NoCuttingTool, cut.ReasonCode);
+    }
+
+    [Fact]
+    public void A_second_cut_on_the_same_part_is_refused()
+    {
+        var first = Pipeline.Apply(Built(), Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+        var second = Pipeline.Apply(first.Snapshot, Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Refused, second.Status);
+        Assert.Equal(Code.AlreadyIncised, second.ReasonCode);
+    }
+
+    [Fact]
+    public void A_cut_targeting_a_part_address_is_refused()
+    {
+        var cut = Pipeline.Apply(Built(), Registry, Verbs, new Command("e-cut", Surgeon, "cut", $"{Patient}.arm_l", Args: Value.Map.Empty.With("part", "arm_l")));
+
+        Assert.Equal(Status.Refused, cut.Status);
+        Assert.Equal(Code.TargetAttached, cut.ReasonCode);
+    }
+
+    [Fact]
+    public void The_bleed_runs_its_course_and_ends()
+    {
+        var cut = Pipeline.Apply(Built(), Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+        var later = Pipeline.Apply(cut.Snapshot, Registry, Verbs, new Command("e-wait", Surgeon, "wait", Args: Value.Map.Empty.With("ticks", 7L)));
+
+        Assert.Equal(Status.Ok, later.Status);
+        Assert.Empty((later.Snapshot.Schedule ?? []).OfType<BleedCause>());
+        Assert.Equal(85L, later.Snapshot.Entities[Patient].Integrity);
+
+        var second = Pipeline.Apply(later.Snapshot, Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Refused, second.Status);
+        Assert.Equal(Code.AlreadyIncised, second.ReasonCode);
+    }
+
+    [Fact]
+    public void A_blow_to_an_incised_part_leaves_it_incised()
+    {
+        var cut = Pipeline.Apply(Built(), Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+        var struck = Pipeline.Apply(cut.Snapshot, Registry, Verbs, new Command("s1", Surgeon, "attack", $"{Patient}.arm_l"));
+
+        Assert.Equal(Status.Ok, struck.Status);
+        var state = PartStates.State(Registry["human"], struck.Snapshot.Entities[Patient], "arm_l")!;
+        Assert.Equal(PartStatus.Damaged, state.Status);
+        Assert.True(state.Incised);
+        Assert.Equal(Code.AlreadyIncised, Pipeline.Apply(struck.Snapshot, Registry, Verbs, Cut(Surgeon, Patient, "arm_l")).ReasonCode);
+        Assert.Equal(Status.Ok, Pipeline.Apply(struck.Snapshot, Registry, Verbs, Suture("t1", Surgeon, Patient, "arm_l")).Status);
+    }
+
+    [Fact]
+    public void A_store_world_folds_the_cut_alike()
+    {
+        var made = WorldBuilder.Snapshot(ValueJson.FromNode(JsonNode.Parse(Scene))!, Registry);
+        var expected = Pipeline.Apply(made.Snapshot, Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+
+        WorldBuilder.Create(scratch, made.Snapshot, Registry, made.Ids);
+        var world = StoreWorld.Open(scratch);
+        Assert.Equal(Status.Ok, world.Apply(Cut(Surgeon, Patient, "arm_l")).Status);
+
+        Assert.Equal(WorldJson.Write(expected.Snapshot), WorldJson.Write(world.CurrentSnapshot()));
+        Assert.True(world.Verify().Ok);
+    }
+
+    [Fact]
+    public void Staunching_an_arm_stops_its_bleed_and_leaves_the_hands()
+    {
+        var snapshot = Built();
+        snapshot = Pipeline.Apply(snapshot, Registry, Verbs, Cut(Surgeon, Patient, "arm_l")).Snapshot;
+        for (var index = 0; index < 3; index++)
+        {
+            var struck = Pipeline.Apply(snapshot, Registry, Verbs, new Command($"s{index}", Surgeon, "attack", $"{Patient}.hand_l"));
+            Assert.Equal(Status.Ok, struck.Status);
+            snapshot = struck.Snapshot;
+        }
+
+        var staunched = Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Ok, staunched.Status);
+        var bleed = Assert.Single((staunched.Snapshot.Schedule ?? []).OfType<BleedCause>());
+        Assert.Equal("hand_l", bleed.Part);
+        var quiet = Pipeline.Apply(staunched.Snapshot, Registry, Verbs, new Command("e-wait", Surgeon, "wait", Args: Value.Map.Empty.With("ticks", 12L)));
+        Assert.Empty((quiet.Snapshot.Schedule ?? []).OfType<BleedCause>());
+        Assert.Equal(75L, quiet.Snapshot.Entities[Patient].Integrity);
+    }
+
+    [Fact]
+    public void Suturing_clears_the_incision_and_leaves_the_bleed()
+    {
+        var cut = Pipeline.Apply(Built(), Registry, Verbs, Cut(Surgeon, Patient, "arm_l"));
+
+        var sutured = Pipeline.Apply(cut.Snapshot, Registry, Verbs, Suture("t1", Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Ok, sutured.Status);
+        Assert.False(sutured.Snapshot.Entities[Patient].Parts.ContainsKey("arm_l"));
+        var bleed = Assert.Single((sutured.Snapshot.Schedule ?? []).OfType<BleedCause>());
+        Assert.Equal("arm_l", bleed.Part);
+    }
+
+    [Fact]
+    public void Treatment_refusals_change_nothing()
+    {
+        var snapshot = Built();
+        foreach (var result in new[]
+        {
+            Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_r")),
+            Pipeline.Apply(snapshot, Registry, Verbs, Suture("t2", Surgeon, Patient, "arm_r")),
+        })
+        {
+            Assert.Equal(Status.Refused, result.Status);
+            Assert.Equal(WorldJson.Write(snapshot), WorldJson.Write(result.Snapshot));
+        }
+        Assert.Equal(Code.NotBleeding, Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_r")).ReasonCode);
+        Assert.Equal(Code.NotIncised, Pipeline.Apply(snapshot, Registry, Verbs, Suture("t2", Surgeon, Patient, "arm_r")).ReasonCode);
+        var unknown = Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t3", Surgeon, Patient, "elbow"));
+        Assert.Equal(Code.InvalidArgs, unknown.ReasonCode);
+        Assert.Equal(WorldJson.Write(snapshot), WorldJson.Write(unknown.Snapshot));
+
+        var severed = snapshot;
+        for (var index = 0; index < 3; index++)
+        {
+            severed = Pipeline.Apply(severed, Registry, Verbs, new Command($"s{index}", Surgeon, "attack", $"{Patient}.hand_l")).Snapshot;
+        }
+        var sutured = Pipeline.Apply(severed, Registry, Verbs, Suture("t4", Surgeon, Patient, "hand_l"));
+        Assert.Equal(Status.Refused, sutured.Status);
+        Assert.Equal(Code.NotIncised, sutured.ReasonCode);
+        Assert.Equal(WorldJson.Write(severed), WorldJson.Write(sutured.Snapshot));
+    }
+
+    [Fact]
+    public void Staunching_a_part_with_no_bleed_leaves_the_other_chain()
+    {
+        var snapshot = Built();
+        snapshot = Pipeline.Apply(snapshot, Registry, Verbs, Cut(Surgeon, Patient, "arm_l")).Snapshot;
+        for (var index = 0; index < 3; index++)
+        {
+            var struck = Pipeline.Apply(snapshot, Registry, Verbs, new Command($"s{index}", Surgeon, "attack", $"{Patient}.hand_l"));
+            Assert.Equal(Status.Ok, struck.Status);
+            snapshot = struck.Snapshot;
+        }
+
+        var staunched = Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_r"));
+
+        Assert.Equal(Status.Refused, staunched.Status);
+        Assert.Equal(Code.NotBleeding, staunched.ReasonCode);
+        Assert.Equal(WorldJson.Write(snapshot), WorldJson.Write(staunched.Snapshot));
+        var parts = (staunched.Snapshot.Schedule ?? []).OfType<BleedCause>().Select(cause => cause.Part).Order(StringComparer.Ordinal).ToList();
+        Assert.Equal(["arm_l", "hand_l"], parts);
+    }
+
+    [Fact]
+    public void A_partless_bleed_is_never_staunched()
+    {
+        var snapshot = Built() with
+        {
+            Schedule = new List<ScheduledCause> { new BleedCause(DueTick: 5, Entity: Patient, CauseId: null, Remaining: 3) },
+        };
+
+        var staunched = Pipeline.Apply(snapshot, Registry, Verbs, Staunch("t1", Surgeon, Patient, "arm_l"));
+
+        Assert.Equal(Status.Refused, staunched.Status);
+        Assert.Equal(Code.NotBleeding, staunched.ReasonCode);
+        Assert.Equal(WorldJson.Write(snapshot), WorldJson.Write(staunched.Snapshot));
+    }
+
+    private static Snapshot Built() => WorldBuilder.Snapshot(ValueJson.FromNode(JsonNode.Parse(Scene))!, Registry).Snapshot;
+
+    private static Command Cut(string actor, string target, string part) =>
+        new("e-cut", actor, "cut", target, Args: Value.Map.Empty.With("part", part));
+
+    private static Command Staunch(string id, string actor, string target, string part) =>
+        new(id, actor, "staunch", target, Args: Value.Map.Empty.With("part", part));
+
+    private static Command Suture(string id, string actor, string target, string part) =>
+        new(id, actor, "suture", target, Args: Value.Map.Empty.With("part", part));
+}

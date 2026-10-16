@@ -1,0 +1,201 @@
+[
+  {
+    "command_id": "pu1",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e5",
+    "args": {
+      "distance_cm": 10,
+      "dir": "+x"
+    }
+  },
+  {
+    "command_id": "pu2",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e5"
+  },
+  {
+    "command_id": "pu3",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e5",
+    "args": {
+      "distance_cm": 100,
+      "dir": "+x"
+    }
+  },
+  {
+    "command_id": "pu4",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e15",
+    "args": {
+      "distance_cm": 30,
+      "dir": "-x"
+    }
+  },
+  {
+    "command_id": "pu5",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e3"
+  },
+  {
+    "command_id": "pu6",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e2",
+    "args": {
+      "distance_cm": 20,
+      "dir": "+y"
+    }
+  },
+  {
+    "command_id": "pu7",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e30",
+    "args": {
+      "distance_cm": 20,
+      "dir": "-y"
+    }
+  },
+  {
+    "command_id": "pu8",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e4",
+    "args": {
+      "distance_cm": 20,
+      "dir": "+x"
+    }
+  },
+  {
+    "command_id": "pu9",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e32",
+    "args": {
+      "distance_cm": 20,
+      "dir": "+x"
+    }
+  },
+  {
+    "command_id": "pu10",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e5",
+    "args": {
+      "dir": "x"
+    }
+  },
+  {
+    "command_id": "pu11",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e5",
+    "args": {
+      "distance_cm": -5
+    }
+  },
+  {
+    "command_id": "pu12",
+    "actor": "e4",
+    "verb": "push"
+  },
+  {
+    "command_id": "pu13",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e4.hand_l",
+    "args": {
+      "distance_cm": 10
+    }
+  },
+  {
+    "command_id": "pu14",
+    "actor": "e4",
+    "verb": "pull",
+    "target": "e15",
+    "args": {
+      "distance_cm": 10,
+      "dir": "+x"
+    }
+  },
+  {
+    "command_id": "pu15",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e5",
+    "args": {
+      "distance_cm": 0
+    }
+  },
+  {
+    "command_id": "pu16",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e5",
+    "args": {
+      "distance_cm": 10,
+      "dir": "+y"
+    }
+  },
+  {
+    "command_id": "pu17",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e31",
+    "args": {
+      "distance_cm": 10,
+      "dir": "+x"
+    }
+  },
+  {
+    "command_id": "pu18",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e5",
+    "args": {
+      "distance_cm": 60,
+      "dir": "-x"
+    }
+  },
+  {
+    "command_id": "pu19",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e71",
+    "args": {
+      "distance_cm": 20,
+      "dir": "-x"
+    }
+  },
+  {
+    "command_id": "pu20",
+    "actor": "e4",
+    "verb": "pull",
+    "target": "e71",
+    "args": {
+      "distance_cm": 20,
+      "dir": "+x"
+    }
+  },
+  {
+    "command_id": "pu21",
+    "actor": "e4",
+    "verb": "push",
+    "target": "e5",
+    "args": {
+      "distance_cm": 10,
+      "dir": null
+    }
+  },
+  {
+    "command_id": "pu22",
+    "actor": "e4",
+    "verb": "push",
+    "target": "nobody"
+  }
+]

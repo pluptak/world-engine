@@ -1,0 +1,156 @@
+[
+  {
+    "command_id": "g1",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e20"
+    }
+  },
+  {
+    "command_id": "g2",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e4"
+    }
+  },
+  {
+    "command_id": "g3",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e2"
+    }
+  },
+  {
+    "command_id": "g4",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e21"
+    }
+  },
+  {
+    "command_id": "g5",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e23"
+    }
+  },
+  {
+    "command_id": "g6",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e5",
+    "args": {
+      "destination": "e20"
+    }
+  },
+  {
+    "command_id": "g7",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "nobody"
+    }
+  },
+  {
+    "command_id": "g8",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3"
+  },
+  {
+    "command_id": "g9",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e20.hand_l"
+    }
+  },
+  {
+    "command_id": "g10",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e20",
+      "part": "hand_r"
+    }
+  },
+  {
+    "command_id": "g11",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e20",
+      "part": "nowhere"
+    }
+  },
+  {
+    "command_id": "g12",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e20",
+      "part": 5
+    }
+  },
+  {
+    "command_id": "g13",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e15",
+    "args": {
+      "destination": "e20"
+    }
+  },
+  {
+    "command_id": "g14",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e30"
+    }
+  },
+  {
+    "command_id": "g15",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e4.hand_l",
+    "args": {
+      "destination": "e20"
+    }
+  },
+  {
+    "command_id": "g16",
+    "actor": "e20",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e4"
+    }
+  },
+  {
+    "command_id": "g17",
+    "actor": "e4",
+    "verb": "give",
+    "target": "e3",
+    "args": {
+      "destination": "e20",
+      "part": "hand_l"
+    }
+  }
+]

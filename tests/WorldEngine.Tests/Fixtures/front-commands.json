@@ -1,0 +1,64 @@
+[
+  {
+    "command_id": "c1",
+    "actor": "e4",
+    "verb": "nosuch"
+  },
+  {
+    "command_id": "c2",
+    "actor": "nobody",
+    "verb": "take",
+    "target": "e3"
+  },
+  {
+    "command_id": "c3",
+    "actor": "e5",
+    "verb": "take",
+    "target": "e3"
+  },
+  {
+    "command_id": "c4",
+    "actor": "e4",
+    "verb": "take"
+  },
+  {
+    "command_id": "c5",
+    "actor": "e4",
+    "verb": "take",
+    "target": "nosuch"
+  },
+  {
+    "command_id": "c6",
+    "actor": "e4",
+    "verb": "take",
+    "target": "bottle"
+  },
+  {
+    "command_id": "c7",
+    "actor": "world",
+    "verb": "take",
+    "target": "e3"
+  },
+  {
+    "command_id": "c8",
+    "actor": "world",
+    "verb": "edit"
+  },
+  {
+    "command_id": "c9",
+    "actor": "e4",
+    "verb": "edit"
+  },
+  {
+    "command_id": "c10",
+    "actor": "e4",
+    "verb": "take",
+    "target": "e3"
+  },
+  {
+    "command_id": "c11",
+    "actor": "e4",
+    "verb": "take",
+    "target": "e3.nosuch"
+  }
+]

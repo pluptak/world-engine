@@ -2,41 +2,43 @@
 
 Queries answer facts and perception from the snapshot, templates, events, and coverage, as `"true"`,
 `"false"`, or `"unknown"` with a `basis_code`. Two lists decide what can be asked.
-`ENGINE_CAPABILITIES` is what the engine computes: seven relations and four senses, while properties
+`Capabilities` is what the engine computes: seven relations and four senses, while properties
 are open (`integrity`, `residue`, `pos` computed, others read from props; the default adds `open`).
-Coverage is what this world models, chosen among them: `validateSnapshot` refuses a covered relation
-or sense the engine has no rule for (`coverage_not_computable`). A category the world leaves out of
-coverage answers unknown (`uncovered_category`, `uncovered_sense`), and a sense the engine cannot
-compute answers unknown / `engine_incapable`. Coverage is never what any actor knows or notices.
-`reachable` (subject an agent, object a target) answers by `inReach`, the one rule every verb that
-reaches applies: same room, centre to centre within `reach_cm`, bars or not; `false` / `no_object`
-without an object. Door verbs reach further ([verbs-openables.md](verbs-openables.md)). A `fact`
-subject may name one part, `<entity>.<part>`: `status`, `integrity` and `attached_to` (its entity)
-read the stored entry or the template default and write nothing; any other field is `false` /
-`not_a_part_field`, and a part the template does not declare is `false` / `no_such_part`.
+Coverage is what this world models, chosen among them: `SnapshotValidation` refuses a covered
+relation or sense the engine has no rule for (`coverage_not_computable`). A category the world
+leaves out of coverage answers unknown (`uncovered_category`, `uncovered_sense`), and a sense the
+engine cannot compute answers unknown / `engine_incapable`. Coverage is never what any actor knows
+or notices. `reachable` (subject an agent, object a target) answers by `Reach.Reaches`, the rule
+every verb that reaches applies: a doorway joining the subject's room is reached from anywhere in it
+when it has no position or stands in the other room ([verbs-openables.md](verbs-openables.md));
+anything else by `Reach.InReach`, same room, centre to centre within `reach_cm`, bars or not; `false`
+/ `no_object` without an object. Inspect's `reachable` is the same answer. A `fact` subject may name one part, `<entity>.<part>`:
+`status`, `integrity` and `attached_to` (its entity) read the stored entry or the template default
+and write nothing; any other field is `false` / `not_a_part_field`, and a part the template does not
+declare is `false` / `no_such_part`.
 
-Sight needs light. A room is lit by its `lit` prop, by a flame in it (`light_source` with
-`burning: true`), or by a lamp on power (`light_source` with a `powered_by` while its walk has
-power), a hand or a pocket included, but not one shut in a closed container or destroyed
-(`isLit` in `query.ts`); `light` and `douse` set `burning` ([verbs-sensing.md](verbs-sensing.md)),
-and nothing stores the answer. Sight across an open door needs both rooms lit
-(`adjacent_open_door_lit`), an unlit room is `location_unlit`, and a camera lends its lit room, an
-intercom its sounds, to the agent it feeds ([camera.md](camera.md), [intercom.md](intercom.md)).
+Sight needs light. A room is lit by its `lit` prop, by a flame in it (`light_source` with `burning:
+true`), or by a lamp on power (`light_source` with a `powered_by` while its walk has power), a hand
+or a pocket included, but not one shut in a closed container or destroyed (`Perception.IsLit`);
+`light` and `douse` set `burning` ([verbs-sensing.md](verbs-sensing.md)), and nothing stores the
+answer. Sight across an open door needs both rooms lit (`adjacent_open_door_lit`), an unlit room is
+`location_unlit`, and a camera lends its lit room, an intercom its sounds, to the agent it feeds
+([camera.md](camera.md), [intercom.md](intercom.md)).
 
-The sense table lives in [senses.md](senses.md): one row per event class; touch ignores rooms and
-reads the observer's own body and grips (`own_body`), never an authored event, else `not_touching`.
+The sense table lives in [senses.md](senses.md): one row per event class; touch reads the body and
+grips (`own_body`) and the room it stands in ([room-sight.md](room-sight.md)), else `not_touching`.
 An event heard alone from the next room names the door it came through (`heard_from`).
 
 An event-form perceive reads the world at both ends of the command that produced it and is true if
 it is true at either; `perceivers: true` names, per event and by sense, every agent that could have
 sensed it. A destroyed observer senses nothing, `false` / `observer_destroyed`, so `observe` lists
-nothing for it and `inspect` is `null`; its own end it still sensed, from the moment before. A body
+nothing for it and `inspect` gives none; its own end it still sensed, from the moment before. A body
 with no power on its `powered_by` walk senses nothing: `false` / `unpowered` ([power.md](power.md)).
 
-What an agent can name in a command is a perception question too (`addressable`): itself, its room,
-what it senses now by a covered sight, smell or touch, or what it could grope for, in reach,
-neither hidden nor shut in a closed container (a door from either room it joins, wherever in the room, even if
-it stands in the other one). Anything else,
-by name, alias, id or `<entity>.<part>`, is `unresolved` as if it did not exist, so no candidate or
-refusal names it; the world author names anything. Ids are sequential, so a hidden thing stays
-unnamed by id too until what hides it moves. A dog that smells wine in a shut chest names it.
+What an agent can name in a command is a perception question too (`Perception.Addressable`): itself,
+its room, what it senses now by a covered sight, smell or touch, or what it could grope for, in
+reach, neither hidden nor shut in a closed container (a door from either room it joins, wherever in
+the room, even if it stands in the other one). Anything else, by name, alias, id or
+`<entity>.<part>`, is `unresolved` as if it did not exist, so no candidate or refusal names it; the
+world author names anything. Ids are sequential, so a hidden thing stays unnamed by id too until
+what hides it moves. A dog that smells wine in a shut chest names it.

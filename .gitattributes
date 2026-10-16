@@ -1,0 +1,3 @@
+# The fixtures are recorded bytes: a stored world's head.json names its files' sizes, so a checkout must not
+# rewrite their line endings (core.autocrlf would make them CRLF).
+tests/WorldEngine.Tests/Fixtures/** -text

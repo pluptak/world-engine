@@ -1,0 +1,38 @@
+{
+  "id": "mold",
+  "extends": "stone",
+  "size_cm": {
+    "w": 20,
+    "d": 20,
+    "h": 20
+  },
+  "mass_g": 2000,
+  "parts": [],
+  "props": {
+    "size": 3
+  },
+  "break_products": [],
+  "break_residue": {},
+  "processes": [
+    {
+      "id": "spread",
+      "every_ticks": 2,
+      "effect": {
+        "adjust_prop": {
+          "prop": "size",
+          "by": 1,
+          "max": 4
+        }
+      },
+      "then": {
+        "remove": true
+      }
+    }
+  ],
+  "fields": {
+    "size": {
+      "tier": "state",
+      "type": "integer"
+    }
+  }
+}

@@ -1,0 +1,91 @@
+[
+  {
+    "command_id": "lt1",
+    "actor": "e4",
+    "verb": "light",
+    "target": "e51"
+  },
+  {
+    "command_id": "lt2",
+    "actor": "e4",
+    "verb": "light",
+    "target": "e52"
+  },
+  {
+    "command_id": "lt3",
+    "actor": "e4",
+    "verb": "douse",
+    "target": "e52"
+  },
+  {
+    "command_id": "lt4",
+    "actor": "e4",
+    "verb": "douse",
+    "target": "e51"
+  },
+  {
+    "command_id": "lt5",
+    "actor": "e4",
+    "verb": "light",
+    "target": "e53"
+  },
+  {
+    "command_id": "lt6",
+    "actor": "e4",
+    "verb": "light",
+    "target": "e54"
+  },
+  {
+    "command_id": "lt7",
+    "actor": "e4",
+    "verb": "light",
+    "target": "e5"
+  },
+  {
+    "command_id": "lt8",
+    "actor": "e4",
+    "verb": "light",
+    "target": "e3"
+  },
+  {
+    "command_id": "lt9",
+    "actor": "e4",
+    "verb": "douse",
+    "target": "e5"
+  },
+  {
+    "command_id": "lt10",
+    "actor": "e4",
+    "verb": "light",
+    "target": "e4.hand_l"
+  },
+  {
+    "command_id": "lt11",
+    "actor": "e4",
+    "verb": "light",
+    "target": "nobody"
+  },
+  {
+    "command_id": "lt12",
+    "actor": "e4",
+    "verb": "light"
+  },
+  {
+    "command_id": "lt13",
+    "actor": "e4",
+    "verb": "douse",
+    "target": "e53"
+  },
+  {
+    "command_id": "lt14",
+    "actor": "e4",
+    "verb": "light",
+    "target": "e2"
+  },
+  {
+    "command_id": "lt15",
+    "actor": "e4",
+    "verb": "douse",
+    "target": "e54"
+  }
+]

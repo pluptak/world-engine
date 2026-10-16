@@ -1,0 +1,16 @@
+{
+  "id": "small_table",
+  "extends": "table",
+  "size_cm": {
+    "w": 20,
+    "d": 15,
+    "h": 75
+  },
+  "mass_g": 15000,
+  "parts": [],
+  "props": {
+    "surface": true
+  },
+  "break_products": [],
+  "break_residue": {}
+}

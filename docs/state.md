@@ -7,13 +7,13 @@ support surfaces, and containers by ID, and may be hidden under or behind someth
 by a room and derived through the support or containment chain otherwise; `location` is always the
 room at the end of that chain.
 
-`validateSnapshot` is the one pure check. No loops; `pos` exactly under a room, `location` the room
-at the chain's end. Every reference names what exists (a detached origin is history, not a link);
-detached parts are accounted for; no part is stored at its default; integrity runs 0–100; ids stay
-below `next_seq`. A template is one of the registry's own keys (`unknown_template`) and a reference
-one of the entities', so `constructor` or `__proto__` is neither. What a container holds fits its
-`inner_*_cm`, for scenarios, edits and clock causes as for verbs. Props hold to their schema
-([fields.md](fields.md)). Relations hold to theirs ([relations.md](relations.md)): never both
+`SnapshotValidation` is the one pure check. No loops; `pos` exactly under a room, `location` the
+room at the chain's end. Every reference names what exists (a detached origin is history, not a
+link); detached parts are accounted for; no part is stored at its default; integrity runs 0–100; ids
+stay below `next_seq`. A template is one of the registry's own keys (`unknown_template`) and a
+reference one of the entities', so `constructor` or `__proto__` is neither. What a container holds
+fits its `inner_*_cm`, for scenarios, edits and clock causes as for verbs. Props hold to their
+schema ([fields.md](fields.md)). Relations hold to theirs ([relations.md](relations.md)): never both
 supported and contained, a room never placed, a door's sides are rooms, and what a key's `opens`
 names can be opened. A world that breaks one rule does not open; the CLI reports `invalid_snapshot`
 and the rule. Every accepted command and edit is checked before it is written.

@@ -1,0 +1,5 @@
+{"entity":"e3","event_id":"ev6","field":"contained_in","to":"e2"}
+{"entity":"e3","event_id":"ev6","field":"in_part","to":"hand_l"}
+{"entity":"e3","event_id":"ev6","field":"support","from":"e1"}
+{"entity":"e3","event_id":"ev6","field":"pos","from":{"x":30,"y":0}}
+{"entity":"e4","event_id":"ev10","field":"props","from":{"burning":true,"light_source":true},"to":{"burning":false,"light_source":true}}

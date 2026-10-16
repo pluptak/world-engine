@@ -1,0 +1,6 @@
+[
+  { "id": "hall", "template": "room", "overrides": { "name": "hall", "props": { "lit": true } } },
+  { "id": "sean", "template": "human", "overrides": { "name": "sean", "location": "hall", "support": "hall", "pos": { "x": -100, "y": 0 } } },
+  { "id": "castor", "template": "human", "overrides": { "name": "castor", "location": "hall", "support": "hall", "pos": { "x": 100, "y": 0 } } },
+  { "id": "guard", "template": "human", "overrides": { "name": "guard", "location": "hall", "support": "hall", "pos": { "x": 0, "y": 200 } } }
+]

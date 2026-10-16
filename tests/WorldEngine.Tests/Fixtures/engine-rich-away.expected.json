@@ -1,0 +1,8429 @@
+{
+  "addressable": [
+    {
+      "actor": "e1",
+      "entity": "e1",
+      "value": true
+    },
+    {
+      "actor": "e1",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e8",
+      "value": false
+    },
+    {
+      "actor": "e1",
+      "entity": "e9",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e1",
+      "value": true
+    },
+    {
+      "actor": "e10",
+      "entity": "e10",
+      "value": true
+    },
+    {
+      "actor": "e10",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e10",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e10",
+      "entity": "e9",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e1",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e11",
+      "value": true
+    },
+    {
+      "actor": "e11",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e11",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e11",
+      "entity": "e9",
+      "value": true
+    },
+    {
+      "actor": "e12",
+      "entity": "e1",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e12",
+      "value": true
+    },
+    {
+      "actor": "e12",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e12",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e12",
+      "entity": "e9",
+      "value": true
+    },
+    {
+      "actor": "e13",
+      "entity": "e1",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e13",
+      "value": true
+    },
+    {
+      "actor": "e13",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e13",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e13",
+      "entity": "e9",
+      "value": true
+    },
+    {
+      "actor": "e14",
+      "entity": "e1",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e14",
+      "value": true
+    },
+    {
+      "actor": "e14",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e14",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e14",
+      "entity": "e9",
+      "value": true
+    },
+    {
+      "actor": "e15",
+      "entity": "e1",
+      "value": true
+    },
+    {
+      "actor": "e15",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e15",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e15",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e15",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e15",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e15",
+      "entity": "e15",
+      "value": true
+    },
+    {
+      "actor": "e15",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e15",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e15",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e15",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e15",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e15",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e15",
+      "entity": "e9",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e1",
+      "value": true
+    },
+    {
+      "actor": "e16",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e16",
+      "value": true
+    },
+    {
+      "actor": "e16",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e16",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e16",
+      "entity": "e9",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e1",
+      "value": true
+    },
+    {
+      "actor": "e2",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e2",
+      "value": true
+    },
+    {
+      "actor": "e2",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e2",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e2",
+      "entity": "e9",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e1",
+      "value": true
+    },
+    {
+      "actor": "e3",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e3",
+      "value": true
+    },
+    {
+      "actor": "e3",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e3",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e3",
+      "entity": "e9",
+      "value": false
+    },
+    {
+      "actor": "e4",
+      "entity": "e1",
+      "value": true
+    },
+    {
+      "actor": "e4",
+      "entity": "e10",
+      "value": true
+    },
+    {
+      "actor": "e4",
+      "entity": "e11",
+      "value": true
+    },
+    {
+      "actor": "e4",
+      "entity": "e12",
+      "value": true
+    },
+    {
+      "actor": "e4",
+      "entity": "e13",
+      "value": true
+    },
+    {
+      "actor": "e4",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e4",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e4",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e4",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e4",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e4",
+      "entity": "e4",
+      "value": true
+    },
+    {
+      "actor": "e4",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e4",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e4",
+      "entity": "e9",
+      "value": true
+    },
+    {
+      "actor": "e5",
+      "entity": "e1",
+      "value": true
+    },
+    {
+      "actor": "e5",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e5",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e5",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e5",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e5",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e5",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e5",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e5",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e5",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e5",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e5",
+      "entity": "e5",
+      "value": true
+    },
+    {
+      "actor": "e5",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e5",
+      "entity": "e9",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e1",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e8",
+      "entity": "e8",
+      "value": true
+    },
+    {
+      "actor": "e8",
+      "entity": "e9",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e1",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e10",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e11",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e12",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e13",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e14",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e15",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e16",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e2",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e3",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e4",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e5",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e8",
+      "value": false
+    },
+    {
+      "actor": "e9",
+      "entity": "e9",
+      "value": true
+    }
+  ],
+  "perceive": [
+    {
+      "entity": "e1",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e1",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e10",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e11",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e12",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e13",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e14",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e15",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e16",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e2",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e3",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e4",
+      "result": {
+        "basis_code": "camera",
+        "value": "true"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e4",
+      "result": {
+        "basis_code": "camera",
+        "value": "true"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location",
+        "value": "true"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location",
+        "value": "true"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location",
+        "value": "true"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e4",
+      "result": {
+        "basis_code": "enclosed",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location",
+        "value": "true"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e4",
+      "result": {
+        "basis_code": "concealed",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location",
+        "value": "true"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e4",
+      "result": {
+        "basis_code": "own_body",
+        "value": "true"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_perceptible",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location",
+        "value": "true"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e4",
+      "result": {
+        "basis_code": "not_touching",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location_lit",
+        "value": "true"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location",
+        "value": "true"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e4",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e4",
+      "result": {
+        "basis_code": "same_location",
+        "value": "true"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e5",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e8",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e1",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e1",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e1",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e1",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e10",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e10",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e10",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e10",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e11",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e11",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e11",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e11",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e12",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e12",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e12",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e12",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e13",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e13",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e13",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e13",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e14",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e14",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e14",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e14",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e15",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e15",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e15",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e15",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e16",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e16",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e16",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e16",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e2",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e2",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e2",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e2",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e3",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e3",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e3",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e3",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e4",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e4",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e4",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e4",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e5",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e5",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e5",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e5",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e8",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e8",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e8",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e8",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    },
+    {
+      "entity": "e9",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "sight"
+    },
+    {
+      "entity": "e9",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "hearing"
+    },
+    {
+      "entity": "e9",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "smell"
+    },
+    {
+      "entity": "e9",
+      "observer": "e9",
+      "result": {
+        "basis_code": "no_sense_capacity",
+        "value": "false"
+      },
+      "sense": "touch"
+    }
+  ],
+  "resolve": [
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "bead"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "bottle"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e13",
+          "entity_id": "e13"
+        }
+      },
+      "text": "crate"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e8",
+          "entity_id": "e8"
+        }
+      },
+      "text": "door"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "doorstop"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e1",
+          "entity_id": "e1"
+        }
+      },
+      "text": "e1"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e10",
+          "entity_id": "e10"
+        }
+      },
+      "text": "e10"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e11",
+          "entity_id": "e11"
+        }
+      },
+      "text": "e11"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e12",
+          "entity_id": "e12"
+        }
+      },
+      "text": "e12"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e13",
+          "entity_id": "e13"
+        }
+      },
+      "text": "e13"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "e14"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "e15"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "e16"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "e2"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "e3"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4",
+          "entity_id": "e4"
+        }
+      },
+      "text": "e4"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4.arm_l",
+          "entity_id": "e4",
+          "part": "arm_l"
+        }
+      },
+      "text": "e4.arm_l"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4.arm_r",
+          "entity_id": "e4",
+          "part": "arm_r"
+        }
+      },
+      "text": "e4.arm_r"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4.hand_l",
+          "entity_id": "e4",
+          "part": "hand_l"
+        }
+      },
+      "text": "e4.hand_l"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4.hand_r",
+          "entity_id": "e4",
+          "part": "hand_r"
+        }
+      },
+      "text": "e4.hand_r"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4.head",
+          "entity_id": "e4",
+          "part": "head"
+        }
+      },
+      "text": "e4.head"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4.pocket",
+          "entity_id": "e4",
+          "part": "pocket"
+        }
+      },
+      "text": "e4.pocket"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4.thumb_l",
+          "entity_id": "e4",
+          "part": "thumb_l"
+        }
+      },
+      "text": "e4.thumb_l"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4.thumb_r",
+          "entity_id": "e4",
+          "part": "thumb_r"
+        }
+      },
+      "text": "e4.thumb_r"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4.torso",
+          "entity_id": "e4",
+          "part": "torso"
+        }
+      },
+      "text": "e4.torso"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "e5"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e8",
+          "entity_id": "e8"
+        }
+      },
+      "text": "e8"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e9",
+          "entity_id": "e9"
+        }
+      },
+      "text": "e9"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "generator"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "hall"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e8",
+          "entity_id": "e8"
+        }
+      },
+      "text": "hatch"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e12",
+          "entity_id": "e12"
+        }
+      },
+      "text": "intercom"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e11",
+          "entity_id": "e11"
+        }
+      },
+      "text": "lamp"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e10",
+          "entity_id": "e10"
+        }
+      },
+      "text": "lens"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "nothing"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "resolved",
+        "target": {
+          "address": "e4",
+          "entity_id": "e4"
+        }
+      },
+      "text": "pusher"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "rag"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "room"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "table"
+    },
+    {
+      "actor": "e4",
+      "result": {
+        "status": "unresolved"
+      },
+      "text": "x.y"
+    }
+  ]
+}

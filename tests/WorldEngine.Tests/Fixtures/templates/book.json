@@ -1,0 +1,9 @@
+{
+  "id": "book",
+  "size_cm": { "w": 25, "d": 18, "h": 6 },
+  "mass_g": 900,
+  "parts": [],
+  "props": { "hands_required": 2 },
+  "break_products": [],
+  "break_residue": {}
+}

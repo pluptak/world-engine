@@ -1,5 +1,8 @@
 # Store: cost of a command
 
+*Measured on the TypeScript engine (tag `ts-final`); the commands and files named are its. The .NET
+store's benchmark is `tools/WorldEngine.Bench`.*
+
 `npm run bench:scale` (`scripts/bench.ts --scale`) runs 10k mixed commands (open, take,
 put, take, drop, close, move, wait, each agent in turn) on a generated world of 20 rooms
 and 500 entities, 20 agents among tables, chests and stones, with 20 growing sprouts so

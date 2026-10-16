@@ -28,11 +28,18 @@ round, since a move takes no time and `wait` is not a move.
 edit that leaves none of its slots' live bodies alive (`docs/templates.md`). A run with no slots,
 or one still registering, never ends this way.
 
+**An end condition.** A run may hold `end_when`, one condition in a beat's forms
+([beats-actions.md](beats-actions.md), `all` included, [beats-watch.md](beats-watch.md)). A running
+run ends, reason `end_when`, after any ok command or edit that leaves it holding; it is read before
+the tick limit, so a run that reaches it on its last tick ends for it. A move in a round that makes
+it hold ends the run there, and the round's closing tick is refused `run_ended`. TypeScript had no
+such field (`EndWhenTests`).
+
 **The end.** What is still scheduled is dropped with nothing recorded, since no time passes again;
-modifiers stay as they were. The end is in the snapshot's `run.ended`, and `validateSnapshot`
+modifiers stay as they were. The end is in the snapshot's `run.ended`, and `SnapshotValidation`
 refuses an ended run that still schedules anything. A run that ended can be played again from its
 own world ([restart.md](restart.md)).
 
 **Not in it.** Rounds, roles and handles, the director's levers ([roles.md](roles.md)), who may
 start or end a run (the author, for now), and successors keeping a slot alive. Tests:
-`tests/run.test.ts`, `tests/restart.test.ts`.
+`RunGoldenTests`, and the `restart` rows of `InitGoldenTests`.
